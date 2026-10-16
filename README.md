@@ -1,99 +1,188 @@
-# CodeQuest
-منصة تعليمية تفاعلية لتعليم البرمجة للأطفال
-# 🎮 CodeQuest - رحلة الكود
+# 🎮 CodeQuest
 
-منصة تعليمية تفاعلية لتعليم البرمجة للأطفال والمراهقين باللغة العربية.
+**An interactive Arabic-first platform for teaching programming to kids and teenagers.**
 
-## 🎯 نظرة عامة
+---
 
-CodeQuest هي منصة تعليمية على المتصفح بتحول تعليم البرمجة لمغامرة ممتعة. الأطفال بيتعلموا أساسيات البرمجة من خلال شخصية روبوت اسمها "كودي" بتوجههم خطوة بخطوة بالعربي.
+## 🎯 Overview
 
-## ✨ المميزات الأساسية
+CodeQuest transforms programming education into an engaging adventure. Children learn coding fundamentals through **Cody**, a friendly robot tutor who guides them step-by-step in Arabic.
 
-### 🎭 حوار تفاعلي
-- **كودي الروبوت** بيعمل كمدرس شخصي من خلال محادثة
-- حوار تدريجي بيتأقلم مع اختيارات الطالب
-- أمثلة كود حقيقية بتظهر وسط المحادثة
+---
 
-### 📚 دعم متعدد اللغات
-- **JavaScript** - التفاعل مع الويب
-- **Python** - الذكاء الاصطناعي وعلوم البيانات
-- **C++** - تطوير الألعاب والأنظمة
+## ✨ Key Features
 
-### 🎯 منهج منظم (5 مستويات لكل لغة)
-1. **المستوى الأول** - المتغيرات
-2. **المستوى الثاني** - الشروط
-3. **المستوى الثالث** - الحلقات
-4. **المستوى الرابع** - الدوال
-5. **المستوى الخامس** - المشاريع
+### 🎭 Interactive Storytelling
+- Cody the Robot acts as a personal tutor via chat-style conversation
+- Progressive dialogue that adapts to student choices
+- Real code examples shown inline within the conversation
 
-كل مستوى بيشمل:
-- 5 أجزاء حوار تفاعلي
-- أمثلة كود حقيقية
-- أسئلة تفاعلية
-- امتحان نهائي (5 أسئلة)
-- حفظ التقدم والاستئناف
+### 📚 Multi-Language Support
+- **JavaScript** — Web interactivity and browser programming
+- **Python** — AI, data science, beginner-friendly syntax
+- **C++** — Game development and system programming
 
-### 🎮 6 ألعاب تعليمية
-- **بازل الأكواد** - مطابقة الكود بالنتيجة
-- **لعبة الذاكرة** - اقلب الكروت وطابق المفاهيم
-- **اكتشف الخطأ** - لاقي البج في الكود
-- **تحدي السرعة** - جاوب بسرعة قبل الوقت
-- **سؤال وجواب** - أسئلة اختيار من متعدد
-- **بناء الكود** - رتب الأسطر بالترتيب الصح
+### 🎯 Structured Curriculum
+**5 levels per language:**
 
-### 🔥 نظام التحدي اليومي
-- تحدٍ جديد كل 24 ساعة
-- مكافأة 50 نقطة
-- عداد الأيام المتتالية
+| # | Level | Topic |
+|---|-------|-------|
+| 1 | Variables | المتغيرات |
+| 2 | Conditions | الشروط |
+| 3 | Loops | الحلقات |
+| 4 | Functions | الدوال |
+| 5 | Projects | المشاريع |
 
-### 🏆 لوحة الشرف
-- أفضل 3 لاعبين على منصة التتويج
-- خصوصية كاملة (التلاتة بس)
-- كارت مركز شخصي لكل مستخدم
+Each level includes:
+- 5 interactive story parts
+- Live code examples
+- Multiple-choice checkpoints
+- Final exam (5 questions)
+- Progress save & resume
 
-### 🛒 المتجر الداخلي
-الطلاب بيكسبوا نقاط من المستويات والألعاب، وبعدين يصرفوها على:
-- **تيجان** - تيجان للشخصية (برونزي للماس)
-- **ثيمات** - ألوان للواجهة
-- **حيوانات أليفة** - حيوانات متحركة بتتبع الشخصية
-- **تأثيرات** - نجوم، نار، برق
-- **ألقاب** - شارات بجانب اسم المستخدم
+### 🎮 6 Educational Mini-Games
+- **Code Puzzle** — Drag & drop code fragments
+- **Memory Game** — Flip cards to match concepts
+- **Bug Hunter** — Find the error in code
+- **Speed Challenge** — Beat the timer
+- **Quiz Master** — Multiple-choice questions
+- **Code Builder** — Arrange code lines
 
-### 🏅 نظام الأوسمة
-12 إنجاز قابل للفتح:
-- خلّص أول مستوى
-- اجمع 100/300 نقطة
-- أتقن كل المستويات
-- جرب أكتر من لغة
-- أول شروا من المتجر
+### 🔥 Daily Challenge
+- New challenge every 24 hours
+- 50 bonus points reward
+- Consecutive-days streak counter
 
-### 👤 التخصيص
-- نظام اختيار أفاتار (18 شخصية متنوعة)
-- حروف تلقائية لو مفيش أفاتار
-- إدارة جلسة (2 ساعة)
-- تشفير كلمة المرور (SHA-256)
-- قفل الحساب بعد 5 محاولات غلط
+### 🏆 Leaderboard
+- Top 3 players on animated podium
+- Privacy-focused (only top 3 displayed)
+- Personal rank card for each user
 
-## 🛠️ التقنيات
+### 🛒 In-Platform Shop
+Earn points from levels and games, then spend them on:
+- **Crowns** — Bronze → Silver → Gold → Diamond
+- **Themes** — Color palettes for the interface
+- **Pets** — Animated pets that follow the avatar
+- **Effects** — Sparkles, fire, lightning
+- **Titles** — Rank badges next to username
 
-| التقنية | الاستخدام |
-|---------|-----------|
-| **HTML5** | هيكل الصفحات |
-| **CSS3** | التنسيق والأنيميشن |
-| **JavaScript** | منطق التطبيق |
-| **Canvas Confetti** | الاحتفالات |
-| **DiceBear API** | توليد الشخصيات |
-| **Web Speech API** | صوت كودي |
-| **Web Audio API** | المؤثرات الصوتية |
-| **LocalStorage** | حفظ البيانات |
-| **GitHub Pages** | الاستضافة |
+### 🏅 Achievement System
+12 unlockable achievements:
+- Complete first level
+- Score 100 / 300 points
+- Master all levels
+- Try multiple languages
+- First purchase
 
-## 🎨 مبادئ التصميم
+### 👤 Personalization
+- Avatar selection (18 diverse characters)
+- Auto-generated initials fallback
+- Session management (2-hour expiry)
+- Password hashing (SHA-256 + salt)
+- Account lockout after 5 failed attempts
 
-- **العربية أولاً (RTL)** - تخطيط كامل من اليمين لليسار
-- **محسّن للموبايل** - متجاوب على كل الأحجام
-- **صديق للأطفال** - ألوان زاهية وأزرار كبيرة
-- **تصميم عصري** - ثيم داكن مع إضاءات نيون
+---
 
-## 📁 هيكل المشروع
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|-----------|---------|
+| HTML5 | Structure |
+| CSS3 | Styling & animations |
+| Vanilla JavaScript | Core logic |
+| Canvas Confetti | Celebration effects |
+| DiceBear API | Avatar generation |
+| Web Speech API | Cody's voice |
+| Web Audio API | Custom sound effects |
+| LocalStorage | Client-side persistence |
+| GitHub Pages | Hosting & deployment |
+
+---
+
+## 🎨 Design Principles
+
+- **Arabic-first (RTL)** — Full right-to-left layout
+- **Mobile-optimized** — Responsive on all screen sizes
+- **Child-friendly** — Bright colors, large buttons, playful animations
+- **Neon-cyberpunk aesthetic** — Dark theme with glowing accents
+
+---
+
+## 📁 Project Structure
+
+CodeQuest/
+├── index.html              # Login / Registration
+├── avatar.html             # Avatar selection
+├── languages.html          # Language chooser
+├── levels.html             # Level map
+├── game.html               # Interactive lesson engine
+├── games.html              # Games hub
+├── game-match.html         # Code puzzle
+├── game-memory.html        # Memory game
+├── game-bug.html           # Bug hunter
+├── game-speed.html         # Speed challenge
+├── game-quiz.html          # Quiz game
+├── game-build.html         # Code builder
+├── daily.html              # Daily challenge
+├── leaderboard.html        # Top 3 leaderboard
+├── profile.html            # User profile
+├── shop.html               # In-platform shop
+├── css/
+│   ├── style.css
+│   ├── avatar.css
+│   ├── languages.css
+│   ├── levels.css
+│   ├── game.css
+│   ├── games.css
+│   ├── profile.css
+│   └── accessories.css
+└── js/
+├── auth.js
+├── game.js
+├── sfx.js
+├── accessories.js
+└── achievements.js
+
+---
+
+## 🚀 Run Locally
+
+1. Clone the repository
+2. Open `index.html` in a modern browser
+3. Register a new account
+4. Start learning!
+
+No build step or server required — pure client-side.
+
+---
+
+## 🌐 Live Demo
+
+👉 **[mariam2009m44-lab.github.io/CodeQuest](https://mariam2009m44-lab.github.io/CodeQuest/)**
+
+---
+
+## 🎓 Educational Philosophy
+
+CodeQuest is built on three core principles:
+
+1. **Learning through stories** — Abstract concepts become relatable characters
+2. **Immediate feedback** — Every action has a clear, animated response
+3. **Progress celebration** — Achievements and rewards keep motivation high
+
+---
+
+## 👩‍💻 Developer
+
+**Mariam** — Created for the *"المبدع الصغير"* (Young Innovator) Competition
+
+---
+
+## 📄 License
+
+This project is created for educational purposes.
+
+---
+
+**Made with ❤️ for young Arabic-speaking coders around the world 🌍**
+
