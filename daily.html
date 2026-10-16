@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | تحدي اليوم</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%)}
+
+.fire-particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.fire-particle{position:absolute;bottom:-20px;font-size:20px;animation:floatUp 6s linear infinite;opacity:0}
+@keyframes floatUp{0%{transform:translateY(0) rotate(0deg);opacity:0}20%{opacity:1}100%{transform:translateY(-105vh) rotate(360deg);opacity:0}}
+
+.back-btn{position:absolute;top:20px;right:15px;background:rgba(0,229,255,0.1);color:#ffd700;border:1px solid rgba(0,229,255,0.4);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;font-family:Cairo,sans-serif;z-index:10}
+
+.daily-container{max-width:500px;margin:0 auto;position:relative;z-index:2;padding-top:60px;padding-bottom:30px}
+
+.title-area{text-align:center;margin-bottom:25px;animation:fadeDown 0.8s ease}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+.title-area h1{font-size:26px;font-weight:900;background:linear-gradient(135deg,#00e5ff,#ffd700,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 15px rgba(0,229,255,0.5))}
+.title-area p{color:#a0aec0;font-size:13px;margin-top:5px}
+
+/* الروبوت الطاير */
+.robot-stage{position:relative;width:100%;height:180px;margin-bottom:20px;perspective:1000px}
+.robot-3d{position:absolute;top:50%;left:50%;width:120px;height:120px;transform:translate(-50%,-50%);animation:robotFloat 3s ease-in-out infinite,robotSpin 6s linear infinite;transform-style:preserve-3d;filter:drop-shadow(0 15px 30px rgba(0,229,255,0.6))}
+@keyframes robotFloat{0%,100%{margin-top:0}50%{margin-top:-20px}}
+@keyframes robotSpin{0%{transform:translate(-50%,-50%) rotateY(0deg)}100%{transform:translate(-50%,-50%) rotateY(360deg)}}
+.robot-3d img{width:100%;height:100%;object-fit:contain}
+
+.orbit-ring{position:absolute;top:50%;left:50%;width:180px;height:180px;border:2px dashed rgba(0,229,255,0.4);border-radius:50%;transform:translate(-50%,-50%);animation:spinRing 8s linear infinite}
+.orbit-ring2{position:absolute;top:50%;left:50%;width:220px;height:220px;border:1px solid rgba(0,229,255,0.2);border-radius:50%;transform:translate(-50%,-50%);animation:spinRing 12s linear infinite reverse}
+@keyframes spinRing{0%{transform:translate(-50%,-50%) rotate(0deg)}100%{transform:translate(-50%,-50%) rotate(360deg)}}
+.orbit-dot{position:absolute;top:-5px;left:50%;width:10px;height:10px;border-radius:50%;transform:translateX(-50%)}
+.orbit-ring .orbit-dot{background:#ffd700;box-shadow:0 0 15px #ffd700}
+.orbit-ring2 .orbit-dot{background:#00e5ff;box-shadow:0 0 15px #00e5ff}
+
+/* شعلة النار */
+.streak-card{background:linear-gradient(135deg, rgba(0,229,255,0.15), rgba(255,215,0,0.1));border:2px solid rgba(0,229,255,0.5);border-radius:24px;padding:20px;display:flex;align-items:center;gap:15px;margin-bottom:20px;box-shadow:0 15px 40px rgba(0,229,255,0.15),inset 0 0 30px rgba(0,229,255,0.1);position:relative;overflow:hidden}
+.streak-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle, rgba(0,229,255,0.15), transparent 70%);animation:streakPulse 3s infinite}
+@keyframes streakPulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+.flame-wrap{position:relative;width:70px;height:70px}
+.flame-icon{font-size:60px;animation:flameDance 1s ease-in-out infinite alternate;filter:drop-shadow(0 0 20px rgba(255,100,0,0.9))}
+@keyframes flameDance{0%{transform:scale(1) rotate(-5deg)}100%{transform:scale(1.15) rotate(5deg)}}
+.flame-particles{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.mini-flame{position:absolute;font-size:12px;animation:miniFlame 1.5s linear infinite}
+@keyframes miniFlame{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-30px) scale(0.3);opacity:0}}
+.streak-info{flex:1;position:relative;z-index:1}
+.streak-number{font-size:42px;font-weight:900;color:#ffd700;text-shadow:0 0 25px rgba(0,229,255,0.9);line-height:1}
+.streak-label{color:#a0aec0;font-size:13px;font-weight:bold;margin-top:5px}
+
+/* التاريخ */
+.date-badge{display:inline-block;background:rgba(0,229,255,0.15);border:1px solid rgba(0,229,255,0.4);color:#00e5ff;padding:8px 20px;border-radius:22px;font-size:13px;font-weight:bold;margin-bottom:15px;box-shadow:0 0 20px rgba(0,229,255,0.3);animation:pulseDate 2s infinite}
+@keyframes pulseDate{0%,100%{box-shadow:0 0 20px rgba(0,229,255,0.3)}50%{box-shadow:0 0 35px rgba(0,229,255,0.6)}}
+
+/* الأسئلة */
+.daily-question-area{background:rgba(255,255,255,0.03);border:2px solid rgba(0,229,255,0.3);border-radius:24px;padding:25px 20px;animation:fadeUp 0.6s ease;backdrop-filter:blur(10px)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.daily-q{background:rgba(0,0,0,0.4);border-radius:14px;padding:18px;text-align:center;font-size:17px;font-weight:bold;color:#00e5ff;margin-bottom:18px;line-height:1.6}
+.speed-options{display:grid;gap:10px}
+.speed-opt-btn{background:rgba(0,229,255,0.05);border:2px solid rgba(0,229,255,0.3);color:#fff;padding:15px;border-radius:12px;font-size:15px;cursor:pointer;transition:0.3s;font-family:'Cairo',sans-serif;font-weight:bold}
+.speed-opt-btn:hover{background:rgba(0,229,255,0.15);border-color:#00e5ff;transform:translateY(-2px)}
+.speed-opt-btn.correct{background:rgba(39,174,96,0.4);border-color:#27ae60;animation:pulse-correct 0.5s}
+.speed-opt-btn.wrong{background:rgba(231,76,60,0.4);border-color:#e74c3c;animation:shake 0.4s}
+@keyframes pulse-correct{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.feedback{text-align:center;font-size:16px;font-weight:bold;margin-top:18px;min-height:25px}
+.feedback.success{color:#27ae60}
+.feedback.error{color:#e74c3c}
+
+/* شاشة الفوز */
+.daily-completed{background:linear-gradient(135deg, rgba(0,229,255,0.1), rgba(255,215,0,0.1));border:2px solid rgba(0,229,255,0.5);border-radius:28px;padding:30px 20px;text-align:center;box-shadow:0 20px 60px rgba(255,100,0,0.3);animation:fadeUp 0.6s ease}
+.trophy-stage{position:relative;width:150px;height:150px;margin:0 auto 15px}
+.trophy-ring{position:absolute;top:50%;left:50%;width:100%;height:100%;border:3px solid rgba(255,215,0,0.5);border-radius:50%;transform:translate(-50%,-50%);animation:spinRing 4s linear infinite;box-shadow:0 0 30px rgba(255,215,0,0.4),inset 0 0 30px rgba(255,215,0,0.2)}
+.trophy-ring::before{content:'';position:absolute;top:-4px;left:50%;width:12px;height:12px;background:#ffd700;border-radius:50%;transform:translateX(-50%);box-shadow:0 0 20px #ffd700}
+.trophy-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:70px;animation:trophyBounce 2s ease-in-out infinite;filter:drop-shadow(0 0 30px rgba(255,215,0,0.9))}
+@keyframes trophyBounce{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.15)}}
+.daily-completed h2{color:#ffd700;font-size:24px;margin-bottom:8px;text-shadow:0 0 20px rgba(255,215,0,0.6);font-weight:900}
+.daily-completed p{color:#a0aec0;font-size:14px;margin-bottom:22px}
+.action-btn{background:linear-gradient(135deg,#00e5ff,#ffd700);color:#fff;border:none;padding:15px;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer;width:100%;font-family:Cairo,sans-serif;box-shadow:0 10px 30px rgba(255,100,0,0.5);transition:0.3s}
+.action-btn:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(0,229,255,0.7)}
+
+/* عملة ذهبية بتلف */
+.coin-flip{display:inline-block;font-size:30px;animation:coinSpin 1.5s linear infinite}
+@keyframes coinSpin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="fire-particles" id="fireParticles"></div>
+<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='languages.html',150)">← رجوع</button>
+
+<div class="daily-container">
+
+<div class="title-area">
+<h1>🔥 تحدي اليوم</h1>
+<p>تحدي جديد كل يوم + مكافآت</p>
+</div>
+
+<div class="robot-stage">
+<div class="orbit-ring"><div class="orbit-dot"></div></div>
+<div class="orbit-ring2"><div class="orbit-dot"></div></div>
+<div class="robot-3d" id="robot3d">
+<img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" alt="Robot">
+</div>
+</div>
+
+<div class="streak-card">
+<div class="flame-wrap">
+<div class="flame-icon">🔥</div>
+<div class="flame-particles" id="flameParticles"></div>
+</div>
+<div class="streak-info">
+<div class="streak-number"><span id="streakNum">0</span></div>
+<div class="streak-label">أيام متتالية</div>
+</div>
+</div>
+
+<div style="text-align:center">
+<div class="date-badge" id="dateBadge">-</div>
+<div class="daily-status" id="dailyStatus" style="color:#a0aec0;font-size:14px;margin-bottom:20px">جاري التحميل...</div>
+</div>
+
+<div class="daily-question-area" id="dailyArea" style="display:none">
+<div class="daily-q" id="dailyQ">-</div>
+<div class="speed-options" id="dailyOptions"></div>
+<div class="feedback" id="feedback"></div>
+</div>
+
+<div class="daily-completed" id="dailyCompleted" style="display:none">
+<div class="trophy-stage">
+<div class="trophy-ring"></div>
+<div class="trophy-icon">🏆</div>
+</div>
+<h2>خلصت تحدي النهاردة!</h2>
+<p>تعالى بكرة عشان تحدي جديد 🔥</p>
+<button class="action-btn" onclick="window.location.href='games.html'">🎮 روح للألعاب</button>
+</div>
+
+</div>
+
+<script>
+const dailyBank = [
+    { q: 'إيه ناتج 5 + 5؟', options: ['10', '12', '8', '15'], answer: '10' },
+    { q: 'إيه الرمز اللي بيعني "أصغر من"؟', options: ['>', '<', '=', '!'], answer: '<' },
+    { q: 'إيه لغة الويب التفاعلية؟', options: ['JavaScript', 'HTML', 'CSS', 'SQL'], answer: 'JavaScript' },
+    { q: 'إيه ناتج 8 * 2؟', options: ['16', '10', '18', '12'], answer: '16' },
+    { q: 'إيه الرمز بتاع الطباعة في JS؟', options: ['print()', 'console.log()', 'echo()', 'write()'], answer: 'console.log()' },
+    { q: 'إيه الشعار بتاع Python؟', options: ['🐍', '🐘', '🦁', '🐯'], answer: '🐍' },
+    { q: 'إيه ناتج 20 - 8؟', options: ['10', '12', '14', '16'], answer: '12' },
+    { q: 'إيه الرمز اللي بيبدأ بيه التعليق؟', options: ['//', '/*', '#', '--'], answer: '//' },
+    { q: 'إيه ناتج 3 * 3؟', options: ['6', '9', '12', '3'], answer: '9' },
+    { q: 'إيه اللي بيخزن صح أو خطأ؟', options: ['Boolean', 'Number', 'String', 'Array'], answer: 'Boolean' },
+    { q: 'إيه ناتج 10 / 2؟', options: ['5', '4', '6', '8'], answer: '5' },
+    { q: 'إيه اللي بيعمل تكرار؟', options: ['if', 'loop', 'var', 'let'], answer: 'loop' }
+];
+
+const user = Auth.getCurrentUser();
+const today = new Date().toDateString();
+const dailyKey = 'cq_daily_' + user;
+const streakKey = 'cq_streak_' + user;
+
+let dailyData = JSON.parse(localStorage.getItem(dailyKey) || '{}');
+let streakData = JSON.parse(localStorage.getItem(streakKey) || '{"count":0,"lastDate":"","best":0}');
+
+const dateEl = document.getElementById('dateBadge');
+const statusEl = document.getElementById('dailyStatus');
+const dailyArea = document.getElementById('dailyArea');
+const completedArea = document.getElementById('dailyCompleted');
+const qEl = document.getElementById('dailyQ');
+const optionsEl = document.getElementById('dailyOptions');
+const feedback = document.getElementById('feedback');
+const streakNumEl = document.getElementById('streakNum');
+
+const now = new Date();
+const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+dateEl.innerText = '📅 ' + now.getDate() + ' ' + months[now.getMonth()];
+streakNumEl.innerText = streakData.count || 0;
+
+const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % dailyBank.length;
+const todayChallenge = dailyBank[dayIndex];
+
+if (dailyData.date === today) {
+    completedArea.style.display = 'block';
+    statusEl.innerText = 'خلصت تحدي النهاردة ✅';
+} else {
+    dailyArea.style.display = 'block';
+    statusEl.innerText = 'تحدي النهاردة:';
+    qEl.innerText = todayChallenge.q;
+    todayChallenge.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'speed-opt-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkDaily(btn, opt);
+        optionsEl.appendChild(btn);
+    });
+}
+
+function checkDaily(btn, selected) {
+    document.querySelectorAll('.speed-opt-btn').forEach(b => b.disabled = true);
+    if (selected === todayChallenge.answer) {
+        btn.classList.add('correct');
+        playSound('win');
+        dailyData = { date: today, score: 50 };
+        localStorage.setItem(dailyKey, JSON.stringify(dailyData));
+        
+        const lastDate = streakData.lastDate;
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        if (lastDate === yesterday) {
+            streakData.count = (streakData.count || 0) + 1;
+        } else if (lastDate !== today) {
+            streakData.count = 1;
+        }
+        streakData.lastDate = today;
+        if (streakData.count > (streakData.best || 0)) streakData.best = streakData.count;
+        localStorage.setItem(streakKey, JSON.stringify(streakData));
+        streakNumEl.innerText = streakData.count;
+        
+        const users = Auth.getUsers();
+        const u = users[user];
+        if (u) { u.bonusPoints = (u.bonusPoints || 0) + 50; Auth.saveUsers(users); }
+        
+        feedback.innerText = '🎉 صح! كسبت 50 نقطة! + سلسلة اليوم 🔥';
+        feedback.className = 'feedback success';
+        try { confetti({ particleCount: 250, spread: 130, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#ffd700', '#ffffff'] }); } catch(e) {}
+        
+        setTimeout(() => {
+            dailyArea.style.display = 'none';
+            completedArea.style.display = 'block';
+            statusEl.innerText = 'خلصت تحدي النهاردة ✅';
+        }, 2000);
+    } else {
+        btn.classList.add('wrong');
+        playSound('error');
+        feedback.innerText = '❌ غلط! الصح: ' + todayChallenge.answer;
+        feedback.className = 'feedback error';
+        setTimeout(() => {
+            document.querySelectorAll('.speed-opt-btn').forEach(b => { b.disabled = false; b.classList.remove('wrong'); });
+            feedback.innerText = '';
+        }, 1500);
+    }
+}
+
+// جزيئات النار في الخلفية
+const fp = document.getElementById('fireParticles');
+const fireIcons = ['🔥', '⭐', '✨', '💫'];
+for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'fire-particle';
+    p.innerText = fireIcons[Math.floor(Math.random() * fireIcons.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDelay = Math.random() * 6 + 's';
+    p.style.fontSize = (Math.random() * 15 + 12) + 'px';
+    fp.appendChild(p);
+}
+
+// جزيئات الشعلة الصغيرة
+const flameP = document.getElementById('flameParticles');
+for (let i = 0; i < 5; i++) {
+    const mf = document.createElement('div');
+    mf.className = 'mini-flame';
+    mf.innerText = '🔥';
+    mf.style.left = (20 + Math.random() * 60) + '%';
+    mf.style.bottom = '10%';
+    mf.style.animationDelay = Math.random() * 1.5 + 's';
+    flameP.appendChild(mf);
+}
+</script>
+</body>
+</html>

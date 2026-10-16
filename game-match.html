@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | بازل الأكواد</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/games.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<header class="games-header">
+<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='games.html',150)">← رجوع</button>
+<h1>🧩 بازل الأكواد</h1>
+<p>المرحلة <span id="roundNum">1</span> • النقاط: <span id="score">0</span></p>
+</header>
+<div class="puzzle-container">
+<div class="score-row">
+<div class="score-box">النقاط: <span id="score2">0</span></div>
+<div class="score-box">المتبقي: <span id="remaining">3</span></div>
+<div class="score-box">🏆 أعلى: <span id="highScore">0</span></div>
+</div>
+<div class="puzzle-board" id="puzzleBoard"></div>
+<div class="pieces-area"><h3>🎯 اسحب القطع دي لمكانها</h3><div class="pieces-row" id="piecesRow"></div></div>
+<div class="feedback" id="feedback"></div>
+<div class="match-actions">
+<button class="action-btn" id="nextRoundBtn" style="display:none;background:linear-gradient(90deg,#27ae60,#2ecc71)" onclick="nextRound()">🎯 المرحلة التالية!</button>
+</div>
+</div>
+<script>
+const allPairs = [
+    { code: 'console.log("Hi")', result: 'يطبع Hi' },{ code: 'let x = 5', result: 'يعرّف متغير' },
+    { code: 'if (x > 0)', result: 'شرط لو أكبر' },{ code: 'for (i=0; i<3; i++)', result: 'يكرر 3 مرات' },
+    { code: 'print("Hi")', result: 'يطبع رسالة' },{ code: 'def test()', result: 'يعرّف دالة' },
+    { code: 'return x', result: 'يرجع قيمة' },{ code: 'while (x < 5)', result: 'يكرر لحد شرط' },
+    { code: 'x++', result: 'يزود بمقدار 1' },{ code: 'const PI = 3.14', result: 'يعرّف ثابت' },
+    { code: 'x === 5', result: 'يقارن بقيمة' },{ code: 'true && false', result: 'عملية منطقية' }
+];
+let score = 0, remaining = 3, pairs = [], dragElement = null, roundNum = 1, usedPairs = [];
+let offsetX = 0, offsetY = 0;
+const board = document.getElementById('puzzleBoard');
+const piecesRow = document.getElementById('piecesRow');
+const scoreEl = document.getElementById('score2');
+const scoreTop = document.getElementById('score');
+const remainingEl = document.getElementById('remaining');
+const highScoreEl = document.getElementById('highScore');
+const feedback = document.getElementById('feedback');
+const nextBtn = document.getElementById('nextRoundBtn');
+const roundEl = document.getElementById('roundNum');
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function initRound() {
+    remaining = 3;
+    remainingEl.innerText = 3;
+    roundEl.innerText = roundNum;
+    nextBtn.style.display = 'none';
+    feedback.innerText = ''; feedback.className = 'feedback';
+    let available = allPairs.filter(p => !usedPairs.includes(p.code));
+    if (available.length < 3) { usedPairs = []; available = allPairs; }
+    pairs = shuffle(available).slice(0, 3);
+    pairs.forEach(p => usedPairs.push(p.code));
+    const pieces = shuffle([...pairs]);
+    let bh = '';
+    pairs.forEach((p, i) => {
+        bh += '<div class="target-slot" data-correct="' + p.code + '"><div class="slot-label">' + p.result + '</div><div class="slot-placeholder">؟</div></div>';
+    });
+    board.innerHTML = bh;
+    let ph = '';
+    pieces.forEach(p => { ph += '<div class="drag-piece" data-code="' + p.code + '">' + p.code + '</div>'; });
+    piecesRow.innerHTML = ph;
+    document.querySelectorAll('.drag-piece').forEach(pc => {
+        pc.addEventListener('mousedown', startDragMouse);
+        pc.addEventListener('touchstart', startDragTouch, { passive: false });
+    });
+}
+function startDragMouse(e) {
+    dragElement = e.currentTarget; playSound('pop');
+    const r = dragElement.getBoundingClientRect();
+    offsetX = e.clientX - r.left; offsetY = e.clientY - r.top;
+    dragElement.classList.add('dragging');
+    dragElement.style.position = 'fixed';
+    dragElement.style.zIndex = '9999';
+    dragElement.style.width = r.width + 'px';
+    dragElement.style.left = r.left + 'px';
+    dragElement.style.top = r.top + 'px';
+    document.addEventListener('mousemove', dragMouse);
+    document.addEventListener('mouseup', endDragMouse);
+}
+function dragMouse(e) {
+    if (!dragElement) return;
+    dragElement.style.left = (e.clientX - offsetX) + 'px';
+    dragElement.style.top = (e.clientY - offsetY) + 'px';
+    highlightSlot(e.clientX, e.clientY);
+}
+function endDragMouse(e) {
+    document.removeEventListener('mousemove', dragMouse);
+    document.removeEventListener('mouseup', endDragMouse);
+    endDrag(e.clientX, e.clientY);
+}
+function startDragTouch(e) {
+    e.preventDefault(); dragElement = e.currentTarget; playSound('pop');
+    const t = e.touches[0]; const r = dragElement.getBoundingClientRect();
+    offsetX = t.clientX - r.left; offsetY = t.clientY - r.top;
+    dragElement.classList.add('dragging');
+    dragElement.style.position = 'fixed';
+    dragElement.style.zIndex = '9999';
+    dragElement.style.width = r.width + 'px';
+    dragElement.style.left = r.left + 'px';
+    dragElement.style.top = r.top + 'px';
+    document.addEventListener('touchmove', dragTouch, { passive: false });
+    document.addEventListener('touchend', endDragTouch);
+}
+function dragTouch(e) {
+    if (!dragElement) return; e.preventDefault();
+    const t = e.touches[0];
+    dragElement.style.left = (t.clientX - offsetX) + 'px';
+    dragElement.style.top = (t.clientY - offsetY) + 'px';
+    highlightSlot(t.clientX, t.clientY);
+}
+function endDragTouch(e) {
+    document.removeEventListener('touchmove', dragTouch);
+    document.removeEventListener('touchend', endDragTouch);
+    const t = e.changedTouches[0];
+    endDrag(t.clientX, t.clientY);
+}
+function highlightSlot(x, y) {
+    document.querySelectorAll('.target-slot').forEach(s => s.classList.remove('hover'));
+    const el = document.elementFromPoint(x, y);
+    if (el) { const s = el.closest('.target-slot'); if (s && !s.classList.contains('filled')) s.classList.add('hover'); }
+}
+function endDrag(x, y) {
+    if (!dragElement) return;
+    dragElement.style.display = 'none';
+    const el = document.elementFromPoint(x, y);
+    dragElement.style.display = '';
+    document.querySelectorAll('.target-slot').forEach(s => s.classList.remove('hover'));
+    const slot = el ? el.closest('.target-slot') : null;
+    const pc = dragElement.getAttribute('data-code');
+    if (slot && !slot.classList.contains('filled')) {
+        if (slot.getAttribute('data-correct') === pc) {
+            slot.classList.add('filled');
+            const ph = slot.querySelector('.slot-placeholder');
+            ph.classList.add('filled-piece'); ph.innerText = pc;
+            ph.style.animation = 'snapIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275)';
+            dragElement.remove();
+            score += 10; remaining--;
+            scoreEl.innerText = score; scoreTop.innerText = score; remainingEl.innerText = remaining;
+            playSound('success');
+            feedback.innerText = '🎉 صح!'; feedback.className = 'feedback success';
+            try { confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, colors: ['#00e5ff', '#27ae60'] }); } catch(e) {}
+            if (remaining === 0) {
+                setTimeout(() => {
+                    playSound('win');
+                    setHighScore('match', score);
+                    highScoreEl.innerText = getHighScore('match');
+                    feedback.innerText = '🏆 خلّصت المرحلة ' + roundNum + '!';
+                    nextBtn.style.display = 'block';
+                    nextBtn.innerText = '🎯 المرحلة ' + (roundNum + 1) + '!';
+                    try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 } }); } catch(e) {}
+                }, 600);
+            }
+        } else {
+            playSound('error'); resetPiece(dragElement);
+            feedback.innerText = '❌ مش هنا!'; feedback.className = 'feedback error';
+            slot.classList.add('shake-slot'); setTimeout(() => slot.classList.remove('shake-slot'), 500);
+        }
+    } else { resetPiece(dragElement); }
+    dragElement = null;
+}
+function resetPiece(p) {
+    p.style.position = ''; p.style.left = ''; p.style.top = '';
+    p.style.width = ''; p.style.zIndex = '';
+    p.classList.remove('dragging');
+}
+function nextRound() { roundNum++; initRound(); }
+initRound();
+highScoreEl.innerText = getHighScore('match');
+const pc = document.getElementById('particles');
+const syms = ['{ }', '</>', '=>', '()', '++'];
+for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div'); p.className = 'particle';
+    p.innerText = syms[Math.floor(Math.random() * syms.length)];
+    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    pc.appendChild(p);
+}
+</script>
+</body>
+</html>

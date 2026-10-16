@@ -1,64 +1,40 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Cairo', sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{background:#050914;height:100vh;overflow:hidden;display:flex;justify-content:center;align-items:center}
+.particles{position:absolute;width:100%;height:100%;top:0;left:0;z-index:0;pointer-events:none;overflow:hidden}
+.particle{position:absolute;color:rgba(0,229,255,0.15);font-weight:bold;font-size:20px}
 
-body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+/* رسالة التنبيه الجديدة */
+.custom-alert{position:fixed;top:-100px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,0.9);color:#050914;padding:12px 25px;border-radius:30px;font-weight:bold;font-size:14px;z-index:10000;transition:top 0.5s ease;box-shadow:0 10px 30px rgba(0,229,255,0.5);text-align:center;min-width:200px}
+.custom-alert.show{top:20px}
+.custom-alert.error{background:rgba(231,76,60,0.9);color:#fff;box-shadow:0 10px 30px rgba(231,76,60,0.5)}
 
-.gate-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 1s ease;
-}
+.loader{position:fixed;top:0;left:0;width:100%;height:100%;background:#050914;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;transition:opacity 0.5s}
+.loader.hidden{opacity:0;pointer-events:none}
+.spinner{width:50px;height:50px;border:5px solid rgba(0,229,255,0.2);border-top:5px solid #00e5ff;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
+.loader p{color:#00e5ff;font-weight:bold}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gate-container{position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:1}
+.scene{position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center;flex-direction:column}
+.door{position:absolute;width:50%;height:100%;background:linear-gradient(90deg,#0f172a,#1e293b);border:2px solid #00e5ff;box-shadow:inset 0 0 50px rgba(0,229,255,0.3);transition:transform 1.5s cubic-bezier(0.77,0,0.175,1);z-index:2}
+.left-door{left:0;transform-origin:left}
+.right-door{right:0;transform-origin:right}
 
-.door {
-    position: absolute;
-    width: 50%;
-    height: 100%;
-    background: #2c3e50;
-    transition: transform 1.5s ease-in-out;
-    z-index: 2;
-}
+/* تنسيق صندوق الدخول للموبايل */
+.login-box{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);padding:30px 20px;border-radius:20px;text-align:center;z-index:3;width:90%;max-width:360px;box-shadow:0 25px 60px rgba(0,0,0,0.8);transition:all 0.5s}
+.login-box h1{color:#00e5ff;text-shadow:0 0 20px rgba(0,229,255,0.6);margin-bottom:5px;font-size:26px;font-weight:900}
+.login-box p{color:#a0aec0;margin-bottom:20px;font-size:13px}
+.login-box input{width:100%;padding:12px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(0,0,0,0.4);color:#fff;font-size:14px;text-align:center;outline:none;transition:0.3s}
+.login-box input:focus{border-color:#00e5ff;box-shadow:0 0 20px rgba(0,229,255,0.2)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,229,255,0.7)}70%{box-shadow:0 0 0 15px rgba(0,229,255,0)}100%{box-shadow:0 0 0 0 rgba(0,229,255,0)}}
+.login-box button{background:linear-gradient(90deg,#00e5ff,#0072ff);color:#fff;border:none;padding:12px;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;width:100%;animation:pulse 2s infinite;margin-top:10px}
+.toggle-text{color:#00e5ff;font-size:12px;cursor:pointer;margin-top:12px;text-decoration:underline}
 
-.left-door { left: 0; transform-origin: left; }
-.right-door { right: 0; transform-origin: right; }
-
-.login-box {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    z-index: 3;
-    position: relative;
-}
-
-.login-box h1 { color: #2c3e50; margin-bottom: 10px; }
-.login-box p { color: #666; margin-bottom: 20px; }
-.login-box input {
-    width: 100%; padding: 10px; margin-bottom: 15px;
-    border: 2px solid #ccc; border-radius: 10px; font-size: 16px;
-}
-.login-box button {
-    background: #27ae60; color: white; border: none;
-    padding: 10px 30px; border-radius: 10px;
-    font-size: 18px; cursor: pointer; transition: background 0.3s;
-}
-.login-box button:hover { background: #219150; }
-
-.gate-container.open .left-door { transform: rotateY(-90deg); }
-.gate-container.open .right-door { transform: rotateY(90deg); }
-.gate-container.open { opacity: 0; pointer-events: none; }
+/* الروبوت للموبايل */
+.robot-container{position:absolute;top:5%;left:50%;transform:translateX(-50%);z-index:4;cursor:pointer;filter:drop-shadow(0 15px 25px rgba(0,229,255,0.4));transition:opacity 1s ease}
+.mascot-img{width:110px;height:110px;transition:transform 0.3s ease;}
+.speech-bubble{position:absolute;top:-40px;left:50%;transform:translateX(-50%);background:#fff;color:#050914;padding:8px 12px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 5px 15px rgba(0,0,0,0.3)}
+.speech-bubble.show{opacity:1}
+.gate-container.open .left-door{transform:perspective(1200px) rotateY(-110deg)}
+.gate-container.open .right-door{transform:perspective(1200px) rotateY(110deg)}
+.gate-container.open{opacity:0;pointer-events:none;transition:opacity 0.5s ease 1s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}

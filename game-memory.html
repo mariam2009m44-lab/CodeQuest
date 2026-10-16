@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | لعبة الذاكرة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/games.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<header class="games-header">
+<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='games.html',150)">← رجوع</button>
+<h1>🧠 لعبة الذاكرة</h1>
+<p>المرحلة <span id="roundNum">1</span> • النقاط: <span id="scoreTop">0</span></p>
+</header>
+<div class="memory-container">
+<div class="score-row">
+<div class="score-box">النقاط: <span id="score">0</span></div>
+<div class="score-box">الأزواج: <span id="pairsLeft">6</span></div>
+<div class="score-box">🏆 أعلى: <span id="highScore">0</span></div>
+</div>
+<div class="memory-grid" id="memoryGrid"></div>
+<div class="feedback" id="feedback"></div>
+<button class="action-btn" id="nextRoundBtn" style="display:none;background:linear-gradient(90deg,#27ae60,#2ecc71)" onclick="nextRound()">🎯 المرحلة التالية!</button>
+</div>
+<script>
+const allPairs = [
+    { code: 'console.log()', result: 'يطبع' },{ code: 'let x', result: 'متغير' },
+    { code: 'if()', result: 'شرط' },{ code: 'for()', result: 'تكرار' },
+    { code: 'function', result: 'دالة' },{ code: 'print()', result: 'يطبع' },
+    { code: 'return', result: 'يرجع' },{ code: 'while()', result: 'حلقة' },
+    { code: 'const', result: 'ثابت' },{ code: 'array', result: 'مصفوفة' }
+];
+let score = 0, pairsLeft = 6, first = null, second = null, lock = false, roundNum = 1;
+const grid = document.getElementById('memoryGrid');
+const scoreEl = document.getElementById('score');
+const scoreTop = document.getElementById('scoreTop');
+const pairsEl = document.getElementById('pairsLeft');
+const highScoreEl = document.getElementById('highScore');
+const feedback = document.getElementById('feedback');
+const nextBtn = document.getElementById('nextRoundBtn');
+const roundEl = document.getElementById('roundNum');
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function initRound() {
+    pairsLeft = 6; first = null; second = null; lock = false;
+    pairsEl.innerText = 6; roundEl.innerText = roundNum;
+    feedback.innerText = ''; feedback.className = 'feedback';
+    nextBtn.style.display = 'none';
+    const selected = shuffle(allPairs).slice(0, 6);
+    let cards = [];
+    selected.forEach((p, i) => {
+        cards.push({ pair: i, type: 'code', value: p.code });
+        cards.push({ pair: i, type: 'result', value: p.result });
+    });
+    cards = shuffle(cards);
+    let h = '';
+    cards.forEach(c => {
+        h += '<div class="memory-card" data-pair="' + c.pair + '" data-type="' + c.type + '" onclick="flip(this)">' +
+            '<div class="card-inner"><div class="card-front">?</div><div class="card-back">' + c.value + '</div></div></div>';
+    });
+    grid.innerHTML = h;
+}
+function flip(el) {
+    if (lock || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+    el.classList.add('flipped'); playSound('flip');
+    if (!first) { first = el; return; }
+    second = el;
+    const p1 = first.getAttribute('data-pair');
+    const p2 = second.getAttribute('data-pair');
+    const t1 = first.getAttribute('data-type');
+    const t2 = second.getAttribute('data-type');
+    if (p1 === p2 && t1 !== t2) {
+        first.classList.add('matched'); second.classList.add('matched');
+        score += 20; pairsLeft--;
+        scoreEl.innerText = score; scoreTop.innerText = score; pairsEl.innerText = pairsLeft;
+        playSound('success');
+        feedback.innerText = '🎉 صح!'; feedback.className = 'feedback success';
+        try { confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: ['#00e5ff', '#27ae60'] }); } catch(e) {}
+        first = null; second = null;
+        if (pairsLeft === 0) {
+            setTimeout(() => {
+                playSound('win');
+                setHighScore('memory', score);
+                highScoreEl.innerText = getHighScore('memory');
+                feedback.innerText = '🏆 خلّصت المرحلة ' + roundNum + '!';
+                nextBtn.style.display = 'block';
+                nextBtn.innerText = '🎯 المرحلة ' + (roundNum + 1) + '!';
+                try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 } }); } catch(e) {}
+            }, 500);
+        }
+    } else {
+        lock = true;
+        playSound('error');
+        feedback.innerText = '❌ مش زوج'; feedback.className = 'feedback error';
+        setTimeout(() => {
+            first.classList.remove('flipped'); second.classList.remove('flipped');
+            first = null; second = null; lock = false;
+        }, 1000);
+    }
+}
+function nextRound() { roundNum++; initRound(); }
+initRound();
+highScoreEl.innerText = getHighScore('memory');
+const pc = document.getElementById('particles');
+const syms = ['{ }', '</>', '=>', '()'];
+for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div'); p.className = 'particle';
+    p.innerText = syms[Math.floor(Math.random() * syms.length)];
+    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    pc.appendChild(p);
+}
+</script>
+</body>
+</html>

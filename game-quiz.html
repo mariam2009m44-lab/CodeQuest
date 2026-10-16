@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | سؤال وجواب</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/games.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<header class="games-header">
+<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='games.html',150)">← رجوع</button>
+<h1>❓ سؤال وجواب</h1>
+<p>المرحلة <span id="roundNum">1</span> • النقاط: <span id="scoreTop">0</span></p>
+</header>
+<div class="quiz-container">
+<div class="score-row">
+<div class="score-box">النقاط: <span id="score">0</span></div>
+<div class="score-box">السؤال: <span id="qNum">1</span>/6</div>
+<div class="score-box">🏆 أعلى: <span id="highScore">0</span></div>
+</div>
+<div class="quiz-progress"><div class="quiz-progress-fill" id="quizProgress"></div></div>
+<div class="quiz-question" id="quizQuestion">جاري التحميل...</div>
+<div class="quiz-options" id="quizOptions"></div>
+<div class="quiz-explanation" id="quizExplanation"></div>
+<div class="feedback" id="feedback"></div>
+<button class="action-btn" id="nextRoundBtn" style="display:none;background:linear-gradient(90deg,#27ae60,#2ecc71)" onclick="nextRound()">🎯 المرحلة التالية!</button>
+</div>
+<script>
+const qBank = [
+    { q: 'إيه نوع البيانات اللي بيخزن صح أو خطأ؟', options: ['String', 'Boolean', 'Number', 'Array'], answer: 'Boolean', explanation: 'Boolean بيخزن true أو false بس.' },
+    { q: 'إيه اللي بيعمل تكرار للكود؟', options: ['Function', 'Loop', 'Variable', 'String'], answer: 'Loop', explanation: 'الحلقة (Loop) بتكرر الكود.' },
+    { q: 'إيه اللي بيخزن مجموعة من القيم؟', options: ['Array', 'Number', 'Boolean', 'String'], answer: 'Array', explanation: 'المصفوفة بتخزن كذا قيمة في متغير واحد.' },
+    { q: 'إيه اللي بيعمل كتلة كود لإعادة الاستخدام؟', options: ['Variable', 'Function', 'Array', 'String'], answer: 'Function', explanation: 'الدالة بتجمع كود لإعادة استخدامه.' },
+    { q: 'إيه اللغة اللي شعارها تعبان؟', options: ['JavaScript', 'Python', 'C++', 'Java'], answer: 'Python', explanation: 'Python شعارها تعبان.' },
+    { q: 'إيه الرمز اللي بيبدأ بيه التعليق في JS؟', options: ['#', '//', '--', '/*'], answer: '//', explanation: 'التعليق في JS بيبدأ بـ //' },
+    { q: 'إيه ناتج 10 % 3؟', options: ['1', '3', '2', '0'], answer: '1', explanation: 'علامة % بتجيب باقي القسمة (10÷3 = 3 والباقي 1).' },
+    { q: 'إيه اسم المتغير اللي مينفعش يتغير؟', options: ['let', 'var', 'const', 'mutable'], answer: 'const', explanation: 'const بيخلي القيمة ثابتة.' },
+    { q: 'إيه الطريقة الصح لكتابة اسم متغير؟', options: ['my-name', 'myName', 'my name', '2myName'], answer: 'myName', explanation: 'أسماء المتغيرات بتكتب camelCase.' },
+    { q: 'إيه الرمز اللي بيعني "لا يساوي"؟', options: ['!=', '==', '<>', '=!'], answer: '!=', explanation: '!= معناها "لا يساوي".' },
+    { q: 'إيه نوع البيانات اللي بيخزن نص؟', options: ['Number', 'String', 'Boolean', 'Array'], answer: 'String', explanation: 'String بتخزن النصوص.' },
+    { q: 'إيه اللي بيوقف الحلقة فوراً؟', options: ['stop', 'break', 'end', 'exit'], answer: 'break', explanation: 'break بتوقف الحلقة فوراً.' }
+];
+let score = 0, roundNum = 1, currentQ = 0, roundQ = [];
+const scoreEl = document.getElementById('score');
+const scoreTop = document.getElementById('scoreTop');
+const qNumEl = document.getElementById('qNum');
+const highScoreEl = document.getElementById('highScore');
+const qEl = document.getElementById('quizQuestion');
+const optionsEl = document.getElementById('quizOptions');
+const explanationEl = document.getElementById('quizExplanation');
+const feedback = document.getElementById('feedback');
+const progressFill = document.getElementById('quizProgress');
+const nextBtn = document.getElementById('nextRoundBtn');
+const roundEl = document.getElementById('roundNum');
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function initRound() {
+    currentQ = 0;
+    roundEl.innerText = roundNum;
+    feedback.innerText = ''; feedback.className = 'feedback';
+    explanationEl.classList.remove('show');
+    nextBtn.style.display = 'none';
+    roundQ = shuffle(qBank).slice(0, 6);
+    loadQuestion();
+}
+function loadQuestion() {
+    if (currentQ >= roundQ.length) { finishRound(); return; }
+    qNumEl.innerText = currentQ + 1;
+    feedback.innerText = ''; feedback.className = 'feedback';
+    explanationEl.classList.remove('show');
+    progressFill.style.width = ((currentQ / roundQ.length) * 100) + '%';
+    const q = roundQ[currentQ];
+    qEl.innerText = q.q;
+    optionsEl.innerHTML = '';
+    q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-opt-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(btn, opt, q.answer, q.explanation);
+        optionsEl.appendChild(btn);
+    });
+}
+function checkAnswer(btn, sel, cor, exp) {
+    document.querySelectorAll('.quiz-opt-btn').forEach(b => b.disabled = true);
+    if (sel === cor) {
+        btn.classList.add('correct');
+        playSound('success'); score += 20;
+        scoreEl.innerText = score; scoreTop.innerText = score;
+        feedback.innerText = '🎉 صح!'; feedback.className = 'feedback success';
+        try { confetti({ particleCount: 40, spread: 55, origin: { y: 0.7 } }); } catch(e) {}
+    } else {
+        btn.classList.add('wrong');
+        playSound('error');
+        feedback.innerText = '❌ غلط! الصح: ' + cor; feedback.className = 'feedback error';
+    }
+    explanationEl.innerText = '💡 ' + exp;
+    explanationEl.classList.add('show');
+    setTimeout(() => { currentQ++; loadQuestion(); }, 2300);
+}
+function finishRound() {
+    progressFill.style.width = '100%';
+    qEl.innerText = '🏆 خلّصت المرحلة ' + roundNum + '!';
+    optionsEl.innerHTML = '';
+    explanationEl.classList.remove('show');
+    playSound('win');
+    setHighScore('quiz', score);
+    highScoreEl.innerText = getHighScore('quiz');
+    feedback.innerText = 'النقاط: ' + score;
+    feedback.className = 'feedback success';
+    nextBtn.style.display = 'block';
+    nextBtn.innerText = '🎯 المرحلة ' + (roundNum + 1) + '!';
+    try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 } }); } catch(e) {}
+}
+function nextRound() { roundNum++; initRound(); }
+initRound();
+highScoreEl.innerText = getHighScore('quiz');
+const pc = document.getElementById('particles');
+const syms = ['❓', '{ }', '</>', '=>'];
+for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div'); p.className = 'particle';
+    p.innerText = syms[Math.floor(Math.random() * syms.length)];
+    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    pc.appendChild(p);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | بناء الكود</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/games.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<header class="games-header">
+<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='games.html',150)">← رجوع</button>
+<h1>🏗️ بناء الكود</h1>
+<p>المرحلة <span id="roundNum">1</span> • النقاط: <span id="scoreTop">0</span></p>
+</header>
+<div class="build-container">
+<div class="score-row">
+<div class="score-box">النقاط: <span id="score">0</span></div>
+<div class="score-box">المهمة: <span id="taskNum">1</span>/4</div>
+<div class="score-box">🏆 أعلى: <span id="highScore">0</span></div>
+</div>
+<div class="build-task" id="buildTask">جاري التحميل...</div>
+<div class="build-area">
+<div class="build-slot" id="buildSlot"></div>
+<div class="build-pool" id="buildPool"></div>
+</div>
+<div class="feedback" id="feedback"></div>
+<button class="action-btn" id="nextRoundBtn" style="display:none;background:linear-gradient(90deg,#27ae60,#2ecc71)" onclick="nextRound()">🎯 المرحلة التالية!</button>
+</div>
+<script>
+const taskBank = [
+    { goal: 'عايز تعمل متغير اسمه name وقيمته "علي"', correct: ['let', 'name', '=', '"علي"', ';'] },
+    { goal: 'عايز تطبع "أهلاً" على الشاشة', correct: ['console.log', '(', '"أهلاً"', ')', ';'] },
+    { goal: 'عايز تعمل شرط لو x أكبر من 5', correct: ['if', '(', 'x > 5', ')', '{', '}'] },
+    { goal: 'عايز تعمل تكرار 3 مرات', correct: ['for', '(', 'let i = 0', ';', 'i < 3', ';', 'i++', ')'] },
+    { goal: 'عايز تعمل دالة اسمها sayHello', correct: ['function', 'sayHello', '(', ')', '{', '}'] },
+    { goal: 'عايز تعمل مصفوفة فيها 3 أرقام', correct: ['let', 'arr', '=', '[', '1, 2, 3', ']', ';'] },
+    { goal: 'عايز تقارن لو x يساوي 10', correct: ['if', '(', 'x === 10', ')', '{', '}'] },
+    { goal: 'عايز ترجع قيمة من دالة', correct: ['return', 'result', ';'] },
+    { goal: 'عايز تزود قيمة x بـ 1', correct: ['x', '++', ';'] },
+    { goal: 'عايز تعمل متغير ثابت PI', correct: ['const', 'PI', '=', '3.14', ';'] }
+];
+let score = 0, roundNum = 1, currentTask = 0, currentBuild = [], roundTasks = [];
+const scoreEl = document.getElementById('score');
+const scoreTop = document.getElementById('scoreTop');
+const taskNumEl = document.getElementById('taskNum');
+const highScoreEl = document.getElementById('highScore');
+const taskEl = document.getElementById('buildTask');
+const buildSlot = document.getElementById('buildSlot');
+const poolEl = document.getElementById('buildPool');
+const feedback = document.getElementById('feedback');
+const nextBtn = document.getElementById('nextRoundBtn');
+const roundEl = document.getElementById('roundNum');
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function initRound() {
+    currentTask = 0;
+    roundEl.innerText = roundNum;
+    feedback.innerText = ''; feedback.className = 'feedback';
+    nextBtn.style.display = 'none';
+    roundTasks = shuffle(taskBank).slice(0, 4);
+    loadTask();
+}
+function loadTask() {
+    if (currentTask >= roundTasks.length) { finishRound(); return; }
+    taskNumEl.innerText = currentTask + 1;
+    feedback.innerText = ''; feedback.className = 'feedback';
+    currentBuild = [];
+    const t = roundTasks[currentTask];
+    taskEl.innerText = '🎯 ' + t.goal;
+    buildSlot.innerHTML = '<div class="slot-empty">اسحب القطع هنا بالترتيب الصح</div>';
+    poolEl.innerHTML = '';
+    shuffle([...t.correct]).forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'build-piece';
+        el.innerText = item;
+        el.onclick = () => addToBuild(item, el);
+        poolEl.appendChild(el);
+    });
+}
+function addToBuild(val, el) {
+    playSound('pop');
+    currentBuild.push(val);
+    el.remove();
+    renderBuild();
+    checkBuild();
+}
+function renderBuild() {
+    if (currentBuild.length === 0) {
+        buildSlot.innerHTML = '<div class="slot-empty">اسحب القطع هنا بالترتيب الصح</div>';
+        return;
+    }
+    buildSlot.innerHTML = '';
+    currentBuild.forEach(v => {
+        const el = document.createElement('div');
+        el.className = 'build-piece built';
+        el.innerText = v;
+        buildSlot.appendChild(el);
+    });
+}
+function checkBuild() {
+    const correct = roundTasks[currentTask].correct;
+    if (currentBuild.length === correct.length) {
+        if (currentBuild.every((v, i) => v === correct[i])) {
+            playSound('success'); score += 25;
+            scoreEl.innerText = score; scoreTop.innerText = score;
+            feedback.innerText = '🎉 صح! كود تمام!'; feedback.className = 'feedback success';
+            buildSlot.classList.add('correct-build');
+            try { confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } }); } catch(e) {}
+            setTimeout(() => {
+                buildSlot.classList.remove('correct-build');
+                currentTask++;
+                loadTask();
+            }, 1600);
+        } else {
+            playSound('error');
+            feedback.innerText = '❌ الترتيب مش صح'; feedback.className = 'feedback error';
+            buildSlot.classList.add('wrong-build');
+            setTimeout(() => {
+                buildSlot.classList.remove('wrong-build');
+                currentBuild = [];
+                renderBuild();
+                const t = roundTasks[currentTask];
+                poolEl.innerHTML = '';
+                shuffle([...t.correct]).forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'build-piece';
+                    el.innerText = item;
+                    el.onclick = () => addToBuild(item, el);
+                    poolEl.appendChild(el);
+                });
+            }, 1000);
+        }
+    }
+}
+function finishRound() {
+    taskEl.innerText = '🏆 خلّصت المرحلة ' + roundNum + '!';
+    buildSlot.innerHTML = ''; poolEl.innerHTML = '';
+    playSound('win');
+    setHighScore('build', score);
+    highScoreEl.innerText = getHighScore('build');
+    feedback.innerText = 'النقاط: ' + score;
+    feedback.className = 'feedback success';
+    nextBtn.style.display = 'block';
+    nextBtn.innerText = '🎯 المرحلة ' + (roundNum + 1) + '!';
+    try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 } }); } catch(e) {}
+}
+function nextRound() { roundNum++; initRound(); }
+initRound();
+highScoreEl.innerText = getHighScore('build');
+const pc = document.getElementById('particles');
+const syms = ['🏗️', '{ }', '</>', ';'];
+for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div'); p.className = 'particle';
+    p.innerText = syms[Math.floor(Math.random() * syms.length)];
+    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    pc.appendChild(p);
+}
+</script>
+</body>
+</html>

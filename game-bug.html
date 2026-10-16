@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | اكتشف الخطأ</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/games.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<header class="games-header">
+<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='games.html',150)">← رجوع</button>
+<h1>🐛 اكتشف الخطأ</h1>
+<p>المرحلة <span id="roundNum">1</span> • النقاط: <span id="scoreTop">0</span></p>
+</header>
+<div class="bug-container">
+<div class="score-row">
+<div class="score-box">النقاط: <span id="score">0</span></div>
+<div class="score-box">السؤال: <span id="qNum">1</span>/5</div>
+<div class="score-box">🏆 أعلى: <span id="highScore">0</span></div>
+</div>
+<h2 class="bug-question" id="bugQuestion">جاري التحميل...</h2>
+<div class="bug-code" id="bugCode"></div>
+<div class="feedback" id="feedback"></div>
+<button class="action-btn" id="nextRoundBtn" style="display:none;background:linear-gradient(90deg,#27ae60,#2ecc71)" onclick="nextRound()">🎯 المرحلة التالية!</button>
+</div>
+<script>
+const bugBank = [
+    { q: 'في الكود ده فيه خطأ. دوس عليه!', code: ['let name = "علي"', 'console.log(nam);', 'let age = 10'], bug: 1, fix: 'اسم المتغير غلط' },
+    { q: 'الكود ده المفروض يجمع رقمين', code: ['let a = 5;', 'let b = 3;', 'let sum = a + b'], bug: -1, fix: 'الكود ده صح! مفيش غلط' },
+    { q: 'في الكود ده علامة ناقصة', code: ['if (x > 5)', 'console.log("كبير")', 'else'], bug: 2, fix: 'else محتاجة قوسين' },
+    { q: 'في الكود ده متغير مش معرف', code: ['let x = 10;', 'console.log(y);', 'let z = 20;'], bug: 1, fix: 'y مش معرف' },
+    { q: 'الكود ده فيه قوس ناقص', code: ['print("Hello"', 'print("World")', 'print("!")'], bug: 0, fix: 'قوس ناقص' },
+    { q: 'الكود ده فيه نقطة فاصلة ناقصة', code: ['let x = 5', 'let y = 10;', 'console.log(x + y);'], bug: 0, fix: 'ناقص ;' },
+    { q: 'في الكود ده نوع بيانات غلط', code: ['let age = "10";', 'let name = "علي";', 'console.log(age + name);'], bug: 0, fix: 'age المفروض رقم' },
+    { q: 'في الكود ده شرط غلط', code: ['let x = 5;', 'if (x = 10) {', 'console.log("مرحبا");', '}'], bug: 1, fix: 'استخدم == مش =' },
+    { q: 'في الكود ده دالة مش معرفة', code: ['function greet() {', '  console.log("Hi");', '}', 'hello();'], bug: 3, fix: 'hello مش معرفة' },
+    { q: 'في الكود ده حلقة غلط', code: ['for (let i = 0; i < 5; i--) {', '  console.log(i);', '}'], bug: 0, fix: 'i-- المفروض i++' }
+];
+let score = 0, roundNum = 1, currentQ = 0, questionsInRound = [];
+const qEl = document.getElementById('bugQuestion');
+const codeEl = document.getElementById('bugCode');
+const scoreEl = document.getElementById('score');
+const scoreTop = document.getElementById('scoreTop');
+const qNumEl = document.getElementById('qNum');
+const highScoreEl = document.getElementById('highScore');
+const feedback = document.getElementById('feedback');
+const nextBtn = document.getElementById('nextRoundBtn');
+const roundEl = document.getElementById('roundNum');
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function initRound() {
+    currentQ = 0;
+    roundEl.innerText = roundNum;
+    feedback.innerText = ''; feedback.className = 'feedback';
+    nextBtn.style.display = 'none';
+    questionsInRound = shuffle(bugBank).slice(0, 5);
+    loadQuestion();
+}
+function loadQuestion() {
+    if (currentQ >= questionsInRound.length) {
+        playSound('win');
+        setHighScore('bug', score);
+        highScoreEl.innerText = getHighScore('bug');
+        qEl.innerText = '🏆 خلّصت المرحلة ' + roundNum + '!';
+        codeEl.innerHTML = '';
+        feedback.innerText = 'النقاط: ' + score;
+        feedback.className = 'feedback success';
+        nextBtn.style.display = 'block';
+        nextBtn.innerText = '🎯 المرحلة ' + (roundNum + 1) + '!';
+        try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 } }); } catch(e) {}
+        return;
+    }
+    feedback.innerText = ''; feedback.className = 'feedback';
+    qNumEl.innerText = currentQ + 1;
+    const b = questionsInRound[currentQ];
+    qEl.innerText = b.q;
+    let h = '';
+    b.code.forEach((line, i) => {
+        h += '<div class="bug-line" onclick="check(' + i + ', ' + b.bug + ')"><span class="line-num">' + (i + 1) + '</span><span class="line-code">' + line + '</span></div>';
+    });
+    codeEl.innerHTML = h;
+}
+function check(clicked, bugIdx) {
+    if (clicked === bugIdx) {
+        score += 20;
+        scoreEl.innerText = score; scoreTop.innerText = score;
+        playSound('success');
+        feedback.innerText = '🎉 صح! ' + questionsInRound[currentQ].fix;
+        feedback.className = 'feedback success';
+        try { confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } }); } catch(e) {}
+        currentQ++;
+        setTimeout(loadQuestion, 2000);
+    } else {
+        playSound('error');
+        feedback.innerText = '❌ مش هنا'; feedback.className = 'feedback error';
+    }
+}
+function nextRound() { roundNum++; initRound(); }
+initRound();
+highScoreEl.innerText = getHighScore('bug');
+const pc = document.getElementById('particles');
+for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div'); p.className = 'particle';
+    p.innerText = '🐛';
+    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    pc.appendChild(p);
+}
+</script>
+</body>
+</html>

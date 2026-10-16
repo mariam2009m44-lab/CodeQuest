@@ -1,0 +1,42 @@
+.avatar-with-acc{position:relative;display:inline-block}
+.acc-crown{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:22px;filter:drop-shadow(0 0 10px rgba(255,215,0,0.9));animation:crownFloat 2s ease-in-out infinite;z-index:5;pointer-events:none}
+@keyframes crownFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+.acc-pet{position:absolute;bottom:-8px;right:-22px;font-size:24px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.7));animation:petBounce 1.5s ease-in-out infinite;z-index:5;pointer-events:none}
+@keyframes petBounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-6px) rotate(5deg)}}
+.acc-effect{position:absolute;top:-8px;left:-22px;font-size:18px;filter:drop-shadow(0 0 10px rgba(255,150,0,0.9));animation:effectSpin 3s linear infinite;z-index:5;pointer-events:none}
+@keyframes effectSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.user-title{background:linear-gradient(135deg,#ffd700,#ff9500);color:#050914;padding:3px 12px;border-radius:15px;font-size:11px;font-weight:900;margin-top:4px;box-shadow:0 3px 10px rgba(255,215,0,0.4);display:none}
+body.has-theme{background-image:radial-gradient(circle at 50% 0%, var(--user-theme,#00e5ff) 0%, transparent 60%) !important}
+
+.achievement-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;transition:opacity 0.4s;padding:20px;pointer-events:none}
+.achievement-overlay.show{opacity:1;pointer-events:auto}
+.achievement-card{background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(0,229,255,0.1));border:3px solid #ffd700;border-radius:28px;padding:35px 25px;text-align:center;max-width:340px;width:100%;box-shadow:0 0 60px rgba(255,215,0,0.6),inset 0 0 40px rgba(255,215,0,0.1);position:relative;overflow:hidden;transform:scale(0.5) rotate(-10deg);transition:transform 0.6s cubic-bezier(0.175,0.885,0.32,1.275)}
+.achievement-overlay.show .achievement-card{transform:scale(1) rotate(0deg)}
+.achievement-glow{position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,215,0,0.3),transparent 60%);animation:achSpin 6s linear infinite;pointer-events:none}
+@keyframes achSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.achievement-icon{font-size:80px;margin-bottom:15px;filter:drop-shadow(0 0 25px rgba(255,215,0,0.9));position:relative;z-index:2;animation:achBounce 1s ease infinite}
+@keyframes achBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.achievement-title{color:#ffd700;font-size:16px;font-weight:900;letter-spacing:2px;margin-bottom:10px;position:relative;z-index:2;text-shadow:0 0 15px rgba(255,215,0,0.8)}
+.achievement-name{color:#fff;font-size:24px;font-weight:900;margin-bottom:8px;position:relative;z-index:2;text-shadow:0 0 20px rgba(255,255,255,0.5)}
+.achievement-desc{color:#a0aec0;font-size:13px;position:relative;z-index:2;line-height:1.6}
+
+.celebration-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(0,229,255,0.2),rgba(0,0,0,0.95));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;z-index:99998;opacity:0;transition:opacity 0.5s;padding:20px;pointer-events:none}
+.celebration-overlay.show{opacity:1;pointer-events:auto}
+.celebration-card{background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(0,114,255,0.1));border:3px solid #00e5ff;border-radius:30px;padding:35px 25px;text-align:center;max-width:380px;width:100%;box-shadow:0 0 80px rgba(0,229,255,0.6);position:relative;overflow:hidden;transform:scale(0.6);transition:transform 0.6s cubic-bezier(0.175,0.885,0.32,1.275)}
+.celebration-overlay.show .celebration-card{transform:scale(1)}
+.celebration-trophy{font-size:100px;margin-bottom:15px;filter:drop-shadow(0 0 30px rgba(255,215,0,0.9));animation:achBounce 1.2s ease infinite}
+.celebration-title{color:#00e5ff;font-size:26px;font-weight:900;margin-bottom:8px;text-shadow:0 0 20px rgba(0,229,255,0.7)}
+.celebration-subtitle{color:#fff;font-size:16px;margin-bottom:18px;font-weight:bold}
+.celebration-score{background:rgba(0,0,0,0.5);border:2px solid #ffd700;border-radius:20px;padding:15px;margin-bottom:18px;display:inline-block;min-width:200px}
+.celebration-score-label{color:#a0aec0;font-size:12px;margin-bottom:5px}
+.celebration-score-value{color:#ffd700;font-size:32px;font-weight:900;text-shadow:0 0 20px rgba(255,215,0,0.8)}
+.celebration-stars{display:flex;justify-content:center;gap:8px;margin-bottom:20px;font-size:28px}
+.celebration-star{opacity:0;animation:starPop 0.5s ease forwards}
+@keyframes starPop{0%{opacity:0;transform:scale(0) rotate(-180deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.celebration-btn{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;border:none;padding:14px 35px;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;box-shadow:0 10px 30px rgba(39,174,96,0.6);transition:0.3s;width:100%}
+.celebration-btn:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(39,174,96,0.8)}
+
+.letter-avatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.4em;text-shadow:0 2px 5px rgba(0,0,0,0.4);border-radius:50%;font-family:'Cairo',sans-serif;letter-spacing:-1px}
+.top-avatar .letter-avatar,.mini-avatar .letter-avatar{font-size:16px}
+.avatar-wrap .letter-avatar{font-size:38px}
+.rank-avatar .letter-avatar,.podium-avatar .letter-avatar,.my-rank-avatar .letter-avatar{font-size:18px}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | الألعاب التعليمية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/games.css">
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+
+<header class="games-header">
+<button class="back-btn" onclick="window.location.href='languages.html'">← رجوع</button>
+<h1>🎮 الألعاب التعليمية</h1>
+<p>اتعلم البرمجة وإنت بتلعب</p>
+</header>
+
+<div class="games-grid">
+
+<div class="game-card" style="--accent: #ffd700;" onclick="openGame('match')">
+<div class="game-icon">🧩</div>
+<h2>بازل الأكواد</h2>
+<p>اسحب الكود لمكانه</p>
+<div class="high-score">🏆 أعلى: <span data-score="match">0</span></div>
+<span class="play-badge">▶ العب</span>
+</div>
+
+<div class="game-card" style="--accent: #00e5ff;" onclick="openGame('memory')">
+<div class="game-icon">🧠</div>
+<h2>لعبة الذاكرة</h2>
+<p>افتكر الكود وطابقه</p>
+<div class="high-score">🏆 أعلى: <span data-score="memory">0</span></div>
+<span class="play-badge">▶ العب</span>
+</div>
+
+<div class="game-card" style="--accent: #e74c3c;" onclick="openGame('bug')">
+<div class="game-icon">🐛</div>
+<h2>اكتشف الخطأ</h2>
+<p>لاقي البج في الكود</p>
+<div class="high-score">🏆 أعلى: <span data-score="bug">0</span></div>
+<span class="play-badge">▶ العب</span>
+</div>
+
+<div class="game-card" style="--accent: #27ae60;" onclick="openGame('speed')">
+<div class="game-icon">⚡</div>
+<h2>تحدي السرعة</h2>
+<p>اقرأ الكود بسرعة</p>
+<div class="high-score">🏆 أعلى: <span data-score="speed">0</span></div>
+<span class="play-badge">▶ العب</span>
+</div>
+
+<div class="game-card" style="--accent: #9b59b6;" onclick="openGame('quiz')">
+<div class="game-icon">❓</div>
+<h2>سؤال وجواب</h2>
+<p>جاوب على أسئلة البرمجة</p>
+<div class="high-score">🏆 أعلى: <span data-score="quiz">0</span></div>
+<span class="play-badge">▶ العب</span>
+</div>
+
+<div class="game-card" style="--accent: #0072ff;" onclick="openGame('build')">
+<div class="game-icon">🏗️</div>
+<h2>بناء الكود</h2>
+<p>رتب الأسطر الصح</p>
+<div class="high-score">🏆 أعلى: <span data-score="build">0</span></div>
+<span class="play-badge">▶ العب</span>
+</div>
+
+</div>
+
+<script>
+const pc = document.getElementById('particles');
+const syms = ['{ }', '</>', '=>', '()', 'if()', '++', '[]'];
+for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.innerText = syms[Math.floor(Math.random() * syms.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    pc.appendChild(p);
+}
+
+document.querySelectorAll('[data-score]').forEach(el => {
+    el.innerText = getHighScore(el.getAttribute('data-score'));
+});
+
+function openGame(game) {
+    playSound('click');
+    let url = '';
+    if (game === 'match') url = 'game-match.html';
+    else if (game === 'memory') url = 'game-memory.html';
+    else if (game === 'bug') url = 'game-bug.html';
+    else if (game === 'speed') url = 'game-speed.html';
+    else if (game === 'quiz') url = 'game-quiz.html';
+    else if (game === 'build') url = 'game-build.html';
+    if (url) setTimeout(() => { window.location.href = url; }, 200);
+}
+</script>
+</body>
+</html>

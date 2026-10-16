@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | اختر شخصيتك</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/avatar.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+
+<div class="top-bar">
+<button class="skip-btn" onclick="skipAvatar()">تخطي ←</button>
+</div>
+
+<header class="avatar-header">
+<h1>👤 اختر شخصيتك</h1>
+<p>اختار الصورة اللي بتمثلك</p>
+</header>
+
+<div class="avatar-grid" id="avatarGrid"></div>
+
+<div class="reveal-overlay" id="revealOverlay">
+<div class="reveal-bg-particles" id="revealParticles"></div>
+<div class="reveal-rings">
+<div class="ring ring-1"></div>
+<div class="ring ring-2"></div>
+<div class="ring ring-3"></div>
+<div class="ring ring-4"></div>
+</div>
+<div class="reveal-rays" id="revealRays"></div>
+<div class="reveal-avatar-wrap">
+<img class="reveal-avatar" id="revealAvatar" src="" alt="Avatar">
+<div class="reveal-flash" id="revealFlash"></div>
+</div>
+<div class="reveal-text-wrap">
+<div class="reveal-text" id="revealText">✨ هذه شخصيتك! ✨</div>
+<div class="reveal-name" id="revealName"></div>
+<div class="reveal-question">جاهز تبدأ المغامرة؟ 🚀</div>
+</div>
+<div class="reveal-buttons">
+<button class="reveal-confirm" onclick="confirmChoice()">✅ تأكيد وابدأ</button>
+<button class="reveal-change" onclick="closeReveal()">🔄 غير الشخصية</button>
+</div>
+</div>
+
+<script>
+const user = Auth.getCurrentUser();
+const allSeeds = [
+    'Jack', 'Emma', 'Oliver', 'Sophia', 'Leo', 'Mia',
+    'Max', 'Luna', 'Ryan', 'Aria', 'Noah', 'Zoe',
+    'Liam', 'Lily', 'Ethan', 'Chloe', 'Lucas', 'Ella'
+];
+const bgColors = ['ffdfbf', 'c0aede', 'b6e3f4', 'd1d4f9', 'ffd5dc', 'c8f7c5', 'ffe0b3', 'e0d5f9'];
+let selectedAvatarUrl = null;
+
+function generateAvatar(seed, bg) {
+    return 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + seed + '&backgroundColor=' + bg + '&radius=50';
+}
+
+function renderAvatars() {
+    const grid = document.getElementById('avatarGrid');
+    grid.innerHTML = '';
+    allSeeds.forEach((seed, i) => {
+        const bg = bgColors[i % bgColors.length];
+        const url = generateAvatar(seed, bg);
+        const card = document.createElement('div');
+        card.className = 'avatar-card';
+        card.innerHTML = '<img src="' + url + '" alt="' + seed + '">';
+        card.onclick = (e) => selectAvatar(e, url, seed);
+        grid.appendChild(card);
+    });
+}
+
+function selectAvatar(event, url, name) {
+    playSound('pop');
+    selectedAvatarUrl = url;
+    const card = event.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    document.body.classList.add('screen-shake');
+    setTimeout(() => document.body.classList.remove('screen-shake'), 500);
+    burstParticles(cx, cy);
+    setTimeout(() => { openReveal(url, name); }, 300);
+}
+
+function burstParticles(x, y) {
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'burst-particle';
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 100 + Math.random() * 200;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+        p.style.setProperty('--dx', dx + 'px');
+        p.style.setProperty('--dy', dy + 'px');
+        p.style.background = ['#00e5ff', '#ffd700', '#ffffff', '#27ae60'][Math.floor(Math.random() * 4)];
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+    }
+}
+
+function openReveal(url, name) {
+    const overlay = document.getElementById('revealOverlay');
+    const img = document.getElementById('revealAvatar');
+    const nameEl = document.getElementById('revealName');
+    const textEl = document.getElementById('revealText');
+    img.src = url;
+    nameEl.innerText = '';
+    textEl.innerText = '';
+    overlay.classList.add('show');
+    playSound('whoosh');
+    const text = '✨ هذه شخصيتك! ✨';
+    let i = 0;
+    const typer = setInterval(() => {
+        if (i < text.length) { textEl.innerText += text.charAt(i); i++; }
+        else { clearInterval(typer); }
+    }, 50);
+    setTimeout(() => {
+        playSound('success');
+        try { confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#ffffff'] }); } catch(e) {}
+    }, 800);
+    setTimeout(() => {
+        nameEl.innerText = 'هذا أنت يا ' + user + '!';
+        nameEl.classList.add('show');
+    }, 1400);
+    const raysContainer = document.getElementById('revealRays');
+    raysContainer.innerHTML = '';
+    for (let r = 0; r < 12; r++) {
+        const ray = document.createElement('div');
+        ray.className = 'ray';
+        ray.style.transform = 'rotate(' + (r * 30) + 'deg)';
+        raysContainer.appendChild(ray);
+    }
+    const rp = document.getElementById('revealParticles');
+    rp.innerHTML = '';
+    for (let k = 0; k < 25; k++) {
+        const p = document.createElement('div');
+        p.className = 'reveal-particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDelay = (Math.random() * 3) + 's';
+        p.style.animationDuration = (2 + Math.random() * 3) + 's';
+        rp.appendChild(p);
+    }
+}
+
+function closeReveal() {
+    playSound('click');
+    document.getElementById('revealOverlay').classList.remove('show');
+    document.getElementById('revealName').classList.remove('show');
+    selectedAvatarUrl = null;
+}
+
+function confirmChoice() {
+    if (!selectedAvatarUrl) return;
+    playSound('win');
+    localStorage.setItem('cq_avatar_' + user, selectedAvatarUrl);
+    try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
+    setTimeout(() => { window.location.href = 'languages.html'; }, 1500);
+}
+
+function skipAvatar() {
+    playSound('click');
+    window.location.href = 'languages.html';
+}
+
+renderAvatars();
+
+const pc = document.getElementById('particles');
+const syms = ['👤', '✨', '⭐', '🌟'];
+for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div'); p.className = 'particle';
+    p.innerText = syms[Math.floor(Math.random() * syms.length)];
+    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    pc.appendChild(p);
+}
+</script>
+</body>
+</html>

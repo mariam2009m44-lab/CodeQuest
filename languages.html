@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | اختر لغتك</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/languages.css">
+<link rel="stylesheet" href="css/accessories.css">
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+
+<div class="top-bar-lang">
+<button class="top-btn profile-btn" onclick="goTo('profile.html')">
+<div class="top-avatar avatar-with-acc" id="topAvatar"></div>
+<span class="top-name" id="topName">-</span>
+</button>
+<button class="top-btn leaderboard-btn" onclick="goTo('leaderboard.html')">🏆 الشرف</button>
+<button class="top-btn daily-btn" onclick="goTo('daily.html')">🔥 تحدي اليوم</button>
+<button class="top-btn shop-btn" onclick="goTo('shop.html')">🛒 المتجر</button>
+</div>
+
+<header class="lang-header">
+<h1>أهلاً بك يا <span id="userName"></span> 👋</h1>
+<div class="user-title"></div>
+<p>اختر لغة البرمجة اللي عايز تتعلمها</p>
+</header>
+
+<div class="lang-cards-container">
+<div class="lang-card js-card" onclick="showIntro('js')">
+<div class="card-shine"></div>
+<div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript"></div>
+<h2>JavaScript</h2>
+<p>لغة الويب التفاعلية</p>
+<div class="card-info"><span>🎯 5 مستويات</span><span>🌐 تعمل في المتصفح</span></div>
+</div>
+<div class="lang-card py-card" onclick="showIntro('py')">
+<div class="card-shine"></div>
+<div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python"></div>
+<h2>Python</h2>
+<p>لغة الذكاء الاصطناعي</p>
+<div class="card-info"><span>🎯 5 مستويات</span><span>🤖 الأسهل للمبتدئين</span></div>
+</div>
+<div class="lang-card cpp-card" onclick="showIntro('cpp')">
+<div class="card-shine"></div>
+<div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++"></div>
+<h2>C++</h2>
+<p>لغة الألعاب والأنظمة</p>
+<div class="card-info"><span>🎯 5 مستويات</span><span>🎮 لغة الألعاب</span></div>
+</div>
+<div class="lang-card games-card" onclick="showIntro('games')">
+<div class="card-shine"></div>
+<div class="card-icon"><div class="games-emoji">🎮</div></div>
+<h2>الألعاب</h2>
+<p>تعلم باللعب والتحدي</p>
+<div class="card-info"><span>🎯 6 ألعاب</span><span>🏆 تحدي ومرح</span></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+<div class="modal" id="modalContent">
+<button class="modal-close" onclick="closeModal()">✕</button>
+<div class="modal-icon" id="modalIcon"></div>
+<h2 id="modalTitle"></h2>
+<p class="modal-tagline" id="modalTagline"></p>
+<div class="modal-intro" id="modalIntro"></div>
+<div class="modal-features" id="modalFeatures"></div>
+<button class="modal-start-btn" id="modalStartBtn">🚀 يلا نبدأ المغامرة!</button>
+</div>
+</div>
+
+<script src="js/accessories.js"></script>
+<script>
+function goTo(page) {
+    playSound('click');
+    setTimeout(() => { window.location.href = page; }, 150);
+}
+
+const user = Auth.getCurrentUser();
+document.getElementById('userName').innerText = user || 'بطل البرمجة';
+document.getElementById('topName').innerText = user || 'بطل';
+
+document.getElementById('topAvatar').innerHTML = Auth.getAvatarHtml(user);
+
+setTimeout(() => { if (typeof Accessories !== 'undefined') Accessories.render(); }, 200);
+
+const particlesContainer = document.getElementById('particles');
+const symbols = ['{ }', '</>', '=>', '( )', 'if()', '++', '[ ]', '&&', '||', ';'];
+for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = Math.random() * 100 + 'vh';
+    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    particlesContainer.appendChild(p);
+}
+
+const langData = {
+    js: { title: 'JavaScript', tagline: 'لغة الويب التفاعلية 🌐', icon: '<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg">',
+        intro: 'أهلاً بيك في عالم <strong>JavaScript</strong>! 🎉<br><br>تخيل إنك بتقدر تخلي أي حاجة على الشاشة تتحرك وتتفاعل!',
+        features: ['✨ بتعمل مواقع تفاعلية', '🎮 بتعمل ألعاب', '💼 مطلوبة في كل شركة'], color: '#ffd700' },
+    py: { title: 'Python', tagline: 'لغة الذكاء الاصطناعي 🤖', icon: '<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg">',
+        intro: 'مرحباً بيك في عالم <strong>Python</strong>! 🐍<br><br>سهلة زي الكتابة بالعربي وقوية زي محركات الصواريخ!',
+        features: ['🚀 الأسهل للمبتدئين', '🤖 الذكاء الاصطناعي', '📊 تحليل البيانات'], color: '#00e5ff' },
+    cpp: { title: 'C++', tagline: 'لغة الألعاب والأنظمة 🚀', icon: '<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg">',
+        intro: 'أهلاً بيك في عالم <strong>C++</strong>! ⚡<br><br>اللغة اللي بتشغل أسرع حاجة في العالم!',
+        features: ['🎮 لغة ألعاب الفيديو', '⚡ سريعة جداً', '💻 في كل الأجهزة'], color: '#0072ff' },
+    games: { title: 'الألعاب التعليمية', tagline: 'اتعلم وإنت بتلعب 🎮', icon: '<div class="games-emoji-modal">🎮</div>',
+        intro: 'أهلاً بيك في عالم <strong>الألعاب</strong>! 🎯<br><br>هتتعلم وإنت بتلعب! ألغاز، تحديات، ونقاط!',
+        features: ['🏆 6 ألعاب متنوعة', '💎 مكافآت ونجوم', '👥 تنافس مع أصحابك'], color: '#27ae60' }
+};
+
+function showIntro(lang) {
+    playSound('click');
+    const data = langData[lang];
+    document.getElementById('modalIcon').innerHTML = data.icon;
+    document.getElementById('modalTitle').innerText = data.title;
+    document.getElementById('modalTagline').innerText = data.tagline;
+    document.getElementById('modalIntro').innerHTML = data.intro;
+    document.getElementById('modalFeatures').innerHTML = data.features.map(f => '<div class="feature-item">' + f + '</div>').join('');
+    document.querySelector('.modal').style.setProperty('--accent-color', data.color);
+    document.getElementById('modalStartBtn').onclick = () => chooseLang(lang, data.title);
+    document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function chooseLang(code, name) {
+    playSound('win');
+    localStorage.setItem('cq_language', code);
+    localStorage.setItem('cq_language_name', name);
+    window.location.href = code === 'games' ? 'games.html' : 'levels.html';
+}
+</script>
+</body>
+</html>
