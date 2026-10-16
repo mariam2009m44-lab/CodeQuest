@@ -158,9 +158,7 @@ No build step or server required — pure client-side.
 
 ## 🌐 Live Demo
 
-👉 **[mariam2009m44-lab.github.io/CodeQuest](https://mariam2009m44-lab.github.io/CodeQuest/)**
-
----
+👉 **[https://mariam2009m44-lab.github.io/CodeQuest/]
 
 ## 🎓 Educational Philosophy
 
