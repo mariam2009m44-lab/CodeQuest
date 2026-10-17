@@ -1,29 +1,59 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><title>الألعاب</title>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مركز الألعاب | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
     <style>
-        body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px;}
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .btn-back { color: #00e5ff; text-decoration: none; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; max-width: 600px; }
-        .card { background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; text-align: center; text-decoration: none; color: #fff; }
-        .card i { font-size: 2.5rem; margin-bottom: 10px; color: #00e5ff; }
-        .card h3 { margin: 0 0 10px; font-size: 1.1rem; } .card p { color: #aaa; font-size: 0.8rem; margin-bottom: 15px; }
-        .btn-play { background: #00e5ff; color: #000; border: none; padding: 8px; border-radius: 10px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; }
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; padding: 10px 20px; background: rgba(5, 9, 20, 0.95); border: 1px solid rgba(0,229,255,0.3); border-radius: 25px; }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --glass: rgba(10, 25, 47, 0.7); }
+        * { box-sizing: border-box; }
+        body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px; }
+        
+        .header { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(0,229,255,0.2); position: sticky; top: 0; z-index: 100; box-sizing: border-box;}
+        .header h1 { margin: 0; font-size: 1.4rem; color: var(--neon-cyan); }
+        .btn-back { background: rgba(0,229,255,0.1); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; }
+
+        /* تصميم شبكة الألعاب المبهجة */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; width: 95%; max-width: 800px; margin-top: 20px; }
+        
+        .game-card { 
+            position: relative; border-radius: 25px; padding: 25px 15px; text-align: center; text-decoration: none; color: #fff; 
+            display: flex; flex-direction: column; align-items: center; overflow: hidden; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* ألوان متدرجة لكل كارت */
+        .game-card:nth-child(1) { background: linear-gradient(135deg, #f59e0b, #b45309); } /* برتقالي */
+        .game-card:nth-child(2) { background: linear-gradient(135deg, #06b6d4, #0e7490); } /* أزرق */
+        .game-card:nth-child(3) { background: linear-gradient(135deg, #ec4899, #be185d); } /* وردي */
+        .game-card:nth-child(4) { background: linear-gradient(135deg, #10b981, #047857); } /* أخضر */
+        .game-card:nth-child(5) { background: linear-gradient(135deg, #8b5cf6, #5b21b6); } /* بنفسجي */
+        .game-card:nth-child(6) { background: linear-gradient(135deg, #ef4444, #b91c1c); } /* أحمر */
+
+        .game-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+
+        .game-icon { font-size: 3rem; margin-bottom: 15px; color: #fff; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+        .game-title { font-size: 1.3rem; font-weight: 900; margin: 0 0 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .game-desc { font-size: 0.85rem; margin-bottom: 20px; opacity: 0.9; }
+        
+        .btn-play { background: #fff; color: #000; border: none; padding: 10px 20px; border-radius: 12px; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; }
+        .game-card:hover .btn-play { background: #000; color: #fff; }
+
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; padding: 10px 20px; background: rgba(5, 9, 20, 0.95); border: 1px solid rgba(0,229,255,0.3); border-radius: 25px; z-index: 1000; }
         .nav-btn { color: #667; text-decoration: none; display: flex; flex-direction: column; align-items: center; width: 60px; }
         .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; } .nav-btn span { font-size: 0.7rem; }
-        .nav-btn.active { color: #00e5ff; }
+        .nav-btn.active { color: var(--neon-cyan); }
     </style>
 </head>
 <body>
-    <div class="header"><a href="languages.html" class="btn-back">← رجوع</a><h2>🎮 الألعاب</h2></div>
-    <div class="grid" id="grid"></div>
+    <div class="header"><a href="languages.html" class="btn-back">← رجوع</a><h1>🎮 مركز الألعاب</h1></div>
+    
+    <div class="games-grid" id="gamesGrid"></div>
+
     <div class="bottom-nav">
         <a href="profile.html" class="nav-btn"><i class="ri-user-3-line"></i><span>ملفي</span></a>
         <a href="shop.html" class="nav-btn"><i class="ri-shopping-bag-3-line"></i><span>المتجر</span></a>
@@ -32,14 +62,23 @@
     </div>
     <script>
         const games = [
-            { name: 'بازل الأكواد', icon: 'ri-puzzle-line', link: 'game-match.html' },
-            { name: 'لعبة الذاكرة', icon: 'ri-brain-line', link: 'game-memory.html' },
-            { name: 'صائد الأخطاء', icon: 'ri-bug-line', link: 'game-bug.html' },
-            { name: 'بناء الكود', icon: 'ri-code-box-line', link: 'game-build.html' }
+            { name: 'بازل الأكواد', icon: 'ri-puzzle-line', desc: 'رتب القطع لبناء الكود', link: 'game-match.html' },
+            { name: 'لعبة الذاكرة', icon: 'ri-brain-line', desc: 'طابق الكود مع معناه', link: 'game-memory.html' },
+            { name: 'بناء الكود', icon: 'ri-code-box-line', desc: 'اكتب الكود بنفسك', link: 'game-build.html' },
+            { name: 'صائد الأخطاء', icon: 'ri-bug-line', desc: 'اكتشف الخطأ البرمجي', link: 'game-bug.html' },
+            { name: 'تحدي السرعة', icon: 'ri-flashlight-line', desc: 'أجب بسرعة قبل الوقت', link: 'game-speed.html' },
+            { name: 'سيد الأسئلة', icon: 'ri-question-line', desc: 'اختبر معلوماتك', link: 'game-quiz.html' }
         ];
-        const grid = document.getElementById('grid');
+        const grid = document.getElementById('gamesGrid');
         games.forEach(g => {
-            grid.innerHTML += `<a href="${g.link}" class="card"><i class="${g.icon}"></i><h3>${g.name}</h3><p>اضغط للعب</p><button class="btn-play">العب الآن</button></a>`;
+            grid.innerHTML += `
+                <a href="${g.link}" class="game-card">
+                    <div class="game-icon"><i class="${g.icon}"></i></div>
+                    <h3 class="game-title">${g.name}</h3>
+                    <p class="game-desc">${g.desc}</p>
+                    <button class="btn-play">العب الآن</button>
+                </a>
+            `;
         });
         document.addEventListener('DOMContentLoaded', () => { Auth.init((l) => { if(!l) window.location.href = 'index.html'; }); });
     </script>

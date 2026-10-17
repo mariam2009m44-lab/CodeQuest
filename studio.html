@@ -12,16 +12,20 @@
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        :root { --neon-cyan: #00e5ff; --glass: rgba(10, 25, 47, 0.85); }
+        * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(10, 25, 47, 0.9); border-bottom: 1px solid rgba(0,229,255,0.2); z-index: 100; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(10, 25, 47, 0.95); border-bottom: 1px solid rgba(0,229,255,0.2); z-index: 100; }
         .header h1 { margin: 0; font-size: 1rem; color: #00e5ff; }
-        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; font-size: 0.85rem; cursor: pointer;}
+        .btn { border: none; padding: 8px 12px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; font-size: 0.8rem; cursor: pointer; margin-left: 5px;}
         .btn-run { background: #28a745; color: white; }
         .btn-finish { background: #ffd700; color: #000; }
+        .btn-hint { background: #8b5cf6; color: white; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; }
         
-        .main-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        
-        /* Dialogue */
+        /* شاشة الحوار */
         .dialogue-phase { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; background: rgba(10, 25, 47, 0.95); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; }
         .avatars-row { display: flex; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 20px; }
         .avatar-img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #00e5ff; background: #000; object-fit: cover;}
@@ -29,30 +33,22 @@
         .chat-bubble { background: rgba(0,0,0,0.8); border: 1px solid #00e5ff; padding: 20px; border-radius: 20px 20px 0 20px; margin-bottom: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
         .cody-msg { margin: 0; line-height: 1.8; font-size: 1.1rem; }
         .btn-next { background: #00e5ff; color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; width: 100%; max-width: 400px; cursor: pointer; }
-     
-ذ
-            width: 100%; max-width: 400px; cursor: pointer; }
         
-        /* Coding */
-        .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; }
-        .editor-wrapper { flex: 1; position: relative; background: #1e1e1e; }
-        #editor-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .terminal-wrapper { height: 30%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
+        /* شاشة الكود - التعديل الجوهري هنا */
+        .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top:0; left:0; }
+        .editor-wrapper { flex: 1; position: relative; background: #1e1e1e; min-height: 300px; width: 100%;}
+        #editor-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+        
+        .terminal-wrapper { height: 35%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
         .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
         .terminal-output { flex: 1; padding: 10px; font-family: monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
-
-        @media (min-width: 769px) {
-            .coding-phase { flex-direction: row; }
-            .editor-wrapper { flex: 2; height: 100%; }
-            .terminal-wrapper { height: 100%; width: 35%; border-top: none; border-right: 2px solid #333; }
-        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1><span id="lessonTitle">جاري التحميل...</span></h1>
-        <div id="headerBtns" style="display:none; gap:8px;">
-            <button class="btn" style="background: #8b5cf6; color: white;" onclick="showHint()">💡 تلميح</button>
+        <h1 id="lessonTitle">جاري التحميل...</h1>
+        <div id="headerBtns" style="display:none;">
+            <button class="btn btn-hint" onclick="showHint()">💡 تلميح</button>
             <button class="btn btn-run" onclick="runCode()">▶ تشغيل</button>
             <button class="btn btn-finish" onclick="completeLesson()">✓ إنهاء</button>
         </div>
@@ -85,7 +81,6 @@
         const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'JavaScript';
         const levelId = parseInt(urlParams.get('level')) || 1;
         let lessonData = null;
-        let lessonCode = "";
 
         const userAvatar = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
         document.getElementById('userAvatarDialogue').src = userAvatar;
@@ -98,15 +93,8 @@
                 
                 document.getElementById('lessonTitle').innerText = lessonData.title;
                 document.getElementById('codyMessage').innerText = lessonData.intro;
-                
-                lessonCode = lessonData.code;
-                const saved = localStorage.getItem(`cq_code_${lang}_${levelId}`);
-                if (saved) lessonCode = saved;
 
-            } catch(e) { 
-                console.error(e); 
-                document.getElementById('codyMessage').innerText = "حدث خطأ في تحميل الدرس."; 
-            }
+            } catch(e) { console.error(e); }
         }
 
         function nextDialogueStep() {
@@ -117,32 +105,35 @@
         }
 
         function initEditor() {
+            const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || lessonData.code;
             require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
             require(['vs/editor/editor.main'], function() {
                 editor = monaco.editor.create(document.getElementById('editor-container'), {
-                    value: lessonCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
+                    value: savedCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
                     theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false
                 });
+                // إجبار المحرر على أخذ مساحته بعد الظهور
+                setTimeout(() => { editor.layout(); }, 200);
+
                 editor.onDidChangeModelContent(() => {
                     localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
                 });
             });
         }
 
-        
         function showHint() {
-            if(lessonData && lessonData.hint) {
-                alert("💡 تلميح كودي:\n" + lessonData.hint);
-            } else {
-                alert("💡 ركز في الكود وجرب تشغله!");
-            }
+            if(lessonData && lessonData.hint) alert("💡 تلميح كودي:
+" + lessonData.hint);
+            else alert("💡 ركز في الكود وجرب تشغله!");
         }
-    
+
         function runCode() {
             if(!editor) return;
             const code = editor.getValue();
             const terminal = document.getElementById('terminalOutput');
             terminal.innerHTML += `<br><span style="color:#888;">> Running...</span><br>`;
+            
+            // JavaScript
             if (lang === 'js' || lang === 'JavaScript') {
                 let originalLog = console.log;
                 console.log = function(...args) {
@@ -153,8 +144,34 @@
                 try { eval(code); } 
                 catch (err) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${err.message}</span><br>`; } 
                 finally { console.log = originalLog; }
-            } else {
-                terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تشغيل ${lang} يتطلب سيرفر.</span><br>`;
+            } 
+            // Python & C++
+            else {
+                const langMap = {
+                    'Python': { language: 'python', version: '3.10.0' },
+                    'C++': { language: 'c++', version: '10.2.0' }
+                };
+                const config = langMap[lang] || langMap['Python'];
+                terminal.innerHTML += `<span style="color:#ffd700;">⏳ جاري التنفيذ...</span><br>`;
+                
+                fetch('https://emkc.org/api/v2/piston/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ language: config.language, version: config.version, files: [{ content: code }] })
+                }).then(res => res.json()).then(data => {
+                    if (data.run) {
+                        if (data.run.stdout) terminal.innerHTML += `<span style="color:#00ff00;">> ${data.run.stdout.replace(/
+/g, '<br>')}</span><br>`;
+                        if (data.run.stderr) terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${data.run.stderr.replace(/
+/g, '<br>')}</span><br>`;
+                        if (!data.run.stdout && !data.run.stderr) terminal.innerHTML += `<span style="color:#888;">تم التنفيذ بدون مخرجات.</span><br>`;
+                    } else {
+                        terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تعذر التنفيذ.</span><br>`;
+                    }
+                    terminal.scrollTop = terminal.scrollHeight;
+                }).catch(e => {
+                    terminal.innerHTML += `<span style="color:#ff4444;">❌ خطأ في الاتصال.</span><br>`;
+                });
             }
         }
 
