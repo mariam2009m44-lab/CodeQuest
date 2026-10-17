@@ -1,64 +1,53 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CodeQuest | تحدي اليوم</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/games.css"><link rel="stylesheet" href="css/accessories.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script><script src="js/auth.js"></script><script src="js/sfx.js"></script>
-<style>body{background:#050914 !important;background-image:radial-gradient(circle at 50% 0%, rgba(255,100,0,0.15) 0%, transparent 60%) !important}.daily-container{max-width:500px;margin:0 auto;padding:20px 15px}.streak-card{background:linear-gradient(135deg,rgba(255,100,0,0.15),rgba(255,215,0,0.1));border:2px solid rgba(255,150,0,0.5);border-radius:24px;padding:25px;display:flex;align-items:center;gap:20px;margin-bottom:20px}.streak-icon{font-size:65px;animation:flame 1s ease-in-out infinite alternate}.streak-info{flex:1}.streak-number{font-size:45px;font-weight:900;color:#ff9500;line-height:1}.streak-label{color:#e0a050;font-size:14px;margin-top:8px}.date-badge{display:inline-block;background:rgba(0,229,255,0.15);border:1px solid rgba(0,229,255,0.4);color:#00e5ff;padding:8px 20px;border-radius:22px;font-size:14px;margin-bottom:20px}.daily-q{background:rgba(0,0,0,0.6);border:2px solid rgba(0,229,255,0.3);border-radius:16px;padding:20px;text-align:center;font-size:18px;font-weight:bold;color:#00e5ff;margin-bottom:20px}.speed-options{display:flex;flex-direction:column;gap:12px}.speed-opt-btn{background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);color:#fff;padding:16px;border-radius:14px;font-size:16px;font-weight:bold;cursor:pointer;font-family:'Cairo',sans-serif}.speed-opt-btn.correct{background:rgba(39,174,96,0.4);border-color:#27ae60}.speed-opt-btn.wrong{background:rgba(231,76,60,0.4);border-color:#e74c3c}.feedback{text-align:center;font-size:16px;font-weight:bold;margin-top:20px;min-height:25px}.feedback.success{color:#27ae60}.feedback.error{color:#e74c3c}@keyframes flame{0%{transform:scale(1) rotate(-3deg)}100%{transform:scale(1.1) rotate(3deg)}}</style>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>تحدي اليوم</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+<style>body{background:#050914;color:#fff;font-family:Cairo;text-align:center;padding:20px;} .box{background:rgba(255,255,255,0.05);padding:20px;border-radius:20px;max-width:400px;margin:auto;} button{background:#00e5ff;padding:10px;border:none;border-radius:10px;margin:10px;cursor:pointer;font-weight:bold;}</style>
 </head>
-<body><div class="games-header"><button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='languages.html',150)">← رجوع</button><h1>🔥 تحدي اليوم</h1><p>تحدي جديد كل يوم + مكافآت</p></div>
-<div class="daily-container"><div class="streak-card"><div class="streak-icon">🔥</div><div class="streak-info"><div class="streak-number"><span id="streakNum">0</span></div><div class="streak-label">أيام متتالية</div></div></div>
-<div style="text-align:center"><div class="date-badge" id="dateBadge">-</div><div class="daily-status" id="dailyStatus" style="text-align:center">جاري التحميل...</div></div>
-<div class="daily-question-area" id="dailyArea" style="display:none"><div class="daily-q" id="dailyQ">-</div><div class="speed-options" id="dailyOptions"></div><div class="feedback" id="feedback"></div></div>
-<div class="daily-completed" id="dailyCompleted" style="display:none"><div class="completed-icon">✅</div><h2>خلصت تحدي النهاردة!</h2><p>تعالى بكرة عشان تحدي جديد 🔥</p><button class="choice-btn" onclick="window.location.href='games.html'" style="background:linear-gradient(135deg,#27ae60,#1e8449);margin-top:15px;">🎮 روح للألعاب</button></div></div>
+<body>
+<div class="box">
+    <h2 style="color:#ff9500;">🔥 تحدي اليوم</h2>
+    <p id="status">جاري التحميل...</p>
+    <div id="quiz" style="display:none;">
+        <h3>إيه ناتج 5 + 5؟</h3>
+        <button onclick="answer(10)">10</button>
+        <button onclick="answer(12)">12</button>
+    </div>
+    <button onclick="window.location.href='languages.html'">رجوع</button>
+</div>
 <script>
-const dailyBank = [{ q: 'إيه ناتج 5 + 5؟', options: ['10', '12', '8', '15'], answer: '10' },{ q: 'إيه الرمز اللي بيعني "أصغر من"؟', options: ['>', '<', '=', '!'], answer: '<' },{ q: 'إيه لغة الويب التفاعلية؟', options: ['JavaScript', 'HTML', 'CSS', 'SQL'], answer: 'JavaScript' },{ q: 'إيه ناتج 8 * 2؟', options: ['16', '10', '18', '12'], answer: '16' },{ q: 'إيه الرمز بتاع الطباعة في JS؟', options: ['print()', 'console.log()', 'echo()', 'write()'], answer: 'console.log()' },{ q: 'إيه الشعار بتاع Python؟', options: ['🐍', '🐘', '🦁', '🐯'], answer: '🐍' },{ q: 'إيه ناتج 20 - 8؟', options: ['10', '12', '14', '16'], answer: '12' },{ q: 'إيه الرمز اللي بيبدأ بيه التعليق؟', options: ['//', '/*', '#', '--'], answer: '//' },{ q: 'إيه ناتج 3 * 3؟', options: ['6', '9', '12', '3'], answer: '9' },{ q: 'إيه اللي بيخزن صح أو خطأ؟', options: ['Boolean', 'Number', 'String', 'Array'], answer: 'Boolean' },{ q: 'إيه ناتج 10 / 2؟', options: ['5', '4', '6', '8'], answer: '5' },{ q: 'إيه اللي بيعمل تكرار؟', options: ['if', 'loop', 'var', 'let'], answer: 'loop' }];
-const user = Auth.getCurrentUser(), uid = Auth.getUserId(), today = new Date().toDateString();
-const dateEl = document.getElementById('dateBadge'), statusEl = document.getElementById('dailyStatus'), dailyArea = document.getElementById('dailyArea'), completedArea = document.getElementById('dailyCompleted'), qEl = document.getElementById('dailyQ'), optionsEl = document.getElementById('dailyOptions'), feedback = document.getElementById('feedback'), streakNumEl = document.getElementById('streakNum');
-const now = new Date(); const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']; dateEl.innerText = '📅 ' + now.getDate() + ' ' + months[now.getMonth()];
-async function initDaily() {
-    if (!uid) return;
-    try {
+let uid;
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.init(async (logged) => {
+        if(!logged) { window.location.href = 'index.html'; return; }
+        uid = Auth.getUserId();
+        const today = new Date().toDateString();
         const doc = await firebase.firestore().collection('users').doc(uid).get();
-        if (doc.exists) {
-            const data = doc.data();
-            const lastDate = data.lastDailyDate || '';
-            const streak = data.dailyStreak || 0;
-            if (lastDate === today) { completedArea.style.display = 'block'; statusEl.innerText = 'خلصت تحدي النهاردة ✅'; streakNumEl.innerText = streak; }
-            else {
-                dailyArea.style.display = 'block'; statusEl.innerText = 'تحدي النهاردة:';
-                const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % dailyBank.length;
-                const challenge = dailyBank[dayIndex];
-                qEl.innerText = challenge.q;
-                challenge.options.forEach(opt => { const btn = document.createElement('button'); btn.className = 'speed-opt-btn'; btn.innerText = opt; btn.onclick = () => checkDaily(btn, opt, challenge.answer); optionsEl.appendChild(btn); });
-                streakNumEl.innerText = streak;
-            }
+        if(doc.data().lastDailyDate === today) {
+            document.getElementById('status').innerText = 'خلصت تحدي النهاردة ✅';
+        } else {
+            document.getElementById('status').innerText = 'جاوب على السؤال واكسب 50 نقطة:';
+            document.getElementById('quiz').style.display = 'block';
         }
-    } catch(e) { console.error(e); }
-}
-async function checkDaily(btn, selected, correct) {
-    document.querySelectorAll('.speed-opt-btn').forEach(b => b.disabled = true);
-    if (selected === correct) {
-        btn.classList.add('correct');
-        try { playSound('win'); } catch(e) {}
-        const userRef = firebase.firestore().collection('users').doc(uid);
+    });
+});
+async function answer(val) {
+    if(val === 10) {
+        const today = new Date().toDateString();
         try {
-            await firebase.firestore().runTransaction(async (transaction) => {
-                const doc = await transaction.get(userRef);
-                const data = doc.data();
-                if (data.lastDailyDate === today) throw "Already claimed";
-                const yesterday = new Date(Date.now() - 86400000).toDateString();
-                let newStreak = (data.lastDailyDate === yesterday) ? (data.dailyStreak || 0) + 1 : 1;
-                transaction.update(userRef, { bonusPoints: firebase.firestore.FieldValue.increment(50), lastDailyDate: today, dailyStreak: newStreak });
+            await firebase.firestore().collection('users').doc(uid).update({
+                bonusPoints: firebase.firestore.FieldValue.increment(50),
+                lastDailyDate: today
             });
-            feedback.innerText = '🎉 صح! كسبت 50 نقطة!'; feedback.className = 'feedback success';
-            try { confetti({ particleCount: 250, spread: 130, origin: { y: 0.5 }, colors: ['#ff6400', '#ffd700', '#ff9500', '#ffffff'] }); } catch(e) {}
-            setTimeout(() => { dailyArea.style.display = 'none'; completedArea.style.display = 'block'; statusEl.innerText = 'خلصت تحدي النهاردة ✅'; }, 2000);
-        } catch(e) { feedback.innerText = '❌ حدث خطأ أو أنك خلصت التحدي بالفعل.'; feedback.className = 'feedback error'; }
-    } else {
-        btn.classList.add('wrong'); try { playSound('error'); } catch(e) {}
-        feedback.innerText = '❌ غلط! الصح: ' + correct; feedback.className = 'feedback error';
-        setTimeout(() => { document.querySelectorAll('.speed-opt-btn').forEach(b => { b.disabled = false; b.classList.remove('wrong'); }); feedback.innerText = ''; }, 1500);
-    }
+            alert('مبروك! كسبت 50 نقطة');
+            location.reload();
+        } catch(e) { alert('خطأ!'); }
+    } else { alert('إجابة خاطئة'); }
 }
-document.addEventListener('DOMContentLoaded', () => { Auth.init((isLoggedIn) => { if(isLoggedIn) initDaily(); else window.location.href = 'index.html'; }); });
-</script></body></html>
+</script>
+</body></html>

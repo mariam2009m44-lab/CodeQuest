@@ -1,36 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CodeQuest | لوحة الشرف</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-<script src="js/auth.js"></script><script src="js/sfx.js"></script>
-<style>body{background:#050914;color:#fff;min-height:100vh;padding:15px;background-image:radial-gradient(circle at 50% 0%, rgba(255,215,0,0.15) 0%, transparent 60%)}.header-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px}.back-btn{background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.4);padding:9px 16px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;font-family:'Cairo',sans-serif}.header-title{flex:1;text-align:center;color:#ffd700;font-size:20px;font-weight:900;text-shadow:0 0 15px rgba(255,215,0,0.6)}.podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin-bottom:30px;padding:0 5px;min-height:220px}.podium-item{display:flex;flex-direction:column;align-items:center;flex:1;max-width:110px}.podium-avatar{width:65px;height:65px;border-radius:50%;background:#374151;border:3px solid;overflow:hidden;margin-bottom:8px;display:flex;align-items:center;justify-content:center}.podium-name{font-size:12px;font-weight:bold;color:#fff;margin-bottom:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}.podium-score{font-size:13px;font-weight:900;color:#ffd700;margin-bottom:8px}.podium-block{width:100%;border-radius:14px 14px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-size:24px;font-weight:900;color:#050914}.podium-1 .podium-avatar{border-color:#ffd700;box-shadow:0 0 25px rgba(255,215,0,0.7);width:80px;height:80px}.podium-1 .podium-block{background:linear-gradient(180deg, #ffd700, #d4a017);height:100px}.podium-2 .podium-avatar{border-color:#c0c0c0;box-shadow:0 0 20px rgba(192,192,192,0.5)}.podium-2 .podium-block{background:linear-gradient(180deg, #d8d8d8, #888);height:75px}.podium-3 .podium-avatar{border-color:#cd7f32;box-shadow:0 0 20px rgba(205,127,50,0.5)}.podium-3 .podium-block{background:linear-gradient(180deg, #e09a5a, #a0522d);height:55px}.crown-top{position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-size:24px;animation:crownFloat 1.5s ease-in-out infinite}.my-rank-card{background:linear-gradient(135deg, rgba(0,229,255,0.15), rgba(0,114,255,0.08));border:2px solid #00e5ff;border-radius:20px;padding:18px;text-align:center;max-width:400px;margin:0 auto}.letter-avatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;border-radius:50%;background:linear-gradient(135deg, #00e5ff, #0072ff)}@keyframes crownFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}</style>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>لوحة الشرف</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+<style>body{background:#050914;color:#fff;font-family:Cairo;text-align:center;padding:20px;} .list{max-width:400px;margin:auto;} .row{background:rgba(255,255,255,0.05);margin-bottom:10px;padding:15px;border-radius:10px;display:flex;justify-content:space-between;font-weight:bold;}</style>
 </head>
 <body>
-<div class="header-bar"><button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='languages.html',150)">← رجوع</button><div class="header-title">🏆 لوحة الشرف</div><div style="width:60px"></div></div>
-<div class="podium" id="podiumArea"></div><div id="myRankArea"></div>
+<h2 style="color:#ffd700;">🏆 أفضل 3 لاعبين</h2>
+<button onclick="window.location.href='languages.html'" style="margin-bottom:20px;padding:10px;border-radius:10px;cursor:pointer;font-family:Cairo;">رجوع</button>
+<div class="list" id="list">جاري التحميل...</div>
 <script>
-async function loadLeaderboard() {
-    const podiumArea = document.getElementById('podiumArea'), myRankArea = document.getElementById('myRankArea'), currentUser = Auth.getCurrentUser();
-    try {
-        const snapshot = await firebase.firestore().collection('users').orderBy('bonusPoints', 'desc').limit(3).get();
-        let topPlayers = []; snapshot.forEach(doc => { topPlayers.push({ name: doc.data().username, score: doc.data().bonusPoints || 0, uid: doc.id }); });
-        function renderPodiumSpot(player, rank) {
-            const isMe = player && player.name === currentUser; const name = player ? player.name : '---'; const score = player ? player.score : 0;
-            const avatar = player ? Auth.getAvatarHtml(name) : '<div class="letter-avatar">؟</div>';
-            let html = '<div class="podium-item podium-' + rank + '">'; if (rank === 1) html += '<div class="crown-top">👑</div>'; html += '<div class="podium-avatar">' + avatar + '</div><div class="podium-name" style="' + (isMe ? 'color:#00e5ff;' : '') + '">' + (isMe ? 'أنت' : name) + '</div><div class="podium-score">' + score + '</div><div class="podium-block">' + rank + '</div></div>'; return html;
-        }
-        let podiumHtml = ''; if (topPlayers[1]) podiumHtml += renderPodiumSpot(topPlayers[1], 2); else podiumHtml += renderPodiumSpot(null, 2); if (topPlayers[0]) podiumHtml += renderPodiumSpot(topPlayers[0], 1); else podiumHtml += renderPodiumSpot(null, 1); if (topPlayers[2]) podiumHtml += renderPodiumSpot(topPlayers[2], 3); else podiumHtml += renderPodiumSpot(null, 3); podiumArea.innerHTML = podiumHtml;
-        if (currentUser) {
-            const userDoc = await firebase.firestore().collection('users').where('username', '==', currentUser).get(); let myScore = 0, myRank = -1;
-            if (!userDoc.empty) { myScore = userDoc.docs[0].data().bonusPoints || 0; const allUsers = await firebase.firestore().collection('users').orderBy('bonusPoints', 'desc').get(); let rankCount = 0; allUsers.forEach(doc => { rankCount++; if (doc.data().username === currentUser) myRank = rankCount; }); }
-            let posText = myRank === 1 ? '🥇 إنت في المركز الأول!' : (myRank === 2 ? '🥈 إنت في المركز التاني!' : (myRank === 3 ? '🥉 إنت في المركز التالت!' : (myRank > 3 ? 'إنت في المركز #' + myRank + ' — كمّل عشان توصل للتلاتة الأوائل!' : 'ابدأ اللعب عشان تدخل لوحة الشرف!')));
-            myRankArea.innerHTML = '<div class="my-rank-card"><div class="my-rank-label">⭐ مركزك الحالي</div><div class="my-rank-info"><div class="my-rank-avatar">' + Auth.getAvatarHtml(currentUser) + '</div><div><div class="my-rank-name">' + currentUser + '</div><div class="my-rank-score">' + myScore + ' نقطة</div></div></div><div class="my-rank-position">' + posText + '</div></div>';
-            if (myRank === 1) { setTimeout(() => { try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } }); } catch(e) {} }, 500); }
-        }
-    } catch (e) { console.error(e); podiumArea.innerHTML = '<div style="color:red;text-align:center;padding:20px;">حدث خطأ في تحميل البيانات</div>'; }
-}
-document.addEventListener('DOMContentLoaded', () => { Auth.init((isLoggedIn) => { if(isLoggedIn) loadLeaderboard(); else window.location.href = 'index.html'; }); });
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.init(async (logged) => {
+        if(!logged) { window.location.href = 'index.html'; return; }
+        try {
+            const snap = await firebase.firestore().collection('users').orderBy('bonusPoints', 'desc').limit(3).get();
+            let html = '';
+            snap.forEach((doc, idx) => {
+                html += '<div class="row"><span>' + (idx+1) + '. ' + doc.data().username + '</span><span style="color:#00e5ff;">' + (doc.data().bonusPoints||0) + ' نقطة</span></div>';
+            });
+            document.getElementById('list').innerHTML = html || 'لا يوجد لاعبين.';
+        } catch(e) { document.getElementById('list').innerText = 'خطأ في التحميل'; }
+    });
+});
 </script>
-</body>
-</html>
+</body></html>

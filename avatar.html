@@ -1,118 +1,58 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CodeQuest | اختر شخصيتك</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/avatar.css">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
-<style>
-/* ستايلات الأنيميشن - مع اجبار المتصفح على تطبيقها */
-body, html { margin: 0; padding: 0; overflow-x: hidden; }
-.boom-overlay {
-    position: fixed !important; top: 0 !important; left: 0 !important; 
-    width: 100vw !important; height: 100vh !important;
-    background: rgba(0, 0, 0, 0.95) !important; z-index: 99999 !important;
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    padding: 15px !important; box-sizing: border-box !important; 
-}
-.boom-overlay.show { display: flex !important; animation: fadeIn 0.5s; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.big-avatar {
-    width: 120px !important; height: 120px !important; 
-    max-width: 40vw !important; max-height: 40vw !important;
-    border-radius: 50% !important;
-    border: 4px solid #00e5ff !important; background: #fff !important;
-    box-shadow: 0 0 30px #00e5ff, 0 0 60px #0072ff !important;
-    animation: zoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    transform: scale(0);
-    object-fit: cover !important;
-    margin-bottom: 20px !important;
-}
-@keyframes zoomIn {
-    0% { transform: scale(0) rotate(-180deg); }
-    70% { transform: scale(1.1) rotate(10deg); }
-    100% { transform: scale(1) rotate(0); }
-}
-
-.big-text {
-    color: #fff !important; font-size: 16px !important; font-weight: 900 !important; 
-    text-shadow: 0 0 15px #00e5ff !important;
-    animation: slideUp 0.8s 0.5s forwards; opacity: 0;
-    text-align: center !important; width: 100% !important;
-    margin: 0 !important;
-}
-@keyframes slideUp { to { opacity: 1; transform: translateY(0); } from { transform: translateY(20px); } }
-
-.hero-text {
-    color: #ffd700 !important; font-size: 18px !important; font-weight: 900 !important; 
-    text-shadow: 0 0 20px #ffd700 !important;
-    animation: slideUp 0.8s 1s forwards; opacity: 0;
-    text-align: center !important; 
-    white-space: normal !important; 
-    word-break: break-word !important;
-    padding: 0 10px !important; width: 100% !important;
-    line-height: 1.5 !important; margin-top: 10px !important;
-}
-
-.continue-btn {
-    background: #27ae60 !important; color: #fff !important; border: none !important; 
-    padding: 12px 30px !important; border-radius: 30px !important; 
-    font-size: 16px !important; font-weight: bold !important; margin-top: 25px !important;
-    font-family: 'Cairo', sans-serif !important; cursor: pointer !important; 
-    box-shadow: 0 8px 15px rgba(39,174,96,0.5) !important;
-    animation: slideUp 0.8s 1.5s forwards; opacity: 0;
-    max-width: 90vw !important;
-}
-</style>
+<script src="js/sfx.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
 </head>
 <body>
-<div class="top-bar">
-<button class="skip-btn" onclick="window.location.href='languages.html'">تخطي ←</button>
-</div>
-<header class="avatar-header">
-<h1>👤 اختر شخصيتك</h1>
-</header>
+<div class="particles" id="particles"></div>
+<div class="top-bar"><button class="skip-btn" onclick="window.location.href='languages.html'">تخطي ←</button></div>
+<header class="avatar-header"><h1>👤 اختر شخصيتك</h1><p>اختار الصورة اللي بتمثلك</p></header>
 <div class="avatar-grid" id="avatarGrid"></div>
 
-<!-- الشاشة اللي هتظهر -->
-<div class="boom-overlay" id="boomOverlay">
-    <img class="big-avatar" id="bigAvatar" src="" alt="Avatar">
-    <div class="big-text">✨ هذه شخصيتك! ✨</div>
-    <div class="hero-text">استعد للمغامرة يا بطل! 🚀</div>
-    <button class="continue-btn" onclick="window.location.href='languages.html'">يلا نبدأ! 🎮</button>
+<div class="reveal-overlay" id="revealOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;">
+    <img id="revealAvatar" style="width:150px;height:150px;border-radius:50%;border:4px solid #00e5ff;box-shadow:0 0 50px #00e5ff;">
+    <h2 style="color:#ffd700;margin-top:20px;font-weight:900;text-shadow:0 0 20px #ffd700;">استعد للمغامرة يا بطل! 🚀</h2>
+    <button onclick="window.location.href='languages.html'" style="background:#27ae60;color:#fff;padding:15px 40px;border-radius:30px;border:none;font-weight:bold;margin-top:30px;font-family:Cairo;font-size:18px;cursor:pointer;">يلا نبدأ! 🎮</button>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const user = Auth.getCurrentUser() || 'Guest';
-    const allSeeds = ['Jack', 'Emma', 'Oliver', 'Sophia', 'Leo', 'Mia', 'Max', 'Luna', 'Ryan', 'Aria', 'Noah', 'Zoe', 'Liam', 'Lily', 'Ethan', 'Chloe', 'Lucas', 'Ella'];
-    const bgColors = ['ffdfbf', 'c0aede', 'b6e3f4', 'd1d4f9', 'ffd5dc', 'c8f7c5', 'ffe0b3', 'e0d5f9'];
-    const grid = document.getElementById('avatarGrid');
+    Auth.init((logged) => {
+        if(!logged) { window.location.href = 'index.html'; return; }
+        const user = Auth.getCurrentUser();
+        const allSeeds = ['Jack', 'Emma', 'Oliver', 'Sophia', 'Leo', 'Mia', 'Max', 'Luna', 'Ryan', 'Aria', 'Noah', 'Zoe', 'Liam', 'Lily', 'Ethan', 'Chloe', 'Lucas', 'Ella'];
+        const bgColors = ['ffdfbf', 'c0aede', 'b6e3f4', 'd1d4f9', 'ffd5dc', 'c8f7c5', 'ffe0b3', 'e0d5f9'];
+        const grid = document.getElementById('avatarGrid');
 
-    allSeeds.forEach((seed, i) => {
-        const bg = bgColors[i % bgColors.length];
-        const url = 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + seed + '&backgroundColor=' + bg + '&radius=50';
-        const card = document.createElement('div');
-        card.className = 'avatar-card';
-        card.innerHTML = '<img src="' + url + '" alt="' + seed + '">';
-        
-        card.onclick = () => {
-            localStorage.setItem('cq_avatar_' + user, url);
-            if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-                firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({ avatar: url }).catch(console.error);
-            }
-            
-            document.getElementById('bigAvatar').src = url;
-            document.getElementById('boomOverlay').classList.add('show');
-        };
-        
-        grid.appendChild(card);
+        allSeeds.forEach((seed, i) => {
+            const bg = bgColors[i % bgColors.length];
+            const url = 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + seed + '&backgroundColor=' + bg + '&radius=50';
+            const card = document.createElement('div');
+            card.className = 'avatar-card';
+            card.innerHTML = '<img src="' + url + '">';
+            card.onclick = async () => {
+                localStorage.setItem('cq_avatar_' + user, url);
+                if (Auth.getUserId()) {
+                    try { await firebase.firestore().collection('users').doc(Auth.getUserId()).update({ avatar: url }); } catch(e) {}
+                }
+                document.getElementById('revealAvatar').src = url;
+                document.getElementById('revealOverlay').style.display = 'flex';
+                try { playSound('win'); } catch(e) {}
+                try { confetti({ particleCount: 150, spread: 80 }); } catch(e) {}
+            };
+            grid.appendChild(card);
+        });
     });
 });
 </script>
-</body>
-</html>
+</body></html>

@@ -1,89 +1,91 @@
-let currentStep = 0;
-let score = 0;
-const steps = [
-    { text: 'أهلاً بك يا بطل! أنا كودي. 🤖', type: 'cody' },
-    { text: 'النهاردة هنتعلم المتغيرات في JavaScript.', type: 'cody' },
-    { text: 'let name = "أحمد";', type: 'code' },
-    { text: 'كلمة let بتعمل صندوق جديد، و name هو اسم الصندوق.', type: 'cody' },
-    { text: 'جاهز للأسئلة؟', type: 'cody' }
-];
+const CONFIG = { pointsPerQuestion: 10, codyUrl: 'https://cdn-icons-png.flaticon.com/512/4712/4712139.png' };
+const STATE = { user: null, uid: null, lang: 'js', level: 'level1', stepIndex: 0, questionIndex: 0, score: 0, correctAnswers: 0, story: null, totalSteps: 0 };
 
-function initGame() {
-    document.getElementById('levelInfo').innerText = 'المستوى الأول: المتغيرات';
-    loadStep();
-}
-
-function loadStep() {
-    if (currentStep >= steps.length) {
-        startQuiz(); return;
+const STORIES = {
+    js: {
+        level1: { langName: 'JavaScript', levelTitle: 'المستوى الأول: المتغيرات', steps: [{ type: 'cody', text: 'أهلاً بك يا بطل! أنا كودي. 🤖' }, { type: 'cody', text: 'النهاردة هنتعلم المتغيرات.' }, { type: 'code', code: 'let name = "أحمد";' }, { type: 'choice', question: 'فهمت؟', options: [{ text: 'أيوه! ✅', reply: 'برافو!' }, { text: 'مش أوي 🤔', reply: 'المتغير ده زي الصندوق بنحط فيه حاجة.' }] }, { type: 'cody', text: 'دلوقتي جاهز للامتحان؟' }], questions: [{ q: 'إزاي نعرّف متغير اسمه age وقيمته 10؟', options: ['let age = 10;', 'age = 10', 'int age = 10;'], answer: 'let age = 10;', explanation: 'بنستخدم let.' }] }
+    },
+    py: {
+        level1: { langName: 'Python', levelTitle: 'المستوى الأول: المتغيرات', steps: [{ type: 'cody', text: 'أهلاً! النهاردة Python! 🐍' }, { type: 'code', code: 'name = "أحمد"' }, { type: 'cody', text: 'من غير أي كلمة زيادة!' }, { type: 'choice', question: 'فهمت؟', options: [{ text: 'أيوه ✅', reply: 'يلا!' }, { text: 'مش أوي 🤔', reply: 'في Python بنكتب الاسم والقيمة وبس.' }] }], questions: [{ q: 'إزاي نعرّف متغير في Python؟', options: ['age = 10', 'let age = 10;', 'int age = 10;'], answer: 'age = 10', explanation: 'بنكتب اسم المتغير وبعدين = والقيمة.' }] }
+    },
+    cpp: {
+        level1: { langName: 'C++', levelTitle: 'المستوى الأول: المتغيرات', steps: [{ type: 'cody', text: 'أهلاً! النهاردة C++! 🚀' }, { type: 'code', code: 'int age = 15;' }, { type: 'cody', text: 'لازم نقول للكمبيوتر نوع البيانات.' }, { type: 'choice', question: 'فهمت؟', options: [{ text: 'أيوه ✅', reply: 'يلا!' }, { text: 'مش أوي 🤔', reply: 'بنستخدم int للأرقام الصحيحة.' }] }], questions: [{ q: 'إزاي نعرّف رقم صحيح في C++؟', options: ['int age = 10;', 'let age = 10;', 'age = 10'], answer: 'int age = 10;', explanation: 'بنستخدم int.' }] }
     }
-    const step = steps[currentStep];
-    const area = document.getElementById('chatArea');
-    const div = document.createElement('div');
-    div.className = 'chat-row ' + (step.type === 'cody' ? 'cody-bubble' : 'code-bubble');
-    div.innerText = step.text;
-    area.appendChild(div);
-    area.scrollTop = area.scrollHeight;
-    
-    document.getElementById('progressFill').style.width = ((currentStep/steps.length) * 50) + '%';
-}
-
-window.nextStep = function() {
-    const btn = document.getElementById('nextBtn');
-    btn.classList.add('hidden');
-    currentStep++;
-    setTimeout(() => { loadStep(); btn.classList.remove('hidden'); }, 500);
 };
 
-function startQuiz() {
-    document.getElementById('nextBtn').classList.add('hidden');
-    document.getElementById('chatArea').innerHTML = '';
-    const area = document.getElementById('chatArea');
-    const div = document.createElement('div');
-    div.className = 'chat-row cody-bubble';
-    div.innerText = '❓ إزاي نعرّف متغير اسمه age وقيمته 10؟';
-    area.appendChild(div);
-    
-    const choicesArea = document.getElementById('choicesArea');
-    choicesArea.classList.remove('hidden');
-    choicesArea.innerHTML = '';
-    
-    const options = ['let age = 10;', 'age = 10', 'int age = 10;'];
-    options.forEach(opt => {
-        const b = document.createElement('button');
-        b.className = 'choice-btn';
-        b.innerText = opt;
-        b.onclick = () => checkAnswer(b, opt);
-        choicesArea.appendChild(b);
+function $(id) { return document.getElementById(id); }
+function scrollChat() { const c = $('chatArea'); if (c) c.scrollTop = c.scrollHeight; }
+function codyBubble(html) { const b = document.createElement('div'); b.className = 'chat-row cody-bubble'; b.innerHTML = html; $('chatArea').appendChild(b); scrollChat(); }
+function codeBubble(code) { const b = document.createElement('div'); b.className = 'chat-row code-bubble'; b.innerHTML = '<pre dir="ltr">' + code + '</pre>'; $('chatArea').appendChild(b); scrollChat(); }
+
+function initGame() {
+    STATE.user = Auth.getCurrentUser(); STATE.uid = Auth.getUserId();
+    STATE.lang = localStorage.getItem('cq_language') || 'js'; STATE.level = localStorage.getItem('cq_current_level') || 'level1';
+    STATE.story = (STORIES[STATE.lang] || STORIES.js)[STATE.level] || STORIES.js.level1;
+    STATE.totalSteps = STATE.story.steps.length;
+    if($('levelInfo')) $('levelInfo').innerText = STATE.story.levelTitle;
+    advanceStep();
+}
+
+function showChoices(step) {
+    const area = $('choicesArea'); area.innerHTML = ''; area.classList.remove('hidden'); $('nextBtn').classList.add('hidden');
+    step.options.forEach(opt => {
+        const btn = document.createElement('button'); btn.className = 'choice-btn'; btn.innerText = opt.text;
+        btn.onclick = () => { area.classList.add('hidden'); codyBubble(opt.reply); setTimeout(() => { STATE.stepIndex++; advanceStep(); }, 800); };
+        area.appendChild(btn);
     });
 }
 
-async function checkAnswer(btn, selected) {
+function advanceStep() {
+    if (STATE.stepIndex >= STATE.totalSteps) { startQuiz(); return; }
+    const step = STATE.story.steps[STATE.stepIndex];
+    if (step.type === 'cody') { codyBubble(step.text); $('choicesArea').classList.add('hidden'); $('nextBtn').classList.remove('hidden'); }
+    else if (step.type === 'code') { codeBubble(step.code); $('choicesArea').classList.add('hidden'); $('nextBtn').classList.remove('hidden'); }
+    else if (step.type === 'choice') { if (step.question) codyBubble(step.question); showChoices(step); }
+}
+
+function startQuiz() {
+    $('nextBtn').classList.add('hidden'); $('choicesArea').classList.add('hidden');
+    codyBubble('🎯 يلا بينا على الامتحان!');
+    setTimeout(() => loadQuestion(), 1000);
+}
+
+function loadQuestion() {
+    if (STATE.questionIndex >= STATE.story.questions.length) { finishGame(); return; }
+    const q = STATE.story.questions[STATE.questionIndex];
+    codyBubble('❓ ' + q.q);
+    const area = $('choicesArea'); area.innerHTML = ''; area.classList.remove('hidden');
+    q.options.forEach(opt => {
+        const btn = document.createElement('button'); btn.className = 'choice-btn'; btn.innerText = opt;
+        btn.onclick = () => checkAnswer(btn, opt, q.answer, q.explanation);
+        area.appendChild(btn);
+    });
+}
+
+function checkAnswer(btn, selected, correct, explanation) {
     document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
-    if (selected === 'let age = 10;') {
-        btn.style.background = '#27ae60';
-        score += 10;
-        document.getElementById('score').innerText = 'النقاط: ' + score;
-        
-        if (Auth.getUserId()) {
-            try {
-                await firebase.firestore().collection('users').doc(Auth.getUserId()).update({
-                    bonusPoints: firebase.firestore.FieldValue.increment(10)
-                });
-            } catch(e) {}
-        }
-        
-        setTimeout(() => {
-            document.getElementById('choicesArea').innerHTML = '';
-            const backBtn = document.createElement('button');
-            backBtn.className = 'choice-btn';
-            backBtn.style.background = 'linear-gradient(135deg, #27ae60, #1e8449)';
-            backBtn.innerText = '🎉 مبروك! كسبت 10 نقاط. الرجوع للخريطة';
-            backBtn.onclick = () => window.location.href = 'levels.html';
-            document.getElementById('choicesArea').appendChild(backBtn);
-        }, 1000);
+    if (selected === correct) {
+        btn.classList.add('correct'); STATE.score += CONFIG.pointsPerQuestion; STATE.correctAnswers++; $('score').innerText = STATE.score;
+        setTimeout(() => { codyBubble('🎉 صح! ' + explanation); setTimeout(() => { STATE.questionIndex++; $('choicesArea').classList.add('hidden'); loadQuestion(); }, 1500); }, 500);
     } else {
-        btn.style.background = '#e74c3c';
-        setTimeout(() => { document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); btn.style.background = ''; }, 1000);
+        btn.classList.add('wrong');
+        setTimeout(() => { codyBubble('❌ الصح: ' + correct + ' — ' + explanation); setTimeout(() => { STATE.questionIndex++; $('choicesArea').classList.add('hidden'); loadQuestion(); }, 2000); }, 500);
     }
+}
+
+async function finishGame() {
+    if (STATE.uid) {
+        try {
+            const userRef = firebase.firestore().collection('users').doc(STATE.uid);
+            const doc = await userRef.get();
+            let prog = doc.data().progress || {};
+            let key = STATE.lang + '_' + STATE.level;
+            let stars = (STATE.correctAnswers / STATE.story.questions.length) * 3;
+            prog[key] = { completed: true, bestScore: Math.max((prog[key]?.bestScore||0), STATE.score) };
+            await userRef.update({ bonusPoints: firebase.firestore.FieldValue.increment(STATE.score), progress: prog });
+        } catch(e) {}
+    }
+    codyBubble('🎉 مبروك! كسبت ' + STATE.score + ' نقطة!');
+    const backBtn = document.createElement('button'); backBtn.className = 'choice-btn'; backBtn.innerText = 'الرجوع للخريطة'; backBtn.onclick = () => window.location.href = 'levels.html';
+    $('choicesArea').appendChild(backBtn); $('choicesArea').classList.remove('hidden');
 }

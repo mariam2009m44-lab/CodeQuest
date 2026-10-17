@@ -1,235 +1,46 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeQuest | المتجر</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/accessories.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>المتجر</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/sfx.js"></script>
-
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
-body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(255,215,0,0.15) 0%, transparent 60%)}
-.header-bar{display:flex;align-items:center;gap:10px;margin-bottom:15px;position:relative;z-index:2}
-.back-btn{background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.4);padding:9px 14px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;font-family:'Cairo',sans-serif}
-.header-title{flex:1;text-align:center;color:#ffd700;font-size:20px;font-weight:900;text-shadow:0 0 15px rgba(255,215,0,0.6)}
-.balance-card{background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,150,0,0.1));border:2px solid rgba(255,215,0,0.5);border-radius:20px;padding:18px;text-align:center;margin-bottom:20px;position:relative;z-index:2;box-shadow:0 10px 30px rgba(255,215,0,0.2)}
-.balance-label{color:#a0aec0;font-size:12px;margin-bottom:5px}
-.balance-value{color:#ffd700;font-size:34px;font-weight:900;text-shadow:0 0 25px rgba(255,215,0,0.7)}
-.balance-value span{font-size:16px;color:#e0a050}
-.tabs{display:flex;gap:6px;margin-bottom:15px;position:relative;z-index:2;overflow-x:auto;padding-bottom:5px}
-.tab{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#a0aec0;padding:8px 14px;border-radius:18px;font-size:12px;font-weight:bold;cursor:pointer;white-space:nowrap;transition:0.3s;font-family:'Cairo',sans-serif}
-.tab.active{background:rgba(255,215,0,0.2);border-color:#ffd700;color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,0.4)}
-.items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:500px;margin:0 auto;position:relative;z-index:2;padding-bottom:30px}
-.item-card{background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.08);border-radius:18px;padding:15px 12px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden}
-.item-card:hover{border-color:var(--accent,#ffd700);transform:translateY(-4px);box-shadow:0 10px 25px var(--accent,#ffd700)}
-.item-card.owned{border-color:#27ae60;background:rgba(39,174,96,0.1)}
-.item-card.equipped{border-color:#00e5ff;background:rgba(0,229,255,0.15);box-shadow:0 0 25px rgba(0,229,255,0.5)}
-.item-icon{font-size:46px;margin-bottom:8px;filter:drop-shadow(0 5px 12px rgba(0,0,0,0.5));animation:breathe 3s ease-in-out infinite}
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.item-name{font-size:13px;font-weight:900;margin-bottom:5px;color:#fff}
-.item-desc{font-size:10px;color:#a0aec0;margin-bottom:10px;line-height:1.4;min-height:28px}
-.item-price{display:inline-block;background:linear-gradient(135deg,#ffd700,#ff9500);color:#050914;padding:6px 14px;border-radius:15px;font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(255,215,0,0.4)}
-.item-price.owned-label{background:rgba(39,174,96,0.4);color:#27ae60;box-shadow:none;border:1px solid #27ae60}
-.item-price.equipped-label{background:linear-gradient(135deg,#00e5ff,#0072ff);color:#fff;box-shadow:0 0 20px rgba(0,229,255,0.6)}
-.item-price.cant-afford{background:rgba(255,255,255,0.1);color:#666;box-shadow:none}
-.toast{position:fixed;top:-100px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;padding:14px 25px;border-radius:30px;font-weight:bold;font-size:13px;z-index:10000;transition:top 0.5s ease;box-shadow:0 10px 30px rgba(39,174,96,0.5);text-align:center;min-width:220px;max-width:90vw}
-.toast.show{top:20px}
-.toast.error{background:linear-gradient(135deg,#e74c3c,#c0392b);box-shadow:0 10px 30px rgba(231,76,60,0.5)}
-.toast.info{background:linear-gradient(135deg,#00e5ff,#0072ff);box-shadow:0 10px 30px rgba(0,229,255,0.5)}
-</style>
+<script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+<style>body{background:#050914;color:#fff;font-family:Cairo;text-align:center;padding:20px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:400px;margin:auto;} .item{background:rgba(255,255,255,0.05);border:1px solid #555;padding:15px;border-radius:15px;cursor:pointer;} .item:hover{border-color:#ffd700;} .icon{font-size:40px;} h2{color:#ffd700;}</style>
 </head>
 <body>
-<div class="toast" id="toast"></div>
-<div class="header-bar">
-<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='levels.html',150)">← رجوع</button>
-<div class="header-title">🛒 المتجر</div>
-<div style="width:60px"></div>
-</div>
-<div class="balance-card">
-<div class="balance-label">💰 رصيدك الحالي</div>
-<div class="balance-value"><span id="balanceNum">0</span> <span>نقطة</span></div>
-</div>
-<div class="tabs">
-<div class="tab active" data-cat="crown" onclick="switchTab('crown', this)">👑 تيجان</div>
-<div class="tab" data-cat="theme" onclick="switchTab('theme', this)">🎨 ثيمات</div>
-<div class="tab" data-cat="pet" onclick="switchTab('pet', this)">🐶 حيوانات</div>
-<div class="tab" data-cat="effect" onclick="switchTab('effect', this)">✨ تأثيرات</div>
-<div class="tab" data-cat="title" onclick="switchTab('title', this)">🏅 ألقاب</div>
-</div>
-<div class="items-grid" id="itemsGrid"></div>
-
+<h2>رصيدك: <span id="balance" style="color:#00e5ff;">0</span> نقطة</h2>
+<button onclick="window.location.href='languages.html'" style="margin-bottom:20px;padding:10px;border-radius:10px;cursor:pointer;font-family:Cairo;">رجوع</button>
+<div class="grid" id="grid"></div>
 <script>
-const user = Auth.getCurrentUser();
-const shopItems = {
-    crown: [
-        { id: 'crown_bronze', name: 'تاج برونزي', desc: 'للمبتدئين', icon: '🥉', price: 30 },
-        { id: 'crown_silver', name: 'تاج فضي', desc: 'للاعبين الشاطرين', icon: '🥈', price: 80 },
-        { id: 'crown_gold', name: 'تاج ذهبي', desc: 'تاج ملكي فخم', icon: '👑', price: 150 },
-        { id: 'crown_diamond', name: 'تاج الماس', desc: 'نادر جداً', icon: '💎', price: 300 }
-    ],
-    theme: [
-        { id: 'theme_ocean', name: 'ثيم المحيط', desc: 'أزرق هادئ', icon: '🌊', price: 50, color: '#00e5ff' },
-        { id: 'theme_sunset', name: 'ثيم الغروب', desc: 'ألوان دافئة', icon: '🌅', price: 50, color: '#ff9500' },
-        { id: 'theme_forest', name: 'ثيم الغابة', desc: 'ألوان خضراء', icon: '🌲', price: 60, color: '#27ae60' },
-        { id: 'theme_night', name: 'ثيم الليل', desc: 'ألوان بنفسجية', icon: '🌙', price: 80, color: '#9b59b6' }
-    ],
-    pet: [
-        { id: 'pet_cat', name: 'قط مشمش', desc: 'صاحب مرح', icon: '🐱', price: 70 },
-        { id: 'pet_dog', name: 'كلب صغير', desc: 'صديق وفي', icon: '🐶', price: 70 },
-        { id: 'pet_dragon', name: 'تنين صغير', desc: 'رفيق قوي', icon: '🐉', price: 200 },
-        { id: 'pet_unicorn', name: 'وحيد القرن', desc: 'سحري', icon: '🦄', price: 250 }
-    ],
-    effect: [
-        { id: 'effect_stars', name: 'نجوم', desc: 'نجوم تلمع', icon: '⭐', price: 60 },
-        { id: 'effect_fire', name: 'نار', desc: 'لهب متوهج', icon: '🔥', price: 90 },
-        { id: 'effect_lightning', name: 'برق', desc: 'صعقة كهربائية', icon: '⚡', price: 110 },
-        { id: 'effect_rainbow', name: 'قوس قزح', desc: 'ألوان زاهية', icon: '🌈', price: 180 }
-    ],
-    title: [
-        { id: 'title_rookie', name: 'مبتدئ', desc: 'لقب البداية', icon: '🌱', price: 20 },
-        { id: 'title_smart', name: 'ذكي', desc: 'إنت شاطر', icon: '🧠', price: 60 },
-        { id: 'title_hero', name: 'بطل', desc: 'لقب الأبطال', icon: '🦸', price: 120 },
-        { id: 'title_legend', name: 'أسطورة', desc: 'نادر جداً', icon: '🌟', price: 300 }
-    ]
-};
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.init((logged) => {
+        if(!logged) { window.location.href = 'index.html'; return; }
+        const balanceEl = document.getElementById('balance');
+        let balance = Auth.getUserData() ? (Auth.getUserData().bonusPoints || 0) : 0;
+        balanceEl.innerText = balance;
 
-const ownedKey = 'cq_owned_' + user;
-const equippedKey = 'cq_equipped_' + user;
-
-function getOwned() { try { return JSON.parse(localStorage.getItem(ownedKey) || '{}'); } catch(e) { return {}; } }
-function setOwned(o) { localStorage.setItem(ownedKey, JSON.stringify(o)); }
-function getEquipped() { try { return JSON.parse(localStorage.getItem(equippedKey) || '{}'); } catch(e) { return {}; } }
-function setEquipped(e) { localStorage.setItem(equippedKey, JSON.stringify(e)); }
-
-function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.className = 'toast show' + (type ? ' ' + type : '');
-    setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-let currentCat = 'crown';
-let currentBalance = 0;
-
-function switchTab(cat, el) {
-    playSound('click');
-    currentCat = cat;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    renderItems();
-}
-
-function renderItems() {
-    const grid = document.getElementById('itemsGrid');
-    const owned = getOwned();
-    const equipped = getEquipped();
-    grid.innerHTML = '';
-    const items = shopItems[currentCat] || [];
-    
-    items.forEach(item => {
-        const isOwned = owned[item.id] === true;
-        const isEquipped = equipped[currentCat] === item.id;
-        const canAfford = currentBalance >= item.price;
-        let priceClass = '';
-        let priceText = '';
-        
-        if (isEquipped) { priceClass = 'equipped-label'; priceText = '✅ مُفعّل'; }
-        else if (isOwned) { priceClass = 'owned-label'; priceText = '🔓 تملكه'; }
-        else if (canAfford) { priceText = '💰 ' + item.price; }
-        else { priceClass = 'cant-afford'; priceText = '💰 ' + item.price; }
-        
-        const card = document.createElement('div');
-        card.className = 'item-card' + (isOwned ? ' owned' : '') + (isEquipped ? ' equipped' : '');
-        card.style.setProperty('--accent', item.color || '#ffd700');
-        card.innerHTML = 
-            '<div class="item-icon">' + item.icon + '</div>' +
-            '<div class="item-name">' + item.name + '</div>' +
-            '<div class="item-desc">' + item.desc + '</div>' +
-            '<div class="item-price ' + priceClass + '">' + priceText + '</div>';
-        card.onclick = () => handleItemClick(item, isOwned, isEquipped, canAfford);
-        grid.appendChild(card);
+        const items = [{n:'تاج',i:'👑',p:50},{n:'قطة',i:'🐱',p:80},{n:'نجوم',i:'⭐',p:60},{n:'بطل',i:'🦸',p:100}];
+        const grid = document.getElementById('grid');
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.innerHTML = '<div class="icon">' + item.i + '</div><p>' + item.n + '</p><b style="color:#ffd700;">' + item.p + ' نقطة</b>';
+            div.onclick = async () => {
+                if(balance >= item.p) {
+                    try {
+                        await firebase.firestore().collection('users').doc(Auth.getUserId()).update({
+                            bonusPoints: firebase.firestore.FieldValue.increment(-item.p)
+                        });
+                        alert('تم الشراء!');
+                        location.reload();
+                    } catch(e) { alert('خطأ في الشراء'); }
+                } else { alert('نقاطك لا تكفي!'); }
+            };
+            grid.appendChild(div);
+        });
     });
-}
-
-async function handleItemClick(item, isOwned, isEquipped, canAfford) {
-    if (isEquipped) {
-        playSound('click');
-        const equipped = getEquipped();
-        delete equipped[currentCat];
-        setEquipped(equipped);
-        showToast('تم إلغاء التفعيل', 'info');
-        renderItems();
-        return;
-    }
-    if (isOwned) {
-        playSound('success');
-        const equipped = getEquipped();
-        equipped[currentCat] = item.id;
-        setEquipped(equipped);
-        if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-            try { await firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({ equipped: equipped }); } catch(e) {}
-        }
-        showToast('✨ تم تفعيل ' + item.name + '!');
-        try { confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#ffffff'] }); } catch(e) {}
-        renderItems();
-        return;
-    }
-    if (!canAfford) {
-        playSound('error');
-        showToast('❌ معندكش نقاط كفاية!', 'error');
-        return;
-    }
-    
-    playSound('win');
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-        const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
-        try {
-            await firebase.firestore().runTransaction(async (transaction) => {
-                const doc = await transaction.get(userRef);
-                if (!doc.exists) throw "User not found";
-                let currentPoints = doc.data().bonusPoints || 0;
-                if (currentPoints < item.price) throw "Not enough points";
-                let owned = doc.data().owned || {};
-                owned[item.id] = true;
-                let equipped = doc.data().equipped || {};
-                equipped[currentCat] = item.id;
-                transaction.update(userRef, { bonusPoints: currentPoints - item.price, owned: owned, equipped: equipped });
-            });
-            
-            const ownedLocal = getOwned(); ownedLocal[item.id] = true; setOwned(ownedLocal);
-            const equippedLocal = getEquipped(); equippedLocal[currentCat] = item.id; setEquipped(equippedLocal);
-            currentBalance -= item.price;
-            document.getElementById('balanceNum').innerText = currentBalance;
-            showToast('🎉 اشتريت ' + item.name + ' واتفعّل!');
-            try { confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
-            setTimeout(renderItems, 300);
-        } catch(e) {
-            playSound('error'); showToast('❌ حدث خطأ أثناء الشراء!', 'error');
-        }
-    }
-}
-
-async function initShop() {
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-        try {
-            const doc = await firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).get();
-            if (doc.exists) currentBalance = doc.data().bonusPoints || 0;
-        } catch(e) {}
-    }
-    document.getElementById('balanceNum').innerText = currentBalance;
-    renderItems();
-}
-
-document.addEventListener('DOMContentLoaded', initShop);
+});
 </script>
-<script>document.addEventListener("DOMContentLoaded", () => { if(typeof Auth !== "undefined") { Auth.init((isLoggedIn) => { if(!isLoggedIn) window.location.href = "index.html"; }); } });</script>
-</body>
-</html>
+</body></html>
