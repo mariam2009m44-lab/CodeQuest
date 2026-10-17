@@ -113,7 +113,23 @@ const balanceKey = 'cq_balance_' + user;
 const ownedKey = 'cq_owned_' + user;
 const equippedKey = 'cq_equipped_' + user;
 
-function getBalance() { return parseInt(localStorage.getItem(balanceKey) || '0'); }
+function getBalance() {
+    const games = ['match', 'memory', 'bug', 'speed', 'quiz', 'build'];
+    let total = 0;
+    games.forEach(g => total += parseInt(localStorage.getItem('cq_high_' + g) || '0'));
+    
+    const users = Auth.getUsers();
+    const u = users[user];
+    if (u && u.bonusPoints) total += u.bonusPoints;
+    
+    // إضافة نقاط المستويات
+    const levelsBalance = parseInt(localStorage.getItem('cq_balance_' + user) || '0');
+    total += levelsBalance;
+
+    // خصم المشتريات
+    const spent = parseInt(localStorage.getItem('cq_spent_' + user) || '0');
+    return Math.max(0, total - spent);
+}
 function setBalance(v) { localStorage.setItem(balanceKey, v); }
 function getOwned() { try { return JSON.parse(localStorage.getItem(ownedKey) || '{}'); } catch(e) { return {}; } }
 function setOwned(o) { localStorage.setItem(ownedKey, JSON.stringify(o)); }
@@ -195,7 +211,8 @@ function handleItemClick(item, isOwned, isEquipped, canAfford) {
     }
     playSound('win');
     const balance = getBalance();
-    setBalance(balance - item.price);
+    const spent = parseInt(localStorage.getItem('cq_spent_' + user) || '0');
+    localStorage.setItem('cq_spent_' + user, spent + item.price);
     const owned = getOwned();
     owned[item.id] = true;
     setOwned(owned);

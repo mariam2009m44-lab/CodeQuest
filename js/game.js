@@ -762,30 +762,6 @@ function reviewAll() {
     showNext();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initState();
-    const levelInfoEl = $('levelInfo');
-    if (levelInfoEl) levelInfoEl.innerText = STATE.story.levelTitle;
-    const scoreEl = $('score');
-    if (scoreEl) scoreEl.innerText = 0;
-
-    if (localStorage.getItem(STATE.doneKey) === 'true') {
-        showReviewDialog();
-    } else if (localStorage.getItem(STATE.progressKey)) {
-        showResumeDialog();
-    } else {
-        advanceStep();
-    }
-});
-
-window.nextStep = function() {
-    playSound('click');
-    const btn = document.getElementById('nextBtn');
-    if (btn) btn.classList.add('hidden');
-    STATE.stepIndex++;
-    saveProgress();
-    advanceStep();
-};
 
 function triggerAchievements(extra) {
     if (typeof Achievements !== 'undefined') {
@@ -817,20 +793,8 @@ function showCelebration() {
         '</div>';
     document.body.appendChild(overlay);
     setTimeout(() => overlay.classList.add('show'), 50);
-    setTimeout(() => {
-        try { confetti({ particleCount: 300, spread: 130, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
-        try { if (typeof playSound === 'function') playSound('win'); } catch(e) {}
-    }, 400);
-    setTimeout(() => {
-        try { confetti({ particleCount: 200, spread: 100, origin: { x: 0.2, y: 0.6 }, colors: ['#00e5ff', '#ffd700'] }); } catch(e) {}
-    }, 800);
-    setTimeout(() => {
-        try { confetti({ particleCount: 200, spread: 100, origin: { x: 0.8, y: 0.6 }, colors: ['#27ae60', '#ffffff'] }); } catch(e) {}
-    }, 1200);
-    document.getElementById('celebrationContinue').onclick = () => {
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.remove(), 500);
-    };
+    setTimeout(() => { try { confetti({ particleCount: 300, spread: 130, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {} try { if (typeof playSound === 'function') playSound('win'); } catch(e) {} }, 400);
+    document.getElementById('celebrationContinue').onclick = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 500); };
 }
 
 const _origFinishGame = finishGame;
@@ -849,4 +813,28 @@ window.startQuiz = function() {
     _origStartQuiz();
 };
 
-triggerAchievements();
+window.nextStep = function() {
+    playSound('click');
+    const btn = document.getElementById('nextBtn');
+    if (btn) btn.classList.add('hidden');
+    STATE.stepIndex++;
+    saveProgress();
+    advanceStep();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    initState();
+    const levelInfoEl = document.getElementById('levelInfo');
+    if (levelInfoEl) levelInfoEl.innerText = STATE.story.levelTitle;
+    const scoreEl = document.getElementById('score');
+    if (scoreEl) scoreEl.innerText = 0;
+
+    if (localStorage.getItem(STATE.doneKey) === 'true') {
+        showReviewDialog();
+    } else if (localStorage.getItem(STATE.progressKey)) {
+        showResumeDialog();
+    } else {
+        advanceStep();
+    }
+    triggerAchievements();
+});
