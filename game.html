@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>الدرس</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | الدرس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/game.css">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -13,8 +14,14 @@
 </head>
 <body>
 <div class="game-container">
-    <header class="game-header"><button class="back-btn" onclick="window.location.href='levels.html'">← رجوع</button><div id="levelInfo">جاري التحميل...</div><div id="score">النقاط: 0</div></header>
+    <header class="game-header">
+        <button class="back-btn" onclick="window.location.href='levels.html'">← رجوع</button>
+        <div id="levelInfo">المستوى الأول</div>
+        <div id="score">النقاط: 0</div>
+    </header>
+    <div class="progress-bar-top"><div class="progress-fill" id="progressFill"></div></div>
     <div class="chat-area" id="chatArea"></div>
+    <div class="choices-area hidden" id="choicesArea"></div>
     <button class="action-btn" id="nextBtn" onclick="nextStep()">التالي 🚀</button>
 </div>
 <script>
@@ -22,5 +29,4 @@ document.addEventListener('DOMContentLoaded', () => {
     Auth.init((logged) => { if(!logged) window.location.href = 'index.html'; else initGame(); });
 });
 </script>
-</body>
-</html>
+</body></html>
