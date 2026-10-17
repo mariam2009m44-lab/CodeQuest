@@ -18,7 +18,6 @@ const Auth = {
         } else { localStorage.clear(); window.location.href = 'index.html'; }
     },
 
-    // دوال الأفاتار
     getAvatarHtml: function(name) {
         name = name || this.getCurrentUser();
         if (!name) return '<div class="letter-avatar">؟</div>';
@@ -33,30 +32,50 @@ const Auth = {
         return '<div class="letter-avatar" style="background:linear-gradient(135deg,' + colors[name.length % colors.length] + ')">' + initials + '</div>';
     },
 
-    // دالة مزامنة بيانات المستخدم من Firebase إلى الـ LocalStorage
+    registerUser: async function(username, password) {
+        const email = username.toLowerCase().replace(/\s+/g, '') + '@codequest.app';
+        try {
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+            try {
+                await firebase.firestore().collection('users').doc(user.uid).set({
+                    username: username, email: email, created: Date.now(), bonusPoints: 0
+                });
+            } catch (fsError) {
+                console.error("Firestore error:", fsError);
+            }
+            return { success: true };
+        } catch (error) {
+            console.error("Register Error:", error);
+            // هنا بنعرض كود الخطأ الحقيقي عشان نعرف المشكلة
+            return { success: false, message: 'كود الخطأ: ' + error.code };
+        }
+    },
+
+    loginUser: async function(username, password) {
+        const email = username.toLowerCase().replace(/\s+/g, '') + '@codequest.app';
+        try {
+            await firebase.auth().signInWithEmailAndPassword(email, password);
+            return { success: true };
+        } catch (error) {
+            console.error("Login Error:", error);
+            // هنا بنعرض كود الخطأ الحقيقي عشان نعرف المشكلة
+            return { success: false, message: 'كود الخطأ: ' + error.code };
+        }
+    },
+
     syncData: async function() {
         if (typeof firebase === 'undefined') return;
         const user = firebase.auth().currentUser;
         if (!user) return;
-        
         try {
             const doc = await firebase.firestore().collection('users').doc(user.uid).get();
             if (doc.exists) {
                 const data = doc.data();
                 const name = data.username || this.getCurrentUser();
-                
-                // مزامنة النقاط
                 localStorage.setItem('cq_balance_' + name, data.bonusPoints || 0);
-                
-                // مزامنة الأفاتار لو موجود
-                if (data.avatar) {
-                    localStorage.setItem('cq_avatar_' + name, data.avatar);
-                }
-                
-                // مزامنة التقدم
-                if (data.unlocked) {
-                    localStorage.setItem('cq_unlocked_' + name + '_js', JSON.stringify(data.unlocked));
-                }
+                if (data.avatar) localStorage.setItem('cq_avatar_' + name, data.avatar);
+                if (data.unlocked) localStorage.setItem('cq_unlocked_' + name + '_js', JSON.stringify(data.unlocked));
             }
         } catch(e) { console.error("Sync Error:", e); }
     }
