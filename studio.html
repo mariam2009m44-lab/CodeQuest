@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>استوديو كودي | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
@@ -10,87 +10,91 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     
-    <!-- Monaco Editor -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
-    <!-- Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Howler.js for Sounds -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --terminal-bg: #0a0a0a; }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.7); }
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background-image: radial-gradient(circle at 50% 0%, #0a192f 0%, #050914 70%); }
+        body { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(10px); z-index: 10; }
-        .header h1 { margin: 0; font-size: 1.2rem; color: var(--neon-cyan); display:flex; align-items:center; gap:10px;}
-        .run-btn { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
-        .run-btn:hover { background: #218838; transform: scale(1.05); box-shadow: 0 0 20px rgba(40, 167, 69, 0.8); }
+        /* Glass Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--glass); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(15px); z-index: 10; }
+        .header h1 { margin: 0; font-size: 1rem; color: var(--neon-cyan); display:flex; align-items:center; gap:5px;}
+        .header-btns { display: flex; gap: 8px; }
+        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; font-size: 0.9rem;}
+        .btn-run { background: #28a745; color: white; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
+        .btn-finish { background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
 
-        /* Layout */
-        .main-container { display: flex; flex: 1; overflow: hidden; }
+        /* Main Layout */
+        .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        /* Cody Panel */
-        .cody-panel { width: 35%; display: flex; flex-direction: column; padding: 20px; background: rgba(5, 9, 20, 0.7); border-left: 1px solid rgba(0,229,255,0.1); backdrop-filter: blur(5px); }
-        .cody-avatar-wrapper { position: relative; width: 100px; height: 100px; margin: 0 auto 20px; }
-        .cody-avatar { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
-        
-        .speech-box { background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 15px; padding: 20px; flex: 1; overflow-y: auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); position: relative; }
-        .speech-box::before { content: ''; position: absolute; top: -10px; right: 20px; border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent rgba(0, 229, 255, 0.3) transparent; }
-        .speech-text { font-size: 1.1rem; line-height: 1.8; color: #e0e0e0; }
-        .speech-text b { color: var(--gold); }
-        
-        .controls { margin-top: 15px; display: flex; gap: 10px; }
-        .btn-secondary { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 10px; border-radius: 10px; cursor: pointer; font-family: 'Cairo'; flex: 1; transition: 0.3s; }
-        .btn-secondary:hover { background: rgba(0, 229, 255, 0.2); }
-
         /* IDE Panel */
-        .ide-panel { width: 65%; display: flex; flex-direction: column; background: #1e1e1e; }
-        #editor-container { flex: 1; width: 100%; }
+        .ide-panel { flex: 1; display: flex; flex-direction: column; background: #1e1e1e; min-height: 0; }
+        #editor-container { flex: 1; width: 100%; height: 100%; min-height: 200px;}
         
-        /* Terminal */
-        .terminal-wrapper { height: 35%; background: var(--terminal-bg); border-top: 2px solid #333; display: flex; flex-direction: column; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
-        .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; border-bottom: 1px solid #333; }
-        .terminal-output { flex: 1; padding: 15px; font-family: 'Courier New', Courier, monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.95rem; line-height: 1.5; text-shadow: 0 0 5px rgba(0, 255, 0, 0.5); }
+        /* Terminal Panel */
+        .terminal-wrapper { height: 35%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
+        .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
+        .terminal-output { flex: 1; padding: 10px; font-family: 'Courier New', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; text-shadow: 0 0 5px rgba(0, 255, 0, 0.5); }
+
+        /* Cody Floating Panel */
+        .cody-panel { 
+            position: absolute; bottom: 45%; right: 20px; width: 60px; height: 60px; 
+            z-index: 50; cursor: pointer; transition: 0.3s;
+            border-radius: 50%; border: 2px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan);
+            background: #000; overflow: hidden;
+        }
+        .cody-panel img { width: 100%; height: 100%; object-fit: cover; }
         
+        .speech-popup {
+            position: absolute; bottom: 55%; right: 90px; width: 250px;
+            background: var(--glass); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,229,255,0.3); border-radius: 15px 15px 0 15px;
+            padding: 15px; display: none; z-index: 49;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); font-size: 0.9rem; line-height: 1.5;
+        }
+
+        /* Mobile Adjustments */
         @media (max-width: 768px) {
-            .main-container { flex-direction: column-reverse; } /* المحرر فوق، كودي تحت في الموبايل */
-            .cody-panel { width: 100%; height: 40%; border-left: none; border-top: 1px solid rgba(0,229,255,0.1); }
-            .ide-panel { width: 100%; height: 60%; }
+            .main-container { flex-direction: column; }
+            .ide-panel { height: 65%; }
+            .terminal-wrapper { height: 35%; }
+            .cody-panel { bottom: 40%; right: 15px; width: 50px; height: 50px; }
+            .speech-popup { bottom: 50%; right: 75px; width: 200px; font-size: 0.8rem; }
+            .header h1 span { display: none; } /* نخفي اسم الدرس في الموبايل عشان المساحة */
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1><i class="ri-terminal-box-line"></i> الاستوديو - <span id="lessonTitle" style="color:var(--gold); font-size:1rem;">جاري التحميل...</span></h1>
-        <div>
-            <button class="run-btn" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
-            <button class="run-btn" style="background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold);" onclick="completeLesson()"><i class="ri-check-double-line"></i> إنهاء</button>
+        <h1><i class="ri-terminal-box-line"></i> <span id="lessonTitle">جاري التحميل...</span></h1>
+        <div class="header-btns">
+            <button class="btn btn-run" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
+            <button class="btn btn-finish" onclick="completeLesson()"><i class="ri-check-double-line"></i> إنهاء</button>
         </div>
     </div>
 
     <div class="main-container">
-        <div class="cody-panel">
-            <div class="cody-avatar-wrapper"><img src="cody-avatar.svg" class="cody-avatar" id="codyImg"></div>
-            <div class="speech-box">
-                <div class="speech-text" id="codyText">جاري تحميل الدرس...</div>
-            </div>
-            <div class="controls">
-                <button class="btn-secondary" onclick="speakText()"><i class="ri-volume-up-line"></i> اسمع كودي</button>
-            </div>
-        </div>
-
         <div class="ide-panel">
             <div id="editor-container"></div>
             <div class="terminal-wrapper">
                 <div class="terminal-header">
-                    <span><i class="ri-terminal-line"></i> TERMINAL / CONSOLE</span>
-                    <span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i> مسح</span>
+                    <span><i class="ri-terminal-line"></i> CONSOLE</span>
+                    <span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i></span>
                 </div>
                 <div class="terminal-output" id="terminalOutput">> Ready...</div>
             </div>
+        </div>
+
+        <!-- Cody Character -->
+        <div class="cody-panel" onclick="toggleSpeech()">
+            <img src="cody-avatar.svg" id="codyImg">
+        </div>
+        <div class="speech-popup" id="speechBox">
+            <div id="codyText" style="color: #e0e0e0;">جاري تحميل الدرس...</div>
+            <button onclick="speakText()" style="background:transparent; border:none; color:var(--neon-cyan); margin-top:10px; cursor:pointer;"><i class="ri-volume-up-line"></i> اسمع</button>
         </div>
     </div>
 
@@ -101,20 +105,27 @@
         const levelId = parseInt(urlParams.get('level')) || 1;
         let currentLesson = null;
 
-        // 1. إعداد الأصوات
+        // تحميل صورة الشخصية
+        const savedAvatar = localStorage.getItem('cq_avatar');
+        if (savedAvatar) document.getElementById('codyImg').src = savedAvatar;
+
         const soundClick = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'], volume: 0.5 });
         const soundSuccess = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'], volume: 0.6 });
         const soundError = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'], volume: 0.5 });
 
-        // 2. تحميل المنهج
         async function loadCurriculum() {
             try {
+                // مسح الكود القديم لو فيه غلطة
+                if(localStorage.getItem(`cq_code_${lang}_${levelId}`) === '// اكتب اسمك هنا\nletlet myName = "مريم";\nconsole.log("أهلاً يا " + myName);') {
+                    localStorage.removeItem(`cq_code_${lang}_${levelId}`);
+                }
+
                 const response = await fetch('curriculum.json');
                 const data = await response.json();
                 currentLesson = data[lang]?.[levelId] || data['JavaScript'][1];
                 
                 document.getElementById('lessonTitle').innerText = currentLesson.title;
-                typeWriter(currentLesson.intro, 'codyText');
+                document.getElementById('codyText').innerText = currentLesson.intro.replace(/<[^>]*>?/gm, '');
                 
                 const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || currentLesson.code;
                 
@@ -122,57 +133,35 @@
                 require(['vs/editor/editor.main'], function() {
                     editor = monaco.editor.create(document.getElementById('editor-container'), {
                         value: savedCode, language: lang === 'js' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
-                        theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, roundedSelection: false, scrollBeyondLastLine: false,
+                        theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false, padding: { top: 10 }
                     });
                     
-                    // حفظ في Firebase
                     let saveTimeout;
                     editor.onDidChangeModelContent(() => {
                         clearTimeout(saveTimeout);
                         saveTimeout = setTimeout(async () => {
                             localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
-                            const uid = Auth.getUserId();
-                            if(uid) {
-                                try { await firebase.firestore().collection('users').doc(uid).update({ [`code_${lang}_${levelId}`]: editor.getValue() }); } catch(e) {}
-                            }
-                        }, 2000);
+                        }, 1000);
                     });
                 });
             } catch(e) { console.error(e); document.getElementById('codyText').innerText = "حدث خطأ في تحميل الدرس."; }
         }
 
-        // 3. تأثير الآلة الكاتبة
-        function typeWriter(html, elementId) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = '';
-            let i = 0;
-            const tempDiv = document.createElement('div'); tempDiv.innerHTML = html;
-            const text = tempDiv.textContent; // في حالة لو فيه HTML tags
-            
-            // عشان نبسطها، هنكتب النص الأصلي
-            const rawText = html.replace(/<[^>]*>?/gm, '');
-            const interval = setInterval(() => {
-                if (i < rawText.length) {
-                    element.innerHTML += rawText.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 30);
+        function toggleSpeech() {
+            const box = document.getElementById('speechBox');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
         }
 
-        // 4. الصوت
         function speakText() {
             let textToSpeak = document.getElementById('codyText').innerText;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                utterance.lang = 'ar-SA'; utterance.rate = 0.95; utterance.pitch = 1.1;
+                utterance.lang = 'ar-SA'; utterance.rate = 0.95;
                 window.speechSynthesis.speak(utterance);
             }
         }
 
-        // 5. تشغيل الكود
         async function runCode() {
             soundClick.play();
             const code = editor.getValue();
@@ -190,11 +179,10 @@
                 catch (err) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${err.message}</span><br>`; soundError.play(); } 
                 finally { console.log = originalLog; }
             } else {
-                terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تشغيل ${lang} يتطلب سيرفر (سيتم إضافته).</span><br>`;
+                terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تشغيل ${lang} يتطلب سيرفر.</span><br>`;
             }
         }
 
-        // 6. إنهاء الدرس
         async function completeLesson() {
             soundSuccess.play();
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700', '#ff4444'] });
@@ -206,7 +194,7 @@
                         [`progress.${lang}.level${levelId}`]: { unlocked: true, stars: 3 },
                         [`progress.${lang}.level${levelId + 1}`]: { unlocked: true, stars: 0 }
                     });
-                } catch(e) { console.error("Error updating progress:", e); }
+                } catch(e) { console.error(e); }
             }
             setTimeout(() => { alert("🎉 مبروك! حصلت على 50 نقطة."); window.location.href = 'levels.html'; }, 1500);
         }
