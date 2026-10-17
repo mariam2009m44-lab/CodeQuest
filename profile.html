@@ -4,94 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>CodeQuest | ملفي الشخصي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/accessories.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js">
-function confirmLogout() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.add('show');
-}
-
-function closeLogoutModal() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.remove('show');
-}
-
-function doLogout() {
-    playSound('win');
-    Auth.logout();
-}
-
-</script>
-<script src="js/auth.js">
-function confirmLogout() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.add('show');
-}
-
-function closeLogoutModal() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.remove('show');
-}
-
-function doLogout() {
-    playSound('win');
-    Auth.logout();
-}
-
-</script>
-<script src="js/sfx.js">
-function confirmLogout() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.add('show');
-}
-
-function closeLogoutModal() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.remove('show');
-}
-
-function doLogout() {
-    playSound('win');
-    Auth.logout();
-}
-
-</script>
-<script src="js/accessories.js">
-function confirmLogout() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.add('show');
-}
-
-function closeLogoutModal() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.remove('show');
-}
-
-function doLogout() {
-    playSound('win');
-    Auth.logout();
-}
-
-</script>
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}
-function confirmLogout() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.add('show');
-}
-
-function closeLogoutModal() {
-    playSound('click');
-    document.getElementById('logoutModal').classList.remove('show');
-}
-
-function doLogout() {
-    playSound('win');
-    Auth.logout();
-}
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/accessories.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%)}
@@ -131,26 +53,20 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .buttons-container{max-width:500px;margin:0 auto;position:relative;z-index:2;display:flex;flex-direction:column;gap:12px;padding-bottom:30px}
 .btn-action{width:100%;padding:16px;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;transition:0.3s;display:flex;align-items:center;justify-content:center;gap:8px;border:none;text-decoration:none}
 .btn-change-avatar{background:linear-gradient(135deg, #27ae60, #1e8449);color:#fff;box-shadow:0 10px 25px rgba(39,174,96,0.5)}
-.btn-change-avatar:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(39,174,96,0.7)}
 .btn-logout{background:linear-gradient(135deg, #e74c3c, #c0392b);color:#fff;box-shadow:0 10px 25px rgba(231,76,60,0.4)}
-.btn-logout:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(231,76,60,0.6)}
-.btn-action:active{transform:scale(0.97)}
 
-/* Custom Logout Modal */
+/* Custom Modal */
 .custom-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,9,20,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;justify-content:center;align-items:center;z-index:99999;opacity:0;pointer-events:none;transition:opacity 0.3s ease}
 .custom-modal-overlay.show{opacity:1;pointer-events:auto}
 .custom-modal-box{background:linear-gradient(135deg, #0f172a, #1e293b);border:2px solid #e74c3c;border-radius:24px;padding:30px 20px;text-align:center;max-width:340px;width:90%;box-shadow:0 0 40px rgba(231,76,60,0.3);transform:scale(0.8);transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275)}
 .custom-modal-overlay.show .custom-modal-box{transform:scale(1)}
 .custom-modal-icon{font-size:55px;margin-bottom:15px;filter:drop-shadow(0 0 15px rgba(231,76,60,0.6))}
-.custom-modal-title{color:#fff;font-size:20px;font-weight:900;margin-bottom:10px;font-family:'Cairo',sans-serif}
-.custom-modal-desc{color:#a0aec0;font-size:14px;margin-bottom:25px;line-height:1.6;font-family:'Cairo',sans-serif}
+.custom-modal-title{color:#fff;font-size:20px;font-weight:900;margin-bottom:10px}
+.custom-modal-desc{color:#a0aec0;font-size:14px;margin-bottom:25px;line-height:1.6}
 .custom-modal-actions{display:flex;gap:10px}
 .custom-modal-btn{flex:1;padding:14px;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;border:none;transition:0.3s}
 .custom-modal-btn-cancel{background:rgba(255,255,255,0.1);color:#fff}
-.custom-modal-btn-cancel:hover{background:rgba(255,255,255,0.2)}
 .custom-modal-btn-confirm{background:linear-gradient(135deg, #e74c3c, #c0392b);color:#fff;box-shadow:0 5px 15px rgba(231,76,60,0.4)}
-.custom-modal-btn-confirm:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(231,76,60,0.6)}
-
 </style>
 </head>
 <body>
@@ -193,9 +109,22 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 <button class="btn-action btn-change-avatar" onclick="playSound('click'); window.location.href='avatar.html'">
 🎨 غير شخصيتك
 </button>
-<button class="btn-action btn-logout" onclick="confirmLogout()">
+<button class="btn-action btn-logout" onclick="showLogoutModal()">
 🚪 تسجيل الخروج / تبديل الحساب
 </button>
+</div>
+
+<!-- النافذة السوداء الاحترافية -->
+<div class="custom-modal-overlay" id="logoutModal">
+    <div class="custom-modal-box">
+        <div class="custom-modal-icon">🚪</div>
+        <div class="custom-modal-title">تسجيل الخروج</div>
+        <div class="custom-modal-desc">هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟<br>تقدمك محفوظ وآمن.</div>
+        <div class="custom-modal-actions">
+            <button class="custom-modal-btn custom-modal-btn-cancel" onclick="hideLogoutModal()">إلغاء</button>
+            <button class="custom-modal-btn custom-modal-btn-confirm" onclick="doLogout()">نعم، خروج</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -244,15 +173,13 @@ allBadges.forEach(b => {
     badgesGrid.appendChild(el);
 });
 
-
-}
-
-function confirmLogout() {
+// دوال النافذة المنبثقة
+function showLogoutModal() {
     playSound('click');
     document.getElementById('logoutModal').classList.add('show');
 }
 
-function closeLogoutModal() {
+function hideLogoutModal() {
     playSound('click');
     document.getElementById('logoutModal').classList.remove('show');
 }
@@ -261,20 +188,6 @@ function doLogout() {
     playSound('win');
     Auth.logout();
 }
-
 </script>
-
-<div class="custom-modal-overlay" id="logoutModal">
-    <div class="custom-modal-box">
-        <div class="custom-modal-icon">🚪</div>
-        <div class="custom-modal-title">تسجيل الخروج</div>
-        <div class="custom-modal-desc">هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟<br>لن تفقد أي تقدم أو نقاط.</div>
-        <div class="custom-modal-actions">
-            <button class="custom-modal-btn custom-modal-btn-cancel" onclick="closeLogoutModal()">إلغاء</button>
-            <button class="custom-modal-btn custom-modal-btn-confirm" onclick="doLogout()">نعم، خروج</button>
-        </div>
-    </div>
-</div>
-
 </body>
 </html>
