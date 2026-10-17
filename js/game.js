@@ -174,7 +174,7 @@ function showCelebration(stars) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (!Auth.isLoggedIn()) { window.location.href = 'index.html'; return; }
+    
     initState();
     const levelInfoEl = $('levelInfo'); if (levelInfoEl) levelInfoEl.innerText = STATE.story.levelTitle;
     const scoreEl = $('score'); if (scoreEl) scoreEl.innerText = 0;
