@@ -1,48 +1,26 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeQuest | الدرس التفاعلي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>الدرس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/game.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-
-    <!-- Firebase SDKs (Compat for pure HTML/JS) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-
-    <script src="js/auth.js"></script>
-<script src="js/sfx.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/game.js"></script>
 </head>
 <body>
 <div class="game-container">
-<header class="game-header">
-<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='levels.html',150)">← رجوع</button>
-<div class="level-info" id="levelInfo">المستوى الأول</div>
-<div class="score">النقاط: <span id="score">0</span></div>
-</header>
-
-<div class="progress-bar-top"><div class="progress-fill" id="progressFill"></div></div>
-
-<div class="stage-indicators">
-<div class="stage-dot active" data-stage="chat">💬</div>
-<div class="stage-line"></div>
-<div class="stage-dot" data-stage="quiz">❓</div>
+    <header class="game-header"><button class="back-btn" onclick="window.location.href='levels.html'">← رجوع</button><div id="levelInfo">جاري التحميل...</div><div id="score">النقاط: 0</div></header>
+    <div class="chat-area" id="chatArea"></div>
+    <button class="action-btn" id="nextBtn" onclick="nextStep()">التالي 🚀</button>
 </div>
-
-<div class="chat-area" id="chatArea"></div>
-
-<div class="choices-area hidden" id="choicesArea"></div>
-
-<button class="action-btn" id="nextBtn" onclick="nextStep()">التالي 🚀</button>
-
-</div>
-<script src="js/achievements.js"></script>
-<script src="js/game.js"></script>
-<script>document.addEventListener("DOMContentLoaded", () => { Auth.init((isLoggedIn) => { if(!isLoggedIn) window.location.href = "index.html"; }); });</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.init((logged) => { if(!logged) window.location.href = 'index.html'; else initGame(); });
+});
+</script>
 </body>
 </html>
