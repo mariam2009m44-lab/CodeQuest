@@ -195,14 +195,15 @@ print(5 + 5)"
         }
 
         // 4. تشغيل الكود
-        function runCode() {
+                async function runCode() {
             const code = editor.getValue();
             const outputDiv = document.getElementById('consoleOutput');
             
-            outputDiv.innerHTML += `<div style="color:#888;">--- تشغيل (${new Date().toLocaleTimeString()}) ---</div>`;
-            
-            // لو لغة جافاسكريبت، نشغلها في المتصفح
+            outputDiv.innerHTML += `<div style="color:#888;">--- جاري التنفيذ (${new Date().toLocaleTimeString()}) ---</div>`;
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+
             if (lang === 'js') {
+                // تشغيل JS محلياً (أسرع)
                 let originalLog = console.log;
                 console.log = function(...args) {
                     outputDiv.innerHTML += `<div>> ${args.join(' ')}</div>`;
@@ -214,12 +215,50 @@ print(5 + 5)"
                 } catch (err) {
                     outputDiv.innerHTML += `<div style="color:#ff4444;">❌ خطأ: ${err.message}</div>`;
                 } finally {
-                    console.log = originalLog; // إرجاع الكونسول لأصله
+                    console.log = originalLog;
                 }
             } else {
-                // للغات زي بايثون، هنحتاج سيرفر حقيقي بعدين. دلوقتي هنعمل محاكاة
-                outputDiv.innerHTML += `<div style="color:#ffd700;">⚠️ تشغيل ${lang.toUpperCase()} يتطلب سيرفر خارجي (سيتم إضافته في النسخة النهائية).</div>`;
+                // تشغيل Python و C++ باستخدام Piston API
+                const langMap = {
+                    'python': { language: 'python', version: '3.10.0' },
+                    'cpp': { language: 'c++', version: '10.2.0' }
+                };
+                const config = langMap[lang] || langMap['python'];
+                
+                outputDiv.innerHTML += `<div style="color:#ffd700;">⏳ جاري إرسال الكود للمترجم...</div>`;
+                
+                try {
+                    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            language: config.language,
+                            version: config.version,
+                            files: [{ content: code }]
+                        })
+                    });
+                    const data = await response.json();
+                    
+                    outputDiv.innerHTML += `<div style="color:#888;">--- النتيجة ---</div>`;
+                    
+                    if (data.run) {
+                        if (data.run.stdout) {
+                            outputDiv.innerHTML += `<div style="color:#00ff00; font-family:monospace;">${data.run.stdout.replace(/\n/g, '<br>')}</div>`;
+                        }
+                        if (data.run.stderr) {
+                            outputDiv.innerHTML += `<div style="color:#ff4444; font-family:monospace;">${data.run.stderr.replace(/\n/g, '<br>')}</div>`;
+                        }
+                        if (!data.run.stdout && !data.run.stderr) {
+                            outputDiv.innerHTML += `<div style="color:#888;">تم التنفيذ بدون مخرجات.</div>`;
+                        }
+                    } else {
+                        outputDiv.innerHTML += `<div style="color:#ffd700;">⚠️ تعذر الحصول على النتيجة من المترجم.</div>`;
+                    }
+                } catch (e) {
+                    outputDiv.innerHTML += `<div style="color:#ff4444;">❌ خطأ في الاتصال بالسيرفر: ${e.message}</div>`;
+                }
             }
+            outputDiv.scrollTop = outputDiv.scrollHeight;
         }
 
         function clearConsole() {
