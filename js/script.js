@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded',()=>{
             return; 
         }
         if(u.length < 3){ showAlert('الاسم لازم يكون 3 حروف على الأقل!', true); return; }
+
+        const englishRegex = /^[a-zA-Z0-9]+$/;
+        if (!englishRegex.test(u)) {
+            showAlert('من فضلك استخدم حروف إنجليزية وأرقام بس في الاسم!', true);
+            return;
+        }
+
         if(p.length < 6){ showAlert('كلمة المرور لازم تكون 6 أحرف على الأقل!', true); return; }
 
         eb.disabled = true;
