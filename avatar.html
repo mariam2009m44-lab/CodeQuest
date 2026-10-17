@@ -12,6 +12,66 @@
 <script src="js/auth.js"></script>
 <script src="js/sfx.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<style>
+/* تأثير اهتزاز الشاشة */
+body.screen-shake { animation: screenShake 0.5s; }
+@keyframes screenShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-8px, 5px); }
+    40% { transform: translate(8px, -5px); }
+    60% { transform: translate(-5px, -5px); }
+    80% { transform: translate(5px, 5px); }
+}
+
+/* تطاير الشررات */
+.burst-particle {
+    position: fixed; width: 12px; height: 12px; border-radius: 50%;
+    pointer-events: none; z-index: 99998; animation: burst 0.8s ease-out forwards;
+    box-shadow: 0 0 15px currentColor;
+}
+@keyframes burst {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0); opacity: 0; }
+}
+
+/* شاشة الاقتحام الكبيرة */
+.reveal-overlay {
+    position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(20,10,40,0.98), rgba(0,0,0,1));
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 99999; padding: 20px; overflow: hidden;
+}
+.reveal-overlay.show { display: flex; }
+
+/* حلقات الإضاءة اللي بتلف */
+.reveal-rings { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+.ring { position: absolute; border-radius: 50%; border: 4px solid transparent; }
+.ring-1 { width: 280px; height: 280px; border-top-color: #00e5ff; border-right-color: #00e5ff; animation: spinRing 2s linear infinite; box-shadow: 0 0 40px rgba(0,229,255,0.6); }
+.ring-2 { width: 360px; height: 360px; border-bottom-color: #9b59b6; border-left-color: #9b59b6; animation: spinRing 3s linear infinite reverse; box-shadow: 0 0 40px rgba(155,89,182,0.6); }
+.ring-3 { width: 440px; height: 440px; border-top-color: #ffd700; border-left-color: #ffd700; animation: spinRing 5s linear infinite; box-shadow: 0 0 30px rgba(255,215,0,0.4); opacity: 0.7; }
+@keyframes spinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* الصورة الكبيرة */
+.reveal-avatar-wrap { position: relative; width: 150px; height: 150px; z-index: 5; animation: avatarEnter 0.8s cubic-bezier(0.175,0.885,0.32,1.275) forwards; transform: scale(0); }
+@keyframes avatarEnter { 0% { transform: scale(0) rotate(-180deg); } 70% { transform: scale(1.2) rotate(10deg); } 100% { transform: scale(1) rotate(0); } }
+.reveal-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; background: #fff; padding: 5px; border: 5px solid #00e5ff; box-shadow: 0 0 60px rgba(0,229,255,0.9), 0 0 120px rgba(155,89,182,0.6); animation: avatarPulse 1.5s ease-in-out infinite; }
+@keyframes avatarPulse { 0%, 100% { box-shadow: 0 0 40px rgba(0,229,255,0.7), 0 0 80px rgba(155,89,182,0.4); } 50% { box-shadow: 0 0 70px rgba(0,229,255,1), 0 0 140px rgba(155,89,182,0.8); } }
+
+/* الكلام المحفز */
+.reveal-text-wrap { text-align: center; margin-top: 25px; z-index: 5; position: relative; }
+.reveal-text { color: #fff; font-size: 20px; font-weight: 900; margin-bottom: 10px; text-shadow: 0 0 20px rgba(0,229,255,0.8); }
+.reveal-hero-text { color: #ffd700; font-size: 26px; font-weight: 900; text-shadow: 0 0 30px rgba(255,215,0,1); margin-top: 10px; opacity: 0; transform: translateY(20px); transition: all 0.5s; line-height: 1.4; }
+.reveal-hero-text.show { opacity: 1; transform: translateY(0); }
+
+/* زرار البدء */
+.skip-final-btn {
+    background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: none;
+    padding: 12px 35px; border-radius: 30px; font-size: 16px; font-weight: 900;
+    font-family: 'Cairo', sans-serif; cursor: pointer; z-index: 10;
+    box-shadow: 0 10px 30px rgba(39,174,96,0.6); opacity: 0; transition: opacity 0.5s;
+    margin-top: 25px;
+}
+.skip-final-btn.show { opacity: 1; }
+</style>
 </head>
 <body>
 <div class="particles" id="particles"></div>
@@ -19,10 +79,19 @@
 <header class="avatar-header"><h1>👤 اختر شخصيتك</h1><p>اختار الصورة اللي بتمثلك</p></header>
 <div class="avatar-grid" id="avatarGrid"></div>
 
-<div class="reveal-overlay" id="revealOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;">
-    <img id="revealAvatar" style="width:150px;height:150px;border-radius:50%;border:4px solid #00e5ff;box-shadow:0 0 50px #00e5ff;">
-    <h2 style="color:#ffd700;margin-top:20px;font-weight:900;text-shadow:0 0 20px #ffd700;">استعد للمغامرة يا بطل! 🚀</h2>
-    <button onclick="window.location.href='languages.html'" style="background:#27ae60;color:#fff;padding:15px 40px;border-radius:30px;border:none;font-weight:bold;margin-top:30px;font-family:Cairo;font-size:18px;cursor:pointer;">يلا نبدأ! 🎮</button>
+<!-- شاشة الأنيميشن السينمائي -->
+<div class="reveal-overlay" id="revealOverlay">
+    <div class="reveal-rings">
+        <div class="ring ring-1"></div><div class="ring ring-2"></div><div class="ring ring-3"></div>
+    </div>
+    <div class="reveal-avatar-wrap">
+        <img class="reveal-avatar" id="revealAvatar" src="" alt="Avatar">
+    </div>
+    <div class="reveal-text-wrap">
+        <div class="reveal-text" id="revealText"></div>
+        <div class="reveal-hero-text" id="revealHeroText">استعد للمغامرة يا بطل! 🚀</div>
+        <button class="skip-final-btn" id="continueBtn" onclick="window.location.href='languages.html'">يلا نبدأ! 🎮</button>
+    </div>
 </div>
 
 <script>
@@ -40,19 +109,57 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'avatar-card';
             card.innerHTML = '<img src="' + url + '">';
-            card.onclick = async () => {
-                localStorage.setItem('cq_avatar_' + user, url);
-                if (Auth.getUserId()) {
-                    try { await firebase.firestore().collection('users').doc(Auth.getUserId()).update({ avatar: url }); } catch(e) {}
-                }
-                document.getElementById('revealAvatar').src = url;
-                document.getElementById('revealOverlay').style.display = 'flex';
-                try { playSound('win'); } catch(e) {}
-                try { confetti({ particleCount: 150, spread: 80 }); } catch(e) {}
-            };
+            card.onclick = (e) => playEpicAnimation(e, url, user);
             grid.appendChild(card);
         });
     });
 });
+
+function playEpicAnimation(event, url, user) {
+    // 1. الحفظ الفوري
+    localStorage.setItem('cq_avatar_' + user, url);
+    if (Auth.getUserId()) {
+        firebase.firestore().collection('users').doc(Auth.getUserId()).update({ avatar: url }).catch(console.error);
+    }
+
+    // 2. اهتزاز الشاشة
+    try { playSound('pop'); } catch(e) {}
+    document.body.classList.add('screen-shake');
+    setTimeout(() => document.body.classList.remove('screen-shake'), 500);
+
+    // 3. تطاير الشررات
+    const rect = event.currentTarget.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+
+    for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'burst-particle';
+        p.style.left = cx + 'px'; p.style.top = cy + 'px';
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 100 + Math.random() * 200;
+        p.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+        p.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+        p.style.background = ['#00e5ff', '#ffd700', '#ffffff', '#27ae60', '#9b59b6'][Math.floor(Math.random() * 5)];
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+    }
+
+    // 4. شاشة الاقتحام
+    setTimeout(() => {
+        document.getElementById('revealAvatar').src = url;
+        document.getElementById('revealOverlay').classList.add('show');
+        try { playSound('whoosh'); } catch(e) {}
+
+        const textEl = document.getElementById('revealText');
+        textEl.innerHTML = ''; let idx = 0;
+        const text = '✨ هذه شخصيتك! ✨';
+        const typer = setInterval(() => { if (idx < text.length) { textEl.innerHTML += text.charAt(idx); idx++; } else clearInterval(typer); }, 50);
+
+        setTimeout(() => { try { playSound('success'); confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } }); } catch(e) {} }, 600);
+        setTimeout(() => { document.getElementById('revealHeroText').classList.add('show'); try { playSound('win'); } catch(e) {} }, 1200);
+        setTimeout(() => { document.getElementById('continueBtn').classList.add('show'); }, 1800);
+    }, 300);
+}
 </script>
-</body></html>
+</body>
+</html>
