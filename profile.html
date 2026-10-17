@@ -6,11 +6,51 @@
 <title>CodeQuest | ملفي الشخصي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&
 <link rel="stylesheet" href="css/accessories.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/sfx.js"></script>
-<script src="js/accessories.js"></script>
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js">
+function confirmLogout() {
+    playSound('click');
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        Auth.logout();
+    }
+}
+
+</script>
+<script src="js/auth.js">
+function confirmLogout() {
+    playSound('click');
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        Auth.logout();
+    }
+}
+
+</script>
+<script src="js/sfx.js">
+function confirmLogout() {
+    playSound('click');
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        Auth.logout();
+    }
+}
+
+</script>
+<script src="js/accessories.js">
+function confirmLogout() {
+    playSound('click');
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        Auth.logout();
+    }
+}
+
+</script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}
+function confirmLogout() {
+    playSound('click');
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        Auth.logout();
+    }
+}
+
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%)}
@@ -91,6 +131,7 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 </div>
 
 <button class="change-avatar-btn" onclick="playSound('click'); window.location.href='avatar.html'">🎨 غير شخصيتك</button>
+<button class="logout-btn-big" onclick="confirmLogout()">🚪 تسجيل الخروج / تبديل الحساب</button>
 
 <script>
 const user = Auth.getCurrentUser();
@@ -136,7 +177,23 @@ allBadges.forEach(b => {
     el.innerHTML = '<div class="badge-icon">' + b.icon + '</div><div class="badge-name">' + b.name + '</div>';
     badgesGrid.appendChild(el);
 });
+
+function confirmLogout() {
+    playSound('click');
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        Auth.logout();
+    }
+}
+
 </script>
-<script src="js/accessories.js"></script>
+<script src="js/accessories.js">
+function confirmLogout() {
+    playSound('click');
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        Auth.logout();
+    }
+}
+
+</script>
 </body>
 </html>
