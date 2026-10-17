@@ -1,320 +1,217 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>استوديو كودي | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    
-    <!-- Firebase -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/accessories.js"></script> <!-- عشان تجهيزات المتجر تظهر -->
-
-    <!-- Monaco Editor (Real Code Editor) -->
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    
+    <!-- Monaco Editor -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Howler.js for Sounds -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --card: rgba(255,255,255,0.05); --gold: #ffd700; }
-        body { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --terminal-bg: #0a0a0a; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background-image: radial-gradient(circle at 50% 0%, #0a192f 0%, #050914 70%); }
         
         /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom: 1px solid rgba(0,229,255,0.2); z-index: 10; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(10px); z-index: 10; }
         .header h1 { margin: 0; font-size: 1.2rem; color: var(--neon-cyan); display:flex; align-items:center; gap:10px;}
-        
-        /* Run Button */
-        .run-btn { background: #28a745; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; font-size: 1rem; transition: 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
-        .run-btn:hover { background: #218838; transform: scale(1.05); }
+        .run-btn { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
+        .run-btn:hover { background: #218838; transform: scale(1.05); box-shadow: 0 0 20px rgba(40, 167, 69, 0.8); }
 
-        /* Main Layout */
-        .container { display: flex; flex: 1; overflow: hidden; }
+        /* Layout */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
         
-        /* Cody Side (Left in RTL) */
-        .cody-panel { width: 30%; padding: 20px; display: flex; flex-direction: column; border-left: 1px solid rgba(0,229,255,0.2); background: rgba(5, 9, 20, 0.5); }
-        .avatar-container { position: relative; width: 120px; height: 120px; margin: 0 auto 20px; }
-        .cody-avatar { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); object-fit: cover; background: #222; }
+        /* Cody Panel */
+        .cody-panel { width: 35%; display: flex; flex-direction: column; padding: 20px; background: rgba(5, 9, 20, 0.7); border-left: 1px solid rgba(0,229,255,0.1); backdrop-filter: blur(5px); }
+        .cody-avatar-wrapper { position: relative; width: 100px; height: 100px; margin: 0 auto 20px; }
+        .cody-avatar { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
         
-        /* Accessories Render Area */
-        .accessory-overlay { position: absolute; top: -15px; right: 50%; transform: translateX(50%); font-size: 2.5rem; pointer-events: none; }
+        .speech-box { background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 15px; padding: 20px; flex: 1; overflow-y: auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); position: relative; }
+        .speech-box::before { content: ''; position: absolute; top: -10px; right: 20px; border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent rgba(0, 229, 255, 0.3) transparent; }
+        .speech-text { font-size: 1.1rem; line-height: 1.8; color: #e0e0e0; }
+        .speech-text b { color: var(--gold); }
         
-        .speech-bubble { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(0,229,255,0.3); position: relative; flex: 1; overflow-y: auto; margin-bottom: 15px; }
-        .speech-text { font-size: 1.1rem; line-height: 1.6; }
-        .speech-text span.keyword { color: var(--gold); font-weight: bold; font-family: monospace; }
+        .controls { margin-top: 15px; display: flex; gap: 10px; }
+        .btn-secondary { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 10px; border-radius: 10px; cursor: pointer; font-family: 'Cairo'; flex: 1; transition: 0.3s; }
+        .btn-secondary:hover { background: rgba(0, 229, 255, 0.2); }
+
+        /* IDE Panel */
+        .ide-panel { width: 65%; display: flex; flex-direction: column; background: #1e1e1e; }
+        #editor-container { flex: 1; width: 100%; }
         
-        .controls { display: flex; gap: 10px; }
-        .btn-audio { flex: 1; padding: 12px; border: none; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; background: var(--neon-cyan); color: #000; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;}
-        .btn-audio:hover { box-shadow: 0 0 15px var(--neon-cyan); }
+        /* Terminal */
+        .terminal-wrapper { height: 35%; background: var(--terminal-bg); border-top: 2px solid #333; display: flex; flex-direction: column; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; border-bottom: 1px solid #333; }
+        .terminal-output { flex: 1; padding: 15px; font-family: 'Courier New', Courier, monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.95rem; line-height: 1.5; text-shadow: 0 0 5px rgba(0, 255, 0, 0.5); }
         
-        /* IDE Side (Right in RTL) */
-        .ide-panel { width: 70%; display: flex; flex-direction: column; background: #1e1e1e; height: 100%; }
-        #editor-container { flex: 1; width: 100%; height: 100%; min-height: 300px; }
-        
-        /* Console */
-        .console-wrapper { height: 35%; background: #000; border-top: 2px solid #333; display: flex; flex-direction: column; }
-        .console-header { background: #2d2d2d; color: #ccc; padding: 5px 15px; font-size: 0.85rem; display: flex; justify-content: space-between; font-family: monospace; }
-        .console-output { flex: 1; padding: 10px; font-family: 'JetBrains Mono', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem;}
-        
-        /* Responsive */
         @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .cody-panel { width: 100%; height: 40%; border-left: none; border-bottom: 1px solid rgba(0,229,255,0.2); padding: 10px; }
-            .avatar-container { width: 80px; height: 80px; margin-bottom: 10px; }
+            .main-container { flex-direction: column-reverse; } /* المحرر فوق، كودي تحت في الموبايل */
+            .cody-panel { width: 100%; height: 40%; border-left: none; border-top: 1px solid rgba(0,229,255,0.1); }
             .ide-panel { width: 100%; height: 60%; }
         }
     </style>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-
     <div class="header">
-        <h1>🤖 استوديو كودي - <span id="levelTitle" style="color:#fff;">جاري التحميل...</span></h1>
-        <div style="display:flex; gap:10px;">
-            <button class="run-btn" onclick="runCode()">▶️ تشغيل الكود</button>
-            <button class="run-btn" style="background: #ffd700; color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);" onclick="completeLesson()">🎉 إنهاء المستوى</button>
-            <button class="run-btn" style="background: transparent; border: 1px solid #ff4444; color:#ff4444; box-shadow:none;" onclick="window.location.href='levels.html'">✖ خروج</button>
+        <h1><i class="ri-terminal-box-line"></i> الاستوديو - <span id="lessonTitle" style="color:var(--gold); font-size:1rem;">جاري التحميل...</span></h1>
+        <div>
+            <button class="run-btn" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
+            <button class="run-btn" style="background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold);" onclick="completeLesson()"><i class="ri-check-double-line"></i> إنهاء</button>
         </div>
     </div>
 
-    <div class="container">
-        <!-- Cody Panel -->
+    <div class="main-container">
         <div class="cody-panel">
-            <div class="avatar-container">
-                <!-- صورة كودي (هتتغير حسب اللغة) -->
-                <img src="cody-avatar.svg" alt="Cody" class="cody-avatar" id="codyImg">
-                <!-- مكان تجهيزات المتجر -->
-                <div class="accessory-overlay" id="avatarAccessories"></div>
-            </div>
-            
-            <div class="speech-bubble">
-                <div class="speech-text" id="codyText">
-                    جاري تحميل الدرس...
-                </div>
+            <div class="cody-avatar-wrapper"><img src="cody-avatar.svg" class="cody-avatar" id="codyImg"></div>
+            <div class="speech-box">
+                <div class="speech-text" id="codyText">جاري تحميل الدرس...</div>
             </div>
             <div class="controls">
-                <button class="btn-audio" onclick="speakText()">🔊 اسمع كودي</button>
+                <button class="btn-secondary" onclick="speakText()"><i class="ri-volume-up-line"></i> اسمع كودي</button>
             </div>
         </div>
 
-        <!-- IDE Panel -->
         <div class="ide-panel">
             <div id="editor-container"></div>
-            
-            <div class="console-wrapper">
-                <div class="console-header">
-                    <span>TERMINAL / CONSOLE</span>
-                    <span onclick="clearConsole()" style="cursor:pointer; color: #ff4444;">مسح 🗑️</span>
+            <div class="terminal-wrapper">
+                <div class="terminal-header">
+                    <span><i class="ri-terminal-line"></i> TERMINAL / CONSOLE</span>
+                    <span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i> مسح</span>
                 </div>
-                <div class="console-output" id="consoleOutput">
-                    > جاهز للتشغيل...
-                </div>
+                <div class="terminal-output" id="terminalOutput">> Ready...</div>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. المتغيرات الأساسية
         let editor;
         const urlParams = new URLSearchParams(window.location.search);
-        const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'js';
-        const levelId = parseInt(urlParams.get('level')) || parseInt(localStorage.getItem('cq_current_level')) || 1;
-        
-        // داتا الدروس (هنستخدمها عشان كودي يشرح)
-        const lessonsData = {
-            'js': {
-                1: {
-                    title: "المتغيرات (Variables)",
-                    intro: "أهلاً بك يا بطل! اليوم سنتعلم كيف نصنع صندوقاً نخزن فيه البيانات، ونسميه <span class='keyword'>let</span>.",
-                    code: "// اكتب اسمك داخل علامات التنصيص
-let name = "Cody";
-console.log("مرحباً يا " + name);"
-                },
-                2: {
-                    title: "الشروط (If Statements)",
-                    intro: "الآن سنتعلم كيف نجعل الكود يتخذ قراراً! إذا كان الرقم أكبر من 10، سنطبع رسالة. نستخدم <span class='keyword'>if</span>.",
-                    code: "let score = 15;
+        const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'JavaScript';
+        const levelId = parseInt(urlParams.get('level')) || 1;
+        let currentLesson = null;
 
-if (score > 10) {
-    console.log("لقد نجحت!");
-}"
-                }
-            },
-            'python': {
-                1: {
-                    title: "طباعة النصوص (Print)",
-                    intro: "مرحباً بك في بايثون! الأمر <span class='keyword'>print</span> هو البداية دائماً، وهو يطبع أي شيء على الشاشة.",
-                    code: "# اكتب كودك هنا
-print("Hello Python!")
-print(5 + 5)"
-                }
-            }
-        };
+        // 1. إعداد الأصوات
+        const soundClick = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'], volume: 0.5 });
+        const soundSuccess = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'], volume: 0.6 });
+        const soundError = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'], volume: 0.5 });
 
-        // 2. إعداد محرر الأكواد Monaco
-        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
-        require(['vs/editor/editor.main'], function() {
-            const lesson = lessonsData[lang]?.[levelId] || lessonsData['js'][1]; // Default to JS Level 1
+        // 2. تحميل المنهج
+        async function loadCurriculum() {
+            try {
+                const response = await fetch('curriculum.json');
+                const data = await response.json();
+                currentLesson = data[lang]?.[levelId] || data['JavaScript'][1];
+                
+                document.getElementById('lessonTitle').innerText = currentLesson.title;
+                typeWriter(currentLesson.intro, 'codyText');
+                
+                const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || currentLesson.code;
+                
+                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+                require(['vs/editor/editor.main'], function() {
+                    editor = monaco.editor.create(document.getElementById('editor-container'), {
+                        value: savedCode, language: lang === 'js' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
+                        theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, roundedSelection: false, scrollBeyondLastLine: false,
+                    });
+                    
+                    // حفظ في Firebase
+                    let saveTimeout;
+                    editor.onDidChangeModelContent(() => {
+                        clearTimeout(saveTimeout);
+                        saveTimeout = setTimeout(async () => {
+                            localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
+                            const uid = Auth.getUserId();
+                            if(uid) {
+                                try { await firebase.firestore().collection('users').doc(uid).update({ [`code_${lang}_${levelId}`]: editor.getValue() }); } catch(e) {}
+                            }
+                        }, 2000);
+                    });
+                });
+            } catch(e) { console.error(e); document.getElementById('codyText').innerText = "حدث خطأ في تحميل الدرس."; }
+        }
+
+        // 3. تأثير الآلة الكاتبة
+        function typeWriter(html, elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+            let i = 0;
+            const tempDiv = document.createElement('div'); tempDiv.innerHTML = html;
+            const text = tempDiv.textContent; // في حالة لو فيه HTML tags
             
-            document.getElementById('levelTitle').innerText = `المستوى ${levelId}: ${lesson.title}`;
-            document.getElementById('codyText').innerHTML = lesson.intro;
-            
-            // تحميل الكود المحفوظ أو كود البداية
-            const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || lesson.code;
+            // عشان نبسطها، هنكتب النص الأصلي
+            const rawText = html.replace(/<[^>]*>?/gm, '');
+            const interval = setInterval(() => {
+                if (i < rawText.length) {
+                    element.innerHTML += rawText.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 30);
+        }
 
-            editor = monaco.editor.create(document.getElementById('editor-container'), {
-                value: savedCode,
-                language: lang === 'js' ? 'javascript' : (lang === 'python' ? 'python' : 'cpp'),
-                theme: 'vs-dark',
-                fontSize: 16,
-                minimap: { enabled: false },
-                automaticLayout: true,
-                roundedSelection: false,
-                scrollBeyondLastLine: false,
-            });
-
-            // الحفظ التلقائي في Firebase
-            let saveTimeout;
-            editor.onDidChangeModelContent(() => {
-                clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(async () => {
-                    const uid = Auth.getUserId();
-                    if(!uid) return;
-                    try {
-                        await firebase.firestore().collection('users').doc(uid).update({
-                            [`code_${lang}_${levelId}`]: editor.getValue()
-                        });
-                    } catch(e) { console.error("Error saving code:", e); }
-                }, 2000); // يحفظ بعد ما الطالب يوقف كتابة لمدة ثانيتين
-            });
-
-            // تشغيل صوت كودي أوتوماتيك أول ما الصفحة تفتح
-            setTimeout(speakText, 1000);
-        });
-
-        // 3. الصوت (Text-to-Speech)
+        // 4. الصوت
         function speakText() {
             let textToSpeak = document.getElementById('codyText').innerText;
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // إيقاف أي صوت شغال
+                window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                utterance.lang = 'ar-SA';
-                utterance.rate = 0.95;
-                utterance.pitch = 1.1;
+                utterance.lang = 'ar-SA'; utterance.rate = 0.95; utterance.pitch = 1.1;
                 window.speechSynthesis.speak(utterance);
             }
         }
 
-        // 4. تشغيل الكود
-                async function runCode() {
+        // 5. تشغيل الكود
+        async function runCode() {
+            soundClick.play();
             const code = editor.getValue();
-            const outputDiv = document.getElementById('consoleOutput');
+            const terminal = document.getElementById('terminalOutput');
+            terminal.innerHTML += `<br><span style="color:#888;">> Running...</span><br>`;
             
-            outputDiv.innerHTML += `<div style="color:#888;">--- جاري التنفيذ (${new Date().toLocaleTimeString()}) ---</div>`;
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-
-            if (lang === 'js') {
-                // تشغيل JS محلياً (أسرع)
+            if (lang === 'js' || lang === 'JavaScript') {
                 let originalLog = console.log;
                 console.log = function(...args) {
-                    outputDiv.innerHTML += `<div>> ${args.join(' ')}</div>`;
-                    outputDiv.scrollTop = outputDiv.scrollHeight;
+                    terminal.innerHTML += `<span style="color:#00ff00;">> ${args.join(' ')}</span><br>`;
+                    terminal.scrollTop = terminal.scrollHeight;
                     originalLog.apply(console, args);
                 };
-                try {
-                    eval(code);
-                } catch (err) {
-                    outputDiv.innerHTML += `<div style="color:#ff4444;">❌ خطأ: ${err.message}</div>`;
-                } finally {
-                    console.log = originalLog;
-                }
+                try { eval(code); soundSuccess.play(); } 
+                catch (err) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${err.message}</span><br>`; soundError.play(); } 
+                finally { console.log = originalLog; }
             } else {
-                // تشغيل Python و C++ باستخدام Piston API
-                const langMap = {
-                    'python': { language: 'python', version: '3.10.0' },
-                    'cpp': { language: 'c++', version: '10.2.0' }
-                };
-                const config = langMap[lang] || langMap['python'];
-                
-                outputDiv.innerHTML += `<div style="color:#ffd700;">⏳ جاري إرسال الكود للمترجم...</div>`;
-                
-                try {
-                    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            language: config.language,
-                            version: config.version,
-                            files: [{ content: code }]
-                        })
-                    });
-                    const data = await response.json();
-                    
-                    outputDiv.innerHTML += `<div style="color:#888;">--- النتيجة ---</div>`;
-                    
-                    if (data.run) {
-                        if (data.run.stdout) {
-                            outputDiv.innerHTML += `<div style="color:#00ff00; font-family:monospace;">${data.run.stdout.replace(/\n/g, '<br>')}</div>`;
-                        }
-                        if (data.run.stderr) {
-                            outputDiv.innerHTML += `<div style="color:#ff4444; font-family:monospace;">${data.run.stderr.replace(/\n/g, '<br>')}</div>`;
-                        }
-                        if (!data.run.stdout && !data.run.stderr) {
-                            outputDiv.innerHTML += `<div style="color:#888;">تم التنفيذ بدون مخرجات.</div>`;
-                        }
-                    } else {
-                        outputDiv.innerHTML += `<div style="color:#ffd700;">⚠️ تعذر الحصول على النتيجة من المترجم.</div>`;
-                    }
-                } catch (e) {
-                    outputDiv.innerHTML += `<div style="color:#ff4444;">❌ خطأ في الاتصال بالسيرفر: ${e.message}</div>`;
-                }
+                terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تشغيل ${lang} يتطلب سيرفر (سيتم إضافته).</span><br>`;
             }
-            outputDiv.scrollTop = outputDiv.scrollHeight;
         }
 
-        
+        // 6. إنهاء الدرس
         async function completeLesson() {
+            soundSuccess.play();
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700', '#ff4444'] });
             const uid = Auth.getUserId();
-            if (!uid) return alert("يجب تسجيل الدخول أولاً");
-
-            // إطلاق البالونات
-            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700', '#ff4444', '#00ff00'] });
-
-            // إضافة النقاط وفتح المستوى التالي في Firebase
-            try {
-                await firebase.firestore().collection('users').doc(uid).update({
-                    points: firebase.firestore.FieldValue.increment(50),
-                    [`progress.${lang}.level${levelId}`]: { unlocked: true, stars: 3 },
-                    [`progress.${lang}.level${levelId + 1}`]: { unlocked: true, stars: 0 }
-                });
-            } catch(e) {
-                console.error("Error updating progress:", e);
+            if (uid) {
+                try {
+                    await firebase.firestore().collection('users').doc(uid).update({
+                        points: firebase.firestore.FieldValue.increment(50),
+                        [`progress.${lang}.level${levelId}`]: { unlocked: true, stars: 3 },
+                        [`progress.${lang}.level${levelId + 1}`]: { unlocked: true, stars: 0 }
+                    });
+                } catch(e) { console.error("Error updating progress:", e); }
             }
-
-            // التوجيه لصفحة المستويات بعد الاحتفال
-            setTimeout(() => {
-                alert("🎉 مبروك يا بطل! حصلت على 50 نقطة. تم فتح المستوى التالي.");
-                window.location.href = 'levels.html';
-            }, 1500);
+            setTimeout(() => { alert("🎉 مبروك! حصلت على 50 نقطة."); window.location.href = 'levels.html'; }, 1500);
         }
 
-        function clearConsole() {
-            document.getElementById('consoleOutput').innerHTML = '> جاهز للتشغيل...';
-        }
-
-        // 5. تحميل تجهيزات المتجر فوق الأفاتار
-        document.addEventListener('DOMContentLoaded', () => {
-            const equipments = localStorage.getItem('cq_equipped') ? JSON.parse(localStorage.getItem('cq_equipped')) : [];
-            const accDiv = document.getElementById('avatarAccessories');
-            if (equipments.includes('crown')) {
-                accDiv.innerHTML += '👑'; // تاج
-            }
-            if (equipments.includes('glasses')) {
-                accDiv.innerHTML = '👓'; // نضارة
-            }
-        });
-
+        document.addEventListener('DOMContentLoaded', loadCurriculum);
     </script>
 </body>
 </html>
