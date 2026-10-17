@@ -12,42 +12,56 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/accessories.js"></script> <!-- عشان تجهيزات المتجر تظهر -->
 
     <!-- Monaco Editor (Real Code Editor) -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --card: rgba(255,255,255,0.05); }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --card: rgba(255,255,255,0.05); --gold: #ffd700; }
         body { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
         /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(0,229,255,0.2); }
-        .header h1 { margin: 0; font-size: 1.2rem; color: var(--neon-cyan); }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom: 1px solid rgba(0,229,255,0.2); z-index: 10; }
+        .header h1 { margin: 0; font-size: 1.2rem; color: var(--neon-cyan); display:flex; align-items:center; gap:10px;}
         
+        /* Run Button */
+        .run-btn { background: #28a745; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; font-size: 1rem; transition: 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
+        .run-btn:hover { background: #218838; transform: scale(1.05); }
+
         /* Main Layout */
         .container { display: flex; flex: 1; overflow: hidden; }
         
         /* Cody Side (Left in RTL) */
-        .cody-panel { width: 35%; padding: 20px; display: flex; flex-direction: column; border-left: 1px solid rgba(0,229,255,0.2); }
-        .cody-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); margin: 0 auto 20px; object-fit: cover; }
-        .speech-bubble { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(0,229,255,0.3); position: relative; flex: 1; overflow-y: auto; }
-        .speech-bubble::after { content: ''; position: absolute; top: -10px; right: 50%; transform: translateX(50%); border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent rgba(0,229,255,0.3) transparent; }
+        .cody-panel { width: 30%; padding: 20px; display: flex; flex-direction: column; border-left: 1px solid rgba(0,229,255,0.2); background: rgba(5, 9, 20, 0.5); }
+        .avatar-container { position: relative; width: 120px; height: 120px; margin: 0 auto 20px; }
+        .cody-avatar { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); object-fit: cover; background: #222; }
+        
+        /* Accessories Render Area */
+        .accessory-overlay { position: absolute; top: -15px; right: 50%; transform: translateX(50%); font-size: 2.5rem; pointer-events: none; }
+        
+        .speech-bubble { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(0,229,255,0.3); position: relative; flex: 1; overflow-y: auto; margin-bottom: 15px; }
         .speech-text { font-size: 1.1rem; line-height: 1.6; }
-        .controls { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-play { background: var(--neon-cyan); color: #000; }
-        .btn-play:hover { box-shadow: 0 0 15px var(--neon-cyan); }
+        .speech-text span.keyword { color: var(--gold); font-weight: bold; font-family: monospace; }
+        
+        .controls { display: flex; gap: 10px; }
+        .btn-audio { flex: 1; padding: 12px; border: none; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; background: var(--neon-cyan); color: #000; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-audio:hover { box-shadow: 0 0 15px var(--neon-cyan); }
         
         /* IDE Side (Right in RTL) */
-        .ide-panel { width: 65%; display: flex; flex-direction: column; background: #1e1e1e; }
+        .ide-panel { width: 70%; display: flex; flex-direction: column; background: #1e1e1e; }
         #editor-container { flex: 1; width: 100%; }
-        .console-output { height: 30%; background: #000; border-top: 2px solid #333; padding: 10px; font-family: monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; }
-        .console-header { background: #333; color: #aaa; padding: 5px 10px; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        
+        /* Console */
+        .console-wrapper { height: 30%; background: #000; border-top: 2px solid #333; display: flex; flex-direction: column; }
+        .console-header { background: #2d2d2d; color: #ccc; padding: 5px 15px; font-size: 0.85rem; display: flex; justify-content: space-between; font-family: monospace; }
+        .console-output { flex: 1; padding: 10px; font-family: 'JetBrains Mono', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem;}
         
         /* Responsive */
         @media (max-width: 768px) {
             .container { flex-direction: column; }
-            .cody-panel { width: 100%; height: 40%; border-left: none; border-bottom: 1px solid rgba(0,229,255,0.2); }
+            .cody-panel { width: 100%; height: 40%; border-left: none; border-bottom: 1px solid rgba(0,229,255,0.2); padding: 10px; }
+            .avatar-container { width: 80px; height: 80px; margin-bottom: 10px; }
             .ide-panel { width: 100%; height: 60%; }
         }
     </style>
@@ -55,110 +69,156 @@
 <body>
 
     <div class="header">
-        <h1>🤖 استوديو كودي</h1>
-        <button class="btn" style="background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); flex: none; padding: 5px 15px;" onclick="window.location.href='languages.html'">رجوع</button>
+        <h1>🤖 استوديو كودي - <span id="levelTitle" style="color:#fff;">جاري التحميل...</span></h1>
+        <div style="display:flex; gap:10px;">
+            <button class="run-btn" onclick="runCode()">▶️ تشغيل الكود</button>
+            <button class="run-btn" style="background: transparent; border: 1px solid #ff4444; color:#ff4444; box-shadow:none;" onclick="window.location.href='levels.html'">✖ خروج</button>
+        </div>
     </div>
 
     <div class="container">
         <!-- Cody Panel -->
         <div class="cody-panel">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff" alt="Cody" class="cody-avatar" id="codyImg">
+            <div class="avatar-container">
+                <!-- صورة كودي (هتتغير حسب اللغة) -->
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff" alt="Cody" class="cody-avatar" id="codyImg">
+                <!-- مكان تجهيزات المتجر -->
+                <div class="accessory-overlay" id="avatarAccessories"></div>
+            </div>
+            
             <div class="speech-bubble">
                 <div class="speech-text" id="codyText">
-                    أهلاً بك يا بطل! أنا كودي. اليوم سنتعلم كيف نكتب أول كود لنا. اكتب الكود بجوار المحرر واضغط تشغيل!
+                    جاري تحميل الدرس...
                 </div>
             </div>
             <div class="controls">
-                <button class="btn btn-play" onclick="speakText()">🔊 اسمع كودي</button>
-                <button class="btn" style="background: #ffd700; color: #000;" onclick="nextLessonStep()">التالي ⏭️</button>
+                <button class="btn-audio" onclick="speakText()">🔊 اسمع كودي</button>
             </div>
         </div>
 
         <!-- IDE Panel -->
         <div class="ide-panel">
             <div id="editor-container"></div>
-            <div class="console-header">
-                <span>Console</span>
-                <span onclick="clearConsole()" style="cursor:pointer; color: #ff4444;">مسح 🗑️</span>
-            </div>
-            <div class="console-output" id="consoleOutput">
-                > جاهز للتشغيل...
+            
+            <div class="console-wrapper">
+                <div class="console-header">
+                    <span>TERMINAL / CONSOLE</span>
+                    <span onclick="clearConsole()" style="cursor:pointer; color: #ff4444;">مسح 🗑️</span>
+                </div>
+                <div class="console-output" id="consoleOutput">
+                    > جاهز للتشغيل...
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. إعداد محرر الأكواد Monaco
+        // 1. المتغيرات الأساسية
         let editor;
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'js';
+        const levelId = parseInt(urlParams.get('level')) || parseInt(localStorage.getItem('cq_current_level')) || 1;
+        
+        // داتا الدروس (هنستخدمها عشان كودي يشرح)
+        const lessonsData = {
+            'js': {
+                1: {
+                    title: "المتغيرات (Variables)",
+                    intro: "أهلاً بك يا بطل! اليوم سنتعلم كيف نصنع صندوقاً نخزن فيه البيانات، ونسميه <span class='keyword'>let</span>.",
+                    code: "// اكتب اسمك داخل علامات التنصيص
+let name = "Cody";
+console.log("مرحباً يا " + name);"
+                },
+                2: {
+                    title: "الشروط (If Statements)",
+                    intro: "الآن سنتعلم كيف نجعل الكود يتخذ قراراً! إذا كان الرقم أكبر من 10، سنطبع رسالة. نستخدم <span class='keyword'>if</span>.",
+                    code: "let score = 15;
+
+if (score > 10) {
+    console.log("لقد نجحت!");
+}"
+                }
+            },
+            'python': {
+                1: {
+                    title: "طباعة النصوص (Print)",
+                    intro: "مرحباً بك في بايثون! الأمر <span class='keyword'>print</span> هو البداية دائماً، وهو يطبع أي شيء على الشاشة.",
+                    code: "# اكتب كودك هنا
+print("Hello Python!")
+print(5 + 5)"
+                }
+            }
+        };
+
+        // 2. إعداد محرر الأكواد Monaco
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
         require(['vs/editor/editor.main'], function() {
+            const lesson = lessonsData[lang]?.[levelId] || lessonsData['js'][1]; // Default to JS Level 1
+            
+            document.getElementById('levelTitle').innerText = `المستوى ${levelId}: ${lesson.title}`;
+            document.getElementById('codyText').innerHTML = lesson.intro;
+            
+            // تحميل الكود المحفوظ أو كود البداية
+            const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || lesson.code;
+
             editor = monaco.editor.create(document.getElementById('editor-container'), {
-                value: '// اكتب الكود الخاص بك هنا
-let name = "Cody";
-console.log("Hello " + name);',
-                language: 'javascript',
+                value: savedCode,
+                language: lang === 'js' ? 'javascript' : (lang === 'python' ? 'python' : 'cpp'),
                 theme: 'vs-dark',
                 fontSize: 16,
                 minimap: { enabled: false },
                 automaticLayout: true,
-                lineNumbers: 'on',
                 roundedSelection: false,
                 scrollBeyondLastLine: false,
-                readOnly: false,
             });
+
+            // الحفظ التلقائي (Auto-save)
+            editor.onDidChangeModelContent(() => {
+                localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
+            });
+
+            // تشغيل صوت كودي أوتوماتيك أول ما الصفحة تفتح
+            setTimeout(speakText, 1000);
         });
 
-        // 2. إعدادات الصوت (كودي بيتكلم)
-        let currentStep = 0;
-        const lessonSteps = [
-            "أهلاً بك يا بطل! أنا كودي. اليوم سنتعلم كيف نكتب أول كود لنا. اكتب الكود بجوار المحرر واضغط تشغيل!",
-            "ممتاز! المتغيرات هي صناديق تخزن فيها البيانات. في الكود المكتوب، المتغير اسمه (name).",
-            "الآن، جرب تغيير اسمك بدل اسم Cody في الكود، ثم اضغط على زر التشغيل البرتقالي بالأعلى."
-        ];
-
+        // 3. الصوت (Text-to-Speech)
         function speakText() {
-            const text = document.getElementById('codyText').innerText;
+            let textToSpeak = document.getElementById('codyText').innerText;
             if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ar-SA'; // اللغة العربية
-                utterance.rate = 0.9; // سرعة الكلام
-                utterance.pitch = 1.1; // نبرة الصوت
+                window.speechSynthesis.cancel(); // إيقاف أي صوت شغال
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'ar-SA';
+                utterance.rate = 0.95;
+                utterance.pitch = 1.1;
                 window.speechSynthesis.speak(utterance);
-            } else {
-                alert("متصفحك لا يدعم خاصية النطق.");
             }
         }
 
-        function nextLessonStep() {
-            if (currentStep < lessonSteps.length - 1) {
-                currentStep++;
-                document.getElementById('codyText').innerText = lessonSteps[currentStep];
-                speakText(); // كودي هيتكلم أوتوماتيك
-            } else {
-                // لو خلص الدرس، نروح للعبة
-                window.location.href = 'games.html';
-            }
-        }
-
-        // 3. تشغيل الكود
+        // 4. تشغيل الكود
         function runCode() {
             const code = editor.getValue();
             const outputDiv = document.getElementById('consoleOutput');
             
-            // تحويل الـ console.log الخاص بالمتصفح ليظهر في الشاشة
-            let originalLog = console.log;
-            console.log = function(...args) {
-                outputDiv.innerHTML += `<div>> ${args.join(' ')}</div>`;
-                originalLog.apply(console, args);
-            };
-
-            outputDiv.innerHTML += `<div style="color:#888;">--- تشغيل ---</div>`;
+            outputDiv.innerHTML += `<div style="color:#888;">--- تشغيل (${new Date().toLocaleTimeString()}) ---</div>`;
             
-            try {
-                // تنفيذ الكود
-                eval(code);
-            } catch (err) {
-                outputDiv.innerHTML += `<div style="color:#ff4444;">❌ خطأ: ${err.message}</div>`;
+            // لو لغة جافاسكريبت، نشغلها في المتصفح
+            if (lang === 'js') {
+                let originalLog = console.log;
+                console.log = function(...args) {
+                    outputDiv.innerHTML += `<div>> ${args.join(' ')}</div>`;
+                    outputDiv.scrollTop = outputDiv.scrollHeight;
+                    originalLog.apply(console, args);
+                };
+                try {
+                    eval(code);
+                } catch (err) {
+                    outputDiv.innerHTML += `<div style="color:#ff4444;">❌ خطأ: ${err.message}</div>`;
+                } finally {
+                    console.log = originalLog; // إرجاع الكونسول لأصله
+                }
+            } else {
+                // للغات زي بايثون، هنحتاج سيرفر حقيقي بعدين. دلوقتي هنعمل محاكاة
+                outputDiv.innerHTML += `<div style="color:#ffd700;">⚠️ تشغيل ${lang.toUpperCase()} يتطلب سيرفر خارجي (سيتم إضافته في النسخة النهائية).</div>`;
             }
         }
 
@@ -166,17 +226,17 @@ console.log("Hello " + name);',
             document.getElementById('consoleOutput').innerHTML = '> جاهز للتشغيل...';
         }
 
-        // ربط زر التشغيل (لوحة المفاتيح أو زرار)
-        // هنضيف زرار تشغيل عائم
-        const runBtn = document.createElement('button');
-        runBtn.innerText = '▶️ تشغيل الكود';
-        runBtn.className = 'btn btn-play';
-        runBtn.style.position = 'absolute';
-        runBtn.style.bottom = '35%';
-        runBtn.style.left = '20px';
-        runBtn.style.zIndex = '1000';
-        runBtn.onclick = runCode;
-        document.querySelector('.ide-panel').appendChild(runBtn);
+        // 5. تحميل تجهيزات المتجر فوق الأفاتار
+        document.addEventListener('DOMContentLoaded', () => {
+            const equipments = localStorage.getItem('cq_equipped') ? JSON.parse(localStorage.getItem('cq_equipped')) : [];
+            const accDiv = document.getElementById('avatarAccessories');
+            if (equipments.includes('crown')) {
+                accDiv.innerHTML += '👑'; // تاج
+            }
+            if (equipments.includes('glasses')) {
+                accDiv.innerHTML = '👓'; // نضارة
+            }
+        });
 
     </script>
 </body>
