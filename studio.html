@@ -122,8 +122,7 @@
         }
 
         function showHint() {
-            if(lessonData && lessonData.hint) alert("💡 تلميح كودي:
-" + lessonData.hint);
+            if(lessonData && lessonData.hint) alert("💡 تلميح كودي:\n" + lessonData.hint);
             else alert("💡 ركز في الكود وجرب تشغله!");
         }
 
@@ -160,10 +159,8 @@
                     body: JSON.stringify({ language: config.language, version: config.version, files: [{ content: code }] })
                 }).then(res => res.json()).then(data => {
                     if (data.run) {
-                        if (data.run.stdout) terminal.innerHTML += `<span style="color:#00ff00;">> ${data.run.stdout.replace(/
-/g, '<br>')}</span><br>`;
-                        if (data.run.stderr) terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${data.run.stderr.replace(/
-/g, '<br>')}</span><br>`;
+                        if (data.run.stdout) terminal.innerHTML += `<span style="color:#00ff00;">> ${data.run.stdout.replace(/\n/g, '<br>')}</span><br>`;
+                        if (data.run.stderr) terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${data.run.stderr.replace(/\n/g, '<br>')}</span><br>`;
                         if (!data.run.stdout && !data.run.stderr) terminal.innerHTML += `<span style="color:#888;">تم التنفيذ بدون مخرجات.</span><br>`;
                     } else {
                         terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تعذر التنفيذ.</span><br>`;
