@@ -2,49 +2,42 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>استوديو كودي | CodeQuest</title>
+    <title>الاستوديو | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="js/world-bg.js"></script>
-    
+    <script src="js/world-bg.js?v=99"></script>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.85); }
-        * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--glass); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(15px); z-index: 100; }
-        .header h1 { margin: 0; font-size: 1rem; color: var(--neon-cyan); }
-        .header-btns { display: flex; gap: 8px; }
-        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; font-size: 0.85rem;}
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(10, 25, 47, 0.9); border-bottom: 1px solid rgba(0,229,255,0.2); z-index: 100; }
+        .header h1 { margin: 0; font-size: 1rem; color: #00e5ff; }
+        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-family: 'Cairo'; font-weight: bold; font-size: 0.85rem; cursor: pointer;}
         .btn-run { background: #28a745; color: white; }
-        .btn-finish { background: var(--gold); color: #000; }
-
-        .main-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative; }
+        .btn-finish { background: #ffd700; color: #000; }
         
-        /* شاشة الحوار */
-        .dialogue-phase { display: flex; flex-direction: column; height: 100%; padding: 20px; justify-content: flex-end; background: var(--glass); backdrop-filter: blur(10px); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; }
-        .chat-bubble { background: rgba(0, 0, 0, 0.7); border: 1px solid var(--neon-cyan); border-radius: 20px 20px 0 20px; padding: 20px; margin-bottom: 20px; max-width: 85%; align-self: flex-start; position: relative; }
-        .cody-msg { font-size: 1.1rem; line-height: 1.8; color: #e0e0e0; }
-        .avatars-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .avatar-img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--neon-cyan); background: #000; object-fit: cover;}
-        .user-avatar-img { border-color: var(--gold); }
-        .btn-next { background: var(--neon-cyan); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; cursor: pointer; width: 100%; }
-
-        /* شاشة الكود */
+        .main-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        
+        /* Dialogue */
+        .dialogue-phase { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; padding-bottom: 50px; background: rgba(10, 25, 47, 0.95); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; }
+        .avatars-row { display: flex; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 20px; }
+        .avatar-img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #00e5ff; background: #000; object-fit: cover;}
+        .user-avatar-img { border-color: #ffd700; }
+        .chat-bubble { background: rgba(0,0,0,0.8); border: 1px solid #00e5ff; padding: 20px; border-radius: 20px 20px 0 20px; margin-bottom: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
+        .cody-msg { margin: 0; line-height: 1.8; font-size: 1.1rem; }
+        .btn-next { background: #00e5ff; color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; width: 100%; max-width: 400px; cursor: pointer; }
+        
+        /* Coding */
         .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; }
         .editor-wrapper { flex: 1; position: relative; background: #1e1e1e; }
         #editor-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
-        .terminal-wrapper { height: 35%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
+        .terminal-wrapper { height: 30%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
         .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
-        .terminal-output { flex: 1; padding: 10px; font-family: 'Courier New', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
+        .terminal-output { flex: 1; padding: 10px; font-family: monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
 
         @media (min-width: 769px) {
             .coding-phase { flex-direction: row; }
@@ -55,8 +48,8 @@
 </head>
 <body>
     <div class="header">
-        <h1><i class="ri-terminal-box-line"></i> <span id="lessonTitle">جاري التحميل...</span></h1>
-        <div class="header-btns" id="headerBtns" style="display:none;">
+        <h1><span id="lessonTitle">جاري التحميل...</span></h1>
+        <div id="headerBtns" style="display:none; gap:8px;">
             <button class="btn btn-run" onclick="runCode()">▶ تشغيل</button>
             <button class="btn btn-finish" onclick="completeLesson()">✓ إنهاء</button>
         </div>
@@ -65,13 +58,13 @@
     <div class="main-container">
         <div class="dialogue-phase" id="dialoguePhase">
             <div class="avatars-row">
-                <img src="cody-avatar.svg" class="avatar-img" id="codyAvatarDialogue">
+                <img src="cody-avatar.svg" class="avatar-img">
                 <img src="cody-avatar.svg" class="avatar-img user-avatar-img" id="userAvatarDialogue">
             </div>
             <div class="chat-bubble">
                 <div class="cody-msg" id="codyMessage">أهلاً بك! أنا كودي. اضغط على الزر أدناه لبدء الدرس.</div>
             </div>
-            <button class="btn-next" id="nextBtn" onclick="nextDialogueStep()">التالي ➡️</button>
+            <button class="btn-next" onclick="nextDialogueStep()">التالي ➡️</button>
         </div>
 
         <div class="coding-phase" id="codingPhase">
@@ -89,8 +82,8 @@
         const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'JavaScript';
         const levelId = parseInt(urlParams.get('level')) || 1;
         let lessonData = null;
+        let lessonCode = "";
 
-        // عرض صورة الطالب
         const userAvatar = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
         document.getElementById('userAvatarDialogue').src = userAvatar;
 
@@ -102,8 +95,15 @@
                 
                 document.getElementById('lessonTitle').innerText = lessonData.title;
                 document.getElementById('codyMessage').innerText = lessonData.intro.replace(/<[^>]*>?/gm, '');
+                
+                lessonCode = lessonData.code;
+                const saved = localStorage.getItem(`cq_code_${lang}_${levelId}`);
+                if (saved && !saved.includes('llet')) lessonCode = saved;
 
-            } catch(e) { console.error(e); document.getElementById('codyMessage').innerText = "حدث خطأ في تحميل الدرس."; }
+            } catch(e) { 
+                console.error(e); 
+                document.getElementById('codyMessage').innerText = "حدث خطأ في تحميل الدرس."; 
+            }
         }
 
         function nextDialogueStep() {
@@ -114,22 +114,20 @@
         }
 
         function initEditor() {
-            const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || lessonData.code;
             require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
             require(['vs/editor/editor.main'], function() {
                 editor = monaco.editor.create(document.getElementById('editor-container'), {
-                    value: savedCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
+                    value: lessonCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
                     theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false
                 });
-                let saveTimeout;
                 editor.onDidChangeModelContent(() => {
-                    clearTimeout(saveTimeout);
-                    saveTimeout = setTimeout(async () => { localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue()); }, 1000);
+                    localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
                 });
             });
         }
 
         function runCode() {
+            if(!editor) return;
             const code = editor.getValue();
             const terminal = document.getElementById('terminalOutput');
             terminal.innerHTML += `<br><span style="color:#888;">> Running...</span><br>`;
@@ -149,7 +147,7 @@
         }
 
         async function completeLesson() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700', '#ff4444'] });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700'] });
             const uid = Auth.getUserId();
             if (uid) {
                 try {
