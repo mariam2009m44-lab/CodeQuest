@@ -1,48 +1,39 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
+<html lang="ar" dir="rtl"><head><title>الاستوديو | CodeQuest</title>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الاستوديو | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/world-bg.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --neon-cyan: #00e5ff; --glass: rgba(10, 25, 47, 0.95); }
-        * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(10, 25, 47, 0.95); border-bottom: 2px solid #00e5ff; z-index: 100; flex-shrink: 0; }
+        .header h1 { margin: 0; font-size: 1.1rem; color: #fff; }
+        .btn { border: none; padding: 8px 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: bold; font-size: 0.85rem; cursor: pointer; margin-left: 5px; }
+        .btn-run { background: #10b981; color: white; } .btn-finish { background: #f59e0b; color: #fff; } .btn-hint { background: #8b5cf6; color: white; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--glass); border-bottom: 2px solid #00e5ff; z-index: 100; flex-shrink: 0; }
-        .header h1 { margin: 0; font-size: 1.1rem; color: #fff; text-shadow: 0 0 5px #00e5ff; }
-        .btn { border: none; padding: 8px 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: bold; font-size: 0.85rem; cursor: pointer; margin-left: 5px; box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: 0.1s;}
-        .btn:active { transform: translateY(4px); box-shadow: none; }
-        .btn-run { background: #10b981; color: white; }
-        .btn-finish { background: #f59e0b; color: #fff; }
-        .btn-hint { background: #8b5cf6; color: white; }
-
         .main-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
         
-        /* شاشة الحوار */
         .dialogue-phase { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; background: #0a192f; z-index: 50; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; }
         .avatars-row { display: flex; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 20px; }
-        .avatar-img { width: 70px; height: 70px; border-radius: 50%; border: 4px solid #00e5ff; background: #000; object-fit: cover; box-shadow: 0 0 15px #00e5ff;}
-        .user-avatar-img { border-color: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
-        .chat-bubble { background: rgba(0,0,0,0.8); border: 2px solid #00e5ff; padding: 20px; border-radius: 20px 20px 0 20px; margin-bottom: 20px; width: 100%; max-width: 400px; box-sizing: border-box; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .avatar-img { width: 70px; height: 70px; border-radius: 50%; border: 4px solid #00e5ff; background: #000; object-fit: cover; }
+        .user-avatar-img { border-color: #f59e0b; }
+        .chat-bubble { background: rgba(0,0,0,0.8); border: 2px solid #00e5ff; padding: 20px; border-radius: 20px 20px 0 20px; margin-bottom: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
         .cody-msg { margin: 0; line-height: 1.8; font-size: 1.1rem; }
-        .btn-next { background: #00e5ff; color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: 900; font-size: 1.2rem; width: 100%; max-width: 400px; cursor: pointer; box-shadow: 0 6px 0 #0088cc; transition: 0.1s;}
-        .btn-next:active { transform: translateY(6px); box-shadow: none; }
+        .btn-next { background: #00e5ff; color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: 900; font-size: 1.2rem; width: 100%; max-width: 400px; cursor: pointer; }
         
-        /* شاشة الكود */
         .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top:0; left:0; }
         .editor-wrapper { flex: 1; position: relative; background: #1e1e1e; width: 100%; min-height: 100px; }
         #editor-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-        
         .terminal-wrapper { height: 30%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; flex-shrink: 0; }
-        .terminal-header { background: #1a1a1a; color: #00e5ff; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; font-weight: bold; }
+        .terminal-header { background: #1a1a1a; color: #00e5ff; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
         .terminal-output { flex: 1; padding: 10px; font-family: monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
     </style>
 </head>
@@ -55,134 +46,76 @@
             <button class="btn btn-finish" onclick="completeLesson()">✓</button>
         </div>
     </div>
-
     <div class="main-container">
         <div class="dialogue-phase" id="dialoguePhase">
-            <div class="avatars-row">
-                <img src="cody-avatar.svg" class="avatar-img">
-                <img src="cody-avatar.svg" class="avatar-img user-avatar-img" id="userAvatarDialogue">
-            </div>
-            <div class="chat-bubble">
-                <div class="cody-msg" id="codyMessage">أهلاً بك! أنا كودي. اضغط على الزر أدناه لبدء الدرس.</div>
-            </div>
+            <div class="avatars-row"><img src="cody-avatar.svg" class="avatar-img"><img src="cody-avatar.svg" class="avatar-img user-avatar-img" id="userAvatarDialogue"></div>
+            <div class="chat-bubble"><div class="cody-msg" id="codyMessage">أهلاً بك! أنا كودي.</div></div>
             <button class="btn-next" onclick="nextDialogueStep()">التالي ➡️</button>
         </div>
-
         <div class="coding-phase" id="codingPhase">
             <div class="editor-wrapper"><div id="editor-container"></div></div>
             <div class="terminal-wrapper">
-                <div class="terminal-header"><span><i class="ri-terminal-line"></i> CONSOLE</span><span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;">مسح 🗑️</span></div>
+                <div class="terminal-header"><span>CONSOLE</span><span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;">مسح</span></div>
                 <div class="terminal-output" id="terminalOutput">> Ready...</div>
             </div>
         </div>
     </div>
-
     <script>
-        let editor;
-        const urlParams = new URLSearchParams(window.location.search);
+        let editor; const urlParams = new URLSearchParams(window.location.search);
         const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'JavaScript';
-        const levelId = parseInt(urlParams.get('level')) || 1;
-        let lessonData = null;
-
-        const userAvatar = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
-        document.getElementById('userAvatarDialogue').src = userAvatar;
+        const levelId = parseInt(urlParams.get('level')) || 1; let lessonData = null;
+        document.getElementById('userAvatarDialogue').src = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
 
         async function loadCurriculum() {
             try {
-                const response = await fetch('curriculum.json');
-                const data = await response.json();
+                const res = await fetch('curriculum.json'); const data = await res.json();
                 lessonData = data[lang]?.[levelId] || data['JavaScript'][1];
                 document.getElementById('lessonTitle').innerText = lessonData.title;
                 document.getElementById('codyMessage').innerText = lessonData.intro;
             } catch(e) { console.error(e); }
         }
-
         function nextDialogueStep() {
             document.getElementById('dialoguePhase').style.display = 'none';
             document.getElementById('codingPhase').style.display = 'flex';
             document.getElementById('headerBtns').style.display = 'flex';
             setTimeout(initEditor, 100); 
         }
-
         function initEditor() {
-            const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || lessonData.code;
-            require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+            const saved = localStorage.getItem(`cq_code_${lang}_${levelId}`) || lessonData.code;
+            require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
             require(['vs/editor/editor.main'], function() {
                 editor = monaco.editor.create(document.getElementById('editor-container'), {
-                    value: savedCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
+                    value: saved, language: lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
                     theme: 'vs-dark', fontSize: 15, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false
                 });
                 setTimeout(() => { editor.layout(); }, 300);
-                editor.onDidChangeModelContent(() => {
-                    localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
-                });
+                editor.onDidChangeModelContent(() => { localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue()); });
             });
         }
-
-        function showHint() {
-            if(lessonData && lessonData.hint) alert("💡 تلميح كودي:\n" + lessonData.hint);
-            else alert("💡 ركز في الكود وجرب تشغله!");
-        }
-
+        function showHint() { alert(lessonData && lessonData.hint ? "💡 " + lessonData.hint : "ركز وجرب!"); }
         function runCode() {
-            if(!editor) return;
-            const code = editor.getValue();
-            const terminal = document.getElementById('terminalOutput');
+            if(!editor) return; const code = editor.getValue(); const terminal = document.getElementById('terminalOutput');
             terminal.innerHTML += `<br><span style="color:#888;">> Running...</span><br>`;
-            
-            if (lang === 'js' || lang === 'JavaScript') {
-                let originalLog = console.log;
-                console.log = function(...args) {
-                    terminal.innerHTML += `<span style="color:#00ff00;">> ${args.join(' ')}</span><br>`;
-                    terminal.scrollTop = terminal.scrollHeight;
-                    originalLog.apply(console, args);
-                };
-                try { eval(code); } 
-                catch (err) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${err.message}</span><br>`; } 
-                finally { console.log = originalLog; }
+            if (lang === 'JavaScript') {
+                let oldLog = console.log; console.log = function(...args) { terminal.innerHTML += `<span style="color:#00ff00;">> ${args.join(' ')}</span><br>`; terminal.scrollTop = terminal.scrollHeight; oldLog(...args); };
+                try { eval(code); } catch(e) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${e.message}</span><br>`; } finally { console.log = oldLog; }
             } else {
-                const langMap = {
-                    'Python': { language: 'python', version: '3.10.0' },
-                    'C++': { language: 'c++', version: '10.2.0' }
-                };
-                const config = langMap[lang] || langMap['Python'];
+                const c = lang === 'Python' ? { language: 'python', version: '3.10.0' } : { language: 'c++', version: '10.2.0' };
                 terminal.innerHTML += `<span style="color:#ffd700;">⏳ جاري التنفيذ...</span><br>`;
-                
-                fetch('https://emkc.org/api/v2/piston/execute', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ language: config.language, version: config.version, files: [{ content: code }] })
-                }).then(res => res.json()).then(data => {
-                    if (data.run) {
-                        if (data.run.stdout) terminal.innerHTML += `<span style="color:#00ff00;">> ${data.run.stdout.replace(/\n/g, '<br>')}</span><br>`;
-                        if (data.run.stderr) terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${data.run.stderr.replace(/\n/g, '<br>')}</span><br>`;
-                        if (!data.run.stdout && !data.run.stderr) terminal.innerHTML += `<span style="color:#888;">تم التنفيذ بدون مخرجات.</span><br>`;
-                    } else {
-                        terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تعذر التنفيذ.</span><br>`;
-                    }
+                fetch('https://emkc.org/api/v2/piston/execute', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language: c.language, version: c.version, files: [{ content: code }] }) })
+                .then(res => res.json()).then(data => {
+                    if(data.run && data.run.stdout) terminal.innerHTML += `<span style="color:#00ff00;">> ${data.run.stdout.replace(/\n/g, '<br>')}</span><br>`;
+                    if(data.run && data.run.stderr) terminal.innerHTML += `<span style="color:#ff4444;">❌ ${data.run.stderr.replace(/\n/g, '<br>')}</span><br>`;
                     terminal.scrollTop = terminal.scrollHeight;
-                }).catch(e => {
-                    terminal.innerHTML += `<span style="color:#ff4444;">❌ خطأ في الاتصال.</span><br>`;
                 });
             }
         }
-
         async function completeLesson() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700'] });
+            confetti({ particleCount: 150, spread: 70 });
             const uid = Auth.getUserId();
-            if (uid) {
-                try {
-                    await firebase.firestore().collection('users').doc(uid).update({
-                        points: firebase.firestore.FieldValue.increment(50),
-                        [`progress.${lang}.level${levelId}`]: { unlocked: true, stars: 3 },
-                        [`progress.${lang}.level${levelId + 1}`]: { unlocked: true, stars: 0 }
-                    });
-                } catch(e) { console.error(e); }
-            }
-            setTimeout(() => { alert("🎉 مبروك! حصلت على 50 نقطة."); window.location.href = 'levels.html'; }, 1500);
+            if (uid) { try { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(50), [`progress.${lang}.level${levelId}`]: { unlocked: true, stars: 3 } }); } catch(e) {} }
+            setTimeout(() => { alert("🎉 مبروك! +50 نقطة"); window.location.href = 'levels.html'; }, 1500);
         }
-
         document.addEventListener('DOMContentLoaded', loadCurriculum);
     </script>
-</body>
-</html>
+</body></html>
