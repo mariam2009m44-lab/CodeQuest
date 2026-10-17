@@ -13,10 +13,9 @@
     
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.85); }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.75); }
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
@@ -30,8 +29,8 @@
         .main-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative; }
         
         /* شاشة الحوار */
-        .dialogue-phase { display: flex; flex-direction: column; height: 100%; padding: 20px; justify-content: flex-end; background: var(--glass); backdrop-filter: blur(15px); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; }
-        .chat-bubble { background: rgba(0, 0, 0, 0.6); border: 1px solid var(--neon-cyan); border-radius: 20px 20px 0 20px; padding: 20px; margin-bottom: 20px; max-width: 85%; align-self: flex-start; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.2);}
+        .dialogue-phase { display: flex; flex-direction: column; height: 100%; padding: 20px; justify-content: flex-end; background: var(--glass); backdrop-filter: blur(10px); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; }
+        .chat-bubble { background: rgba(0, 0, 0, 0.7); border: 1px solid var(--neon-cyan); border-radius: 20px 20px 0 20px; padding: 20px; margin-bottom: 20px; max-width: 85%; align-self: flex-start; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.2);}
         .chat-bubble::after { content: ''; position: absolute; bottom: -15px; right: 20px; border-width: 15px 15px 0 0; border-style: solid; border-color: var(--neon-cyan) transparent transparent transparent; }
         .cody-msg { font-size: 1.1rem; line-height: 1.8; color: #e0e0e0; }
         
@@ -44,9 +43,10 @@
 
         /* شاشة الكود */
         .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; }
-        .editor-wrapper { flex: 1; position: relative; min-height: 250px; }
+        .editor-wrapper { flex: 1; position: relative; background: #1e1e1e; }
         #editor-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .terminal-wrapper { height: 30%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
+        
+        .terminal-wrapper { height: 35%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
         .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
         .terminal-output { flex: 1; padding: 10px; font-family: 'Courier New', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
 
@@ -67,7 +67,6 @@
     </div>
 
     <div class="main-container">
-        <!-- شاشة الحوار -->
         <div class="dialogue-phase" id="dialoguePhase">
             <div class="avatars-row">
                 <img src="cody-avatar.svg" class="avatar-img" id="codyAvatarDialogue">
@@ -79,7 +78,6 @@
             <button class="btn-next" id="nextBtn" onclick="nextDialogueStep()">التالي ➡️</button>
         </div>
 
-        <!-- شاشة كتابة الكود -->
         <div class="coding-phase" id="codingPhase">
             <div class="editor-wrapper"><div id="editor-container"></div></div>
             <div class="terminal-wrapper">
@@ -95,15 +93,10 @@
         const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'JavaScript';
         const levelId = parseInt(urlParams.get('level')) || 1;
         let lessonData = null;
-        let dialogueStep = 0;
 
-        // تحميل صورة الشخصية اللي إنتي اخترتيها
+        // تحميل صورة الشخصية
         const userAvatar = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
         document.getElementById('userAvatarDialogue').src = userAvatar;
-
-        const soundClick = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'], volume: 0.5 });
-        const soundSuccess = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'], volume: 0.6 });
-        const soundError = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'], volume: 0.5 });
 
         async function loadCurriculum() {
             try {
@@ -112,22 +105,16 @@
                 lessonData = data[lang]?.[levelId] || data['JavaScript'][1];
                 
                 document.getElementById('lessonTitle').innerText = lessonData.title;
-                
-                // نص الحوار اللي كودي هيقوله
-                const introText = lessonData.intro.replace(/<[^>]*>?/gm, '');
-                document.getElementById('codyMessage').innerText = introText;
-                speakText(introText);
+                document.getElementById('codyMessage').innerText = lessonData.intro.replace(/<[^>]*>?/gm, '');
 
             } catch(e) { console.error(e); document.getElementById('codyMessage').innerText = "حدث خطأ في تحميل الدرس."; }
         }
 
         function nextDialogueStep() {
-            if (dialogueStep === 0) {
-                document.getElementById('dialoguePhase').style.display = 'none';
-                document.getElementById('codingPhase').style.display = 'flex';
-                document.getElementById('headerBtns').style.display = 'flex';
-                initEditor();
-            }
+            document.getElementById('dialoguePhase').style.display = 'none';
+            document.getElementById('codingPhase').style.display = 'flex';
+            document.getElementById('headerBtns').style.display = 'flex';
+            initEditor();
         }
 
         function initEditor() {
@@ -146,17 +133,7 @@
             });
         }
 
-        function speakText(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ar-SA'; utterance.rate = 0.95;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        async function runCode() {
-            soundClick.play();
+        function runCode() {
             const code = editor.getValue();
             const terminal = document.getElementById('terminalOutput');
             terminal.innerHTML += `<br><span style="color:#888;">> Running...</span><br>`;
@@ -167,8 +144,8 @@
                     terminal.scrollTop = terminal.scrollHeight;
                     originalLog.apply(console, args);
                 };
-                try { eval(code); soundSuccess.play(); } 
-                catch (err) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${err.message}</span><br>`; soundError.play(); } 
+                try { eval(code); } 
+                catch (err) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${err.message}</span><br>`; } 
                 finally { console.log = originalLog; }
             } else {
                 terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تشغيل ${lang} يتطلب سيرفر.</span><br>`;
@@ -176,7 +153,6 @@
         }
 
         async function completeLesson() {
-            soundSuccess.play();
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700', '#ff4444'] });
             const uid = Auth.getUserId();
             if (uid) {

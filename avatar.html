@@ -76,7 +76,7 @@ body.screen-shake { animation: screenShake 0.5s; }
 </head>
 <body>
 <div class="particles" id="particles"></div>
-<div class="top-bar"><button class="skip-btn" onclick="window.location.href='languages.html'">تخطي ←</button></div>
+<div class="top-bar"><button class="skip-btn" onclick="startGame()">تخطي ←</button></div>
 <header class="avatar-header"><h1>👤 اختر شخصيتك</h1><p>اختار الصورة اللي بتمثلك</p></header>
 <div class="avatar-grid" id="avatarGrid"></div>
 
@@ -91,76 +91,37 @@ body.screen-shake { animation: screenShake 0.5s; }
     <div class="reveal-text-wrap">
         <div class="reveal-text" id="revealText"></div>
         <div class="reveal-hero-text" id="revealHeroText">استعد للمغامرة يا بطل! 🚀</div>
-        <button class="skip-final-btn" id="continueBtn" onclick="window.location.href='languages.html'">يلا نبدأ! 🎮</button>
+        <button class="skip-final-btn" id="continueBtn" onclick="startGame()">يلا نبدأ! 🎮</button>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    Auth.init((logged) => {
-        if(!logged) { window.location.href = 'index.html'; return; }
-        const user = Auth.getCurrentUser();
-        const allSeeds = ['Jack', 'Emma', 'Oliver', 'Sophia', 'Leo', 'Mia', 'Max', 'Luna', 'Ryan', 'Aria', 'Noah', 'Zoe', 'Liam', 'Lily', 'Ethan', 'Chloe', 'Lucas', 'Ella'];
-        const bgColors = ['ffdfbf', 'c0aede', 'b6e3f4', 'd1d4f9', 'ffd5dc', 'c8f7c5', 'ffe0b3', 'e0d5f9'];
-        const grid = document.getElementById('avatarGrid');
 
-        allSeeds.forEach((seed, i) => {
-            const bg = bgColors[i % bgColors.length];
-            const url = 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + seed + '&backgroundColor=' + bg + '&radius=50';
-            const card = document.createElement('div');
-            card.className = 'avatar-card';
-            card.innerHTML = '<img src="' + url + '">';
-            card.onclick = (e) => playEpicAnimation(e, url, user);
-            grid.appendChild(card);
-        });
-    });
-});
 
-function playEpicAnimation(event, url, user) {
-    // 1. الحفظ الفوري
-    localStorage.setItem('cq_avatar_' + user, url);
-    if (Auth.getUserId()) {
-        firebase.firestore().collection('users').doc(Auth.getUserId()).update({ avatar: url }).catch(console.error);
-    }
+    <script>
+        function selectAvatar(element) {
+            // إزالة التحديد من الكل
+            document.querySelectorAll('.avatar-card').forEach(el => el.style.borderColor = 'transparent');
+            // تحديد اللي اتضغط عليه
+            element.style.borderColor = '#00e5ff';
+            // حفظ الرابط في المتصفح
+            const imgSrc = element.querySelector('img').src;
+            localStorage.setItem('cq_avatar', imgSrc);
+        }
 
-    // 2. اهتزاز الشاشة
-    try { playSound('pop'); } catch(e) {}
-    document.body.classList.add('screen-shake');
-    setTimeout(() => document.body.classList.remove('screen-shake'), 500);
-
-    // 3. تطاير الشررات
-    const rect = event.currentTarget.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-
-    for (let i = 0; i < 30; i++) {
-        const p = document.createElement('div');
-        p.className = 'burst-particle';
-        p.style.left = cx + 'px'; p.style.top = cy + 'px';
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 100 + Math.random() * 200;
-        p.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
-        p.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
-        p.style.background = ['#00e5ff', '#ffd700', '#ffffff', '#27ae60', '#9b59b6'][Math.floor(Math.random() * 5)];
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 800);
-    }
-
-    // 4. شاشة الاقتحام
-    setTimeout(() => {
-        document.getElementById('revealAvatar').src = url;
-        document.getElementById('revealOverlay').classList.add('show');
-        try { playSound('whoosh'); } catch(e) {}
-
-        const textEl = document.getElementById('revealText');
-        textEl.innerHTML = ''; let idx = 0;
-        const text = '✨ هذه شخصيتك! ✨';
-        const typer = setInterval(() => { if (idx < text.length) { textEl.innerHTML += text.charAt(idx); idx++; } else clearInterval(typer); }, 50);
-
-        setTimeout(() => { try { playSound('success'); confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } }); } catch(e) {} }, 600);
-        setTimeout(() => { document.getElementById('revealHeroText').classList.add('show'); try { playSound('win'); } catch(e) {} }, 1200);
-        setTimeout(() => { document.getElementById('continueBtn').classList.add('show'); }, 1800);
-    }, 300);
-}
-</script>
-</body>
+        function startGame() {
+            const avatar = localStorage.getItem('cq_avatar');
+            if (!avatar) { alert("يرجى اختيار شخصية أولاً!"); return; }
+            
+            // حفظ في فايربيز
+            const uid = Auth.getUserId();
+            if (uid) {
+                firebase.firestore().collection('users').doc(uid).update({ avatar: avatar })
+                .then(() => { window.location.href = 'languages.html'; })
+                .catch(e => { console.error(e); window.location.href = 'languages.html'; });
+            } else {
+                window.location.href = 'languages.html';
+            }
+        }
+    </script>
+    </body>
 </html>
