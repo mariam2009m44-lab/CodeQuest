@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeQuest | المستويات</title>
+<title>CodeQuest | خريطة المغامرات</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/levels.css">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -17,23 +17,40 @@
 <button class="back-btn" onclick="window.location.href='languages.html'">← رجوع</button>
 <div class="title-box"><h1 id="userName">...</h1><p>مسارك في <span id="langName">JavaScript</span></p></div>
 </header>
-<div class="map-container">
-<img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" class="mascot-float">
-<div class="path-line"></div>
-<div class="level-node unlocked" onclick="window.location.href='game.html'">
-<span class="node-icon">▶</span><span class="node-num">1</span><span class="node-label">البداية</span>
-</div>
-<div class="level-node locked" style="margin-left: 40%;"><span class="node-icon">🔒</span><span class="node-num">2</span><span class="node-label">الشروط</span></div>
+<div class="map-container" id="mapContainer">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" class="mascot-float">
+    <div class="path-line"></div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     Auth.init((logged) => {
-        if(!logged) { window.location.href = 'index.html'; } 
-        else { 
-            document.getElementById('userName').innerText = Auth.getCurrentUser(); 
-            document.getElementById('langName').innerText = localStorage.getItem('cq_language_name') || 'JavaScript';
+        if(!logged) { window.location.href = 'index.html'; return; }
+        const user = Auth.getCurrentUser(), data = Auth.getUserData();
+        const lang = localStorage.getItem('cq_language') || 'js';
+        document.getElementById('userName').innerText = user;
+        document.getElementById('langName').innerText = localStorage.getItem('cq_language_name') || 'JavaScript';
+
+        const prog = data.progress || {};
+        const mapContainer = document.getElementById('mapContainer');
+        
+        const levelNames = ['البداية', 'الشروط', 'الحلقات', 'الدوال', 'المشاريع'];
+        
+        for(let i=1; i<=5; i++) {
+            let key = lang + '_level' + i;
+            let isUnlocked = (i === 1) || (prog[key] && prog[key].unlocked);
+            let stars = (prog[key] && prog[key].stars) ? prog[key].stars : 0;
+            
+            let nodeHTML = `
+            <div class="level-node ${isUnlocked ? 'unlocked' : 'locked'}" style="margin-${i%2===0 ? 'right' : 'left'}: ${i%2===0 ? '40%' : '40%'};" onclick="${isUnlocked ? "startLevel('level"+i+"')" : ""}">
+                <span class="node-icon">${isUnlocked ? '▶' : '🔒'}</span>
+                <span class="node-num">${i}</span>
+                <span class="node-label">${levelNames[i-1]}</span>
+                <div style="color:#ffd700; font-size:12px; position:absolute; top:-20px;">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+            </div>`;
+            mapContainer.insertAdjacentHTML('beforeend', nodeHTML);
         }
     });
 });
+function startLevel(level) { localStorage.setItem('cq_current_level', level); window.location.href = 'game.html'; }
 </script>
 </body></html>

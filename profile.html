@@ -1,21 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>الملف الشخصي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest | ملفي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-<style>body{background:#050914;color:#fff;font-family:Cairo;text-align:center;padding:20px;} .card{background:rgba(255,255,255,0.05);border:2px solid #00e5ff;border-radius:20px;padding:20px;max-width:400px;margin:auto;} img{width:100px;height:100px;border-radius:50%;border:3px solid #00e5ff;} h2{color:#ffd700;} button{background:#e74c3c;color:#fff;padding:10px 20px;border:none;border-radius:10px;margin-top:20px;cursor:pointer;font-family:Cairo;font-weight:bold;}</style>
+<style>
+body{background:#050914;color:#fff;min-height:100vh;padding:20px;font-family:Cairo;display:flex;justify-content:center;align-items:center;}
+.card{background:rgba(255,255,255,0.03);border:2px solid #00e5ff;border-radius:25px;padding:30px;text-align:center;width:100%;max-width:400px;box-shadow:0 0 40px rgba(0,229,255,0.2);}
+.avatar{width:120px;height:120px;border-radius:50%;border:4px solid #00e5ff;margin:0 auto 15px;}
+h2{color:#00e5ff;margin-bottom:5px;}
+.score{font-size:40px;font-weight:900;color:#ffd700;margin:20px 0;text-shadow:0 0 20px rgba(255,215,0,0.5);}
+.btn{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;padding:15px;border-radius:15px;width:100%;font-family:Cairo;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px;}
+.btn-back{background:linear-gradient(135deg,#00e5ff,#0072ff);}
+</style>
 </head>
 <body>
 <div class="card">
-    <div id="avatar"></div>
+    <div id="avatarContainer"></div>
     <h2 id="name">جاري التحميل...</h2>
-    <h3>النقاط: <span id="score" style="color:#ffd700;">0</span></h3>
-    <button onclick="Auth.logout()">تسجيل الخروج</button>
-    <br><br><button onclick="window.location.href='languages.html'" style="background:#00e5ff;color:#000;">الرجوع للرئيسية</button>
+    <p style="color:#a0aec0; font-size:14px;">بطل البرمجة</p>
+    <div class="score">💰 <span id="score">0</span></div>
+    <button class="btn btn-back" onclick="window.location.href='languages.html'">العودة للرئيسية</button>
+    <button class="btn" onclick="Auth.logout()">تسجيل الخروج</button>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = Auth.getCurrentUser(), data = Auth.getUserData();
         document.getElementById('name').innerText = user;
         document.getElementById('score').innerText = data ? (data.bonusPoints || 0) : 0;
-        document.getElementById('avatar').innerHTML = Auth.getAvatarHtml(user);
+        document.getElementById('avatarContainer').innerHTML = '<div class="avatar">' + Auth.getAvatarHtml(user) + '</div>';
     });
 });
 </script>
