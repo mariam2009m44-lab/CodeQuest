@@ -1,48 +1,6 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeQuest | اختر اللغة</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/languages.css">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-</head>
-<body>
-<div class="particles" id="particles"></div>
-<header class="lang-header">
-    <h1>أهلاً بك يا <span id="userName">...</span> 👋</h1>
-    <p>اختر لغة البرمجة اللي عايز تتعلمها</p>
-</header>
-<div class="lang-cards-container">
-    <div class="lang-card js-card" onclick="chooseLang('js', 'JavaScript')">
-        <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"></div>
-        <h2>JavaScript</h2><p>لغة الويب التفاعلية</p>
-    </div>
-    <div class="lang-card py-card" onclick="chooseLang('py', 'Python')">
-        <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"></div>
-        <h2>Python</h2><p>لغة الذكاء الاصطناعي</p>
-    </div>
-    <div class="lang-card cpp-card" onclick="chooseLang('cpp', 'C++')">
-        <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg"></div>
-        <h2>C++</h2><p>لغة الألعاب والأنظمة</p>
-    </div>
-</div>
-<div style="text-align:center; margin-top:20px;">
-    <button onclick="window.location.href='games.html'" style="background:#ffd700; color:#000; padding:15px 30px; border-radius:20px; border:none; font-weight:900; font-size:18px; font-family:Cairo; cursor:pointer; box-shadow:0 0 20px #ffd700;">🎮 اذهب إلى الألعاب</button>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    Auth.init((logged) => {
-        if(!logged) { window.location.href = 'index.html'; } 
-        else { document.getElementById('userName').innerText = Auth.getCurrentUser(); }
-    });
-});
-function chooseLang(code, name) {
-    localStorage.setItem('cq_language', code); localStorage.setItem('cq_language_name', name);
-    window.location.href = 'levels.html';
-}
-</script>
-</body></html>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>اللغات</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/languages.css"><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script><script src="js/firebase-config.js"></script><script src="js/auth.js"></script></head><body><header class="lang-header"><h1>أهلاً بك يا <span id="userName">...</span> 👋</h1><p>اختر لغة البرمجة</p></header><div class="lang-cards-container"><div class="lang-card js-card" onclick="chooseLang('js', 'JavaScript')"><div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"></div><h2>JavaScript</h2><p>لغة الويب</p></div><div class="lang-card py-card" onclick="chooseLang('py', 'Python')"><div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"></div><h2>Python</h2><p>الذكاء الاصطناعي</p></div><div class="lang-card cpp-card" onclick="chooseLang('cpp', 'C++')"><div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg"></div><h2>C++</h2><p>الألعاب</p></div></div><div style="text-align:center; margin-top:20px; position:relative; z-index:10; display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
+    <button onclick="window.location.href='games.html'" style="background:#ffd700; color:#000; padding:12px 25px; border-radius:20px; border:none; font-weight:900; font-family:Cairo; cursor:pointer; box-shadow:0 5px 15px rgba(255,215,0,0.4);">🎮 الألعاب</button>
+    <button onclick="window.location.href='shop.html'" style="background:#00e5ff; color:#000; padding:12px 25px; border-radius:20px; border:none; font-weight:900; font-family:Cairo; cursor:pointer; box-shadow:0 5px 15px rgba(0,229,255,0.4);">🛒 المتجر</button>
+    <button onclick="window.location.href='profile.html'" style="background:#9b59b6; color:#fff; padding:12px 25px; border-radius:20px; border:none; font-weight:900; font-family:Cairo; cursor:pointer; box-shadow:0 5px 15px rgba(155,89,182,0.4);">👤 ملفي</button>
+    <button onclick="window.location.href='leaderboard.html'" style="background:#e74c3c; color:#fff; padding:12px 25px; border-radius:20px; border:none; font-weight:900; font-family:Cairo; cursor:pointer; box-shadow:0 5px 15px rgba(231,76,60,0.4);">🏆 الشرف</button>
+</div><script>document.addEventListener('DOMContentLoaded', () => { Auth.init((logged) => { if(!logged) window.location.href = 'index.html'; else document.getElementById('userName').innerText = Auth.getCurrentUser(); }); }); function chooseLang(c, n) { localStorage.setItem('cq_language', c); localStorage.setItem('cq_language_name', n); window.location.href = 'levels.html'; }</script></body></html>
