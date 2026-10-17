@@ -18,13 +18,18 @@ const Auth = {
         } else { localStorage.clear(); window.location.href = 'index.html'; }
     },
 
+    // الدالة اللي بتظهر الصورة في الشريط العلوي (مصلحة عشان متخفيش الصورة)
     getAvatarHtml: function(name) {
         name = name || this.getCurrentUser();
         if (!name) return '<div class="letter-avatar">؟</div>';
         const saved = localStorage.getItem('cq_avatar_' + name);
-        if (saved && (saved.indexOf('data:') === 0 || saved.indexOf('http') === 0) && saved.indexOf('dicebear') === -1) {
-            return '<img src="' + saved + '" alt="' + name + '">';
+        
+        if (saved) {
+            // لو فيه صورة محفوظة، اعرضها على طول
+            return '<img src="' + saved + '" alt="' + name + '" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">';
         }
+        
+        // لو مفيش صورة، اعرض الحروف
         const parts = name.trim().split(/\s+/);
         let initials = parts[0].charAt(0).toUpperCase();
         if (parts[1]) initials += '.' + parts[1].charAt(0).toUpperCase();
@@ -41,13 +46,10 @@ const Auth = {
                 await firebase.firestore().collection('users').doc(user.uid).set({
                     username: username, email: email, created: Date.now(), bonusPoints: 0
                 });
-            } catch (fsError) {
-                console.error("Firestore error:", fsError);
-            }
+            } catch (fsError) { console.error("Firestore error:", fsError); }
             return { success: true };
         } catch (error) {
             console.error("Register Error:", error);
-            // هنا بنعرض كود الخطأ الحقيقي عشان نعرف المشكلة
             return { success: false, message: 'كود الخطأ: ' + error.code };
         }
     },
@@ -59,7 +61,6 @@ const Auth = {
             return { success: true };
         } catch (error) {
             console.error("Login Error:", error);
-            // هنا بنعرض كود الخطأ الحقيقي عشان نعرف المشكلة
             return { success: false, message: 'كود الخطأ: ' + error.code };
         }
     },
@@ -75,7 +76,6 @@ const Auth = {
                 const name = data.username || this.getCurrentUser();
                 localStorage.setItem('cq_balance_' + name, data.bonusPoints || 0);
                 if (data.avatar) localStorage.setItem('cq_avatar_' + name, data.avatar);
-                if (data.unlocked) localStorage.setItem('cq_unlocked_' + name + '_js', JSON.stringify(data.unlocked));
             }
         } catch(e) { console.error("Sync Error:", e); }
     }
