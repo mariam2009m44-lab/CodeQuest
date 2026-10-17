@@ -1,14 +1,13 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 50%)}
 .stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
-.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 2s infinite ease-in-out}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 2s infinite}
 @keyframes twinkle{0%,100%{opacity:0.2;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
 .top-bar{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;position:relative;z-index:2;gap:10px}
 .title-box{text-align:center;flex:1}
 .title-box h1{color:#00e5ff;font-size:18px;text-shadow:0 0 15px rgba(0,229,255,0.5)}
 .title-box p{color:#a0aec0;margin-top:3px;font-size:12px}
-.back-btn,.change-lang-btn{background:rgba(255,255,255,0.05);color:#a0aec0;border:1px solid rgba(255,255,255,0.1);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:11px;white-space:nowrap}
-.change-lang-btn{color:#00e5ff;border-color:rgba(0,229,255,0.3)}
+.back-btn{background:rgba(255,255,255,0.05);color:#a0aec0;border:1px solid rgba(255,255,255,0.1);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:11px;white-space:nowrap}
 .map-container{position:relative;width:100%;max-width:400px;margin:0 auto;padding:40px 20px;display:flex;flex-direction:column;align-items:center;z-index:2;min-height:60vh}
 .mascot-float{position:absolute;top:-10px;width:80px;height:80px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 10px 20px rgba(0,229,255,0.5));z-index:3}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
@@ -16,44 +15,7 @@ body{background:#050914;color:#fff;min-height:100vh;overflow-x:hidden;background
 .level-node{position:relative;width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;justify-content:center;align-items:center;margin:30px 0;z-index:2;transition:0.3s;cursor:pointer}
 .level-node.unlocked{background:linear-gradient(135deg,#00e5ff,#0072ff);box-shadow:0 0 30px rgba(0,229,255,0.6);animation:pulse-node 2s infinite}
 @keyframes pulse-node{0%{box-shadow:0 0 20px rgba(0,229,255,0.4)}50%{box-shadow:0 0 40px rgba(0,229,255,0.9)}100%{box-shadow:0 0 20px rgba(0,229,255,0.4)}}
-.level-node.unlocked:hover{transform:scale(1.15)}
 .level-node.locked{background:rgba(255,255,255,0.05);border:2px dashed rgba(255,255,255,0.2);opacity:0.6}
 .node-icon{font-size:20px;margin-bottom:-5px}
 .node-num{font-size:22px;font-weight:900;color:#fff}
 .node-label{position:absolute;bottom:-25px;font-size:12px;color:#a0aec0;white-space:nowrap}
-.level-node.locked .node-label{color:#666}
-
-.videos-section{max-width:500px;margin:0 auto 30px;padding:0 10px;position:relative;z-index:2}
-.videos-section h2{color:#00e5ff;font-size:17px;font-weight:900;text-align:center;margin-bottom:5px;text-shadow:0 0 12px rgba(0,229,255,0.5)}
-.videos-subtitle{color:#a0aec0;font-size:12px;text-align:center;margin-bottom:15px}
-.videos-scroll{display:flex;gap:12px;overflow-x:auto;padding:5px 5px 15px;scrollbar-width:none}
-.videos-scroll::-webkit-scrollbar{display:none}
-.video-card{flex-shrink:0;width:150px;background:linear-gradient(135deg, rgba(255,0,0,0.15), rgba(0,0,0,0.4));border:2px solid rgba(255,80,80,0.4);border-radius:16px;padding:15px 12px;cursor:pointer;transition:all 0.3s;box-shadow:0 5px 15px rgba(0,0,0,0.3)}
-.video-card:hover{border-color:#ff5050;transform:translateY(-5px);box-shadow:0 10px 25px rgba(255,80,80,0.4)}
-.video-card:active{transform:scale(0.96)}
-.video-icon{font-size:32px;margin-bottom:8px;text-align:center;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.5))}
-.video-info h3{color:#fff;font-size:13px;font-weight:900;margin-bottom:5px;line-height:1.4}
-.video-info p{color:#ff5050;font-size:11px;font-weight:bold}
-.map-title{color:#00e5ff;font-size:17px;font-weight:900;text-align:center;margin-bottom:15px;position:relative;z-index:2;text-shadow:0 0 12px rgba(0,229,255,0.5)}
-
-.videos-strip{max-width:500px;margin:0 auto 20px;padding:0 15px;position:relative;z-index:2}
-.strip-title{color:#00e5ff;font-size:14px;font-weight:900;text-align:center;margin-bottom:10px;text-shadow:0 0 10px rgba(0,229,255,0.5)}
-.videos-scroll{display:flex;gap:8px;overflow-x:auto;padding:3px 3px 10px;scrollbar-width:none;justify-content:flex-start}
-.videos-scroll::-webkit-scrollbar{display:none}
-.video-chip{flex-shrink:0;background:linear-gradient(135deg, rgba(255,80,80,0.15), rgba(0,0,0,0.3));border:1px solid rgba(255,80,80,0.4);color:#fff;padding:8px 14px;border-radius:20px;font-size:11px;font-weight:bold;cursor:pointer;transition:0.3s;font-family:'Cairo',sans-serif;white-space:nowrap}
-.video-chip:hover{background:rgba(255,80,80,0.25);border-color:#ff5050;transform:translateY(-2px);box-shadow:0 5px 15px rgba(255,80,80,0.3)}
-.video-chip:active{transform:scale(0.95)}
-
-.mini-avatar{width:60px;height:60px;margin:0 auto 8px;border-radius:50%;overflow:hidden;background:#b6e3f4;border:3px solid #00e5ff;box-shadow:0 0 20px rgba(0,229,255,0.6);cursor:pointer;transition:0.3s;animation:floatAvatar 3s ease-in-out infinite}
-.mini-avatar:hover{transform:scale(1.1);box-shadow:0 0 35px rgba(0,229,255,0.9)}
-.mini-avatar:active{transform:scale(0.95)}
-.mini-avatar img{width:100%;height:100%;object-fit:cover}
-@keyframes floatAvatar{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-
-.mini-avatar{width:42px !important;height:42px !important;border:2px solid #00e5ff !important;box-shadow:0 0 12px rgba(0,229,255,0.5) !important}
-.title-box h1{font-size:16px !important}
-.title-box p{font-size:11px !important}
-
-.shop-btn{background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,150,0,0.2));color:#ffd700;border:1px solid rgba(255,215,0,0.5);padding:9px 14px;border-radius:20px;font-size:11px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;transition:0.3s;animation:pulseShop 2s infinite}
-@keyframes pulseShop{0%,100%{box-shadow:0 0 10px rgba(255,215,0,0.3)}50%{box-shadow:0 0 25px rgba(255,215,0,0.7)}}
-.shop-btn:hover{transform:translateY(-2px)}

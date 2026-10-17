@@ -1,51 +1,29 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%);overflow:hidden}
 .game-container{max-width:600px;margin:0 auto;height:100vh;display:flex;flex-direction:column;padding:15px}
-
-/* الهيدر */
 .game-header{display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-bottom:10px;background:rgba(255,255,255,0.03);border-radius:15px;padding:12px 15px;border:1px solid rgba(0,229,255,0.2)}
 .back-btn{background:transparent;color:#00e5ff;border:none;font-size:14px;font-weight:bold;cursor:pointer;font-family:'Cairo'}
-.level-info{font-weight:bold;color:#fff;font-size:14px;text-shadow:0 0 10px rgba(0,229,255,0.5)}
+.level-info{font-weight:bold;color:#fff;font-size:14px}
 .score{color:#ffd700;font-weight:900;font-size:14px;background:rgba(255,215,0,0.1);padding:5px 12px;border-radius:20px;border:1px solid rgba(255,215,0,0.3)}
-
-/* شريط التقدم */
 .progress-bar-top{width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;margin-bottom:15px}
 .progress-fill{height:100%;background:linear-gradient(90deg,#00e5ff,#0072ff);width:0%;transition:width 0.5s ease;box-shadow:0 0 10px #00e5ff}
-
-/* شريط حالة كودي */
 .cody-status{display:flex;align-items:center;gap:10px;margin-bottom:15px;background:rgba(0,0,0,0.3);padding:8px 15px;border-radius:20px;width:fit-content;border:1px solid rgba(39,174,96,0.3)}
 .cody-status img{width:30px;height:30px;border-radius:50%;background:#fff;padding:2px}
-.cody-status span{color:#27ae60;font-size:12px;font-weight:bold;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-
-/* منطقة المحادثة */
-.chat-area{flex:1;overflow-y:auto;padding:10px 5px;display:flex;flex-direction:column;gap:15px;scrollbar-width:thin;scrollbar-color:#00e5ff transparent}
+.cody-status span{color:#27ae60;font-size:12px;font-weight:bold}
+.chat-area{flex:1;overflow-y:auto;padding:10px 5px;display:flex;flex-direction:column;gap:15px}
 .chat-area::-webkit-scrollbar{width:4px}
 .chat-area::-webkit-scrollbar-thumb{background:#00e5ff;border-radius:10px}
-
-/* فقاعات المحادثة */
 .chat-row{display:flex;align-items:flex-end;animation:slideUp 0.4s ease forwards;opacity:0;transform:translateY(20px)}
 @keyframes slideUp{to{opacity:1;transform:translateY(0)}}
-.cody-bubble{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#fff;padding:15px;border-radius:20px 20px 20px 5px;max-width:85%;font-size:14px;line-height:1.6;box-shadow:0 5px 15px rgba(0,0,0,0.2)}
-
-/* محرر الأكواد الاحترافي */
+.cody-bubble{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#fff;padding:15px;border-radius:20px 20px 20px 5px;max-width:85%;font-size:14px;line-height:1.6}
 .code-bubble{background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:0;max-width:95%;width:100%;overflow:hidden;direction:ltr;box-shadow:0 10px 30px rgba(0,0,0,0.5);margin:5px 0}
-.code-bubble::before{content:'JavaScript';display:block;background:#2d2d2d;color:#888;font-size:10px;padding:5px 10px;font-family:'Fira Code',monospace;border-bottom:1px solid #333}
 .code-bubble pre{margin:0;padding:15px;color:#d4d4d4;font-family:'Fira Code',monospace;font-size:14px;overflow-x:auto}
-/* ألوان الكود */
 .code-bubble .keyword{color:#569cd6}
 .code-bubble .string{color:#ce9178}
-
-/* أزرار الاختيار */
 .choices-area{display:flex;flex-direction:column;gap:10px;margin-top:15px}
 .choice-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(0,229,255,0.4);color:#fff;padding:15px;border-radius:12px;font-size:14px;font-weight:bold;font-family:'Cairo';cursor:pointer;transition:0.3s;text-align:right}
 .choice-btn:hover{background:rgba(0,229,255,0.1);transform:translateX(-5px);border-color:#00e5ff}
-.choice-btn.correct{background:rgba(39,174,96,0.4);border-color:#27ae60;animation:pulseCorrect 0.5s}
-.choice-btn.wrong{background:rgba(231,76,60,0.4);border-color:#e74c3c;animation:shake 0.4s}
-@keyframes pulseCorrect{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
-
-/* زرار التالي */
-.action-btn{background:linear-gradient(90deg,#00e5ff,#0072ff);color:#fff;border:none;padding:15px;border-radius:15px;font-size:18px;font-weight:900;font-family:'Cairo';cursor:pointer;margin-top:15px;width:100%;box-shadow:0 10px 20px rgba(0,114,255,0.4);transition:0.3s}
-.action-btn:hover{transform:translateY(-3px);box-shadow:0 15px 30px rgba(0,114,255,0.6)}
+.choice-btn.correct{background:rgba(39,174,96,0.4);border-color:#27ae60}
+.choice-btn.wrong{background:rgba(231,76,60,0.4);border-color:#e74c3c}
+.action-btn{background:linear-gradient(90deg,#00e5ff,#0072ff);color:#fff;border:none;padding:15px;border-radius:15px;font-size:18px;font-weight:900;font-family:'Cairo';cursor:pointer;margin-top:15px;width:100%;box-shadow:0 10px 20px rgba(0,114,255,0.4)}
 .hidden{display:none !important}
