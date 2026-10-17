@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CodeQuest | لوحة الشرف</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/accessories.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/sfx.js"></script>
@@ -12,37 +13,38 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(255,215,0,0.15) 0%, transparent 60%)}
-.header-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;position:relative;z-index:2}
+.header-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px;position:relative;z-index:2}
 .back-btn{background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.4);padding:9px 16px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;font-family:'Cairo',sans-serif;transition:0.3s}
 .back-btn:hover{background:rgba(0,229,255,0.25)}
 .header-title{flex:1;text-align:center;color:#ffd700;font-size:20px;font-weight:900;text-shadow:0 0 15px rgba(255,215,0,0.6)}
-.podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin-bottom:30px;position:relative;z-index:2;padding:0 5px}
-.podium-item{display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px}
-.podium-avatar{width:70px;height:70px;border-radius:50%;background:#b6e3f4;border:4px solid;overflow:hidden;margin-bottom:8px;position:relative;transition:0.3s}
-.podium-avatar img{width:100%;height:100%;object-fit:cover}
-.podium-name{font-size:12px;font-weight:bold;color:#fff;margin-bottom:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
-.podium-score{font-size:14px;font-weight:900;color:#ffd700;margin-bottom:8px}
-.podium-block{width:100%;border-radius:14px 14px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-size:26px;font-weight:900;color:#050914;position:relative;overflow:hidden;box-shadow:0 -5px 20px rgba(0,0,0,0.4)}
+.privacy-note{text-align:center;color:#a0aec0;font-size:12px;margin-bottom:25px;position:relative;z-index:2}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin-bottom:30px;position:relative;z-index:2;padding:0 5px;min-height:220px}
+.podium-item{display:flex;flex-direction:column;align-items:center;flex:1;max-width:110px}
+.podium-avatar{width:65px;height:65px;border-radius:50%;background:#374151;border:3px solid;overflow:hidden;margin-bottom:8px;position:relative;display:flex;align-items:center;justify-content:center}
+.podium-name{font-size:12px;font-weight:bold;color:#fff;margin-bottom:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+.podium-score{font-size:13px;font-weight:900;color:#ffd700;margin-bottom:8px}
+.podium-block{width:100%;border-radius:14px 14px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-size:24px;font-weight:900;color:#050914;position:relative;overflow:hidden;box-shadow:0 -5px 20px rgba(0,0,0,0.4)}
 .podium-block::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg, rgba(255,255,255,0.35), transparent 60%);pointer-events:none}
-.podium-1 .podium-avatar{border-color:#ffd700;box-shadow:0 0 35px rgba(255,215,0,0.9);width:85px;height:85px;animation:crownFloat 2s ease-in-out infinite}
-@keyframes crownFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.podium-1 .podium-block{background:linear-gradient(180deg, #ffd700, #d4a017);height:110px}
-.podium-2 .podium-avatar{border-color:#c0c0c0;box-shadow:0 0 25px rgba(192,192,192,0.7)}
-.podium-2 .podium-block{background:linear-gradient(180deg, #d8d8d8, #888);height:80px}
-.podium-3 .podium-avatar{border-color:#cd7f32;box-shadow:0 0 25px rgba(205,127,50,0.7)}
-.podium-3 .podium-block{background:linear-gradient(180deg, #e09a5a, #a0522d);height:60px}
-.crown-top{position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:26px;animation:crownFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(255,215,0,0.9))}
-.my-rank-card{background:linear-gradient(135deg, rgba(0,229,255,0.15), rgba(0,114,255,0.08));border:2px solid #00e5ff;border-radius:20px;padding:18px;text-align:center;max-width:400px;margin:0 auto 20px;position:relative;z-index:2;box-shadow:0 0 30px rgba(0,229,255,0.3)}
+
+.podium-1 .podium-avatar{border-color:#ffd700;box-shadow:0 0 25px rgba(255,215,0,0.7);width:80px;height:80px}
+.podium-1 .podium-block{background:linear-gradient(180deg, #ffd700, #d4a017);height:100px}
+.podium-2 .podium-avatar{border-color:#c0c0c0;box-shadow:0 0 20px rgba(192,192,192,0.5)}
+.podium-2 .podium-block{background:linear-gradient(180deg, #d8d8d8, #888);height:75px}
+.podium-3 .podium-avatar{border-color:#cd7f32;box-shadow:0 0 20px rgba(205,127,50,0.5)}
+.podium-3 .podium-block{background:linear-gradient(180deg, #e09a5a, #a0522d);height:55px}
+
+.crown-top{position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-size:24px;animation:crownFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(255,215,0,0.9))}
+@keyframes crownFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
+
+.my-rank-card{background:linear-gradient(135deg, rgba(0,229,255,0.15), rgba(0,114,255,0.08));border:2px solid #00e5ff;border-radius:20px;padding:18px;text-align:center;max-width:400px;margin:0 auto;position:relative;z-index:2;box-shadow:0 0 30px rgba(0,229,255,0.3)}
 .my-rank-label{color:#00e5ff;font-size:12px;font-weight:bold;margin-bottom:8px}
 .my-rank-info{display:flex;align-items:center;justify-content:center;gap:15px}
-.my-rank-avatar{width:50px;height:50px;border-radius:50%;overflow:hidden;background:#b6e3f4;border:3px solid #00e5ff}
-.my-rank-avatar img{width:100%;height:100%;object-fit:cover}
+.my-rank-avatar{width:50px;height:50px;border-radius:50%;overflow:hidden;background:#b6e3f4;border:3px solid #00e5ff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold}
 .my-rank-name{font-size:16px;font-weight:900;color:#fff}
 .my-rank-score{font-size:20px;font-weight:900;color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,0.6)}
 .my-rank-position{color:#a0aec0;font-size:12px;margin-top:6px}
-.empty-msg{text-align:center;color:#a0aec0;font-size:14px;padding:60px 20px;position:relative;z-index:2}
-.empty-msg .emoji{font-size:70px;display:block;margin-bottom:20px;animation:crownFloat 2s infinite}
-.info-note{text-align:center;color:#666;font-size:11px;margin-top:20px;position:relative;z-index:2;padding:0 20px}
+
+.letter-avatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;border-radius:50%;background:#374151}
 </style>
 </head>
 <body>
@@ -53,25 +55,33 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 <div style="width:60px"></div>
 </div>
 
-<div id="podiumArea"></div>
+<div class="privacy-note">🔒 يتم عرض أفضل 3 لاعبين فقط للحفاظ على الخصوصية</div>
+
+<div class="podium" id="podiumArea"></div>
 <div id="myRankArea"></div>
 
-<div class="info-note">🔒 يتم عرض أفضل 3 لاعبين فقط للحفاظ على الخصوصية</div>
-
 <script>
-const users = Auth.getUsers();
 const currentUser = Auth.getCurrentUser();
+const users = Auth.getUsers();
 const games = ['match', 'memory', 'bug', 'speed', 'quiz', 'build'];
 const players = [];
 
-Object.keys(users).forEach(name => {
+// دالة لحساب نقاط كل لاعب بطريقة موحدة
+function getPlayerScore(name) {
     let total = 0;
-    games.forEach(g => {
-        total += parseInt(localStorage.getItem('cq_high_' + g) || '0');
-    });
-    const u = users[name];
-    if (u && u.bonusPoints) total += u.bonusPoints;
-    if (total > 0) players.push({ name: name, score: total });
+    // نقاط المستويات
+    total += parseInt(localStorage.getItem('cq_balance_' + name) || '0');
+    // نقاط التحدي اليومي والمكافآت
+    if (users[name] && users[name].bonusPoints) {
+        total += users[name].bonusPoints;
+    }
+    // نقاط الألعاب (لو كانت متسجلة)
+    // ملاحظة: الألعاب بتسجل high score كـ global مش per user، فهنعتمد على المستويات والمكافآت
+    return total;
+}
+
+Object.keys(users).forEach(name => {
+    players.push({ name: name, score: getPlayerScore(name) });
 });
 
 players.sort((a, b) => b.score - a.score);
@@ -79,82 +89,88 @@ players.sort((a, b) => b.score - a.score);
 const podiumArea = document.getElementById('podiumArea');
 const myRankArea = document.getElementById('myRankArea');
 
-function getAvatarUrl(name) { return Auth.getAvatarUrl(name); }
+function getAvatarHtml(name) {
+    return Auth.getAvatarHtml(name);
+}
 
-if (players.length === 0) {
-    podiumArea.innerHTML = '<div class="empty-msg"><span class="emoji">🏆</span>مفيش لاعبين لسه!<br>ابدأ العب عشان تكون أول بطل.</div>';
-    myRankArea.innerHTML = '';
+// دالة لرسم مركز واحد في المنصة
+function renderPodiumSpot(player, rank) {
+    const isMe = player && player.name === currentUser;
+    const name = player ? player.name : '---';
+    const score = player ? player.score : 0;
+    const avatar = player ? getAvatarHtml(name) : '<div class="letter-avatar">؟</div>';
+    
+    let html = '<div class="podium-item podium-' + rank + '">';
+    
+    if (rank === 1) {
+        html += '<div class="crown-top">👑</div>';
+    }
+    
+    html += '<div class="podium-avatar">' + avatar + '</div>';
+    html += '<div class="podium-name" style="' + (isMe ? 'color:#00e5ff;' : '') + '">' + (isMe ? 'أنت' : name) + '</div>';
+    html += '<div class="podium-score">' + score + '</div>';
+    html += '<div class="podium-block">' + rank + '</div>';
+    html += '</div>';
+    
+    return html;
+}
+
+// ترتيب العرض: التاني (شمال) - الأول (وسط) - التالت (يمين)
+let podiumHtml = '';
+
+// المركز التاني
+if (players[1]) {
+    podiumHtml += renderPodiumSpot(players[1], 2);
 } else {
-    const top3 = players.slice(0, 3);
-    let podiumHtml = '<div class="podium">';
-    let myRankInfo = -1;
-    players.forEach((p, i) => {
-        if (p.name === currentUser) myRankInfo = i + 1;
-    });
+    podiumHtml += renderPodiumSpot(null, 2);
+}
 
-    if (top3[1]) {
-        podiumHtml += '<div class="podium-item podium-2">';
-        podiumHtml += '<div class="podium-avatar"><img src="' + getAvatarUrl(top3[1].name) + '"></div>';
-        podiumHtml += '<div class="podium-name">' + top3[1].name + '</div>';
-        podiumHtml += '<div class="podium-score">' + top3[1].score + '</div>';
-        podiumHtml += '<div class="podium-block">2</div>';
-        podiumHtml += '</div>';
-    } else {
-        podiumHtml += '<div class="podium-item podium-2" style="opacity:0.3"><div class="podium-avatar"></div><div class="podium-name">-</div><div class="podium-score">0</div><div class="podium-block">2</div></div>';
-    }
+// المركز الأول
+if (players[0]) {
+    podiumHtml += renderPodiumSpot(players[0], 1);
+} else {
+    podiumHtml += renderPodiumSpot(null, 1);
+}
 
-    if (top3[0]) {
-        podiumHtml += '<div class="podium-item podium-1">';
-        podiumHtml += '<div class="podium-avatar"><div class="crown-top">👑</div><img src="' + getAvatarUrl(top3[0].name) + '"></div>';
-        podiumHtml += '<div class="podium-name">' + top3[0].name + '</div>';
-        podiumHtml += '<div class="podium-score">' + top3[0].score + '</div>';
-        podiumHtml += '<div class="podium-block">1</div>';
-        podiumHtml += '</div>';
-    } else {
-        podiumHtml += '<div class="podium-item podium-1" style="opacity:0.3"><div class="podium-avatar"></div><div class="podium-name">-</div><div class="podium-score">0</div><div class="podium-block">1</div></div>';
-    }
+// المركز التالت
+if (players[2]) {
+    podiumHtml += renderPodiumSpot(players[2], 3);
+} else {
+    podiumHtml += renderPodiumSpot(null, 3);
+}
 
-    if (top3[2]) {
-        podiumHtml += '<div class="podium-item podium-3">';
-        podiumHtml += '<div class="podium-avatar"><img src="' + getAvatarUrl(top3[2].name) + '"></div>';
-        podiumHtml += '<div class="podium-name">' + top3[2].name + '</div>';
-        podiumHtml += '<div class="podium-score">' + top3[2].score + '</div>';
-        podiumHtml += '<div class="podium-block">3</div>';
-        podiumHtml += '</div>';
-    } else {
-        podiumHtml += '<div class="podium-item podium-3" style="opacity:0.3"><div class="podium-avatar"></div><div class="podium-name">-</div><div class="podium-score">0</div><div class="podium-block">3</div></div>';
-    }
+podiumArea.innerHTML = podiumHtml;
 
-    podiumHtml += '</div>';
-    podiumArea.innerHTML = podiumHtml;
+// عرض بطاقة "مركزك" للاعب الحالي
+let myRank = players.findIndex(p => p.name === currentUser) + 1;
+let myScore = getPlayerScore(currentUser);
 
-    if (myRankInfo > 0) {
-        let myScore = 0;
-        players.forEach(p => { if (p.name === currentUser) myScore = p.score; });
-        let posText = '';
-        if (myRankInfo === 1) posText = '🥇 إنت في المركز الأول!';
-        else if (myRankInfo === 2) posText = '🥈 إنت في المركز التاني!';
-        else if (myRankInfo === 3) posText = '🥉 إنت في المركز التالت!';
-        else posText = 'إنت في المركز #' + myRankInfo + ' — كمّل عشان توصل للتلاتة الأوائل!';
-        myRankArea.innerHTML = 
-            '<div class="my-rank-card">' +
-                '<div class="my-rank-label">⭐ مركزك</div>' +
-                '<div class="my-rank-info">' +
-                    '<div class="my-rank-avatar"><img src="' + getAvatarUrl(currentUser) + '"></div>' +
-                    '<div>' +
-                        '<div class="my-rank-name">' + currentUser + '</div>' +
-                        '<div class="my-rank-score">' + myScore + ' نقطة</div>' +
-                    '</div>' +
+if (myScore > 0 || myRank > 0) {
+    let posText = '';
+    if (myRank === 1) posText = '🥇 إنت في المركز الأول!';
+    else if (myRank === 2) posText = '🥈 إنت في المركز التاني!';
+    else if (myRank === 3) posText = '🥉 إنت في المركز التالت!';
+    else if (myRank > 3) posText = 'إنت في المركز #' + myRank + ' — كمّل عشان توصل للتلاتة الأوائل!';
+    else posText = 'ابدأ اللعب عشان تدخل لوحة الشرف!';
+
+    myRankArea.innerHTML = 
+        '<div class="my-rank-card">' +
+            '<div class="my-rank-label">⭐ مركزك الحالي</div>' +
+            '<div class="my-rank-info">' +
+                '<div class="my-rank-avatar">' + getAvatarHtml(currentUser) + '</div>' +
+                '<div>' +
+                    '<div class="my-rank-name">' + currentUser + '</div>' +
+                    '<div class="my-rank-score">' + myScore + ' نقطة</div>' +
                 '</div>' +
-                '<div class="my-rank-position">' + posText + '</div>' +
-            '</div>';
-    }
+            '</div>' +
+            '<div class="my-rank-position">' + posText + '</div>' +
+        '</div>';
+}
 
-    if (top3[0] && top3[0].name === currentUser) {
-        setTimeout(() => {
-            try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#ffd700', '#00e5ff', '#ffffff'] }); } catch(e) {}
-        }, 500);
-    }
+if (myRank === 1) {
+    setTimeout(() => {
+        try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#ffd700', '#00e5ff', '#ffffff'] }); } catch(e) {}
+    }, 500);
 }
 </script>
 </body>
