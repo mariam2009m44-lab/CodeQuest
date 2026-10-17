@@ -45,12 +45,14 @@
             const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('userAvatar').src = av;
             Auth.init(async (logged) => {
                 if (!logged) return window.location.href = 'index.html';
-                const doc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
-                if (doc.exists) {
-                    document.getElementById('userName').innerText = doc.data().username || "بطل";
-                    document.getElementById('userPts').innerText = doc.data().points || 0;
-                    if(doc.data().avatar) { document.getElementById('userAvatar').src = doc.data().avatar; localStorage.setItem('cq_avatar', doc.data().avatar); }
-                }
+                try {
+                    const doc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
+                    if (doc.exists) {
+                        document.getElementById('userName').innerText = doc.data().username || "بطل";
+                        document.getElementById('userPts').innerText = doc.data().points || 0;
+                        if(doc.data().avatar) { document.getElementById('userAvatar').src = doc.data().avatar; localStorage.setItem('cq_avatar', doc.data().avatar); }
+                    }
+                } catch(e) { console.error(e); }
             });
         });
     </script>

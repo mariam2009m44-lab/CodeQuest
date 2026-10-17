@@ -27,14 +27,13 @@
     <button class="btn-start" onclick="saveAndStart()">🚀 يلا نبدأ المغامرة</button>
     <script>
         let selectedAvatarUrl = null;
-        // صور كيوت ومناسبة للأطفال (روبوتات وأطفال)
-        const seeds = ['Cody', 'Milo', 'Luna', 'Leo', 'Zoe', 'Max', 'Bella', 'Felix', 'Aneka', 'Coco', 'Ruby', 'Jack'];
+        // استخدام نمط adventurer (أطفال كيوت)
+        const seeds = ['Mia', 'Leo', 'Zoe', 'Max', 'Luna', 'Charlie', 'Lily', 'Oscar', 'Bella', 'Rocky', 'Coco', 'Daisy'];
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init((logged) => { if (!logged) window.location.href = 'index.html'; });
             const grid = document.getElementById('avatarsGrid');
             seeds.forEach(seed => {
-                // استخدام نمط bottts (روبوتات كيوت) أو adventurer (أطفال كيوت)
-                const imgUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}&backgroundColor=00e5ff,ffd700,ff4444,8b5cf6`;
+                const imgUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
                 const card = document.createElement('div');
                 card.className = 'avatar-card';
                 card.innerHTML = `<img src="${imgUrl}">`;

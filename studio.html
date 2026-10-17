@@ -8,8 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="js/world-bg.js?v=99"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -23,13 +22,16 @@
         .main-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
         
         /* Dialogue */
-        .dialogue-phase { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; padding-bottom: 50px; background: rgba(10, 25, 47, 0.95); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; }
+        .dialogue-phase { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; background: rgba(10, 25, 47, 0.95); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; }
         .avatars-row { display: flex; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 20px; }
         .avatar-img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #00e5ff; background: #000; object-fit: cover;}
         .user-avatar-img { border-color: #ffd700; }
         .chat-bubble { background: rgba(0,0,0,0.8); border: 1px solid #00e5ff; padding: 20px; border-radius: 20px 20px 0 20px; margin-bottom: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
         .cody-msg { margin: 0; line-height: 1.8; font-size: 1.1rem; }
         .btn-next { background: #00e5ff; color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; width: 100%; max-width: 400px; cursor: pointer; }
+     
+ذ
+            width: 100%; max-width: 400px; cursor: pointer; }
         
         /* Coding */
         .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; }
@@ -94,11 +96,11 @@
                 lessonData = data[lang]?.[levelId] || data['JavaScript'][1];
                 
                 document.getElementById('lessonTitle').innerText = lessonData.title;
-                document.getElementById('codyMessage').innerText = lessonData.intro.replace(/<[^>]*>?/gm, '');
+                document.getElementById('codyMessage').innerText = lessonData.intro;
                 
                 lessonCode = lessonData.code;
                 const saved = localStorage.getItem(`cq_code_${lang}_${levelId}`);
-                if (saved && !saved.includes('llet')) lessonCode = saved;
+                if (saved) lessonCode = saved;
 
             } catch(e) { 
                 console.error(e); 
