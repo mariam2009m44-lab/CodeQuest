@@ -65,6 +65,7 @@
             .ide-panel { width: 100%; height: 60%; }
         }
     </style>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
@@ -72,6 +73,7 @@
         <h1>🤖 استوديو كودي - <span id="levelTitle" style="color:#fff;">جاري التحميل...</span></h1>
         <div style="display:flex; gap:10px;">
             <button class="run-btn" onclick="runCode()">▶️ تشغيل الكود</button>
+            <button class="run-btn" style="background: #ffd700; color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);" onclick="completeLesson()">🎉 إنهاء المستوى</button>
             <button class="run-btn" style="background: transparent; border: 1px solid #ff4444; color:#ff4444; box-shadow:none;" onclick="window.location.href='levels.html'">✖ خروج</button>
         </div>
     </div>
@@ -259,6 +261,41 @@ print(5 + 5)"
                 }
             }
             outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        
+        async function completeLesson() {
+            const uid = Auth.getUserId();
+            if (!uid) return alert("يجب تسجيل الدخول أولاً");
+
+            // إطلاق البالونات
+            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700', '#ff4444', '#00ff00'] });
+
+            // حفظ التقدم في المتصفح (localStorage)
+            let progress = JSON.parse(localStorage.getItem('cq_progress') || '{}');
+            if (!progress[lang]) progress[lang] = {};
+
+            // إعطاء 3 نجوم وإنهاء المستوى الحالي
+            progress[lang][`level${levelId}`] = { unlocked: true, stars: 3 };
+            // فتح المستوى التالي
+            progress[lang][`level${levelId + 1}`] = { unlocked: true, stars: 0 };
+
+            localStorage.setItem('cq_progress', JSON.stringify(progress));
+
+            // إضافة النقاط في Firebase
+            try {
+                await firebase.firestore().collection('users').doc(uid).update({
+                    points: firebase.firestore.FieldValue.increment(50) // 50 نقطة للمستوى
+                });
+            } catch(e) {
+                console.error("Error updating points:", e);
+            }
+
+            // التوجيه لصفحة المستويات بعد الاحتفال
+            setTimeout(() => {
+                alert("🎉 مبروك يا بطل! حصلت على 50 نقطة. تم فتح المستوى التالي.");
+                window.location.href = 'levels.html';
+            }, 1500);
         }
 
         function clearConsole() {
