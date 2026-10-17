@@ -167,14 +167,14 @@
                 
                 const added = await Auth.addPoints(30);
                 if (added) {
-                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); playSound('success');
                     setTimeout(() => {
                         currentLevelIndex++;
                         loadLevel(); // الانتقال للمستوى التالي أوتوماتيك
                     }, 3000);
                 }
             } else {
-                addMessage('cody', `النتيجة مش متطابقة. راجع الكود وجرب تاني، أنا معاك! 💪`);
+                playSound('error'); addMessage('cody', `النتيجة مش متطابقة. راجع الكود وجرب تاني، أنا معاك! 💪`);
             }
         }
     </script>
