@@ -39,8 +39,9 @@
         async function claim() {
             const uid = Auth.getUserId();
             if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(50) }); }
-            alert("🎉 ممتاز! +50 نقطة"); window.location.href = 'games.html';
+            showToast("🎉 ممتاز! +50 نقطة", "success"); window.location.href = 'games.html';
         }
         Auth.init((l) => { if(!l) window.location.href = 'index.html'; });
     </script>
+    <script src="global.js"></script>
 </body></html>

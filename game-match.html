@@ -66,8 +66,9 @@
         async function claimReward() {
             const uid = Auth.getUserId();
             if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(20) }); }
-            alert("🎉 مبروك! +20 نقطة"); window.location.href = 'games.html';
+            showToast("🎉 مبروك! +20 نقطة", "success"); window.location.href = 'games.html';
         }
         Auth.init((l) => { if(!l) window.location.href = 'index.html'; else render(); });
     </script>
+    <script src="global.js"></script>
 </body></html>
