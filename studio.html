@@ -174,9 +174,19 @@ print(5 + 5)"
                 scrollBeyondLastLine: false,
             });
 
-            // الحفظ التلقائي (Auto-save)
+            // الحفظ التلقائي في Firebase
+            let saveTimeout;
             editor.onDidChangeModelContent(() => {
-                localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(async () => {
+                    const uid = Auth.getUserId();
+                    if(!uid) return;
+                    try {
+                        await firebase.firestore().collection('users').doc(uid).update({
+                            [`code_${lang}_${levelId}`]: editor.getValue()
+                        });
+                    } catch(e) { console.error("Error saving code:", e); }
+                }, 2000); // يحفظ بعد ما الطالب يوقف كتابة لمدة ثانيتين
             });
 
             // تشغيل صوت كودي أوتوماتيك أول ما الصفحة تفتح
@@ -271,24 +281,15 @@ print(5 + 5)"
             // إطلاق البالونات
             confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700', '#ff4444', '#00ff00'] });
 
-            // حفظ التقدم في المتصفح (localStorage)
-            let progress = JSON.parse(localStorage.getItem('cq_progress') || '{}');
-            if (!progress[lang]) progress[lang] = {};
-
-            // إعطاء 3 نجوم وإنهاء المستوى الحالي
-            progress[lang][`level${levelId}`] = { unlocked: true, stars: 3 };
-            // فتح المستوى التالي
-            progress[lang][`level${levelId + 1}`] = { unlocked: true, stars: 0 };
-
-            localStorage.setItem('cq_progress', JSON.stringify(progress));
-
-            // إضافة النقاط في Firebase
+            // إضافة النقاط وفتح المستوى التالي في Firebase
             try {
                 await firebase.firestore().collection('users').doc(uid).update({
-                    points: firebase.firestore.FieldValue.increment(50) // 50 نقطة للمستوى
+                    points: firebase.firestore.FieldValue.increment(50),
+                    [`progress.${lang}.level${levelId}`]: { unlocked: true, stars: 3 },
+                    [`progress.${lang}.level${levelId + 1}`]: { unlocked: true, stars: 0 }
                 });
             } catch(e) {
-                console.error("Error updating points:", e);
+                console.error("Error updating progress:", e);
             }
 
             // التوجيه لصفحة المستويات بعد الاحتفال

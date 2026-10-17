@@ -1,1 +1,47 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>البازل</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script><script src="js/firebase-config.js"></script><script src="js/auth.js"></script><style>body{background:#050914;color:#fff;padding:15px;font-family:Cairo;text-align:center;}.slot{background:rgba(0,229,255,0.1);border:2px dashed #00e5ff;border-radius:15px;padding:15px;margin-bottom:10px;min-height:50px;}.piece{background:#00e5ff;color:#000;padding:10px;border-radius:10px;font-family:monospace;display:inline-block;margin:5px;cursor:pointer;}</style></head><body><h2 style="color:#ffd700;">🧩 بازل الأكواد</h2><div id="board"></div><div id="pool"></div><script>const pairs=[{c:'let x=5',r:'متغير'},{c:'if(x>0)',r:'شرط'}];let score=0,matched=0;document.addEventListener('DOMContentLoaded',()=>{Auth.init((l)=>{if(!l)window.location.href='index.html';else init();});});function init(){document.getElementById('board').innerHTML=pairs.map((p,i)=>`<div class="slot" data-c="${p.c}">${p.r}</div>`).join('');document.getElementById('pool').innerHTML=[...pairs].sort(()=>Math.random()-0.5).map(p=>`<span class="piece" onclick="match(this,'${p.c}')">${p.c}</span>`).join('');}function match(el,c){const slot=document.querySelector(`.slot[data-c="${c}"]`);if(slot&&!slot.classList.contains('filled')){slot.classList.add('filled');slot.innerText=c+' ✅';el.remove();score+=10;matched++;if(matched===2)finish();}}async function finish(){alert('ربحت '+score+' نقطة!');const uid=Auth.getUserId();if(uid)await firebase.firestore().collection('users').doc(uid).update({bonusPoints:firebase.firestore.FieldValue.increment(score)});window.location.href='games.html';}</script></body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><title>بازل الأكواد | CodeQuest</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <style>
+        body { background: #050914; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .header { position: absolute; top: 20px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
+        .btn-back { background: rgba(0,229,255,0.1); border: 1px solid #00e5ff; color: #00e5ff; padding: 8px 15px; border-radius: 10px; cursor: pointer; text-decoration: none; }
+        .game-board { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 1px solid #00e5ff; box-shadow: 0 0 20px rgba(0,229,255,0.2); text-align: center; width: 80%; max-width: 400px; }
+        .code-piece { background: #111; padding: 15px; margin: 10px 0; border-radius: 10px; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
+        .code-piece:hover { border-color: #00e5ff; transform: scale(1.02); }
+        .slot { border-bottom: 2px dashed #555; min-height: 50px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2 style="margin:0; color:#ffd700;">🧩 بازل الأكواد</h2><a href="games.html" class="btn-back">← رجوع</a></div>
+    <div class="game-board">
+        <p>رتب القطع لبناء كود يطبع "Hello World":</p>
+        <div class="slot" id="slot"></div>
+        <div id="pieces">
+            <div class="code-piece" draggable="true" onclick="placePiece('console.log("Hello World");')">console.log("Hello World");</div>
+            <div class="code-piece" draggable="true" onclick="placePiece('let x = 5;')">let x = 5;</div>
+            <div class="code-piece" draggable="true" onclick="placePiece('if (x > 0) {')">if (x > 0) {</div>
+        </div>
+        <button onclick="checkWin()" style="margin-top:20px; background:#00e5ff; color:#000; border:none; padding:10px 20px; border-radius:10px; font-family:'Cairo'; font-weight:bold; cursor:pointer; width:100%;">تحقق من الحل</button>
+    </div>
+    <script>
+        let currentBuild = [];
+        function placePiece(code) {
+            currentBuild.push(code);
+            document.getElementById('slot').innerHTML += `<div class="code-piece" style="background:#00e5ff; color:#000; width:100%; box-sizing:border-box;">${code}</div>`;
+        }
+        function checkWin() {
+            if (currentBuild.length === 1 && currentBuild[0] === 'console.log("Hello World");') {
+                alert("🎉 إجابة صحيحة! أنت بطل.");
+                // ممكن هنا نضيف النقاط في Firebase
+            } else {
+                alert("❌ ترتيب غير صحيح، جرب تاني.");
+                currentBuild = [];
+                document.getElementById('slot').innerHTML = '';
+            }
+        }
+    </script>
+</body></html>
