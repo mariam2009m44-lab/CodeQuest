@@ -1,131 +1,123 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeQuest | اختر شخصيتك</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/avatar.css">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/auth.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختر شخصيتك | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/world-bg.js"></script>
-<script src="js/sfx.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-<style>
-/* تأثير اهتزاز الشاشة */
-body.screen-shake { animation: screenShake 0.5s; }
-@keyframes screenShake {
-    0%, 100% { transform: translate(0, 0); }
-    20% { transform: translate(-8px, 5px); }
-    40% { transform: translate(8px, -5px); }
-    60% { transform: translate(-5px, -5px); }
-    80% { transform: translate(5px, 5px); }
-}
+    <style>
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.8); }
+        * { box-sizing: border-box; }
+        body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
+        
+        .header { width: 100%; padding: 20px; display: flex; justify-content: flex-end; }
+        .btn-skip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 15px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s;}
+        .btn-skip:hover { background: rgba(255,255,255,0.1); }
 
-/* تطاير الشررات */
-.burst-particle {
-    position: fixed; width: 12px; height: 12px; border-radius: 50%;
-    pointer-events: none; z-index: 99998; animation: burst 0.8s ease-out forwards;
-    box-shadow: 0 0 15px currentColor;
-}
-@keyframes burst {
-    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0); opacity: 0; }
-}
+        .title-area { text-align: center; margin-bottom: 30px; }
+        .title-area h1 { color: var(--neon-cyan); font-size: 2rem; margin: 0 0 10px; text-shadow: 0 0 15px rgba(0,229,255,0.4); display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .title-area p { color: #aaa; margin: 0; font-size: 1.1rem; }
 
-/* شاشة الاقتحام الكبيرة */
-.reveal-overlay {
-    position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(20,10,40,0.98), rgba(0,0,0,1));
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 99999; padding: 20px; overflow: hidden;
-}
-.reveal-overlay.show { display: flex; }
+        .avatars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 90%; max-width: 500px; margin: 0 auto; }
+        @media (min-width: 600px) { .avatars-grid { grid-template-columns: repeat(4, 1fr); max-width: 600px; } }
 
-/* حلقات الإضاءة اللي بتلف */
-.reveal-rings { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; pointer-events: none; display: flex; align-items: center; justify-content: center; }
-.ring { position: absolute; border-radius: 50%; border: 4px solid transparent; }
-.ring-1 { width: 280px; height: 280px; border-top-color: #00e5ff; border-right-color: #00e5ff; animation: spinRing 2s linear infinite; box-shadow: 0 0 40px rgba(0,229,255,0.6); }
-.ring-2 { width: 360px; height: 360px; border-bottom-color: #9b59b6; border-left-color: #9b59b6; animation: spinRing 3s linear infinite reverse; box-shadow: 0 0 40px rgba(155,89,182,0.6); }
-.ring-3 { width: 440px; height: 440px; border-top-color: #ffd700; border-left-color: #ffd700; animation: spinRing 5s linear infinite; box-shadow: 0 0 30px rgba(255,215,0,0.4); opacity: 0.7; }
-@keyframes spinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .avatar-card { background: var(--glass); border: 3px solid transparent; border-radius: 20px; padding: 10px; cursor: pointer; transition: all 0.3s ease; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; }
+        .avatar-card img { width: 100%; height: 100%; object-fit: contain; border-radius: 15px; background: #111; }
+        .avatar-card:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+        .avatar-card.selected { border-color: var(--neon-cyan); box-shadow: 0 0 25px rgba(0,229,255,0.6); background: rgba(0,229,255,0.1); }
 
-/* الصورة الكبيرة */
-.reveal-avatar-wrap { position: relative; width: 150px; height: 150px; z-index: 5; animation: avatarEnter 0.8s cubic-bezier(0.175,0.885,0.32,1.275) forwards; transform: scale(0); }
-@keyframes avatarEnter { 0% { transform: scale(0) rotate(-180deg); } 70% { transform: scale(1.2) rotate(10deg); } 100% { transform: scale(1) rotate(0); } }
-.reveal-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; background: #fff; padding: 5px; border: 5px solid #00e5ff; box-shadow: 0 0 60px rgba(0,229,255,0.9), 0 0 120px rgba(155,89,182,0.6); animation: avatarPulse 1.5s ease-in-out infinite; }
-@keyframes avatarPulse { 0%, 100% { box-shadow: 0 0 40px rgba(0,229,255,0.7), 0 0 80px rgba(155,89,182,0.4); } 50% { box-shadow: 0 0 70px rgba(0,229,255,1), 0 0 140px rgba(155,89,182,0.8); } }
-
-/* الكلام المحفز */
-.reveal-text-wrap { text-align: center; margin-top: 25px; z-index: 5; position: relative; }
-.reveal-text { color: #fff; font-size: 20px; font-weight: 900; margin-bottom: 10px; text-shadow: 0 0 20px rgba(0,229,255,0.8); }
-.reveal-hero-text { color: #ffd700; font-size: 26px; font-weight: 900; text-shadow: 0 0 30px rgba(255,215,0,1); margin-top: 10px; opacity: 0; transform: translateY(20px); transition: all 0.5s; line-height: 1.4; }
-.reveal-hero-text.show { opacity: 1; transform: translateY(0); }
-
-/* زرار البدء */
-.skip-final-btn {
-    background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: none;
-    padding: 12px 35px; border-radius: 30px; font-size: 16px; font-weight: 900;
-    font-family: 'Cairo', sans-serif; cursor: pointer; z-index: 10;
-    box-shadow: 0 10px 30px rgba(39,174,96,0.6); opacity: 0; transition: opacity 0.5s;
-    margin-top: 25px;
-}
-.skip-final-btn.show { opacity: 1; }
-</style>
+        .btn-start-container { width: 100%; max-width: 400px; padding: 0 20px; margin-top: 40px; box-sizing: border-box; }
+        .btn-start { width: 100%; padding: 18px; border: none; border-radius: 20px; background: linear-gradient(135deg, #00e5ff, #007bff); color: #000; font-family: 'Cairo'; font-weight: 900; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,229,255,0.3); display: flex; justify-content: center; align-items: center; gap: 10px;}
+        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,229,255,0.5); }
+    </style>
 </head>
 <body>
-<div class="particles" id="particles"></div>
-<div class="top-bar"><button class="skip-btn" onclick="startGame()">تخطي ←</button></div>
-<header class="avatar-header"><h1>👤 اختر شخصيتك</h1><p>اختار الصورة اللي بتمثلك</p></header>
-<div class="avatar-grid" id="avatarGrid"></div>
-
-<!-- شاشة الأنيميشن السينمائي -->
-<div class="reveal-overlay" id="revealOverlay">
-    <div class="reveal-rings">
-        <div class="ring ring-1"></div><div class="ring ring-2"></div><div class="ring ring-3"></div>
+    <div class="header">
+        <button class="btn-skip" onclick="window.location.href='languages.html'">تخطي ←</button>
     </div>
-    <div class="reveal-avatar-wrap">
-        <img class="reveal-avatar" id="revealAvatar" src="" alt="Avatar">
+
+    <div class="title-area">
+        <h1><i class="ri-user-star-line"></i> اختر شخصيتك</h1>
+        <p>اختر الصورة التي تمثلك لتبدأ رحلة البرمجة</p>
     </div>
-    <div class="reveal-text-wrap">
-        <div class="reveal-text" id="revealText"></div>
-        <div class="reveal-hero-text" id="revealHeroText">استعد للمغامرة يا بطل! 🚀</div>
-        <button class="skip-final-btn" id="continueBtn" onclick="startGame()">يلا نبدأ! 🎮</button>
+
+    <div class="avatars-grid" id="avatarsGrid">
+        <!-- سيتم توليد الصور هنا بالجافاسكريبت -->
     </div>
-</div>
 
+    <div class="btn-start-container">
+        <button class="btn-start" onclick="saveAndStart()">
+            <i class="ri-rocket-line"></i> يلا نبدأ المغامرة
+        </button>
+    </div>
 
-
-    
-    
     <script>
-        let selectedAvatarUrl = '';
+        let selectedAvatarUrl = null;
+        const avatarSeeds = [
+            'Felix', 'Aneka', 'Mia', 'Leo', 'Zoe', 'Max', 'Luna', 'Charlie', 'Lily', 'Oscar', 'Bella', 'Rocky', 'Coco', 'Daisy', 'Buddy', 'Ruby', 'Jack', 'Stella'
+        ];
 
-        function selectAvatar(element) {
-            document.querySelectorAll('.avatar-option').forEach(el => el.style.borderColor = 'transparent');
-            element.style.borderColor = '#00e5ff';
-            selectedAvatarUrl = element.querySelector('img').src;
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            // حماية الصفحة
+            if(typeof Auth !== 'undefined') {
+                Auth.init((logged) => {
+                    if (!logged) window.location.href = 'index.html';
+                });
+            }
 
-        function startGame() {
-            if (!selectedAvatarUrl) { alert("يا بطل، اختر شخصيتك الأول!"); return; }
+            const grid = document.getElementById('avatarsGrid');
             
-            localStorage.setItem('cq_avatar', selectedAvatarUrl); // حفظ في المتصفح
-            
+            // توليد 18 شخصية
+            avatarSeeds.forEach(seed => {
+                const imgUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+                
+                const card = document.createElement('div');
+                card.className = 'avatar-card';
+                card.innerHTML = `<img src="${imgUrl}" alt="Avatar">`;
+                
+                card.onclick = () => {
+                    // إزالة التحديد من الكل
+                    document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
+                    // تحديد الكارت اللي اتضغط عليه
+                    card.classList.add('selected');
+                    selectedAvatarUrl = imgUrl;
+                };
+                
+                grid.appendChild(card);
+            });
+        });
+
+        async function saveAndStart() {
+            if (!selectedAvatarUrl) {
+                alert("يا بطل، اختر شخصيتك الأول!");
+                return;
+            }
+
+            // حفظ في المتصفح
+            localStorage.setItem('cq_avatar', selectedAvatarUrl);
+
+            // حفظ في فايربيز
             const uid = Auth.getUserId();
             if (uid) {
-                // حفظ في فايربيز
-                firebase.firestore().collection('users').doc(uid).update({ avatar: selectedAvatarUrl })
-                .then(() => { window.location.href = 'languages.html'; })
-                .catch((e) => { 
-                    console.error(e); 
-                    window.location.href = 'languages.html'; 
-                });
-            } else {
-                window.location.href = 'languages.html';
+                try {
+                    await firebase.firestore().collection('users').doc(uid).update({
+                        avatar: selectedAvatarUrl
+                    });
+                } catch(e) {
+                    console.error("Error saving avatar:", e);
+                }
             }
+            
+            // التوجه للصفحة التالية
+            window.location.href = 'languages.html';
         }
     </script>
-    </body>
+</body>
 </html>
