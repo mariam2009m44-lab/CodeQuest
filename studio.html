@@ -16,55 +16,46 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.7); }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.8); }
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Glass Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--glass); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(15px); z-index: 10; }
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--glass); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(15px); z-index: 100; }
         .header h1 { margin: 0; font-size: 1rem; color: var(--neon-cyan); display:flex; align-items:center; gap:5px;}
         .header-btns { display: flex; gap: 8px; }
-        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; font-size: 0.9rem;}
+        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; font-size: 0.85rem;}
         .btn-run { background: #28a745; color: white; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
         .btn-finish { background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
 
-        /* Main Layout */
-        .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+        /* Main Layout - Mobile First */
+        .main-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative; }
         
-        /* IDE Panel */
-        .ide-panel { flex: 1; display: flex; flex-direction: column; background: #0d1117; min-height: 0; }
-        #editor-container { flex: 1; width: 100%; height: 100%; min-height: 200px;}
+        /* Editor Area */
+        .editor-wrapper { flex: 1; position: relative; min-height: 250px; }
+        #editor-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
-        /* Terminal Panel */
-        .terminal-wrapper { height: 35%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
+        /* Console Area */
+        .terminal-wrapper { height: 30%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
         .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
-        .terminal-output { flex: 1; padding: 10px; font-family: 'Courier New', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; text-shadow: 0 0 5px rgba(0, 255, 0, 0.5); }
+        .terminal-output { flex: 1; padding: 10px; font-family: 'Courier New', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
 
-        /* Cody Floating Panel */
-        .cody-panel { 
-            position: absolute; bottom: 45%; right: 20px; width: 60px; height: 60px; 
-            z-index: 50; cursor: pointer; transition: 0.3s;
-            border-radius: 50%; border: 2px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan);
-            background: #000; overflow: hidden;
-        }
-        .cody-panel img { width: 100%; height: 100%; object-fit: cover; }
+        /* Floating Cody */
+        .cody-float { position: absolute; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); background: #000; z-index: 200; cursor: pointer; overflow: hidden; }
+        .cody-float img { width: 100%; height: 100%; object-fit: cover; }
         
-        .speech-popup {
-            position: absolute; bottom: 55%; right: 90px; width: 250px;
-            background: var(--glass); backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,229,255,0.3); border-radius: 15px 15px 0 15px;
-            padding: 15px; display: none; z-index: 49;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); font-size: 0.9rem; line-height: 1.5;
-        }
+        /* Speech Popup */
+        .speech-popup { position: absolute; bottom: 85px; right: 20px; width: 250px; background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--neon-cyan); border-radius: 15px; padding: 15px; display: none; z-index: 199; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .speech-popup.active { display: block; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .main-container { flex-direction: column; }
-            .ide-panel { height: 65%; }
-            .terminal-wrapper { height: 35%; }
-            .cody-panel { bottom: 40%; right: 15px; width: 50px; height: 50px; }
-            .speech-popup { bottom: 50%; right: 75px; width: 200px; font-size: 0.8rem; }
-            .header h1 span { display: none; } /* نخفي اسم الدرس في الموبايل عشان المساحة */
+        /* Desktop Adjustments */
+        @media (min-width: 769px) {
+            .main-container { flex-direction: row; }
+            .editor-wrapper { flex: 2; height: 100%; }
+            .terminal-wrapper { height: 100%; width: 35%; border-top: none; border-right: 2px solid #333; }
+            .cody-float { bottom: 30px; right: 30px; width: 80px; height: 80px; }
+            .speech-popup { bottom: 120px; right: 30px; width: 300px; }
         }
     </style>
 </head>
@@ -78,24 +69,24 @@
     </div>
 
     <div class="main-container">
-        <div class="ide-panel">
+        <div class="editor-wrapper">
             <div id="editor-container"></div>
-            <div class="terminal-wrapper">
-                <div class="terminal-header">
-                    <span><i class="ri-terminal-line"></i> CONSOLE</span>
-                    <span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i></span>
-                </div>
-                <div class="terminal-output" id="terminalOutput">> Ready...</div>
+        </div>
+        
+        <div class="terminal-wrapper">
+            <div class="terminal-header">
+                <span><i class="ri-terminal-line"></i> CONSOLE</span>
+                <span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i></span>
             </div>
+            <div class="terminal-output" id="terminalOutput">> Ready...</div>
         </div>
 
-        <!-- Cody Character -->
-        <div class="cody-panel" onclick="toggleSpeech()">
+        <div class="cody-float" onclick="document.getElementById('speechBox').classList.toggle('active')">
             <img src="cody-avatar.svg" id="codyImg">
         </div>
         <div class="speech-popup" id="speechBox">
-            <div id="codyText" style="color: #e0e0e0;">جاري تحميل الدرس...</div>
-            <button onclick="speakText()" style="background:transparent; border:none; color:var(--neon-cyan); margin-top:10px; cursor:pointer;"><i class="ri-volume-up-line"></i> اسمع</button>
+            <div id="codyText" style="color: #e0e0e0; font-size: 0.9rem; line-height: 1.6;">جاري تحميل الدرس...</div>
+            <button onclick="speakText()" style="background:transparent; border:none; color:var(--neon-cyan); margin-top:10px; cursor:pointer; font-family:'Cairo';"><i class="ri-volume-up-line"></i> اسمع</button>
         </div>
     </div>
 
@@ -106,7 +97,7 @@
         const levelId = parseInt(urlParams.get('level')) || 1;
         let currentLesson = null;
 
-        // تحميل صورة الشخصية
+        // تحميل الأفاتار
         const savedAvatar = localStorage.getItem('cq_avatar');
         if (savedAvatar) document.getElementById('codyImg').src = savedAvatar;
 
@@ -117,8 +108,10 @@
         async function loadCurriculum() {
             try {
                 // مسح الكود القديم لو فيه غلطة
-                if(localStorage.getItem(`cq_code_${lang}_${levelId}`) === '// اكتب اسمك هنا\nletlet myName = "مريم";\nconsole.log("أهلاً يا " + myName);') {
+                let savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`);
+                if (savedCode && savedCode.includes('llet')) {
                     localStorage.removeItem(`cq_code_${lang}_${levelId}`);
+                    savedCode = null;
                 }
 
                 const response = await fetch('curriculum.json');
@@ -128,12 +121,12 @@
                 document.getElementById('lessonTitle').innerText = currentLesson.title;
                 document.getElementById('codyText').innerText = currentLesson.intro.replace(/<[^>]*>?/gm, '');
                 
-                const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || currentLesson.code;
+                savedCode = savedCode || currentLesson.code;
                 
                 require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
                 require(['vs/editor/editor.main'], function() {
                     editor = monaco.editor.create(document.getElementById('editor-container'), {
-                        value: savedCode, language: lang === 'js' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
+                        value: savedCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
                         theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false, padding: { top: 10 }
                     });
                     
@@ -146,11 +139,6 @@
                     });
                 });
             } catch(e) { console.error(e); document.getElementById('codyText').innerText = "حدث خطأ في تحميل الدرس."; }
-        }
-
-        function toggleSpeech() {
-            const box = document.getElementById('speechBox');
-            box.style.display = box.style.display === 'block' ? 'none' : 'block';
         }
 
         function speakText() {
