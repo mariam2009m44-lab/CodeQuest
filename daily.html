@@ -1,53 +1,82 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>تحدي اليوم</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-<style>body{background:#050914;color:#fff;font-family:Cairo;text-align:center;padding:20px;} .box{background:rgba(255,255,255,0.05);padding:20px;border-radius:20px;max-width:400px;margin:auto;} button{background:#00e5ff;padding:10px;border:none;border-radius:10px;margin:10px;cursor:pointer;font-weight:bold;}</style>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>التحدي اليومي | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <style>
+        body{background:#050914;color:#fff;font-family:'Cairo',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}
+        .box{background:rgba(255,255,255,0.05);padding:30px;border-radius:20px;text-align:center;border:1px solid #00e5ff;box-shadow:0 0 20px rgba(0,229,255,0.2);}
+        button{background:linear-gradient(135deg,#00e5ff,#007bff);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:bold;cursor:pointer;margin:5px;font-family:'Cairo';}
+        button:hover{transform:translateY(-2px);}
+        .hidden{display:none;}
+    </style>
 </head>
 <body>
-<div class="box">
-    <h2 style="color:#ff9500;">🔥 تحدي اليوم</h2>
-    <p id="status">جاري التحميل...</p>
-    <div id="quiz" style="display:none;">
-        <h3>إيه ناتج 5 + 5؟</h3>
-        <button onclick="answer(10)">10</button>
-        <button onclick="answer(12)">12</button>
+    <div class="box">
+        <h2 style="color:#00e5ff;">⚡ التحدي اليومي</h2>
+        <p id="status">جاري التحميل...</p>
+        <div id="quiz" class="hidden">
+            <p>كم يساوي: <strong>10 / 2</strong> ؟</p>
+            <button onclick="answer(10)">10</button>
+            <button onclick="answer(5)">5</button>
+        </div>
+        <button onclick="window.location.href='languages.html'" style="margin-top:20px;background:#333;border:1px solid #555;">رجوع</button>
     </div>
-    <button onclick="window.location.href='languages.html'">رجوع</button>
-</div>
-<script>
-let uid;
-document.addEventListener('DOMContentLoaded', () => {
-    Auth.init(async (logged) => {
-        if(!logged) { window.location.href = 'index.html'; return; }
-        uid = Auth.getUserId();
-        const today = new Date().toDateString();
-        const doc = await firebase.firestore().collection('users').doc(uid).get();
-        if(doc.data().lastDailyDate === today) {
-            document.getElementById('status').innerText = 'خلصت تحدي النهاردة ✅';
-        } else {
-            document.getElementById('status').innerText = 'جاوب على السؤال واكسب 50 نقطة:';
-            document.getElementById('quiz').style.display = 'block';
-        }
-    });
-});
-async function answer(val) {
-    if(val === 10) {
-        const today = new Date().toDateString();
-        try {
-            await firebase.firestore().collection('users').doc(uid).update({
-                bonusPoints: firebase.firestore.FieldValue.increment(50),
-                lastDailyDate: today
+    <script>
+        let uid = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.init(async (logged) => {
+                if (!logged) { window.location.href = 'index.html'; return; }
+                uid = Auth.getUserId();
+                const today = new Date().toDateString();
+                
+                try {
+                    const doc = await firebase.firestore().collection('users').doc(uid).get();
+                    const data = doc.data();
+                    
+                    if (data.lastDailyDate === today) {
+                        document.getElementById('status').innerText = 'لقد حصلت على مكافأتك اليوم! عد غداً 🌟';
+                    } else {
+                        document.getElementById('status').innerText = 'أجب على السؤال لتحصل على 50 نقطة!';
+                        document.getElementById('quiz').classList.remove('hidden');
+                    }
+                } catch(e) {
+                    document.getElementById('status').innerText = 'حدث خطأ في تحميل البيانات.';
+                }
             });
-            alert('مبروك! كسبت 50 نقطة');
-            location.reload();
-        } catch(e) { alert('خطأ!'); }
-    } else { alert('إجابة خاطئة'); }
-}
-</script>
-</body></html>
+        });
+
+        async function answer(val) {
+            if (val !== 5) { alert('إجابة خاطئة! حاول مرة أخرى.'); return; }
+            
+            const today = new Date().toDateString();
+            const userRef = firebase.firestore().collection('users').doc(uid);
+
+            try {
+                // استخدام Transaction لضمان أخذ المكافأة مرة واحدة فقط
+                await firebase.firestore().runTransaction(async (transaction) => {
+                    const doc = await transaction.get(userRef);
+                    if (!doc.exists) throw "User does not exist!";
+                    
+                    const data = doc.data();
+                    if (data.lastDailyDate === today) throw "Already claimed!";
+
+                    transaction.update(userRef, {
+                        bonusPoints: firebase.firestore.FieldValue.increment(50),
+                        lastDailyDate: today
+                    });
+                });
+                alert('🎉 مبروك! حصلت على 50 نقطة.');
+                window.location.reload();
+            } catch(e) {
+                console.error(e);
+                alert('لقد حصلت على المكافأة بالفعل اليوم أو حدث خطأ.');
+            }
+        }
+    </script>
+</body>
+</html>

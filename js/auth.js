@@ -27,5 +27,30 @@ const Auth = {
         const saved = this.userData ? this.userData.avatar : localStorage.getItem('cq_avatar_' + name);
         if (saved) return '<img src="' + saved + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
         return '<div class="letter-avatar" style="background:#00e5ff;color:#000;font-weight:bold;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;">' + name.charAt(0).toUpperCase() + '</div>';
+    },
+    async loginUser(username, password) {
+        try {
+            const email = username.includes('@') ? username : `${username}@codequest.app`;
+            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+            return { success: true, user: userCredential.user };
+        } catch (error) {
+            console.error("Login Error:", error);
+            return { success: false, message: error.message };
+        }
+    },
+    async registerUser(username, password) {
+        try {
+            const email = username.includes('@') ? username : `${username}@codequest.app`;
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            await firebase.firestore().collection('users').doc(userCredential.user.uid).set({
+                username: username,
+                points: 0,
+                avatar: null
+            });
+            return { success: true, user: userCredential.user };
+        } catch (error) {
+            console.error("Register Error:", error);
+            return { success: false, message: error.message };
+        }
     }
 };

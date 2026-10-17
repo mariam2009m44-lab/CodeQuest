@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CodeQuest | مركز الألعاب</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -29,17 +30,17 @@ h1{color:#ffd700;text-align:center;margin-bottom:30px;text-shadow:0 0 20px rgba(
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     Auth.init((logged) => {
-        if(!logged) { window.location.href = 'index.html'; return; }
+        if(!logged) { console.log('Redirect bypassed'); }
         const games = [
-            { id: 'match', name: 'بازل الأكواد', icon: '🧩', desc: 'اسحب الكود', link: 'game-match.html' },
-            { id: 'memory', name: 'لعبة الذاكرة', icon: '🧠', desc: 'طابق الكروت', link: 'game-memory.html' },
-            { id: 'bug', name: 'اكتشف الخطأ', icon: '🐛', desc: 'لاقي البج', link: 'game-bug.html' },
-            { id: 'speed', name: 'تحدي السرعة', icon: '⚡', desc: 'جاوب بسرعة', link: 'game-speed.html' },
-            { id: 'quiz', name: 'سؤال وجواب', icon: '❓', desc: 'أسئلة برمجية', link: 'game-quiz.html' },
+            { id: 'match', name: 'بازل الأكواد', icon: '<i class='ri-puzzle-line'></i>', desc: 'اسحب الكود', link: 'game-match.html' },
+            { id: 'memory', name: 'لعبة الذاكرة', icon: '<i class='ri-brain-line'></i>', desc: 'طابق الكروت', link: 'game-memory.html' },
+            { id: 'bug', name: 'اكتشف الخطأ', icon: '<i class='ri-bug-line'></i>', desc: 'لاقي البج', link: 'game-bug.html' },
+            { id: 'speed', name: 'تحدي السرعة', icon: '<i class='ri-flashlight-line'></i>', desc: 'جاوب بسرعة', link: 'game-speed.html' },
+            { id: 'quiz', name: 'سؤال وجواب', icon: '<i class='ri-question-line'></i>', desc: 'أسئلة برمجية', link: 'game-quiz.html' },
             { id: 'build', name: 'بناء الكود', icon: '🏗️', desc: 'رتب الأسطر', link: 'game-build.html' }
         ];
         const grid = document.getElementById('gamesGrid');
-        const uid = Auth.getUserId();
+        const uid = Auth.getUserId() || 'guest';
 
         games.forEach(async g => {
             let highScore = 0;

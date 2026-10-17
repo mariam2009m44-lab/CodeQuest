@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 1000); 
             }
             else { showAlert(res.message, true); eb.disabled = false; eb.innerText = isLogin ? 'دخول' : 'تسجيل'; }
-        } catch (err) { showAlert('حدث خطأ!', true); eb.disabled = false; eb.innerText = isLogin ? 'دخول' : 'تسجيل'; }
+        } catch (err) { console.error('REAL ERROR:', err); showAlert(err.message, true); eb.disabled = false; eb.innerText = isLogin ? 'دخول' : 'تسجيل'; }
     };
     eb.addEventListener('click', handleAuth); pi.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleAuth(); });
     function showAlert(msg, isError = false) {
