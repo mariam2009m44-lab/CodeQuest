@@ -52,6 +52,7 @@
     <div class="header">
         <h1><span id="lessonTitle">جاري التحميل...</span></h1>
         <div id="headerBtns" style="display:none; gap:8px;">
+            <button class="btn" style="background: #8b5cf6; color: white;" onclick="showHint()">💡 تلميح</button>
             <button class="btn btn-run" onclick="runCode()">▶ تشغيل</button>
             <button class="btn btn-finish" onclick="completeLesson()">✓ إنهاء</button>
         </div>
@@ -128,6 +129,15 @@
             });
         }
 
+        
+        function showHint() {
+            if(lessonData && lessonData.hint) {
+                alert("💡 تلميح كودي:\n" + lessonData.hint);
+            } else {
+                alert("💡 ركز في الكود وجرب تشغله!");
+            }
+        }
+    
         function runCode() {
             if(!editor) return;
             const code = editor.getValue();
