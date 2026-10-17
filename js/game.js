@@ -1,8 +1,3 @@
-/* ============================================
-   CodeQuest - Interactive Learning Engine
-   Multi-Language Support: JS / Python / C++
-   ============================================ */
-
 const CONFIG = {
     levelCount: 5,
     pointsPerQuestion: 10,
@@ -17,7 +12,11 @@ const STATE = {
     stepIndex: 0,
     questionIndex: 0,
     score: 0,
-    inQuiz: false
+    inQuiz: false,
+    progressKey: '',
+    doneKey: '',
+    story: null,
+    totalSteps: 0
 };
 
 const STORIES = {
@@ -458,10 +457,6 @@ function initState() {
     STATE.totalSteps = STATE.story.steps.length;
 }
 
-function getAvatarUrl() {
-    return Auth.getAvatarUrl(STATE.user);
-}
-
 function saveProgress() {
     localStorage.setItem(STATE.progressKey, JSON.stringify({
         step: STATE.stepIndex,
@@ -485,7 +480,7 @@ function codyBubble(html) {
 function studentBubble(html) {
     const b = document.createElement('div');
     b.className = 'chat-row student-row';
-    b.innerHTML = '<div class="chat-bubble student-bubble">' + html + '</div><div class="chat-avatar student-avatar"><img src="' + getAvatarUrl() + '" alt="Student"></div>';
+    b.innerHTML = '<div class="chat-bubble student-bubble">' + html + '</div><div class="chat-avatar student-avatar">' + Auth.getAvatarHtml(STATE.user) + '</div>';
     $('chatArea').appendChild(b);
     scrollChat();
 }
@@ -542,6 +537,15 @@ function advanceStep() {
     }
 }
 
+window.nextStep = function() {
+    playSound('click');
+    const btn = $('nextBtn');
+    if (btn) btn.classList.add('hidden');
+    STATE.stepIndex++;
+    saveProgress();
+    advanceStep();
+};
+
 function startQuiz() {
     STATE.inQuiz = true;
     $('nextBtn').classList.add('hidden');
@@ -552,6 +556,10 @@ function startQuiz() {
     if (chatDot) chatDot.classList.add('done');
     if (quizDot) quizDot.classList.add('active');
     $('progressFill').style.width = '60%';
+    
+    const gamesCount = parseInt(localStorage.getItem('cq_games_count_' + STATE.user) || '0');
+    localStorage.setItem('cq_games_count_' + STATE.user, gamesCount + 1);
+
     setTimeout(() => {
         codyBubble('🎯 يلا بينا على الامتحان!');
         setTimeout(() => loadQuestion(), 800);
@@ -607,22 +615,34 @@ function finishGame() {
     $('choicesArea').classList.add('hidden');
     localStorage.removeItem(STATE.progressKey);
     localStorage.setItem(STATE.doneKey, 'true');
-    const balanceKey = 'cq_balance_' + STATE.user;
-    const currentBalance = parseInt(localStorage.getItem(balanceKey) || '0');
-    localStorage.setItem(balanceKey, currentBalance + STATE.score);
+    
+    // إضافة النقاط في ملف المستخدم
+    const users = Auth.getUsers();
+    if (users[STATE.user]) {
+        users[STATE.user].bonusPoints = (users[STATE.user].bonusPoints || 0) + STATE.score;
+        Auth.saveUsers(users);
+    }
 
     setTimeout(() => {
         codyBubble('🎉 مبروك يا ' + STATE.user + '! خلّصت ' + STATE.story.levelTitle + '!');
         setTimeout(() => {
-            codyBubble('كسبت ' + STATE.score + ' نقطة! ⭐ رصيدك: ' + (currentBalance + STATE.score) + ' نقطة 💰');
+            codyBubble('كسبت ' + STATE.score + ' نقطة! ⭐');
             try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.6 }, colors: ['#00e5ff', '#0072ff', '#27ae60', '#ffd700'] }); } catch(e) {}
             playSound('win');
+            
             const progress = JSON.parse(localStorage.getItem('cq_unlocked_' + STATE.user + '_' + STATE.lang)) || { level1: true };
             const levelNum = parseInt(STATE.level.replace('level', ''));
             for (let i = 1; i <= Math.min(levelNum + 1, 5); i++) {
                 progress['level' + i] = true;
             }
             localStorage.setItem('cq_unlocked_' + STATE.user + '_' + STATE.lang, JSON.stringify(progress));
+            
+            showCelebration();
+            
+            if (typeof Achievements !== 'undefined') {
+                setTimeout(() => Achievements.check({ lastPerfect: STATE.score === STATE.story.questions.length * CONFIG.pointsPerQuestion }), 2500);
+            }
+            
             setTimeout(() => {
                 const nextLevelNum = levelNum + 1;
                 if (nextLevelNum <= 5) {
@@ -762,17 +782,9 @@ function reviewAll() {
     showNext();
 }
 
-
-function triggerAchievements(extra) {
-    if (typeof Achievements !== 'undefined') {
-        setTimeout(() => Achievements.check(extra), 2500);
-    }
-}
-
 function showCelebration() {
     const overlay = document.createElement('div');
     overlay.className = 'celebration-overlay';
-    const levelNum = parseInt(STATE.level.replace('level', ''));
     const stars = Math.min(3, Math.max(1, Math.ceil(STATE.score / 40)));
     let starsHTML = '';
     for (let i = 0; i < 3; i++) {
@@ -793,40 +805,15 @@ function showCelebration() {
         '</div>';
     document.body.appendChild(overlay);
     setTimeout(() => overlay.classList.add('show'), 50);
-    setTimeout(() => { try { confetti({ particleCount: 300, spread: 130, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {} try { if (typeof playSound === 'function') playSound('win'); } catch(e) {} }, 400);
+    setTimeout(() => { try { confetti({ particleCount: 300, spread: 130, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {} }, 400);
     document.getElementById('celebrationContinue').onclick = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 500); };
 }
 
-const _origFinishGame = finishGame;
-window.finishGame = function() {
-    _origFinishGame();
-    setTimeout(() => {
-        showCelebration();
-        triggerAchievements({ lastPerfect: STATE.score === STATE.story.questions.length * CONFIG.pointsPerQuestion });
-    }, 2500);
-};
-
-const _origStartQuiz = startQuiz;
-window.startQuiz = function() {
-    const gamesCount = parseInt(localStorage.getItem('cq_games_count_' + STATE.user) || '0');
-    localStorage.setItem('cq_games_count_' + STATE.user, gamesCount + 1);
-    _origStartQuiz();
-};
-
-window.nextStep = function() {
-    playSound('click');
-    const btn = document.getElementById('nextBtn');
-    if (btn) btn.classList.add('hidden');
-    STATE.stepIndex++;
-    saveProgress();
-    advanceStep();
-};
-
 document.addEventListener('DOMContentLoaded', () => {
     initState();
-    const levelInfoEl = document.getElementById('levelInfo');
+    const levelInfoEl = $('levelInfo');
     if (levelInfoEl) levelInfoEl.innerText = STATE.story.levelTitle;
-    const scoreEl = document.getElementById('score');
+    const scoreEl = $('score');
     if (scoreEl) scoreEl.innerText = 0;
 
     if (localStorage.getItem(STATE.doneKey) === 'true') {
@@ -836,5 +823,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         advanceStep();
     }
-    triggerAchievements();
 });
