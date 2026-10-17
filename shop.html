@@ -190,7 +190,8 @@ function renderItems() {
     });
 }
 
-function handleItemClick(item, isOwned, isEquipped, canAfford) {
+
+async function handleItemClick(item, isOwned, isEquipped, canAfford) {
     if (isEquipped) {
         playSound('click');
         const equipped = getEquipped();
@@ -205,6 +206,16 @@ function handleItemClick(item, isOwned, isEquipped, canAfford) {
         const equipped = getEquipped();
         equipped[currentCat] = item.id;
         setEquipped(equipped);
+        
+        // حفظ في Firebase
+        if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+            try {
+                await firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({
+                    equipped: equipped
+                });
+            } catch(e) { console.error(e); }
+        }
+        
         showToast('✨ تم تفعيل ' + item.name + '!');
         try { confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#ffffff'] }); } catch(e) {}
         burstEmoji(item.icon);
@@ -213,25 +224,62 @@ function handleItemClick(item, isOwned, isEquipped, canAfford) {
     }
     if (!canAfford) {
         playSound('error');
-        showToast('❌ معندكش نقاط كفاية! محتاج ' + (item.price - getBalance()) + ' نقطة زيادة', 'error');
+        showToast('❌ معندكش نقاط كفاية!', 'error');
         return;
     }
+    
+    // عملية الشراء من Firebase
     playSound('win');
-    const balance = getBalance();
-    const spent = parseInt(localStorage.getItem('cq_spent_' + user) || '0');
-    localStorage.setItem('cq_spent_' + user, spent + item.price);
-    const owned = getOwned();
-    owned[item.id] = true;
-    setOwned(owned);
-    const equipped = getEquipped();
-    equipped[currentCat] = item.id;
-    setEquipped(equipped);
-    document.getElementById('balanceNum').innerText = balance - item.price;
-    showToast('🎉 اشتريت ' + item.name + ' واتفعّل!');
-    try { confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
-    burstEmoji(item.icon);
-    setTimeout(renderItems, 300);
+    
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+        const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+        try {
+            await firebase.firestore().runTransaction(async (transaction) => {
+                const doc = await transaction.get(userRef);
+                if (!doc.exists) throw "User not found";
+                
+                let currentPoints = doc.data().bonusPoints || 0;
+                if (currentPoints < item.price) throw "Not enough points";
+                
+                let owned = doc.data().owned || {};
+                owned[item.id] = true;
+                
+                let equipped = doc.data().equipped || {};
+                equipped[currentCat] = item.id;
+                
+                transaction.update(userRef, {
+                    bonusPoints: currentPoints - item.price,
+                    owned: owned,
+                    equipped: equipped
+                });
+            });
+            
+            // تحديث المتصفح
+            const balance = getBalance();
+            setBalance(balance - item.price);
+            const ownedLocal = getOwned();
+            ownedLocal[item.id] = true;
+            setOwned(ownedLocal);
+            const equippedLocal = getEquipped();
+            equippedLocal[currentCat] = item.id;
+            setEquipped(equippedLocal);
+            
+            document.getElementById('balanceNum').innerText = balance - item.price;
+            showToast('🎉 اشتريت ' + item.name + ' واتفعّل!');
+            try { confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
+            burstEmoji(item.icon);
+            setTimeout(renderItems, 300);
+            
+        } catch(e) {
+            console.error(e);
+            playSound('error');
+            showToast('❌ حدث خطأ أثناء الشراء!', 'error');
+        }
+    } else {
+        showToast('❌ خطأ في الاتصال!', 'error');
+    }
 }
+
 
 function burstEmoji(emoji) {
     for (let i = 0; i < 10; i++) {
