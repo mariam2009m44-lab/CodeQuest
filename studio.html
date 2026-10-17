@@ -16,11 +16,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.8); }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.85); }
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--glass); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(15px); z-index: 100; }
         .header h1 { margin: 0; font-size: 1rem; color: var(--neon-cyan); display:flex; align-items:center; gap:5px;}
         .header-btns { display: flex; gap: 8px; }
@@ -28,65 +27,65 @@
         .btn-run { background: #28a745; color: white; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
         .btn-finish { background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
 
-        /* Main Layout - Mobile First */
         .main-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative; }
         
-        /* Editor Area */
+        /* شاشة الحوار */
+        .dialogue-phase { display: flex; flex-direction: column; height: 100%; padding: 20px; justify-content: flex-end; background: var(--glass); backdrop-filter: blur(15px); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; }
+        .chat-bubble { background: rgba(0, 0, 0, 0.6); border: 1px solid var(--neon-cyan); border-radius: 20px 20px 0 20px; padding: 20px; margin-bottom: 20px; max-width: 85%; align-self: flex-start; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.2);}
+        .chat-bubble::after { content: ''; position: absolute; bottom: -15px; right: 20px; border-width: 15px 15px 0 0; border-style: solid; border-color: var(--neon-cyan) transparent transparent transparent; }
+        .cody-msg { font-size: 1.1rem; line-height: 1.8; color: #e0e0e0; }
+        
+        .avatars-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .avatar-img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--neon-cyan); background: #000; object-fit: cover;}
+        .user-avatar-img { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
+        
+        .btn-next { background: var(--neon-cyan); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,229,255,0.4); width: 100%; transition: 0.3s;}
+        .btn-next:hover { transform: scale(1.02); }
+
+        /* شاشة الكود */
+        .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; }
         .editor-wrapper { flex: 1; position: relative; min-height: 250px; }
         #editor-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
-        /* Console Area */
         .terminal-wrapper { height: 30%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
         .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
         .terminal-output { flex: 1; padding: 10px; font-family: 'Courier New', monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
 
-        /* Floating Cody */
-        .cody-float { position: absolute; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); background: #000; z-index: 200; cursor: pointer; overflow: hidden; }
-        .cody-float img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Speech Popup */
-        .speech-popup { position: absolute; bottom: 85px; right: 20px; width: 250px; background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--neon-cyan); border-radius: 15px; padding: 15px; display: none; z-index: 199; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .speech-popup.active { display: block; animation: popIn 0.3s ease-out; }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-        /* Desktop Adjustments */
         @media (min-width: 769px) {
-            .main-container { flex-direction: row; }
+            .coding-phase { flex-direction: row; }
             .editor-wrapper { flex: 2; height: 100%; }
             .terminal-wrapper { height: 100%; width: 35%; border-top: none; border-right: 2px solid #333; }
-            .cody-float { bottom: 30px; right: 30px; width: 80px; height: 80px; }
-            .speech-popup { bottom: 120px; right: 30px; width: 300px; }
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1><i class="ri-terminal-box-line"></i> <span id="lessonTitle">جاري التحميل...</span></h1>
-        <div class="header-btns">
+        <div class="header-btns" id="headerBtns" style="display:none;">
             <button class="btn btn-run" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
             <button class="btn btn-finish" onclick="completeLesson()"><i class="ri-check-double-line"></i> إنهاء</button>
         </div>
     </div>
 
     <div class="main-container">
-        <div class="editor-wrapper">
-            <div id="editor-container"></div>
-        </div>
-        
-        <div class="terminal-wrapper">
-            <div class="terminal-header">
-                <span><i class="ri-terminal-line"></i> CONSOLE</span>
-                <span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i></span>
+        <!-- شاشة الحوار -->
+        <div class="dialogue-phase" id="dialoguePhase">
+            <div class="avatars-row">
+                <img src="cody-avatar.svg" class="avatar-img" id="codyAvatarDialogue">
+                <img src="cody-avatar.svg" class="avatar-img user-avatar-img" id="userAvatarDialogue">
             </div>
-            <div class="terminal-output" id="terminalOutput">> Ready...</div>
+            <div class="chat-bubble">
+                <div class="cody-msg" id="codyMessage">أهلاً بك! أنا كودي. اضغط على الزر أدناه لبدء الدرس.</div>
+            </div>
+            <button class="btn-next" id="nextBtn" onclick="nextDialogueStep()">التالي ➡️</button>
         </div>
 
-        <div class="cody-float" onclick="document.getElementById('speechBox').classList.toggle('active')">
-            <img src="cody-avatar.svg" id="codyImg">
-        </div>
-        <div class="speech-popup" id="speechBox">
-            <div id="codyText" style="color: #e0e0e0; font-size: 0.9rem; line-height: 1.6;">جاري تحميل الدرس...</div>
-            <button onclick="speakText()" style="background:transparent; border:none; color:var(--neon-cyan); margin-top:10px; cursor:pointer; font-family:'Cairo';"><i class="ri-volume-up-line"></i> اسمع</button>
+        <!-- شاشة كتابة الكود -->
+        <div class="coding-phase" id="codingPhase">
+            <div class="editor-wrapper"><div id="editor-container"></div></div>
+            <div class="terminal-wrapper">
+                <div class="terminal-header"><span><i class="ri-terminal-line"></i> CONSOLE</span><span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i></span></div>
+                <div class="terminal-output" id="terminalOutput">> Ready...</div>
+            </div>
         </div>
     </div>
 
@@ -95,11 +94,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         const lang = urlParams.get('lang') || localStorage.getItem('cq_language') || 'JavaScript';
         const levelId = parseInt(urlParams.get('level')) || 1;
-        let currentLesson = null;
+        let lessonData = null;
+        let dialogueStep = 0;
 
-        // تحميل الأفاتار
-        const savedAvatar = localStorage.getItem('cq_avatar');
-        if (savedAvatar) document.getElementById('codyImg').src = savedAvatar;
+        // تحميل صورة الشخصية اللي إنتي اخترتيها
+        const userAvatar = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
+        document.getElementById('userAvatarDialogue').src = userAvatar;
 
         const soundClick = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'], volume: 0.5 });
         const soundSuccess = new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'], volume: 0.6 });
@@ -107,45 +107,49 @@
 
         async function loadCurriculum() {
             try {
-                // مسح الكود القديم لو فيه غلطة
-                let savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`);
-                if (savedCode && savedCode.includes('llet')) {
-                    localStorage.removeItem(`cq_code_${lang}_${levelId}`);
-                    savedCode = null;
-                }
-
                 const response = await fetch('curriculum.json');
                 const data = await response.json();
-                currentLesson = data[lang]?.[levelId] || data['JavaScript'][1];
+                lessonData = data[lang]?.[levelId] || data['JavaScript'][1];
                 
-                document.getElementById('lessonTitle').innerText = currentLesson.title;
-                document.getElementById('codyText').innerText = currentLesson.intro.replace(/<[^>]*>?/gm, '');
+                document.getElementById('lessonTitle').innerText = lessonData.title;
                 
-                savedCode = savedCode || currentLesson.code;
-                
-                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
-                require(['vs/editor/editor.main'], function() {
-                    editor = monaco.editor.create(document.getElementById('editor-container'), {
-                        value: savedCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
-                        theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false, padding: { top: 10 }
-                    });
-                    
-                    let saveTimeout;
-                    editor.onDidChangeModelContent(() => {
-                        clearTimeout(saveTimeout);
-                        saveTimeout = setTimeout(async () => {
-                            localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue());
-                        }, 1000);
-                    });
-                });
-            } catch(e) { console.error(e); document.getElementById('codyText').innerText = "حدث خطأ في تحميل الدرس."; }
+                // نص الحوار اللي كودي هيقوله
+                const introText = lessonData.intro.replace(/<[^>]*>?/gm, '');
+                document.getElementById('codyMessage').innerText = introText;
+                speakText(introText);
+
+            } catch(e) { console.error(e); document.getElementById('codyMessage').innerText = "حدث خطأ في تحميل الدرس."; }
         }
 
-        function speakText() {
-            let textToSpeak = document.getElementById('codyText').innerText;
+        function nextDialogueStep() {
+            if (dialogueStep === 0) {
+                document.getElementById('dialoguePhase').style.display = 'none';
+                document.getElementById('codingPhase').style.display = 'flex';
+                document.getElementById('headerBtns').style.display = 'flex';
+                initEditor();
+            }
+        }
+
+        function initEditor() {
+            const savedCode = localStorage.getItem(`cq_code_${lang}_${levelId}`) || lessonData.code;
+            require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+            require(['vs/editor/editor.main'], function() {
+                editor = monaco.editor.create(document.getElementById('editor-container'), {
+                    value: savedCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
+                    theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false, padding: { top: 10 }
+                });
+                let saveTimeout;
+                editor.onDidChangeModelContent(() => {
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(async () => { localStorage.setItem(`cq_code_${lang}_${levelId}`, editor.getValue()); }, 1000);
+                });
+            });
+        }
+
+        function speakText(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'ar-SA'; utterance.rate = 0.95;
                 window.speechSynthesis.speak(utterance);
             }
@@ -156,7 +160,6 @@
             const code = editor.getValue();
             const terminal = document.getElementById('terminalOutput');
             terminal.innerHTML += `<br><span style="color:#888;">> Running...</span><br>`;
-            
             if (lang === 'js' || lang === 'JavaScript') {
                 let originalLog = console.log;
                 console.log = function(...args) {
