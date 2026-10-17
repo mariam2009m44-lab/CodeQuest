@@ -1,123 +1,59 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختر شخصيتك | CodeQuest</title>
+<html lang="ar" dir="rtl"><head><title>اختر شخصيتك</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/world-bg.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.8); }
-        * { box-sizing: border-box; }
-        body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
-        
-        .header { width: 100%; padding: 20px; display: flex; justify-content: flex-end; }
-        .btn-skip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 15px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s;}
-        .btn-skip:hover { background: rgba(255,255,255,0.1); }
-
+        body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box;}
+        .header { width: 100%; display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        .btn-skip { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 15px; cursor: pointer; font-family: 'Cairo'; text-decoration: none;}
         .title-area { text-align: center; margin-bottom: 30px; }
-        .title-area h1 { color: var(--neon-cyan); font-size: 2rem; margin: 0 0 10px; text-shadow: 0 0 15px rgba(0,229,255,0.4); display: flex; align-items: center; justify-content: center; gap: 10px;}
-        .title-area p { color: #aaa; margin: 0; font-size: 1.1rem; }
-
-        .avatars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 90%; max-width: 500px; margin: 0 auto; }
-        @media (min-width: 600px) { .avatars-grid { grid-template-columns: repeat(4, 1fr); max-width: 600px; } }
-
-        .avatar-card { background: var(--glass); border: 3px solid transparent; border-radius: 20px; padding: 10px; cursor: pointer; transition: all 0.3s ease; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; }
-        .avatar-card img { width: 100%; height: 100%; object-fit: contain; border-radius: 15px; background: #111; }
-        .avatar-card:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(0,229,255,0.3); }
-        .avatar-card.selected { border-color: var(--neon-cyan); box-shadow: 0 0 25px rgba(0,229,255,0.6); background: rgba(0,229,255,0.1); }
-
-        .btn-start-container { width: 100%; max-width: 400px; padding: 0 20px; margin-top: 40px; box-sizing: border-box; }
-        .btn-start { width: 100%; padding: 18px; border: none; border-radius: 20px; background: linear-gradient(135deg, #00e5ff, #007bff); color: #000; font-family: 'Cairo'; font-weight: 900; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,229,255,0.3); display: flex; justify-content: center; align-items: center; gap: 10px;}
-        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,229,255,0.5); }
+        .title-area h1 { color: #00e5ff; font-size: 2rem; margin: 0 0 10px; }
+        .avatars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 500px; }
+        .avatar-card { background: rgba(10, 25, 47, 0.8); border: 3px solid transparent; border-radius: 20px; padding: 10px; cursor: pointer; transition: 0.3s; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; }
+        .avatar-card img { width: 100%; height: 100%; border-radius: 15px; background: #111; object-fit: cover; }
+        .avatar-card.selected { border-color: #00e5ff; box-shadow: 0 0 20px rgba(0,229,255,0.5); transform: scale(1.05); }
+        .btn-start { margin-top: 30px; width: 100%; max-width: 400px; padding: 18px; border: none; border-radius: 20px; background: linear-gradient(135deg, #00e5ff, #007bff); color: #000; font-family: 'Cairo'; font-weight: 900; font-size: 1.3rem; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <button class="btn-skip" onclick="window.location.href='languages.html'">تخطي ←</button>
-    </div>
-
-    <div class="title-area">
-        <h1><i class="ri-user-star-line"></i> اختر شخصيتك</h1>
-        <p>اختر الصورة التي تمثلك لتبدأ رحلة البرمجة</p>
-    </div>
-
-    <div class="avatars-grid" id="avatarsGrid">
-        <!-- سيتم توليد الصور هنا بالجافاسكريبت -->
-    </div>
-
-    <div class="btn-start-container">
-        <button class="btn-start" onclick="saveAndStart()">
-            <i class="ri-rocket-line"></i> يلا نبدأ المغامرة
-        </button>
-    </div>
-
+    <div class="header"><a href="languages.html" class="btn-skip">تخطي ←</a></div>
+    <div class="title-area"><h1>اختر شخصيتك</h1><p>الصورة التي ستمثلك في الرحلة</p></div>
+    <div class="avatars-grid" id="avatarsGrid"></div>
+    <button class="btn-start" onclick="saveAndStart()">🚀 يلا نبدأ المغامرة</button>
     <script>
         let selectedAvatarUrl = null;
-        const avatarSeeds = [
-            'Felix', 'Aneka', 'Mia', 'Leo', 'Zoe', 'Max', 'Luna', 'Charlie', 'Lily', 'Oscar', 'Bella', 'Rocky', 'Coco', 'Daisy', 'Buddy', 'Ruby', 'Jack', 'Stella'
-        ];
-
+        // صور كيوت ومناسبة للأطفال (روبوتات وأطفال)
+        const seeds = ['Cody', 'Milo', 'Luna', 'Leo', 'Zoe', 'Max', 'Bella', 'Felix', 'Aneka', 'Coco', 'Ruby', 'Jack'];
         document.addEventListener('DOMContentLoaded', () => {
-            // حماية الصفحة
-            if(typeof Auth !== 'undefined') {
-                Auth.init((logged) => {
-                    if (!logged) window.location.href = 'index.html';
-                });
-            }
-
+            Auth.init((logged) => { if (!logged) window.location.href = 'index.html'; });
             const grid = document.getElementById('avatarsGrid');
-            
-            // توليد 18 شخصية
-            avatarSeeds.forEach(seed => {
-                const imgUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
-                
+            seeds.forEach(seed => {
+                // استخدام نمط bottts (روبوتات كيوت) أو adventurer (أطفال كيوت)
+                const imgUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}&backgroundColor=00e5ff,ffd700,ff4444,8b5cf6`;
                 const card = document.createElement('div');
                 card.className = 'avatar-card';
-                card.innerHTML = `<img src="${imgUrl}" alt="Avatar">`;
-                
+                card.innerHTML = `<img src="${imgUrl}">`;
                 card.onclick = () => {
-                    // إزالة التحديد من الكل
                     document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
-                    // تحديد الكارت اللي اتضغط عليه
                     card.classList.add('selected');
                     selectedAvatarUrl = imgUrl;
                 };
-                
                 grid.appendChild(card);
             });
         });
-
         async function saveAndStart() {
-            if (!selectedAvatarUrl) {
-                alert("يا بطل، اختر شخصيتك الأول!");
-                return;
-            }
-
-            // حفظ في المتصفح
+            if (!selectedAvatarUrl) return alert("اختر شخصيتك الأول يا بطل!");
             localStorage.setItem('cq_avatar', selectedAvatarUrl);
-
-            // حفظ في فايربيز
             const uid = Auth.getUserId();
             if (uid) {
-                try {
-                    await firebase.firestore().collection('users').doc(uid).update({
-                        avatar: selectedAvatarUrl
-                    });
-                } catch(e) {
-                    console.error("Error saving avatar:", e);
-                }
+                try { await firebase.firestore().collection('users').doc(uid).update({ avatar: selectedAvatarUrl }); } catch(e) {}
             }
-            
-            // التوجه للصفحة التالية
             window.location.href = 'languages.html';
         }
     </script>
-</body>
-</html>
+</body></html>

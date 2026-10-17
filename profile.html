@@ -1,41 +1,36 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><title>ملفي | CodeQuest</title>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<html lang="ar" dir="rtl"><head><title>ملفي</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="js/world-bg.js?v=99"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
     <style>
-        body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
-        .header { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(10, 25, 47, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(0,229,255,0.2); position: sticky; top: 0; z-index: 100; box-sizing: border-box; }
-        .header h1 { margin: 0; font-size: 1.4rem; color: #00e5ff; }
-        .btn-back { background: rgba(0,229,255,0.1); border: 1px solid #00e5ff; color: #00e5ff; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; }
-        .profile-card { background: rgba(10, 25, 47, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 40px 20px; width: 90%; max-width: 400px; margin-top: 30px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .avatar-wrapper { width: 140px; height: 140px; margin: 0 auto 20px; border-radius: 50%; padding: 5px; background: linear-gradient(45deg, #00e5ff, #8b5cf6); box-shadow: 0 0 30px rgba(0,229,255,0.4); }
-        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; background: #111; object-fit: cover; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
-        .stat-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        .stat-box h3 { margin: 0; color: #aaa; font-size: 0.9rem; }
-        .stat-box p { margin: 5px 0 0; color: #ffd700; font-size: 1.5rem; font-weight: bold; }
-        .btn-logout { background: rgba(255, 68, 68, 0.1); color: #ff4444; border: 1px solid #ff4444; padding: 15px; border-radius: 15px; width: 100%; margin-top: 30px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; box-sizing: border-box;}
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; padding: 10px 20px; background: rgba(5, 9, 20, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(0,229,255,0.3); border-radius: 25px; z-index: 1000; }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 65px; height: 60px; border-radius: 18px; color: #667; text-decoration: none; }
-        .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; } .nav-btn span { font-size: 0.7rem; font-weight: bold; }
-        .nav-btn.active { color: #00e5ff; border-bottom: 3px solid #00e5ff; border-radius: 18px 18px 5px 5px; }
+        body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px; }
+        .header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-back { color: #00e5ff; text-decoration: none; font-weight: bold; }
+        .profile-card { background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(0,229,255,0.2); border-radius: 30px; padding: 40px 20px; width: 100%; max-width: 400px; text-align: center; box-sizing: border-box;}
+        .avatar-wrapper { width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 50%; padding: 5px; background: linear-gradient(45deg, #00e5ff, #8b5cf6); }
+        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; background: #111; object-fit: cover;}
+        .stats { display: flex; justify-content: space-around; margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; }
+        .stat h3 { margin: 0; font-size: 0.9rem; color: #aaa; } .stat p { margin: 5px 0 0; color: #ffd700; font-size: 1.5rem; font-weight: bold; }
+        .btn-logout { margin-top: 20px; width: 100%; padding: 15px; border-radius: 15px; background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid #ff4444; font-family: 'Cairo'; font-weight: bold; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; padding: 10px 20px; background: rgba(5, 9, 20, 0.95); border: 1px solid rgba(0,229,255,0.3); border-radius: 25px; }
+        .nav-btn { color: #667; text-decoration: none; display: flex; flex-direction: column; align-items: center; width: 60px; }
+        .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; } .nav-btn span { font-size: 0.7rem; }
+        .nav-btn.active { color: #00e5ff; }
     </style>
 </head>
 <body>
-    <div class="header"><a href="languages.html" class="btn-back">← رجوع</a><h1>الملف الشخصي</h1></div>
+    <div class="header"><a href="languages.html" class="btn-back">← رجوع</a><h2>ملفي</h2></div>
     <div class="profile-card">
         <div class="avatar-wrapper"><img src="cody-avatar.svg" id="userAvatar"></div>
-        <h2 style="margin: 0; font-size: 1.8rem;" id="userName">المبرمج البطل</h2>
-        <p style="color: #00e5ff; margin: 5px 0 0;">مبرمج طموح 🚀</p>
-        <div class="stats-grid">
-            <div class="stat-box"><h3>النقاط (XP)</h3><p id="userPts">0</p></div>
-            <div class="stat-box"><h3>المستوى</h3><p>1</p></div>
+        <h2 id="userName" style="margin:0;">جاري التحميل...</h2>
+        <div class="stats">
+            <div class="stat"><h3>النقاط</h3><p id="userPts">0</p></div>
+            <div class="stat"><h3>المستوى</h3><p>1</p></div>
         </div>
         <button class="btn-logout" onclick="Auth.logout()">تسجيل الخروج</button>
     </div>
@@ -47,33 +42,15 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // عرض فوري من المتصفح
-            const localAvatar = localStorage.getItem('cq_avatar');
-            if(localAvatar) document.getElementById('userAvatar').src = localAvatar;
-            
-            const localName = localStorage.getItem('cq_username');
-            if(localName) document.getElementById('userName').innerText = localName;
-
-            // جلب الباقي من فايربيز (بدون تعطيل الصفحة)
+            const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('userAvatar').src = av;
             Auth.init(async (logged) => {
-                if (!logged) { window.location.href = 'index.html'; return; }
-                const uid = Auth.getUserId();
-                try {
-                    const doc = await firebase.firestore().collection('users').doc(uid).get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        if (data.username) {
-                            document.getElementById('userName').innerText = data.username;
-                            localStorage.setItem('cq_username', data.username);
-                        }
-                        document.getElementById('userPts').innerText = data.points || 0;
-                        // تحديث الأفاتار لو موجود في فايربيز
-                        if(data.avatar) {
-                            document.getElementById('userAvatar').src = data.avatar;
-                            localStorage.setItem('cq_avatar', data.avatar);
-                        }
-                    }
-                } catch(e) { console.error(e); }
+                if (!logged) return window.location.href = 'index.html';
+                const doc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
+                if (doc.exists) {
+                    document.getElementById('userName').innerText = doc.data().username || "بطل";
+                    document.getElementById('userPts').innerText = doc.data().points || 0;
+                    if(doc.data().avatar) { document.getElementById('userAvatar').src = doc.data().avatar; localStorage.setItem('cq_avatar', doc.data().avatar); }
+                }
             });
         });
     </script>
