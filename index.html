@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><title>تسجيل الدخول</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
+    <link rel="stylesheet" href="global.css">
+    <style>
+        .login-box { background: var(--glass); padding: 40px 20px; border-radius: 30px; width: 90%; max-width: 400px; margin-top: 50px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .login-box h1 { color: var(--neon-cyan); margin-bottom: 30px; }
+        input { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-family: 'Cairo'; outline: none; }
+        button { width: 100%; padding: 15px; border-radius: 15px; border: none; background: var(--neon-cyan); color: #000; font-weight: bold; font-family: 'Cairo'; cursor: pointer; font-size: 1.1rem; }
+    </style>
+</head><body>
+    <div class="header"><h1>CodeQuest</h1></div>
+    <div class="login-box">
+        <h1>تسجيل الدخول</h1>
+        <input type="text" id="username" placeholder="اسم المستخدم...">
+        <input type="password" id="password" placeholder="كلمة المرور...">
+        <button onclick="login()">دخول</button>
+        <p style="margin-top:15px; color:#aaa; cursor:pointer;" onclick="register()">ليس لديك حساب؟ سجل الآن</p>
+    </div>
+    <script>
+        function login() {
+            const u = document.getElementById('username').value; const p = document.getElementById('password').value;
+            if(!u || !p) return alert("املأ البيانات");
+            Auth.loginUser(u, p).then(r => { if(r.success) window.location.href = localStorage.getItem('cq_avatar') ? 'languages.html' : 'avatar.html'; else alert(r.message); });
+        }
+        function register() {
+            const u = document.getElementById('username').value; const p = document.getElementById('password').value;
+            if(!u || !p) return alert("املأ البيانات");
+            Auth.registerUser(u, p).then(r => { if(r.success) window.location.href = 'avatar.html'; else alert(r.message); });
+        }
+    </script>
+</body></html>
