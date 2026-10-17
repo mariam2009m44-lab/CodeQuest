@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     function startGame(u){
         try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#0072ff', '#ffffff'] }); } catch(e) {}
         lb.style.opacity='0'; lb.style.transform='scale(0.5)'; robot.style.opacity='0'; gate.classList.add('open');
-        setTimeout(()=>{ window.location.href = 'languages.html'; }, 1500);
+        setTimeout(()=>{ window.location.href = localStorage.getItem('cq_avatar_' + u) ? 'languages.html' : 'avatar.html'; }, 1500);
     }
 
     function showAlert(msg, isError = false) {
