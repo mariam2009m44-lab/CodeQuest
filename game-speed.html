@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><title>تحدي السرعة</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="global.css">
+    <style>
+        .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 20px; width: 100%; max-width: 600px; box-sizing: border-box; }
+        .timer { font-size: 3rem; font-weight: bold; color: #ef4444; text-shadow: 0 0 15px rgba(239,68,68,0.5); }
+        .question-box { background: var(--glass); border: 1px solid #333; padding: 30px; border-radius: 20px; text-align: center; width: 100%; box-sizing: border-box; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 20px;}
+        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; }
+        .opt-btn:hover { background: rgba(139,92,246,0.2); border-color: #8b5cf6; }
+    </style>
+</head><body>
+    <div class="header"><a href="games.html" class="btn-back">رجوع</a><h1>⚡ تحدي السرعة</h1></div>
+    <div class="game-area">
+        <div class="timer" id="timer">15</div>
+        <div class="question-box">
+            <h2 id="question" style="margin:0;">جاري التحميل...</h2>
+            <div class="options" id="options"></div>
+        </div>
+    </div>
+    <script>
+        const qs = [
+            { q: "ناتج 5 + 3 هو:", o: ["7", "8", "9", "10"], c: 1 },
+            { q: "أي مما يلي لتعريف متغير؟", o: ["var", "int", "let", "def"], c: 2 },
+            { q: "ناتج 'Hello' + ' World' هو:", o: ["Hello World", "HelloWorld", "Error", "None"], c: 0 }
+        ];
+        let cq = 0, score = 0, time = 15, timer;
+        function start() {
+            cq = 0; score = 0; time = 15; document.getElementById('timer').innerText = time;
+            clearInterval(timer);
+            timer = setInterval(() => { time--; document.getElementById('timer').innerText = time; if(time <= 0) end(); }, 1000);
+            show();
+        }
+        function show() {
+            if(cq >= qs.length) return end();
+            const q = qs[cq]; document.getElementById('question').innerText = q.q;
+            const opts = document.getElementById('options'); opts.innerHTML = '';
+            q.o.forEach((o, i) => {
+                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = o;
+                b.onclick = () => { if(i === q.c) score++; cq++; show(); }; opts.appendChild(b);
+            });
+        }
+        function end() {
+            clearInterval(timer);
+            confetti({ particleCount: 150 });
+            setTimeout(claim, 1000);
+        }
+        async function claim() {
+            const uid = Auth.getUserId(); const pts = score * 10;
+            if(uid && pts > 0) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(pts) }); }
+            alert(`🎉 مبروك! نتيجتك ${score} وحصلت على ${pts} نقطة.`); window.location.href = 'games.html';
+        }
+        Auth.init((l) => { if(!l) window.location.href = 'index.html'; else start(); });
+    </script>
+</body></html>
