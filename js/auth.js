@@ -1,32 +1,52 @@
 const Auth = {
-    setSession: function(username) {
-        const session = { user: username, expires: Date.now() + (1000 * 60 * 60 * 24) };
-        localStorage.setItem('cq_session', JSON.stringify(session));
+    currentUser: null,
+    userData: null,
+
+    init: function(callback) {
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                this.currentUser = user;
+                await this.loadUserData(user.uid);
+                if (callback) callback(true);
+            } else {
+                this.currentUser = null;
+                this.userData = null;
+                if (callback) callback(false);
+            }
+        });
     },
-    getSession: function() {
+
+    loadUserData: async function(uid) {
         try {
-            const session = JSON.parse(localStorage.getItem('cq_session'));
-            if (!session || Date.now() > session.expires) { localStorage.removeItem('cq_session'); return null; }
-            return session;
-        } catch(e) { return null; }
+            const doc = await firebase.firestore().collection('users').doc(uid).get();
+            if (doc.exists) {
+                this.userData = doc.data();
+                localStorage.setItem('cq_session', JSON.stringify({ uid: uid, username: doc.data().username }));
+            } else {
+                console.error("User document not found");
+            }
+        } catch (e) {
+            console.error("Error loading user data:", e);
+        }
     },
-    isLoggedIn: function() { return this.getSession() !== null; },
-    getCurrentUser: function() { const session = this.getSession(); return session ? session.user : null; },
+
+    getUserId: function() { return this.currentUser ? this.currentUser.uid : null; },
+    getCurrentUser: function() { return this.userData ? this.userData.username : (this.currentUser ? this.currentUser.email : null); },
+    getUserData: function() { return this.userData; },
+    isLoggedIn: function() { return this.currentUser !== null; },
+
     logout: function() {
-        if (typeof firebase !== 'undefined') {
-            firebase.auth().signOut().then(() => { localStorage.clear(); window.location.href = 'index.html'; });
-        } else { localStorage.clear(); window.location.href = 'index.html'; }
+        firebase.auth().signOut().then(() => {
+            localStorage.removeItem('cq_session');
+            window.location.href = 'index.html';
+        });
     },
 
     getAvatarHtml: function(name) {
         name = name || this.getCurrentUser();
         if (!name) return '<div class="letter-avatar">؟</div>';
-        const saved = localStorage.getItem('cq_avatar_' + name);
-        
-        if (saved) {
-            return '<img src="' + saved + '" alt="' + name + '" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">';
-        }
-        
+        const saved = this.userData ? this.userData.avatar : localStorage.getItem('cq_avatar_' + name);
+        if (saved) return '<img src="' + saved + '" alt="' + name + '" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">';
         const parts = name.trim().split(/\s+/);
         let initials = parts[0].charAt(0).toUpperCase();
         if (parts[1]) initials += '.' + parts[1].charAt(0).toUpperCase();
@@ -39,14 +59,14 @@ const Auth = {
         try {
             const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
-            try {
-                await firebase.firestore().collection('users').doc(user.uid).set({
-                    username: username, email: email, created: Date.now(), bonusPoints: 0
-                });
-            } catch (fsError) { console.error("Firestore error:", fsError); }
+            await firebase.firestore().collection('users').doc(user.uid).set({
+                username: username, email: email, created: Date.now(),
+                bonusPoints: 0, xp: 0, coins: 0, owned: {}, equipped: {}, progress: {}
+            });
             return { success: true };
         } catch (error) {
-            return { success: false, message: 'كود الخطأ: ' + error.code };
+            console.error("Register Error:", error);
+            return { success: false, message: 'حدث خطأ أثناء التسجيل. جرب اسم مستخدم آخر أو تحقق من اتصالك.' };
         }
     },
 
@@ -56,22 +76,8 @@ const Auth = {
             await firebase.auth().signInWithEmailAndPassword(email, password);
             return { success: true };
         } catch (error) {
-            return { success: false, message: 'كود الخطأ: ' + error.code };
+            console.error("Login Error:", error);
+            return { success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة.' };
         }
-    },
-
-    syncData: async function() {
-        if (typeof firebase === 'undefined') return;
-        const user = firebase.auth().currentUser;
-        if (!user) return;
-        try {
-            const doc = await firebase.firestore().collection('users').doc(user.uid).get();
-            if (doc.exists) {
-                const data = doc.data();
-                const name = data.username || this.getCurrentUser();
-                localStorage.setItem('cq_balance_' + name, data.bonusPoints || 0);
-                if (data.avatar) localStorage.setItem('cq_avatar_' + name, data.avatar);
-            }
-        } catch(e) { console.error("Sync Error:", e); }
     }
 };
