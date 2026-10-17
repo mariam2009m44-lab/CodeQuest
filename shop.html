@@ -25,7 +25,6 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .balance-value{color:#ffd700;font-size:34px;font-weight:900;text-shadow:0 0 25px rgba(255,215,0,0.7)}
 .balance-value span{font-size:16px;color:#e0a050}
 .tabs{display:flex;gap:6px;margin-bottom:15px;position:relative;z-index:2;overflow-x:auto;padding-bottom:5px}
-.tabs::-webkit-scrollbar{display:none}
 .tab{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#a0aec0;padding:8px 14px;border-radius:18px;font-size:12px;font-weight:bold;cursor:pointer;white-space:nowrap;transition:0.3s;font-family:'Cairo',sans-serif}
 .tab.active{background:rgba(255,215,0,0.2);border-color:#ffd700;color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,0.4)}
 .items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:500px;margin:0 auto;position:relative;z-index:2;padding-bottom:30px}
@@ -73,23 +72,32 @@ const shopItems = {
     crown: [
         { id: 'crown_bronze', name: 'تاج برونزي', desc: 'للمبتدئين', icon: '🥉', price: 30 },
         { id: 'crown_silver', name: 'تاج فضي', desc: 'للاعبين الشاطرين', icon: '🥈', price: 80 },
-        { id: 'crown_gold', name: 'تاج ذهبي', desc: 'تاج ملكي فخم', icon: '👑', price: 150 }
+        { id: 'crown_gold', name: 'تاج ذهبي', desc: 'تاج ملكي فخم', icon: '👑', price: 150 },
+        { id: 'crown_diamond', name: 'تاج الماس', desc: 'نادر جداً', icon: '💎', price: 300 }
     ],
     theme: [
         { id: 'theme_ocean', name: 'ثيم المحيط', desc: 'أزرق هادئ', icon: '🌊', price: 50, color: '#00e5ff' },
-        { id: 'theme_sunset', name: 'ثيم الغروب', desc: 'ألوان دافئة', icon: '🌅', price: 50, color: '#ff9500' }
+        { id: 'theme_sunset', name: 'ثيم الغروب', desc: 'ألوان دافئة', icon: '🌅', price: 50, color: '#ff9500' },
+        { id: 'theme_forest', name: 'ثيم الغابة', desc: 'ألوان خضراء', icon: '🌲', price: 60, color: '#27ae60' },
+        { id: 'theme_night', name: 'ثيم الليل', desc: 'ألوان بنفسجية', icon: '🌙', price: 80, color: '#9b59b6' }
     ],
     pet: [
         { id: 'pet_cat', name: 'قط مشمش', desc: 'صاحب مرح', icon: '🐱', price: 70 },
-        { id: 'pet_dog', name: 'كلب صغير', desc: 'صديق وفي', icon: '🐶', price: 70 }
+        { id: 'pet_dog', name: 'كلب صغير', desc: 'صديق وفي', icon: '🐶', price: 70 },
+        { id: 'pet_dragon', name: 'تنين صغير', desc: 'رفيق قوي', icon: '🐉', price: 200 },
+        { id: 'pet_unicorn', name: 'وحيد القرن', desc: 'سحري', icon: '🦄', price: 250 }
     ],
     effect: [
         { id: 'effect_stars', name: 'نجوم', desc: 'نجوم تلمع', icon: '⭐', price: 60 },
-        { id: 'effect_fire', name: 'نار', desc: 'لهب متوهج', icon: '🔥', price: 90 }
+        { id: 'effect_fire', name: 'نار', desc: 'لهب متوهج', icon: '🔥', price: 90 },
+        { id: 'effect_lightning', name: 'برق', desc: 'صعقة كهربائية', icon: '⚡', price: 110 },
+        { id: 'effect_rainbow', name: 'قوس قزح', desc: 'ألوان زاهية', icon: '🌈', price: 180 }
     ],
     title: [
         { id: 'title_rookie', name: 'مبتدئ', desc: 'لقب البداية', icon: '🌱', price: 20 },
-        { id: 'title_smart', name: 'ذكي', desc: 'إنت شاطر', icon: '🧠', price: 60 }
+        { id: 'title_smart', name: 'ذكي', desc: 'إنت شاطر', icon: '🧠', price: 60 },
+        { id: 'title_hero', name: 'بطل', desc: 'لقب الأبطال', icon: '🦸', price: 120 },
+        { id: 'title_legend', name: 'أسطورة', desc: 'نادر جداً', icon: '🌟', price: 300 }
     ]
 };
 
