@@ -21,7 +21,7 @@
 <script src="js/sfx.js"></script>
 <script src="js/accessories.js"></script>
 
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%)}
@@ -198,5 +198,6 @@ function doLogout() {
 }
 </script>
 <script>document.addEventListener("DOMContentLoaded", () => { if(typeof Auth !== "undefined") Auth.syncData(); });</script>
+<script>document.addEventListener("DOMContentLoaded", () => { if(typeof Auth !== "undefined") { Auth.init((isLoggedIn) => { if(!isLoggedIn) window.location.href = "index.html"; }); } });</script>
 </body>
 </html>

@@ -16,7 +16,7 @@
 
     <script src="js/auth.js"></script>
 <script src="js/sfx.js"></script>
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+
 </head>
 <body>
 <div class="particles" id="particles"></div>
@@ -151,5 +151,6 @@ function chooseLang(code, name) {
 }
 </script>
 <script>document.addEventListener("DOMContentLoaded", () => { if(typeof Auth !== "undefined") Auth.syncData(); });</script>
+<script>document.addEventListener("DOMContentLoaded", () => { if(typeof Auth !== "undefined") { Auth.init((isLoggedIn) => { if(!isLoggedIn) window.location.href = "index.html"; }); } });</script>
 </body>
 </html>

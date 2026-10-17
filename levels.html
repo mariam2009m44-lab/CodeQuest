@@ -18,7 +18,7 @@
     <script src="js/auth.js"></script>
 <script src="js/sfx.js"></script>
 
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+
 <link rel="stylesheet" href="css/accessories.css">
 </head>
 <body>
@@ -155,5 +155,6 @@ function startLevel(num) {
 <script src="js/accessories.js">setTimeout(() => { if (typeof Accessories !== "undefined") Accessories.render(); }, 200);
 </script>
 <script>document.addEventListener("DOMContentLoaded", () => { if(typeof Auth !== "undefined") Auth.syncData(); });</script>
+<script>document.addEventListener("DOMContentLoaded", () => { if(typeof Auth !== "undefined") { Auth.init((isLoggedIn) => { if(!isLoggedIn) window.location.href = "index.html"; }); } });</script>
 </body>
 </html>
