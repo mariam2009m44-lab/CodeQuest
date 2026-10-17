@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استوديو كودي | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+
+    <!-- Monaco Editor (Real Code Editor) -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+
+    <style>
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --card: rgba(255,255,255,0.05); }
+        body { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(0,229,255,0.2); }
+        .header h1 { margin: 0; font-size: 1.2rem; color: var(--neon-cyan); }
+        
+        /* Main Layout */
+        .container { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Cody Side (Left in RTL) */
+        .cody-panel { width: 35%; padding: 20px; display: flex; flex-direction: column; border-left: 1px solid rgba(0,229,255,0.2); }
+        .cody-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); margin: 0 auto 20px; object-fit: cover; }
+        .speech-bubble { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(0,229,255,0.3); position: relative; flex: 1; overflow-y: auto; }
+        .speech-bubble::after { content: ''; position: absolute; top: -10px; right: 50%; transform: translateX(50%); border-width: 0 10px 10px 10px; border-style: solid; border-color: transparent transparent rgba(0,229,255,0.3) transparent; }
+        .speech-text { font-size: 1.1rem; line-height: 1.6; }
+        .controls { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-play { background: var(--neon-cyan); color: #000; }
+        .btn-play:hover { box-shadow: 0 0 15px var(--neon-cyan); }
+        
+        /* IDE Side (Right in RTL) */
+        .ide-panel { width: 65%; display: flex; flex-direction: column; background: #1e1e1e; }
+        #editor-container { flex: 1; width: 100%; }
+        .console-output { height: 30%; background: #000; border-top: 2px solid #333; padding: 10px; font-family: monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; }
+        .console-header { background: #333; color: #aaa; padding: 5px 10px; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .cody-panel { width: 100%; height: 40%; border-left: none; border-bottom: 1px solid rgba(0,229,255,0.2); }
+            .ide-panel { width: 100%; height: 60%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🤖 استوديو كودي</h1>
+        <button class="btn" style="background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); flex: none; padding: 5px 15px;" onclick="window.location.href='languages.html'">رجوع</button>
+    </div>
+
+    <div class="container">
+        <!-- Cody Panel -->
+        <div class="cody-panel">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff" alt="Cody" class="cody-avatar" id="codyImg">
+            <div class="speech-bubble">
+                <div class="speech-text" id="codyText">
+                    أهلاً بك يا بطل! أنا كودي. اليوم سنتعلم كيف نكتب أول كود لنا. اكتب الكود بجوار المحرر واضغط تشغيل!
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-play" onclick="speakText()">🔊 اسمع كودي</button>
+                <button class="btn" style="background: #ffd700; color: #000;" onclick="nextLessonStep()">التالي ⏭️</button>
+            </div>
+        </div>
+
+        <!-- IDE Panel -->
+        <div class="ide-panel">
+            <div id="editor-container"></div>
+            <div class="console-header">
+                <span>Console</span>
+                <span onclick="clearConsole()" style="cursor:pointer; color: #ff4444;">مسح 🗑️</span>
+            </div>
+            <div class="console-output" id="consoleOutput">
+                > جاهز للتشغيل...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. إعداد محرر الأكواد Monaco
+        let editor;
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: '// اكتب الكود الخاص بك هنا
+let name = "Cody";
+console.log("Hello " + name);',
+                language: 'javascript',
+                theme: 'vs-dark',
+                fontSize: 16,
+                minimap: { enabled: false },
+                automaticLayout: true,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                readOnly: false,
+            });
+        });
+
+        // 2. إعدادات الصوت (كودي بيتكلم)
+        let currentStep = 0;
+        const lessonSteps = [
+            "أهلاً بك يا بطل! أنا كودي. اليوم سنتعلم كيف نكتب أول كود لنا. اكتب الكود بجوار المحرر واضغط تشغيل!",
+            "ممتاز! المتغيرات هي صناديق تخزن فيها البيانات. في الكود المكتوب، المتغير اسمه (name).",
+            "الآن، جرب تغيير اسمك بدل اسم Cody في الكود، ثم اضغط على زر التشغيل البرتقالي بالأعلى."
+        ];
+
+        function speakText() {
+            const text = document.getElementById('codyText').innerText;
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ar-SA'; // اللغة العربية
+                utterance.rate = 0.9; // سرعة الكلام
+                utterance.pitch = 1.1; // نبرة الصوت
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("متصفحك لا يدعم خاصية النطق.");
+            }
+        }
+
+        function nextLessonStep() {
+            if (currentStep < lessonSteps.length - 1) {
+                currentStep++;
+                document.getElementById('codyText').innerText = lessonSteps[currentStep];
+                speakText(); // كودي هيتكلم أوتوماتيك
+            } else {
+                // لو خلص الدرس، نروح للعبة
+                window.location.href = 'games.html';
+            }
+        }
+
+        // 3. تشغيل الكود
+        function runCode() {
+            const code = editor.getValue();
+            const outputDiv = document.getElementById('consoleOutput');
+            
+            // تحويل الـ console.log الخاص بالمتصفح ليظهر في الشاشة
+            let originalLog = console.log;
+            console.log = function(...args) {
+                outputDiv.innerHTML += `<div>> ${args.join(' ')}</div>`;
+                originalLog.apply(console, args);
+            };
+
+            outputDiv.innerHTML += `<div style="color:#888;">--- تشغيل ---</div>`;
+            
+            try {
+                // تنفيذ الكود
+                eval(code);
+            } catch (err) {
+                outputDiv.innerHTML += `<div style="color:#ff4444;">❌ خطأ: ${err.message}</div>`;
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleOutput').innerHTML = '> جاهز للتشغيل...';
+        }
+
+        // ربط زر التشغيل (لوحة المفاتيح أو زرار)
+        // هنضيف زرار تشغيل عائم
+        const runBtn = document.createElement('button');
+        runBtn.innerText = '▶️ تشغيل الكود';
+        runBtn.className = 'btn btn-play';
+        runBtn.style.position = 'absolute';
+        runBtn.style.bottom = '35%';
+        runBtn.style.left = '20px';
+        runBtn.style.zIndex = '1000';
+        runBtn.onclick = runCode;
+        document.querySelector('.ide-panel').appendChild(runBtn);
+
+    </script>
+</body>
+</html>
