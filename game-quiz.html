@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><title>سيد الأسئلة</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="global.css">
+    <style>
+        .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 20px; width: 100%; max-width: 600px; box-sizing: border-box; }
+        .progress { width: 100%; height: 10px; background: #1e1e1e; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #00e5ff, #10b981); width: 0%; transition: 0.3s; }
+        .q-box { background: var(--glass); border: 1px solid #333; padding: 30px; border-radius: 20px; text-align: center; width: 100%; box-sizing: border-box; }
+        .options { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
+        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; text-align: right; }
+        .opt-btn:hover { background: rgba(16, 185, 129, 0.1); border-color: #10b981; }
+        .opt-btn.correct { background: rgba(16, 185, 129, 0.3) !important; border-color: #10b981; }
+        .opt-btn.wrong { background: rgba(239, 68, 68, 0.3) !important; border-color: #ef4444; }
+    </style>
+</head><body>
+    <div class="header"><a href="games.html" class="btn-back">رجوع</a><h1>❓ سيد الأسئلة</h1></div>
+    <div class="game-area">
+        <div class="progress"><div class="progress-fill" id="prog"></div></div>
+        <div class="q-box"><h2 id="question">جاري التحميل...</h2><div class="options" id="options"></div></div>
+    </div>
+    <script>
+        const qs = [
+            { q: "ما هي اللغة التي تعمل في المتصفح؟", o: ["Python", "JavaScript", "C++", "Java"], c: 1 },
+            { q: "أي من هذه الكلمات محجوزة في JS؟", o: ["let", "name", "value", "data"], c: 0 },
+            { q: "كيف نكتب تعليقاً في JS؟", o: ["<!-- -->", "#", "//", "/* */"], c: 2 },
+            { q: "ما هي النتيجة: typeof 5؟", o: ["'number'", "'integer'", "'float'", "'string'"], c: 0 }
+        ];
+        let cq = 0, score = 0;
+        function show() {
+            if(cq >= qs.length) return end();
+            document.getElementById('prog').style.width = ((cq/qs.length)*100) + '%';
+            const q = qs[cq]; document.getElementById('question').innerText = q.q;
+            const opts = document.getElementById('options'); opts.innerHTML = '';
+            q.o.forEach((o, i) => {
+                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = o;
+                b.onclick = () => {
+                    if(i === q.c) { b.classList.add('correct'); score++; } else { b.classList.add('wrong'); opts.children[q.c].classList.add('correct'); }
+                    setTimeout(() => { cq++; show(); }, 1000);
+                };
+                opts.appendChild(b);
+            });
+        }
+        function end() {
+            document.getElementById('prog').style.width = '100%';
+            confetti({ particleCount: 150 });
+            setTimeout(claim, 1000);
+        }
+        async function claim() {
+            const uid = Auth.getUserId(); const pts = score * 15;
+            if(uid && pts > 0) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(pts) }); }
+            alert(`🎉 أكملت الاختبار! نتيجتك ${score} وحصلت على ${pts} نقطة.`); window.location.href = 'games.html';
+        }
+        Auth.init((l) => { if(!l) window.location.href = 'index.html'; else show(); });
+    </script>
+</body></html>
