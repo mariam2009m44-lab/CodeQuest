@@ -18,18 +18,15 @@ const Auth = {
         } else { localStorage.clear(); window.location.href = 'index.html'; }
     },
 
-    // الدالة اللي بتظهر الصورة في الشريط العلوي (مصلحة عشان متخفيش الصورة)
     getAvatarHtml: function(name) {
         name = name || this.getCurrentUser();
         if (!name) return '<div class="letter-avatar">؟</div>';
         const saved = localStorage.getItem('cq_avatar_' + name);
         
         if (saved) {
-            // لو فيه صورة محفوظة، اعرضها على طول
             return '<img src="' + saved + '" alt="' + name + '" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">';
         }
         
-        // لو مفيش صورة، اعرض الحروف
         const parts = name.trim().split(/\s+/);
         let initials = parts[0].charAt(0).toUpperCase();
         if (parts[1]) initials += '.' + parts[1].charAt(0).toUpperCase();
@@ -49,7 +46,6 @@ const Auth = {
             } catch (fsError) { console.error("Firestore error:", fsError); }
             return { success: true };
         } catch (error) {
-            console.error("Register Error:", error);
             return { success: false, message: 'كود الخطأ: ' + error.code };
         }
     },
@@ -60,7 +56,6 @@ const Auth = {
             await firebase.auth().signInWithEmailAndPassword(email, password);
             return { success: true };
         } catch (error) {
-            console.error("Login Error:", error);
             return { success: false, message: 'كود الخطأ: ' + error.code };
         }
     },

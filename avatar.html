@@ -36,12 +36,23 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'avatar-card';
         card.innerHTML = '<img src="' + url + '" alt="' + seed + '">';
         card.onclick = () => {
-            try { playSound('win'); } catch(e) {}
-            try { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); } catch(e) {}
+            // 1. الحفظ الفوري في المتصفح
             localStorage.setItem('cq_avatar_' + user, url);
+            
+            // 2. الحفظ في Firebase (لو متاح)
             if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
                 firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({ avatar: url }).catch(console.error);
             }
+
+            // 3. الانيميشن والاحتفال
+            try { playSound('win'); } catch(e) {}
+            try { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); } catch(e) {}
+            
+            // تأثير اهتزاز بسيط
+            document.body.style.transform = 'scale(0.95)';
+            setTimeout(() => { document.body.style.transform = 'scale(1)'; }, 200);
+
+            // 4. التحويل لصفحة اللغات فوراً
             setTimeout(() => { window.location.href = 'languages.html'; }, 800);
         };
         grid.appendChild(card);
