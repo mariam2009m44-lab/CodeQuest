@@ -1,6 +1,6 @@
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBNWj1X206ZIcUVB7GpdBJ4WKsl_p7MlC4",
+  apiKey: "AIzaSyB9ivRWhimK5APTUJBTFmf1FWx4W-Pv8gQ",
   authDomain: "codequest-6350a.firebaseapp.com",
   projectId: "codequest-6350a",
   storageBucket: "codequest-6350a.firebasestorage.app",
