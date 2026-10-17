@@ -6,23 +6,17 @@
 <title>CodeQuest | المتجر</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/accessories.css">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-
-    <!-- Firebase SDKs (Compat for pure HTML/JS) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-
-    <script src="js/auth.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/sfx.js"></script>
 <script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(255,215,0,0.15) 0%, transparent 60%)}
-.stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
-.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 2s infinite ease-in-out}
-@keyframes twinkle{0%,100%{opacity:0.2;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
 .header-bar{display:flex;align-items:center;gap:10px;margin-bottom:15px;position:relative;z-index:2}
 .back-btn{background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.4);padding:9px 14px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;font-family:'Cairo',sans-serif}
 .header-title{flex:1;text-align:center;color:#ffd700;font-size:20px;font-weight:900;text-shadow:0 0 15px rgba(255,215,0,0.6)}
@@ -51,25 +45,19 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .toast.show{top:20px}
 .toast.error{background:linear-gradient(135deg,#e74c3c,#c0392b);box-shadow:0 10px 30px rgba(231,76,60,0.5)}
 .toast.info{background:linear-gradient(135deg,#00e5ff,#0072ff);box-shadow:0 10px 30px rgba(0,229,255,0.5)}
-.confetti-burst{position:fixed;pointer-events:none;font-size:30px;z-index:9999;animation:burstUp 1.5s ease-out forwards}
-@keyframes burstUp{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-300px) scale(0);opacity:0}}
 </style>
 </head>
 <body>
-<div class="stars" id="stars"></div>
 <div class="toast" id="toast"></div>
-
 <div class="header-bar">
 <button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='levels.html',150)">← رجوع</button>
 <div class="header-title">🛒 المتجر</div>
 <div style="width:60px"></div>
 </div>
-
 <div class="balance-card">
 <div class="balance-label">💰 رصيدك الحالي</div>
 <div class="balance-value"><span id="balanceNum">0</span> <span>نقطة</span></div>
 </div>
-
 <div class="tabs">
 <div class="tab active" data-cat="crown" onclick="switchTab('crown', this)">👑 تيجان</div>
 <div class="tab" data-cat="theme" onclick="switchTab('theme', this)">🎨 ثيمات</div>
@@ -77,67 +65,37 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 <div class="tab" data-cat="effect" onclick="switchTab('effect', this)">✨ تأثيرات</div>
 <div class="tab" data-cat="title" onclick="switchTab('title', this)">🏅 ألقاب</div>
 </div>
-
 <div class="items-grid" id="itemsGrid"></div>
 
 <script>
 const user = Auth.getCurrentUser();
-
 const shopItems = {
     crown: [
-        { id: 'crown_bronze', name: 'تاج برونزي', desc: 'للمبتدئين', icon: '🎖️', price: 30 },
+        { id: 'crown_bronze', name: 'تاج برونزي', desc: 'للمبتدئين', icon: '🥉', price: 30 },
         { id: 'crown_silver', name: 'تاج فضي', desc: 'للاعبين الشاطرين', icon: '🥈', price: 80 },
-        { id: 'crown_gold', name: 'تاج ذهبي', desc: 'تاج ملكي فخم', icon: '👑', price: 150 },
-        { id: 'crown_diamond', name: 'تاج الماس', desc: 'نادر جداً', icon: '💎', price: 300 }
+        { id: 'crown_gold', name: 'تاج ذهبي', desc: 'تاج ملكي فخم', icon: '👑', price: 150 }
     ],
     theme: [
         { id: 'theme_ocean', name: 'ثيم المحيط', desc: 'أزرق هادئ', icon: '🌊', price: 50, color: '#00e5ff' },
-        { id: 'theme_sunset', name: 'ثيم الغروب', desc: 'ألوان دافئة', icon: '🌅', price: 50, color: '#ff9500' },
-        { id: 'theme_forest', name: 'ثيم الغابة', desc: 'ألوان خضراء', icon: '🌲', price: 60, color: '#27ae60' },
-        { id: 'theme_night', name: 'ثيم الليل', desc: 'ألوان بنفسجية', icon: '🌙', price: 80, color: '#9b59b6' }
+        { id: 'theme_sunset', name: 'ثيم الغروب', desc: 'ألوان دافئة', icon: '🌅', price: 50, color: '#ff9500' }
     ],
     pet: [
         { id: 'pet_cat', name: 'قط مشمش', desc: 'صاحب مرح', icon: '🐱', price: 70 },
-        { id: 'pet_dog', name: 'كلب صغير', desc: 'صديق وفي', icon: '🐶', price: 70 },
-        { id: 'pet_dragon', name: 'تنين صغير', desc: 'رفيق قوي', icon: '🐉', price: 200 },
-        { id: 'pet_unicorn', name: 'وحيد القرن', desc: 'سحري', icon: '🦄', price: 250 }
+        { id: 'pet_dog', name: 'كلب صغير', desc: 'صديق وفي', icon: '🐶', price: 70 }
     ],
     effect: [
         { id: 'effect_stars', name: 'نجوم', desc: 'نجوم تلمع', icon: '⭐', price: 60 },
-        { id: 'effect_fire', name: 'نار', desc: 'لهب متوهج', icon: '🔥', price: 90 },
-        { id: 'effect_lightning', name: 'برق', desc: 'صعقة كهربائية', icon: '⚡', price: 110 },
-        { id: 'effect_rainbow', name: 'قوس قزح', desc: 'ألوان زاهية', icon: '🌈', price: 180 }
+        { id: 'effect_fire', name: 'نار', desc: 'لهب متوهج', icon: '🔥', price: 90 }
     ],
     title: [
         { id: 'title_rookie', name: 'مبتدئ', desc: 'لقب البداية', icon: '🌱', price: 20 },
-        { id: 'title_smart', name: 'ذكي', desc: 'إنت شاطر', icon: '🧠', price: 60 },
-        { id: 'title_hero', name: 'بطل', desc: 'لقب الأبطال', icon: '🦸', price: 120 },
-        { id: 'title_legend', name: 'أسطورة', desc: 'نادر جداً', icon: '🌟', price: 300 }
+        { id: 'title_smart', name: 'ذكي', desc: 'إنت شاطر', icon: '🧠', price: 60 }
     ]
 };
 
-const balanceKey = 'cq_balance_' + user;
 const ownedKey = 'cq_owned_' + user;
 const equippedKey = 'cq_equipped_' + user;
 
-function getBalance() {
-    const games = ['match', 'memory', 'bug', 'speed', 'quiz', 'build'];
-    let total = 0;
-    games.forEach(g => total += parseInt(localStorage.getItem('cq_high_' + g) || '0'));
-    
-    const users = Auth.getUsers();
-    const u = users[user];
-    if (u && u.bonusPoints) total += u.bonusPoints;
-    
-    // إضافة نقاط المستويات
-    const levelsBalance = parseInt(localStorage.getItem('cq_balance_' + user) || '0');
-    total += levelsBalance;
-
-    // خصم المشتريات
-    const spent = parseInt(localStorage.getItem('cq_spent_' + user) || '0');
-    return Math.max(0, total - spent);
-}
-function setBalance(v) { localStorage.setItem(balanceKey, v); }
 function getOwned() { try { return JSON.parse(localStorage.getItem(ownedKey) || '{}'); } catch(e) { return {}; } }
 function setOwned(o) { localStorage.setItem(ownedKey, JSON.stringify(o)); }
 function getEquipped() { try { return JSON.parse(localStorage.getItem(equippedKey) || '{}'); } catch(e) { return {}; } }
@@ -151,6 +109,7 @@ function showToast(msg, type) {
 }
 
 let currentCat = 'crown';
+let currentBalance = 0;
 
 function switchTab(cat, el) {
     playSound('click');
@@ -162,21 +121,23 @@ function switchTab(cat, el) {
 
 function renderItems() {
     const grid = document.getElementById('itemsGrid');
-    const balance = getBalance();
     const owned = getOwned();
     const equipped = getEquipped();
     grid.innerHTML = '';
     const items = shopItems[currentCat] || [];
+    
     items.forEach(item => {
         const isOwned = owned[item.id] === true;
         const isEquipped = equipped[currentCat] === item.id;
-        const canAfford = balance >= item.price;
+        const canAfford = currentBalance >= item.price;
         let priceClass = '';
         let priceText = '';
+        
         if (isEquipped) { priceClass = 'equipped-label'; priceText = '✅ مُفعّل'; }
-        else if (isOwned) { priceClass = 'owned-label'; priceText = '🔓 تملكه (اضغط للتفعيل)'; }
+        else if (isOwned) { priceClass = 'owned-label'; priceText = '🔓 تملكه'; }
         else if (canAfford) { priceText = '💰 ' + item.price; }
         else { priceClass = 'cant-afford'; priceText = '💰 ' + item.price; }
+        
         const card = document.createElement('div');
         card.className = 'item-card' + (isOwned ? ' owned' : '') + (isEquipped ? ' equipped' : '');
         card.style.setProperty('--accent', item.color || '#ffd700');
@@ -189,7 +150,6 @@ function renderItems() {
         grid.appendChild(card);
     });
 }
-
 
 async function handleItemClick(item, isOwned, isEquipped, canAfford) {
     if (isEquipped) {
@@ -206,19 +166,11 @@ async function handleItemClick(item, isOwned, isEquipped, canAfford) {
         const equipped = getEquipped();
         equipped[currentCat] = item.id;
         setEquipped(equipped);
-        
-        // حفظ في Firebase
         if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-            try {
-                await firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({
-                    equipped: equipped
-                });
-            } catch(e) { console.error(e); }
+            try { await firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({ equipped: equipped }); } catch(e) {}
         }
-        
         showToast('✨ تم تفعيل ' + item.name + '!');
         try { confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#ffffff'] }); } catch(e) {}
-        burstEmoji(item.icon);
         renderItems();
         return;
     }
@@ -228,85 +180,47 @@ async function handleItemClick(item, isOwned, isEquipped, canAfford) {
         return;
     }
     
-    // عملية الشراء من Firebase
     playSound('win');
-    
     if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
         const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
         try {
             await firebase.firestore().runTransaction(async (transaction) => {
                 const doc = await transaction.get(userRef);
                 if (!doc.exists) throw "User not found";
-                
                 let currentPoints = doc.data().bonusPoints || 0;
                 if (currentPoints < item.price) throw "Not enough points";
-                
                 let owned = doc.data().owned || {};
                 owned[item.id] = true;
-                
                 let equipped = doc.data().equipped || {};
                 equipped[currentCat] = item.id;
-                
-                transaction.update(userRef, {
-                    bonusPoints: currentPoints - item.price,
-                    owned: owned,
-                    equipped: equipped
-                });
+                transaction.update(userRef, { bonusPoints: currentPoints - item.price, owned: owned, equipped: equipped });
             });
             
-            // تحديث المتصفح
-            const balance = getBalance();
-            setBalance(balance - item.price);
-            const ownedLocal = getOwned();
-            ownedLocal[item.id] = true;
-            setOwned(ownedLocal);
-            const equippedLocal = getEquipped();
-            equippedLocal[currentCat] = item.id;
-            setEquipped(equippedLocal);
-            
-            document.getElementById('balanceNum').innerText = balance - item.price;
+            const ownedLocal = getOwned(); ownedLocal[item.id] = true; setOwned(ownedLocal);
+            const equippedLocal = getEquipped(); equippedLocal[currentCat] = item.id; setEquipped(equippedLocal);
+            currentBalance -= item.price;
+            document.getElementById('balanceNum').innerText = currentBalance;
             showToast('🎉 اشتريت ' + item.name + ' واتفعّل!');
             try { confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
-            burstEmoji(item.icon);
             setTimeout(renderItems, 300);
-            
         } catch(e) {
-            console.error(e);
-            playSound('error');
-            showToast('❌ حدث خطأ أثناء الشراء!', 'error');
+            playSound('error'); showToast('❌ حدث خطأ أثناء الشراء!', 'error');
         }
-    } else {
-        showToast('❌ خطأ في الاتصال!', 'error');
     }
 }
 
-
-function burstEmoji(emoji) {
-    for (let i = 0; i < 10; i++) {
-        const e = document.createElement('div');
-        e.className = 'confetti-burst';
-        e.innerText = emoji;
-        e.style.left = (30 + Math.random() * 40) + '%';
-        e.style.top = '50%';
-        e.style.animationDelay = (i * 0.05) + 's';
-        document.body.appendChild(e);
-        setTimeout(() => e.remove(), 1600);
+async function initShop() {
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+        try {
+            const doc = await firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).get();
+            if (doc.exists) currentBalance = doc.data().bonusPoints || 0;
+        } catch(e) {}
     }
+    document.getElementById('balanceNum').innerText = currentBalance;
+    renderItems();
 }
 
-document.getElementById('balanceNum').innerText = getBalance();
-
-const starsContainer = document.getElementById('stars');
-for (let i = 0; i < 30; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    s.style.left = Math.random() * 100 + 'vw';
-    s.style.top = Math.random() * 100 + 'vh';
-    s.style.animationDelay = Math.random() * 3 + 's';
-    starsContainer.appendChild(s);
-}
-
-renderItems();
+document.addEventListener('DOMContentLoaded', initShop);
 </script>
 </body>
 </html>
