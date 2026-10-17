@@ -6,11 +6,6 @@
 <title>CodeQuest | اختر شخصيتك</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/avatar.css">
-<link rel="stylesheet" href="css/accessories.css">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/sfx.js"></script>
@@ -19,7 +14,7 @@
 <body>
 <div class="particles" id="particles"></div>
 <div class="top-bar">
-<button class="skip-btn" onclick="skipAvatar()">تخطي ←</button>
+<button class="skip-btn" onclick="window.location.href='languages.html'">تخطي ←</button>
 </div>
 <header class="avatar-header">
 <h1>👤 اختر شخصيتك</h1>
@@ -28,89 +23,40 @@
 <div class="avatar-grid" id="avatarGrid"></div>
 
 <script>
-const user = Auth.getCurrentUser();
-const boySeeds = ['Jack', 'Oliver', 'Leo', 'Max', 'Ryan', 'Liam', 'Noah', 'Ethan', 'Lucas', 'James', 'Henry', 'Mason'];
-const girlSeeds = ['Emma', 'Sophia', 'Mia', 'Luna', 'Aria', 'Zoe', 'Lily', 'Chloe', 'Ella', 'Ava', 'Grace', 'Ivy'];
-const allSeeds = [...boySeeds, ...girlSeeds];
-const bgColors = ['ffdfbf', 'c0aede', 'b6e3f4', 'd1d4f9', 'ffd5dc', 'c8f7c5', 'ffe0b3', 'e0d5f9'];
-let selectedAvatarUrl = null;
-
-function generateAvatar(seed, bg) {
-    return 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + seed + '&backgroundColor=' + bg + '&radius=50';
-}
-
-function renderAvatars() {
+document.addEventListener('DOMContentLoaded', () => {
+    const user = Auth.getCurrentUser() || 'Guest';
+    const allSeeds = ['Jack', 'Emma', 'Oliver', 'Sophia', 'Leo', 'Mia', 'Max', 'Luna', 'Ryan', 'Aria', 'Noah', 'Zoe', 'Liam', 'Lily', 'Ethan', 'Chloe', 'Lucas', 'Ella'];
+    const bgColors = ['ffdfbf', 'c0aede', 'b6e3f4', 'd1d4f9', 'ffd5dc', 'c8f7c5', 'ffe0b3', 'e0d5f9'];
     const grid = document.getElementById('avatarGrid');
-    grid.innerHTML = '';
+
     allSeeds.forEach((seed, i) => {
         const bg = bgColors[i % bgColors.length];
-        const url = generateAvatar(seed, bg);
+        const url = 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + seed + '&backgroundColor=' + bg + '&radius=50';
         const card = document.createElement('div');
         card.className = 'avatar-card';
         card.innerHTML = '<img src="' + url + '" alt="' + seed + '">';
-        card.onclick = (e) => selectAvatar(e, url, seed);
+        card.onclick = () => {
+            try { playSound('win'); } catch(e) {}
+            try { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); } catch(e) {}
+            localStorage.setItem('cq_avatar_' + user, url);
+            if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+                firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({ avatar: url }).catch(console.error);
+            }
+            setTimeout(() => { window.location.href = 'languages.html'; }, 800);
+        };
         grid.appendChild(card);
     });
-}
 
-function selectAvatar(event, url, name) {
-    playSound('pop');
-    selectedAvatarUrl = url;
-    const card = event.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    document.body.classList.add('screen-shake');
-    setTimeout(() => document.body.classList.remove('screen-shake'), 500);
+    const pc = document.getElementById('particles');
     for (let i = 0; i < 20; i++) {
-        const p = document.createElement('div');
-        p.className = 'burst-particle';
-        p.style.left = cx + 'px';
-        p.style.top = cy + 'px';
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 100 + Math.random() * 200;
-        p.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
-        p.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
-        p.style.background = ['#00e5ff', '#ffd700', '#ffffff', '#27ae60'][Math.floor(Math.random() * 4)];
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 800);
+        const p = document.createElement('div'); p.className = 'particle';
+        p.innerText = ['👤', '✨', '⭐', '🌟'][Math.floor(Math.random() * 4)];
+        p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+        p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+        p.style.animationDelay = (Math.random() * 5) + 's';
+        pc.appendChild(p);
     }
-    setTimeout(() => { confirmChoice(); }, 500);
-}
-
-async function confirmChoice() {
-    if (!selectedAvatarUrl) return;
-    playSound('win');
-    localStorage.setItem('cq_avatar_' + user, selectedAvatarUrl);
-    
-    // حفظ في Firebase
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-        try {
-            const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
-            await userRef.update({ avatar: selectedAvatarUrl });
-        } catch(e) { console.error("Error saving avatar:", e); }
-    }
-    
-    try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
-    setTimeout(() => { window.location.href = 'languages.html'; }, 1000);
-}
-
-function skipAvatar() {
-    playSound('click');
-    window.location.href = 'languages.html';
-}
-
-renderAvatars();
-
-const pc = document.getElementById('particles');
-for (let i = 0; i < 20; i++) {
-    const p = document.createElement('div'); p.className = 'particle';
-    p.innerText = ['👤', '✨', '⭐', '🌟'][Math.floor(Math.random() * 4)];
-    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
-    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
-    p.style.animationDelay = (Math.random() * 5) + 's';
-    pc.appendChild(p);
-}
+});
 </script>
 </body>
 </html>
