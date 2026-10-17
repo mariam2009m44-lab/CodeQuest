@@ -13,40 +13,37 @@
         * { box-sizing: border-box; }
         body { background: transparent; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px; }
         
-        .header { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(0,229,255,0.2); position: sticky; top: 0; z-index: 100; box-sizing: border-box;}
-        .header h1 { margin: 0; font-size: 1.4rem; color: var(--neon-cyan); }
-        .btn-back { background: rgba(0,229,255,0.1); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; }
+        .header { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(15px); border-bottom: 2px solid #00e5ff; position: sticky; top: 0; z-index: 100; box-sizing: border-box;}
+        .header h1 { margin: 0; font-size: 1.4rem; color: #fff; text-shadow: 0 0 10px #00e5ff;}
+        .btn-back { background: #00e5ff; border: none; color: #000; padding: 8px 15px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 0 #0088cc; }
 
-        /* تصميم شبكة الألعاب المبهجة (Claymorphism) */
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; width: 95%; max-width: 800px; margin-top: 20px; }
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 25px; width: 95%; max-width: 800px; margin-top: 25px; }
         
         .game-card { 
-            position: relative; border-radius: 25px; padding: 25px 15px; text-align: center; text-decoration: none; color: #fff; 
+            position: relative; border-radius: 30px; padding: 30px 20px; text-align: center; text-decoration: none; color: #fff; 
             display: flex; flex-direction: column; align-items: center; overflow: hidden; transition: 0.3s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 8px 8px 16px rgba(0,0,0,0.4), inset -4px -4px 8px rgba(0,0,0,0.2), inset 4px 4px 8px rgba(255,255,255,0.2);
         }
         
-        /* ألوان متدرجة لكل كارت */
-        .game-card:nth-child(1) { background: linear-gradient(135deg, #f59e0b, #b45309); } /* برتقالي */
-        .game-card:nth-child(2) { background: linear-gradient(135deg, #06b6d4, #0e7490); } /* أزرق */
-        .game-card:nth-child(3) { background: linear-gradient(135deg, #ec4899, #be185d); } /* وردي */
-        .game-card:nth-child(4) { background: linear-gradient(135deg, #10b981, #047857); } /* أخضر */
-        .game-card:nth-child(5) { background: linear-gradient(135deg, #8b5cf6, #5b21b6); } /* بنفسجي */
-        .game-card:nth-child(6) { background: linear-gradient(135deg, #ef4444, #b91c1c); } /* أحمر */
+        .game-card:nth-child(1) { background: #f59e0b; }
+        .game-card:nth-child(2) { background: #06b6d4; }
+        .game-card:nth-child(3) { background: #ec4899; }
+        .game-card:nth-child(4) { background: #10b981; }
+        .game-card:nth-child(5) { background: #8b5cf6; }
+        .game-card:nth-child(6) { background: #ef4444; }
 
-        .game-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+        .game-card:active { transform: scale(0.95); }
 
-        .game-icon { font-size: 3rem; margin-bottom: 15px; color: #fff; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
-        .game-title { font-size: 1.3rem; font-weight: 900; margin: 0 0 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .game-desc { font-size: 0.85rem; margin-bottom: 20px; opacity: 0.9; }
+        .game-icon { font-size: 3.5rem; margin-bottom: 15px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .game-title { font-size: 1.3rem; font-weight: 900; margin: 0 0 10px; }
+        .game-desc { font-size: 0.9rem; margin-bottom: 20px; opacity: 0.9; font-weight: bold;}
         
-        .btn-play { background: #fff; color: #000; border: none; padding: 10px 20px; border-radius: 12px; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; }
-        .game-card:hover .btn-play { background: #000; color: #fff; }
+        .btn-play { background: #fff; color: #000; border: none; padding: 12px 20px; border-radius: 15px; font-family: 'Cairo'; font-weight: 900; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: 0.1s; }
 
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; padding: 10px 20px; background: rgba(5, 9, 20, 0.95); border: 1px solid rgba(0,229,255,0.3); border-radius: 25px; z-index: 1000; }
-        .nav-btn { color: #667; text-decoration: none; display: flex; flex-direction: column; align-items: center; width: 60px; }
-        .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; } .nav-btn span { font-size: 0.7rem; }
-        .nav-btn.active { color: var(--neon-cyan); }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; padding: 10px 20px; background: rgba(5, 9, 20, 0.95); border: 2px solid #00e5ff; border-radius: 25px; z-index: 1000; box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+        .nav-btn { color: #667; text-decoration: none; display: flex; flex-direction: column; align-items: center; width: 60px; transition: 0.3s;}
+        .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; } .nav-btn span { font-size: 0.7rem; font-weight: bold;}
+        .nav-btn.active { color: #00e5ff; transform: translateY(-5px); }
     </style>
 </head>
 <body>
