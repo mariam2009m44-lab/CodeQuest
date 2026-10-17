@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><title>لعبة الذاكرة</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="global.css">
+    <style>
+        body { overflow: hidden; }
+        .board { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; align-content: center; box-sizing: border-box;}
+        .card { aspect-ratio: 1/1; background: #1e1e1e; border: 2px solid #333; border-radius: 15px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s; text-align: center; padding: 5px;}
+        .card.flipped { background: var(--glass); border-color: var(--neon-cyan); color: #00e5ff; box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+        .card.matched { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981; pointer-events: none; }
+        .card .front { display: block; font-size: 2rem;} .card .back { display: none; font-size: 0.8rem; font-family: monospace; direction: ltr;}
+        .card.flipped .front, .card.matched .front { display: none; }
+        .card.flipped .back, .card.matched .back { display: block; }
+    </style>
+</head><body>
+    <div class="header"><a href="games.html" class="btn-back">رجوع</a><h1>🧠 لعبة الذاكرة</h1></div>
+    <div class="board" id="board"></div>
+    <script>
+        const data = [
+            { id: 1, text: 'console.log', match: 'يطبع' }, { id: 2, text: 'let', match: 'متغير' },
+            { id: 3, text: 'if', match: 'شرط' }, { id: 4, text: 'for', match: 'حلقة' },
+            { id: 5, text: 'function', match: 'دالة' }, { id: 6, text: 'array', match: 'مصفوفة' }
+        ];
+        let cards = [], flipped = [], matched = 0;
+        function init() {
+            cards = [];
+            data.forEach(item => { cards.push({ id: item.id, text: item.text }); cards.push({ id: item.id, text: item.match }); });
+            cards.sort(() => Math.random() - 0.5);
+            const board = document.getElementById('board'); board.innerHTML = '';
+            cards.forEach((c, i) => {
+                const el = document.createElement('div'); el.className = 'card';
+                el.innerHTML = `<span class="front">❓</span><span class="back">${c.text}</span>`;
+                el.onclick = () => flip(el, i); board.appendChild(el);
+            });
+        }
+        function flip(el, i) {
+            if(el.classList.contains('flipped') || el.classList.contains('matched') || flipped.length === 2) return;
+            el.classList.add('flipped'); flipped.push({ el, i });
+            if(flipped.length === 2) {
+                if(cards[flipped[0].i].id === cards[flipped[1].i].id) {
+                    flipped[0].el.classList.add('matched'); flipped[1].el.classList.add('matched');
+                    matched++; flipped = [];
+                    if(matched === 6) { confetti({ particleCount: 200 }); setTimeout(claimReward, 1000); }
+                } else {
+                    setTimeout(() => { flipped[0].el.classList.remove('flipped'); flipped[1].el.classList.remove('flipped'); flipped = []; }, 1000);
+                }
+            }
+        }
+        async function claimReward() {
+            const uid = Auth.getUserId();
+            if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(80) }); }
+            alert("🎉 مبروك! +80 نقطة"); window.location.href = 'games.html';
+        }
+        Auth.init((l) => { if(!l) window.location.href = 'index.html'; else init(); });
+    </script>
+</body></html>
