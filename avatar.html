@@ -97,27 +97,31 @@ body.screen-shake { animation: screenShake 0.5s; }
 
 
 
+    
+    
     <script>
+        let selectedAvatarUrl = '';
+
         function selectAvatar(element) {
-            // إزالة التحديد من الكل
-            document.querySelectorAll('.avatar-card').forEach(el => el.style.borderColor = 'transparent');
-            // تحديد اللي اتضغط عليه
+            document.querySelectorAll('.avatar-option').forEach(el => el.style.borderColor = 'transparent');
             element.style.borderColor = '#00e5ff';
-            // حفظ الرابط في المتصفح
-            const imgSrc = element.querySelector('img').src;
-            localStorage.setItem('cq_avatar', imgSrc);
+            selectedAvatarUrl = element.querySelector('img').src;
         }
 
         function startGame() {
-            const avatar = localStorage.getItem('cq_avatar');
-            if (!avatar) { alert("يرجى اختيار شخصية أولاً!"); return; }
+            if (!selectedAvatarUrl) { alert("يا بطل، اختر شخصيتك الأول!"); return; }
             
-            // حفظ في فايربيز
+            localStorage.setItem('cq_avatar', selectedAvatarUrl); // حفظ في المتصفح
+            
             const uid = Auth.getUserId();
             if (uid) {
-                firebase.firestore().collection('users').doc(uid).update({ avatar: avatar })
+                // حفظ في فايربيز
+                firebase.firestore().collection('users').doc(uid).update({ avatar: selectedAvatarUrl })
                 .then(() => { window.location.href = 'languages.html'; })
-                .catch(e => { console.error(e); window.location.href = 'languages.html'; });
+                .catch((e) => { 
+                    console.error(e); 
+                    window.location.href = 'languages.html'; 
+                });
             } else {
                 window.location.href = 'languages.html';
             }

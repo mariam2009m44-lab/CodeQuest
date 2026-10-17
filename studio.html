@@ -15,31 +15,27 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.75); }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.85); }
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
         .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--glass); border-bottom: 1px solid rgba(0,229,255,0.2); backdrop-filter: blur(15px); z-index: 100; }
-        .header h1 { margin: 0; font-size: 1rem; color: var(--neon-cyan); display:flex; align-items:center; gap:5px;}
+        .header h1 { margin: 0; font-size: 1rem; color: var(--neon-cyan); }
         .header-btns { display: flex; gap: 8px; }
-        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; font-size: 0.85rem;}
-        .btn-run { background: #28a745; color: white; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
-        .btn-finish { background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
+        .btn { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; font-size: 0.85rem;}
+        .btn-run { background: #28a745; color: white; }
+        .btn-finish { background: var(--gold); color: #000; }
 
         .main-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative; }
         
         /* شاشة الحوار */
         .dialogue-phase { display: flex; flex-direction: column; height: 100%; padding: 20px; justify-content: flex-end; background: var(--glass); backdrop-filter: blur(10px); z-index: 50; position: absolute; top: 0; left: 0; width: 100%; }
-        .chat-bubble { background: rgba(0, 0, 0, 0.7); border: 1px solid var(--neon-cyan); border-radius: 20px 20px 0 20px; padding: 20px; margin-bottom: 20px; max-width: 85%; align-self: flex-start; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.2);}
-        .chat-bubble::after { content: ''; position: absolute; bottom: -15px; right: 20px; border-width: 15px 15px 0 0; border-style: solid; border-color: var(--neon-cyan) transparent transparent transparent; }
+        .chat-bubble { background: rgba(0, 0, 0, 0.7); border: 1px solid var(--neon-cyan); border-radius: 20px 20px 0 20px; padding: 20px; margin-bottom: 20px; max-width: 85%; align-self: flex-start; position: relative; }
         .cody-msg { font-size: 1.1rem; line-height: 1.8; color: #e0e0e0; }
-        
         .avatars-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .avatar-img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--neon-cyan); background: #000; object-fit: cover;}
-        .user-avatar-img { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
-        
-        .btn-next { background: var(--neon-cyan); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,229,255,0.4); width: 100%; transition: 0.3s;}
-        .btn-next:hover { transform: scale(1.02); }
+        .user-avatar-img { border-color: var(--gold); }
+        .btn-next { background: var(--neon-cyan); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; cursor: pointer; width: 100%; }
 
         /* شاشة الكود */
         .coding-phase { display: none; flex-direction: column; height: 100%; width: 100%; }
@@ -61,8 +57,8 @@
     <div class="header">
         <h1><i class="ri-terminal-box-line"></i> <span id="lessonTitle">جاري التحميل...</span></h1>
         <div class="header-btns" id="headerBtns" style="display:none;">
-            <button class="btn btn-run" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
-            <button class="btn btn-finish" onclick="completeLesson()"><i class="ri-check-double-line"></i> إنهاء</button>
+            <button class="btn btn-run" onclick="runCode()">▶ تشغيل</button>
+            <button class="btn btn-finish" onclick="completeLesson()">✓ إنهاء</button>
         </div>
     </div>
 
@@ -81,7 +77,7 @@
         <div class="coding-phase" id="codingPhase">
             <div class="editor-wrapper"><div id="editor-container"></div></div>
             <div class="terminal-wrapper">
-                <div class="terminal-header"><span><i class="ri-terminal-line"></i> CONSOLE</span><span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;"><i class="ri-delete-bin-line"></i></span></div>
+                <div class="terminal-header"><span><i class="ri-terminal-line"></i> CONSOLE</span><span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color: #ff4444;">مسح 🗑️</span></div>
                 <div class="terminal-output" id="terminalOutput">> Ready...</div>
             </div>
         </div>
@@ -94,7 +90,7 @@
         const levelId = parseInt(urlParams.get('level')) || 1;
         let lessonData = null;
 
-        // تحميل صورة الشخصية
+        // عرض صورة الطالب
         const userAvatar = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
         document.getElementById('userAvatarDialogue').src = userAvatar;
 
@@ -123,7 +119,7 @@
             require(['vs/editor/editor.main'], function() {
                 editor = monaco.editor.create(document.getElementById('editor-container'), {
                     value: savedCode, language: lang === 'js' || lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
-                    theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false, padding: { top: 10 }
+                    theme: 'vs-dark', fontSize: 16, minimap: { enabled: false }, automaticLayout: true, scrollBeyondLastLine: false
                 });
                 let saveTimeout;
                 editor.onDidChangeModelContent(() => {
