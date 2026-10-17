@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>CodeQuest | لوحة الشرف</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/accessories.css">
@@ -18,6 +21,7 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .back-btn:hover{background:rgba(0,229,255,0.25)}
 .header-title{flex:1;text-align:center;color:#ffd700;font-size:20px;font-weight:900;text-shadow:0 0 15px rgba(255,215,0,0.6)}
 .privacy-note{text-align:center;color:#a0aec0;font-size:12px;margin-bottom:25px;position:relative;z-index:2}
+
 .podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin-bottom:30px;position:relative;z-index:2;padding:0 5px;min-height:220px}
 .podium-item{display:flex;flex-direction:column;align-items:center;flex:1;max-width:110px}
 .podium-avatar{width:65px;height:65px;border-radius:50%;background:#374151;border:3px solid;overflow:hidden;margin-bottom:8px;position:relative;display:flex;align-items:center;justify-content:center}
@@ -39,12 +43,11 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .my-rank-card{background:linear-gradient(135deg, rgba(0,229,255,0.15), rgba(0,114,255,0.08));border:2px solid #00e5ff;border-radius:20px;padding:18px;text-align:center;max-width:400px;margin:0 auto;position:relative;z-index:2;box-shadow:0 0 30px rgba(0,229,255,0.3)}
 .my-rank-label{color:#00e5ff;font-size:12px;font-weight:bold;margin-bottom:8px}
 .my-rank-info{display:flex;align-items:center;justify-content:center;gap:15px}
-.my-rank-avatar{width:50px;height:50px;border-radius:50%;overflow:hidden;background:#b6e3f4;border:3px solid #00e5ff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold}
+.my-rank-avatar{width:50px;height:50px;border-radius:50%;overflow:hidden;background:#374151;border:3px solid #00e5ff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold}
 .my-rank-name{font-size:16px;font-weight:900;color:#fff}
 .my-rank-score{font-size:20px;font-weight:900;color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,0.6)}
 .my-rank-position{color:#a0aec0;font-size:12px;margin-top:6px}
-
-.letter-avatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;border-radius:50%;background:#374151}
+.letter-avatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;border-radius:50%;background:linear-gradient(135deg, #00e5ff, #0072ff);}
 </style>
 </head>
 <body>
@@ -57,95 +60,72 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 
 <div class="privacy-note">🔒 يتم عرض أفضل 3 لاعبين فقط للحفاظ على الخصوصية</div>
 
-<div class="podium" id="podiumArea"></div>
+<!-- المنصة ثابتة ومبنية مسبقاً -->
+<div class="podium">
+    <div class="podium-item podium-2" id="p2-item">
+        <div class="podium-avatar" id="p2-avatar"><div class="letter-avatar">؟</div></div>
+        <div class="podium-name" id="p2-name">---</div>
+        <div class="podium-score" id="p2-score">0</div>
+        <div class="podium-block">2</div>
+    </div>
+    <div class="podium-item podium-1" id="p1-item">
+        <div class="crown-top">👑</div>
+        <div class="podium-avatar" id="p1-avatar"><div class="letter-avatar">؟</div></div>
+        <div class="podium-name" id="p1-name">---</div>
+        <div class="podium-score" id="p1-score">0</div>
+        <div class="podium-block">1</div>
+    </div>
+    <div class="podium-item podium-3" id="p3-item">
+        <div class="podium-avatar" id="p3-avatar"><div class="letter-avatar">؟</div></div>
+        <div class="podium-name" id="p3-name">---</div>
+        <div class="podium-score" id="p3-score">0</div>
+        <div class="podium-block">3</div>
+    </div>
+</div>
+
 <div id="myRankArea"></div>
 
 <script>
-const currentUser = Auth.getCurrentUser();
-const users = Auth.getUsers();
-const games = ['match', 'memory', 'bug', 'speed', 'quiz', 'build'];
-const players = [];
+try {
+    const currentUser = Auth.getCurrentUser();
+    const users = Auth.getUsers() || {};
+    const players = [];
 
-// دالة لحساب نقاط كل لاعب بطريقة موحدة
-function getPlayerScore(name) {
-    let total = 0;
-    // نقاط المستويات
-    total += parseInt(localStorage.getItem('cq_balance_' + name) || '0');
-    // نقاط التحدي اليومي والمكافآت
-    if (users[name] && users[name].bonusPoints) {
-        total += users[name].bonusPoints;
+    // حساب نقاط كل اللاعبين
+    Object.keys(users).forEach(name => {
+        let total = parseInt(localStorage.getItem('cq_balance_' + name) || '0');
+        if (users[name] && users[name].bonusPoints) {
+            total += users[name].bonusPoints;
+        }
+        players.push({ name: name, score: total });
+    });
+
+    // ترتيب اللاعبين من الأعلى للأقل
+    players.sort((a, b) => b.score - a.score);
+
+    // دالة لتحديث بيانات مركز معين
+    function updatePodium(rank, player) {
+        const avatarEl = document.getElementById('p' + rank + '-avatar');
+        const nameEl = document.getElementById('p' + rank + '-name');
+        const scoreEl = document.getElementById('p' + rank + '-score');
+        
+        if (player) {
+            avatarEl.innerHTML = Auth.getAvatarHtml(player.name);
+            nameEl.innerText = player.name;
+            nameEl.style.color = (player.name === currentUser) ? '#00e5ff' : '#fff';
+            scoreEl.innerText = player.score;
+        }
     }
-    // نقاط الألعاب (لو كانت متسجلة)
-    // ملاحظة: الألعاب بتسجل high score كـ global مش per user، فهنعتمد على المستويات والمكافآت
-    return total;
-}
 
-Object.keys(users).forEach(name => {
-    players.push({ name: name, score: getPlayerScore(name) });
-});
+    // تحديث المراكز التلاتة
+    if (players[0]) updatePodium(1, players[0]);
+    if (players[1]) updatePodium(2, players[1]);
+    if (players[2]) updatePodium(3, players[2]);
 
-players.sort((a, b) => b.score - a.score);
+    // كارت المركز الشخصي
+    const myRank = players.findIndex(p => p.name === currentUser) + 1;
+    const myScore = players.find(p => p.name === currentUser)?.score || 0;
 
-const podiumArea = document.getElementById('podiumArea');
-const myRankArea = document.getElementById('myRankArea');
-
-function getAvatarHtml(name) {
-    return Auth.getAvatarHtml(name);
-}
-
-// دالة لرسم مركز واحد في المنصة
-function renderPodiumSpot(player, rank) {
-    const isMe = player && player.name === currentUser;
-    const name = player ? player.name : '---';
-    const score = player ? player.score : 0;
-    const avatar = player ? getAvatarHtml(name) : '<div class="letter-avatar">؟</div>';
-    
-    let html = '<div class="podium-item podium-' + rank + '">';
-    
-    if (rank === 1) {
-        html += '<div class="crown-top">👑</div>';
-    }
-    
-    html += '<div class="podium-avatar">' + avatar + '</div>';
-    html += '<div class="podium-name" style="' + (isMe ? 'color:#00e5ff;' : '') + '">' + (isMe ? 'أنت' : name) + '</div>';
-    html += '<div class="podium-score">' + score + '</div>';
-    html += '<div class="podium-block">' + rank + '</div>';
-    html += '</div>';
-    
-    return html;
-}
-
-// ترتيب العرض: التاني (شمال) - الأول (وسط) - التالت (يمين)
-let podiumHtml = '';
-
-// المركز التاني
-if (players[1]) {
-    podiumHtml += renderPodiumSpot(players[1], 2);
-} else {
-    podiumHtml += renderPodiumSpot(null, 2);
-}
-
-// المركز الأول
-if (players[0]) {
-    podiumHtml += renderPodiumSpot(players[0], 1);
-} else {
-    podiumHtml += renderPodiumSpot(null, 1);
-}
-
-// المركز التالت
-if (players[2]) {
-    podiumHtml += renderPodiumSpot(players[2], 3);
-} else {
-    podiumHtml += renderPodiumSpot(null, 3);
-}
-
-podiumArea.innerHTML = podiumHtml;
-
-// عرض بطاقة "مركزك" للاعب الحالي
-let myRank = players.findIndex(p => p.name === currentUser) + 1;
-let myScore = getPlayerScore(currentUser);
-
-if (myScore > 0 || myRank > 0) {
     let posText = '';
     if (myRank === 1) posText = '🥇 إنت في المركز الأول!';
     else if (myRank === 2) posText = '🥈 إنت في المركز التاني!';
@@ -153,11 +133,11 @@ if (myScore > 0 || myRank > 0) {
     else if (myRank > 3) posText = 'إنت في المركز #' + myRank + ' — كمّل عشان توصل للتلاتة الأوائل!';
     else posText = 'ابدأ اللعب عشان تدخل لوحة الشرف!';
 
-    myRankArea.innerHTML = 
+    document.getElementById('myRankArea').innerHTML = 
         '<div class="my-rank-card">' +
             '<div class="my-rank-label">⭐ مركزك الحالي</div>' +
             '<div class="my-rank-info">' +
-                '<div class="my-rank-avatar">' + getAvatarHtml(currentUser) + '</div>' +
+                '<div class="my-rank-avatar">' + Auth.getAvatarHtml(currentUser) + '</div>' +
                 '<div>' +
                     '<div class="my-rank-name">' + currentUser + '</div>' +
                     '<div class="my-rank-score">' + myScore + ' نقطة</div>' +
@@ -165,12 +145,14 @@ if (myScore > 0 || myRank > 0) {
             '</div>' +
             '<div class="my-rank-position">' + posText + '</div>' +
         '</div>';
-}
 
-if (myRank === 1) {
-    setTimeout(() => {
-        try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#ffd700', '#00e5ff', '#ffffff'] }); } catch(e) {}
-    }, 500);
+    if (myRank === 1) {
+        setTimeout(() => {
+            try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#ffd700', '#00e5ff', '#ffffff'] }); } catch(e) {}
+        }, 500);
+    }
+} catch (error) {
+    console.error("Error loading leaderboard:", error);
 }
 </script>
 </body>
