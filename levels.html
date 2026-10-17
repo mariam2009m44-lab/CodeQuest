@@ -1,1 +1,100 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>المستويات</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/levels.css"><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script><script src="js/firebase-config.js"></script><script src="js/auth.js"></script></head><body><div class="stars" id="stars"></div><header class="top-bar"><button class="back-btn" onclick="window.location.href='languages.html'">← رجوع</button><div class="title-box"><h1 id="userName">...</h1><p>مسارك في <span id="langName">...</span></p></div></header><div class="map-container" id="mapContainer"><img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" class="mascot-float"><div class="path-line"></div></div><script>document.addEventListener('DOMContentLoaded', () => { Auth.init((logged) => { if(!logged) return; const user = Auth.getCurrentUser(), data = Auth.getUserData(); const lang = localStorage.getItem('cq_language') || 'js'; document.getElementById('userName').innerText = user; document.getElementById('langName').innerText = localStorage.getItem('cq_language_name') || 'JavaScript'; const prog = data.progress || {}; const map = document.getElementById('mapContainer'); const names = ['البداية', 'الشروط', 'الحلقات', 'الدوال', 'المشاريع']; for(let i=1; i<=5; i++) { let key = lang + '_level' + i; let isUnlocked = (i === 1) || (prog[key] && prog[key].unlocked); let stars = (prog[key] && prog[key].stars) ? prog[key].stars : 0; map.insertAdjacentHTML('beforeend', `<div class="level-node ${isUnlocked ? 'unlocked' : 'locked'}" style="margin-${i%2===0 ? 'right' : 'left'}: ${i%2===0 ? '40%' : '40%'};" onclick="${isUnlocked ? "startLevel('level"+i+"')" : ""}"><span class="node-icon">${isUnlocked ? '▶' : '🔒'}</span><span class="node-num">${i}</span><span class="node-label">${names[i-1]}</span><div style="color:#ffd700; font-size:14px; position:absolute; top:-25px;">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div></div>`); } }); }); function startLevel(l) { localStorage.setItem('cq_current_level', l); window.location.href = 'game.html'; }</script></body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خريطة المستويات | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { background: #050914; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
+        .header { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .title { color: #00e5ff; font-size: 1.2rem; font-weight: bold; }
+        .btn-back { background: rgba(0, 229, 255, 0.1); border: 1px solid #00e5ff; color: #00e5ff; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-family: 'Cairo'; font-weight: bold;}
+        
+        .map-container { position: relative; flex: 1; width: 100%; max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding-bottom: 50px; }
+        
+        .robot-img { width: 100px; height: 100px; margin-top: 10px; border-radius: 50%; border: 3px solid #00e5ff; box-shadow: 0 0 20px rgba(0,229,255,0.5); z-index: 2; background: #111;}
+        
+        .path-line { width: 6px; height: 300px; background: linear-gradient(to bottom, #00e5ff, rgba(0,229,255,0.2)); position: absolute; top: 100px; z-index: 1; }
+
+        .level-node { width: 70px; height: 70px; background: #111; border: 3px solid #00e5ff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; color: #fff; cursor: pointer; z-index: 2; margin: 25px 0; transition: 0.3s; box-shadow: 0 0 15px rgba(0,229,255,0.3); position: relative; }
+        .level-node:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(0,229,255,0.8); }
+        .level-node.locked { border-color: #555; color: #555; box-shadow: none; cursor: not-allowed; background: #1a1a1a; }
+        
+        .stars { position: absolute; bottom: -25px; font-size: 1rem; display: flex; gap: 2px; }
+        .star { color: #ffd700; text-shadow: 0 0 5px #ffd700; }
+        .star.empty { color: #444; text-shadow: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">مسارك في <span id="langName" style="color:#ffd700;">...</span></div>
+        <button class="btn-back" onclick="window.location.href='languages.html'">← رجوع</button>
+    </div>
+
+    <div class="map-container" id="mapContainer">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff" class="robot-img" alt="Cody">
+        <div class="path-line"></div>
+        <!-- سيتم إضافة المستويات هنا تلقائياً -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Auth === 'undefined') {
+                alert("حدث خطأ في تحميل مكتبة الحسابات.");
+                return;
+            }
+
+            Auth.init((logged) => {
+                if (!logged) { window.location.href = 'index.html'; return; }
+                
+                const lang = localStorage.getItem('cq_language') || 'JavaScript';
+                document.getElementById('langName').innerText = lang;
+                
+                const mapContainer = document.getElementById('mapContainer');
+                
+                // محاولة قراءة التقدم المحفوظ
+                let progress = {};
+                try {
+                    const savedProgress = localStorage.getItem('cq_progress');
+                    const parsed = savedProgress ? JSON.parse(savedProgress) : {};
+                    progress = parsed[lang] || {};
+                } catch(e) { console.error("Progress parse error", e); }
+
+                // رسم 5 مستويات
+                for (let i = 1; i <= 5; i++) {
+                    const levelKey = 'level' + i;
+                    const isUnlocked = (i === 1) || (progress[levelKey] && progress[levelKey].unlocked);
+                    const stars = (progress[levelKey] && progress[levelKey].stars) || 0;
+                    
+                    const node = document.createElement('div');
+                    node.className = `level-node ${isUnlocked ? '' : 'locked'}`;
+                    
+                    let starsHtml = '<div class="stars">';
+                    for(let s=0; s<3; s++) {
+                        starsHtml += `<span class="star ${s < stars ? '' : 'empty'}">★</span>`;
+                    }
+                    starsHtml += '</div>';
+
+                    node.innerHTML = `${isUnlocked ? i : '🔒'} ${starsHtml}`;
+                    
+                    if (isUnlocked) {
+                        node.onclick = () => {
+                            localStorage.setItem('cq_current_level', i);
+                            // هنا الربط مع الاستوديو الجديد
+                            window.location.href = `studio.html?lang=${lang}&level=${i}`;
+                        };
+                    }
+                    
+                    mapContainer.appendChild(node);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
