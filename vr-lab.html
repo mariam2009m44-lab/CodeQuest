@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeQuest VR Lab</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Cairo', sans-serif; }
+        .vr-ui { position: absolute; top: 20px; right: 20px; z-index: 10; }
+        .vr-btn { background: #00E5FF; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; font-family: 'Cairo'; }
+    </style>
+</head>
+<body>
+    <div class="vr-ui">
+        <a href="index.html" class="vr-btn">⬅️ خروج من VR</a>
+    </div>
+
+    <a-scene>
+        <a-sky color="#050914"></a-sky>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="20" height="20" color="#0a0f1d"></a-plane>
+        
+        <!-- مجسم Cody -->
+        <a-entity position="0 1.5 -3">
+            <a-sphere color="#00E5FF" radius="0.5"></a-sphere>
+            <a-text value="Cody VR Assistant" align="center" position="0 -0.8 0" color="#FFD700" width="4"></a-text>
+        </a-entity>
+
+        <!-- لوحة الدروس -->
+        <a-entity position="-2 2 -4">
+            <a-box color="#8B5CF6" width="2" height="1.5" depth="0.1"></a-box>
+            <a-text value="مسار JavaScript" align="center" position="0 0 0.1" color="#FFFFFF" width="3"></a-text>
+        </a-entity>
+
+        <!-- لوحة المتجر -->
+        <a-entity position="2 2 -4">
+            <a-box color="#FFD700" width="2" height="1.5" depth="0.1"></a-box>
+            <a-text value="المتجر" align="center" position="0 0 0.1" color="#000000" width="3"></a-text>
+        </a-entity>
+
+        <a-entity camera look-controls position="0 1.6 0"></a-entity>
+    </a-scene>
+</body>
+</html>

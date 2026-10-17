@@ -18,15 +18,15 @@ const Auth = {
         });
     },
     getUserId: function() { return this.currentUser ? this.currentUser.uid : null; },
-    getCurrentUser: function() { return this.userData ? this.userData.username : null; },
+    getCurrentUser: function() { return this.currentUser; },
     getUserData: function() { return this.userData; },
     logout: function() { firebase.auth().signOut().then(() => { localStorage.clear(); window.location.href = 'index.html'; }); },
     getAvatarHtml: function(name) {
         name = name || this.getCurrentUser();
-        if (!name) return '<div class="letter-avatar">؟</div>';
+        if (name) return '<div class="letter-avatar">'+name[0].toUpperCase()+'</div>';
         const saved = this.userData ? this.userData.avatar : localStorage.getItem('cq_avatar_' + name);
-        if (saved) return '<img src="' + saved + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-        return '<div class="letter-avatar" style="background:#00e5ff;color:#000;font-weight:bold;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;">' + name.charAt(0).toUpperCase() + '</div>';
+        if (saved) return '<img src="'+saved+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+        return '<div class="letter-avatar" style="background:#0e5fff;color:#000;font-weight:bold;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%">'+name.charAt(0).toUpperCase()+'</div>';
     },
     async loginUser(username, password) {
         try {
@@ -51,6 +51,25 @@ const Auth = {
         } catch (error) {
             console.error("Register Error:", error);
             return { success: false, message: error.message };
+        }
+    },
+    async addPoints(pointsToAdd) {
+        if (!this.currentUser) {
+            console.log("No user logged in");
+            return false;
+        }
+        try {
+            const userRef = firebase.firestore().collection('users').doc(this.currentUser.uid);
+            await userRef.update({
+                points: firebase.firestore.FieldValue.increment(pointsToAdd)
+            });
+            if (this.userData) {
+                this.userData.points = (this.userData.points || 0) + pointsToAdd;
+            }
+            return true;
+        } catch (error) {
+            console.error("Error adding points:", error);
+            return false;
         }
     }
 };

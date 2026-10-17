@@ -34,4 +34,25 @@
             Auth.registerUser(u, p).then(r => { if(r.success) window.location.href = 'avatar.html'; else alert(r.message); });
         }
     </script>
-</body></html>
+
+<script>
+    // كود عرض النقاط الحقيقية في الواجهة
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            if (window.Auth && Auth.getUserData()) {
+                const points = Auth.getUserData().points || 0;
+                // بندور على أي عنصر فيه كلمة "رصيدك" أو "0" ونغيره
+                let el = document.getElementById('pointsDisplay');
+                if(!el) {
+                    // لو مفيش ID، هنكريت شارة صغيرة فوق الشمال تبان في كل الصفحات
+                    el = document.createElement('div');
+                    el.style.cssText = 'position:fixed; top:15px; left:15px; background:#FFD700; color:#000; padding:8px 15px; border-radius:20px; font-weight:bold; z-index:9999; font-family:Cairo, sans-serif; box-shadow: 0 4px 15px rgba(255,215,0,0.3);';
+                    document.body.appendChild(el);
+                }
+                el.innerHTML = `⭐ رصيدك: ${points} XP`;
+            }
+        }, 1000); // نستنى ثانية عشان Firebase يحمل الداتا
+    });
+</script>
+</body>
+</html>

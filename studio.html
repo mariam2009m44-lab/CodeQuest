@@ -87,6 +87,7 @@
             if (lang === 'JavaScript') {
                 let oldLog = console.log; console.log = function(...args) { terminal.innerHTML += `<span style="color:#00ff00;">> ${args.join(' ')}</span><br>`; terminal.scrollTop = terminal.scrollHeight; oldLog(...args); };
                 try { eval(code); } catch(e) { terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${e.message}</span><br>`; } finally { console.log = oldLog; }
+                    if (typeof Auth !== 'undefined' && Auth.getUserId()) { Auth.addPoints(10); console.log('🎉 +10 XP!'); }
             } else {
                 const c = lang === 'Python' ? { language: 'python', version: '3.10.0' } : { language: 'c++', version: '10.2.0' };
                 terminal.innerHTML += `<span style="color:#ffd700;">⏳ جاري التنفيذ...</span><br>`;
@@ -108,4 +109,79 @@
         }
         document.addEventListener('DOMContentLoaded', loadCurriculum);
     </script>
+
+    <!-- Cody AI Assistant Panel -->
+    <style>
+        #aiPanel { position: fixed; top: 0; left: -350px; width: 350px; height: 100vh; background: #0a0f1d; border-right: 2px solid #00E5FF; transition: left 0.3s ease; z-index: 1000; padding: 20px; box-sizing: border-box; direction: rtl; font-family: 'Cairo', sans-serif; box-shadow: 5px 0 15px rgba(0,229,255,0.1); }
+        #aiPanel.open { left: 0; }
+        #chatHistory { height: 70vh; overflow-y: auto; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; color: #fff; }
+        #aiInput { width: 100%; padding: 10px; background: #111827; border: 1px solid #333; color: #fff; border-radius: 5px; margin-bottom: 5px; box-sizing: border-box; outline: none; }
+        #aiInput:focus { border-color: #00E5FF; }
+        .ai-btn { position: fixed; top: 20px; left: 20px; z-index: 1001; background: #8B5CF6; color: #fff; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-family: 'Cairo', sans-serif; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.2s; }
+        .ai-btn:hover { transform: scale(1.05); }
+        .msg-user { background: rgba(0, 229, 255, 0.1); padding: 8px; border-radius: 8px; margin-bottom: 10px; border-right: 3px solid #00E5FF; }
+        .msg-ai { background: rgba(52, 211, 153, 0.1); padding: 8px; border-radius: 8px; margin-bottom: 10px; border-right: 3px solid #34D399; }
+    </style>
+
+    <button class="ai-btn" onclick="toggleAI()">🤖 مساعد Cody</button>
+    
+    <div id="aiPanel">
+        <h3 style="color: #00E5FF; margin-top: 0;">🤖 Cody AI</h3>
+        <p style="color: #888; font-size: 12px; margin-bottom: 15px;">مساعدك الشخصي في كتابة الأكواد. اسألني عن أي خطأ!</p>
+        <div id="chatHistory">
+            <div class="msg-ai">مرحباً! أنا Cody. لو واجهت مشكلة في الكود، اسألني وسأعطيك تلميحاً.</div>
+        </div>
+        <input type="text" id="aiInput" placeholder="اكتب سؤالك هنا..." onkeypress="if(event.key === 'Enter') sendAIMessage()">
+        <button onclick="sendAIMessage()" style="width: 100%; padding: 10px; background: #00E5FF; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-family: 'Cairo';">إرسال</button>
+    </div>
+    
+
+    <script>
+        function toggleAI() {
+            const panel = document.getElementById('aiPanel');
+            panel.classList.toggle('open');
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addChatMessage('أنت', msg, 'user');
+            input.value = '';
+
+            // محاكاة تفكير الذكاء الاصطناعي
+            setTimeout(() => {
+                let reply = "أنا هنا لمساعدتك! جرب تشغل الكود الأول وتشوف النتيجة في الـ Terminal.";
+                
+                const code = editor ? editor.getValue() : "";
+
+                if (msg.includes('خطأ') || msg.includes('error') || msg.includes('مشكلة') || msg.includes('مش شغال')) {
+                    if (code.includes('console.log') && !code.includes(';')) {
+                        reply = "يبدو أنك نسيت الفاصلة المنقوطة (;) في نهاية سطر console.log. في JavaScript، الفاصلة المنقوطة مهمة جداً!";
+                    } else if (code.includes('if') && !code.includes('{')) {
+                        reply = "تأكد من استخدام الأقواس المتعرجة {} بعد جملة if لتحديد الكود الذي سيتم تنفيذه.";
+                    } else {
+                        reply = "راجع الأقواس المتعرجة {} والفاصلة المنقوطة ;. جرب تشغل الكود وتقرأ رسالة الخطأ الحمراء في الـ Terminal، هي هتقولك المشكلة فين بالظبط.";
+                    }
+                } else if (msg.includes('حل') || msg.includes('تلميح') || msg.includes('مساعدة')) {
+                    reply = "تلميحي لك: تأكد من تعريف المتغيرات (let أو const) قبل استخدامها، وتأكد من صياغة الشروط (if/else) بشكل صحيح.";
+                } else if (msg.includes('شكرا')) {
+                    reply = "على الرحب والسعة! استمر في التعلم والتطوير. 🚀";
+                }
+
+                addChatMessage('Cody AI', reply, 'ai');
+            }, 800);
+        }
+
+        function addChatMessage(sender, text, type) {
+            const history = document.getElementById('chatHistory');
+            const div = document.createElement('div');
+            div.className = type === 'user' ? 'msg-user' : 'msg-ai';
+            div.innerHTML = `<strong style="color: ${type === 'user' ? '#00E5FF' : '#34D399'}; font-size: 12px;">${sender}:</strong><br><span style="font-size: 14px;">${text}</span>`;
+            history.appendChild(div);
+            history.scrollTop = history.scrollHeight;
+        }
+    </script>
+    
 </body></html>
