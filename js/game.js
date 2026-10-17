@@ -16,32 +16,56 @@ const STORIES = {
         ]},
         level2: { levelTitle: 'JS: الشروط', steps: [
             { type: 'cody', text: 'النهاردة هنتعلم الشروط! 🎯' },
+            { type: 'cody', text: 'تخيل إنك عايز الكود ياخد قرار لو اللاعب كسب أو خسر.' },
             { type: 'code', code: 'if (score > 50) {\n  console.log("كسبت");\n}' },
             { type: 'cody', text: 'لو اللاعب عنده أكتر من 50، هتطبع "كسبت".' },
             { type: 'cody', text: 'جاهز للامتحان؟' }
         ], questions: [
             { q: 'إيه الكلمة اللي بنستخدمها للشرط؟', options: ['if', 'for', 'let', 'else'], answer: 'if', explanation: 'if معناها "لو".' }
+        ]},
+        level3: { levelTitle: 'JS: الحلقات', steps: [
+            { type: 'cody', text: 'الحلقات (Loops) بتخلي الكود يتكرر! 🔄' },
+            { type: 'code', code: 'for (let i = 0; i < 3; i++) {\n  console.log(i);\n}' },
+            { type: 'cody', text: 'الكود ده هيطبع الأرقام من 0 لـ 2.' }
+        ], questions: [
+            { q: 'إيه اللي بيعمل تكرار في الكود؟', options: ['for', 'if', 'let'], answer: 'for', explanation: 'for بتعمل حلقة تكرار.' }
+        ]},
+        level4: { levelTitle: 'JS: الدوال', steps: [
+            { type: 'cody', text: 'الدالة (Function) بتجمع كود عشان نستخدمه كذا مرة.' },
+            { type: 'code', code: 'function greet() {\n  console.log("أهلاً");\n}' }
+        ], questions: [
+            { q: 'إزاي نعرف دالة؟', options: ['function name()', 'let name()', 'def name()'], answer: 'function name()', explanation: 'بنستخدم كلمة function.' }
+        ]},
+        level5: { levelTitle: 'JS: المشاريع', steps: [
+            { type: 'cody', text: 'مبروك! وصلت لأعلى مستوى. هنعمل مشروع صغير. 🏆' },
+            { type: 'code', code: 'let x = 5;\nif (x > 0) { console.log("موجب"); }' }
+        ], questions: [
+            { q: 'إزاي نطبع في JavaScript؟', options: ['console.log()', 'print()', 'echo()'], answer: 'console.log()', explanation: 'console.log.' }
         ]}
     },
     py: {
         level1: { levelTitle: 'Python: المتغيرات', steps: [
             { type: 'cody', text: 'مرحباً! النهاردة لغة Python! 🐍' },
             { type: 'code', code: 'name = "سارة"' },
-            { type: 'cody', text: 'في Python، بنكتب الاسم وبعدين = والقيمة. من غير let ولا const!' },
-            { type: 'cody', text: 'سهلة جداً، صح؟ جاهز للامتحان؟' }
+            { type: 'cody', text: 'في Python، بنكتب الاسم وبعدين = والقيمة. من غير let ولا const!' }
         ], questions: [
             { q: 'إزاي نعرف متغير في Python؟', options: ['let x = 5', 'x = 5', 'int x = 5'], answer: 'x = 5', explanation: 'بنكتب الاسم = والقيمة.' }
-        ]}
+        ]},
+        level2: { levelTitle: 'Python: الشروط', steps: [{ type: 'cody', text: 'الشروط في Python سهلة جداً.' }, { type: 'code', code: 'if x > 0:\n    print("موجب")' }], questions: [{ q: 'إزاي بنكتب الشرط؟', options: ['if x > 0:', 'if (x > 0)', 'if x > 0'], answer: 'if x > 0:', explanation: 'لازم النقطتين في الآخر.' }] },
+        level3: { levelTitle: 'Python: الحلقات', steps: [{ type: 'cody', text: 'الحلقات بتكرر الكود.' }, { type: 'code', code: 'for i in range(3):\n    print(i)' }], questions: [{ q: 'الكلمة اللي بنستخدمها للتكرار؟', options: ['for', 'if', 'let'], answer: 'for', explanation: 'بنستخدم for.' }] },
+        level4: { levelTitle: 'Python: الدوال', steps: [{ type: 'cody', text: 'الدالة في Python بتبدأ بـ def.' }, { type: 'code', code: 'def greet():\n    print("أهلاً")' }], questions: [{ q: 'بنعرف دالة إزاي؟', options: ['def name()', 'function name()', 'let name()'], answer: 'def name()', explanation: 'بنستخدم def.' }] },
+        level5: { levelTitle: 'Python: المشاريع', steps: [{ type: 'cody', text: 'مبروك! هتعمل مشروع صغير. 🏆' }, { type: 'code', code: 'x = 10\nprint(x)' }], questions: [{ q: 'إزاي نطبع في Python؟', options: ['print()', 'console.log()', 'echo()'], answer: 'print()', explanation: 'بنستخدم print.' }] }
     },
     cpp: {
         level1: { levelTitle: 'C++: المتغيرات', steps: [
             { type: 'cody', text: 'أهلاً! النهاردة C++! 🚀' },
             { type: 'code', code: 'int age = 15;' },
-            { type: 'cody', text: 'لازم نقول للكمبيوتر نوع البيانات (int) وبعدها اسم المتغير.' },
-            { type: 'cody', text: 'جاهز للامتحان؟' }
-        ], questions: [
-            { q: 'إيه الكلمة اللي بنستخدمها للأرقام الصحيحة؟', options: ['int', 'let', 'var', 'num'], answer: 'int', explanation: 'int اختصار لـ Integer.' }
-        ]}
+            { type: 'cody', text: 'لازم نقول للكمبيوتر نوع البيانات (int) وبعدها اسم المتغير.' }
+        ], questions: [{ q: 'إيه الكلمة اللي بنستخدمها للأرقام الصحيحة؟', options: ['int', 'let', 'var', 'num'], answer: 'int', explanation: 'int اختصار لـ Integer.' }] },
+        level2: { levelTitle: 'C++: الشروط', steps: [{ type: 'cody', text: 'الشروط في C++ شبه JS.' }, { type: 'code', code: 'if (x > 0) {\n  cout << "موجب";\n}' }], questions: [{ q: 'إيه الكلمة اللي بنستخدمها للشرط؟', options: ['if', 'when', 'let'], answer: 'if', explanation: 'بنستخدم if.' }] },
+        level3: { levelTitle: 'C++: الحلقات', steps: [{ type: 'cody', text: 'بنستخدم for للتكرار.' }, { type: 'code', code: 'for (int i = 0; i < 3; i++) {\n  cout << i;\n}' }], questions: [{ q: 'إيه اللي بيعمل تكرار؟', options: ['for', 'if', 'int'], answer: 'for', explanation: 'for.' }] },
+        level4: { levelTitle: 'C++: الدوال', steps: [{ type: 'cody', text: 'الدالة لازم يكون ليها نوع رجوع.' }, { type: 'code', code: 'void greet() {\n  cout << "أهلاً";\n}' }], questions: [{ q: 'إيه نوع الرجوع لو مش هنرجع حاجة؟', options: ['void', 'int', 'string'], answer: 'void', explanation: 'void معناها مفيش رجوع.' }] },
+        level5: { levelTitle: 'C++: المشاريع', steps: [{ type: 'cody', text: 'مبروك! جاهز للمشروع. 🏆' }, { type: 'code', code: 'int x = 10;\ncout << x;' }], questions: [{ q: 'إزاي نطبع في C++؟', options: ['cout', 'print', 'console.log'], answer: 'cout', explanation: 'بنستخدم cout.' }] }
     }
 };
 
@@ -67,7 +91,7 @@ function codyBubble(html) {
 
 function codeBubble(code) {
     const b = document.createElement('div'); b.className = 'chat-row code-bubble';
-    let formatted = code.replace(/let|const|if|int/g, '<span class="keyword">$&</span>')
+    let formatted = code.replace(/let|const|if|int|for|function|def|void|cout/g, '<span class="keyword">$&</span>')
                         .replace(/"[^"]*"/g, '<span class="string">$&</span>');
     b.innerHTML = '<pre dir="ltr">' + formatted + '</pre>';
     $('chatArea').appendChild(b); scrollChat();
@@ -77,7 +101,11 @@ function codeBubble(code) {
 function initGame() {
     STATE.user = Auth.getCurrentUser(); STATE.uid = Auth.getUserId();
     STATE.lang = localStorage.getItem('cq_language') || 'js'; STATE.level = localStorage.getItem('cq_current_level') || 'level1';
-    STATE.story = (STORIES[STATE.lang] || STORIES.js)[STATE.level] || STORIES.js.level1;
+    
+    // لو المستوى مش موجود في اللغة دي، نرجع للأول
+    const langStories = STORIES[STATE.lang] || STORIES.js;
+    STATE.story = langStories[STATE.level] || langStories.level1;
+    
     STATE.totalSteps = STATE.story.steps.length; STATE.totalQuestions = STATE.story.questions.length;
     if($('levelInfo')) $('levelInfo').innerText = STATE.story.levelTitle;
     advanceStep();
