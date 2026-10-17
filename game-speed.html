@@ -1,151 +1,86 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CodeQuest | تحدي السرعة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/games.css">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/sfx.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-
-    <!-- Firebase SDKs (Compat for pure HTML/JS) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-
-    <script src="js/auth.js"></script>
-<script src="js/sfx.js"></script>
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
+<style>
+body{background:#050914;color:#fff;min-height:100vh;padding:15px;font-family:Cairo;text-align:center;}
+.timer{width:100%;height:10px;background:#333;border-radius:10px;margin:20px auto;max-width:400px;overflow:hidden;}
+.fill{height:100%;background:#e74c3c;width:100%;transition:width 0.1s linear;}
+.q-box{background:rgba(255,255,255,0.05);padding:20px;border-radius:15px;max-width:400px;margin:auto;font-size:20px;font-weight:bold;border:2px solid #00e5ff;}
+.opts{display:grid;gap:10px;max-width:400px;margin:20px auto;}
+button{background:#1e293b;color:#fff;padding:15px;border:none;border-radius:10px;font-family:Cairo;font-size:16px;cursor:pointer;}
+button:hover{background:#00e5ff;color:#000;}
+</style>
 </head>
 <body>
-<div class="particles" id="particles"></div>
-<header class="games-header">
-<button class="back-btn" onclick="playSound('click'); setTimeout(()=>window.location.href='games.html',150)">← رجوع</button>
-<h1>⚡ تحدي السرعة</h1>
-<p>المرحلة <span id="roundNum">1</span> • النقاط: <span id="scoreTop">0</span></p>
-</header>
-<div class="speed-container">
-<div class="score-row">
-<div class="score-box">النقاط: <span id="score">0</span></div>
-<div class="score-box">السؤال: <span id="qNum">1</span>/8</div>
-<div class="score-box">🏆 أعلى: <span id="highScore">0</span></div>
-</div>
-<div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
-<div class="speed-question" id="speedQuestion">جاري التحميل...</div>
-<div class="speed-options" id="speedOptions"></div>
-<div class="feedback" id="feedback"></div>
-<button class="action-btn" id="nextRoundBtn" style="display:none;background:linear-gradient(90deg,#27ae60,#2ecc71)" onclick="nextRound()">🎯 المرحلة التالية!</button>
-</div>
+<h1 style="color:#ffd700;">⚡ تحدي السرعة</h1>
+<div class="timer"><div class="fill" id="fill"></div></div>
+<div class="q-box" id="qText">جاري التحميل...</div>
+<div class="opts" id="opts"></div>
 <script>
-const qBank = [
-    { q: 'إيه ناتج 5 + 3؟', options: ['7', '8', '9', '6'], answer: '8' },
-    { q: 'إيه اللون بتاع JavaScript؟', options: ['🟡 أصفر', '🔵 أزرق', '🟢 أخضر', '🔴 أحمر'], answer: '🟡 أصفر' },
-    { q: 'إيه الرمز بتاع الطباعة في JS؟', options: ['print', 'console.log', 'echo', 'write'], answer: 'console.log' },
-    { q: 'إيه ناتج 10 * 2؟', options: ['12', '20', '100', '8'], answer: '20' },
-    { q: 'إزاي نعرّف متغير في JS؟', options: ['let x', 'variable x', 'int x', 'def x'], answer: 'let x' },
-    { q: 'إيه الشعار بتاع Python؟', options: ['🐍 تعبان', '🐘 فيل', '🦁 أسد', '🐬 دلفين'], answer: '🐍 تعبان' },
-    { q: 'إيه ناتج 15 - 5؟', options: ['5', '10', '20', '15'], answer: '10' },
-    { q: 'إيه آخر حاجة بنكتبها في الكود؟', options: ['!', ';', '.', ','], answer: ';' },
-    { q: 'إيه ناتج 7 + 8؟', options: ['14', '15', '16', '17'], answer: '15' },
-    { q: 'إيه لغة الذكاء الاصطناعي؟', options: ['Python', 'HTML', 'CSS', 'XML'], answer: 'Python' },
-    { q: 'إيه ناتج 20 / 4؟', options: ['4', '5', '6', '8'], answer: '5' },
-    { q: 'إيه الرمز اللي بيعني "أكبر من"؟', options: ['<', '>', '=', '!'], answer: '>' }
+const qs = [
+    { q: 'إيه ناتج 5+5؟', o: ['10', '12', '8'], a: '10' },
+    { q: 'إيه لون JavaScript؟', o: ['أصفر', 'أزرق', 'أحمر'], a: 'أصفر' },
+    { q: 'إيه رمز الطباعة؟', o: ['print', 'console.log', 'echo'], a: 'console.log' },
+    { q: 'إيه ناتج 10-4؟', o: ['6', '8', '4'], a: '6' },
+    { q: 'إيه لغة الذكاء الاصطناعي؟', o: ['Python', 'HTML', 'C++'], a: 'Python' }
 ];
-let score = 0, roundNum = 1, currentQ = 0, timer = null, timeLeft = 100, roundQ = [];
-const scoreEl = document.getElementById('score');
-const scoreTop = document.getElementById('scoreTop');
-const qNumEl = document.getElementById('qNum');
-const highScoreEl = document.getElementById('highScore');
-const qEl = document.getElementById('speedQuestion');
-const optionsEl = document.getElementById('speedOptions');
-const feedback = document.getElementById('feedback');
-const timerFill = document.getElementById('timerFill');
-const nextBtn = document.getElementById('nextRoundBtn');
-const roundEl = document.getElementById('roundNum');
-function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function initRound() {
-    currentQ = 0;
-    roundEl.innerText = roundNum;
-    feedback.innerText = ''; feedback.className = 'feedback';
-    nextBtn.style.display = 'none';
-    roundQ = shuffle(qBank).slice(0, 8);
-    loadQuestion();
-}
-function loadQuestion() {
-    if (currentQ >= roundQ.length) { finishRound(); return; }
-    qNumEl.innerText = currentQ + 1;
-    feedback.innerText = ''; feedback.className = 'feedback';
-    const q = roundQ[currentQ];
-    qEl.innerText = q.q;
-    optionsEl.innerHTML = '';
-    q.options.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = 'speed-opt-btn';
-        btn.innerText = opt;
-        btn.onclick = () => checkAnswer(opt, q.answer);
-        optionsEl.appendChild(btn);
+let current = 0, score = 0, time = 100, timer;
+
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.init((logged) => { if(!logged) window.location.href = 'index.html'; else loadQ(); });
+});
+
+function loadQ() {
+    if(current >= qs.length) return finishGame();
+    const q = qs[current];
+    document.getElementById('qText').innerText = q.q;
+    const opts = document.getElementById('opts');
+    opts.innerHTML = '';
+    q.o.forEach(o => {
+        const b = document.createElement('button');
+        b.innerText = o;
+        b.onclick = () => check(b, o, q.a);
+        opts.appendChild(b);
     });
-    startTimer();
-}
-function startTimer() {
-    timeLeft = 100;
-    timerFill.style.width = '100%';
-    timerFill.style.background = 'linear-gradient(90deg, #27ae60, #2ecc71)';
-    if (timer) clearInterval(timer);
+    time = 100;
+    document.getElementById('fill').style.width = '100%';
+    clearInterval(timer);
     timer = setInterval(() => {
-        timeLeft -= 1.5;
-        timerFill.style.width = timeLeft + '%';
-        if (timeLeft < 40) timerFill.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
-        if (timeLeft < 20) timerFill.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
-        if (timeLeft <= 0) {
-            clearInterval(timer); playSound('error');
-            feedback.innerText = '⏰ الوقت خلص!'; feedback.className = 'feedback error';
-            document.querySelectorAll('.speed-opt-btn').forEach(b => b.disabled = true);
-            setTimeout(() => { currentQ++; loadQuestion(); }, 1200);
-        }
+        time -= 2;
+        document.getElementById('fill').style.width = time + '%';
+        if(time <= 0) { clearInterval(timer); check(null, '', q.a); }
     }, 100);
 }
-function checkAnswer(sel, cor) {
-    if (timer) clearInterval(timer);
-    document.querySelectorAll('.speed-opt-btn').forEach(b => b.disabled = true);
-    if (sel === cor) {
-        playSound('success'); score += 15;
-        scoreEl.innerText = score; scoreTop.innerText = score;
-        feedback.innerText = '🎉 صح!'; feedback.className = 'feedback success';
-        try { confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } }); } catch(e) {}
-    } else {
-        playSound('error');
-        feedback.innerText = '❌ غلط! الصح: ' + cor; feedback.className = 'feedback error';
+
+function check(btn, sel, correct) {
+    clearInterval(timer);
+    document.querySelectorAll('button').forEach(b => b.disabled = true);
+    if(sel === correct) { score += 20; try { playSound('success'); } catch(e){} }
+    else { try { playSound('error'); } catch(e){} }
+    setTimeout(() => { current++; loadQ(); }, 1000);
+}
+
+async function finishGame() {
+    try { confetti({ particleCount: 200, spread: 100 }); } catch(e){}
+    alert('🎉 مبروك! كسبت ' + score + ' نقطة!');
+    const uid = Auth.getUserId();
+    if(uid) {
+        const ref = firebase.firestore().collection('users').doc(uid).collection('highscores').doc('speed');
+        const doc = await ref.get();
+        if(!doc.exists || score > doc.data().score) {
+            await ref.set({ score: score });
+            await firebase.firestore().collection('users').doc(uid).update({ bonusPoints: firebase.firestore.FieldValue.increment(score) });
+        }
     }
-    setTimeout(() => { currentQ++; loadQuestion(); }, 1100);
-}
-function finishRound() {
-    qEl.innerText = '🏆 خلّصت المرحلة ' + roundNum + '!';
-    optionsEl.innerHTML = '';
-    timerFill.style.width = '0%';
-    playSound('win');
-    setHighScore('speed', score);
-    highScoreEl.innerText = getHighScore('speed');
-    feedback.innerText = 'النقاط: ' + score;
-    feedback.className = 'feedback success';
-    nextBtn.style.display = 'block';
-    nextBtn.innerText = '🎯 المرحلة ' + (roundNum + 1) + '!';
-    try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 } }); } catch(e) {}
-}
-function nextRound() { roundNum++; initRound(); }
-initRound();
-highScoreEl.innerText = getHighScore('speed');
-const pc = document.getElementById('particles');
-const syms = ['⚡', '{ }', '</>', '=>'];
-for (let i = 0; i < 15; i++) {
-    const p = document.createElement('div'); p.className = 'particle';
-    p.innerText = syms[Math.floor(Math.random() * syms.length)];
-    p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
-    p.style.fontSize = (Math.random() * 15 + 10) + 'px';
-    p.style.animationDelay = (Math.random() * 5) + 's';
-    pc.appendChild(p);
+    setTimeout(() => window.location.href = 'games.html', 1500);
 }
 </script>
-</body>
-</html>
+</body></html>
