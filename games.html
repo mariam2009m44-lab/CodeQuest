@@ -7,16 +7,16 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/sfx.js"></script>
+<script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
 <style>
 body{background:#050914;color:#fff;min-height:100vh;padding:15px;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%);font-family:Cairo;}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
 .back-btn{background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid #00e5ff;padding:10px 20px;border-radius:20px;font-weight:bold;cursor:pointer;font-family:Cairo;}
 h1{color:#ffd700;text-align:center;margin-bottom:30px;text-shadow:0 0 20px rgba(255,215,0,0.5);}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;max-width:500px;margin:auto;}
-.card{background:rgba(255,255,255,0.03);border:2px solid rgba(255,255,255,0.1);border-radius:20px;padding:20px;text-align:center;cursor:pointer;transition:0.3s;position:relative;}
+.card{background:rgba(255,255,255,0.03);border:2px solid rgba(255,255,255,0.1);border-radius:20px;padding:20px;text-align:center;cursor:pointer;transition:0.3s;}
 .card:hover{transform:translateY(-5px);border-color:#00e5ff;box-shadow:0 10px 30px rgba(0,229,255,0.3);}
-.icon{font-size:50px;margin-bottom:10px;filter:drop-shadow(0 5px 10px rgba(0,0,0,0.5));}
+.icon{font-size:50px;margin-bottom:10px;}
 .name{font-weight:900;font-size:16px;margin-bottom:5px;}
 .desc{color:#a0aec0;font-size:11px;margin-bottom:10px;}
 .high-score{background:rgba(255,215,0,0.1);color:#ffd700;padding:4px 10px;border-radius:10px;font-size:11px;font-weight:bold;display:inline-block;}
@@ -30,17 +30,14 @@ h1{color:#ffd700;text-align:center;margin-bottom:30px;text-shadow:0 0 20px rgba(
 document.addEventListener('DOMContentLoaded', () => {
     Auth.init((logged) => {
         if(!logged) { window.location.href = 'index.html'; return; }
-        
         const games = [
-            { id: 'match', name: 'بازل الأكواد', icon: '🧩', desc: 'اسحب الكود لمكانه', link: 'game-match.html' },
+            { id: 'match', name: 'بازل الأكواد', icon: '🧩', desc: 'اسحب الكود', link: 'game-match.html' },
             { id: 'memory', name: 'لعبة الذاكرة', icon: '🧠', desc: 'طابق الكروت', link: 'game-memory.html' },
             { id: 'bug', name: 'اكتشف الخطأ', icon: '🐛', desc: 'لاقي البج', link: 'game-bug.html' },
             { id: 'speed', name: 'تحدي السرعة', icon: '⚡', desc: 'جاوب بسرعة', link: 'game-speed.html' },
             { id: 'quiz', name: 'سؤال وجواب', icon: '❓', desc: 'أسئلة برمجية', link: 'game-quiz.html' },
             { id: 'build', name: 'بناء الكود', icon: '🏗️', desc: 'رتب الأسطر', link: 'game-build.html' }
         ];
-
-
         const grid = document.getElementById('gamesGrid');
         const uid = Auth.getUserId();
 
@@ -52,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch(e){}
             const div = document.createElement('div');
             div.className = 'card';
-            div.innerHTML = `<div class="icon">${g.icon}</div><div class="name">${g.name}</div><div class="desc">${g.desc}</div><div class="high-score">🏆 أعلى: ${highScore}</div>`;
+            div.innerHTML = `<div class="icon">${g.icon}</div><div class="name">${g.name}</div><div class="desc">${g.desc}</div><div class="high-score">🏆 ${highScore}</div>`;
             div.onclick = () => window.location.href = g.link;
             grid.appendChild(div);
         });
