@@ -3,54 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>CodeQuest | ملفي الشخصي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/accessories.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js">
-function confirmLogout() {
-    playSound('click');
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        Auth.logout();
-    }
-}
-
-</script>
-<script src="js/auth.js">
-function confirmLogout() {
-    playSound('click');
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        Auth.logout();
-    }
-}
-
-</script>
-<script src="js/sfx.js">
-function confirmLogout() {
-    playSound('click');
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        Auth.logout();
-    }
-}
-
-</script>
-<script src="js/accessories.js">
-function confirmLogout() {
-    playSound('click');
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        Auth.logout();
-    }
-}
-
-</script>
-<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}
-function confirmLogout() {
-    playSound('click');
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        Auth.logout();
-    }
-}
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/accessories.js"></script>
+<script>if(!localStorage.getItem("cq_session")){window.location.href="index.html";}</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%)}
@@ -61,8 +22,8 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .profile-card{background:linear-gradient(135deg, rgba(0,229,255,0.1), rgba(0,114,255,0.05));border:2px solid rgba(0,229,255,0.3);border-radius:24px;padding:25px 20px;text-align:center;margin-bottom:15px;position:relative;z-index:2;box-shadow:0 15px 40px rgba(0,229,255,0.15)}
 .avatar-wrap{position:relative;width:110px;height:110px;margin:0 auto 12px;cursor:pointer;transition:0.3s}
 .avatar-wrap:active{transform:scale(0.95)}
-.avatar-wrap img{width:100%;height:100%;border-radius:50%;background:#b6e3f4;border:3px solid #00e5ff;box-shadow:0 0 25px rgba(0,229,255,0.6);animation:floatAvatar 3s ease-in-out infinite}
-@keyframes floatAvatar{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.avatar-wrap img, .avatar-wrap .letter-avatar{width:100%;height:100%;border-radius:50%;background:#b6e3f4;border:3px solid #00e5ff;box-shadow:0 0 25px rgba(0,229,255,0.6);object-fit:cover}
+.avatar-wrap .letter-avatar{display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff}
 .avatar-edit{position:absolute;bottom:0;right:0;background:#27ae60;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #050914;box-shadow:0 5px 15px rgba(39,174,96,0.5)}
 .profile-card h2{color:#00e5ff;font-size:22px;margin-bottom:5px;font-weight:900;text-shadow:0 0 15px rgba(0,229,255,0.5)}
 .join-date{color:#a0aec0;font-size:12px;margin-bottom:18px}
@@ -73,7 +34,6 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .stats-title{color:#00e5ff;font-size:15px;font-weight:bold;margin-bottom:12px;text-align:center;position:relative;z-index:2}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:500px;margin:0 auto 20px;position:relative;z-index:2}
 .stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;transition:0.3s}
-.stat-card:hover{background:rgba(0,229,255,0.08);border-color:rgba(0,229,255,0.3)}
 .stat-icon{font-size:26px}
 .stat-info{display:flex;flex-direction:column;flex:1}
 .stat-name{font-size:11px;color:#a0aec0}
@@ -88,10 +48,14 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 .badge-icon{font-size:26px;margin-bottom:5px}
 .badge-name{font-size:9px;color:#e0e0e0;font-weight:bold;line-height:1.3}
 
-.change-avatar-btn{display:block;max-width:500px;margin:0 auto;background:linear-gradient(135deg, #27ae60, #1e8449);color:#fff;border:none;padding:15px;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;box-shadow:0 10px 25px rgba(39,174,96,0.5);transition:0.3s;position:relative;z-index:2}
-.change-avatar-btn:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(39,174,96,0.7)}
+.buttons-container{max-width:500px;margin:0 auto;position:relative;z-index:2;display:flex;flex-direction:column;gap:12px;padding-bottom:30px}
+.btn-action{width:100%;padding:16px;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;transition:0.3s;display:flex;align-items:center;justify-content:center;gap:8px;border:none;text-decoration:none}
+.btn-change-avatar{background:linear-gradient(135deg, #27ae60, #1e8449);color:#fff;box-shadow:0 10px 25px rgba(39,174,96,0.5)}
+.btn-change-avatar:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(39,174,96,0.7)}
+.btn-logout{background:linear-gradient(135deg, #e74c3c, #c0392b);color:#fff;box-shadow:0 10px 25px rgba(231,76,60,0.4)}
+.btn-logout:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(231,76,60,0.6)}
+.btn-action:active{transform:scale(0.97)}
 </style>
-<link rel="stylesheet" href="css/accessories.css">
 </head>
 <body>
 
@@ -102,12 +66,11 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 </div>
 
 <div class="profile-card">
-<div class="avatar-wrap avatar-with-acc" onclick="playSound('click'); window.location.href='avatar.html'">
-<div id="userAvatar" style="width:100%;height:100%"></div>
+<div class="avatar-wrap" onclick="playSound('click'); window.location.href='avatar.html'">
+<div id="userAvatar"></div>
 <div class="avatar-edit">✏️</div>
 </div>
 <h2 id="userName">-</h2>
-<div class="user-title"></div>
 <p class="join-date">عضو من <span id="joinDate">-</span></p>
 <div class="total-score">
 <div class="score-label">مجموع النقاط</div>
@@ -130,15 +93,21 @@ body{background:#050914;color:#fff;min-height:100vh;padding:15px;overflow-x:hidd
 <div class="badges-grid" id="badgesGrid"></div>
 </div>
 
-<button class="change-avatar-btn" onclick="playSound('click'); window.location.href='avatar.html'">🎨 غير شخصيتك</button>
-
+<div class="buttons-container">
+<button class="btn-action btn-change-avatar" onclick="playSound('click'); window.location.href='avatar.html'">
+🎨 غير شخصيتك
+</button>
+<button class="btn-action btn-logout" onclick="confirmLogout()">
+🚪 تسجيل الخروج / تبديل الحساب
+</button>
+</div>
 
 <script>
 const user = Auth.getCurrentUser();
 document.getElementById('userName').innerText = user || 'بطل البرمجة';
+document.getElementById('userAvatar').innerHTML = Auth.getAvatarHtml(user);
 
-
-document.getElementById("userAvatar").innerHTML = Auth.getAvatarHtml(user);
+setTimeout(() => { if (typeof Accessories !== 'undefined') Accessories.render(); }, 300);
 
 const users = Auth.getUsers();
 const userData = users[user] || {};
@@ -156,7 +125,8 @@ games.forEach(g => {
     if (el) el.innerText = score;
 });
 const bonus = (userData.bonusPoints || 0);
-document.getElementById('totalScore').innerText = total + bonus;
+const levelsBalance = parseInt(localStorage.getItem('cq_balance_' + user) || '0');
+document.getElementById('totalScore').innerText = total + bonus + levelsBalance;
 
 const allBadges = [
     { id: 'match', icon: '🧩', name: 'حلّال البازل', condition: () => parseInt(localStorage.getItem('cq_high_match') || '0') >= 30 },
@@ -165,8 +135,8 @@ const allBadges = [
     { id: 'speed', icon: '⚡', name: 'السريع', condition: () => parseInt(localStorage.getItem('cq_high_speed') || '0') >= 60 },
     { id: 'quiz', icon: '❓', name: 'العبقري', condition: () => parseInt(localStorage.getItem('cq_high_quiz') || '0') >= 60 },
     { id: 'build', icon: '🏗️', name: 'المهندس', condition: () => parseInt(localStorage.getItem('cq_high_build') || '0') >= 50 },
-    { id: 'master', icon: '👑', name: 'بطل CodeQuest', condition: () => (total + bonus) >= 200 },
-    { id: 'legend', icon: '💎', name: 'أسطورة البرمجة', condition: () => (total + bonus) >= 300 }
+    { id: 'master', icon: '👑', name: 'بطل CodeQuest', condition: () => (total + bonus + levelsBalance) >= 200 },
+    { id: 'legend', icon: '💎', name: 'أسطورة البرمجة', condition: () => (total + bonus + levelsBalance) >= 300 }
 ];
 
 const badgesGrid = document.getElementById('badgesGrid');
@@ -184,21 +154,6 @@ function confirmLogout() {
         Auth.logout();
     }
 }
-
 </script>
-<script src="js/accessories.js">
-function confirmLogout() {
-    playSound('click');
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        Auth.logout();
-    }
-}
-
-</script>
-
-<button class="btn-logout-modern" onclick="confirmLogout()">
-    <span class="logout-icon">🚪</span>
-    <span>تسجيل الخروج / تبديل الحساب</span>
-</button>
 </body>
 </html>
