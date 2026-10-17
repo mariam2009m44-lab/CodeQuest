@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - CodeQuest</title>
+    <link rel="stylesheet" href="global.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { width: 100%; max-width: 400px; padding: 40px 30px; text-align: center; }
+        .logo { font-size: 2.5rem; color: var(--primary); font-weight: 900; margin-bottom: 30px; text-shadow: 0 0 15px var(--primary-glow); }
+        .input-group { margin-bottom: 20px; text-align: right; }
+        .input-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        .toggle-text { margin-top: 20px; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; }
+        .toggle-text span { color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="login-card card-glass animate-fade">
+        <div class="logo">CodeQuest 🚀</div>
+        <h2 id="formTitle" style="margin-bottom: 25px; color: white;">تسجيل الدخول</h2>
+        
+        <div class="input-group">
+            <label>اسم المستخدم</label>
+            <input type="text" id="username" placeholder="اكتب اسمك هنا...">
+        </div>
+        <div class="input-group">
+            <label>كلمة المرور</label>
+            <input type="password" id="password" placeholder="********">
+        </div>
+        
+        <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleAuth()">دخول</button>
+        
+        <div class="toggle-text" onclick="toggleMode()">
+            ليس لديك حساب؟ <span id="toggleSpan">سجل الآن</span>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('formTitle').innerText = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد';
+            document.getElementById('submitBtn').innerText = isLogin ? 'دخول' : 'إنشاء حساب';
+            document.getElementById('toggleSpan').innerText = isLogin ? 'سجل الآن' : 'سجل دخولك';
+            document.querySelector('.toggle-text').childNodes[0].nodeValue = isLogin ? 'ليس لديك حساب؟ ' : 'لديك حساب بالفعل؟ ';
+        }
+
+        async function handleAuth() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            const btn = document.getElementById('submitBtn');
+
+            if (!u || !p) {
+                alert("يرجى ملء جميع الحقول!");
+                return;
+            }
+
+            btn.innerText = "جاري التحميل...";
+            btn.disabled = true;
+
+            let res;
+            if (isLogin) {
+                res = await Auth.loginUser(u, p);
+            } else {
+                res = await Auth.registerUser(u, p);
+            }
+
+            if (res.success) {
+                window.location.href = 'index.html'; // التحويل للوحة التحكم
+            } else {
+                alert("خطأ: " + res.message);
+                btn.innerText = isLogin ? 'دخول' : 'إنشاء حساب';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
