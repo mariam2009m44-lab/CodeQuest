@@ -2,46 +2,137 @@
 <html lang="ar" dir="rtl"><head><title>بازل الأكواد | CodeQuest</title>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body { background: #050914; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .header { position: absolute; top: 20px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
-        .btn-back { background: rgba(0,229,255,0.1); border: 1px solid #00e5ff; color: #00e5ff; padding: 8px 15px; border-radius: 10px; cursor: pointer; text-decoration: none; }
-        .game-board { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 1px solid #00e5ff; box-shadow: 0 0 20px rgba(0,229,255,0.2); text-align: center; width: 80%; max-width: 400px; }
-        .code-piece { background: #111; padding: 15px; margin: 10px 0; border-radius: 10px; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
-        .code-piece:hover { border-color: #00e5ff; transform: scale(1.02); }
-        .slot { border-bottom: 2px dashed #555; min-height: 50px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        :root { --neon-cyan: #00e5ff; --bg: #050914; --gold: #ffd700; --glass: rgba(10, 25, 47, 0.7); }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+        
+        .header { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(0,229,255,0.2); z-index: 10; }
+        .header h1 { margin: 0; font-size: 1.2rem; color: var(--gold); }
+        .btn-back { background: rgba(0,229,255,0.1); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold;}
+        
+        .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 600px; padding: 20px; z-index: 10;}
+        
+        .target-zone { width: 100%; min-height: 150px; background: rgba(0,0,0,0.5); border: 2px dashed rgba(0,229,255,0.5); border-radius: 20px; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+        .target-zone.active { border-color: var(--gold); box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+        
+        .pieces-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        .code-piece { background: var(--glass); border: 1px solid rgba(255,255,255,0.2); padding: 12px 20px; border-radius: 12px; cursor: pointer; font-family: monospace; font-size: 1.1rem; transition: 0.2s; direction: ltr; color: #fff;}
+        .code-piece:hover { background: rgba(0,229,255,0.2); border-color: var(--neon-cyan); transform: scale(1.05); }
+        .code-piece.placed { background: rgba(0,229,255,0.1); border-color: var(--neon-cyan); cursor: default; color: var(--neon-cyan);}
+        
+        .controls { margin-top: 30px; display: flex; gap: 15px; width: 100%; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+        .btn-check { background: linear-gradient(135deg, var(--neon-cyan), #007bff); color: #000; box-shadow: 0 5px 15px rgba(0,229,255,0.4); }
+        .btn-check:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,229,255,0.6); }
+        .btn-reset { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+        
+        .success-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: var(--glass); backdrop-filter: blur(20px); border: 2px solid var(--gold); padding: 40px; border-radius: 30px; text-align: center; opacity: 0; transition: 0.4s; z-index: 1000; pointer-events: none; }
+        .success-msg.show { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: all; }
+        .success-msg h2 { color: var(--gold); font-size: 2rem; margin: 0 0 10px; }
+        .success-msg p { color: #fff; font-size: 1.2rem; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="header"><h2 style="margin:0; color:#ffd700;">🧩 بازل الأكواد</h2><a href="games.html" class="btn-back">← رجوع</a></div>
-    <div class="game-board">
-        <p>رتب القطع لبناء كود يطبع "Hello World":</p>
-        <div class="slot" id="slot"></div>
-        <div id="pieces">
-            <div class="code-piece" draggable="true" onclick="placePiece('console.log("Hello World");')">console.log("Hello World");</div>
-            <div class="code-piece" draggable="true" onclick="placePiece('let x = 5;')">let x = 5;</div>
-            <div class="code-piece" draggable="true" onclick="placePiece('if (x > 0) {')">if (x > 0) {</div>
+    <script src="js/world-bg.js"></script>
+    <div class="header"><h1>🧩 بازل الأكواد</h1><a href="games.html" class="btn-back">← رجوع</a></div>
+    
+    <div class="game-area">
+        <p style="text-align:center; color:#aaa; margin-bottom:20px;">رتب القطع لبناء كود يطبع "Hello World"</p>
+        
+        <div class="target-zone" id="targetZone"></div>
+        
+        <div class="pieces-container" id="piecesContainer">
+            <!-- سيتم إضافة القطع هنا بالجافاسكريبت -->
         </div>
-        <button onclick="checkWin()" style="margin-top:20px; background:#00e5ff; color:#000; border:none; padding:10px 20px; border-radius:10px; font-family:'Cairo'; font-weight:bold; cursor:pointer; width:100%;">تحقق من الحل</button>
+        
+        <div class="controls">
+            <button class="btn btn-reset" onclick="resetGame()">إعادة</button>
+            <button class="btn btn-check" onclick="checkWin()">تحقق من الحل</button>
+        </div>
     </div>
+
+    <div class="success-msg" id="successMsg">
+        <h2>🎉 مبروك!</h2>
+        <p>لقد قمت ببناء الكود بنجاح</p>
+        <button class="btn btn-check" onclick="claimReward()">احصل على 20 نقطة</button>
+    </div>
+
     <script>
+        const correctOrder = ['console.log', '(', '"Hello World"', ')', ';'];
         let currentBuild = [];
-        function placePiece(code) {
-            currentBuild.push(code);
-            document.getElementById('slot').innerHTML += `<div class="code-piece" style="background:#00e5ff; color:#000; width:100%; box-sizing:border-box;">${code}</div>`;
+        let pieces = [];
+
+        function initGame() {
+            currentBuild = [];
+            pieces = [...correctOrder].sort(() => Math.random() - 0.5);
+            document.getElementById('targetZone').innerHTML = '';
+            const container = document.getElementById('piecesContainer');
+            container.innerHTML = '';
+            
+            pieces.forEach((p, i) => {
+                const el = document.createElement('div');
+                el.className = 'code-piece';
+                el.innerText = p;
+                el.onclick = () => placePiece(i, el);
+                container.appendChild(el);
+            });
         }
+
+        function placePiece(index, element) {
+            if(element.classList.contains('placed')) return;
+            
+            element.classList.add('placed');
+            element.style.opacity = '0.3';
+            
+            currentBuild.push(pieces[index]);
+            
+            const target = document.createElement('div');
+            target.className = 'code-piece placed';
+            target.innerText = pieces[index];
+            target.onclick = () => removePiece(index, element, target);
+            document.getElementById('targetZone').appendChild(target);
+        }
+
+        function removePiece(origIndex, origElement, targetElement) {
+            currentBuild = currentBuild.filter((_, i) => i !== currentBuild.indexOf(pieces[origIndex])); // إزالة العنصر
+            // طريقة أبسط للإزالة
+            const idx = currentBuild.lastIndexOf(pieces[origIndex]);
+            if(idx > -1) currentBuild.splice(idx, 1);
+            
+            targetElement.remove();
+            origElement.classList.remove('placed');
+            origElement.style.opacity = '1';
+        }
+
+        function resetGame() { initGame(); }
+
         function checkWin() {
-            if (currentBuild.length === 1 && currentBuild[0] === 'console.log("Hello World");') {
-                alert("🎉 إجابة صحيحة! أنت بطل.");
-                // ممكن هنا نضيف النقاط في Firebase
+            if (currentBuild.join(' ') === correctOrder.join(' ')) {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#ffd700'] });
+                document.getElementById('successMsg').classList.add('show');
             } else {
-                alert("❌ ترتيب غير صحيح، جرب تاني.");
-                currentBuild = [];
-                document.getElementById('slot').innerHTML = '';
+                alert('❌ الترتيب غير صحيح، جرب تاني!');
             }
         }
+
+        async function claimReward() {
+            const uid = Auth.getUserId();
+            if(uid) {
+                try {
+                    await firebase.firestore().collection('users').doc(uid).update({
+                        points: firebase.firestore.FieldValue.increment(20)
+                    });
+                } catch(e) { console.error(e); }
+            }
+            window.location.href = 'games.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body></html>
