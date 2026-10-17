@@ -169,8 +169,18 @@ function closeReveal() {
 function confirmChoice() {
     if (!selectedAvatarUrl) return;
     playSound('win');
+    const user = Auth.getCurrentUser();
     localStorage.setItem('cq_avatar_' + user, selectedAvatarUrl);
+    
+    // حفظ في Firebase
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+        const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+        userRef.update({ avatar: selectedAvatarUrl }).catch(e => console.error(e));
+    }
+    
     try { confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
+    setTimeout(() => { window.location.href = 'languages.html'; }, 1500);
+}, colors: ['#00e5ff', '#ffd700', '#27ae60', '#ffffff'] }); } catch(e) {}
     setTimeout(() => { window.location.href = 'languages.html'; }, 1500);
 }
 

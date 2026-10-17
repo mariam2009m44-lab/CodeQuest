@@ -616,17 +616,23 @@ function finishGame() {
     localStorage.removeItem(STATE.progressKey);
     localStorage.setItem(STATE.doneKey, 'true');
     
-    // إضافة النقاط في ملف المستخدم
-    const users = Auth.getUsers();
-    if (users[STATE.user]) {
-        users[STATE.user].bonusPoints = (users[STATE.user].bonusPoints || 0) + STATE.score;
-        Auth.saveUsers(users);
+    // حفظ النقاط محلياً
+    const currentBalance = parseInt(localStorage.getItem('cq_balance_' + STATE.user) || '0');
+    const newBalance = currentBalance + STATE.score;
+    localStorage.setItem('cq_balance_' + STATE.user, newBalance);
+    
+    // حفظ النقاط في Firebase
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+        const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+        userRef.update({
+            bonusPoints: firebase.firestore.FieldValue.increment(STATE.score)
+        }).catch(e => console.error("Firebase Update Error:", e));
     }
 
     setTimeout(() => {
         codyBubble('🎉 مبروك يا ' + STATE.user + '! خلّصت ' + STATE.story.levelTitle + '!');
         setTimeout(() => {
-            codyBubble('كسبت ' + STATE.score + ' نقطة! ⭐');
+            codyBubble('كسبت ' + STATE.score + ' نقطة! ⭐ رصيدك: ' + newBalance + ' نقطة 💰');
             try { confetti({ particleCount: 250, spread: 120, origin: { y: 0.6 }, colors: ['#00e5ff', '#0072ff', '#27ae60', '#ffd700'] }); } catch(e) {}
             playSound('win');
             
