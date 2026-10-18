@@ -1,117 +1,66 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملفي الشخصي | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملفي | CodeQuest</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
+        .header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header h1 { color: var(--primary); font-size: 1.5rem; }
-        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
-
-        .profile-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 30px; padding: 30px 20px; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        .avatar-box { width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 50%; border: 4px solid var(--primary); background: #000; overflow: hidden; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
-        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .user-name { font-size: 1.8rem; font-weight: 900; color: #fff; margin-bottom: 5px; }
-        .user-title { color: var(--text-muted); font-size: 1rem; margin-bottom: 25px; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
-        .stat-item { background: rgba(0,0,0,0.4); padding: 15px 10px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .stat-value { font-size: 1.4rem; font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); }
-        
-        .xp-bar-container { text-align: right; margin-bottom: 30px; }
-        .xp-text { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
-        .xp-bar { height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-        .xp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; border-radius: 10px; transition: 0.5s; }
-        
-        .btn-logout { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 12px; border-radius: 12px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; }
-        .btn-logout:hover { background: #ef4444; color: #fff; }
+        .profile-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px 20px; width: 100%; max-width: 500px; text-align: center; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); margin: 0 auto 15px; background: #000; }
+        .name { font-size: 1.8rem; font-weight: 900; color: #fff; margin-bottom: 5px; }
+        .title { color: var(--text-muted); font-size: 1rem; margin-bottom: 25px; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block; }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); }
+        .logout-btn { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); padding: 12px; border-radius: 12px; width: 100%; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="dashboard.html" class="btn-back">← رجوع</a>
-        <h1>الملف الشخصي</h1>
-    </div>
+    <div class="header"><a href="dashboard.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>الملف الشخصي</h1><div style="width:50px;"></div></div>
 
     <div class="profile-card">
-        <div class="avatar-box">
-            <img src="cody-avatar.svg" id="userAvatar" alt="Avatar">
-        </div>
-        <div class="user-name" id="userName">جاري التحميل...</div>
-        <div class="user-title">مبرمج طموح 🚀</div>
+        <img src="cody-avatar.svg" id="userAvatar" class="avatar">
+        <div class="name" id="userName">جاري التحميل...</div>
+        <div class="title">مبرمج طموح 🚀</div>
         
-        <div class="stats-grid">
-            <div class="stat-item">
-                <span class="stat-value" id="statLevel">1</span>
-                <span class="stat-label">المستوى</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="statPoints">0</span>
-                <span class="stat-label">النقاط (XP)</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value">0</span>
-                <span class="stat-label">الإنجازات</span>
-            </div>
+        <div class="stats">
+            <div class="stat-box"><span class="stat-value" id="userLevel">1</span><span class="stat-label">المستوى</span></div>
+            <div class="stat-box"><span class="stat-value" id="userPoints">0</span><span class="stat-label">النقاط (XP)</span></div>
         </div>
+        
+        <button class="logout-btn" onclick="Auth.logout()">تسجيل الخروج 🚪</button>
+    </div>
 
-        <div class="xp-bar-container">
-            <div class="xp-text">
-                <span>التقدم للمستوى القادم</span>
-                <span id="xpPercentage">0%</span>
-            </div>
-            <div class="xp-bar">
-                <div class="xp-fill" id="xpFill"></div>
-            </div>
-        </div>
-
-        <button class="btn-logout" onclick="Auth.logout()">تسجيل الخروج 🚪</button>
+    <div class="bottom-nav">
+        <a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a>
+        <a href="languages.html"><i class="ri-book-open-line"></i> التعلم</a>
+        <a href="games.html"><i class="ri-gamepad-line"></i> الألعاب</a>
+        <a href="profile.html" class="active"><i class="ri-user-3-line"></i> ملفي</a>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const savedAvatar = localStorage.getItem('cq_avatar');
-            if(savedAvatar) document.getElementById('userAvatar').src = savedAvatar;
-
+            const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('userAvatar').src = av;
             Auth.init(async (logged) => {
-                if (!logged) { window.location.href = 'login.html'; return; }
-                
-                const uid = Auth.getUserId();
+                if(!logged) return window.location.href = 'login.html';
                 try {
-                    const doc = await firebase.firestore().collection('users').doc(uid).get();
-                    if (doc.exists) {
+                    const doc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
+                    if(doc.exists) {
                         const data = doc.data();
-                        document.getElementById('userName').innerText = data.username || "البطل";
-                        
-                        const points = data.points || 0;
-                        document.getElementById('statPoints').innerText = points;
-                        
-                        const level = Math.floor(points / 100) + 1;
-                        document.getElementById('statLevel').innerText = level;
-                        
-                        const currentLevelPoints = points % 100;
-                        const xpPercentage = currentLevelPoints;
-                        document.getElementById('xpPercentage').innerText = xpPercentage + '%';
-                        document.getElementById('xpFill').style.width = xpPercentage + '%';
-                        
+                        document.getElementById('userName').innerText = data.username || 'البطل';
+                        document.getElementById('userPoints').innerText = data.points || 0;
+                        document.getElementById('userLevel').innerText = Math.floor((data.points || 0) / 100) + 1;
                         if(data.avatar) document.getElementById('userAvatar').src = data.avatar;
                     }
-                } catch (e) { console.error(e); }
+                } catch(e) { console.error(e); }
             });
         });
     </script>
-</body>
-</html>
+</body></html>
