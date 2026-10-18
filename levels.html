@@ -38,6 +38,7 @@
         .lesson-info { flex: 1; }
         .lesson-title { font-weight: bold; font-size: 1.1rem; color: #fff; margin-bottom: 5px; }
         .lesson-type { font-size: 0.8rem; color: var(--text-muted); }
+        .stars { color: var(--gold); font-size: 1rem; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 17, 40, 0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass-border); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: bold; }
@@ -78,9 +79,14 @@
 
     <script>
         let lang = localStorage.getItem('cq_language') || 'JavaScript';
-        if (lang === 'C') lang = 'C++'; // إصلاح لو الاسم اتخزن غلط
+        let jsonFile = 'js_curriculum.json';
+        
+        if (lang === 'Python') jsonFile = 'python_curriculum.json';
+        else if (lang === 'C++' || lang === 'C') { lang = 'C++'; jsonFile = 'cpp_curriculum.json'; localStorage.setItem('cq_language', 'C++'); }
+        
         document.getElementById('langTitle').innerText = `مسار ${lang}`;
         let curriculumData = null;
+        let userProgress = {}; // هنخزن فيه تقدم الطالب
 
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('open');
@@ -90,19 +96,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init(async (logged) => {
                 if (!logged) { window.location.href = 'login.html'; return; }
-                
                 try {
-                    const res = await fetch('curriculum.json');
-                    const data = await res.json();
-                    curriculumData = data[lang];
-                    
-                    if(!curriculumData) {
-                        document.getElementById('lessonsList').innerHTML = `<p style="color:red; text-align:center;">عذراً، لا يوجد محتوى لهذه اللغة حالياً (${lang}).</p>`;
-                        return;
+                    // 1. جلب تقدم الطالب من Firebase (عشان النجوم)
+                    const userDoc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
+                    if(userDoc.exists && userDoc.data().progress) {
+                        userProgress = userDoc.data().progress[lang] || {};
                     }
+
+                    // 2. جلب المحتوى
+                    const res = await fetch(jsonFile);
+                    curriculumData = await res.json();
                     
                     renderChapters();
-                    if(curriculumData.chapters.length > 0) loadChapter(curriculumData.chapters[0]);
+                    if(curriculumData.chapters.length > 0) loadChapter(curriculumData.chapters[0], 0);
                 } catch(e) {
                     console.error(e);
                     document.getElementById('lessonsList').innerHTML = `<p style="color:red; text-align:center;">حدث خطأ في تحميل المحتوى.</p>`;
@@ -120,29 +126,40 @@
                 div.onclick = () => {
                     document.querySelectorAll('.chapter-item').forEach(c => c.classList.remove('active'));
                     div.classList.add('active');
-                    loadChapter(ch);
+                    loadChapter(ch, i);
                     toggleMenu();
                 };
                 list.appendChild(div);
             });
         }
 
-        function loadChapter(chapter) {
+        function loadChapter(chapter, chIndex) {
             const grid = document.getElementById('lessonsList');
             grid.innerHTML = '';
-            chapter.lessons.forEach(lesson => {
-                const typeIcon = lesson.type === 'lecture' ? 'ri-chat-3-line' : 'ri-code-s-slash-line';
-                const typeText = lesson.type === 'lecture' ? 'شرح تفاعلي' : 'تطبيق عملي';
+            chapter.lessons.forEach((lesson, lIndex) => {
+                const typeIcon = 'ri-chat-3-line';
+                
+                // حساب النجوم (لو الدرس مكتمل هنجيب عدد النجوم)
+                let starsHtml = '<span class="stars">☆☆☆</span>';
+                const progressKey = `ch_${chapter.id}_les_${lesson.id}`;
+                if(userProgress[progressKey] && userProgress[progressKey].stars) {
+                    const s = userProgress[progressKey].stars;
+                    starsHtml = `<span class="stars">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span>`;
+                }
 
                 const card = document.createElement('div');
                 card.className = `lesson-card`;
                 card.innerHTML = `
                     <div class="lesson-icon"><i class="${typeIcon}"></i></div>
-                    <div class="lesson-info"><div class="lesson-title">${lesson.title}</div><div class="lesson-type">${typeText}</div></div>
-                    <i class="ri-arrow-left-s-line" style="color:var(--primary); font-size:1.5rem;"></i>
+                    <div class="lesson-info">
+                        <div class="lesson-title">${lesson.title}</div>
+                        <div class="lesson-type">شرح تفاعلي + كويز</div>
+                    </div>
+                    ${starsHtml}
                 `;
                 card.onclick = () => {
-                    window.location.href = `lecture.html?lang=${lang}&level=${lesson.id}`;
+                    // بنبعت رقم الفصل ورقم الدرس بالظبط
+                    window.location.href = `lecture.html?lang=${lang}&ch=${chIndex}&les=${lIndex}`;
                 };
                 grid.appendChild(card);
             });
