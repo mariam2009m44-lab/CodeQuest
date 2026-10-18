@@ -1,55 +1,115 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><title>المستويات</title>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خريطة المستويات | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script><link rel="stylesheet" href="css/global.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        .map { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; margin-top: 20px; }
-        .node { width: 70px; height: 70px; border-radius: 50%; background: #111; border: 3px solid var(--neon-cyan); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; margin: 20px 0; cursor: pointer; }
-        .node.locked { border-color: #555; color: #555; cursor: not-allowed; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-x: hidden; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px;}
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; font-size: 1rem; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+        
+        .map-container { position: relative; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px; }
+        
+        /* الخط المتعرج */
+        .path-line { position: absolute; top: 50px; bottom: 50px; width: 8px; background: linear-gradient(to bottom, var(--primary), var(--secondary)); border-radius: 10px; z-index: 0; box-shadow: 0 0 15px var(--primary); }
+        
+        .level-node { width: 80px; height: 80px; background: #1e1e1e; border: 4px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; color: #fff; cursor: pointer; z-index: 1; margin: 30px 0; transition: 0.3s; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+        .level-node:hover { transform: scale(1.1); }
+        .level-node.locked { border-color: #444; color: #444; background: #111; cursor: not-allowed; box-shadow: none; }
+        .level-node.completed { border-color: var(--success); box-shadow: 0 0 20px rgba(16,185,129,0.4); }
+
+        /* النجوم */
+        .stars { position: absolute; bottom: -30px; display: flex; gap: 2px; font-size: 1.2rem; }
+        .star { color: #444; } .star.filled { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+
+        /* تأثير كودي */
+        .cody-float { width: 100px; height: 100px; margin-bottom: 20px; animation: float 3s infinite ease-in-out; z-index: 1; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        @media (max-width: 500px) {
+            .level-node { width: 70px; height: 70px; font-size: 1.5rem; margin: 25px 0; }
+            .cody-float { width: 80px; height: 80px; }
+        }
     </style>
-<link rel="stylesheet" href="global.css">
-</head><body>
-    <div class="header"><a href="languages.html" class="btn-back">رجوع</a><h1 id="title">المستويات</h1></div>
-    <div class="map" id="map"></div>
-    <div class="bottom-nav">
-        <a href="profile.html" class="nav-btn"><i class="ri-user-3-line"></i><span>ملفي</span></a>
-        <a href="shop.html" class="nav-btn"><i class="ri-shopping-bag-3-line"></i><span>المتجر</span></a>
-        <a href="games.html" class="nav-btn"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="leaderboard.html" class="nav-btn"><i class="ri-trophy-line"></i><span>الشرف</span></a>
+</head>
+<body>
+    <div class="header">
+        <a href="languages.html" class="btn-back">→ رجوع</a>
+        <h1 id="langTitle">مسار JavaScript</h1>
     </div>
+
+    <div class="map-container" id="mapContainer">
+        <img src="cody-avatar.svg" class="cody-float" id="codyImg" alt="Cody">
+        <div class="path-line" id="pathLine"></div>
+    </div>
+
     <script>
         const lang = localStorage.getItem('cq_language') || 'JavaScript';
-        document.getElementById('title').innerText = lang;
-        const map = document.getElementById('map');
-        for(let i=1; i<=10; i++) {
-            const d = document.createElement('div'); d.className = 'node' + (i===1 ? '' : ' locked'); d.innerText = i===1 ? '1' : '🔒';
-            if(i===1) d.onclick = () => window.location.href = `studio.html?lang=${lang}&level=1`;
-            map.appendChild(d);
-        }
-    </script>
+        document.getElementById('langTitle').innerText = `مسار ${lang}`;
 
-<script>
-    // كود عرض النقاط الحقيقية في الواجهة
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            if (window.Auth && Auth.getUserData()) {
-                const points = Auth.getUserData().points || 0;
-                // بندور على أي عنصر فيه كلمة "رصيدك" أو "0" ونغيره
-                let el = document.getElementById('pointsDisplay');
-                if(!el) {
-                    // لو مفيش ID، هنكريت شارة صغيرة فوق الشمال تبان في كل الصفحات
-                    el = document.createElement('div');
-                    el.style.cssText = 'position:fixed; top:15px; left:15px; background:#FFD700; color:#000; padding:8px 15px; border-radius:20px; font-weight:bold; z-index:9999; font-family:Cairo, sans-serif; box-shadow: 0 4px 15px rgba(255,215,0,0.3);';
-                    document.body.appendChild(el);
+        // عرض صورة الشخصية
+        const savedAvatar = localStorage.getItem('cq_avatar');
+        if(savedAvatar) document.getElementById('codyImg').src = savedAvatar;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.init(async (logged) => {
+                if (!logged) { window.location.href = 'index.html'; return; }
+                
+                const uid = Auth.getUserId();
+                const mapContainer = document.getElementById('mapContainer');
+                const levelsCount = 10; // 10 مستويات
+
+                try {
+                    const doc = await firebase.firestore().collection('users').doc(uid).get();
+                    const progress = doc.exists ? (doc.data().progress?.[lang] || {}) : {};
+
+                    for (let i = 1; i <= levelsCount; i++) {
+                        // المستوى 1 مفتوح دايماً، أو لو المستوى اللي قبله مكتمل
+                        const isUnlocked = (i === 1) || (progress[`level${i-1}`] && progress[`level${i-1}`].unlocked);
+                        const stars = (progress[`level${i}`] && progress[`level${i}`].stars) || 0;
+                        const isCompleted = stars > 0;
+
+                        // إنشاء العقدة
+                        const node = document.createElement('div');
+                        node.className = `level-node ${isUnlocked ? '' : 'locked'} ${isCompleted ? 'completed' : ''}`;
+                        node.innerHTML = isUnlocked ? i : '<i class="ri-lock-fill"></i>';
+                        
+                        // النجوم
+                        let starsHtml = '<div class="stars">';
+                        for (let s = 0; s < 3; s++) {
+                            starsHtml += `<span class="star ${s < stars ? 'filled' : ''}">★</span>`;
+                        }
+                        starsHtml += '</div>';
+                        node.innerHTML += starsHtml;
+
+                        // التفاعل
+                        if (isUnlocked) {
+                            node.onclick = () => {
+                                window.location.href = `studio.html?lang=${lang}&level=${i}`;
+                            };
+                        }
+                        
+                        // إضافة خط متعرج بسيط (عشان الشكل الاحترافي)
+                        node.style.marginRight = (i % 2 === 0) ? '40px' : '-40px';
+                        
+                        mapContainer.appendChild(node);
+                    }
+                } catch(e) {
+                    console.error(e);
+                    mapContainer.innerHTML += "<p style='color:red;'>حدث خطأ في تحميل المستويات.</p>";
                 }
-                el.innerHTML = `⭐ رصيدك: ${points} XP`;
-            }
-        }, 1000); // نستنى ثانية عشان Firebase يحمل الداتا
-    });
-</script>
-    <script src="global.js"></script>
+            });
+        });
+    </script>
 </body>
 </html>
