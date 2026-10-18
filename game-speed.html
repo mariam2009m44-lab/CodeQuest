@@ -1,24 +1,27 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><title>تحدي السرعة</title>
+<html lang="ar" dir="rtl">
+<head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>تحدي السرعة | CodeQuest</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .game-area { width: 100%; max-width: 600px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { color: #8b5cf6; font-size: 1.3rem; }
+        .game-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
         .timer { font-size: 3rem; font-weight: bold; color: var(--danger); text-shadow: 0 0 15px rgba(239,68,68,0.5); }
         .question-box { background: var(--glass); padding: 30px; border-radius: 20px; text-align: center; width: 100%; box-sizing: border-box; border: 1px solid var(--glass-border); }
         .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 20px;}
-        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; }
+        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
         .opt-btn:hover { background: rgba(139,92,246,0.2); border-color: #8b5cf6; }
     </style>
-</head><body>
-    <div class="header" style="width:100%; max-width:600px; display:flex; justify-content:space-between; align-items:center;">
-        <a href="games.html" class="btn-back">← رجوع</a><h1 style="color:#8b5cf6;">⚡ تحدي السرعة</h1>
-    </div>
+</head>
+<body>
+    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>⚡ تحدي السرعة</h1><div style="width:50px;"></div></div>
     <div class="game-area">
         <div class="timer" id="timer">15</div>
         <div class="question-box">
@@ -26,11 +29,13 @@
             <div class="options" id="options"></div>
         </div>
     </div>
+    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
     <script>
         const qs = [
             { q: "ناتج 5 + 3 هو:", o: ["7", "8", "9", "10"], c: 1 },
             { q: "أي مما يلي لتعريف متغير؟", o: ["var", "int", "let", "def"], c: 2 },
-            { q: "ناتج 'Hello' + ' World' هو:", o: ["Hello World", "HelloWorld", "Error", "None"], c: 0 }
+            { q: "ناتج 'Hello' + ' World' هو:", o: ["Hello World", "HelloWorld", "Error", "None"], c: 0 },
+            { q: "كيف نكتب تعليقاً؟", o: ["//", "#", "<!--", "/*"], c: 0 }
         ];
         let cq = 0, score = 0, time = 15, timer;
         function start() {
@@ -49,9 +54,7 @@
             });
         }
         function end() {
-            clearInterval(timer);
-            confetti({ particleCount: 150 });
-            setTimeout(claim, 1000);
+            clearInterval(timer); confetti({ particleCount: 150 }); setTimeout(claim, 1000);
         }
         async function claim() {
             const uid = Auth.getUserId(); const pts = score * 10;

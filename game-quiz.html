@@ -1,31 +1,35 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><title>سيد الأسئلة</title>
+<html lang="ar" dir="rtl">
+<head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>سيد الأسئلة | CodeQuest</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .game-area { width: 100%; max-width: 600px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { color: var(--success); font-size: 1.3rem; }
+        .game-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
         .progress { width: 100%; height: 10px; background: #1e1e1e; border-radius: 5px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); width: 0%; transition: 0.3s; }
         .q-box { background: var(--glass); padding: 30px; border-radius: 20px; text-align: center; width: 100%; border: 1px solid var(--glass-border); box-sizing: border-box;}
         .options { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
-        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; text-align: right; }
+        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; text-align: right; transition: 0.3s; }
         .opt-btn:hover { background: rgba(16, 185, 129, 0.1); border-color: var(--success); }
-        .opt-btn.correct { background: rgba(16, 185, 129, 0.3) !important; border-color: var(--success); }
-        .opt-btn.wrong { background: rgba(239, 68, 68, 0.3) !important; border-color: var(--danger); }
+        .opt-btn.correct { background: rgba(16, 185, 129, 0.3) !important; border-color: var(--success); color:#fff; }
+        .opt-btn.wrong { background: rgba(239, 68, 68, 0.3) !important; border-color: var(--danger); color:#fff; }
     </style>
-</head><body>
-    <div class="header" style="width:100%; max-width:600px; display:flex; justify-content:space-between; align-items:center;">
-        <a href="games.html" class="btn-back">← رجوع</a><h1 style="color:var(--success);">❓ سيد الأسئلة</h1>
-    </div>
+</head>
+<body>
+    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>❓ سيد الأسئلة</h1><div style="width:50px;"></div></div>
     <div class="game-area">
         <div class="progress"><div class="progress-fill" id="prog"></div></div>
         <div class="q-box"><h2 id="question">جاري التحميل...</h2><div class="options" id="options"></div></div>
     </div>
+    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
     <script>
         const qs = [
             { q: "ما هي اللغة التي تعمل في المتصفح؟", o: ["Python", "JavaScript", "C++", "Java"], c: 1 },
@@ -49,9 +53,7 @@
             });
         }
         function end() {
-            document.getElementById('prog').style.width = '100%';
-            confetti({ particleCount: 150 });
-            setTimeout(claim, 1000);
+            document.getElementById('prog').style.width = '100%'; confetti({ particleCount: 150 }); setTimeout(claim, 1000);
         }
         async function claim() {
             const uid = Auth.getUserId(); const pts = score * 15;
