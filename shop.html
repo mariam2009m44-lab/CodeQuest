@@ -3,83 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المتجر</title>
-    <link rel="stylesheet" href="css/global.css">
+    <title>المتجر | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        .shop-container { max-width: 800px; margin: 40px auto; padding: 20px; text-align: center; }
-        .mystery-box { font-size: 6rem; cursor: pointer; transition: transform 0.2s; display: inline-block; margin: 30px 0; }
-        .mystery-box:hover { transform: scale(1.1) rotate(5deg); }
-        .mystery-box:active { transform: scale(0.9); }
-        .balance { font-size: 2rem; color: var(--accent); font-weight: bold; margin-bottom: 20px; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--gold); font-size: 1.8rem; text-shadow: 0 0 15px rgba(255,215,0,0.5); }
+        
+        .wallet { background: rgba(0,0,0,0.6); border: 2px solid var(--gold); padding: 10px 20px; border-radius: 20px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: bold; color: var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; width: 100%; max-width: 900px; }
+        
+        .item-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 25px; padding: 25px 15px; text-align: center; transition: 0.3s; position: relative; overflow: hidden; }
+        .item-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-color: var(--primary); }
+        
+        .item-img { font-size: 4rem; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        .item-name { font-size: 1.3rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .item-price { color: var(--gold); font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        
+        .btn-buy { background: linear-gradient(135deg, var(--primary), #007bff); color: #000; border: none; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+        .btn-buy:hover { box-shadow: 0 0 20px rgba(0,229,255,0.6); }
+        .btn-buy:disabled { background: #333; color: #888; cursor: not-allowed; box-shadow: none; }
+        
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; font-size: 1rem; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
     </style>
-<link rel="stylesheet" href="global.css">
 </head>
 <body>
-    <div class="shop-container animate-fade">
-        <a href="index.html" class="btn-secondary" style="position:absolute; top:20px; right:20px; text-decoration:none;">⬅️ رجوع</a>
-        <h1 style="color: var(--primary); margin-bottom: 10px;">متجر الأسرار</h1>
-        <div class="balance">عملاتك: <span id="shop-points">0</span> 🪙</div>
-        
-        <div class="card-glass" style="padding: 40px;">
-            <h2 style="color: var(--secondary);">صندوق المفاجآت!</h2>
-            <p style="color: var(--text-muted);">افتح الصندوق بـ 50 نقطة واحصل على ميدالية أو شخصية نادرة!</p>
-            <div class="mystery-box" id="box" onclick="openBox()">🎁</div>
-            <div id="result" style="font-size: 1.5rem; font-weight: bold; color: var(--accent); margin-top: 20px;"></div>
-        </div>
+    <div class="header">
+        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <h1>🛒 المتجر</h1>
+        <div class="wallet"><i class="ri-coin-line"></i> <span id="userPoints">0</span></div>
     </div>
 
+    <div class="shop-grid" id="shopGrid"></div>
+
     <script>
-        let currentCoins = 0;
-        
+        const items = [
+            { id: 'crown', name: 'تاج ملكي', icon: '👑', price: 150 },
+            { id: 'cat', name: 'قطة أليفة', icon: '🐱', price: 200 },
+            { id: 'star', name: 'نجمة سحرية', icon: '⭐', price: 100 },
+            { id: 'glasses', name: 'نضارة كود', icon: '👓', price: 80 },
+            { id: 'rocket', name: 'صاروخ', icon: '🚀', price: 300 },
+            { id: 'shield', name: 'درع الحماية', icon: '🛡️', price: 250 }
+        ];
+
         document.addEventListener('DOMContentLoaded', () => {
-            Auth.init((loggedIn) => {
-                if(!loggedIn) window.location.href = 'login.html';
-                else {
-                    currentCoins = Auth.getUserData()?.coins || 0;
-                    document.getElementById('shop-points').innerText = currentCoins;
-                }
+            Auth.init(async (logged) => {
+                if (!logged) { window.location.href = 'login.html'; return; }
+                
+                const uid = Auth.getUserId();
+                const userRef = firebase.firestore().collection('users').doc(uid);
+                
+                const doc = await userRef.get();
+                if(!doc.exists) return;
+                
+                let currentPoints = doc.data().points || 0;
+                let inventory = doc.data().inventory || [];
+                document.getElementById('userPoints').innerText = currentPoints;
+                
+                renderShop(currentPoints, inventory);
             });
         });
 
-        
-    let isProcessing = false;
-    async function openBox() {
-        if (isProcessing) return; // منع الضغط المتكرر
-        if (currentCoins < 50) { showToast("عذراً، تحتاج 50 نقطة!", "error"); return; }
-        
-        isProcessing = true;
-        const box = document.getElementById('box');
-        box.style.pointerEvents = 'none';
-        
-        try {
-            const success = await Auth.addCoins(-50);
-            if (!success) throw new Error("فشل الخصم");
+        function renderShop(points, inventory) {
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = '';
             
-            currentCoins -= 50;
-            document.getElementById('shop-points').innerText = currentCoins;
-            
-            const prizes = ['🥇 ميدالية ذهبية', '👽 شخصية فضائية', '🐱 شخصية قطة', '💎 جوهرة نادرة'];
-            const prize = prizes[Math.floor(Math.random() * prizes.length)];
-            
-            setTimeout(() => {
-                document.getElementById('result').innerText = "مبروك! حصلت على: " + prize;
-                try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e) {}
-                isProcessing = false;
-                box.style.pointerEvents = 'auto';
-            }, 600);
-        } catch (error) {
-            showToast("حدث خطأ أثناء الشراء، حاول لاحقاً.", "error");
-            isProcessing = false;
-            box.style.pointerEvents = 'auto';
+            items.forEach(item => {
+                const isBought = inventory.includes(item.id);
+                const canAfford = points >= item.price;
+                
+                grid.innerHTML += `
+                    <div class="item-card">
+                        <div class="item-img">${item.icon}</div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price"><i class="ri-coin-line"></i> ${item.price}</div>
+                        <button class="btn-buy" 
+                                onclick="buyItem('${item.id}', ${item.price})" 
+                                ${isBought || !canAfford ? 'disabled' : ''}>
+                            ${isBought ? 'تم الشراء ✅' : (canAfford ? 'شراء الآن' : 'نقاط غير كافية')}
+                        </button>
+                    </div>
+                `;
+            });
         }
-    }
-    
+
+        async function buyItem(itemId, price) {
+            const uid = Auth.getUserId();
+            const userRef = firebase.firestore().collection('users').doc(uid);
+            
+            try {
+                await firebase.firestore().runTransaction(async (transaction) => {
+                    const doc = await transaction.get(userRef);
+                    let points = doc.data().points || 0;
+                    let inventory = doc.data().inventory || [];
+                    
+                    if (points < price) throw "نقاطك لا تكفي!";
+                    if (inventory.includes(itemId)) throw "لقد اشتريت هذا بالفعل!";
+                    
+                    transaction.update(userRef, {
+                        points: points - price,
+                        inventory: [...inventory, itemId]
+                    });
+                });
+                
+                alert("🎉 مبروك! تم الشراء بنجاح.");
+                window.location.reload();
+                
+            } catch (e) {
+                alert("❌ " + e);
+            }
+        }
     </script>
-    <script src="global.js"></script>
 </body>
 </html>

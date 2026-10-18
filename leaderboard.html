@@ -3,101 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الشرف - CodeQuest</title>
-    <link rel="stylesheet" href="css/global.css">
+    <title>لوحة الشرف | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        .leaderboard-container { max-width: 800px; margin: 40px auto; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { color: var(--accent); text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-        .list-container { display: flex; flex-direction: column; gap: 15px; }
-        .player-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 25px; background: rgba(17, 24, 39, 0.7); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.2s; }
-        .player-row:hover { transform: scale(1.02); background: rgba(17, 24, 39, 0.9); }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; font-size: 1rem; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+
+        .podium { display: flex; justify-content: center; align-items: flex-end; gap: 15px; margin-bottom: 40px; width: 100%; max-width: 500px; }
         
-        .player-info { display: flex; align-items: center; gap: 15px; }
-        .rank { font-size: 1.5rem; font-weight: bold; width: 40px; text-align: center; }
-        .avatar { font-size: 2rem; background: rgba(0,0,0,0.3); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid var(--primary); }
-        .username { font-weight: bold; font-size: 1.2rem; }
-        .points { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
+        .podium-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .podium-avatar { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; background: #000; object-fit: cover; margin-bottom: 10px; }
+        .podium-name { font-weight: bold; font-size: 1rem; margin-bottom: 5px; color: #fff; }
+        .podium-points { font-size: 0.9rem; color: var(--gold); font-weight: bold; }
         
-        /* تمييز المراكز الثلاثة الأولى */
-        .top-1 { border-color: #FFD700; background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent); }
-        .top-1 .rank, .top-1 .points { color: #FFD700; }
-        .top-2 { border-color: #C0C0C0; background: linear-gradient(90deg, rgba(192, 192, 192, 0.1), transparent); }
-        .top-2 .rank, .top-2 .points { color: #C0C0C0; }
-        .top-3 { border-color: #CD7F32; background: linear-gradient(90deg, rgba(205, 127, 50, 0.1), transparent); }
-        .top-3 .rank, .top-3 .points { color: #CD7F32; }
+        .podium-base { width: 100px; border-radius: 10px 10px 0 0; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: 900; margin-top: 10px;}
+        .first .podium-base { height: 120px; background: linear-gradient(to top, rgba(255,215,0,0.2), rgba(255,215,0,0.8)); border: 2px solid var(--gold); color: #000;}
+        .second .podium-base { height: 90px; background: linear-gradient(to top, rgba(192,192,192,0.2), rgba(192,192,192,0.8)); border: 2px solid #c0c0c0; color: #000;}
+        .third .podium-base { height: 70px; background: linear-gradient(to top, rgba(205,127,50,0.2), rgba(205,127,50,0.8)); border: 2px solid #cd7f32; color: #000;}
+
+        .first .podium-avatar { width: 90px; height: 90px; border-color: var(--gold); box-shadow: 0 0 20px var(--gold); }
+        .second .podium-avatar { border-color: #c0c0c0; box-shadow: 0 0 15px #c0c0c0; }
+        .third .podium-avatar { border-color: #cd7f32; box-shadow: 0 0 15px #cd7f32; }
+
+        .list-container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 10px; }
+        .list-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .list-item:hover { background: rgba(0,229,255,0.05); border-color: var(--primary); transform: scale(1.02); }
         
-        .loading { text-align: center; color: var(--text-muted); font-size: 1.2rem; padding: 40px; }
+        .rank-info { display: flex; align-items: center; gap: 15px; }
+        .rank-num { font-weight: bold; color: var(--text-muted); width: 25px; }
+        .list-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--text-muted); }
+        .list-name { font-weight: bold; color: #fff; }
+        .list-points { color: var(--gold); font-weight: bold; }
     </style>
-<link rel="stylesheet" href="global.css">
 </head>
 <body>
-    <div class="leaderboard-container animate-fade">
-        <div class="header">
-            <a href="index.html" class="btn-secondary" style="text-decoration: none;">⬅️ رجوع للرئيسية</a>
-            <h1>🏆 أبطال CodeQuest</h1>
-            <div style="width: 100px;"></div> <!-- للتوازن -->
-        </div>
-        
-        <div class="list-container" id="leaderboardList">
-            <div class="loading">جاري تحميل بيانات الأبطال... ⏳</div>
-        </div>
+    <div class="header">
+        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <h1>🏆 لوحة الشرف</h1>
     </div>
+
+    <div class="podium" id="podium"></div>
+    <div class="list-container" id="listContainer"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // بنستنى ثانية عشان نتأكد إن Firebase اشتغل
-            setTimeout(async () => {
-                const listContainer = document.getElementById('leaderboardList');
-                if (typeof firebase === 'undefined') {
-                    listContainer.innerHTML = "<div class='loading' style='color:var(--danger);'>خطأ في الاتصال بقاعدة البيانات.</div>";
-                    return;
-                }
+            Auth.init(async (logged) => {
+                if (!logged) { window.location.href = 'login.html'; return; }
                 
                 try {
-                    // سحب أعلى 10 طلاب مرتبين حسب النقاط
                     const snapshot = await firebase.firestore().collection('users').orderBy('points', 'desc').limit(10).get();
-                    
-                    if (snapshot.empty) {
-                        listContainer.innerHTML = "<div class='loading'>لا يوجد أبطال بعد. كن أول من يجمع النقاط! 🚀</div>";
-                        return;
-                    }
-
-                    let html = '';
-                    let rank = 1;
+                    const users = [];
                     snapshot.forEach(doc => {
-                        const user = doc.data();
-                        let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-                        let topClass = rank <= 3 ? `top-${rank}` : '';
-                        let avatar = user.avatar || '👤';
-                        let name = user.username || 'بطل مجهول';
-                        let points = user.points || 0;
-                        
-                        html += `
-                            <div class="player-row ${topClass}">
-                                <div class="player-info">
-                                    <span class="rank">${medal}</span>
-                                    <span class="avatar">${avatar}</span>
-                                    <span class="username">${name}</span>
-                                </div>
-                                <div class="points">${points} XP ⭐</div>
-                            </div>
-                        `;
-                        rank++;
+                        const data = doc.data();
+                        if(data.username && data.points > 0) {
+                            users.push({ name: data.username, points: data.points, avatar: data.avatar || 'cody-avatar.svg' });
+                        }
                     });
-                    listContainer.innerHTML = html;
-                } catch (e) {
-                    console.error("Leaderboard Error:", e);
-                    listContainer.innerHTML = "<div class='loading' style='color:var(--danger);'>حدث خطأ في جلب البيانات. تأكد من إعدادات Firebase Rules.</div>";
-                }
-            }, 1000);
+                    
+                    renderPodium(users);
+                    renderList(users);
+                    
+                } catch(e) { console.error(e); }
+            });
         });
+
+        function renderPodium(users) {
+            const podium = document.getElementById('podium');
+            if(users.length < 3) return;
+            
+            podium.innerHTML = `
+                <div class="podium-item second">
+                    <img src="${users[1].avatar}" class="podium-avatar">
+                    <div class="podium-name">${users[1].name}</div>
+                    <div class="podium-points">${users[1].points} XP</div>
+                    <div class="podium-base">2</div>
+                </div>
+                <div class="podium-item first">
+                    <img src="${users[0].avatar}" class="podium-avatar">
+                    <div class="podium-name">${users[0].name}</div>
+                    <div class="podium-points">${users[0].points} XP</div>
+                    <div class="podium-base">1</div>
+                </div>
+                <div class="podium-item third">
+                    <img src="${users[2].avatar}" class="podium-avatar">
+                    <div class="podium-name">${users[2].name}</div>
+                    <div class="podium-points">${users[2].points} XP</div>
+                    <div class="podium-base">3</div>
+                </div>
+            `;
+        }
+
+        function renderList(users) {
+            const list = document.getElementById('listContainer');
+            if(users.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:var(--text-muted);">لا يوجد أبطال بعد. العب واجمع النقاط لتكون الأول!</p>';
+                return;
+            }
+            
+            let html = '';
+            users.forEach((user, index) => {
+                if(index < 3) return;
+                html += `
+                    <div class="list-item">
+                        <div class="rank-info">
+                            <span class="rank-num">#${index + 1}</span>
+                            <img src="${user.avatar}" class="list-avatar">
+                            <span class="list-name">${user.name}</span>
+                        </div>
+                        <span class="list-points">${user.points} XP</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
     </script>
-    <script src="global.js"></script>
 </body>
 </html>
