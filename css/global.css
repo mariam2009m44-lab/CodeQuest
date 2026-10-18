@@ -1,100 +1,44 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 
 :root {
     --bg: #050914;
     --primary: #00e5ff;
-    --primary-dark: #0088cc;
     --secondary: #8b5cf6;
     --gold: #ffd700;
     --glass: rgba(10, 25, 47, 0.7);
     --glass-border: rgba(0, 229, 255, 0.2);
     --text-main: #ffffff;
     --text-muted: #8892b0;
-    --danger: #ef4444;
     --success: #10b981;
-    --font-main: 'Cairo', sans-serif;
+    --danger: #ef4444;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text-main); font-family: var(--font-main); min-height: 100vh; overflow-x: hidden; direction: rtl; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+body { background: var(--bg); color: var(--text-main); min-height: 100vh; direction: rtl; overflow-x: hidden; }
 a { text-decoration: none; color: inherit; }
 ul { list-style: none; }
 
 /* أزرار */
-.btn-primary { background: var(--primary); color: #000; padding: 12px 25px; border-radius: 12px; font-weight: bold; font-family: var(--font-main); border: none; cursor: pointer; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); display: inline-block; transition: 0.3s; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0, 229, 255, 0.6); }
-.btn-secondary { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 10px 20px; border-radius: 12px; font-weight: bold; font-family: var(--font-main); cursor: pointer; transition: 0.3s; }
-.btn-secondary:hover { background: rgba(0, 229, 255, 0.1); }
+.btn { padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; font-size: 1rem; display: inline-block; text-align: center; }
+.btn-primary { background: var(--primary); color: #000; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0, 229, 255, 0.6); }
 
 /* كروت زجاجية */
 .glass-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; backdrop-filter: blur(10px); }
-.card-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; color: #fff; display: flex; align-items: center; gap: 10px; }
-cat << 'EOF' > index.html
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeQuest | رحلة الكود</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
-        .stars { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%); overflow: hidden; }
-        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 5s infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
 
-        .landing-container { display: flex; align-items: center; justify-content: space-between; width: 90%; max-width: 1000px; z-index: 1; }
-        .text-content { flex: 1; padding-right: 30px; }
-        .text-content h1 { font-size: 3.5rem; margin-bottom: 15px; color: #fff; text-shadow: 0 0 20px rgba(0, 229, 255, 0.5); }
-        .text-content p { font-size: 1.3rem; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
-        .text-content .logo { display: flex; align-items: center; gap: 10px; font-size: 2rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
-        .cta-buttons { display: flex; gap: 15px; }
-        .image-content { flex: 1; display: flex; justify-content: center; position: relative; }
-        .image-content img { width: 100%; max-width: 400px; filter: drop-shadow(0 0 30px var(--primary)); animation: float 4s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+/* شريط التنقل السفلي (للموبايل) */
+.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(5, 9, 20, 0.95); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--glass-border); z-index: 1000; backdrop-filter: blur(10px); }
+.bottom-nav a { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; }
+.bottom-nav a i { font-size: 1.5rem; margin-bottom: 4px; }
+.bottom-nav a.active { color: var(--primary); }
 
-        @media (max-width: 768px) {
-            .landing-container { flex-direction: column; text-align: center; }
-            .text-content { padding-right: 0; margin-bottom: 30px; }
-            .text-content h1 { font-size: 2.5rem; }
-            .text-content .logo { justify-content: center; }
-            .cta-buttons { justify-content: center; }
-        }
-    </style>
-</head>
-<body>
-    <div class="stars" id="stars"></div>
-    
-    <div class="landing-container">
-        <div class="text-content">
-            <div class="logo"><i class="ri-robot-line"></i> CodeQuest</div>
-            <h1>اكتشف عالم البرمجة</h1>
-            <p>تعلم، العب، واصنع مستقبلك. رحلة تفاعلية ممتعة لتعلم البرمجة من الصفر.</p>
-            <div class="cta-buttons">
-                <a href="avatar.html" class="btn-primary">🚀 ابدأ رحلتك الآن</a>
-                <a href="dashboard.html" class="btn-secondary">تسجيل الدخول</a>
-            </div>
-        </div>
-        <div class="image-content">
-            <img src="cody-avatar.svg" alt="Cody Robot">
-        </div>
-    </div>
-
-    <script>
-        const starsContainer = document.getElementById('stars');
-        for (let i = 0; i < 100; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            const size = Math.random() * 3 + 1;
-            star.style.width = size + 'px';
-            star.style.height = size + 'px';
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.animationDelay = Math.random() * 5 + 's';
-            starsContainer.appendChild(star);
-        }
-    </script>
-</body>
-</html>
+/* القائمة الجانبية (للكمبيوتر) */
+.desktop-sidebar { display: none; }
+@media (min-width: 768px) {
+    .bottom-nav { display: none; }
+    .desktop-sidebar { display: flex; flex-direction: column; width: 250px; background: rgba(10, 17, 40, 0.95); height: 100vh; position: fixed; right: 0; top: 0; padding: 20px; border-left: 1px solid var(--glass-border); z-index: 1000; }
+    .sidebar-link { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; color: var(--text-muted); font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
+    .sidebar-link:hover, .sidebar-link.active { background: rgba(0, 229, 255, 0.1); color: var(--primary); }
+    .main-content { margin-right: 250px; padding: 30px; }
+}
