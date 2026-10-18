@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المتجر</title>
-    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="css/global.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -45,31 +45,39 @@
             });
         });
 
-        async function openBox() {
-            if (currentPoints < 50) {
-                showToast("عذراً، تحتاج 50 نقطة لفتح الصندوق!", "success");
-                return;
-            }
+        
+    let isProcessing = false;
+    async function openBox() {
+        if (isProcessing) return; // منع الضغط المتكرر
+        if (currentPoints < 50) { showToast("عذراً، تحتاج 50 نقطة!", "error"); return; }
+        
+        isProcessing = true;
+        const box = document.getElementById('box');
+        box.style.pointerEvents = 'none';
+        
+        try {
+            const success = await Auth.addPoints(-50);
+            if (!success) throw new Error("فشل الخصم");
             
-            const box = document.getElementById('box');
-            box.style.transform = 'scale(1.2) rotate(20deg)';
-            setTimeout(() => box.style.transform = 'scale(1) rotate(-20deg)', 200);
-            setTimeout(() => box.style.transform = 'scale(1) rotate(0)', 400);
-            
-            // خصم النقاط
-            await Auth.addPoints(-50);
             currentPoints -= 50;
             document.getElementById('shop-points').innerText = currentPoints;
             
-            // سحب عشوائي
             const prizes = ['🥇 ميدالية ذهبية', '👽 شخصية فضائية', '🐱 شخصية قطة', '💎 جوهرة نادرة'];
             const prize = prizes[Math.floor(Math.random() * prizes.length)];
             
             setTimeout(() => {
                 document.getElementById('result').innerText = "مبروك! حصلت على: " + prize;
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); playSound('success');
+                try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e) {}
+                isProcessing = false;
+                box.style.pointerEvents = 'auto';
             }, 600);
+        } catch (error) {
+            showToast("حدث خطأ أثناء الشراء، حاول لاحقاً.", "error");
+            isProcessing = false;
+            box.style.pointerEvents = 'auto';
         }
+    }
+    
     </script>
     <script src="global.js"></script>
 </body>

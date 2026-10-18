@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>اتعلم مع كودي - CodeQuest</title>
-    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="css/global.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -34,6 +34,7 @@
             .editor-side { flex: 1.2; }
         }
     </style>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <div class="top-bar">
@@ -61,7 +62,9 @@
 
     <script>
         let editor;
-        let currentLang = 'javascript';
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentLang = urlParams.get('lang') || 'javascript';
+        let currentLevelIndex = parseInt(urlParams.get('level')) || 0;
         let currentLevelIndex = 0;
         let lessonCompleted = false;
 
@@ -143,10 +146,11 @@
                 const data = await response.json();
                 
                 if (data.run && data.run.stdout) {
-                    terminal.innerHTML = data.run.stdout.replace(/\n/g, '<br>');
+                    terminal.textContent = data.run.stdout;
                     checkAnswer(data.run.stdout.trim());
                 } else if (data.run && data.run.stderr) {
-                    terminal.innerHTML = `<span style="color:#F87171;">${data.run.stderr}</span>`;
+                    terminal.textContent = data.run.stderr;
+ terminal.style.color = '#F87171';
                 } else {
                     terminal.innerHTML = "> لا يوجد مخرجات (تأكد من كتابة الكود).";
                 }
@@ -161,13 +165,13 @@
             const langData = curriculumData[currentLang];
             const expected = langData[currentLevelIndex].expected;
 
-            if (output.includes(expected)) {
+            if (output.trim() === expected.trim() || output.trim() === expected.trim() + '\n') {
                 lessonCompleted = true;
                 addMessage('cody', `🎉 عاش جداً! إجابة صحيحة. خدت <b>30 XP</b>!`);
                 
                 const added = await Auth.addPoints(30);
                 if (added) {
-                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); playSound('success');
+                    try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(e) { console.log("Confetti failed safely"); } playSound('success');
                     setTimeout(() => {
                         currentLevelIndex++;
                         loadLevel(); // الانتقال للمستوى التالي أوتوماتيك
