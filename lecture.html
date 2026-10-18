@@ -60,6 +60,7 @@
         else if (lang === 'C++') jsonFile = 'cpp_curriculum.json';
 
         let lessonData = null;
+        let curriculumData = null;
         let chapterData = null; 
         let currentStep = 0;
         let chatIndex = 0;
@@ -78,6 +79,7 @@
                 // كسر الكاش عشان نضمن جلب أحدث ملف
                 const res = await fetch(jsonFile + '?v=' + new Date().getTime());
                 const data = await res.json();
+                curriculumData = data;
                 
                 chapterData = data.chapters[chIndex];
                 if (!chapterData) { document.getElementById('lessonTitle').innerText = "خطأ في الفصل"; return; }
@@ -148,6 +150,7 @@
             else if (currentStep === 1) { currentStep = 2; showQuiz(); }
         }
 
+        
         async function checkAnswer(selected, btnElement) {
             if(selected === lessonData.quiz.a) {
                 btnElement.classList.add('correct');
@@ -162,16 +165,27 @@
                     });
                 }
                 
-                setTimeout(() => {
-                    alert("🎉 عاش يا بطل! إجابة صحيحة وحصلت على 50 نقطة.");
-                    window.location.href = 'levels.html';
-                }, 1000);
+                const isLastLesson = (lesIndex === chapterData.lessons.length - 1);
+                const isLastChapter = (chIndex === curriculumData.chapters.length - 1);
+
+                if (isLastLesson && isLastChapter) {
+                    showModal('success', '🏆 بطل خارق!', 'لقد أنهيت المنهج بالكامل! أنت الآن مبرمج حقيقي.', 'رجوع للمسارات');
+                    document.getElementById('modalBtn').onclick = () => { window.location.href = 'levels.html'; };
+                } else if (isLastLesson) {
+                    showModal('success', '🎉 عاش يا بطل!', 'لقد أكملت كل دروس هذا الفصل! حان وقت الامتحان.', 'اذهب للامتحان');
+                    document.getElementById('modalBtn').onclick = () => { window.location.href = `exam.html?lang=${lang}&ch=${chIndex}`; };
+                } else {
+                    showModal('success', '🌟 ممتاز!', 'لقد أنهيت هذا الدرس بنجاح. هل أنت مستعد للدرس التالي؟', 'الدرس التالي');
+                    document.getElementById('modalBtn').onclick = () => { window.location.href = `lecture.html?lang=${lang}&ch=${chIndex}&les=${lesIndex + 1}`; };
+                }
+
             } else {
                 btnElement.classList.add('wrong');
                 setTimeout(() => btnElement.classList.remove('wrong'), 1000);
-                alert("❌ إجابة خاطئة. حاول مرة أخرى.");
+                showModal('error', '❌ إجابة خاطئة', 'حاول مرة أخرى يا بطل، أنت تقدر!', 'حاول تاني');
             }
         }
+    
     </script>
 </body>
 </html>
