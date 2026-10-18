@@ -38,13 +38,6 @@
         .lesson-info { flex: 1; }
         .lesson-title { font-weight: bold; font-size: 1.1rem; color: #fff; margin-bottom: 5px; }
         .lesson-type { font-size: 0.8rem; color: var(--text-muted); }
-        .stars { color: var(--gold); font-size: 1rem; }
-
-        .exam-card { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(139,92,246,0.2)); border: 2px dashed #ef4444; border-radius: 15px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .exam-card:hover { background: linear-gradient(135deg, rgba(239,68,68,0.3), rgba(139,92,246,0.3)); transform: scale(1.02); }
-        .exam-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(239,68,68,0.2); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: #ef4444; }
-        .exam-title { font-weight: bold; font-size: 1.2rem; color: #fff; margin-bottom: 5px; }
-        .exam-desc { font-size: 0.85rem; color: #ccc; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 17, 40, 0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass-border); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: bold; }
@@ -74,7 +67,6 @@
             <p>اختر درساً من القائمة لتبدأ التعلم مع كودي!</p>
         </div>
         <div class="lessons-list" id="lessonsList"></div>
-        <div id="examArea"></div>
     </div>
 
     <nav class="bottom-nav">
@@ -85,13 +77,14 @@
     </nav>
 
     <script>
+        // 1. تحديد اللغة بدقة (حل مشكلة C و C++)
         let storedLang = localStorage.getItem('cq_language') || 'JavaScript';
         let lang = 'JavaScript';
         let jsonFile = 'js_curriculum.json';
 
-        if (storedLang.includes('Python')) {
+        if (storedLang === 'Python' || storedLang.includes('Python')) {
             lang = 'Python'; jsonFile = 'python_curriculum.json';
-        } else if (storedLang.includes('C')) {
+        } else if (storedLang === 'C++' || storedLang === 'C' || storedLang.includes('C')) {
             lang = 'C++'; jsonFile = 'cpp_curriculum.json'; localStorage.setItem('cq_language', 'C++');
         } else {
             lang = 'JavaScript'; jsonFile = 'js_curriculum.json'; localStorage.setItem('cq_language', 'JavaScript');
@@ -99,7 +92,6 @@
         
         document.getElementById('langTitle').innerText = `مسار ${lang}`;
         let curriculumData = null;
-        let userProgress = {}; 
 
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('open');
@@ -110,19 +102,15 @@
             Auth.init(async (logged) => {
                 if (!logged) { window.location.href = 'login.html'; return; }
                 try {
-                    const userDoc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
-                    if(userDoc.exists && userDoc.data().progress) {
-                        userProgress = userDoc.data().progress[lang] || {};
-                    }
-
-                    const res = await fetch(jsonFile);
+                    // كسر الكاش عشان نضمن جلب أحدث ملف
+                    const res = await fetch(jsonFile + '?v=' + new Date().getTime());
                     curriculumData = await res.json();
                     
                     renderChapters();
                     if(curriculumData.chapters.length > 0) loadChapter(curriculumData.chapters[0], 0);
                 } catch(e) {
-                    console.error("Error loading JSON:", e);
-                    document.getElementById('lessonsList').innerHTML = `<p style="color:red; text-align:center;">حدث خطأ في تحميل المحتوى. تأكد من اتصالك.</p>`;
+                    console.error(e);
+                    document.getElementById('lessonsList').innerHTML = `<p style="color:red; text-align:center;">حدث خطأ في تحميل المحتوى.</p>`;
                 }
             });
         });
@@ -146,54 +134,24 @@
 
         function loadChapter(chapter, chIndex) {
             const grid = document.getElementById('lessonsList');
-            const examArea = document.getElementById('examArea');
             grid.innerHTML = '';
-            examArea.innerHTML = ''; 
 
-            // عرض الدروس
-            if(chapter.lessons && chapter.lessons.length > 0) {
-                chapter.lessons.forEach((lesson, lIndex) => {
-                    let starsHtml = '<span class="stars">☆☆☆</span>';
-                    const progressKey = `ch_${chapter.id}_les_${lesson.id}`;
-                    if(userProgress[progressKey] && userProgress[progressKey].stars) {
-                        const s = userProgress[progressKey].stars;
-                        starsHtml = `<span class="stars">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span>`;
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = `lesson-card`;
-                    card.innerHTML = `
-                        <div class="lesson-icon"><i class="ri-chat-3-line"></i></div>
-                        <div class="lesson-info">
-                            <div class="lesson-title">${lesson.title}</div>
-                            <div class="lesson-type">شرح تفاعلي + كويز</div>
-                        </div>
-                        ${starsHtml}
-                    `;
-                    card.onclick = () => {
-                        window.location.href = `lecture.html?lang=${lang}&ch=${chIndex}&les=${lIndex}`;
-                    };
-                    grid.appendChild(card);
-                });
-            } else {
-                grid.innerHTML = '<p style="text-align:center; color:#aaa;">جاري إضافة الدروس لهذا الفصل قريباً...</p>';
-            }
-
-            // كارت الامتحان
-            const examCard = document.createElement('div');
-            examCard.className = 'exam-card';
-            examCard.innerHTML = `
-                <div class="exam-icon"><i class="ri-file-paper-2-line"></i></div>
-                <div class="lesson-info">
-                    <div class="exam-title">امتحان ${chapter.title}</div>
-                    <div class="exam-desc">اختبر فهمك لكل ما تعلمته في هذا الفصل!</div>
-                </div>
-                <i class="ri-arrow-left-s-line" style="color:#ef4444; font-size:1.5rem;"></i>
-            `;
-            examCard.onclick = () => {
-                window.location.href = `exam.html?lang=${lang}&ch=${chIndex}`;
-            };
-            examArea.appendChild(examCard);
+            chapter.lessons.forEach((lesson, lIndex) => {
+                const card = document.createElement('div');
+                card.className = `lesson-card`;
+                card.innerHTML = `
+                    <div class="lesson-icon"><i class="ri-chat-3-line"></i></div>
+                    <div class="lesson-info">
+                        <div class="lesson-title">${lesson.title}</div>
+                        <div class="lesson-type">شرح تفاعلي + كويز</div>
+                    </div>
+                    <i class="ri-arrow-left-s-line" style="color:var(--primary); font-size:1.5rem;"></i>
+                `;
+                card.onclick = () => {
+                    window.location.href = `lecture.html?lang=${encodeURIComponent(lang)}&ch=${chIndex}&les=${lIndex}`;
+                };
+                grid.appendChild(card);
+            });
         }
     </script>
 </body>

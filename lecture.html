@@ -34,13 +34,6 @@
         .quiz-option { background: #f3f4f6; border: 2px solid transparent; padding: 15px; border-radius: 15px; margin-bottom: 10px; cursor: pointer; font-size: 1.05rem; font-weight: bold; color: #4b5563; transition: 0.2s;}
         .quiz-option.correct { background: #d1fae5; border-color: #10b981; color: #065f46; pointer-events: none; }
         .quiz-option.wrong { background: #fee2e2; border-color: #ef4444; color: #991b1b; pointer-events: none; }
-        
-        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px); }
-        .custom-modal { background: #fff; border-radius: 25px; padding: 30px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s ease-out; }
-        .custom-modal-icon { font-size: 4rem; margin-bottom: 15px; }
-        .custom-modal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; color: #333; }
-        .custom-modal-text { font-size: 1rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
-        .custom-modal-btn { background: #8b5cf6; color: #fff; border: none; padding: 12px 30px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -52,19 +45,13 @@
     <div class="chat-container" id="chatContainer"></div>
     <div class="action-area"><button class="btn-next" id="nextBtn" onclick="nextStep()">التالي ⬅️</button></div>
 
-    <div class="custom-modal-overlay" id="customModal">
-        <div class="custom-modal">
-            <div class="custom-modal-icon" id="modalIcon">❌</div>
-            <div class="custom-modal-title" id="modalTitle">إجابة خاطئة</div>
-            <div class="custom-modal-text" id="modalText">حاول مرة أخرى يا بطل!</div>
-            <button class="custom-modal-btn" id="modalBtn" onclick="closeModal()">حاول تاني</button>
-        </div>
-    </div>
-
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         let lang = urlParams.get('lang') || 'JavaScript';
+        // فك تشفير اللغة (عشان C++ بتبقى C%2B%2B في الرابط)
+        lang = decodeURIComponent(lang);
         if (lang === 'C') lang = 'C++';
+        
         const chIndex = parseInt(urlParams.get('ch')) || 0;
         const lesIndex = parseInt(urlParams.get('les')) || 0;
         
@@ -76,7 +63,6 @@
         let chapterData = null; 
         let currentStep = 0;
         let chatIndex = 0;
-        let mistakes = 0; 
         
         const userAvatar = localStorage.getItem('cq_avatar') || 'https://api.dicebear.com/7.x/adventurer/svg?seed=User';
         const codyAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff';
@@ -89,7 +75,8 @@
 
         async function loadLesson() {
             try {
-                const res = await fetch(jsonFile);
+                // كسر الكاش عشان نضمن جلب أحدث ملف
+                const res = await fetch(jsonFile + '?v=' + new Date().getTime());
                 const data = await res.json();
                 
                 chapterData = data.chapters[chIndex];
@@ -119,7 +106,7 @@
                 document.getElementById('nextBtn').innerText = "رد ⬅️";
             } else {
                 document.getElementById('nextBtn').style.display = 'block';
-                document.getElementById('nextBtn').innerText = "شوف الكود 💻";
+                               document.getElementById('nextBtn').innerText = "شوف الكود 💻";
             }
         }
 
@@ -166,55 +153,25 @@
                 btnElement.classList.add('correct');
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 
-                let starsEarned = 3 - mistakes;
-                if (starsEarned < 1) starsEarned = 1; 
-
                 const uid = Auth.getUserId();
                 if(uid) {
                     const progressKey = `progress.${lang}.ch_${chapterData.id}_les_${lessonData.id}`;
                     await firebase.firestore().collection('users').doc(uid).update({
                         points: firebase.firestore.FieldValue.increment(50),
-                        [progressKey]: { stars: starsEarned, completed: true }
+                        [progressKey]: { stars: 3, completed: true }
                     });
                 }
                 
-                const congratsDiv = document.createElement('div');
-                congratsDiv.className = 'message cody';
-                congratsDiv.innerHTML = `<img src="${codyAvatar}" class="avatar"><div class="bubble">عاش يا بطل! إجابة صحيحة 🌟 كده أنت خلصت الدرس وخدت ${starsEarned} نجوم و 50 نقطة! يلا نكمل! 🚀</div>`;
-                chatContainer.appendChild(congratsDiv);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-
-                const isLastLesson = (lesIndex === chapterData.lessons.length - 1);
-
                 setTimeout(() => {
-                    if (isLastLesson) {
-                        // لو آخر درس في الفصل
-                        showModal('success', 'مبروك!', 'لقد أكملت كل دروس هذا الفصل! حان وقت الامتحان.', 'اذهب للامتحان');
-                        document.getElementById('modalBtn').onclick = () => { window.location.href = `exam.html?lang=${lang}&ch=${chIndex}`; };
-                    } else {
-                        // لو فيه درس تاني في نفس الفصل
-                        showModal('success', 'عاش!', 'لقد أنهيت هذا الدرس بنجاح. هل أنت مستعد للدرس التالي؟', 'الدرس التالي');
-                        document.getElementById('modalBtn').onclick = () => { window.location.href = `lecture.html?lang=${lang}&ch=${chIndex}&les=${lesIndex + 1}`; };
-                    }
-                }, 2000);
+                    alert("🎉 عاش يا بطل! إجابة صحيحة وحصلت على 50 نقطة.");
+                    window.location.href = 'levels.html';
+                }, 1000);
             } else {
                 btnElement.classList.add('wrong');
-                mistakes++; 
                 setTimeout(() => btnElement.classList.remove('wrong'), 1000);
-                showModal('error', 'إجابة خاطئة', 'حاول مرة أخرى يا بطل، أنت تقدر!', 'حاول تاني');
+                alert("❌ إجابة خاطئة. حاول مرة أخرى.");
             }
         }
-
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
     </script>
 </body>
 </html>
