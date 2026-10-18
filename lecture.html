@@ -6,82 +6,141 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #e5e7eb; }
-        .chat-header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
-        .chat-header h2 { margin: 0; color: #333; font-size: 1.2rem; }
-        .btn-back { color: #8b5cf6; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px;}
+        body { display: flex; flex-direction: column; min-height: 100vh; background: #0a1128; padding-bottom: 20px;}
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(10, 17, 40, 0.95); border-bottom: 1px solid var(--glass-border); }
+        .top-bar a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        .top-bar h1 { margin: 0; font-size: 1.2rem; color: #fff; }
         
-        .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .learning-container { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
         
-        .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 90%; align-self: flex-start; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* كودي وشرحه */
+        .cody-section { display: flex; align-items: flex-start; gap: 15px; }
+        .cody-avatar { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--primary); background: #000; box-shadow: 0 0 15px rgba(0,229,255,0.4); }
+        .speech-bubble { background: var(--glass); border: 1px solid var(--primary); padding: 20px; border-radius: 20px 20px 20px 0; flex: 1; color: #fff; line-height: 1.7; font-size: 1.1rem; }
         
-        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #fff; border: 2px solid #8b5cf6; object-fit: cover;}
-        .bubble { padding: 15px 20px; border-radius: 20px; font-size: 1.1rem; line-height: 1.6; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); background: #fff; border-bottom-right-radius: 5px; position: relative; min-height: 50px;}
+        /* كود */
+        .code-block { background: #1e1e1e; border: 1px solid #444; border-radius: 15px; padding: 20px; font-family: monospace; color: #00ff00; font-size: 1.1rem; direction: ltr; text-align: left; overflow-x: auto; white-space: pre; }
         
-        .action-area { padding: 20px; background: #fff; display: flex; justify-content: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-        .btn-next { background: #8b5cf6; color: #fff; border: none; padding: 15px 40px; border-radius: 25px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: none; transition: 0.3s; }
-        .btn-next:hover { transform: scale(1.05); }
+        /* أزرار الفهم */
+        .understand-btns { display: flex; gap: 15px; margin-top: auto; }
+        .btn-understand { flex: 1; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-yes { background: var(--success); color: #fff; }
+        .btn-no { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        
+        /* الكويز */
+        .quiz-section { display: none; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .quiz-question { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; color: #fff; border: 1px solid var(--glass-border); }
+        .quiz-option { background: #1e1e1e; border: 1px solid #444; padding: 15px; border-radius: 12px; color: #fff; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; text-align: right; transition: 0.3s; }
+        .quiz-option:hover { border-color: var(--primary); }
+        .quiz-option.correct { background: rgba(16, 185, 129, 0.3); border-color: var(--success); pointer-events: none; }
+        .quiz-option.wrong { background: rgba(239, 68, 68, 0.3); border-color: var(--danger); pointer-events: none; }
     </style>
 </head>
 <body>
-    <div class="chat-header">
-        <a href="levels.html" class="btn-back"><i class="ri-arrow-right-line"></i> رجوع للفصول</a>
-        <h2 id="lessonTitle">جاري التحميل...</h2>
-        <div style="width:50px;"></div>
-    </div>
+    <header class="top-bar">
+        <a href="levels.html"><i class="ri-arrow-right-line"></i> رجوع</a>
+        <h1 id="lessonTitle">جاري التحميل...</h1>
+        <div style="width: 40px;"></div>
+    </header>
 
-    <div class="chat-container" id="chatContainer"></div>
-
-    <div class="action-area">
-        <button class="btn-next" id="nextBtn" onclick="goToCode()">جرب ما تعلمته (فتح المحرر) 💻</button>
+    <div class="learning-container">
+        <!-- شرح كودي -->
+        <div class="cody-section">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff" class="cody-avatar">
+            <div class="speech-bubble" id="codyText"></div>
+        </div>
+        
+        <!-- الكود -->
+        <div class="code-block" id="codeExample"></div>
+        
+        <!-- أزرار التفاعل -->
+        <div class="understand-btns" id="understandBtns">
+            <button class="btn-understand btn-yes" onclick="understood()">فهمت، التالي! 👍</button>
+            <button class="btn-understand btn-no" onclick="notUnderstood()">مش فاهم، اشرح تاني 🤔</button>
+        </div>
+        
+        <!-- الكويز -->
+        <div class="quiz-section" id="quizSection">
+            <div class="quiz-question" id="quizQuestion"></div>
+            <div id="quizOptions"></div>
+        </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const lang = urlParams.get('lang') || 'JavaScript';
-        const levelId = parseInt(urlParams.get('level')) || 1;
-        const av = localStorage.getItem('cq_avatar') || 'cody-avatar.svg';
+        const lessonId = parseInt(urlParams.get('lesson')) || 1;
         let lessonData = null;
+        let explanationStep = 0;
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             Auth.init(l => { if(!l) window.location.href='login.html'; });
-            const res = await fetch('curriculum.json');
-            const data = await res.json();
-            lessonData = data[lang].lessons_data[levelId];
-            document.getElementById('lessonTitle').innerText = lessonData.title;
-            
-            startTypewriter(lessonData.intro);
+            loadLesson();
         });
 
-        function startTypewriter(text) {
-            const chat = document.getElementById('chatContainer');
-            chat.innerHTML = `
-                <div class="message-row">
-                    <img src="${av}" class="avatar">
-                    <div class="bubble" id="typeText"></div>
-                </div>
-            `;
-            chat.scrollTop = chat.scrollHeight;
+        async function loadLesson() {
+            const res = await fetch('curriculum.json');
+            const data = await res.json();
+            const lessons = data[lang] || data['JavaScript'];
+            lessonData = lessons.find(l => l.id === lessonId);
             
-            let i = 0;
-            const target = document.getElementById('typeText');
-            const interval = setInterval(() => {
-                if (i < text.length) {
-                    target.innerHTML += text.charAt(i);
-                    chat.scrollTop = chat.scrollHeight;
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    document.getElementById('nextBtn').style.display = 'block';
-                }
-            }, 40);
+            document.getElementById('lessonTitle').innerText = lessonData.title;
+            
+            // عرض المقدمة
+            document.getElementById('codyText').innerHTML = lessonData.intro;
+            document.getElementById('codeExample').innerText = lessonData.code;
         }
 
-        function goToCode() {
-            window.location.href = `studio.html?lang=${lang}&level=${levelId}`;
+        function notUnderstood() {
+            if(explanationStep === 0) {
+                document.getElementById('codyText').innerHTML = "ولا يهمك! دعني أشرح بطريقة أبسط:<br>" + lessonData.concept;
+                explanationStep++;
+            } else {
+                document.getElementById('codyText').innerHTML = "حسناً، اقرأ الكود المكتوب بالأسفل جيداً. سأعطيك سؤالاً بسيطاً لتتأكد من فهمك.";
+            }
+        }
+
+        function understood() {
+            document.getElementById('understandBtns').style.display = 'none';
+            document.getElementById('quizSection').style.display = 'flex';
+            
+            document.getElementById('quizQuestion').innerText = "📝 كويز سريع: " + lessonData.quiz.question;
+            
+            const optsDiv = document.getElementById('quizOptions');
+            optsDiv.innerHTML = '';
+            lessonData.quiz.options.forEach((opt, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'quiz-option';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optsDiv.appendChild(btn);
+            });
+        }
+
+        async function checkAnswer(selectedIndex, btnElement) {
+            if(selectedIndex === lessonData.quiz.answer) {
+                btnElement.classList.add('correct');
+                confetti({ particleCount: 150, spread: 70 });
+                
+                // إضافة النقاط
+                const uid = Auth.getUserId();
+                if(uid) {
+                    await firebase.firestore().collection('users').doc(uid).update({
+                        points: firebase.firestore.FieldValue.increment(50)
+                    });
+                }
+                
+                setTimeout(() => {
+                    alert("🎉 عاش يا بطل! إجابة صحيحة وحصلت على 50 نقطة.");
+                    window.location.href = 'levels.html';
+                }, 1000);
+            } else {
+                btnElement.classList.add('wrong');
+                alert("❌ إجابة خاطئة. حاول مرة أخرى أو اقرأ الشرح.");
+            }
         }
     </script>
 </body>
