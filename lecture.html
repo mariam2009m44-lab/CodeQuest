@@ -9,65 +9,78 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; min-height: 100vh; background: #0a1128; padding-bottom: 20px;}
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(10, 17, 40, 0.95); border-bottom: 1px solid var(--glass-border); }
-        .top-bar a { color: var(--primary); text-decoration: none; font-weight: bold; }
-        .top-bar h1 { margin: 0; font-size: 1.2rem; color: #fff; }
+        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #e5e7eb; }
         
-        .learning-container { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        /* الهيدر */
+        .chat-header { background: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
+        .chat-header a { color: #8b5cf6; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .chat-header h1 { margin: 0; font-size: 1.1rem; color: #333; }
         
-        .cody-section { display: flex; align-items: flex-start; gap: 15px; }
-        .cody-avatar { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--primary); background: #000; box-shadow: 0 0 15px rgba(0,229,255,0.4); }
-        .speech-bubble { background: var(--glass); border: 1px solid var(--primary); padding: 20px; border-radius: 20px 20px 20px 0; flex: 1; color: #fff; line-height: 1.7; font-size: 1.1rem; }
+        /* منطقة الشات */
+        .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         
-        .code-block { background: #1e1e1e; border: 1px solid #444; border-radius: 15px; padding: 20px; font-family: monospace; color: #00ff00; font-size: 1.1rem; direction: ltr; text-align: left; overflow-x: auto; white-space: pre; }
+        /* فقاعات الرسائل */
+        .message { display: flex; align-items: flex-end; gap: 10px; max-width: 85%; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { opacity: 0; transform: translateY(10px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
         
-        .understand-btns { display: flex; gap: 15px; margin-top: auto; }
-        .btn-understand { flex: 1; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; border: none; transition: 0.3s; }
-        .btn-yes { background: var(--success); color: #fff; }
-        .btn-no { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        .message.cody { align-self: flex-start; }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
         
-        .quiz-section { display: none; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .quiz-question { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; color: #fff; border: 1px solid var(--glass-border); }
-        .quiz-option { background: #1e1e1e; border: 1px solid #444; padding: 15px; border-radius: 12px; color: #fff; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; text-align: right; transition: 0.3s; }
-        .quiz-option:hover { border-color: var(--primary); }
-        .quiz-option.correct { background: rgba(16, 185, 129, 0.3); border-color: var(--success); pointer-events: none; }
-        .quiz-option.wrong { background: rgba(239, 68, 68, 0.3); border-color: var(--danger); pointer-events: none; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #fff; object-fit: cover;}
+        .bubble { padding: 15px 20px; border-radius: 20px; font-size: 1rem; line-height: 1.5; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;}
+        
+        /* ألوان الفقاعات */
+        .cody .bubble { background: #ffffff; border-bottom-right-radius: 5px; }
+        .user .bubble { background: #dbeafe; border-bottom-left-radius: 5px; color: #1e3a8a; }
+        
+        /* زرار التالي */
+        .action-area { padding: 15px 20px; background: #ffffff; display: flex; justify-content: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 10; min-height: 80px; align-items: center;}
+        .btn-next { background: #8b5cf6; color: #fff; border: none; padding: 15px 40px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: none; transition: 0.3s; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(139,92,246,0.3); }
+        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139,92,246,0.5); }
+        
+        /* الكود */
+        .code-container { display: none; margin-top: 20px; background: #1e1e1e; border-radius: 15px; padding: 15px; direction: ltr; text-align: left; border: 1px solid #444; overflow-x: auto; }
+        .code-container pre { margin: 0; color: #00ff00; font-family: monospace; font-size: 1rem; white-space: pre-wrap;}
+        
+        /* الكويز */
+        .quiz-container { display: none; margin-top: 20px; background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); animation: popIn 0.4s; }
+        .quiz-title { font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 15px; }
+        .quiz-option { background: #f3f4f6; border: 2px solid transparent; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; font-weight: bold; color: #4b5563; }
+        .quiz-option:hover { background: #e5e7eb; }
+        .quiz-option.correct { background: #d1fae5; border-color: #10b981; color: #065f46; pointer-events: none; }
+        .quiz-option.wrong { background: #fee2e2; border-color: #ef4444; color: #991b1b; pointer-events: none; }
     </style>
 </head>
 <body>
-    <header class="top-bar">
-        <a href="levels.html"><i class="ri-arrow-right-line"></i> رجوع للفصول</a>
+    <header class="chat-header">
+        <a href="levels.html"><i class="ri-arrow-right-line"></i> رجوع</a>
         <h1 id="lessonTitle">جاري التحميل...</h1>
         <div style="width: 40px;"></div>
     </header>
 
-    <div class="learning-container">
-        <div class="cody-section">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff" class="cody-avatar">
-            <div class="speech-bubble" id="codyText"></div>
-        </div>
-        
-        <div class="code-block" id="codeExample"></div>
-        
-        <div class="understand-btns" id="understandBtns">
-            <button class="btn-understand btn-yes" onclick="understood()">فهمت، التالي! 👍</button>
-            <button class="btn-understand btn-no" onclick="notUnderstood()">مش فاهم، اشرح تاني 🤔</button>
-        </div>
-        
-        <div class="quiz-section" id="quizSection">
-            <div class="quiz-question" id="quizQuestion"></div>
-            <div id="quizOptions"></div>
-        </div>
+    <div class="chat-container" id="chatContainer"></div>
+
+    <div class="action-area">
+        <button class="btn-next" id="nextBtn" onclick="nextStep()">التالي ⬅️</button>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         let lang = urlParams.get('lang') || 'JavaScript';
-        if (lang === 'C') lang = 'C++';
-        const lessonId = parseInt(urlParams.get('level')) || 1;
+        const chIndex = parseInt(urlParams.get('ch')) || 0;
+        const lesIndex = parseInt(urlParams.get('les')) || 0;
+        
+        let jsonFile = 'js_curriculum.json';
+        if (lang === 'Python') jsonFile = 'python_curriculum.json';
+        else if (lang === 'C++' || lang === 'C') jsonFile = 'cpp_curriculum.json';
+
         let lessonData = null;
-        let explanationStep = 0;
+        let currentStep = 0; // 0: chat, 1: code, 2: quiz
+        let chatIndex = 0;
+        
+        const userAvatar = localStorage.getItem('cq_avatar') || 'https://api.dicebear.com/7.x/adventurer/svg?seed=User';
+        const codyAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff';
+        const chatContainer = document.getElementById('chatContainer');
 
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init(l => { if(!l) window.location.href='login.html'; });
@@ -75,56 +88,105 @@
         });
 
         async function loadLesson() {
-            const res = await fetch('curriculum.json');
+            const res = await fetch(jsonFile);
             const data = await res.json();
+            lessonData = data.chapters[chIndex].lessons[lesIndex];
+            document.getElementById('lessonTitle').innerText = lessonData.title;
             
-            // البحث عن الدرس في الفصول
-            const chapters = data[lang].chapters;
-            for (let ch of chapters) {
-                const found = ch.lessons.find(l => l.id === lessonId);
-                if (found) { lessonData = found; break; }
-            }
-            
-            if(!lessonData) {
-                document.getElementById('codyText').innerText = "عذراً، لم يتم العثور على هذا الدرس.";
+            // بدء الشات
+            playNextChat();
+        }
+
+        function playNextChat() {
+            if (chatIndex >= lessonData.chat.length) {
+                // خلص شات، نعرض الكود
+                currentStep = 1;
+                showCode();
                 return;
             }
 
-            document.getElementById('lessonTitle').innerText = lessonData.title;
-            document.getElementById('codyText').innerHTML = lessonData.intro;
-            document.getElementById('codeExample').innerText = lessonData.code;
-        }
-
-        function notUnderstood() {
-            if(explanationStep === 0) {
-                document.getElementById('codyText').innerHTML = "ولا يهمك! دعني أشرح بطريقة أبسط:<br>" + (lessonData.concept || "اقرأ الكود بتركيز.");
-                explanationStep++;
+            const msg = lessonData.chat[chatIndex];
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${msg.sender}`;
+            
+            const avatar = msg.sender === 'cody' ? codyAvatar : userAvatar;
+            
+            msgDiv.innerHTML = `
+                <img src="${avatar}" class="avatar">
+                <div class="bubble">${msg.text}</div>
+            `;
+            
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            chatIndex++;
+            
+            // إظهار زرار التالي لو فيه رسايل تانية
+            if (chatIndex < lessonData.chat.length) {
+                document.getElementById('nextBtn').style.display = 'block';
+                document.getElementById('nextBtn').innerText = "رد ⬅️";
             } else {
-                document.getElementById('codyText').innerHTML = "حسناً، اقرأ الكود المكتوب بالأسفل جيداً. سأعطيك سؤالاً بسيطاً لتتأكد من فهمك.";
+                // لو خلص شات، الزرار يقول "شوف الكود"
+                document.getElementById('nextBtn').style.display = 'block';
+                document.getElementById('nextBtn').innerText = "شوف الكود 💻";
             }
         }
 
-        function understood() {
-            document.getElementById('understandBtns').style.display = 'none';
-            document.getElementById('quizSection').style.display = 'flex';
+        function showCode() {
+            document.getElementById('nextBtn').style.display = 'none';
             
-            document.getElementById('quizQuestion').innerText = "📝 كويز سريع: " + lessonData.quiz.q;
+            const codeDiv = document.createElement('div');
+            codeDiv.className = 'code-container';
+            codeDiv.id = 'codeBox';
+            codeDiv.innerHTML = `<pre>${lessonData.code}</pre>`;
+            chatContainer.appendChild(codeDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
             
-            const optsDiv = document.getElementById('quizOptions');
-            optsDiv.innerHTML = '';
-            lessonData.quiz.options.forEach((opt, index) => {
-                const btn = document.createElement('div');
-                btn.className = 'quiz-option';
-                btn.innerText = opt;
-                btn.onclick = () => checkAnswer(index, btn);
-                optsDiv.appendChild(btn);
-            });
+            setTimeout(() => {
+                codeDiv.style.display = 'block';
+                document.getElementById('nextBtn').style.display = 'block';
+                document.getElementById('nextBtn').innerText = "فهمت، جرب الكويز! 📝";
+            }, 500);
         }
 
-        async function checkAnswer(selectedIndex, btnElement) {
-            if(selectedIndex === lessonData.quiz.a) {
+        function showQuiz() {
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            const quizDiv = document.createElement('div');
+            quizDiv.className = 'quiz-container';
+            quizDiv.id = 'quizBox';
+            
+            let optionsHtml = '';
+            lessonData.quiz.options.forEach((opt, i) => {
+                optionsHtml += `<div class="quiz-option" onclick="checkAnswer(${i}, this)">${opt}</div>`;
+            });
+            
+            quizDiv.innerHTML = `
+                <div class="quiz-title">📝 كويز: ${lessonData.quiz.q}</div>
+                ${optionsHtml}
+            `;
+            
+            chatContainer.appendChild(quizDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            setTimeout(() => {
+                quizDiv.style.display = 'block';
+            }, 500);
+        }
+
+        function nextStep() {
+            if (currentStep === 0) {
+                playNextChat();
+            } else if (currentStep === 1) {
+                currentStep = 2;
+                showQuiz();
+            }
+        }
+
+        async function checkAnswer(selected, btnElement) {
+            if(selected === lessonData.quiz.a) {
                 btnElement.classList.add('correct');
-                confetti({ particleCount: 150, spread: 70 });
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 
                 const uid = Auth.getUserId();
                 if(uid) {
@@ -139,7 +201,8 @@
                 }, 1000);
             } else {
                 btnElement.classList.add('wrong');
-                alert("❌ إجابة خاطئة. حاول مرة أخرى أو اقرأ الشرح.");
+                setTimeout(() => btnElement.classList.remove('wrong'), 1000);
+                alert("❌ إجابة خاطئة. حاول مرة أخرى.");
             }
         }
     </script>
