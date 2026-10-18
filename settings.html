@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+
+        .settings-group { width: 100%; max-width: 600px; margin-bottom: 25px; }
+        .group-title { font-size: 1.2rem; font-weight: bold; color: var(--text-muted); margin-bottom: 15px; padding-right: 10px; }
+        
+        .setting-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: 0.3s; }
+        .setting-item:hover { background: rgba(0,229,255,0.05); border-color: var(--primary); }
+        
+        .setting-info { display: flex; align-items: center; gap: 15px; }
+        .setting-icon { width: 40px; height: 40px; background: rgba(0,229,255,0.1); color: var(--primary); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
+        .setting-text h3 { margin: 0; font-size: 1.1rem; color: #fff; }
+        .setting-text p { margin: 5px 0 0; font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 15px; border-radius: 15px; width: 100%; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-danger:hover { background: #ef4444; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <h1>⚙️ الإعدادات</h1>
+    </div>
+
+    <div class="settings-group">
+        <div class="group-title">التفضيلات العامة</div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-icon"><i class="ri-notification-3-line"></i></div>
+                <div class="setting-text"><h3>الإشعارات</h3><p>استلام تنبيهات الدروس والتحديات</p></div>
+            </div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-icon"><i class="ri-volume-up-line"></i></div>
+                <div class="setting-text"><h3>المؤثرات الصوتية</h3><p>تشغيل الأصوات داخل الألعاب</p></div>
+            </div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-icon"><i class="ri-moon-line"></i></div>
+                <div class="setting-text"><h3>الوضع الداكن</h3><p>تفعيل المظهر الليلي الافتراضي</p></div>
+            </div>
+            <label class="switch"><input type="checkbox" checked disabled><span class="slider"></span></label>
+        </div>
+    </div>
+
+    <div class="settings-group">
+        <div class="group-title">الحساب والخصوصية</div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-icon"><i class="ri-shield-user-line"></i></div>
+                <div class="setting-text"><h3>الخصوصية</h3><p>إدارة من يمكنه رؤية ملفك الشخصي</p></div>
+            </div>
+            <i class="ri-arrow-left-s-line" style="color:var(--text-muted); font-size:1.5rem;"></i>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-icon"><i class="ri-lock-password-line"></i></div>
+                <div class="setting-text"><h3>تغيير كلمة المرور</h3><p>تحديث كلمة المرور الخاصة بك</p></div>
+            </div>
+            <i class="ri-arrow-left-s-line" style="color:var(--text-muted); font-size:1.5rem;"></i>
+        </div>
+    </div>
+
+    <div class="settings-group" style="margin-top: 40px;">
+        <button class="btn-danger" onclick="Auth.logout()">
+            <i class="ri-logout-box-r-line"></i> تسجيل الخروج من الحساب
+        </button>
+    </div>
+
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        Auth.init((logged) => { if (!logged) window.location.href = 'login.html'; });
+    </script>
+</body>
+</html>

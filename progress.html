@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التقدم | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+
+        .progress-container { display: flex; gap: 25px; width: 100%; max-width: 800px; flex-wrap: wrap; }
+        
+        /* الدائرة */
+        .circle-card { flex: 1; min-width: 250px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .circular-progress { position: relative; width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--primary) 0%, var(--primary) 0%, #333 0%); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; transition: 1s; }
+        .circular-progress::before { content: ""; position: absolute; width: 130px; height: 130px; border-radius: 50%; background: #0a1128; }
+        .progress-value { position: relative; font-size: 2rem; font-weight: bold; color: #fff; }
+        .circle-card h3 { margin: 0; color: #fff; font-size: 1.2rem; }
+        .circle-card p { margin: 5px 0 0; color: var(--text-muted); font-size: 0.9rem; }
+
+        /* الإحصائيات */
+        .stats-card { flex: 2; min-width: 300px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+        .stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+        
+        .stat-name { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 1.1rem; }
+        .stat-icon { color: var(--primary); font-size: 1.4rem; }
+        .stat-num { font-size: 1.5rem; font-weight: bold; color: #fff; }
+        
+        .badges-grid { display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
+        .badge { width: 60px; height: 60px; border-radius: 15px; background: rgba(0,0,0,0.5); border: 1px solid #333; display: flex; justify-content: center; align-items: center; font-size: 2rem; filter: grayscale(1); transition: 0.3s; }
+        .badge.unlocked { filter: grayscale(0); border-color: var(--gold); box-shadow: 0 0 10px rgba(255,215,0,0.3); background: rgba(255,215,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <h1>📊 لوحة التقدم</h1>
+    </div>
+
+    <div class="progress-container">
+        <div class="circle-card">
+            <div class="circular-progress" id="circleProgress">
+                <span class="progress-value" id="progressPercent">0%</span>
+            </div>
+            <h3>التقدم الكلي</h3>
+            <p>في جميع المسارات</p>
+        </div>
+
+        <div class="stats-card">
+            <div class="stat-row">
+                <div class="stat-name"><i class="ri-star-fill stat-icon" style="color:var(--gold);"></i> إجمالي النقاط (XP)</div>
+                <div class="stat-num" id="totalXP">0</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-name"><i class="ri-book-open-line stat-icon"></i> الدروس المكتملة</div>
+                <div class="stat-num" id="lessonsDone">0</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-name"><i class="ri-gamepad-line stat-icon"></i> الألعاب الملعوبة</div>
+                <div class="stat-num">0</div>
+            </div>
+            <div class="stat-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                <div class="stat-name"><i class="ri-medal-line stat-icon" style="color:#8b5cf6;"></i> الإنجازات والشارات</div>
+                <div class="badges-grid">
+                    <div class="badge unlocked" title="أول كود">🚀</div>
+                    <div class="badge unlocked" title="بطل الألعاب">🎮</div>
+                    <div class="badge" title="مبرمج محترف">💻</div>
+                    <div class="badge" title="متفوق">🏆</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.init(async (logged) => {
+                if (!logged) { window.location.href = 'login.html'; return; }
+                
+                const uid = Auth.getUserId();
+                try {
+                    const doc = await firebase.firestore().collection('users').doc(uid).get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const points = data.points || 0;
+                        
+                        // تحديث الإحصائيات
+                        document.getElementById('totalXP').innerText = points;
+                        
+                        // حساب الدروس المكتملة (بافتراض كل 50 نقطة = درس)
+                        const lessons = Math.floor(points / 50);
+                        document.getElementById('lessonsDone').innerText = lessons;
+                        
+                        // حساب النسبة المئوية (بافتراض أن الهدف 1000 نقطة)
+                        const targetPoints = 1000;
+                        let percent = Math.min(Math.floor((points / targetPoints) * 100), 100);
+                        
+                        document.getElementById('progressPercent').innerText = percent + '%';
+                        document.getElementById('circleProgress').style.background = `conic-gradient(var(--primary) ${percent}%, #333 ${percent}%)`;
+                    }
+                } catch(e) { console.error(e); }
+            });
+        });
+    </script>
+</body>
+</html>
