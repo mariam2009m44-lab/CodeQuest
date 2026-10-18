@@ -3,108 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بطاقة البطل - CodeQuest</title>
-    <link rel="stylesheet" href="css/global.css">
+    <title>ملفي الشخصي | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
-    <script src="global.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        .profile-container { max-width: 600px; margin: 40px auto; padding: 20px; }
-        .player-card { position: relative; padding: 40px 20px; text-align: center; border-radius: 25px; background: linear-gradient(145deg, rgba(17, 24, 39, 0.8), rgba(139, 92, 246, 0.1)); border: 2px solid var(--secondary); box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); overflow: hidden; }
-        .player-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(0,229,255,0.1) 0%, transparent 60%); pointer-events: none; }
-        .avatar-large { font-size: 5rem; width: 120px; height: 120px; margin: 0 auto 20px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
-        .player-name { font-size: 2.2rem; font-weight: 900; color: white; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .player-level { display: inline-block; background: var(--accent); color: #000; padding: 5px 20px; border-radius: 20px; font-weight: bold; font-size: 1.1rem; margin-bottom: 20px; }
-        
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .stat-val { font-size: 1.8rem; font-weight: bold; color: var(--primary); display: block; }
-        .stat-label { color: var(--text-muted); font-size: 0.9rem; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { color: var(--primary); font-size: 1.5rem; }
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
 
-        .xp-bar-container { background: rgba(0,0,0,0.5); border-radius: 10px; height: 20px; overflow: hidden; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); width: 0%; transition: width 1s ease-out; box-shadow: 0 0 10px var(--primary-glow); }
-        .xp-text { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
+        .profile-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 30px; padding: 30px 20px; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .avatar-box { width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 50%; border: 4px solid var(--primary); background: #000; overflow: hidden; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .user-name { font-size: 1.8rem; font-weight: 900; color: #fff; margin-bottom: 5px; }
+        .user-title { color: var(--text-muted); font-size: 1rem; margin-bottom: 25px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
+        .stat-item { background: rgba(0,0,0,0.4); padding: 15px 10px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-value { font-size: 1.4rem; font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .xp-bar-container { text-align: right; margin-bottom: 30px; }
+        .xp-text { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+        .xp-bar { height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .xp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; border-radius: 10px; transition: 0.5s; }
+        
+        .btn-logout { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 12px; border-radius: 12px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
     </style>
-<link rel="stylesheet" href="global.css">
 </head>
 <body>
-    <div style="padding: 20px;">
-        <a href="index.html" class="btn-secondary" style="text-decoration: none;" onclick="playSound('click')">⬅️ الرئيسية</a>
+    <div class="header">
+        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <h1>الملف الشخصي</h1>
     </div>
 
-    <div class="profile-container animate-fade">
-        <div class="player-card">
-            <div class="avatar-large" id="p-avatar">👤</div>
-            <div class="player-name" id="p-name">جاري التحميل...</div>
-            <div class="player-level" id="p-level">المستوى 1</div>
-            
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <span class="stat-val" id="p-points">0</span>
-                    <span class="stat-label">إجمالي النقاط (XP)</span>
-                </div>
-                
-        <div class="stat-box" style="border-color: #FFD700;">
-            <span class="stat-val" id="p-coins" style="color: #FFD700;">0</span>
-            <span class="stat-label">العملات 🪙</span>
+    <div class="profile-card">
+        <div class="avatar-box">
+            <img src="cody-avatar.svg" id="userAvatar" alt="Avatar">
         </div>
-<div class="stat-box">
-                    <span class="stat-val" id="p-rank">#--</span>
-                    <span class="stat-label">الترتيب العام</span>
-                </div>
+        <div class="user-name" id="userName">جاري التحميل...</div>
+        <div class="user-title">مبرمج طموح 🚀</div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-value" id="statLevel">1</span>
+                <span class="stat-label">المستوى</span>
             </div>
+            <div class="stat-item">
+                <span class="stat-value" id="statPoints">0</span>
+                <span class="stat-label">النقاط (XP)</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">0</span>
+                <span class="stat-label">الإنجازات</span>
+            </div>
+        </div>
 
-            <div class="xp-bar-container">
-                <div class="xp-bar-fill" id="p-xp-bar"></div>
+        <div class="xp-bar-container">
+            <div class="xp-text">
+                <span>التقدم للمستوى القادم</span>
+                <span id="xpPercentage">0%</span>
             </div>
-            <div class="xp-text" id="p-xp-text">0 XP للمستوى التالي</div>
+            <div class="xp-bar">
+                <div class="xp-fill" id="xpFill"></div>
+            </div>
         </div>
+
+        <button class="btn-logout" onclick="Auth.logout()">تسجيل الخروج 🚪</button>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            Auth.init((loggedIn) => {
-                if(!loggedIn) window.location.href = 'login.html';
-                else {
-                    const user = Auth.getCurrentUser();
-                    const userRef = firebase.firestore().collection('users').doc(user.uid);
-                    
-                    // استخدام onSnapshot عشان التحديث اللايف
-                    userRef.onSnapshot(doc => {
-                        if (doc.exists) {
-                            const data = doc.data();
-                            const points = data.points || 0;
-                            
-                            document.getElementById('p-avatar').innerText = data.avatar || '👤';
-                            document.getElementById('p-name').innerText = data.username;
-                            document.getElementById('p-points').innerText = points;
-                            document.getElementById('p-coins').innerText = data.coins || 0;
-                            
-                            // حساب المستوى (كل 100 نقطة = مستوى)
-                            const level = Math.floor(points / 100) + 1;
-                            const nextXp = (level * 100) - points;
-                            const progress = points % 100;
-                            
-                            document.getElementById('p-level').innerText = `المستوى ${level}`;
-                            document.getElementById('p-xp-text').innerText = `${nextXp} XP للمستوى التالي`;
-                            document.getElementById('p-xp-bar').style.width = `${progress}%`;
-                        }
-                    });
+            const savedAvatar = localStorage.getItem('cq_avatar');
+            if(savedAvatar) document.getElementById('userAvatar').src = savedAvatar;
 
-                    // جلب الترتيب
-                    firebase.firestore().collection('users').orderBy('points', 'desc').get().then(snapshot => {
-                        let rank = 1;
-                        snapshot.forEach(doc => {
-                            if(doc.id === user.uid) {
-                                document.getElementById('p-rank').innerText = `#${rank}`;
-                            }
-                            rank++;
-                        });
-                    });
-                }
+            Auth.init(async (logged) => {
+                if (!logged) { window.location.href = 'login.html'; return; }
+                
+                const uid = Auth.getUserId();
+                try {
+                    const doc = await firebase.firestore().collection('users').doc(uid).get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        document.getElementById('userName').innerText = data.username || "البطل";
+                        
+                        const points = data.points || 0;
+                        document.getElementById('statPoints').innerText = points;
+                        
+                        const level = Math.floor(points / 100) + 1;
+                        document.getElementById('statLevel').innerText = level;
+                        
+                        const currentLevelPoints = points % 100;
+                        const xpPercentage = currentLevelPoints;
+                        document.getElementById('xpPercentage').innerText = xpPercentage + '%';
+                        document.getElementById('xpFill').style.width = xpPercentage + '%';
+                        
+                        if(data.avatar) document.getElementById('userAvatar').src = data.avatar;
+                    }
+                } catch (e) { console.error(e); }
             });
         });
     </script>

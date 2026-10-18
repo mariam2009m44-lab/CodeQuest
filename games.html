@@ -2,54 +2,91 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مركز الألعاب - CodeQuest</title>
-    <link rel="stylesheet" href="global.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مركز الألعاب | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        body { background: var(--bg-main); color: white; font-family: 'Cairo', sans-serif; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(0,0,0,0.3); border-bottom: 2px solid var(--primary); }
-        .header h1 { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; padding: 40px; max-width: 1200px; margin: 0 auto; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 10px rgba(0,229,255,0.4); }
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; font-size: 1rem; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+
+        .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 800px; }
         
-        .game-card { position: relative; padding: 40px 20px; text-align: center; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
-        .game-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent); transform: translateX(-100%); transition: 0.6s; }
-        .game-card:hover::before { transform: translateX(100%); }
-        .game-card:hover { transform: translateY(-10px) scale(1.02); border-color: var(--primary); box-shadow: 0 15px 40px rgba(0, 229, 255, 0.2); }
+        .game-card { border-radius: 25px; padding: 30px 20px; text-align: center; text-decoration: none; color: #fff; display: flex; flex-direction: column; align-items: center; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);}
+        .game-card:hover { transform: translateY(-5px) scale(1.02); }
         
-        .game-icon { font-size: 4rem; margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--secondary)); }
-        .game-title { color: var(--accent); font-size: 1.6rem; font-weight: 900; margin-bottom: 10px; }
-        .game-desc { color: var(--text-muted); font-size: 1rem; margin-bottom: 20px; }
-        .play-badge { padding: 8px 20px; background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); border-radius: 20px; color: var(--primary); font-weight: bold; }
+        .game-card:nth-child(1) { background: linear-gradient(135deg, #f59e0b, #b45309); }
+        .game-card:nth-child(2) { background: linear-gradient(135deg, #8b5cf6, #5b21b6); }
+        .game-card:nth-child(3) { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+        .game-card:nth-child(4) { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .game-card:nth-child(5) { background: linear-gradient(135deg, #10b981, #047857); }
+        .game-card:nth-child(6) { background: linear-gradient(135deg, #ec4899, #be185d); }
+
+        .game-icon { font-size: 3.5rem; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+        .game-title { font-size: 1.3rem; font-weight: 900; margin: 0 0 10px; }
+        .game-desc { font-size: 0.9rem; opacity: 0.9; margin-bottom: 20px; }
+        
+        .btn-play { background: rgba(255,255,255,0.9); color: #000; border: none; padding: 10px 20px; border-radius: 12px; font-family: 'Cairo'; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        .game-card:hover .btn-play { background: #fff; transform: scale(1.05); }
+
+        @media (min-width: 768px) { .games-grid { grid-template-columns: repeat(3, 1fr); } }
     </style>
 </head>
 <body>
-    <div class="header animate-fade">
-        <a href="index.html" class="btn-secondary" style="padding: 8px 16px; font-size: 14px; text-decoration: none;">⬅️ الرئيسية</a>
-        <h1>مركز الألعاب</h1>
-        <div style="width: 100px;"></div>
+    <div class="header">
+        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <h1>🎮 مركز الألعاب</h1>
     </div>
 
-    <div class="games-grid animate-fade">
+    <div class="games-grid">
+        <a href="game-match.html" class="game-card">
+            <i class="ri-puzzle-line game-icon"></i>
+            <h3 class="game-title">بازل الأكواد</h3>
+            <p class="game-desc">رتب القطع لبناء الكود</p>
+            <button class="btn-play">العب الآن</button>
+        </a>
         <a href="game-memory.html" class="game-card">
-            <span class="game-icon">🧠</span>
-            <div class="game-title">لعبة الذاكرة</div>
-            <div class="game-desc">طابق بين الكود البرمجي ووظيفته لتقوية ذاكرتك.</div>
-            <span class="play-badge">العب الآن 🚀</span>
+            <i class="ri-brain-line game-icon"></i>
+            <h3 class="game-title">لعبة الذاكرة</h3>
+            <p class="game-desc">طابق الكود مع معناه</p>
+            <button class="btn-play">العب الآن</button>
         </a>
-        
         <a href="game-bug.html" class="game-card">
-            <span class="game-icon">🐞</span>
-            <div class="game-title">صائد الأخطاء</div>
-            <div class="game-desc">ابحث عن السطر الذي يحتوي على خطأ برمجي واضغط عليه.</div>
-            <span class="play-badge">العب الآن 🚀</span>
+            <i class="ri-bug-line game-icon"></i>
+            <h3 class="game-title">صائد الأخطاء</h3>
+            <p class="game-desc">اكتشف الخطأ البرمجي</p>
+            <button class="btn-play">العب الآن</button>
         </a>
-        
+        <a href="game-speed.html" class="game-card">
+            <i class="ri-flashlight-line game-icon"></i>
+            <h3 class="game-title">تحدي السرعة</h3>
+            <p class="game-desc">أجب بسرعة قبل الوقت</p>
+            <button class="btn-play">العب الآن</button>
+        </a>
         <a href="game-quiz.html" class="game-card">
-            <span class="game-icon">🏆</span>
-            <div class="game-title">سيد الأسئلة</div>
-            <div class="game-desc">أجب على أسئلة البرمجة الصعبة واجمع النقاط.</div>
-            <span class="play-badge">العب الآن 🚀</span>
+            <i class="ri-question-line game-icon"></i>
+            <h3 class="game-title">سيد الأسئلة</h3>
+            <p class="game-desc">اختبر معلوماتك</p>
+            <button class="btn-play">العب الآن</button>
+        </a>
+        <a href="game-build.html" class="game-card">
+            <i class="ri-code-box-line game-icon"></i>
+            <h3 class="game-title">بناء الكود</h3>
+            <p class="game-desc">اكتب الكود بنفسك</p>
+            <button class="btn-play">العب الآن</button>
         </a>
     </div>
+
+    <script>
+        Auth.init((logged) => { if (!logged) window.location.href = 'login.html'; });
+    </script>
 </body>
 </html>
