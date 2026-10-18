@@ -14,10 +14,9 @@
         .chat-header a { color: #8b5cf6; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px; font-size: 1rem;}
         .chat-header h1 { margin: 0; font-size: 1.1rem; color: #333; }
         
-        /* شات أوسع */
-        .chat-container { flex: 1; padding: 20px; padding-bottom: 90px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 700px; margin: 0 auto; box-sizing: border-box;}
+        .chat-container { flex: 1; padding: 20px; padding-bottom: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 700px; margin: 0 auto; box-sizing: border-box;}
         
-        .message { display: flex; align-items: flex-end; gap: 10px; max-width: 90%; animation: popIn 0.3s ease-out; }
+        .message { display: flex; align-items: flex-end; gap: 10px; max-width: 95%; animation: popIn 0.3s ease-out; }
         @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
         .message.cody { align-self: flex-start; } .message.user { align-self: flex-end; flex-direction: row-reverse; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #fff; object-fit: cover;}
@@ -70,10 +69,11 @@
         const chIndex = parseInt(urlParams.get('ch')) || 0;
         const lesIndex = parseInt(urlParams.get('les')) || 0;
         
+        // التحديد القاطع للملف
         let jsonFile = 'js_curriculum.json';
         if (lang === 'Python') jsonFile = 'python_curriculum.json';
         else if (lang === 'C++') jsonFile = 'cpp_curriculum.json';
-        
+
         let lessonData = null;
         let chapterData = null; 
         let currentStep = 0;
@@ -102,7 +102,7 @@
 
                 document.getElementById('lessonTitle').innerText = lessonData.title;
                 playNextChat();
-            } catch(e) { document.getElementById('lessonTitle').innerText = "خطأ"; }
+            } catch(e) { document.getElementById('lessonTitle').innerText = "خطأ في تحميل الملف"; }
         }
 
         function playNextChat() {
@@ -193,7 +193,9 @@
                         showModal('success', 'مبروك!', 'لقد أكملت كل دروس هذا الفصل! حان وقت الامتحان.', 'اذهب للامتحان');
                         document.getElementById('modalBtn').onclick = () => { window.location.href = `exam.html?lang=${lang}&ch=${chIndex}`; };
                     } else {
-                        window.location.href = `lecture.html?lang=${lang}&ch=${chIndex}&les=${lesIndex + 1}`;
+                        // زرار الانتقال للدرس التالي
+                        showModal('success', 'عاش!', 'لقد أنهيت هذا الدرس بنجاح. هل أنت مستعد للدرس التالي؟', 'الدرس التالي');
+                        document.getElementById('modalBtn').onclick = () => { window.location.href = `lecture.html?lang=${lang}&ch=${chIndex}&les=${lesIndex + 1}`; };
                     }
                 }, 2000);
             } else {
