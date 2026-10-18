@@ -40,7 +40,6 @@
         .lesson-type { font-size: 0.8rem; color: var(--text-muted); }
         .stars { color: var(--gold); font-size: 1rem; }
 
-        /* كارت الامتحان */
         .exam-card { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(139,92,246,0.2)); border: 2px dashed #ef4444; border-radius: 15px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .exam-card:hover { background: linear-gradient(135deg, rgba(239,68,68,0.3), rgba(139,92,246,0.3)); transform: scale(1.02); }
         .exam-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(239,68,68,0.2); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: #ef4444; }
@@ -86,13 +85,23 @@
     </nav>
 
     <script>
-        let lang = localStorage.getItem('cq_language') || 'JavaScript';
-        // إصلاح مشكلة C++ 
-        if (lang === 'C') { lang = 'C++'; localStorage.setItem('cq_language', 'C++'); }
-        
+        // 1. تحديد اللغة بدقة (حل مشكلة C و C++)
+        let storedLang = localStorage.getItem('cq_language') || 'JavaScript';
+        let lang = 'JavaScript';
         let jsonFile = 'js_curriculum.json';
-        if (lang === 'Python') jsonFile = 'python_curriculum.json';
-        else if (lang === 'C++') jsonFile = 'cpp_curriculum.json';
+
+        if (storedLang.includes('Python') || storedLang === 'py') {
+            lang = 'Python';
+            jsonFile = 'python_curriculum.json';
+        } else if (storedLang.includes('C') || storedLang === 'cpp') {
+            lang = 'C++';
+            jsonFile = 'cpp_curriculum.json';
+            localStorage.setItem('cq_language', 'C++'); // تصحيح تلقائي
+        } else {
+            lang = 'JavaScript';
+            jsonFile = 'js_curriculum.json';
+            localStorage.setItem('cq_language', 'JavaScript'); // تصحيح تلقائي
+        }
         
         document.getElementById('langTitle').innerText = `مسار ${lang}`;
         let curriculumData = null;
@@ -145,7 +154,7 @@
             const grid = document.getElementById('lessonsList');
             const examArea = document.getElementById('examArea');
             grid.innerHTML = '';
-            examArea.innerHTML = ''; // مسح الامتحان القديم
+            examArea.innerHTML = ''; 
 
             chapter.lessons.forEach((lesson, lIndex) => {
                 let starsHtml = '<span class="stars">☆☆☆</span>';
@@ -171,7 +180,6 @@
                 grid.appendChild(card);
             });
 
-            // إضافة كارت "الامتحان النهائي للفصل"
             const examCard = document.createElement('div');
             examCard.className = 'exam-card';
             examCard.innerHTML = `
