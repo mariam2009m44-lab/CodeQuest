@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المشاريع | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; width: 100%; max-width: 900px; }
+        
+        .project-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; }
+        .project-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        
+        .project-icon { width: 50px; height: 50px; background: rgba(0,229,255,0.1); border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--primary); margin-bottom: 15px; }
+        .project-title { font-size: 1.3rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .project-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; }
+        
+        .project-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+        .project-date { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .btn-open { background: rgba(0,229,255,0.1); color: var(--primary); border: 1px solid var(--primary); padding: 8px 15px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-open:hover { background: var(--primary); color: #000; }
+
+        .btn-new-project { background: var(--glass); border: 2px dashed var(--glass-border); border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; min-height: 200px; color: var(--text-muted); }
+        .btn-new-project:hover { border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05); }
+        .btn-new-project i { font-size: 3rem; margin-bottom: 10px; }
+        .btn-new-project span { font-size: 1.1rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <h1>💼 المشاريع</h1>
+    </div>
+
+    <div class="projects-grid">
+        <!-- مشروع جديد -->
+        <div class="btn-new-project" onclick="createNewProject()">
+            <i class="ri-add-line"></i>
+            <span>مشروع جديد</span>
+        </div>
+
+        <!-- مشاريع تجريبية -->
+        <div class="project-card">
+            <div>
+                <div class="project-icon"><i class="ri-calculator-line"></i></div>
+                <h3 class="project-title">آلة حاسبة</h3>
+                <p class="project-desc">مشروع لبناء آلة حاسبة بسيطة باستخدام HTML و CSS و JavaScript.</p>
+            </div>
+            <div class="project-footer">
+                <span class="project-date">منذ يومين</span>
+                <button class="btn-open" onclick="window.location.href='studio.html'">فتح</button>
+            </div>
+        </div>
+
+        <div class="project-card">
+            <div>
+                <div class="project-icon"><i class="ri-gamepad-line"></i></div>
+                <h3 class="project-title">لعبة تخمين الرقم</h3>
+                <p class="project-desc">لعبة تفاعلية حيث يحاول المستخدم تخمين رقم سري.</p>
+            </div>
+            <div class="project-footer">
+                <span class="project-date">منذ أسبوع</span>
+                <button class="btn-open" onclick="window.location.href='studio.html'">فتح</button>
+            </div>
+        </div>
+
+        <div class="project-card">
+            <div>
+                <div class="project-icon"><i class="ri-checkbox-multiple-line"></i></div>
+                <h3 class="project-title">قائمة المهام</h3>
+                <p class="project-desc">تطبيق بسيط لإضافة وحذف المهام اليومية وتنظيمها.</p>
+            </div>
+            <div class="project-footer">
+                <span class="project-date">منذ شهر</span>
+                <button class="btn-open" onclick="window.location.href='studio.html'">فتح</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createNewProject() {
+            // توجيه المستخدم للاستوديو لبدء مشروع جديد
+            window.location.href = 'studio.html';
+        }
+    </script>
+</body>
+</html>
