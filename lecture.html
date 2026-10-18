@@ -9,44 +9,41 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #e5e7eb; }
+        /* تصغير التصميم عشان يظبط على الموبايل */
+        body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; background: #e5e7eb; margin: 0;}
         
-        /* الهيدر */
-        .chat-header { background: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
-        .chat-header a { color: #8b5cf6; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .chat-header h1 { margin: 0; font-size: 1.1rem; color: #333; }
+        .chat-header { background: #ffffff; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; flex-shrink: 0;}
+        .chat-header a { color: #8b5cf6; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px; font-size: 0.9rem;}
+        .chat-header h1 { margin: 0; font-size: 1rem; color: #333; }
         
         /* منطقة الشات */
-        .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .chat-container { flex: 1; padding: 15px; padding-bottom: 90px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        /* فقاعات الرسائل */
-        .message { display: flex; align-items: flex-end; gap: 10px; max-width: 85%; animation: popIn 0.3s ease-out; }
-        @keyframes popIn { 0% { opacity: 0; transform: translateY(10px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        /* فقاعات الرسائل أصغر */
+        .message { display: flex; align-items: flex-end; gap: 8px; max-width: 90%; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
         
         .message.cody { align-self: flex-start; }
         .message.user { align-self: flex-end; flex-direction: row-reverse; }
         
-        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #fff; object-fit: cover;}
-        .bubble { padding: 15px 20px; border-radius: 20px; font-size: 1rem; line-height: 1.5; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;}
+        .avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #fff; object-fit: cover;}
+        .bubble { padding: 10px 15px; border-radius: 15px; font-size: 0.95rem; line-height: 1.5; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        /* ألوان الفقاعات */
         .cody .bubble { background: #ffffff; border-bottom-right-radius: 5px; }
         .user .bubble { background: #dbeafe; border-bottom-left-radius: 5px; color: #1e3a8a; }
         
-        /* زرار التالي */
-        .action-area { padding: 15px 20px; background: #ffffff; display: flex; justify-content: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 10; min-height: 80px; align-items: center;}
-        .btn-next { background: #8b5cf6; color: #fff; border: none; padding: 15px 40px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: none; transition: 0.3s; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(139,92,246,0.3); }
-        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139,92,246,0.5); }
+        /* زرار التالي ثابت تحت */
+        .action-area { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px; background: #ffffff; display: flex; justify-content: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .btn-next { background: #8b5cf6; color: #fff; border: none; padding: 12px; border-radius: 25px; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; cursor: pointer; display: none; transition: 0.3s; width: 100%; max-width: 350px; box-shadow: 0 4px 15px rgba(139,92,246,0.3); }
         
         /* الكود */
-        .code-container { display: none; margin-top: 20px; background: #1e1e1e; border-radius: 15px; padding: 15px; direction: ltr; text-align: left; border: 1px solid #444; overflow-x: auto; }
-        .code-container pre { margin: 0; color: #00ff00; font-family: monospace; font-size: 1rem; white-space: pre-wrap;}
+        .code-container { display: none; margin-top: 10px; background: #1e1e1e; border-radius: 12px; padding: 12px; direction: ltr; text-align: left; border: 1px solid #444; overflow-x: auto; }
+        .code-container pre { margin: 0; color: #00ff00; font-family: monospace; font-size: 0.9rem; white-space: pre-wrap;}
         
-        /* الكويز */
-        .quiz-container { display: none; margin-top: 20px; background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); animation: popIn 0.4s; }
-        .quiz-title { font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 15px; }
-        .quiz-option { background: #f3f4f6; border: 2px solid transparent; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; font-weight: bold; color: #4b5563; }
-        .quiz-option:hover { background: #e5e7eb; }
+        /* الكويز أصغر */
+        .quiz-container { display: none; margin-top: 10px; background: #fff; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .quiz-title { font-size: 1.05rem; font-weight: bold; color: #333; margin-bottom: 12px; }
+        .quiz-option { background: #f3f4f6; border: 2px solid transparent; padding: 12px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; font-size: 0.95rem; font-weight: bold; color: #4b5563; transition: 0.2s;}
         .quiz-option.correct { background: #d1fae5; border-color: #10b981; color: #065f46; pointer-events: none; }
         .quiz-option.wrong { background: #fee2e2; border-color: #ef4444; color: #991b1b; pointer-events: none; }
     </style>
@@ -67,15 +64,19 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         let lang = urlParams.get('lang') || 'JavaScript';
-        const chIndex = parseInt(urlParams.get('ch')) || 0;
-        const lesIndex = parseInt(urlParams.get('les')) || 0;
+        
+        // إصلاح مشكلة رقم الفصل
+        let chIndex = parseInt(urlParams.get('ch'));
+        if (isNaN(chIndex)) chIndex = 0;
+        let lesIndex = parseInt(urlParams.get('les'));
+        if (isNaN(lesIndex)) lesIndex = 0;
         
         let jsonFile = 'js_curriculum.json';
         if (lang === 'Python') jsonFile = 'python_curriculum.json';
         else if (lang === 'C++' || lang === 'C') jsonFile = 'cpp_curriculum.json';
 
         let lessonData = null;
-        let currentStep = 0; // 0: chat, 1: code, 2: quiz
+        let currentStep = 0;
         let chatIndex = 0;
         
         const userAvatar = localStorage.getItem('cq_avatar') || 'https://api.dicebear.com/7.x/adventurer/svg?seed=User';
@@ -88,18 +89,27 @@
         });
 
         async function loadLesson() {
-            const res = await fetch(jsonFile);
-            const data = await res.json();
-            lessonData = data.chapters[chIndex].lessons[lesIndex];
-            document.getElementById('lessonTitle').innerText = lessonData.title;
-            
-            // بدء الشات
-            playNextChat();
+            try {
+                const res = await fetch(jsonFile);
+                const data = await res.json();
+                
+                // التأكد إن الفصل موجود
+                if (!data.chapters[chIndex]) { chIndex = 0; }
+                const chapter = data.chapters[chIndex];
+                
+                // التأكد إن الدرس موجود
+                if (!chapter.lessons[lesIndex]) { lesIndex = 0; }
+                lessonData = chapter.lessons[lesIndex];
+
+                document.getElementById('lessonTitle').innerText = lessonData.title;
+                playNextChat();
+            } catch(e) {
+                document.getElementById('lessonTitle').innerText = "خطأ في التحميل";
+            }
         }
 
         function playNextChat() {
             if (chatIndex >= lessonData.chat.length) {
-                // خلص شات، نعرض الكود
                 currentStep = 1;
                 showCode();
                 return;
@@ -108,25 +118,18 @@
             const msg = lessonData.chat[chatIndex];
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${msg.sender}`;
-            
             const avatar = msg.sender === 'cody' ? codyAvatar : userAvatar;
             
-            msgDiv.innerHTML = `
-                <img src="${avatar}" class="avatar">
-                <div class="bubble">${msg.text}</div>
-            `;
-            
+            msgDiv.innerHTML = `<img src="${avatar}" class="avatar"><div class="bubble">${msg.text}</div>`;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
             
             chatIndex++;
             
-            // إظهار زرار التالي لو فيه رسايل تانية
             if (chatIndex < lessonData.chat.length) {
                 document.getElementById('nextBtn').style.display = 'block';
                 document.getElementById('nextBtn').innerText = "رد ⬅️";
             } else {
-                // لو خلص شات، الزرار يقول "شوف الكود"
                 document.getElementById('nextBtn').style.display = 'block';
                 document.getElementById('nextBtn').innerText = "شوف الكود 💻";
             }
@@ -146,7 +149,7 @@
                 codeDiv.style.display = 'block';
                 document.getElementById('nextBtn').style.display = 'block';
                 document.getElementById('nextBtn').innerText = "فهمت، جرب الكويز! 📝";
-            }, 500);
+            }, 300);
         }
 
         function showQuiz() {
@@ -161,17 +164,11 @@
                 optionsHtml += `<div class="quiz-option" onclick="checkAnswer(${i}, this)">${opt}</div>`;
             });
             
-            quizDiv.innerHTML = `
-                <div class="quiz-title">📝 كويز: ${lessonData.quiz.q}</div>
-                ${optionsHtml}
-            `;
-            
+            quizDiv.innerHTML = `<div class="quiz-title">📝 كويز: ${lessonData.quiz.q}</div>${optionsHtml}`;
             chatContainer.appendChild(quizDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
             
-            setTimeout(() => {
-                quizDiv.style.display = 'block';
-            }, 500);
+            setTimeout(() => { quizDiv.style.display = 'block'; }, 300);
         }
 
         function nextStep() {
@@ -195,10 +192,17 @@
                     });
                 }
                 
+                // رسالة تشجيعية في الشات
+                const congratsDiv = document.createElement('div');
+                congratsDiv.className = 'message cody';
+                congratsDiv.innerHTML = `<img src="${codyAvatar}" class="avatar"><div class="bubble">عاش يا بطل! إجابة صحيحة 🌟 كده أنت خلصت الدرس ده بنجاح، وخدت 50 نقطة. يلا نروح للفصل اللي بعده أو نكمل دروس! 🚀</div>`;
+                chatContainer.appendChild(congratsDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
                 setTimeout(() => {
-                    alert("🎉 عاش يا بطل! إجابة صحيحة وحصلت على 50 نقطة.");
+                    alert("🎉 مبروك! حصلت على 50 نقطة.");
                     window.location.href = 'levels.html';
-                }, 1000);
+                }, 2000);
             } else {
                 btnElement.classList.add('wrong');
                 setTimeout(() => btnElement.classList.remove('wrong'), 1000);
