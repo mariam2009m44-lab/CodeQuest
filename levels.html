@@ -13,97 +13,114 @@
     <script src="js/auth.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-x: hidden; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px;}
-        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; font-size: 1rem; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-x: hidden; background: #050914; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--glass); padding: 15px 20px; border-radius: 20px; border: 1px solid var(--glass-border); z-index: 10;}
+        .header h1 { color: var(--primary); font-size: 1.3rem; }
+        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
+
+        .map-container { position: relative; width: 100%; max-width: 400px; padding-bottom: 100px; display: flex; flex-direction: column; align-items: center; margin-top: 20px;}
         
-        .map-container { position: relative; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px; }
-        
-        /* الخط المتعرج */
-        .path-line { position: absolute; top: 50px; bottom: 50px; width: 8px; background: linear-gradient(to bottom, var(--primary), var(--secondary)); border-radius: 10px; z-index: 0; box-shadow: 0 0 15px var(--primary); }
-        
-        .level-node { width: 80px; height: 80px; background: #1e1e1e; border: 4px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; color: #fff; cursor: pointer; z-index: 1; margin: 30px 0; transition: 0.3s; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
-        .level-node:hover { transform: scale(1.1); }
-        .level-node.locked { border-color: #444; color: #444; background: #111; cursor: not-allowed; box-shadow: none; }
+        /* تصميم الخط المتعرج باستخدام SVG */
+        .path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .path-svg path { fill: none; stroke: url(#gradient); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 10 10; animation: dash 30s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -1000; } }
+
+        .level-node { width: 80px; height: 80px; background: #111; border: 4px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; font-weight: bold; color: #fff; cursor: pointer; z-index: 2; transition: 0.3s; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.4); margin: 40px 0; }
+        .level-node.locked { border-color: #444; color: #444; background: #1a1a1a; cursor: not-allowed; box-shadow: none; }
         .level-node.completed { border-color: var(--success); box-shadow: 0 0 20px rgba(16,185,129,0.4); }
-
+        
         /* النجوم */
-        .stars { position: absolute; bottom: -30px; display: flex; gap: 2px; font-size: 1.2rem; }
-        .star { color: #444; } .star.filled { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+        .stars { position: absolute; bottom: -25px; display: flex; gap: 2px; font-size: 1.2rem; }
+        .star { color: #444; } .star.filled { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
 
-        /* تأثير كودي */
-        .cody-float { width: 100px; height: 100px; margin-bottom: 20px; animation: float 3s infinite ease-in-out; z-index: 1; }
+        /* الشخصية */
+        .cody-float { width: 80px; height: 80px; position: absolute; top: -60px; z-index: 3; animation: float 3s infinite ease-in-out; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-
-        @media (max-width: 500px) {
-            .level-node { width: 70px; height: 70px; font-size: 1.5rem; margin: 25px 0; }
-            .cody-float { width: 80px; height: 80px; }
-        }
     </style>
 </head>
 <body>
     <div class="header">
-        <a href="languages.html" class="btn-back">→ رجوع</a>
+        <a href="languages.html" class="btn-back">← رجوع</a>
         <h1 id="langTitle">مسار JavaScript</h1>
     </div>
 
     <div class="map-container" id="mapContainer">
+        <!-- الخطوط المتعرجة -->
+        <svg class="path-svg" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#00e5ff" />
+                    <stop offset="100%" stop-color="#8b5cf6" />
+                </linearGradient>
+            </defs>
+            <!-- الخط هنرسمه بالجافاسكريبت عشان يمشي مع المستويات -->
+            <path id="pathLine" d=""></path>
+        </svg>
+        
         <img src="cody-avatar.svg" class="cody-float" id="codyImg" alt="Cody">
-        <div class="path-line" id="pathLine"></div>
+        <!-- المستويات هتترسم هنا -->
     </div>
 
     <script>
         const lang = localStorage.getItem('cq_language') || 'JavaScript';
         document.getElementById('langTitle').innerText = `مسار ${lang}`;
-
-        // عرض صورة الشخصية
+        
         const savedAvatar = localStorage.getItem('cq_avatar');
         if(savedAvatar) document.getElementById('codyImg').src = savedAvatar;
 
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init(async (logged) => {
-                if (!logged) { window.location.href = 'index.html'; return; }
+                if (!logged) { window.location.href = 'login.html'; return; }
                 
                 const uid = Auth.getUserId();
                 const mapContainer = document.getElementById('mapContainer');
-                const levelsCount = 10; // 10 مستويات
-
+                const pathLine = document.getElementById('pathLine');
+                const levelsCount = 10;
+                
                 try {
                     const doc = await firebase.firestore().collection('users').doc(uid).get();
                     const progress = doc.exists ? (doc.data().progress?.[lang] || {}) : {};
 
+                    // إحداثيات رسم الخط
+                    let pathD = `M 50% 100 `; 
+
                     for (let i = 1; i <= levelsCount; i++) {
-                        // المستوى 1 مفتوح دايماً، أو لو المستوى اللي قبله مكتمل
                         const isUnlocked = (i === 1) || (progress[`level${i-1}`] && progress[`level${i-1}`].unlocked);
                         const stars = (progress[`level${i}`] && progress[`level${i}`].stars) || 0;
                         const isCompleted = stars > 0;
 
-                        // إنشاء العقدة
                         const node = document.createElement('div');
                         node.className = `level-node ${isUnlocked ? '' : 'locked'} ${isCompleted ? 'completed' : ''}`;
-                        node.innerHTML = isUnlocked ? i : '<i class="ri-lock-fill"></i>';
                         
-                        // النجوم
+                        // محتوى العقدة
+                        node.innerHTML = isUnlocked ? i : '<i class="ri-lock-fill"></i>';
                         let starsHtml = '<div class="stars">';
-                        for (let s = 0; s < 3; s++) {
-                            starsHtml += `<span class="star ${s < stars ? 'filled' : ''}">★</span>`;
-                        }
+                        for (let s = 0; s < 3; s++) starsHtml += `<span class="star ${s < stars ? 'filled' : ''}">★</span>`;
                         starsHtml += '</div>';
                         node.innerHTML += starsHtml;
 
                         // التفاعل
                         if (isUnlocked) {
-                            node.onclick = () => {
-                                window.location.href = `studio.html?lang=${lang}&level=${i}`;
-                            };
+                            node.onclick = () => { window.location.href = `studio.html?lang=${lang}&level=${i}`; };
                         }
                         
-                        // إضافة خط متعرج بسيط (عشان الشكل الاحترافي)
-                        node.style.marginRight = (i % 2 === 0) ? '40px' : '-40px';
+                        // التعرج (يمين وشمال)
+                        const offset = (i % 2 === 0) ? '30%' : '-30%';
+                        node.style.transform = `translateX(${offset})`;
                         
+                        // إضافة الخط المتعرج
+                        if(i > 1) {
+                            const x = (i % 2 === 0) ? 'calc(50% + 120px)' : 'calc(50% - 120px)';
+                            pathD += ` L 50% ${(i * 120)} `; // رسم خط بسيط
+                        }
+
                         mapContainer.appendChild(node);
                     }
+                    
+                    // رسم الخط المبدئي
+                    pathLine.setAttribute('d', "M 50 100 Q 200 200, 50 300 T 50 500 T 50 700 T 50 900");
+                    mapContainer.style.height = (levelsCount * 140) + 'px';
+
                 } catch(e) {
                     console.error(e);
                     mapContainer.innerHTML += "<p style='color:red;'>حدث خطأ في تحميل المستويات.</p>";
