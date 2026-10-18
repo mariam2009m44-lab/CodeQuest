@@ -1,33 +1,32 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><title>لعبة الذاكرة</title>
+<html lang="ar" dir="rtl">
+<head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>لعبة الذاكرة | CodeQuest</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 500px; margin-top: 20px; }
-        .card { aspect-ratio: 1/1; background: #1e1e1e; border: 2px solid #333; border-radius: 15px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s; text-align: center; padding: 5px;}
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
+        .header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { color: var(--primary); font-size: 1.3rem; }
+        .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 500px; }
+        .card { aspect-ratio: 1/1; background: #1e1e1e; border: 2px solid #333; border-radius: 15px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 0.9rem; font-weight: bold; transition: 0.3s; text-align: center; padding: 5px; }
         .card.flipped { background: var(--glass); border-color: var(--primary); color: var(--primary); }
         .card.matched { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success); pointer-events: none; }
-        .card .front { display: block; font-size: 2rem;} .card .back { display: none; font-size: 0.8rem; font-family: monospace;}
+        .card .front { display: block; font-size: 2rem;} .card .back { display: none; font-family: monospace;}
         .card.flipped .front, .card.matched .front { display: none; }
         .card.flipped .back, .card.matched .back { display: block; }
     </style>
-</head><body>
-    <div class="header" style="width:100%; max-width:500px; display:flex; justify-content:space-between; align-items:center;">
-        <a href="games.html" class="btn-back">← رجوع</a><h1 style="color:var(--primary);">🧠 لعبة الذاكرة</h1>
-    </div>
+</head>
+<body>
+    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>🧠 لعبة الذاكرة</h1><div style="width:50px;"></div></div>
     <div class="board" id="board"></div>
+    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
     <script>
-        const data = [
-            { id: 1, text: 'console.log', match: 'يطبع' }, { id: 2, text: 'let', match: 'متغير' },
-            { id: 3, text: 'if', match: 'شرط' }, { id: 4, text: 'for', match: 'حلقة' },
-            { id: 5, text: 'function', match: 'دالة' }, { id: 6, text: 'array', match: 'مصفوفة' }
-        ];
+        const data = [{ id: 1, text: 'console.log', match: 'يطبع' }, { id: 2, text: 'let', match: 'متغير' }, { id: 3, text: 'if', match: 'شرط' }, { id: 4, text: 'for', match: 'حلقة' }, { id: 5, text: 'function', match: 'دالة' }, { id: 6, text: 'array', match: 'مصفوفة' }];
         let cards = [], flipped = [], matched = 0;
         function init() {
             cards = [];
@@ -48,9 +47,7 @@
                     flipped[0].el.classList.add('matched'); flipped[1].el.classList.add('matched');
                     matched++; flipped = [];
                     if(matched === 6) { confetti({ particleCount: 200 }); setTimeout(claimReward, 1000); }
-                } else {
-                    setTimeout(() => { flipped[0].el.classList.remove('flipped'); flipped[1].el.classList.remove('flipped'); flipped = []; }, 1000);
-                }
+                } else { setTimeout(() => { flipped[0].el.classList.remove('flipped'); flipped[1].el.classList.remove('flipped'); flipped = []; }, 1000); }
             }
         }
         async function claimReward() {
