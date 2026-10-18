@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعرف على اللغة | CodeQuest</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { display:flex; flex-direction:column; align-items:center; padding:20px; justify-content:center; min-height:100vh; }
+        .intro-card { background:var(--glass); border:2px solid var(--primary); border-radius:30px; padding:30px 20px; width:100%; max-width:500px; text-align:center; box-shadow:0 0 40px rgba(0,229,255,0.2); position:relative; overflow:hidden; }
+        .cody-img { width:100px; height:100px; border-radius:50%; border:3px solid var(--primary); margin-bottom:20px; background:#000; animation: float 3s infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+        .title { font-size:2rem; font-weight:900; color:var(--primary); margin-bottom:10px; text-shadow:0 0 10px var(--primary); }
+        .desc { color:var(--text-muted); font-size:1.1rem; line-height:1.6; margin-bottom:20px; }
+        .features { text-align:right; margin-bottom:30px; }
+        .features li { margin-bottom:10px; color:#fff; font-size:1rem; display:flex; align-items:center; gap:10px;}
+        .features li i { color:var(--gold); }
+    </style>
+</head>
+<body>
+    <div class="intro-card" id="card">
+        <img src="cody-avatar.svg" id="cody" class="cody-img">
+        <h1 class="title" id="langTitle">جاري التحميل...</h1>
+        <p class="desc" id="langDesc"></p>
+        <ul class="features" id="featuresList"></ul>
+        <button class="btn btn-primary" style="width:100%;" onclick="startLearning()">🚀 ابدأ المغامرة الآن</button>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || 'JavaScript';
+        const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('cody').src = av;
+
+        const data = {
+            'JavaScript': { color: '#f7df1e', desc: 'لغة الويب التفاعلية! بها نصنع المواقع والألعاب التي تحبها.', features: ['بناء المواقع', 'صناعة الألعاب', 'التحكم في المتصفح'] },
+            'Python': { color: '#3776ab', desc: 'لغة المستقبل! نستخدمها في الذكاء الاصطناعي وتحليل البيانات.', features: ['الذكاء الاصطناعي', 'تحليل البيانات', 'أكواد بسيطة وقوية'] },
+            'C++': { color: '#00599c', desc: 'لغة القوة والسرعة! وراء كل لعبة ضخمة ونظام تشغيل.', features: ['تطوير الألعاب 3D', 'أنظمة التشغيل', 'البرمجة التنافسية'] }
+        };
+
+        const d = data[lang] || data['JavaScript'];
+        document.getElementById('langTitle').innerText = lang;
+        document.getElementById('langTitle').style.color = d.color;
+        document.getElementById('langDesc').innerText = d.desc;
+        document.getElementById('card').style.borderColor = d.color;
+        document.getElementById('card').style.boxShadow = `0 0 40px ${d.color}40`;
+        
+        const list = document.getElementById('featuresList');
+        d.features.forEach(f => { list.innerHTML += `<li><i class="ri-check-line"></i> ${f}</li>`; });
+
+        function startLearning() {
+            localStorage.setItem('cq_language', lang);
+            window.location.href = 'levels.html';
+        }
+        Auth.init(l => { if(!l) window.location.href='login.html'; });
+    </script>
+</body></html>

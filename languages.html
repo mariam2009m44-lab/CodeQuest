@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختر اللغة | CodeQuest</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { display:flex; flex-direction:column; align-items:center; padding:20px; padding-bottom:80px; }
+        .header { width:100%; max-width:600px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+        .grid { display:flex; flex-direction:column; gap:15px; width:100%; max-width:500px; }
+        .card { background:var(--glass); border:2px solid var(--glass-border); border-radius:20px; padding:20px; display:flex; align-items:center; gap:20px; text-decoration:none; color:#fff; transition:0.3s; }
+        .card:hover { border-color:var(--primary); transform:scale(1.02); }
+        .card img { width:50px; height:50px; }
+    </style>
+</head>
+<body>
+    <div class="header"><a href="dashboard.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h2 style="color:var(--primary);">اختر مسارك</h2><div style="width:50px;"></div></div>
+    <div class="grid">
+        <a href="lang-intro.html?lang=JavaScript" class="card">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg">
+            <div><h3 style="margin:0;">JavaScript</h3><p style="margin:5px 0 0; color:var(--text-muted); font-size:0.9rem;">لغة الويب التفاعلية</p></div>
+        </a>
+        <a href="lang-intro.html?lang=Python" class="card">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg">
+            <div><h3 style="margin:0;">Python</h3><p style="margin:5px 0 0; color:var(--text-muted); font-size:0.9rem;">لغة الذكاء الاصطناعي</p></div>
+        </a>
+        <a href="lang-intro.html?lang=C++" class="card">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg">
+            <div><h3 style="margin:0;">C++</h3><p style="margin:5px 0 0; color:var(--text-muted); font-size:0.9rem;">لغة الألعاب والأنظمة</p></div>
+        </a>
+    </div>
+    <div class="bottom-nav">
+        <a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a>
+        <a href="languages.html" class="active"><i class="ri-book-open-line"></i> التعلم</a>
+        <a href="games.html"><i class="ri-gamepad-line"></i> الألعاب</a>
+        <a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a>
+    </div>
+    <script>Auth.init(l => { if(!l) window.location.href='login.html'; });</script>
+</body></html>
