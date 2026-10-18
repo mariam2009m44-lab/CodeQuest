@@ -3,67 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختيار الشخصية</title>
-    <link rel="stylesheet" href="css/global.css">
+    <title>اختر شخصيتك | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        .avatar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 20px; padding: 40px; max-width: 600px; margin: 0 auto; }
-        .avatar-item { font-size: 4rem; text-align: center; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
-        .avatar-item:hover, .avatar-item.selected { border-color: var(--primary); background: rgba(0, 229, 255, 0.1); transform: scale(1.1); }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 10px rgba(0,229,255,0.4); }
+        .btn-skip { color: var(--text-muted); text-decoration: none; font-weight: bold; transition: 0.3s; }
+        .btn-skip:hover { color: #fff; }
+        
+        .avatars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 100%; max-width: 600px; margin-bottom: 30px; }
+        .avatar-card { background: var(--glass); border: 2px solid transparent; border-radius: 20px; padding: 10px; cursor: pointer; transition: 0.3s; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; }
+        .avatar-card img { width: 100%; height: 100%; object-fit: contain; border-radius: 15px; background: rgba(0,0,0,0.5); }
+        .avatar-card:hover { transform: scale(1.05); }
+        .avatar-card.selected { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,229,255,0.5); background: rgba(0,229,255,0.1); }
+        
+        .btn-start { width: 100%; max-width: 600px; padding: 15px; border-radius: 15px; font-size: 1.2rem; }
+        
+        @media (max-width: 500px) { .avatars-grid { grid-template-columns: repeat(3, 1fr); } }
     </style>
-<link rel="stylesheet" href="global.css">
 </head>
 <body>
-    <div style="text-align: center; padding: 20px;">
-        <h1 style="color: var(--primary);">اختر شخصيتك البطلة</h1>
-        <p style="color: var(--text-muted);">اختر الشخصية التي ستمثلك في رحلة التعلم</p>
+    <div class="header">
+        <h1>اختر شخصيتك</h1>
+        <a href="languages.html" class="btn-skip">تخطي ←</a>
     </div>
-    <div class="avatar-grid animate-fade" id="avatarGrid">
-        <!-- سيتم ملؤها بواسطة JS -->
-    </div>
-    
-    <div style="text-align: center; margin-top: 30px;">
-        <a href="index.html" class="btn-primary" style="text-decoration: none;">حفظ والعودة ⬅️</a>
-    </div>
+
+    <div class="avatars-grid" id="avatarsGrid"></div>
+
+    <button class="btn-primary btn-start" onclick="saveAndStart()">🚀 يلا نبدأ المغامرة</button>
 
     <script>
-        const avatars = ['👤', '👦', '👧', '🦸‍♂️', '🦸‍♀️', '🧙‍♂️', '🧙‍♀️', '👽', '🐱', '🤖'];
+        let selectedAvatarUrl = null;
+        const seeds = ['Mia', 'Leo', 'Zoe', 'Max', 'Luna', 'Charlie', 'Lily', 'Oscar', 'Bella', 'Rocky', 'Coco', 'Daisy'];
         
         document.addEventListener('DOMContentLoaded', () => {
-            Auth.init((loggedIn) => {
-                if(!loggedIn) window.location.href = 'login.html';
-                const grid = document.getElementById('avatarGrid');
-                const currentAvatar = Auth.getUserData()?.avatar;
-
-                avatars.forEach(av => {
-                    const div = document.createElement('div');
-                    div.className = 'avatar-item' + (av === currentAvatar ? ' selected' : '');
-                    div.innerText = av;
-                    div.onclick = () => saveAvatar(av, div);
-                    grid.appendChild(div);
-                });
+            Auth.init((logged) => { if (!logged) window.location.href = 'index.html'; });
+            
+            const grid = document.getElementById('avatarsGrid');
+            seeds.forEach(seed => {
+                const imgUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+                const card = document.createElement('div');
+                card.className = 'avatar-card';
+                card.innerHTML = `<img src="${imgUrl}" alt="Avatar">`;
+                card.onclick = () => {
+                    document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedAvatarUrl = imgUrl;
+                };
+                grid.appendChild(card);
             });
         });
 
-        async function saveAvatar(avatar) {
-            const user = Auth.getCurrentUser();
-            if(!user) return;
-            await firebase.firestore().collection('users').doc(user.uid).update({ avatar: avatar });
+        async function saveAndStart() {
+            if (!selectedAvatarUrl) return alert("يا بطل، اختر شخصيتك الأول!");
+            localStorage.setItem('cq_avatar', selectedAvatarUrl);
             
-            document.querySelectorAll('.avatar-item').forEach(el => el.classList.remove('selected'));
-            event.target.classList.add('selected');
-            
-            // تحديث الداتا المحلية
-            const data = Auth.getUserData();
-            if(data) data.avatar = avatar;
-            
-            setTimeout(() => { window.location.href = 'index.html'; }, 500);
+            const uid = Auth.getUserId();
+            if (uid) {
+                try { await firebase.firestore().collection('users').doc(uid).update({ avatar: selectedAvatarUrl }); } catch(e) { console.error(e); }
+            }
+            window.location.href = 'languages.html';
         }
     </script>
-    <script src="global.js"></script>
 </body>
 </html>
