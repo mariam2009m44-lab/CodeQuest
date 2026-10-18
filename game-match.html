@@ -1,42 +1,40 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl"><head><title>بازل الأكواد</title>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { overflow: hidden; }
-        .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 20px; width: 100%; max-width: 600px; box-sizing: border-box;}
-        .target-zone { width: 100%; min-height: 120px; background: rgba(0,0,0,0.6); border: 2px dashed #00e5ff; border-radius: 20px; padding: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
-        .target-zone.correct { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        .target-zone.wrong { border-color: #ef4444; animation: shake 0.5s; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } 100% { transform: translateX(0); } }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .game-area { width: 100%; max-width: 600px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .target-zone { width: 100%; min-height: 120px; background: rgba(0,0,0,0.6); border: 2px dashed var(--primary); border-radius: 20px; padding: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+        .target-zone.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .target-zone.wrong { border-color: var(--danger); animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
         .pieces { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; width: 100%; }
-        .piece { background: #1e1e1e; border: 1px solid #444; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-family: monospace; font-size: 1.1rem; color: #00e5ff; box-shadow: 0 4px 0 #111; }
+        .piece { background: #1e1e1e; border: 1px solid #444; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-family: monospace; font-size: 1.1rem; color: var(--primary); box-shadow: 0 4px 0 #111; }
         .piece:active { transform: translateY(4px); box-shadow: none; }
-        .piece.placed { background: #0a0a0a; border-color: #10b981; color: #fff; }
-        .btn-check { background: var(--neon-cyan); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #0088cc; }
+        .piece.placed { background: #0a0a0a; border-color: var(--success); color: #fff; }
     </style>
-<link rel="stylesheet" href="global.css">
 </head><body>
-    <div class="header"><a href="games.html" class="btn-back">رجوع</a><h1>🧩 بازل الأكواد</h1></div>
+    <div class="header" style="width:100%; max-width:600px; display:flex; justify-content:space-between; align-items:center;">
+        <a href="games.html" class="btn-back">← رجوع</a><h1 style="color:var(--primary);">🧩 بازل الأكواد</h1>
+    </div>
     <div class="game-area">
-        <p style="color:#aaa;">رتب القطع لبناء كود يطبع "Hello World"</p>
+        <p style="color:var(--text-muted); text-align:center;">رتب القطع لبناء كود يطبع "Hello World"</p>
         <div class="target-zone" id="targetZone"></div>
         <div class="pieces" id="piecesContainer"></div>
-        <button class="btn-check" onclick="checkCode()">✓ تحقق من الحل</button>
+        <button class="btn-primary" onclick="checkCode()">✓ تحقق من الحل</button>
     </div>
     <script>
         const correctCode = ['console.log', '(', '"Hello World"', ')', ';'];
         let availablePieces = [...correctCode].sort(() => Math.random() - 0.5);
         let userBuild = [];
-        const target = document.getElementById('targetZone'); const container = document.getElementById('piecesContainer');
-
         function render() {
-            container.innerHTML = '';
+            const container = document.getElementById('piecesContainer'); container.innerHTML = '';
             availablePieces.forEach(p => {
                 if(!userBuild.includes(p)) {
                     const el = document.createElement('div'); el.className = 'piece'; el.innerText = p;
@@ -46,7 +44,7 @@
             });
         }
         function updateUI() {
-            target.innerHTML = '';
+            const target = document.getElementById('targetZone'); target.innerHTML = '';
             userBuild.forEach(p => {
                 const el = document.createElement('div'); el.className = 'piece placed'; el.innerText = p;
                 el.onclick = () => { userBuild = userBuild.filter(x => x !== p); updateUI(); };
@@ -55,6 +53,7 @@
             render();
         }
         function checkCode() {
+            const target = document.getElementById('targetZone');
             if (userBuild.join(' ') === correctCode.join(' ')) {
                 target.classList.add('correct');
                 confetti({ particleCount: 150, spread: 70 });
@@ -67,9 +66,8 @@
         async function claimReward() {
             const uid = Auth.getUserId();
             if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(20) }); }
-            showToast("🎉 مبروك! +20 نقطة", "success"); window.location.href = 'games.html';
+            alert("🎉 مبروك! +20 نقطة"); window.location.href = 'games.html';
         }
-        Auth.init((l) => { if(!l) window.location.href = 'index.html'; else render(); });
+        Auth.init((l) => { if(!l) window.location.href = 'login.html'; else render(); });
     </script>
-    <script src="global.js"></script>
 </body></html>

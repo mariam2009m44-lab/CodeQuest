@@ -1,86 +1,86 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>التحدي اليومي | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحدي اليومي | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        body{background:#050914;color:#fff;font-family:'Cairo',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}
-        .box{background:rgba(255,255,255,0.05);padding:30px;border-radius:20px;text-align:center;border:1px solid #00e5ff;box-shadow:0 0 20px rgba(0,229,255,0.2);}
-        button{background:linear-gradient(135deg,#00e5ff,#007bff);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:bold;cursor:pointer;margin:5px;font-family:'Cairo';}
-        button:hover{transform:translateY(-2px);}
-        .hidden{display:none;}
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; justify-content: center; min-height: 100vh; }
+        .challenge-card { background: var(--glass); border: 1px solid var(--gold); border-radius: 25px; padding: 40px 20px; text-align: center; width: 100%; max-width: 500px; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
+        .challenge-icon { font-size: 4rem; margin-bottom: 20px; text-shadow: 0 0 20px var(--gold); }
+        .btn-claim { background: linear-gradient(135deg, var(--gold), #ff8c00); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; width: 100%; cursor: pointer; margin-top: 20px; display: none; }
+        .btn-back { margin-top: 20px; color: var(--text-muted); text-decoration: none; font-weight: bold; }
     </style>
-<link rel="stylesheet" href="css/global.css">
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<link rel="stylesheet" href="global.css">
 </head>
 <body>
-    <div class="box">
-        <h2 style="color:#00e5ff;">⚡ التحدي اليومي</h2>
-        <p id="status">جاري التحميل...</p>
-        <div id="quiz" class="hidden">
-            <p>كم يساوي: <strong>10 / 2</strong> ؟</p>
-            <button onclick="answer(10)">10</button>
-            <button onclick="answer(5)">5</button>
+    <div class="challenge-card">
+        <div class="challenge-icon">⚡</div>
+        <h1 style="color:var(--gold); margin:0 0 10px;">التحدي اليومي</h1>
+        <p style="color:var(--text-muted); margin-bottom:30px;">أجب على السؤال لتحصل على 50 نقطة!</p>
+        
+        <div id="quizArea" style="display:none;">
+            <h2 style="margin-bottom:20px; font-size:1.5rem;">كم يساوي: <strong>10 / 2</strong> ؟</h2>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-primary" style="flex:1; background:#1e1e1e; color:#fff; border:1px solid #444;" onclick="answer(10)">10</button>
+                <button class="btn-primary" style="flex:1; background:#1e1e1e; color:#fff; border:1px solid #444;" onclick="answer(5)">5</button>
+            </div>
         </div>
-        <button onclick="window.location.href='languages.html'" style="margin-top:20px;background:#333;border:1px solid #555;">رجوع</button>
+        
+        <p id="statusMsg" style="color:var(--text-muted); font-weight:bold;"></p>
+        <button class="btn-claim" id="claimBtn" onclick="claimReward()">احصل على المكافأة 🎁</button>
     </div>
+    <a href="dashboard.html" class="btn-back">← العودة للوحة التحكم</a>
+
     <script>
-        let uid = null;
+        const today = new Date().toDateString();
+        let isCorrect = false;
+
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init(async (logged) => {
-                if (!logged) { window.location.href = 'index.html'; return; }
-                uid = Auth.getUserId();
-                const today = new Date().toDateString();
+                if (!logged) { window.location.href = 'login.html'; return; }
                 
-                try {
-                    const doc = await firebase.firestore().collection('users').doc(uid).get();
-                    const data = doc.data();
-                    
-                    if (data.lastDailyDate === today) {
-                        document.getElementById('status').innerText = 'لقد حصلت على مكافأتك اليوم! عد غداً 🌟';
-                    } else {
-                        document.getElementById('status').innerText = 'أجب على السؤال لتحصل على 50 نقطة!';
-                        document.getElementById('quiz').classList.remove('hidden');
-                    }
-                } catch(e) {
-                    document.getElementById('status').innerText = 'حدث خطأ في تحميل البيانات.';
+                const uid = Auth.getUserId();
+                const doc = await firebase.firestore().collection('users').doc(uid).get();
+                
+                if(doc.data().lastDailyDate === today) {
+                    document.getElementById('statusMsg').innerText = "لقد حصلت على مكافأتك اليوم! عد غداً 🌟";
+                } else {
+                    document.getElementById('quizArea').style.display = 'block';
                 }
             });
         });
 
-        async function answer(val) {
-            if (val !== 5) { alert('إجابة خاطئة! حاول مرة أخرى.'); return; }
-            
-            const today = new Date().toDateString();
-            const userRef = firebase.firestore().collection('users').doc(uid);
-
-            try {
-                // استخدام Transaction لضمان أخذ المكافأة مرة واحدة فقط
-                await firebase.firestore().runTransaction(async (transaction) => {
-                    const doc = await transaction.get(userRef);
-                    if (!doc.exists) throw "User does not exist!";
-                    
-                    const data = doc.data();
-                    if (data.lastDailyDate === today) throw "Already claimed!";
-
-                    transaction.update(userRef, {
-                        bonusPoints: firebase.firestore.FieldValue.increment(50),
-                        lastDailyDate: today
-                    });
-                });
-                alert('🎉 مبروك! حصلت على 50 نقطة.');
-                window.location.reload();
-            } catch(e) {
-                console.error(e);
-                alert('لقد حصلت على المكافأة بالفعل اليوم أو حدث خطأ.');
+        function answer(val) {
+            if(val === 5) {
+                isCorrect = true;
+                document.getElementById('quizArea').style.display = 'none';
+                document.getElementById('statusMsg').innerText = "إجابة صحيحة! أنت رائع.";
+                document.getElementById('statusMsg').style.color = "var(--success)";
+                document.getElementById('claimBtn').style.display = 'block';
+            } else {
+                alert("إجابة خاطئة! حاول مرة أخرى.");
             }
         }
+
+        async function claimReward() {
+            if(!isCorrect) return;
+            const uid = Auth.getUserId();
+            try {
+                await firebase.firestore().collection('users').doc(uid).update({
+                    points: firebase.firestore.FieldValue.increment(50),
+                    lastDailyDate: today
+                });
+                confetti({ particleCount: 200 });
+                alert("🎉 مبروك! حصلت على 50 نقطة.");
+                window.location.href = 'dashboard.html';
+            } catch(e) { console.error(e); }
+        }
     </script>
-    <script src="global.js"></script>
 </body>
 </html>

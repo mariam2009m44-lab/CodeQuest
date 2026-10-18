@@ -1,202 +1,63 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الذاكرة - CodeQuest</title>
-    <link rel="stylesheet" href="css/global.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
+<html lang="ar" dir="rtl"><head><title>لعبة الذاكرة</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
-        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        
-        .board { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 15px; 
-            max-width: 700px; 
-            width: 100%;
-            perspective: 1000px;
-        }
-
-        .card {
-            aspect-ratio: 1 / 1;
-            position: relative;
-            cursor: pointer;
-            transform-style: preserve-3d;
-            transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
-            border-radius: 12px;
-        }
-
-        .card.flipped, .card.matched {
-            transform: rotateY(180deg);
-        }
-
-        .card-front, .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            text-align: center;
-            box-sizing: border-box;
-        }
-
-        .card-front {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border: 2px solid rgba(0, 229, 255, 0.3);
-            color: #00E5FF;
-            font-size: 2.5rem;
-            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.1);
-        }
-        
-        .card-front::after {
-            content: "❓";
-        }
-
-        .card-back {
-            background: linear-gradient(135deg, #0f172a, #1e1b4b);
-            border: 2px solid #8B5CF6;
-            color: #fff;
-            transform: rotateY(180deg);
-            font-size: 1rem;
-            font-weight: bold;
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-        }
-
-        .card.matched .card-back {
-            border-color: #34D399;
-            box-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
-            background: linear-gradient(135deg, #064e3b, #022c22);
-            color: #34D399;
-        }
-
-        .card.matched {
-            cursor: default;
-            pointer-events: none;
-        }
-
-        @media (max-width: 600px) {
-            .board { grid-template-columns: repeat(3, 1fr); }
-            .card-back { font-size: 0.8rem; }
-        }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 500px; margin-top: 20px; }
+        .card { aspect-ratio: 1/1; background: #1e1e1e; border: 2px solid #333; border-radius: 15px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s; text-align: center; padding: 5px;}
+        .card.flipped { background: var(--glass); border-color: var(--primary); color: var(--primary); }
+        .card.matched { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success); pointer-events: none; }
+        .card .front { display: block; font-size: 2rem;} .card .back { display: none; font-size: 0.8rem; font-family: monospace;}
+        .card.flipped .front, .card.matched .front { display: none; }
+        .card.flipped .back, .card.matched .back { display: block; }
     </style>
-<link rel="stylesheet" href="global.css">
-</head>
-<body>
-    <div class="header animate-fade">
-        <a href="games.html" class="btn-secondary">⬅️ رجوع للمركز</a>
-        <h1 style="color: #00E5FF; text-shadow: 0 0 10px rgba(0,229,255,0.5);">🧠 لعبة الذاكرة</h1>
-        <h2 style="color: #FFD700;">النقاط: <span id="score">0</span></h2>
+</head><body>
+    <div class="header" style="width:100%; max-width:500px; display:flex; justify-content:space-between; align-items:center;">
+        <a href="games.html" class="btn-back">← رجوع</a><h1 style="color:var(--primary);">🧠 لعبة الذاكرة</h1>
     </div>
-
-    <p style="color: #94A3B8; margin-bottom: 20px; text-align: center;">طابق بين الكود البرمجي ووظيفته الصحيحة!</p>
-
     <div class="board" id="board"></div>
-
     <script>
         const data = [
-            { id: 1, text: "console.log", match: "طباعة" }, 
-            { id: 2, text: "let", match: "متغير" },
-            { id: 3, text: "const", match: "ثابت" }, 
-            { id: 4, text: "for", match: "حلقة تكرارية" },
-            { id: 5, text: "function", match: "دالة" }, 
-            { id: 6, text: "array", match: "مصفوفة" }
+            { id: 1, text: 'console.log', match: 'يطبع' }, { id: 2, text: 'let', match: 'متغير' },
+            { id: 3, text: 'if', match: 'شرط' }, { id: 4, text: 'for', match: 'حلقة' },
+            { id: 5, text: 'function', match: 'دالة' }, { id: 6, text: 'array', match: 'مصفوفة' }
         ];
-
-        let cards = [], flipped = [], matched = 0, score = 0;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            Auth.init(() => {
-                if(!Auth.getUserId()) {
-                    showToast("يجب تسجيل الدخول أولاً!", "success");
-                    window.location.href = 'index.html';
-                } else {
-                    initGame();
-                }
-            });
-        });
-
-        function initGame() {
-            const board = document.getElementById('board');
-            board.innerHTML = '';
+        let cards = [], flipped = [], matched = 0;
+        function init() {
             cards = [];
-            flipped = [];
-            matched = 0;
-            score = 0;
-            document.getElementById('score').innerText = score;
-
-            data.forEach(item => { 
-                cards.push({ id: item.id, text: item.text, type: 'code' }); 
-                cards.push({ id: item.id, text: item.match, type: 'match' }); 
-            });
-            
-            // خلط الكروت
+            data.forEach(item => { cards.push({ id: item.id, text: item.text }); cards.push({ id: item.id, text: item.match }); });
             cards.sort(() => Math.random() - 0.5);
-
+            const board = document.getElementById('board'); board.innerHTML = '';
             cards.forEach((c, i) => {
-                const el = document.createElement('div'); 
-                el.className = 'card';
-                el.innerHTML = `
-                    <div class="card-front"></div>
-                    <div class="card-back">${c.text}</div>
-                `;
-                el.onclick = () => flip(el, i); 
-                board.appendChild(el);
+                const el = document.createElement('div'); el.className = 'card';
+                el.innerHTML = `<span class="front">❓</span><span class="back">${c.text}</span>`;
+                el.onclick = () => flip(el, i); board.appendChild(el);
             });
         }
-
         function flip(el, i) {
-            if (el.classList.contains('flipped') || el.classList.contains('matched') || flipped.length === 2) return;
-            
-            el.classList.add('flipped'); 
-            flipped.push({ el, i });
-
-            if (flipped.length === 2) {
-                const [c1, c2] = flipped;
-                if (cards[c1.i].id === cards[c2.i].id && cards[c1.i].type !== cards[c2.i].type) {
-                    // تطابق صحيح
-                    c1.el.classList.add('matched'); 
-                    c2.el.classList.add('matched');
-                    matched++;
-                    score += 10;
-                    document.getElementById('score').innerText = score;
-                    flipped = [];
-                    
-                    if (matched === 6) { 
-                        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); 
-                        setTimeout(claimReward, 1000); 
-                    }
+            if(el.classList.contains('flipped') || el.classList.contains('matched') || flipped.length === 2) return;
+            el.classList.add('flipped'); flipped.push({ el, i });
+            if(flipped.length === 2) {
+                if(cards[flipped[0].i].id === cards[flipped[1].i].id) {
+                    flipped[0].el.classList.add('matched'); flipped[1].el.classList.add('matched');
+                    matched++; flipped = [];
+                    if(matched === 6) { confetti({ particleCount: 200 }); setTimeout(claimReward, 1000); }
                 } else {
-                    // خطأ
-                    setTimeout(() => { 
-                        c1.el.classList.remove('flipped'); 
-                        c2.el.classList.remove('flipped'); 
-                        flipped = []; 
-                    }, 1000);
+                    setTimeout(() => { flipped[0].el.classList.remove('flipped'); flipped[1].el.classList.remove('flipped'); flipped = []; }, 1000);
                 }
             }
         }
-
         async function claimReward() {
-            // إضافة 50 نقطة في حالة الفوز باللعبة كاملة
-            const bonusPoints = 50;
-            await Auth.addPoints(bonusPoints);
-            alert(`🎉 مبروك! لقد أكملت اللعبة بنجاح وكسبت ${bonusPoints} نقطة إضافية!`);
-            window.location.href = 'games.html';
+            const uid = Auth.getUserId();
+            if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(80) }); }
+            alert("🎉 مبروك! +80 نقطة"); window.location.href = 'games.html';
         }
+        Auth.init((l) => { if(!l) window.location.href = 'login.html'; else init(); });
     </script>
-    <script src="global.js"></script>
-</body>
-</html>
+</body></html>
