@@ -87,7 +87,7 @@
                 else {
                     const name = Auth.getUserData()?.username || 'البطل';
                     addMessage('cody', `أهلاً يا ${name}! أنا كودي. هنبدأ رحلة التعلم! 🚀`);
-                    setTimeout(() => loadLevel(), 500);
+                    setTimeout(() => restoreProgress(), 500);
                 }
             });
         });
@@ -106,7 +106,19 @@
             currentLevelIndex = 0;
             monaco.editor.setModelLanguage(editor.getModel(), lang === 'cpp' ? 'cpp' : lang);
             addMessage('cody', `يلا بينا نتعلم <b>${lang.toUpperCase()}</b> من الأول! 🔥`);
-            setTimeout(() => loadLevel(), 500);
+            setTimeout(() => restoreProgress(), 500);
+        }
+
+        
+        function restoreProgress() {
+            const data = Auth.getUserData();
+            if (data) {
+                currentLang = data.currentLang || 'javascript';
+                currentLevelIndex = data.currentLevelIndex || 0;
+                document.getElementById('langSelect').value = currentLang;
+                monaco.editor.setModelLanguage(editor.getModel(), currentLang === 'cpp' ? 'cpp' : currentLang);
+                loadLevel();
+            }
         }
 
         function loadLevel() {
@@ -170,6 +182,7 @@
                 addMessage('cody', `🎉 عاش جداً! إجابة صحيحة. خدت <b>30 XP</b>!`);
                 
                 const added = await Auth.addPoints(30);
+                await Auth.saveProgress(currentLang, currentLevelIndex + 1, `${currentLang}-${currentLevelIndex}`);
                 if (added) {
                     try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(e) { console.log("Confetti failed safely"); } playSound('success');
                     setTimeout(() => {

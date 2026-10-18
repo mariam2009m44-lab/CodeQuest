@@ -45,7 +45,12 @@
                     <span class="stat-val" id="p-points">0</span>
                     <span class="stat-label">إجمالي النقاط (XP)</span>
                 </div>
-                <div class="stat-box">
+                
+        <div class="stat-box" style="border-color: #FFD700;">
+            <span class="stat-val" id="p-coins" style="color: #FFD700;">0</span>
+            <span class="stat-label">العملات 🪙</span>
+        </div>
+<div class="stat-box">
                     <span class="stat-val" id="p-rank">#--</span>
                     <span class="stat-label">الترتيب العام</span>
                 </div>
@@ -75,6 +80,7 @@
                             document.getElementById('p-avatar').innerText = data.avatar || '👤';
                             document.getElementById('p-name').innerText = data.username;
                             document.getElementById('p-points').innerText = points;
+                            document.getElementById('p-coins').innerText = data.coins || 0;
                             
                             // حساب المستوى (كل 100 نقطة = مستوى)
                             const level = Math.floor(points / 100) + 1;

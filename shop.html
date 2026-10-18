@@ -22,7 +22,7 @@
     <div class="shop-container animate-fade">
         <a href="index.html" class="btn-secondary" style="position:absolute; top:20px; right:20px; text-decoration:none;">⬅️ رجوع</a>
         <h1 style="color: var(--primary); margin-bottom: 10px;">متجر الأسرار</h1>
-        <div class="balance">رصيدك: <span id="shop-points">0</span> ⭐</div>
+        <div class="balance">عملاتك: <span id="shop-points">0</span> 🪙</div>
         
         <div class="card-glass" style="padding: 40px;">
             <h2 style="color: var(--secondary);">صندوق المفاجآت!</h2>
@@ -33,14 +33,14 @@
     </div>
 
     <script>
-        let currentPoints = 0;
+        let currentCoins = 0;
         
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init((loggedIn) => {
                 if(!loggedIn) window.location.href = 'login.html';
                 else {
-                    currentPoints = Auth.getUserData()?.points || 0;
-                    document.getElementById('shop-points').innerText = currentPoints;
+                    currentCoins = Auth.getUserData()?.coins || 0;
+                    document.getElementById('shop-points').innerText = currentCoins;
                 }
             });
         });
@@ -49,18 +49,18 @@
     let isProcessing = false;
     async function openBox() {
         if (isProcessing) return; // منع الضغط المتكرر
-        if (currentPoints < 50) { showToast("عذراً، تحتاج 50 نقطة!", "error"); return; }
+        if (currentCoins < 50) { showToast("عذراً، تحتاج 50 نقطة!", "error"); return; }
         
         isProcessing = true;
         const box = document.getElementById('box');
         box.style.pointerEvents = 'none';
         
         try {
-            const success = await Auth.addPoints(-50);
+            const success = await Auth.addCoins(-50);
             if (!success) throw new Error("فشل الخصم");
             
-            currentPoints -= 50;
-            document.getElementById('shop-points').innerText = currentPoints;
+            currentCoins -= 50;
+            document.getElementById('shop-points').innerText = currentCoins;
             
             const prizes = ['🥇 ميدالية ذهبية', '👽 شخصية فضائية', '🐱 شخصية قطة', '💎 جوهرة نادرة'];
             const prize = prizes[Math.floor(Math.random() * prizes.length)];

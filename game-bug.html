@@ -1,51 +1,135 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><title>صائد الأخطاء</title>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script><script src="js/world-bg.js"></script>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صائد الأخطاء - CodeQuest</title>
+    <link rel="stylesheet" href="global.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="css/global.css">
     <style>
-        .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 20px; width: 100%; max-width: 600px; box-sizing: border-box; }
-        .code-block { background: #1e1e1e; border: 1px solid #444; border-radius: 15px; padding: 20px; width: 100%; direction: ltr; text-align: left; font-family: monospace; font-size: 1.1rem; line-height: 1.8; }
-        .code-line { cursor: pointer; padding: 5px 10px; border-radius: 5px; transition: 0.2s; }
-        .code-line:hover { background: rgba(255,255,255,0.1); }
-        .code-line.selected { background: rgba(239, 68, 68, 0.3); border: 1px solid #ef4444; }
-        .line-num { color: #555; display: inline-block; width: 25px; }
-        .btn-check { background: #ef4444; color: #fff; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #b91c1c; }
+        .game-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .code-box { background: #1e1e1e; border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; direction: ltr; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
+        .code-line { display: block; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: #d4d4d4; margin-bottom: 5px; border: 1px solid transparent; }
+        .code-line:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .line-num { color: #858585; margin-right: 15px; user-select: none; display: inline-block; width: 20px; }
+        .correct { background: rgba(52, 211, 153, 0.2) !important; border-color: #34D399 !important; color: #34D399 !important; }
+        .wrong { background: rgba(248, 113, 113, 0.2) !important; border-color: #F87171 !important; color: #F87171 !important; }
+        .feedback { text-align: center; margin-top: 20px; font-size: 1.2rem; font-weight: bold; min-height: 30px; }
     </style>
-</head><body>
-    <div class="header"><a href="games.html" class="btn-back">رجوع</a><h1>🐛 صائد الأخطاء</h1></div>
-    <div class="game-area">
-        <p style="color:#aaa;">اختر السطر الذي يحتوي على الخطأ البرمجي:</p>
-        <div class="code-block" id="codeBlock"></div>
-        <button class="btn-check" onclick="checkBug()">✓ تأكيد السطر</button>
+</head>
+<body>
+    <div class="game-container animate-fade">
+        <div class="header">
+            <a href="games.html" class="btn-secondary" style="text-decoration: none;">⬅️ رجوع</a>
+            <h2 style="color: var(--primary);">🐞 اصطد الخطأ</h2>
+            <h2 style="color: var(--accent);">النقاط: <span id="score">0</span></h2>
+        </div>
+        
+        <div class="card-glass">
+            <p style="color: var(--text-muted); margin-bottom: 15px; text-align: center;">اضغط على السطر الذي يحتوي على الخطأ البرمجي لتصيده!</p>
+            <div class="code-box" id="codeArea"></div>
+            <div class="feedback" id="feedback"></div>
+        </div>
     </div>
+
     <script>
-        const codeLines = ["let x = 5;", "let y = 10;", "if (x = 5) {", "  console.log('x is 5');", "}"];
-        let selected = -1;
-        function render() {
-            const block = document.getElementById('codeBlock'); block.innerHTML = '';
-            codeLines.forEach((line, i) => {
-                const d = document.createElement('div'); d.className = 'code-line';
-                d.innerHTML = `<span class="line-num">${i+1}</span>${line}`;
-                d.onclick = () => { document.querySelectorAll('.code-line').forEach(c => c.classList.remove('selected')); d.classList.add('selected'); selected = i; };
-                block.appendChild(d);
+        const levels = [
+            {
+                lines: [
+                    '<span style="color:#569cd6;">function</span> <span style="color:#dcdcaa;">greet</span>(name) {',
+                    '  <span style="color:#569cd6;">let</span> message = <span style="color:#ce9178;">"Hello, "</span> + name',
+                    '  <span style="color:#dcdcaa;">console</span>.log(message);',
+                    '}'
+                ],
+                bugIndex: 1,
+                hint: "في JavaScript، الفاصلة المنقوطة (;) في نهاية السطر ضرورية جداً."
+            },
+            {
+                lines: [
+                    '<span style="color:#569cd6;">let</span> score = 10;',
+                    '<span style="color:#569cd6;">if</span> (score = 10) {',
+                    '  <span style="color:#dcdcaa;">console</span>.log(<span style="color:#ce9178;">"Winner"</span>);',
+                    '}'
+                ],
+                bugIndex: 1,
+                hint: "استخدام علامة (=) يعني التعيين. للمقارنة نستخدم (===)."
+            }
+        ];
+
+        let currentLevel = 0;
+        let totalScore = 0;
+        let canClick = true;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.init((loggedIn) => {
+                if(!loggedIn) window.location.href = 'login.html';
+                else loadLevel();
+            });
+        });
+
+        function loadLevel() {
+            if (currentLevel >= levels.length) return endGame();
+            canClick = true;
+            document.getElementById('feedback').innerHTML = '';
+            const area = document.getElementById('codeArea');
+            area.innerHTML = '';
+            const level = levels[currentLevel];
+
+            level.lines.forEach((line, index) => {
+                const div = document.createElement('div');
+                div.className = 'code-line';
+                div.innerHTML = `<span class="line-num">${index + 1}</span> ${line}`;
+                div.onclick = () => checkBug(index, div);
+                area.appendChild(div);
             });
         }
-        function checkBug() {
-            if(selected === -1) return showToast("اختر سطراً أولاً!", "success");
-            if(selected === 2) { confetti({ particleCount: 150 }); setTimeout(claimReward, 1000); }
-            else showToast("❌ هذا السطر سليم. حاول مرة أخرى!", "success");
+
+        function checkBug(clickedIndex, element) {
+            if (!canClick) return;
+            canClick = false;
+            const level = levels[currentLevel];
+            const feedback = document.getElementById('feedback');
+
+            if (clickedIndex === level.bugIndex) {
+                element.classList.add('correct');
+                totalScore += 20;
+                document.getElementById('score').innerText = totalScore;
+                feedback.innerHTML = '<span style="color: #34D399;">🎯 قنص دقيق! +20 نقطة</span>';
+                try { confetti({ particleCount: 50, spread: 60 }); } catch(e) {}
+            } else {
+                element.classList.add('wrong');
+                document.querySelectorAll('.code-line')[level.bugIndex].classList.add('correct');
+                feedback.innerHTML = `<span style="color: #F87171;">❌ خطأ!</span><br><span style="color: #FFD700; font-size: 0.9rem;">💡 ${level.hint}</span>`;
+            }
+
+            setTimeout(() => {
+                currentLevel++;
+                loadLevel();
+            }, 2500);
         }
-        async function claimReward() {
-            const uid = Auth.getUserId();
-            if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(30) }); }
-            showToast("🎉 مبروك! +30 نقطة", "success"); window.location.href = 'games.html';
+
+        async function endGame() {
+            document.getElementById('codeArea').innerHTML = '<h2 style="color: var(--primary); text-align: center;">🎉 مبروك! تم تصفية جميع الأخطاء</h2>';
+            document.getElementById('feedback').innerHTML = `<span style="color: var(--accent);">إجمالي النقاط: ${totalScore}</span>`;
+            
+            if (totalScore > 0) {
+                await Auth.addPoints(totalScore); // إضافة نقاط الخبرة
+                document.getElementById('feedback').innerHTML += '<br><span style="color: #34D399; font-size: 0.9rem;">تمت إضافة الخبرة لملفك!</span>';
+            }
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-primary';
+            btn.style.marginTop = '20px';
+            btn.innerText = 'العودة للألعاب';
+            btn.onclick = () => window.location.href = 'games.html';
+            document.querySelector('.card-glass').appendChild(btn);
         }
-        Auth.init((l) => { if(!l) window.location.href = 'index.html'; else render(); });
     </script>
-    <script src="global.js"></script>
-</body></html>
+</body>
+</html>

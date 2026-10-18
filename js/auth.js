@@ -45,6 +45,10 @@ const Auth = {
             await firebase.firestore().collection('users').doc(userCredential.user.uid).set({
                 username: username,
                 points: 0,
+                coins: 0,
+                completedLessons: [],
+                currentLang: "javascript",
+                currentLevelIndex: 0,
                 avatar: null
             });
             return { success: true, user: userCredential.user };
@@ -53,6 +57,38 @@ const Auth = {
             return { success: false, message: error.message };
         }
     },
+    
+    async addCoins(amount) {
+        if (!this.currentUser) return false;
+        try {
+            const userRef = firebase.firestore().collection('users').doc(this.currentUser.uid);
+            await userRef.update({ coins: firebase.firestore.FieldValue.increment(amount) });
+            if (this.userData) this.userData.coins = (this.userData.coins || 0) + amount;
+            return true;
+        } catch (error) { console.error("Coin Error:", error); return false; }
+    },
+    async saveProgress(lang, levelIndex, lessonId) {
+        if (!this.currentUser) return false;
+        try {
+            const userRef = firebase.firestore().collection('users').doc(this.currentUser.uid);
+            const data = this.getUserData();
+            let completed = data.completedLessons || [];
+            if (!completed.includes(lessonId)) completed.push(lessonId);
+            
+            await userRef.update({
+                currentLang: lang,
+                currentLevelIndex: levelIndex,
+                completedLessons: completed
+            });
+            if(this.userData) {
+                this.userData.currentLang = lang;
+                this.userData.currentLevelIndex = levelIndex;
+                this.userData.completedLessons = completed;
+            }
+            return true;
+        } catch (error) { console.error("Save Progress Error:", error); return false; }
+    }
+,
     async addPoints(pointsToAdd) {
         if (!this.currentUser) {
             console.log("No user logged in");
