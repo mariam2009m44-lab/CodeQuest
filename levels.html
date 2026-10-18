@@ -1,81 +1,134 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>خريطة المستويات | CodeQuest</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الفصول | CodeQuest</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-x: hidden; background: #050914; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--glass); padding: 15px 20px; border-radius: 20px; border: 1px solid var(--glass-border); z-index: 10; }
-        .header h1 { color: var(--primary); font-size: 1.3rem; margin:0; }
-        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
-        .map-container { position: relative; width: 100%; max-width: 400px; padding-bottom: 100px; display: flex; flex-direction: column; align-items: center; margin-top: 20px; }
-        .level-node { width: 75px; height: 75px; background: #111; border: 4px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; font-weight: bold; color: #fff; cursor: pointer; z-index: 2; transition: 0.3s; position: relative; box-shadow: 0 0 20px rgba(0,229,255,0.4); margin: 30px 0; }
-        .level-node.locked { border-color: #444; color: #444; background: #1a1a1a; cursor: not-allowed; box-shadow: none; }
-        .level-node.completed { border-color: var(--success); box-shadow: 0 0 20px rgba(16,185,129,0.4); }
-        .stars { position: absolute; bottom: -25px; display: flex; gap: 2px; font-size: 1.2rem; }
-        .star { color: #444; } .star.filled { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
-        .cody-float { width: 70px; height: 70px; position: absolute; top: -40px; z-index: 3; animation: float 3s infinite ease-in-out; border-radius:50%; border:2px solid var(--primary); }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        body { display: flex; height: 100vh; overflow: hidden; background: #0a1128; }
+        
+        /* القائمة الجانبية للفصول */
+        .chapters-sidebar { width: 280px; background: #111c3a; border-left: 1px solid var(--glass-border); display: flex; flex-direction: column; overflow-y: auto; }
+        .chapter-item { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; color: var(--text-muted); font-weight: bold; }
+        .chapter-item:hover { background: rgba(0,229,255,0.05); }
+        .chapter-item.active { background: rgba(0,229,255,0.1); color: var(--primary); border-right: 4px solid var(--primary); }
+        
+        /* المحتوى الرئيسي */
+        .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary); font-size: 1.8rem; }
+        
+        .intro-box { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
+        .intro-box img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); background: #000; }
+        .intro-box p { color: #fff; font-size: 1.1rem; line-height: 1.6; margin: 0; }
+        
+        /* شبكة الدروس */
+        .lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .lesson-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; position: relative; }
+        .lesson-card:hover { background: rgba(0,229,255,0.1); border-color: var(--primary); transform: translateY(-3px); }
+        .lesson-card.locked { opacity: 0.5; cursor: not-allowed; }
+        
+        .lesson-num { width: 35px; height: 35px; background: #1e1e1e; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: var(--primary); }
+        .lesson-title { font-weight: bold; color: #fff; flex: 1; font-size: 0.95rem; }
+        .lesson-status { color: var(--success); font-size: 1.2rem; }
+        
+        /* زر الرجوع */
+        .btn-back { background: var(--primary); color: #000; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="lang-intro.html?lang=JavaScript" class="btn-back">← رجوع</a>
-        <h1 id="langTitle">مسار JavaScript</h1>
+    <div class="chapters-sidebar" id="sidebar">
+        <!-- الفصول هتترسم هنا -->
     </div>
-    <div class="map-container" id="mapContainer">
-        <img src="cody-avatar.svg" class="cody-float" id="codyImg">
+
+    <div class="main-content">
+        <div class="header">
+            <a href="languages.html" class="btn-back">← رجوع للمسارات</a>
+            <h1 id="mainTitle">جاري التحميل...</h1>
+        </div>
+
+        <div class="intro-box">
+            <img src="cody-avatar.svg" id="codyImg">
+            <p id="introText">اختر درساً من القائمة لتبدأ التعلم مع كودي!</p>
+        </div>
+
+        <div class="lessons-grid" id="lessonsGrid"></div>
     </div>
-    <div class="bottom-nav">
-        <a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a>
-        <a href="languages.html" class="active"><i class="ri-book-open-line"></i> التعلم</a>
-        <a href="games.html"><i class="ri-gamepad-line"></i> الألعاب</a>
-        <a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a>
-    </div>
+
     <script>
         const lang = localStorage.getItem('cq_language') || 'JavaScript';
-        document.getElementById('langTitle').innerText = `مسار ${lang}`;
         const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('codyImg').src = av;
+        let curriculumData = null;
+        let userProgress = {};
 
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init(async (logged) => {
                 if (!logged) { window.location.href = 'login.html'; return; }
                 const uid = Auth.getUserId();
-                const mapContainer = document.getElementById('mapContainer');
-                const levelsCount = 10;
-                try {
-                    const doc = await firebase.firestore().collection('users').doc(uid).get();
-                    const progress = doc.exists ? (doc.data().progress?.[lang] || {}) : {};
+                const doc = await firebase.firestore().collection('users').doc(uid).get();
+                userProgress = doc.exists ? (doc.data().progress?.[lang] || {}) : {};
 
-                    for (let i = 1; i <= levelsCount; i++) {
-                        const isUnlocked = (i === 1) || (progress[`level${i-1}`] && progress[`level${i-1}`].unlocked);
-                        const stars = (progress[`level${i}`] && progress[`level${i}`].stars) || 0;
-                        const isCompleted = stars > 0;
-
-                        const node = document.createElement('div');
-                        node.className = `level-node ${isUnlocked ? '' : 'locked'} ${isCompleted ? 'completed' : ''}`;
-                        node.innerHTML = isUnlocked ? i : '<i class="ri-lock-fill"></i>';
-                        
-                        let starsHtml = '<div class="stars">';
-                        for (let s = 0; s < 3; s++) starsHtml += `<span class="star ${s < stars ? 'filled' : ''}">★</span>`;
-                        starsHtml += '</div>';
-                        node.innerHTML += starsHtml;
-
-                        if (isUnlocked) {
-                            node.onclick = () => { window.location.href = `studio.html?lang=${lang}&level=${i}`; };
-                        }
-                        
-                        const offset = (i % 2 === 0) ? '40px' : '-40px';
-                        node.style.transform = `translateX(${offset})`;
-                        mapContainer.appendChild(node);
-                    }
-                    mapContainer.style.height = (levelsCount * 110) + 'px';
-                } catch(e) { console.error(e); }
+                const res = await fetch('curriculum.json');
+                const data = await res.json();
+                curriculumData = data[lang];
+                
+                renderSidebar();
+                loadChapter(curriculumData.chapters[0]); // تحميل الفصل الأول افتراضياً
             });
         });
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            curriculumData.chapters.forEach((chapter, index) => {
+                const div = document.createElement('div');
+                div.className = `chapter-item ${index === 0 ? 'active' : ''}`;
+                div.innerHTML = `<span>${chapter.title}</span> <i class="ri-lock-line" style="font-size:0.8rem;"></i>`;
+                div.onclick = () => {
+                    document.querySelectorAll('.chapter-item').forEach(c => c.classList.remove('active'));
+                    div.classList.add('active');
+                    loadChapter(chapter);
+                };
+                sidebar.appendChild(div);
+            });
+        }
+
+        function loadChapter(chapter) {
+            document.getElementById('mainTitle').innerText = chapter.title;
+            const grid = document.getElementById('lessonsGrid');
+            grid.innerHTML = '';
+
+            chapter.lessons.forEach(lesson => {
+                // شروط فتح الدرس: أول درس مفتوح، أو اللي قبله مكتمل
+                const isUnlocked = (lesson.id === 1) || (userProgress[`level${lesson.id-1}`] && userProgress[`level${lesson.id-1}`].unlocked);
+                const isCompleted = (userProgress[`level${lesson.id}`] && userProgress[`level${lesson.id}`].unlocked);
+
+                const card = document.createElement('div');
+                card.className = `lesson-card ${isUnlocked ? '' : 'locked'}`;
+                
+                let statusHtml = isCompleted ? '<i class="ri-checkbox-circle-fill lesson-status"></i>' : '';
+                let lockHtml = !isUnlocked ? '<i class="ri-lock-fill" style="color:#888;"></i>' : '';
+
+                card.innerHTML = `
+                    <div class="lesson-num">${lesson.id}</div>
+                    <div class="lesson-title">${lesson.title}</div>
+                    ${statusHtml || lockHtml}
+                `;
+
+                if (isUnlocked) {
+                    card.onclick = () => {
+                        if (lesson.type === 'lecture') {
+                            window.location.href = `lecture.html?lang=${lang}&level=${lesson.id}`;
+                        } else {
+                            window.location.href = `studio.html?lang=${lang}&level=${lesson.id}`;
+                        }
+                    };
+                }
+                grid.appendChild(card);
+            });
+        }
     </script>
-</body></html>
+</body>
+</html>
