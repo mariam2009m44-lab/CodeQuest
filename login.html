@@ -3,42 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - CodeQuest</title>
-    <link rel="stylesheet" href="css/global.css">
+    <title>تسجيل الدخول | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-card { width: 100%; max-width: 400px; padding: 40px 30px; text-align: center; }
-        .logo { font-size: 2.5rem; color: var(--primary); font-weight: 900; margin-bottom: 30px; text-shadow: 0 0 15px var(--primary-glow); }
-        .input-group { margin-bottom: 20px; text-align: right; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
-        .toggle-text { margin-top: 20px; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; }
-        .toggle-text span { color: var(--primary); font-weight: bold; }
+        body { display: flex; min-height: 100vh; overflow: hidden; margin: 0; }
+        
+        /* النصف الأيسر (الصورة) */
+        .image-side { flex: 1; background: linear-gradient(135deg, #0a192f, #050914); display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+        .image-side::before { content: ''; position: absolute; width: 200%; height: 200%; background: radial-gradient(circle, rgba(0,229,255,0.1) 0%, transparent 60%); top: -50%; left: -50%; animation: rotateBg 20s linear infinite; }
+        @keyframes rotateBg { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .image-side img { width: 70%; max-width: 400px; z-index: 1; filter: drop-shadow(0 0 30px var(--primary)); animation: float 4s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        /* النصف الأيمن (الفورم) */
+        .form-side { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; background: var(--bg); position: relative; }
+        .form-side::before { content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 100%; background: url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="1" fill="%2300e5ff" opacity="0.3"/></svg>'); opacity: 0.5; z-index: 0; }
+        
+        .login-card { width: 100%; max-width: 400px; z-index: 1; }
+        .login-card h2 { color: #fff; font-size: 2rem; margin-bottom: 10px; }
+        .login-card p { color: var(--text-muted); margin-bottom: 30px; }
+        
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem; }
+        .input-group input { width: 100%; padding: 15px 45px 15px 15px; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-family: 'Cairo'; font-size: 1rem; transition: 0.3s; outline: none; }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
+        
+        .btn-submit { width: 100%; padding: 15px; border-radius: 12px; font-size: 1.1rem; margin-top: 10px; }
+        .toggle-form { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 0.95rem; }
+        .toggle-form a { color: var(--primary); font-weight: bold; cursor: pointer; text-decoration: none; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .image-side { display: none; } /* نخفي الصورة في الموبايل عشان نوفر مساحة */
+            .form-side { flex: 1; }
+        }
     </style>
-<link rel="stylesheet" href="global.css">
 </head>
 <body>
-    <div class="login-card card-glass animate-fade">
-        <div class="logo">CodeQuest 🚀</div>
-        <h2 id="formTitle" style="margin-bottom: 25px; color: white;">تسجيل الدخول</h2>
-        
-        <div class="input-group">
-            <label>اسم المستخدم</label>
-            <input type="text" id="username" placeholder="اكتب اسمك هنا...">
-        </div>
-        <div class="input-group">
-            <label>كلمة المرور</label>
-            <input type="password" id="password" placeholder="********">
-        </div>
-        
-        <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleAuth()">دخول</button>
-        
-        <div class="toggle-text" onclick="toggleMode()">
-            ليس لديك حساب؟ <span id="toggleSpan">سجل الآن</span>
+    <!-- النصف الأيسر -->
+    <div class="image-side">
+        <img src="cody-avatar.svg" alt="Cody">
+    </div>
+
+    <!-- النصف الأيمن -->
+    <div class="form-side">
+        <div class="login-card">
+            <div style="display:flex; align-items:center; gap:10px; color:var(--primary); font-size:1.5rem; font-weight:900; margin-bottom:20px;">
+                <i class="ri-robot-line"></i> CodeQuest
+            </div>
+            
+            <h2 id="formTitle">تسجيل الدخول</h2>
+            <p id="formSubtitle">أهلاً بك مجدداً! أكمل رحلتك التعليمية.</p>
+
+            <form id="authForm" onsubmit="event.preventDefault(); handleAuth();">
+                <div class="input-group">
+                    <i class="ri-user-line"></i>
+                    <input type="text" id="username" placeholder="اسم المستخدم..." required>
+                </div>
+                <div class="input-group">
+                    <i class="ri-lock-password-line"></i>
+                    <input type="password" id="password" placeholder="كلمة المرور..." required>
+                </div>
+                <button type="submit" class="btn-primary btn-submit" id="submitBtn">دخول 🚀</button>
+            </form>
+
+            <div class="toggle-form">
+                <span id="toggleText">ليس لديك حساب؟</span>
+                <a onclick="toggleMode()" id="toggleLink">سجل الآن</a>
+            </div>
         </div>
     </div>
 
@@ -47,37 +86,51 @@
 
         function toggleMode() {
             isLogin = !isLogin;
-            document.getElementById('formTitle').innerText = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد';
-            document.getElementById('submitBtn').innerText = isLogin ? 'دخول' : 'إنشاء حساب';
-            document.getElementById('toggleSpan').innerText = isLogin ? 'سجل الآن' : 'سجل دخولك';
-            document.querySelector('.toggle-text').childNodes[0].nodeValue = isLogin ? 'ليس لديك حساب؟ ' : 'لديك حساب بالفعل؟ ';
+            const title = document.getElementById('formTitle');
+            const subtitle = document.getElementById('formSubtitle');
+            const btn = document.getElementById('submitBtn');
+            const toggleText = document.getElementById('toggleText');
+            const toggleLink = document.getElementById('toggleLink');
+
+            if (isLogin) {
+                title.innerText = 'تسجيل الدخول';
+                subtitle.innerText = 'أهلاً بك مجدداً! أكمل رحلتك التعليمية.';
+                btn.innerText = 'دخول 🚀';
+                toggleText.innerText = 'ليس لديك حساب؟';
+                toggleLink.innerText = 'سجل الآن';
+            } else {
+                title.innerText = 'إنشاء حساب جديد';
+                subtitle.innerText = 'انضم إلى آلاف المبرمجين وابدأ رحلتك.';
+                btn.innerText = 'تسجيل 🚀';
+                toggleText.innerText = 'لديك حساب بالفعل؟';
+                toggleLink.innerText = 'تسجيل الدخول';
+            }
         }
 
         async function handleAuth() {
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
             const btn = document.getElementById('submitBtn');
+            
+            if(!username || !password) return;
 
-            if (!u || !p) {
-                alert("يرجى ملء جميع الحقول!");
-                return;
-            }
-
-            btn.innerText = "جاري التحميل...";
+            btn.innerText = 'جاري التحميل... ⏳';
             btn.disabled = true;
 
-            let res;
+            let result;
             if (isLogin) {
-                res = await Auth.loginUser(u, p);
+                result = await Auth.loginUser(username, password);
             } else {
-                res = await Auth.registerUser(u, p);
+                result = await Auth.registerUser(username, password);
             }
 
-            if (res.success) {
-                window.location.href = 'index.html'; // التحويل للوحة التحكم
+            if (result.success) {
+                // لو المستخدم جديد ومختارش شخصية، نوديه يختار
+                const hasAvatar = localStorage.getItem('cq_avatar');
+                window.location.href = hasAvatar ? 'dashboard.html' : 'avatar.html';
             } else {
-                alert("خطأ: " + res.message);
-                btn.innerText = isLogin ? 'دخول' : 'إنشاء حساب';
+                alert("❌ " + (result.message || "حدث خطأ، تأكد من البيانات."));
+                btn.innerText = isLogin ? 'دخول 🚀' : 'تسجيل 🚀';
                 btn.disabled = false;
             }
         }
