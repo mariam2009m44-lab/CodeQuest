@@ -13,7 +13,6 @@
 </head>
 <body>
     <div class="dashboard-layout">
-        <!-- الشريط الجانبي -->
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <span>🚀</span> <span>CodeQuest</span>
@@ -29,9 +28,7 @@
             </div>
         </aside>
 
-        <!-- المحتوى الرئيسي -->
         <main class="main-content">
-            <!-- الهيدر -->
             <header class="top-header animate-fade">
                 <div class="user-profile">
                     <div class="avatar" id="nav-avatar">🤖</div>
@@ -46,20 +43,17 @@
                 </div>
             </header>
 
-            <!-- قسم الترحيب -->
             <section class="card animate-fade" style="background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(0,229,255,0.1)); margin-bottom: 30px; position: relative; overflow: hidden;">
                 <div style="position: relative; z-index: 2; max-width: 60%;">
                     <h1 style="font-size: 2rem; margin-bottom: 10px;">مرحباً، <span id="hero-name">أيها البطل</span>! 👋</h1>
                     <p style="color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">أنت على بعد خطوة واحدة من تحقيق حلمك. أكمل دروسك واجمع النقاط لتصبح مبرمجاً محترفاً.</p>
                     <a href="studio.html" class="btn-primary">🚀 أكمل التعلم</a>
                 </div>
-                <!-- شخصية الروبوت (نستخدم إيموجي كبير كبديل مؤقت) -->
                 <div style="position: absolute; left: 20px; bottom: -20px; font-size: 10rem; opacity: 0.8; z-index: 1; filter: drop-shadow(0 0 20px var(--primary));">
                     🤖
                 </div>
             </section>
 
-            <!-- الإحصائيات -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="card animate-fade" style="text-align: center;">
                     <div style="font-size: 2.5rem; margin-bottom: 10px;">🏆</div>
@@ -78,7 +72,6 @@
                 </div>
             </div>
 
-            <!-- تابع من حيث توقفت -->
             <section class="card animate-fade">
                 <h2 style="margin-bottom: 15px; font-size: 1.4rem;">📖 تابع من حيث توقفت</h2>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -92,7 +85,6 @@
                     <a href="studio.html" class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">متابعة الدرس ⬅️</a>
                 </div>
             </section>
-
         </main>
     </div>
 
@@ -109,18 +101,14 @@
                         const completed = data.completedLessons ? data.completedLessons.length : 0;
                         const level = Math.floor(points / 100) + 1;
                         
-                        // تحديث الهيدر
                         document.getElementById('nav-username').innerText = data.username;
                         document.getElementById('nav-avatar').innerText = data.avatar || '🤖';
                         document.getElementById('nav-points').innerText = points;
                         document.getElementById('nav-coins').innerText = coins;
                         document.getElementById('hero-name').innerText = data.username;
-                        
-                        // تحديث الإحصائيات
                         document.getElementById('stat-level').innerText = level;
                         document.getElementById('stat-lessons').innerText = completed;
                         
-                        // شريط التقدم (مثال: كل درس 10%)
                         let progress = Math.min(completed * 10, 100); 
                         document.getElementById('progress-percent').innerText = progress + '%';
                         document.getElementById('progress-bar').style.width = progress + '%';
