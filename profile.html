@@ -16,42 +16,70 @@
         </div>
 
         <div class="card" style="text-align: center; margin-bottom: 30px;">
-            <div style="width: 100px; height: 100px; background: var(--primary-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 15px auto;">
+            <div id="avatarDisplay" style="width: 100px; height: 100px; background: var(--primary-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 15px auto;">
                 <i class="ri-user-smile-line"></i>
             </div>
-            <h2 style="color: var(--text-main); margin-bottom: 5px;">مريم البطلة</h2>
-            <p style="color: var(--text-muted); margin-bottom: 15px;">مبرمجة طموحة 🚀</p>
+            <h2 id="displayName" style="color: var(--text-main); margin-bottom: 5px;">جاري التحميل...</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">مبرمج طموح 🚀</p>
             <div style="display: flex; justify-content: center; gap: 20px;">
                 <div style="text-align: center;">
-                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary-main);">1,250</p>
+                    <p id="profileXP" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-main);">0</p>
                     <p style="font-size: 0.8rem; color: var(--text-muted);">XP</p>
                 </div>
                 <div style="text-align: center;">
-                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--reward);">15</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">أيام متتالية</p>
-                </div>
-                <div style="text-align: center;">
-                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--success);">24</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">دروس مكتملة</p>
+                    <p id="profileCoins" style="font-size: 1.5rem; font-weight: 700; color: var(--reward);">0</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">كوينز</p>
                 </div>
             </div>
         </div>
 
         <h3 style="color: var(--text-main); margin-bottom: 20px;">الشارات المكتسبة</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
-            <div class="card" style="text-align: center; padding: 15px;">
-                <div style="font-size: 2rem; margin-bottom: 10px;">🚀</div>
-                <p style="font-size: 0.8rem; font-weight: 600;">البداية الموفقة</p>
-            </div>
-            <div class="card" style="text-align: center; padding: 15px;">
-                <div style="font-size: 2rem; margin-bottom: 10px;">🔥</div>
-                <p style="font-size: 0.8rem; font-weight: 600;">أسبوع كامل</p>
-            </div>
-            <div class="card" style="text-align: center; padding: 15px;">
-                <div style="font-size: 2rem; margin-bottom: 10px;">🧠</div>
-                <p style="font-size: 0.8rem; font-weight: 600;">حل الألغاز</p>
-            </div>
+        <div id="badgesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
         </div>
     </div>
+
+    <script type="module">
+        import { auth, db, doc, getDoc } from './js/app.js';
+
+        const avatarMap = {
+            'astronaut': '👩‍🚀',
+            'fox': '🦊',
+            'robot': '🤖',
+            'dragon': '🐉',
+            'default': '<i class="ri-user-smile-line"></i>'
+        };
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                const data = userSnap.data() || {};
+
+                document.getElementById('displayName').innerText = data.displayName || "بطل CodeQuest";
+                document.getElementById('profileXP').innerText = data.xp || 0;
+                document.getElementById('profileCoins').innerText = data.coins || 0;
+
+                const activeAvatar = data.activeAvatar || 'default';
+                const avatarEl = document.getElementById('avatarDisplay');
+                if (avatarMap[activeAvatar].includes('<i')) {
+                    avatarEl.innerHTML = avatarMap[activeAvatar];
+                } else {
+                    avatarEl.innerText = avatarMap[activeAvatar];
+                    avatarEl.style.background = 'transparent';
+                }
+
+                const badgesContainer = document.getElementById('badgesContainer');
+                if (data.xp >= 50) {
+                    badgesContainer.innerHTML += `<div class="card" style="text-align: center; padding: 15px;"><div style="font-size: 2rem; margin-bottom: 10px;">🚀</div><p style="font-size: 0.8rem; font-weight: 600;">البداية</p></div>`;
+                }
+                if (data.xp >= 200) {
+                    badgesContainer.innerHTML += `<div class="card" style="text-align: center; padding: 15px;"><div style="font-size: 2rem; margin-bottom: 10px;">🔥</div><p style="font-size: 0.8rem; font-weight: 600;">مثابر</p></div>`;
+                }
+                if (data.inventory && data.inventory.length > 0) {
+                    badgesContainer.innerHTML += `<div class="card" style="text-align: center; padding: 15px;"><div style="font-size: 2rem; margin-bottom: 10px;">🛍️</div><p style="font-size: 0.8rem; font-weight: 600;">متسوق</p></div>`;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
