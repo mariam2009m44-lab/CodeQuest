@@ -4,82 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ملفي الشخصي | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { background: var(--bg-deep); padding: var(--space-l); }
+        .profile-container { max-width: 800px; margin: 0 auto; }
+        .profile-header { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-xl); text-align: center; margin-bottom: var(--space-l); position: relative; overflow: hidden; }
+        .avatar-display { width: 120px; height: 120px; background: var(--bg-deep); border: 4px solid var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 5rem; margin: 0 auto var(--space-m); box-shadow: 0 0 30px rgba(0, 217, 255, 0.3); }
+        .user-name { font-size: 2rem; color: var(--text-primary); margin-bottom: var(--space-xs); }
+        .user-level { display: inline-block; background: rgba(118, 87, 255, 0.2); color: var(--accent-purple); padding: 5px 15px; border-radius: var(--radius-pill); font-weight: 700; margin-bottom: var(--space-m); }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-s); }
+        .stat-box { background: rgba(5, 11, 31, 0.5); border: 1px solid var(--border-soft); border-radius: var(--radius-button); padding: var(--space-s); text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: 900; color: var(--primary); }
+        .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 5px; }
+        .section-title { color: var(--text-primary); font-size: 1.3rem; margin-bottom: var(--space-m); display: flex; align-items: center; gap: 10px; }
+        .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-s); }
+        .badge-item { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-m); text-align: center; }
+        .badge-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .badge-name { font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    </style>
 </head>
-<body style="background: var(--bg-base);">
-    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 style="color: var(--text-main);">ملفي الشخصي</h1>
-            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
+<body>
+    <div class="profile-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-m);">
+            <h1 style="color: var(--text-primary);">ملفي الشخصي</h1>
+            <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
         </div>
 
-        <div class="card" style="text-align: center; margin-bottom: 30px;">
-            <div id="avatarDisplay" style="width: 100px; height: 100px; background: var(--primary-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 15px auto;">
-                <i class="ri-user-smile-line"></i>
-            </div>
-            <h2 id="displayName" style="color: var(--text-main); margin-bottom: 5px;">جاري التحميل...</h2>
-            <p style="color: var(--text-muted); margin-bottom: 15px;">مبرمج طموح 🚀</p>
-            <div style="display: flex; justify-content: center; gap: 20px;">
-                <div style="text-align: center;">
-                    <p id="profileXP" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-main);">0</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">XP</p>
+        <div class="profile-header">
+            <div class="avatar-display" id="avatarDisplay">🤖</div>
+            <h2 class="user-name" id="userName">جاري التحميل...</h2>
+            <div class="user-level" id="userLevel">المستوى 1</div>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="statXP">0</div>
+                    <div class="stat-label">نقاط الخبرة</div>
                 </div>
-                <div style="text-align: center;">
-                    <p id="profileCoins" style="font-size: 1.5rem; font-weight: 700; color: var(--reward);">0</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">كوينز</p>
+                <div class="stat-box">
+                    <div class="stat-value" id="statCoins">0</div>
+                    <div class="stat-label">العملات</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statLessons">0</div>
+                    <div class="stat-label">دروس مكتملة</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statProjects">0</div>
+                    <div class="stat-label">مشاريع</div>
                 </div>
             </div>
         </div>
 
-        <h3 style="color: var(--text-main); margin-bottom: 20px;">الشارات المكتسبة</h3>
-        <div id="badgesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
-        </div>
+        <h3 class="section-title"><i class="ri-medal-line"></i> الشارات المكتسبة</h3>
+        <div class="badges-grid" id="badgesContainer"></div>
     </div>
 
     <script type="module">
         import { auth, db, doc, getDoc } from './js/app.js';
 
         const avatarMap = {
-            'astronaut': '👩‍🚀',
-            'fox': '🦊',
-            'robot': '🤖',
-            'dragon': '🐉',
-            'default': '<i class="ri-user-smile-line"></i>'
+            'crown': '👑', 'glasses': '👓', 'stars': '✨', 'suit': '🧥', 'default': '🤖'
         };
 
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                const data = userSnap.data() || {};
+                const snap = await getDoc(userRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('userName').innerText = data.displayName || user.email.split('@')[0];
+                    document.getElementById('statXP').innerText = data.xp || 0;
+                    document.getElementById('statCoins').innerText = data.coins || 0;
+                    
+                    const level = Math.floor((data.xp || 0) / 100) + 1;
+                    document.getElementById('userLevel').innerText = 'المستوى ' + level;
 
-                document.getElementById('displayName').innerText = data.displayName || "بطل CodeQuest";
-                document.getElementById('profileXP').innerText = data.xp || 0;
-                document.getElementById('profileCoins').innerText = data.coins || 0;
-
-                const activeAvatar = data.activeAvatar || 'default';
-                const avatarEl = document.getElementById('avatarDisplay');
-                if (avatarMap[activeAvatar].includes('<i')) {
-                    avatarEl.innerHTML = avatarMap[activeAvatar];
-                } else {
-                    avatarEl.innerText = avatarMap[activeAvatar];
-                    avatarEl.style.background = 'transparent';
-                }
-
-                const badgesContainer = document.getElementById('badgesContainer');
-                if (data.xp >= 50) {
-                    badgesContainer.innerHTML += `<div class="card" style="text-align: center; padding: 15px;"><div style="font-size: 2rem; margin-bottom: 10px;">🚀</div><p style="font-size: 0.8rem; font-weight: 600;">البداية</p></div>`;
-                }
-                if (data.xp >= 200) {
-                    badgesContainer.innerHTML += `<div class="card" style="text-align: center; padding: 15px;"><div style="font-size: 2rem; margin-bottom: 10px;">🔥</div><p style="font-size: 0.8rem; font-weight: 600;">مثابر</p></div>`;
-                }
-                if (data.inventory && data.inventory.length > 0) {
-                    badgesContainer.innerHTML += `<div class="card" style="text-align: center; padding: 15px;"><div style="font-size: 2rem; margin-bottom: 10px;">🛍️</div><p style="font-size: 0.8rem; font-weight: 600;">متسوق</p></div>`;
+                    const inventory = data.inventory || [];
+                    if (inventory.includes('crown')) document.getElementById('avatarDisplay').innerText = '👑';
+                    else if (inventory.includes('suit')) document.getElementById('avatarDisplay').innerText = '🧥';
+                    
+                    renderBadges(data);
                 }
             }
         });
+
+        function renderBadges(data) {
+            const container = document.getElementById('badgesContainer');
+            container.innerHTML = '';
+            const badges = [];
+            
+            if ((data.xp || 0) >= 50) badges.push({ icon: '🚀', name: 'البداية' });
+            if ((data.xp || 0) >= 200) badges.push({ icon: '🔥', name: 'مثابر' });
+            if ((data.inventory || []).length > 0) badges.push({ icon: '🛍️', name: 'متسوق' });
+            if ((data.xp || 0) >= 500) badges.push({ icon: '🏆', name: 'محترف' });
+
+            if (badges.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1;">أكمل دروساً أكثر للحصول على شارات!</p>';
+            }
+
+            badges.forEach(b => {
+                const div = document.createElement('div');
+                div.className = 'badge-item';
+                div.innerHTML = `<div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div>`;
+                container.appendChild(div);
+            });
+        }
     </script>
 </body>
 </html>

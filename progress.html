@@ -3,149 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التقدم | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
+    <title>تقدمي | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
-        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
-
-        .progress-container { display: flex; gap: 25px; width: 100%; max-width: 800px; flex-wrap: wrap; }
+        body { background: var(--bg-deep); padding: var(--space-l); }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
+        .header h1 { font-size: 2rem; color: var(--text-primary); }
         
-        /* الدائرة */
-        .circle-card { flex: 1; min-width: 250px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .circular-progress { position: relative; width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--primary) 0%, var(--primary) 0%, #333 0%); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; transition: 1s; }
-        .circular-progress::before { content: ""; position: absolute; width: 130px; height: 130px; border-radius: 50%; background: #0a1128; }
-        .progress-value { position: relative; font-size: 2rem; font-weight: bold; color: #fff; }
-        .circle-card h3 { margin: 0; color: #fff; font-size: 1.2rem; }
-        .circle-card p { margin: 5px 0 0; color: var(--text-muted); font-size: 0.9rem; }
-
-        /* الإحصائيات */
-        .stats-card { flex: 2; min-width: 300px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        .stat-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
-        .stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-m); }
+        .card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); }
         
-        .stat-name { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 1.1rem; }
-        .stat-icon { color: var(--primary); font-size: 1.4rem; }
-        .stat-num { font-size: 1.5rem; font-weight: bold; color: #fff; }
+        .gauge-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .gauge { width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--primary) 65%, var(--border-soft) 0); display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: var(--space-m); }
+        .gauge::before { content: ''; position: absolute; width: 120px; height: 120px; background: var(--bg-panel); border-radius: 50%; }
+        .gauge-value { position: relative; font-size: 2rem; font-weight: 900; color: var(--text-primary); }
         
-        .badges-grid { display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
-        .badge { width: 60px; height: 60px; border-radius: 15px; background: rgba(0,0,0,0.5); border: 1px solid #333; display: flex; justify-content: center; align-items: center; font-size: 2rem; filter: grayscale(1); transition: 0.3s; }
-        .badge.unlocked { filter: grayscale(0); border-color: var(--gold); box-shadow: 0 0 10px rgba(255,215,0,0.3); background: rgba(255,215,0,0.1); }
+        .chart-container { height: 200px; display: flex; align-items: flex-end; justify-content: space-between; padding-top: var(--space-m); }
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 12%; }
+        .bar { width: 100%; background: var(--primary); border-radius: var(--radius-button) var(--radius-button) 0 0; transition: height 1s ease; }
+        .bar-label { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .stats-list { display: flex; flex-direction: column; gap: var(--space-s); margin-top: var(--space-m); }
+        .stat-row { display: flex; justify-content: space-between; padding: 15px; background: var(--bg-deep); border-radius: var(--radius-button); border: 1px solid var(--border-soft); color: var(--text-primary); font-weight: 600; }
+        
+        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
     </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
-    <div class="header">
-        <a href="dashboard.html" class="btn-back">← رجوع</a>
-        <h1>📊 لوحة التقدم</h1>
-    </div>
-
-    <div class="progress-container">
-        <div class="circle-card">
-            <div class="circular-progress" id="circleProgress">
-                <span class="progress-value" id="progressPercent">0%</span>
-            </div>
-            <h3>التقدم الكلي</h3>
-            <p>في جميع المسارات</p>
+    <div class="container">
+        <div class="header">
+            <h1>تقدمك في التعلم</h1>
+            <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
         </div>
 
-        <div class="stats-card">
-            <div class="stat-row">
-                <div class="stat-name"><i class="ri-star-fill stat-icon" style="color:var(--gold);"></i> إجمالي النقاط (XP)</div>
-                <div class="stat-num" id="totalXP">0</div>
+        <div class="dashboard-grid">
+            <div class="card gauge-container">
+                <h3 style="color: var(--text-secondary); margin-bottom: 20px;">نسبة الإنجاز</h3>
+                <div class="gauge">
+                    <div class="gauge-value" id="overallProgress">0%</div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">استمر في التعلم للوصول إلى 100%</p>
             </div>
-            <div class="stat-row">
-                <div class="stat-name"><i class="ri-book-open-line stat-icon"></i> الدروس المكتملة</div>
-                <div class="stat-num" id="lessonsDone">0</div>
+
+            <div class="card">
+                <h3 style="color: var(--text-secondary); margin-bottom: 10px;">تطور الأداء الأسبوعي</h3>
+                <div class="chart-container">
+                    <div class="bar-wrapper"><div class="bar" style="height: 20%;"></div><span class="bar-label">السبت</span></div>
+                    <div class="bar-wrapper"><div class="bar" style="height: 40%;"></div><span class="bar-label">الأحد</span></div>
+                    <div class="bar-wrapper"><div class="bar" style="height: 60%;"></div><span class="bar-label">الإثنين</span></div>
+                    <div class="bar-wrapper"><div class="bar" style="height: 35%;"></div><span class="bar-label">الثلاثاء</span></div>
+                    <div class="bar-wrapper"><div class="bar" style="height: 80%;"></div><span class="bar-label">الأربعاء</span></div>
+                    <div class="bar-wrapper"><div class="bar" style="height: 50%;"></div><span class="bar-label">الخميس</span></div>
+                    <div class="bar-wrapper"><div class="bar" style="height: 90%;"></div><span class="bar-label">الجمعة</span></div>
+                </div>
             </div>
-            <div class="stat-row">
-                <div class="stat-name"><i class="ri-gamepad-line stat-icon"></i> الألعاب الملعوبة</div>
-                <div class="stat-num">0</div>
-            </div>
-            <div class="stat-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-                <div class="stat-name"><i class="ri-medal-line stat-icon" style="color:#8b5cf6;"></i> الإنجازات والشارات</div>
-                <div class="badges-grid">
-                    <div class="badge unlocked" title="أول كود">🚀</div>
-                    <div class="badge unlocked" title="بطل الألعاب">🎮</div>
-                    <div class="badge" title="مبرمج محترف">💻</div>
-                    <div class="badge" title="متفوق">🏆</div>
+
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3 style="color: var(--text-secondary); margin-bottom: 10px;">إحصائياتك التفصيلية</h3>
+                <div class="stats-list">
+                    <div class="stat-row"><span><i class="ri-book-open-line" style="color: var(--primary);"></i> الدروس المكتملة</span> <span id="lessonsStat">0</span></div>
+                    <div class="stat-row"><span><i class="ri-code-s-slash-line" style="color: var(--accent-purple);"></i> التمارين الناجحة</span> <span id="exercisesStat">0</span></div>
+                    <div class="stat-row"><span><i class="ri-folder-code-line" style="color: var(--accent-orange);"></i> المشاريع المبنية</span> <span id="projectsStat">0</span></div>
+                    <div class="stat-row"><span><i class="ri-gamepad-line" style="color: var(--accent-green);"></i> الألعاب المكتملة</span> <span id="gamesStat">0</span></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            Auth.init(async (logged) => {
-                if (!logged) { window.location.href = 'login.html'; return; }
-                
-                const uid = Auth.getUserId();
-                try {
-                    const doc = await firebase.firestore().collection('users').doc(uid).get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const points = data.points || 0;
-                        
-                        // تحديث الإحصائيات
-                        document.getElementById('totalXP').innerText = points;
-                        
-                        // حساب الدروس المكتملة (بافتراض كل 50 نقطة = درس)
-                        const lessons = Math.floor(points / 50);
-                        document.getElementById('lessonsDone').innerText = lessons;
-                        
-                        // حساب النسبة المئوية (بافتراض أن الهدف 1000 نقطة)
-                        const targetPoints = 1000;
-                        let percent = Math.min(Math.floor((points / targetPoints) * 100), 100);
-                        
-                        document.getElementById('progressPercent').innerText = percent + '%';
-                        document.getElementById('circleProgress').style.background = `conic-gradient(var(--primary) ${percent}%, #333 ${percent}%)`;
-                    }
-                } catch(e) { console.error(e); }
-            });
-        });
-    </script>
+    <script type="module">
+        import { auth, db, doc, getDoc } from './js/app.js';
 
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const xp = data.xp || 0;
+                    const progressPercent = Math.min(Math.round((xp / 500) * 100), 100);
+                    
+                    document.getElementById('overallProgress').innerText = progressPercent + '%';
+                    document.querySelector('.gauge').style.background = `conic-gradient(var(--primary) ${progressPercent}%, var(--border-soft) 0)`;
+                    
+                    document.getElementById('lessonsStat').innerText = Math.floor(xp / 50);
+                    document.getElementById('exercisesStat').innerText = Math.floor(xp / 70);
+                    document.getElementById('projectsStat').innerText = (data.inventory || []).length > 0 ? 1 : 0;
+                    document.getElementById('gamesStat').innerText = Math.floor(xp / 100);
                 }
-            });
+            }
         });
     </script>
 </body>

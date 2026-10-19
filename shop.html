@@ -1,160 +1,112 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المتجر | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; min-height: 100vh; padding-bottom: 80px; background: #050914; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(10, 17, 40, 0.95); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
-        .top-bar a { color: var(--primary); text-decoration: none; font-weight: bold; }
-        .top-bar h1 { margin: 0; font-size: 1.3rem; color: var(--gold); }
-        
-        .wallet { background: rgba(0,0,0,0.5); border: 1px solid var(--gold); padding: 8px 15px; border-radius: 12px; color: var(--gold); font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box;}
-        @media(min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
-        
-        .item-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px 15px; text-align: center; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
-        .item-card:hover { border-color: var(--gold); transform: translateY(-5px); }
-        .item-icon { font-size: 3rem; margin-bottom: 10px; }
-        .item-name { font-weight: bold; color: #fff; margin-bottom: 5px; }
-        .item-price { color: var(--gold); font-size: 0.9rem; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
-        .btn-buy { background: var(--gold); color: #000; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-buy:disabled { background: #333; color: #888; cursor: not-allowed; }
-        
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 17, 40, 0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass-border); z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: bold; }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 4px; }
-        .nav-item.active { color: var(--gold); }
+        body { background: var(--bg-deep); padding: var(--space-l); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
+        .header h1 { font-size: 2rem; color: var(--text-primary); }
+        .balance { display: flex; align-items: center; gap: 10px; background: var(--bg-panel); padding: 10px 20px; border-radius: var(--radius-pill); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-size: 1.2rem; font-weight: 700; }
+        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-m); }
+        .store-item { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); text-align: center; transition: 0.3s; display: flex; flex-direction: column; }
+        .store-item:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: var(--shadow-card); }
+        .item-icon { font-size: 4rem; margin-bottom: var(--space-s); }
+        .item-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-xs); }
+        .item-price { color: var(--accent-yellow); font-weight: 700; font-size: 1.1rem; margin-bottom: var(--space-m); display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-buy { width: 100%; padding: 12px; border-radius: var(--radius-button); border: none; background: linear-gradient(135deg, var(--primary), var(--primary-grad-2)); color: var(--bg-deep); font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; font-family: var(--font-arabic); margin-top: auto; }
+        .btn-buy:hover { filter: brightness(1.1); }
+        .btn-buy:disabled { background: var(--border-soft); color: var(--text-muted); cursor: not-allowed; }
     </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
-    
-    <header class="top-header">
-        <a href="dashboard.html" class="btn-icon"><i class="ri-arrow-right-line"></i></a>
-        <h1 style="font-size:1.1rem; margin:0;">المتجر</h1>
-        <div style="width: 40px;"></div>
-    </header>
+    <div class="header">
+        <div>
+            <h1>متجر كودي</h1>
+            <p style="color: var(--text-secondary);">طوّر شخصيتك وتميز في الفضاء!</p>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div class="balance"><i class="ri-coins-fill"></i> <span id="userCoins">0</span></div>
+            <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i></a>
+        </div>
+    </div>
 
+    <div class="store-grid" id="storeGrid"></div>
 
-    <div class="grid" id="shopGrid"></div>
+    <script type="module">
+        import { auth, db, doc, getDoc, updateDoc, increment } from './js/app.js';
+        import { showToast } from './js/ui.js';
 
-    
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item active"><i class="ri-home-4-line"></i><span>الرئيسية</span></a>
-        <a href="languages.html" class="nav-item"><i class="ri-book-open-line"></i><span>التعلم</span></a>
-        <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="shop.html" class="nav-item active"><i class="ri-shopping-bag-3-line"></i><span>المتجر</span></a>
-        <a href="profile.html" class="nav-item"><i class="ri-user-3-line"></i><span>ملفي</span></a>
-    </nav>
-
-
-    <script>
-        // كتالوج المنتجات (أسعار ثابتة)
         const items = [
-            { id: 'crown', name: 'تاج ملكي', icon: '👑', price: 150 },
-            { id: 'cat', name: 'قطة أليفة', icon: '🐱', price: 200 },
-            { id: 'star', name: 'نجمة سحرية', icon: '⭐', price: 100 },
-            { id: 'glasses', name: 'نضارة كود', icon: '👓', price: 80 },
-            { id: 'rocket', name: 'صاروخ', icon: '🚀', price: 300 },
-            { id: 'shield', name: 'درع', icon: '🛡️', price: 250 }
+            { id: 'crown', name: 'تاج الملك', icon: '👑', price: 200 },
+            { id: 'glasses', name: 'نظارة كودي', icon: '👓', price: 150 },
+            { id: 'stars', name: 'تأثير النجوم', icon: '✨', price: 100 },
+            { id: 'suit', name: 'زي المغامر', icon: '🧥', price: 300 }
         ];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            Auth.init(async (logged) => {
-                if (!logged) { window.location.href = 'login.html'; return; }
-                const uid = Auth.getUserId();
-                const doc = await firebase.firestore().collection('users').doc(uid).get();
-                
-                let currentCoins = doc.data().coins || 0; // قراءة العملات
-                let inventory = doc.data().inventory || [];
-                document.getElementById('userCoins').innerText = currentCoins;
-                
-                renderShop(currentCoins, inventory);
-            });
+        let currentUser = null;
+        let userCoins = 0;
+        let userInventory = [];
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
+                if (snap.exists()) {
+                    userCoins = snap.data().coins || 0;
+                    userInventory = snap.data().inventory || [];
+                    document.getElementById('userCoins').innerText = userCoins;
+                    renderStore();
+                }
+            }
         });
 
-        function renderShop(coins, inventory) {
-            const grid = document.getElementById('shopGrid');
+        function renderStore() {
+            const grid = document.getElementById('storeGrid');
             grid.innerHTML = '';
             items.forEach(item => {
-                const isBought = inventory.includes(item.id);
-                const canAfford = coins >= item.price;
-                grid.innerHTML += `
-                    <div class="item-card">
-                        <div class="item-icon">${item.icon}</div>
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-price"><i class="ri-coin-line"></i> ${item.price}</div>
-                        <button class="btn-buy" onclick="buyItem('${item.id}', ${item.price})" ${isBought || !canAfford ? 'disabled' : ''}>
-                            ${isBought ? 'تم الشراء ✅' : (canAfford ? 'شراء' : 'عملات غير كافية')}
-                        </button>
-                    </div>
+                const owned = userInventory.includes(item.id);
+                const div = document.createElement('div');
+                div.className = 'store-item';
+                div.innerHTML = `
+                    <div class="item-icon">${item.icon}</div>
+                    <div class="item-title">${item.name}</div>
+                    <div class="item-price"><i class="ri-coins-fill"></i> ${item.price}</div>
+                    <button class="btn-buy" ${owned ? 'disabled' : ''} onclick="buyItem('${item.id}', ${item.price})">
+                        ${owned ? 'تم الشراء' : 'شراء الآن'}
+                    </button>
                 `;
+                grid.appendChild(div);
             });
         }
 
-        async function buyItem(itemId, price) {
-            const uid = Auth.getUserId();
-            const userRef = firebase.firestore().collection('users').doc(uid);
+        window.buyItem = async (itemId, price) => {
+            if (userCoins < price) {
+                showToast('عذراً، لا تمتلك عملات كافية!', 'error');
+                return;
+            }
             try {
-                await firebase.firestore().runTransaction(async (transaction) => {
-                    const doc = await transaction.get(userRef);
-                    let coins = doc.data().coins || 0;
-                    let inventory = doc.data().inventory || [];
-                    
-                    if (coins < price) throw "عملاتك لا تكفي!";
-                    if (inventory.includes(itemId)) throw "لقد اشتريت هذا بالفعل!";
-                    
-                    // خصم العملات فقط، بدون المساس بالنقاط (XP)
-                    transaction.update(userRef, {
-                        coins: coins - price,
-                        inventory: [...inventory, itemId]
-                    });
+                const userRef = doc(db, "users", currentUser.uid);
+                const newInventory = [...userInventory, itemId];
+                await updateDoc(userRef, {
+                    coins: increment(-price),
+                    inventory: newInventory
                 });
-                alert("🎉 مبروك! تم الشراء بنجاح.");
-                window.location.reload();
-            } catch (e) { alert("❌ " + e); }
-        }
-    </script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
+                userCoins -= price;
+                userInventory = newInventory;
+                document.getElementById('userCoins').innerText = userCoins;
+                showToast('تم الشراء بنجاح! 🎉', 'success');
+                renderStore();
+            } catch (error) {
+                showToast('حدث خطأ أثناء الشراء.', 'error');
+            }
+        };
     </script>
 </body>
 </html>
