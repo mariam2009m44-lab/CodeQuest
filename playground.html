@@ -77,6 +77,7 @@
             <select id="lang-select" class="lang-select" onchange="changeLanguage()">
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
+                <option value="cpp">C++</option>
             </select>
         </div>
         <button class="run-btn" id="run-btn" onclick="runCode()">
@@ -96,6 +97,7 @@
     </div>
 
     <!-- CodeMirror Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
@@ -121,7 +123,9 @@
         // دالة تغيير اللغة
         function changeLanguage() {
             const lang = document.getElementById('lang-select').value;
-            editor.setOption("mode", lang);
+            let mode = lang;
+            if (lang === 'cpp') mode = 'text/x-c++src';
+            editor.setOption("mode", mode);
             document.getElementById('filename').innerText = lang === 'javascript' ? 'main.js' : 'main.py';
             editor.setValue(defaultCode[lang]);
         }
