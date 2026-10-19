@@ -3,26 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeQuest | عالم البرمجة</title>
+    <title>CodeQuest | اكتشف عالم البرمجة</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* كل التنسيقات هنا معزولة تماماً */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: #F8FAFC; 
+            color: #1E293B; 
+            line-height: 1.6; 
+            overflow-x: hidden;
+        }
+        a { text-decoration: none; }
+        
+        /* Navbar */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 5%; background: white; border-bottom: 1px solid #E2E8F0;
+        }
+        .logo { font-size: 1.8rem; font-weight: 900; color: #4F46E5; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 15px; align-items: center; }
+        .btn-login { color: #4F46E5; font-weight: 700; padding: 10px 20px; border-radius: 8px; transition: 0.3s; }
+        .btn-login:hover { background: #EEF2FF; }
+        .btn-start { background: #4F46E5; color: white; padding: 10px 25px; border-radius: 8px; font-weight: 700; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); transition: 0.3s; }
+        .btn-start:hover { background: #4338CA; transform: translateY(-2px); }
+
+        /* Hero Section */
+        .hero {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 80px 10%; max-width: 1200px; margin: 0 auto; gap: 40px;
+        }
+        .hero-text { max-width: 550px; }
+        .hero-badge { display: inline-block; background: #EEF2FF; color: #4F46E5; padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 0.9rem; margin-bottom: 20px; }
+        .hero h1 { font-size: 3.5rem; font-weight: 900; line-height: 1.2; margin-bottom: 20px; }
+        .hero h1 span { color: #4F46E5; }
+        .hero p { font-size: 1.2rem; color: #64748B; margin-bottom: 30px; }
+        .hero-btn { display: inline-block; background: #4F46E5; color: white; padding: 16px 36px; border-radius: 12px; font-size: 1.2rem; font-weight: 700; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); transition: 0.3s; }
+        .hero-btn:hover { background: #4338CA; transform: translateY(-3px); }
+        
+        .hero-visual { flex: 1; display: flex; justify-content: center; }
+        .hero-img-box { 
+            width: 400px; height: 400px; background: linear-gradient(135deg, #EEF2FF, #E0E7FF); 
+            border-radius: 30px; display: flex; justify-content: center; align-items: center; 
+            font-size: 10rem; color: #4F46E5; box-shadow: 0 20px 40px rgba(0,0,0,0.05); 
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hero { flex-direction: column; text-align: center; padding: 40px 5%; }
+            .hero h1 { font-size: 2.5rem; }
+            .navbar { flex-direction: column; gap: 15px; }
+            .hero-img-box { width: 300px; height: 300px; font-size: 7rem; }
+        }
+    </style>
 </head>
-<body class="light-mode">
-    <nav class="light-nav">
-        <div class="logo-light"><i class="ri-code-box-fill"></i> CodeQuest</div>
-        <div style="display: flex; gap: 15px;">
-            <a href="login.html" class="btn-outline-light">تسجيل الدخول</a>
-            <a href="signup.html" class="btn-primary-light">ابدأ الآن</a>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><i class="ri-code-box-fill"></i> CodeQuest</div>
+        <div class="nav-links">
+            <a href="login.html" class="btn-login">تسجيل الدخول</a>
+            <a href="signup.html" class="btn-start">إنشاء حساب جديد</a>
         </div>
     </nav>
-    <section class="hero-light">
-        <div>
-            <h1>اكتشف عالم<br><span>البرمجة مع كودي!</span></h1>
+
+    <main class="hero">
+        <div class="hero-text">
+            <span class="hero-badge"><i class="ri-rocket-line"></i> مصمم للأبطال الصغار</span>
+            <h1>اكتشف عالم <span>البرمجة مع كودي!</span></h1>
             <p>انضم إلى رحلة تعليمية تفاعلية لتعلم لغات البرمجة، بناء الألعاب، وحل الألغاز. مصممة للأطفال من 8 إلى 14 سنة.</p>
-            <a href="signup.html" class="btn-primary-light" style="font-size: 1.2rem; padding: 15px 30px;">ابدأ التعلم الآن <i class="ri-arrow-left-line"></i></a>
+            <a href="signup.html" class="hero-btn">ابدأ التعلم الآن <i class="ri-arrow-left-line"></i></a>
         </div>
-        <div class="hero-img-light"><i class="ri-robot-2-fill"></i></div>
-    </section>
+        <div class="hero-visual">
+            <div class="hero-img-box">
+                <i class="ri-robot-2-fill"></i>
+            </div>
+        </div>
+    </main>
+
 </body>
 </html>
