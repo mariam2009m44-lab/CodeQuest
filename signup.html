@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css?v=3">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-deep); background-image: radial-gradient(circle at center, rgba(118, 87, 255, 0.15), transparent 50%); }
+        .auth-card { background: var(--bg-card); padding: 40px; border-radius: var(--radius-card); box-shadow: var(--shadow-card); width: 100%; max-width: 420px; text-align: center; border: 1px solid var(--border-soft); }
+        .auth-card h2 { margin-bottom: var(--space-l); color: var(--primary); font-size: 1.8rem; font-weight: 900; }
+        .form-group { margin-bottom: var(--space-m); text-align: right; }
+        .form-group label { display: block; margin-bottom: var(--space-xs); font-weight: 700; color: var(--text-primary); font-size: 0.95rem; }
+        .auth-links { margin-top: var(--space-m); font-size: 0.9rem; color: var(--text-secondary); }
+        .auth-links a { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <h2>انضم إلينا!</h2>
+        <form id="signupForm">
+            <div class="form-group">
+                <label>اسم البطل</label>
+                <input type="text" id="name" class="input-field" placeholder="مريم" required>
+            </div>
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="email" class="input-field" placeholder="example@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="password" class="input-field" placeholder="********" required minlength="6">
+            </div>
+            <button type="submit" id="signupBtn" class="btn-primary" style="width: 100%; margin-top: var(--space-s); font-size: 1.1rem; padding: 14px;">إنشاء الحساب</button>
+        </form>
+        <div class="auth-links">
+            لديك حساب بالفعل؟ <a onclick="window.location.href='login.html'">سجل دخول</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, doc, setDoc } from './js/app.js';
+        import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { showToast } from './js/ui.js';
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('signupBtn');
+
+            btn.disabled = true;
+            btn.innerText = 'جاري الإنشاء...';
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                await updateProfile(user, { displayName: name });
+                
+                await setDoc(doc(db, "users", user.uid), {
+                    displayName: name,
+                    email: email,
+                    xp: 0,
+                    coins: 500,
+                    inventory: [],
+                    activeAvatar: 'cody'
+                });
+
+                showToast('تم إنشاء الحساب بنجاح!', 'success');
+                setTimeout(() => window.location.href = 'avatar.html', 1000);
+            } catch (error) {
+                showToast('حدث خطأ. قد يكون البريد مستخدم بالفعل.', 'error');
+                btn.disabled = false;
+                btn.innerText = 'إنشاء الحساب';
+            }
+        });
+    </script>
+</body>
+</html>
