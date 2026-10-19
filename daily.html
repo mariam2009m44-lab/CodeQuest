@@ -96,14 +96,14 @@
 
                     // تحديث النقاط والتاريخ بشكل آمن
                     transaction.update(userRef, {
-                        points: firebase.firestore.FieldValue.increment(50),
+                        coins: firebase.firestore.FieldValue.increment(50),
                         lastDailyDate: today
                     });
                 });
                 
                 // لو نجح الـ Transaction
                 confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-                alert("🎉 مبروك! حصلت على 50 نقطة.");
+                alert("🎉 مبروك! حصلت على 50 عملة.");
                 window.location.href = 'dashboard.html';
 
             } catch (e) {
