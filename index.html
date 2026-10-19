@@ -1,52 +1,733 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cody Coding Academy | ابدأ البرمجة من الصفر</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cody | أكاديمية البرمجة للأطفال</title>
   <style>
-    :root { --blue: #1765ed; --text: #14243e; --muted: #52627a; --line: #e4eaf3; --soft: #f5f8fe; }
-    * { box-sizing: border-box; }
-    body { margin: 0; color: var(--text); background: #fff; font-family: Cairo, sans-serif; line-height: 1.9; }
-    a { color: inherit; text-decoration: none; }
-    .container { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
-    .nav { display: flex; justify-content: space-between; align-items: center; padding-block: 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 16px; }
-    .brand { font-weight: 900; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
-    .mark { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--blue); color: white; font-weight: 900; font-size: 1.5rem; }
-    .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .btn { display: inline-flex; justify-content: center; padding: 10px 20px; border: 1px solid var(--line); border-radius: 12px; font-weight: 700; transition: 0.2s; }
-    .btn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
-    .btn.primary:hover { background: #1152c9; }
-    .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 50px; align-items: center; padding-block: 75px; }
-    .hero h1 { margin: 12px 0 20px; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.45; }
-    .hero h1 span { color: var(--blue); }
-    .hero p { color: var(--muted); font-size: 1.1rem; }
-    .visual { min-height: 330px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 32px; background: linear-gradient(145deg, #f7faff, #edf3ff); padding: 30px; text-align: center; font-size: 8rem; color: var(--blue); }
-    @media (max-width: 760px) { .hero { grid-template-columns: 1fr; padding-block: 40px; text-align: center; } .nav { justify-content: center; } }
+    :root {
+      --blue: #2878ff;
+      --purple: #9561ff;
+      --navy: #101c46;
+      --muted: #7180a5;
+      --white: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--navy);
+      background:
+        radial-gradient(ellipse at 5% 20%, #e4efff 0, transparent 32%),
+        radial-gradient(ellipse at 90% 70%, #f0e8ff 0, transparent 30%),
+        #fbfcff;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    .container {
+      width: min(1200px, 90%);
+      margin: auto;
+    }
+
+    /* Navigation */
+    header { padding-top: 14px; }
+
+    nav {
+      min-height: 70px;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background: rgba(255,255,255,.86);
+      border: 1px solid #edf1fa;
+      border-radius: 40px;
+      box-shadow: 0 10px 40px #243d6b08;
+      position: relative;
+      z-index: 5;
+    }
+
+    .logo {
+      font-size: 29px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      direction: ltr;
+      white-space: nowrap;
+    }
+
+    .logo span { color: var(--blue); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-links a {
+      padding: 12px 17px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: .25s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: #eaf1ff;
+      color: var(--blue);
+    }
+
+    .login {
+      border: 1.5px solid #a9c2ff;
+      color: var(--blue);
+      padding: 12px 20px;
+      border-radius: 28px;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 510px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 30px;
+      padding: 50px 0 55px;
+    }
+
+    .hero-content { text-align: center; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: var(--blue);
+      border: 1px solid #e5edff;
+      border-radius: 30px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow span {
+      width: 8px;
+      height: 8px;
+      background: #48d8ad;
+      border-radius: 50%;
+    }
+
+    h1 {
+      font-size: clamp(38px, 5vw, 66px);
+      line-height: 1.35;
+      letter-spacing: -2px;
+      font-weight: 950;
+    }
+
+    .gradient-text {
+      background: linear-gradient(100deg, #00a9ef, #4269ff, #a34dff);
+      color: transparent;
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .hero-description {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 2;
+      max-width: 480px;
+      margin: 18px auto 25px;
+    }
+
+    .primary-button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      background: linear-gradient(110deg, #159eff, #a044f5);
+      padding: 16px 34px;
+      border-radius: 35px;
+      font-weight: 800;
+      font-size: 16px;
+      box-shadow: 0 12px 28px #6a75ff30;
+      transition: transform .25s, box-shadow .25s;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 35px #6a75ff45;
+    }
+
+    .trust-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 22px;
+      margin-top: 28px;
+      color: #58698f;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .trust-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #e8f4ff;
+      font-size: 17px;
+    }
+
+    /* Cody character - CSS only */
+    .character-area {
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .blob {
+      position: absolute;
+      width: 340px;
+      height: 310px;
+      background: linear-gradient(140deg, #dceaff, #e9ddff);
+      border-radius: 45% 55% 55% 45% / 45% 40% 60% 55%;
+      z-index: -1;
+      animation: blob 8s ease-in-out infinite;
+    }
+
+    .spark {
+      position: absolute;
+      font-size: 36px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .spark.one { top: 45px; right: 12%; }
+    .spark.two { bottom: 85px; left: 8%; animation-delay: 1s; }
+    .spark.three { top: 100px; left: 9%; animation-delay: .5s; }
+
+    .cody {
+      width: 235px;
+      height: 300px;
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+      margin-top: 24px;
+    }
+
+    .antenna {
+      position: absolute;
+      width: 7px;
+      height: 38px;
+      background: #7389ff;
+      border-radius: 8px;
+      top: -17px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .antenna::before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #48dcff, #8665ff);
+      top: -15px;
+      left: -7px;
+      box-shadow: 0 0 22px #7b9bff80;
+    }
+
+    .head {
+      position: absolute;
+      top: 12px;
+      left: 10px;
+      width: 215px;
+      height: 170px;
+      border: 5px solid #d8e1ff;
+      border-radius: 48% 48% 43% 43%;
+      background: linear-gradient(145deg, #fff, #e7edff);
+      box-shadow: 0 18px 35px #445b9c20, inset 0 -7px 12px #c4d1ff40;
+      z-index: 2;
+    }
+
+    .ear {
+      position: absolute;
+      width: 25px;
+      height: 43px;
+      border-radius: 12px;
+      top: 75px;
+      background: #aebdff;
+    }
+
+    .ear.left { left: -16px; }
+    .ear.right { right: -16px; }
+
+    .eye {
+      position: absolute;
+      top: 57px;
+      width: 42px;
+      height: 48px;
+      background: #25396e;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 5px #d9e2ff;
+    }
+
+    .eye::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      top: 8px;
+      left: 9px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    .eye.left { left: 38px; }
+    .eye.right { right: 38px; }
+
+    .cheek {
+      position: absolute;
+      top: 112px;
+      width: 25px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffb9d4;
+      opacity: .8;
+    }
+
+    .cheek.left { left: 20px; }
+    .cheek.right { right: 20px; }
+
+    .smile {
+      position: absolute;
+      width: 46px;
+      height: 22px;
+      border-bottom: 5px solid #5269a3;
+      border-radius: 0 0 50% 50%;
+      top: 112px;
+      left: 80px;
+    }
+
+    .body-bot {
+      position: absolute;
+      width: 145px;
+      height: 115px;
+      bottom: 0;
+      left: 45px;
+      border: 5px solid #d8e1ff;
+      border-radius: 35px 35px 25px 25px;
+      background: linear-gradient(145deg, #fff, #e8efff);
+      box-shadow: 0 20px 30px #445b9c18;
+    }
+
+    .chest-code {
+      position: absolute;
+      top: 34px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 30px;
+      font-weight: 900;
+      color: #637eff;
+      direction: ltr;
+    }
+
+    .arm {
+      position: absolute;
+      width: 28px;
+      height: 77px;
+      top: 190px;
+      border: 5px solid #d8e1ff;
+      border-radius: 20px;
+      background: #f7f9ff;
+    }
+
+    .arm.left { left: 25px; transform: rotate(18deg); }
+    .arm.right { right: 20px; transform: rotate(-30deg); }
+
+    .floating-code {
+      position: absolute;
+      left: 0;
+      top: 85px;
+      background: #3e5ed9;
+      color: white;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 14px 30px #3e5ed930;
+      transform: rotate(-8deg);
+      direction: ltr;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .floating-game {
+      position: absolute;
+      right: 0;
+      bottom: 65px;
+      padding: 15px 18px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px #445b9c15;
+      font-size: 29px;
+      transform: rotate(8deg);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes blob {
+      0%, 100% { border-radius: 45% 55% 55% 45% / 45% 40% 60% 55%; }
+      50% { border-radius: 55% 45% 40% 60% / 55% 55% 45% 45%; }
+    }
+
+    /* Learning choices */
+    .learning-section {
+      padding: 35px 0 75px;
+      border-top: 1px solid #e9eef9;
+      background: #ffffff70;
+    }
+
+    .section-heading {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(27px, 3vw, 38px);
+      font-weight: 950;
+      margin-bottom: 10px;
+    }
+
+    .section-heading p {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid #ffffff;
+      border-radius: 24px;
+      padding: 25px 18px 20px;
+      text-align: center;
+      transition: transform .25s, box-shadow .25s;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 35px #344a7812;
+    }
+
+    .card:nth-child(1) { background: #f3eaff; }
+    .card:nth-child(2) { background: #e4fbf2; }
+    .card:nth-child(3) { background: #e6f5ff; }
+    .card:nth-child(4) { background: #fff2df; }
+
+    .card-icon {
+      font-size: 47px;
+      margin-bottom: 13px;
+    }
+
+    .card h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: #69799e;
+      font-size: 13px;
+      line-height: 1.9;
+      min-height: 49px;
+      margin-bottom: 15px;
+    }
+
+    .card-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 25px;
+      padding: 12px;
+      background: #ffffffb8;
+      font-size: 13px;
+      font-weight: 850;
+      transition: .2s;
+    }
+
+    .card-link:hover { background: white; }
+
+    /* About */
+    .about {
+      padding: 65px 0;
+      text-align: center;
+    }
+
+    .about p {
+      color: var(--muted);
+      max-width: 650px;
+      margin: 12px auto 22px;
+      line-height: 2;
+    }
+
+    footer {
+      border-top: 1px solid #e9eef9;
+      padding: 25px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .nav-links { gap: 0; }
+      .nav-links a { padding: 10px; }
+      .hero { gap: 10px; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .floating-code { left: -5px; }
+      .floating-game { right: -5px; }
+    }
+
+    @media (max-width: 650px) {
+      header { padding-top: 8px; }
+      nav {
+        border-radius: 22px;
+        padding: 12px 15px;
+        flex-wrap: wrap;
+      }
+
+      .logo { font-size: 24px; }
+      .login { padding: 9px 12px; font-size: 12px; }
+
+      .nav-links {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+      }
+
+      .nav-links a {
+        white-space: nowrap;
+        font-size: 12px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 38px;
+        gap: 0;
+      }
+
+      .hero-content { order: 1; }
+      .character-area {
+        order: 2;
+        min-height: 350px;
+        margin-top: 10px;
+      }
+
+      .cody { transform: scale(.88); }
+      .floating-code { left: 2%; }
+      .floating-game { right: 2%; }
+      .hero-description { font-size: 15px; }
+      .trust-row { gap: 12px; }
+      .cards { gap: 10px; }
+      .card { padding: 20px 12px; border-radius: 19px; }
+      .card h3 { font-size: 17px; }
+      .card p { font-size: 12px; }
+      .card-icon { font-size: 38px; }
+    }
+
+    @media (max-width: 380px) {
+      .cards { grid-template-columns: 1fr; }
+      .floating-code { font-size: 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    }
   </style>
 </head>
+
 <body>
   <header class="container">
-    <nav class="nav">
-      <a class="brand" href="index.html"><span class="mark">C</span> Cody Coding Academy</a>
-      <div class="actions">
-        <a class="btn" href="login.html">تسجيل الدخول</a>
-        <a class="btn primary" href="signup.html">إنشاء حساب</a>
+    <nav aria-label="القائمة الرئيسية">
+      <a class="logo" href="#home">Cody <span>&lt;/&gt;</span></a>
+
+      <div class="nav-links">
+        <a class="active" href="#home">الرئيسية</a>
+        <a href="#paths">المسارات</a>
+        <a href="#games">الألعاب</a>
+        <a href="#projects">المشاريع</a>
+        <a href="#about">حول كودي</a>
       </div>
+
+      <!-- غيّري الرابط لصفحة تسجيل الدخول عند إنشائها -->
+      <a class="login" href="login.html">تسجيل الدخول　♟</a>
     </nav>
   </header>
-  <main class="container">
-    <section class="hero">
-      <div>
-        <h1>تعلّم البرمجة من الصفر، <span>بخطوات تفهمها وتطبّقها.</span></h1>
-        <p>Cody Coding Academy منصة عربية للمبتدئين الذين يريدون فهم البرمجة، لا حفظ الأوامر فقط. تتعرف على الفكرة، تقرأ مثالًا واضحًا، ثم تكتب الكود وتجربه بنفسك.</p>
-        <div class="actions" style="margin-top: 30px;">
-          <a class="btn primary" href="signup.html" style="padding: 14px 28px; font-size: 1.1rem;">ابدأ التعلم مجانًا</a>
+
+  <main>
+    <section class="hero container" id="home">
+      <div class="hero-content">
+        <div class="eyebrow"><span></span> مغامرتك البرمجية تبدأ هنا</div>
+
+        <h1>
+          تعلّم البرمجة<br>
+          مع <span class="gradient-text">كودي</span>
+        </h1>
+
+        <p class="hero-description">
+          رحلة ممتعة ومبتكرة للأطفال لاكتشاف عالم البرمجة،
+          من خلال الألعاب التفاعلية والتحديات والمشاريع الحقيقية.
+        </p>
+
+        <a href="#paths" class="primary-button">
+          ابدأ رحلتك <span>←</span>
+        </a>
+
+        <div class="trust-row">
+          <div class="trust-item">
+            <span class="trust-icon">🛡️</span>
+            <span>بيئة آمنة للأطفال</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">⭐</span>
+            <span>تعلّم تفاعلي</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">💗</span>
+            <span>مناسب لمستويات مختلفة</span>
+          </div>
         </div>
       </div>
-      <div class="visual"><i class="ri-robot-2-fill"></i></div>
+
+      <!-- Cody مرسوم بالكامل باستخدام CSS -->
+      <div class="character-area" aria-label="شخصية كودي الروبوت">
+        <div class="blob"></div>
+        <div class="spark one">💡</div>
+        <div class="spark two">✨</div>
+        <div class="spark three">💜</div>
+
+        <div class="floating-code">
+          <span style="color:#ffb3e6">print</span>
+          <span style="color:#a8f4ce">(</span><br>
+          &nbsp; Hello, coder!<br>
+          <span style="color:#a8f4ce">)</span>
+        </div>
+
+        <div class="cody">
+          <div class="antenna"></div>
+          <div class="ear left"></div>
+          <div class="ear right"></div>
+
+          <div class="head">
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+            <div class="cheek left"></div>
+            <div class="cheek right"></div>
+            <div class="smile"></div>
+          </div>
+
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+
+          <div class="body-bot">
+            <div class="chest-code">&lt;/&gt;</div>
+          </div>
+        </div>
+
+        <div class="floating-game">🎮</div>
+      </div>
+    </section>
+
+    <section class="learning-section" id="paths">
+      <div class="container">
+        <div class="section-heading">
+          <h2>ماذا ستتعلّم؟ ✨</h2>
+          <p>اختار ما يناسبك وابدأ رحلتك في عالم البرمجة.</p>
+        </div>
+
+        <div class="cards">
+          <article class="card">
+            <div class="card-icon">🗺️</div>
+            <h3>المسارات</h3>
+            <p>اختار مسارك المناسب وتعلّم خطوة بخطوة مع كودي.</p>
+            <a class="card-link" href="paths.html">استكشف المسارات ←</a>
+          </article>
+
+          <article class="card">
+            <div class="card-icon">💻</div>
+            <h3>محرر الأكواد</h3>
+            <p>اكتب أكوادك وجرّبها بنفسك في بيئة تعلّم بسيطة.</p>
+            <a class="card-link" href="editor.html">ابدأ البرمجة ←</a>
+          </article>
+
+          <article class="card" id="games">
+            <div class="card-icon">🎮</div>
+            <h3>الألعاب</h3>
+            <p>تعلّم من خلال ألعاب وتحديات ممتعة تنمّي مهاراتك.</p>
+            <a class="card-link" href="games.html">جرّب الألعاب ←</a>
+          </article>
+
+          <article class="card" id="projects">
+            <div class="card-icon">🚀</div>
+            <h3>المشاريع</h3>
+            <p>حوّل أفكارك إلى مشاريع صغيرة وشارك إبداعك.</p>
+            <a class="card-link" href="projects.html">اكتشف المشاريع ←</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about container" id="about">
+      <div class="section-heading">
+        <h2>أهلًا بك في عالم كودي 💙</h2>
+      </div>
+      <p>
+        هنا كل فكرة ممكن تتحول إلى مشروع، وكل تحدٍ فرصة تتعلّم منها.
+        ابدأ من مستواك، وتقدّم خطوة بخطوة، واكتشف متعة صناعة التكنولوجيا.
+      </p>
+      <a href="#paths" class="primary-button">هيا نبدأ! ←</a>
     </section>
   </main>
+
+  <footer>
+    <div class="container">
+      Cody Coding Academy · نتعلّم اليوم لنصنع أفكار الغد ✨
+    </div>
+  </footer>
 </body>
 </html>
