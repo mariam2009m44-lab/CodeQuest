@@ -1,21 +1,22 @@
-# 🎮 CodeQuest - The Coding Journey
+# CodeQuest - رحلة الكود 🚀
 
-An interactive educational platform for teaching programming to children and teenagers in Arabic.
+منصة تعليمية تفاعلية لتعليم البرمجة للأطفال بالعربية.
 
-## Features
-- 3 Programming languages (JavaScript, Python, C++)
-- 5 levels per language (Interactive dialogues + Quizzes)
-- 6 educational mini-games
-- In-app store (Crowns, Pets, Effects, Titles)
-- Leaderboard (Top 3 players)
-- Badges and achievements system
-- Progress saved in Firebase (Cloud)
+## المميزات
+- **3 لغات برمجة:** JavaScript, Python, C++
+- **محرر أكواد حقيقي:** تشغيل مباشر للأكواد عبر Judge0 API.
+- **نظام مكافآت:** XP، عملات، شارات، ومتجر.
+- **أمان:** تسجيل دخول عبر Firebase Auth، وحماية البيانات عبر Firestore Rules.
+- **PWA:** يمكن تثبيت المنصة كتطبيق على الموبايل.
 
-## Technologies
-HTML5, CSS3, JavaScript, Firebase (Auth, Firestore), GSAP, Canvas Confetti, DiceBear.
+## التقنيات
+- HTML5, CSS3 (Design System), Vanilla JS (ES Modules).
+- Firebase (Auth & Firestore).
+- CodeMirror (Editor).
+- Judge0 API (Code Execution).
+- PWA (Service Worker).
 
-## Running the App
-Open `index.html` in any modern web browser.
-
-## Developer
-Mariam - Young Innovator Competition
+## التشغيل المحلي
+1. Clone the repo.
+2. Add your Firebase config in `js/firebase-config.js`.
+3. Run a local server (e.g., `python -m http.server`).

@@ -1,101 +1,85 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سيد الأسئلة | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: var(--success); font-size: 1.3rem; }
-        .game-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
-        .progress { width: 100%; height: 10px; background: #1e1e1e; border-radius: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); width: 0%; transition: 0.3s; }
-        .q-box { background: var(--glass); padding: 30px; border-radius: 20px; text-align: center; width: 100%; border: 1px solid var(--glass-border); box-sizing: border-box;}
-        .options { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
-        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; text-align: right; transition: 0.3s; }
-        .opt-btn:hover { background: rgba(16, 185, 129, 0.1); border-color: var(--success); }
-        .opt-btn.correct { background: rgba(16, 185, 129, 0.3) !important; border-color: var(--success); color:#fff; }
-        .opt-btn.wrong { background: rgba(239, 68, 68, 0.3) !important; border-color: var(--danger); color:#fff; }
+        body { background: var(--bg-deep); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: var(--space-l); }
+        .quiz-container { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-xl); max-width: 600px; width: 100%; box-shadow: var(--shadow-card); }
+        .header { display: flex; justify-content: space-between; margin-bottom: var(--space-l); color: var(--primary); font-weight: 700; }
+        .question { font-size: 1.5rem; color: var(--text-primary); margin-bottom: var(--space-l); text-align: center; }
+        .options { display: flex; flex-direction: column; gap: 15px; }
+        .option-btn { padding: 15px; background: var(--bg-deep); border: 1px solid var(--border-soft); border-radius: var(--radius-button); color: var(--text-primary); font-size: 1.1rem; cursor: pointer; font-family: var(--font-arabic); text-align: right; transition: 0.2s; }
+        .option-btn:hover { border-color: var(--primary); }
+        .option-btn.correct { background: rgba(53, 214, 163, 0.2); border-color: var(--accent-green); }
+        .option-btn.wrong { background: rgba(255, 107, 107, 0.2); border-color: var(--accent-coral); }
     </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
-    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>❓ سيد الأسئلة</h1><div style="width:50px;"></div></div>
-    <div class="game-area">
-        <div class="progress"><div class="progress-fill" id="prog"></div></div>
-        <div class="q-box"><h2 id="question">جاري التحميل...</h2><div class="options" id="options"></div></div>
+    <div class="quiz-container">
+        <div class="header">
+            <span>السؤال <span id="qNum">1</span>/5</span>
+            <span id="scoreDisplay">النقاط: 0</span>
+        </div>
+        <div class="question" id="questionText">جاري التحميل...</div>
+        <div class="options" id="optionsContainer"></div>
     </div>
-    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
+
     <script>
-        const qs = [
-            { q: "ما هي اللغة التي تعمل في المتصفح؟", o: ["Python", "JavaScript", "C++", "Java"], c: 1 },
-            { q: "أي من هذه الكلمات محجوزة في JS؟", o: ["let", "name", "value", "data"], c: 0 },
-            { q: "كيف نكتب تعليقاً في JS؟", o: ["<!-- -->", "#", "//", "/* */"], c: 2 },
-            { q: "ما هي النتيجة: typeof 5؟", o: ["'number'", "'integer'", "'float'", "'string'"], c: 0 }
+        const questions = [
+            { q: "إيه اللغة اللي بنستخدمها لبناء المواقع التفاعلية؟", options: ["Python", "JavaScript", "C++"], a: 1 },
+            { q: "إيه الأمر اللي بنستخدمه للطباعة في بايثون؟", options: ["console.log", "cout", "print"], a: 2 },
+            { q: "إيه النوع اللي بنستخدمه للأرقام الصحيحة في C++؟", options: ["int", "string", "float"], a: 0 },
+            { q: "إيه العلامة اللي بنستخدمها في الضرب؟", options: ["x", "*", "#"], a: 1 },
+            { q: "مين الروبوت اللي بيرشدنا في المنصة؟", options: ["كودي", "روبو", "نوفا"], a: 0 }
         ];
-        let cq = 0, score = 0;
-        function show() {
-            if(cq >= qs.length) return end();
-            document.getElementById('prog').style.width = ((cq/qs.length)*100) + '%';
-            const q = qs[cq]; document.getElementById('question').innerText = q.q;
-            const opts = document.getElementById('options'); opts.innerHTML = '';
-            q.o.forEach((o, i) => {
-                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = o;
-                b.onclick = () => {
-                    if(i === q.c) { b.classList.add('correct'); score++; } else { b.classList.add('wrong'); opts.children[q.c].classList.add('correct'); }
-                    setTimeout(() => { cq++; show(); }, 1000);
-                };
-                opts.appendChild(b);
+
+        let currentQ = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            if (currentQ >= questions.length) {
+                document.getElementById('questionText').innerText = "أنهيت اللعبة! نقاطك: " + score;
+                document.getElementById('optionsContainer').innerHTML = '<a href="games.html" class="btn-primary" style="text-align:center; margin-top:20px;">العودة للألعاب</a>';
+                return;
+            }
+            const q = questions[currentQ];
+            document.getElementById('qNum').innerText = currentQ + 1;
+            document.getElementById('questionText').innerText = q.q;
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx, btn, q.a);
+                container.appendChild(btn);
             });
         }
-        function end() {
-            document.getElementById('prog').style.width = '100%'; confetti({ particleCount: 150 }); setTimeout(claim, 1000);
+
+        function checkAnswer(selected, btn, correct) {
+            document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+            if (selected === correct) {
+                btn.classList.add('correct');
+                score += 20;
+                document.getElementById('scoreDisplay').innerText = "النقاط: " + score;
+            } else {
+                btn.classList.add('wrong');
+                document.querySelectorAll('.option-btn')[correct].classList.add('correct');
+            }
+            setTimeout(() => {
+                currentQ++;
+                loadQuestion();
+            }, 1500);
         }
-        async function claim() {
-            const uid = Auth.getUserId(); const pts = score * 15;
-            if(uid && pts > 0) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(pts) }); }
-            alert(`🎉 أكملت الاختبار! نتيجتك ${score} وحصلت على ${pts} نقطة.`); window.location.href = 'games.html';
-        }
-        Auth.init((l) => { if(!l) window.location.href = 'login.html'; else show(); });
+
+        loadQuestion();
     </script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-</body></html>
+</body>
+</html>
