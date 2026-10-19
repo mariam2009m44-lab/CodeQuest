@@ -8,120 +8,24 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    <link rel="stylesheet" href="css/style.css?v=9000">
+    <link rel="stylesheet" href="css/style.css?v=9100">
     
     <style>
-        .playground-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            height: calc(100vh - 100px);
-        }
-        .playground-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--dark-glass);
-            padding: 15px 25px;
-            border-radius: var(--radius-card);
-            border: 1px solid var(--dark-border);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .playground-header h1 {
-            color: #fff;
-            font-size: 1.5rem;
-            font-weight: 900;
-            margin: 0;
-        }
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .lang-select {
-            background: var(--dark-surface);
-            color: var(--dark-cyan);
-            border: 1px solid var(--dark-border);
-            padding: 10px 20px;
-            border-radius: var(--radius-btn);
-            font-family: 'Cairo', sans-serif;
-            font-weight: 700;
-            cursor: pointer;
-            outline: none;
-        }
-        .btn-run {
-            background: var(--dark-green);
-            color: #000;
-            border: none;
-            padding: 10px 24px;
-            border-radius: var(--radius-btn);
-            font-weight: 800;
-            cursor: pointer;
-            font-family: 'Cairo';
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
+        .playground-layout { display: flex; flex-direction: column; gap: 20px; height: calc(100vh - 100px); }
+        .playground-header { display: flex; justify-content: space-between; align-items: center; background: var(--dark-glass); padding: 15px 25px; border-radius: var(--radius-card); border: 1px solid var(--dark-border); flex-wrap: wrap; gap: 15px; }
+        .playground-header h1 { color: #fff; font-size: 1.5rem; font-weight: 900; margin: 0; }
+        .controls { display: flex; align-items: center; gap: 15px; }
+        .lang-select { background: var(--dark-surface); color: var(--dark-cyan); border: 1px solid var(--dark-border); padding: 10px 20px; border-radius: var(--radius-btn); font-family: 'Cairo', sans-serif; font-weight: 700; cursor: pointer; outline: none; }
+        .btn-run { background: var(--dark-green); color: #000; border: none; padding: 10px 24px; border-radius: var(--radius-btn); font-weight: 800; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-run:hover { transform: translateY(-2px); filter: brightness(1.1); }
         .btn-run:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .workspace {
-            display: flex;
-            gap: 20px;
-            flex: 1;
-            min-height: 0;
-        }
-        .editor-panel {
-            flex: 1.2;
-            display: flex;
-            flex-direction: column;
-            background: #1E1E24;
-            border-radius: var(--radius-card);
-            border: 1px solid var(--dark-border);
-            overflow: hidden;
-        }
-        .terminal-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #000;
-            border-radius: var(--radius-card);
-            border: 1px solid var(--dark-border);
-            overflow: hidden;
-        }
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            background: rgba(0,0,0,0.4);
-            border-bottom: 1px solid #333;
-            color: #A8B5D9;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .CodeMirror {
-            flex: 1;
-            height: 100% !important;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
-            direction: ltr;
-        }
-        #terminalOutput {
-            flex: 1;
-            padding: 20px;
-            color: var(--dark-green);
-            font-family: 'JetBrains Mono', monospace;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            direction: ltr;
-            font-size: 14px;
-        }
-        @media (max-width: 900px) {
-            .workspace { flex-direction: column; }
-            .playground-layout { height: auto; }
-            .editor-panel, .terminal-panel { min-height: 400px; }
-        }
+        .workspace { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        .editor-panel { flex: 1.2; display: flex; flex-direction: column; background: #1E1E24; border-radius: var(--radius-card); border: 1px solid var(--dark-border); overflow: hidden; }
+        .terminal-panel { flex: 1; display: flex; flex-direction: column; background: #000; border-radius: var(--radius-card); border: 1px solid var(--dark-border); overflow: hidden; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0,0,0,0.4); border-bottom: 1px solid #333; color: #A8B5D9; font-family: 'JetBrains Mono', monospace; }
+        .CodeMirror { flex: 1; height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 15px; direction: ltr; }
+        #terminalOutput { flex: 1; padding: 20px; color: var(--dark-green); font-family: 'JetBrains Mono', monospace; overflow-y: auto; white-space: pre-wrap; direction: ltr; font-size: 14px; }
+        @media (max-width: 900px) { .workspace { flex-direction: column; } .playground-layout { height: auto; } .editor-panel, .terminal-panel { min-height: 400px; } }
     </style>
 </head>
 <body class="dark-theme">
@@ -177,6 +81,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-    <script type="module" src="js/playground.js?v=9000"></script>
+    <script type="module" src="js/playground.js?v=9100"></script>
 </body>
 </html>
