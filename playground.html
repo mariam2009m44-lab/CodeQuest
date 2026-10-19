@@ -6,75 +6,33 @@
     <title>الملعب | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <!-- CodeMirror CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
     
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --bg-panel: #1e293b;
-            --primary: #00ffcc;
-            --text-main: #e2e8f0;
-            --border: rgba(255,255,255,0.1);
-        }
-        body {
-            margin: 0; padding: 0; font-family: 'Cairo', sans-serif;
-            background-color: var(--bg-dark); color: var(--text-main);
-            height: 100vh; display: flex; flex-direction: column;
-        }
-        .header {
-            background: var(--bg-panel); padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px;
-        }
+        :root { --bg-dark: #0f172a; --bg-panel: #1e293b; --primary: #00ffcc; --text-main: #e2e8f0; --border: rgba(255,255,255,0.1); }
+        body { margin: 0; padding: 0; font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; }
+        .header { background: var(--bg-panel); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
         .header-right { display: flex; align-items: center; gap: 15px; }
         .header h1 { margin: 0; font-size: 1.1rem; color: var(--primary); }
-        
-        /* تنسيق قائمة اختيار اللغة */
-        .lang-select {
-            background: #0f172a; color: var(--primary);
-            border: 1px solid var(--border); padding: 6px 12px;
-            border-radius: 6px; font-family: 'Cairo'; cursor: pointer;
-        }
-
-        .run-btn {
-            background: var(--primary); color: #000; border: none;
-            padding: 8px 20px; border-radius: 6px; font-weight: bold;
-            cursor: pointer; font-family: 'Cairo'; display: flex;
-            align-items: center; gap: 8px; transition: 0.2s;
-        }
-        .run-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--primary); }
-        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
+        .lang-select { background: #0f172a; color: var(--primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-family: 'Cairo'; cursor: pointer; }
+        .run-btn { background: var(--primary); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 8px; }
         .workspace { display: flex; flex: 1; overflow: hidden; }
-        .editor-container {
-            flex: 1; border-left: 1px solid var(--border);
-            display: flex; flex-direction: column;
-        }
+        .editor-container { flex: 1; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
         .console-container { flex: 1; display: flex; flex-direction: column; background: #000; }
-        .panel-title {
-            padding: 10px; background: var(--bg-panel); font-size: 0.9rem;
-            color: #94a3b8; border-bottom: 1px solid var(--border);
-            text-align: center; direction: ltr;
-        }
-        
+        .panel-title { padding: 10px; background: var(--bg-panel); font-size: 0.9rem; color: #94a3b8; border-bottom: 1px solid var(--border); text-align: center; direction: ltr; }
         .CodeMirror { height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 15px; direction: ltr; }
         iframe { flex: 1; border: none; background: #fff; width: 100%; height: 100%; }
-
-        @media (max-width: 768px) {
-            .workspace { flex-direction: column; }
-            .editor-container { border-left: none; border-bottom: 1px solid var(--border); }
-        }
+        @media (max-width: 768px) { .workspace { flex-direction: column; } .editor-container { border-left: none; border-bottom: 1px solid var(--border); } }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="header-right">
-            <a href="index.html" style="color:var(--text-main); text-decoration:none;"><i class="ri-arrow-right-line"></i></a>
+            <a href="dashboard.html" style="color:var(--text-main); text-decoration:none;"><i class="ri-arrow-right-line"></i></a>
             <h1>ملعب الأكواد</h1>
-            <select id="lang-select" class="lang-select" onchange="changeLanguage()">
+            <select id="lang-select" class="lang-select">
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
                 <option value="cpp">C++</option>
@@ -96,55 +54,44 @@
         </div>
     </div>
 
-    <!-- CodeMirror Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
-    
-    <!-- Pyodide (Python in Browser) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 
     <script>
-        // إعداد محرر الأكواد
+        // 1. إعداد المحرر
         const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
-            mode: "javascript", theme: "dracula", lineNumbers: true,
-            autoCloseBrackets: true, indentUnit: 4, tabSize: 4
+            mode: "javascript", theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4, tabSize: 4
         });
 
-        // الأكواد الافتراضية
-        
+        // 2. الأكواد الافتراضية
+        const codeJS = '// Welcome to CodeQuest!\\nlet name = "Cody";\\nconsole.log("Hello, " + name + "!");';
+        const codePy = '# Welcome to CodeQuest!\\nname = "Cody"\\nprint("Hello, " + name + "!")';
+        const codeCpp = '// Welcome to CodeQuest!\\n#include <iostream>\\nusing namespace std;\\nint main() {\\n    cout << "Hello, Cody!" << endl;\\n    return 0;\\n}';
 
-        editor.setValue(defaultCode.javascript);
+        // 3. دالة تغيير اللغة (مباشرة وواضحة جداً)
+        document.getElementById('lang-select').addEventListener('change', function() {
+            const lang = this.value;
+            const filenameEl = document.getElementById('filename');
 
-        // دالة تغيير اللغة
-        
+            if (lang === 'cpp') {
+                editor.setOption("mode", "text/x-c++src");
+                filenameEl.innerText = "main.cpp";
+                editor.setValue(codeCpp);
+            } else if (lang === 'python') {
+                editor.setOption("mode", "python");
+                filenameEl.innerText = "main.py";
+                editor.setValue(codePy);
+            } else {
+                editor.setOption("mode", "javascript");
+                filenameEl.innerText = "main.js";
+                editor.setValue(codeJS);
+            }
+        });
 
-        
-        const defaultCode = {
-            javascript: `// أهلاً بك في CodeQuest Playground!\nlet name = "Cody";\nconsole.log("Hello, " + name + "!");`,
-            python: `# أهلاً بك في CodeQuest Playground!\nname = "Cody"\nprint("Hello, " + name + "!")`,
-            cpp: `// أهلاً بك في CodeQuest Playground!\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello, Cody!" << endl;\n    return 0;\n}`
-        };
-
-        function changeLanguage() {
-            const lang = document.getElementById('lang-select').value;
-            let mode = lang;
-            let filename = 'main.js';
-            
-            if (lang === 'python') { filename = 'main.py'; }
-            else if (lang === 'cpp') { mode = 'text/x-c++src'; filename = 'main.cpp'; }
-            
-            editor.setOption("mode", mode);
-            document.getElementById('filename').innerText = filename;
-            editor.setValue(defaultCode[lang]);
-        }
-
-        // تشغيل الكود الافتراضي أول ما الصفحة تفتح
-        setTimeout(() => { changeLanguage(); }, 100);
-    
-
-        // دالة التشغيل الرئيسية
+        // 4. دالة التشغيل
         async function runCode() {
             const lang = document.getElementById('lang-select').value;
             const code = editor.getValue();
@@ -152,79 +99,29 @@
             const iframe = document.getElementById('output-frame');
 
             if (lang === 'javascript') {
-                runJavaScript(code, iframe);
+                iframe.srcdoc = `<html><body style="font-family:monospace; padding:15px;"><script>
+                    const oLog = console.log;
+                    console.log = function(...args) { document.body.innerHTML += '> ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ') + '<br>'; oLog(...args); };
+                    window.onerror = function(msg) { document.body.innerHTML += '<span style="color:red;">Error: ' + msg + '</span><br>'; };
+                <\/script><script>try { ${code} } catch(e) { console.log('Error: ' + e.message); }<\/script></body></html>`;
             } else if (lang === 'python') {
-                // تعطيل الزرار عشان التحميل بياخد ثواني أول مرة
-                btn.disabled = true;
-                btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> جاري التشغيل...';
-                await runPython(code, iframe);
-                btn.disabled = false;
-                btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
+                btn.disabled = true; btn.innerHTML = 'جاري التشغيل...';
+                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px;">جاري تحميل بايثون...</body></html>';
+                try {
+                    if (!window.pyodide) {
+                        window.pyodide = await loadPyodide({
+                            stdout: (text) => { iframe.contentWindow.document.body.innerHTML += text + '<br>'; },
+                            stderr: (text) => { iframe.contentWindow.document.body.innerHTML += `<span style="color:red;">${text}</span><br>`; }
+                        });
+                    }
+                    iframe.contentWindow.document.body.innerHTML = '';
+                    await window.pyodide.runPythonAsync(code);
+                } catch (err) { iframe.contentWindow.document.body.innerHTML += `<span style="color:red;">Error: ${err.message}</span>`; }
+                btn.disabled = false; btn.innerHTML = 'تشغيل الكود';
+            } else if (lang === 'cpp') {
+                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; color:red; direction:rtl; text-align:center;">⚠️ تشغيل C++ يحتاج سيرفر خارجي.</body></html>';
             }
         }
-
-        // تشغيل JavaScript (عبر iframe معزول)
-        function runJavaScript(code, iframe) {
-            const htmlContent = `
-                <html><head><style>body{font-family:monospace;padding:15px;color:#333;}</style></head>
-                <body>
-                    <script>
-                        const originalLog = console.log;
-                        console.log = function(...args) {
-                            const div = document.createElement('div');
-                            div.innerText = '> ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
-                            document.body.appendChild(div);
-                        };
-                        window.onerror = function(msg) {
-                            document.body.innerHTML += '<div style="color:red;">Error: ' + msg + '</div>';
-                        };
-                    <\/script>
-                    <script>try { ${code} } catch(e) { console.log('Error: ' + e.message); }<\/script>
-                </body></html>
-            `;
-            iframe.srcdoc = htmlContent;
-        }
-
-        // تشغيل Python (عبر Pyodide)
-        async function runPython(code, iframe) {
-            iframe.srcdoc = `<html><body style="font-family:monospace; padding:15px; color:#333;"><div id="py-out">جاري تحميل بيئة بايثون لأول مرة... (قد يستغرق 10 ثواني)</div></body></html>`;
-            
-            try {
-                if (!window.pyodide) {
-                    window.pyodide = await loadPyodide({
-                        stdout: (text) => {
-                            const doc = iframe.contentWindow.document;
-                            doc.getElementById('py-out').innerHTML += text + '<br>';
-                        },
-                        stderr: (text) => {
-                            const doc = iframe.contentWindow.document;
-                            doc.getElementById('py-out').innerHTML += `<span style="color:red;">${text}</span><br>`;
-                        }
-                    });
-                }
-                
-                // تصفير الشاشة قبل التشغيل
-                iframe.contentWindow.document.getElementById('py-out').innerHTML = '';
-                await window.pyodide.runPythonAsync(code);
-                
-            } catch (err) {
-                iframe.contentWindow.document.getElementById('py-out').innerHTML += `<span style="color:red;">Error: ${err.message}</span>`;
-            }
-        }
-    
-        // استقبال الكود من صفحة الدروس
-        window.addEventListener('load', () => {
-            const savedCode = sessionStorage.getItem('playgroundCode');
-            const savedLang = sessionStorage.getItem('playgroundLang');
-            if (savedCode && savedLang) {
-                document.getElementById('lang-select').value = savedLang;
-                changeLanguage(); 
-                editor.setValue(savedCode);
-                sessionStorage.removeItem('playgroundCode');
-                sessionStorage.removeItem('playgroundLang');
-            }
-        });
     </script>
-    
 </body>
 </html>
