@@ -1,89 +1,444 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المحاضرة | Cody Academy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10111f">
+  <title>المحاضرة | Cody Academy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.min.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .lecture-page {
+      max-width: 1450px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .lecture-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .lecture-heading h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+    }
+
+    .lecture-heading p {
+      margin: 0;
+      opacity: .7;
+    }
+
+    .lecture-workspace {
+      display: grid;
+      grid-template-columns: minmax(280px, .8fr) minmax(0, 1.4fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .lecture-card,
+    .editor-card {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 20px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .lecture-card {
+      padding: 22px;
+    }
+
+    .cody-bubble {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .cody-avatar {
+      display: grid;
+      place-items: center;
+      flex: 0 0 48px;
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: rgba(139,92,246,.18);
+      color: #b9a0ff;
+      font-size: 25px;
+    }
+
+    .cody-text h2 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+    }
+
+    .cody-text p,
+    .lesson-description,
+    .lesson-task {
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 22px 0 10px;
+      font-size: 1rem;
+    }
+
+    .task-box,
+    .hint-box {
+      padding: 15px;
+      border-radius: 14px;
+      background: rgba(139,92,246,.09);
+      border: 1px solid rgba(139,92,246,.15);
+    }
+
+    .task-box p,
+    .hint-box p {
+      margin: 0;
+      line-height: 1.9;
+    }
+
+    #lessonHints {
+      padding-right: 22px;
+      line-height: 2;
+    }
+
+    .progress-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255,255,255,.1);
+    }
+
+    #progressBar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #8b5cf6, #38bdf8);
+      transition: width .3s ease;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      flex-wrap: wrap;
+    }
+
+    #fileNameDisplay {
+      direction: ltr;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .9rem;
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .editor-actions button,
+    .quiz-action {
+      cursor: pointer;
+      font: inherit;
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 14px;
+    }
+
+    .run-button,
+    .quiz-action {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    .reset-button {
+      background: rgba(255,255,255,.08);
+      color: inherit;
+    }
+
+    .CodeMirror {
+      height: 340px;
+      direction: ltr;
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .terminal-panel {
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(0,0,0,.15);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+
+    .terminal-output {
+      min-height: 90px;
+      max-height: 250px;
+      overflow: auto;
+      padding: 16px;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: 13px/1.8 'JetBrains Mono', monospace;
+      color: #d1d5db;
+    }
+
+    .quiz-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+    }
+
+    .quiz-dialog {
+      width: min(100%, 520px);
+      max-height: 85vh;
+      overflow: auto;
+      padding: 24px;
+      border-radius: 20px;
+      background: #191a2b;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .quiz-option {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 13px;
+      text-align: right;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .quiz-option.selected {
+      border-color: #a78bfa;
+      background: rgba(139,92,246,.18);
+    }
+
+    #quizFeedback {
+      margin-top: 15px;
+      line-height: 1.8;
+    }
+
+    .status-message {
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.05);
+      line-height: 1.8;
+    }
+
+    @media (max-width: 850px) {
+      .lecture-page {
+        padding: 14px;
+      }
+
+      .lecture-workspace {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .CodeMirror {
+        height: 300px;
+      }
+    }
+  </style>
 </head>
+
 <body class="dark-theme">
-    <div class="app-layout">
-        <aside class="sidebar">
-            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="languages.html" class="nav-item active"><i class="ri-map-2-line"></i> المسارات</a>
-                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-                <a href="#" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
-            </nav>
-        </aside>
-        <main class="main-content" style="display: flex; flex-direction: column;">
-            <div class="workspace">
-                <div class="lecture-panel glass-card">
-                    <div class="cody-bubble">
-                        <div class="cody-avatar"><i class="ri-robot-2-fill"></i></div>
-                        <div class="cody-text">
-                            <h3 id="lessonTitle">جاري التحميل...</h3>
-                            <p id="codyDesc"></p>
-                        </div>
-                    </div>
-                    <div class="task-box">
-                        <h4><i class="ri-lightbulb-line"></i> تلميح من كودي</h4>
-                        <p>جرب تعديل الكود بنفسك وشغله عشان تشوف النتيجة.</p>
-                    </div>
-                </div>
-                <div class="editor-panel">
-                    <div class="editor-header">
-                        <span id="fileNameDisplay">main.py</span>
-                        <button class="btn-dark-primary" style="padding: 8px 16px; font-size: 0.9rem;" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
-                    </div>
-                    <textarea id="codeEditor"></textarea>
-                    <div class="terminal-panel">
-                        <div class="terminal-header">
-                            <div class="dot" style="background: #FF6B6B;"></div>
-                            <div class="dot" style="background: #FFCB57;"></div>
-                            <div class="dot" style="background: #35D6A3;"></div>
-                        </div>
-                        <div id="terminalOutput" class="terminal-output">> Console Ready...</div>
-                    </div>
-                </div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="ri-robot-2-fill"></i> Cody Academy
+      </div>
+
+      <nav class="nav-menu">
+        <a href="dashboard.html" class="nav-item">
+          <i class="ri-home-5-line"></i> الرئيسية
+        </a>
+        <a href="languages.html" class="nav-item active">
+          <i class="ri-map-2-line"></i> المسارات
+        </a>
+        <a href="playground.html" class="nav-item">
+          <i class="ri-terminal-box-line"></i> محرر الأكواد
+        </a>
+        <a href="profile.html" class="nav-item">
+          <i class="ri-user-smile-line"></i> حسابي
+        </a>
+        <a href="#" class="nav-item logout">
+          <i class="ri-logout-box-r-line"></i> خروج
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="lecture-page">
+        <header class="lecture-topbar">
+          <div class="lecture-heading">
+            <h1>مساحة التعلّم <span aria-hidden="true">✨</span></h1>
+            <p>تعلّم، جرّب الكود، واكتشف بنفسك.</p>
+          </div>
+          <a href="languages.html" class="nav-item">
+            <i class="ri-arrow-right-line"></i> العودة للمسارات
+          </a>
+        </header>
+
+        <section class="lecture-card" style="margin-bottom:20px">
+          <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:10px">
+            <span>تقدمك في الدرس</span>
+            <span id="progressText">جاري التحميل...</span>
+          </div>
+          <div class="progress-track">
+            <div id="progressBar"></div>
+          </div>
+        </section>
+
+        <div class="lecture-workspace">
+          <section class="lecture-card">
+            <div class="cody-bubble">
+              <div class="cody-avatar">
+                <i class="ri-robot-2-fill"></i>
+              </div>
+              <div class="cody-text">
+                <h2 id="lessonTitle">جاري تحميل الدرس...</h2>
+                <p id="codyIntro">كودي بيجهّز الدرس ليك.</p>
+              </div>
             </div>
-        </main>
+
+            <h3 class="section-label">
+              <i class="ri-book-open-line"></i> شرح الدرس
+            </h3>
+            <p id="lessonDescription" class="lesson-description">
+              جاري تحميل المحتوى...
+            </p>
+
+            <h3 class="section-label">
+              <i class="ri-lightbulb-line"></i> مهمتك
+            </h3>
+            <div class="task-box">
+              <p id="lessonTask" class="lesson-task">
+                ستظهر مهمتك هنا.
+              </p>
+            </div>
+
+            <h3 class="section-label">
+              <i class="ri-sparkling-line"></i> تلميحات كودي
+            </h3>
+            <ul id="lessonHints">
+              <li>جاري تجهيز التلميحات...</li>
+            </ul>
+
+            <button id="openQuizBtn" class="quiz-action" type="button" onclick="showQuiz()" style="width:100%;margin-top:20px">
+              <i class="ri-question-answer-line"></i> اختبر فهمك
+            </button>
+          </section>
+
+          <section class="editor-card" aria-label="محرر الأكواد">
+            <div class="editor-toolbar">
+              <span id="fileNameDisplay">main.js</span>
+
+              <div class="editor-actions">
+                <button id="resetCodeBtn" class="reset-button" type="button" onclick="resetCode()">
+                  <i class="ri-refresh-line"></i> إعادة الضبط
+                </button>
+                <button id="runCodeBtn" class="run-button" type="button" onclick="runUserCode()">
+                  <i class="ri-play-fill"></i> تشغيل الكود
+                </button>
+              </div>
+            </div>
+
+            <textarea id="codeEditor" aria-label="اكتب الكود هنا"></textarea>
+
+            <div class="terminal-panel">
+              <div class="terminal-header">
+                <strong>النتيجة</strong>
+                <div class="terminal-dots" aria-hidden="true">
+                  <span style="background:#ff6b6b"></span>
+                  <span style="background:#ffcb57"></span>
+                  <span style="background:#35d6a3"></span>
+                </div>
+              </div>
+              <pre id="terminalOutput" class="terminal-output" aria-live="polite">Console Ready...</pre>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="quizModal" class="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quizQuestion">
+    <div class="quiz-dialog">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <h2 style="margin-top:0">اختبر فهمك</h2>
+        <button type="button" class="reset-button" onclick="document.getElementById('quizModal').style.display='none'" aria-label="إغلاق الاختبار">
+          <i class="ri-close-line"></i> إغلاق
+        </button>
+      </div>
+
+      <p id="quizQuestion">جاري تحميل السؤال...</p>
+      <div id="quizOptions"></div>
+      <div id="quizFeedback" aria-live="polite"></div>
+
+      <button id="submitQuizBtn" class="quiz-action" type="button" onclick="submitQuiz()" style="display:none;width:100%;margin-top:14px">
+        تأكيد الإجابة
+      </button>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
-    <script type="module">
-        import { App } from './js/app.js';
-        import { readSelection, getLesson } from './js/curriculum.js';
+  </div>
 
-        await App.init();
-        const { language } = readSelection();
-        const lesson = getLesson(readSelection());
-        
-        document.getElementById('lessonTitle').innerText = lesson.title;
-        document.getElementById('codyDesc').innerText = lesson.cody_intro || lesson.desc;
-        
-        const ext = language === 'python' ? '.py' : (language === 'cpp' ? '.cpp' : '.js');
-        document.getElementById('fileNameDisplay').innerText = 'main' + ext;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.min.js"></script>
 
-        const mode = language === 'python' ? 'python' : (language === 'cpp' ? 'text/x-c++src' : 'javascript');
-        
-        var editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), { 
-            lineNumbers: true, theme: "dracula", mode: mode, autoCloseBrackets: true
-        });
-        editor.setValue(lesson.code || '// اكتب الكود هنا');
-        
-        window.runCode = () => {
-            const out = document.getElementById('terminalOutput');
-            out.innerHTML = '> جاري التشغيل (يتطلب خادم آمن)...';
-        };
-    </script>
+  <script type="module" src="js/lecture.js"></script>
 </body>
 </html>
