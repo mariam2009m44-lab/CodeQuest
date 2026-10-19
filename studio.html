@@ -40,6 +40,10 @@
         .custom-modal-btn { background: #8b5cf6; color: #fff; border: none; padding: 12px 30px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; }
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+
+    <!-- Prism.js Dark Theme -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
     <header class="header">
@@ -137,7 +141,14 @@
 
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                 iframeDoc.open();
-                iframeDoc.write('<html><body><script>window.onerror = function(msg){ window.parent.postMessage({type:"err", msg:msg}, "*"); }; const oLog = console.log; console.log = function(...a){ window.parent.postMessage({type:"log", msg:a.join(" ")}, "*"); oLog(...a); };<\/script></body></html>');
+                iframeDoc.write('<html><body><script>window.onerror = function(msg){ window.parent.postMessage({type:"err", msg:msg}, "*"); }; const oLog = console.log; console.log = function(...a){ window.parent.postMessage({type:"log", msg:a.join(" ")}, "*"); oLog(...a); };<\/script>
+    <!-- Prism.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+</body></html>');
                 iframeDoc.close();
 
                 const msgHandler = (event) => {
