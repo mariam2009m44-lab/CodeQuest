@@ -4,89 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ملعب الأكواد | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
     <style>
-        .playground-layout { display: flex; height: calc(100vh - 120px); gap: 20px; padding: 20px; }
-        .editor-panel, .output-panel { flex: 1; display: flex; flex-direction: column; background: #1d1f21; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-light); }
-        .panel-header { background: #2d2f31; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .panel-title { color: #a0aec0; font-family: var(--font-code); font-size: 0.9rem; }
+        body { background: var(--bg-deep); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .topbar { background: var(--bg-panel); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); z-index: 10; }
+        .brand { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 900; color: var(--primary); }
+        .controls { display: flex; gap: 15px; align-items: center; }
+        .lang-select { background: var(--bg-deep); color: var(--primary); border: 1px solid var(--border-soft); padding: 10px 15px; border-radius: var(--radius-input); font-family: var(--font-arabic); font-weight: 700; outline: none; cursor: pointer; }
+        .workspace { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; }
+        .panel { flex: 1; display: flex; flex-direction: column; border-radius: var(--radius-card); border: 1px solid var(--border-soft); background: var(--bg-panel); overflow: hidden; }
+        .panel-header { padding: 10px 20px; background: #1E1E24; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; color: #A8B5D9; font-family: var(--font-code); font-size: 0.9rem; }
         .CodeMirror { flex: 1; height: 100% !important; font-family: var(--font-code); font-size: 15px; direction: ltr; }
-        .output-content { flex: 1; background: #fff; padding: 15px; font-family: var(--font-code); font-size: 14px; direction: ltr; color: #1e293b; overflow-y: auto; white-space: pre-wrap; }
-        .controls { display: flex; gap: 10px; align-items: center; }
-        .select-lang { background: #1d1f21; color: #a0aec0; border: 1px solid #4a5568; padding: 6px 12px; border-radius: var(--radius-sm); font-family: var(--font-arabic); }
+        .terminal { flex: 1; background: #000; padding: 20px; font-family: var(--font-code); font-size: 14px; color: #35D6A3; overflow-y: auto; white-space: pre-wrap; direction: ltr; }
+        .terminal-header { display: flex; gap: 8px; padding: 10px 20px; background: #111; border-bottom: 1px solid #333; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        @media (max-width: 768px) { .workspace { flex-direction: column; } }
     </style>
 </head>
 <body>
-    <div style="padding: 20px 20px 0 20px;">
-        <header class="topbar">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <a href="dashboard.html" class="btn btn-secondary" style="padding: 8px;"><i class="ri-arrow-right-line"></i></a>
-                <h2 style="color: var(--primary-main);">ملعب الأكواد</h2>
-            </div>
-            <div class="controls">
-                <select id="langSelect" class="select-lang">
-                    <option value="javascript">JavaScript</option>
-                    <option value="python">Python</option>
-                    <option value="cpp">C++</option>
-                </select>
-                <button id="runBtn" class="btn btn-primary"><i class="ri-play-fill"></i> تشغيل</button>
-            </div>
-        </header>
-    </div>
-
-    <div class="playground-layout">
-        <div class="editor-panel">
-            <div class="panel-header">
-                <span class="panel-title" id="fileName">main.js</span>
-            </div>
+    <header class="topbar">
+        <div class="brand"><i class="ri-code-box-fill"></i> CodeQuest</div>
+        <div class="controls">
+            <a href="dashboard.html" class="btn-secondary" style="padding: 8px 16px;"><i class="ri-home-5-line"></i> الرئيسية</a>
+            <select id="langSelect" class="lang-select">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+            </select>
+            <button id="runBtn" class="btn-primary"><i class="ri-play-fill"></i> تشغيل</button>
+        </div>
+    </header>
+    <div class="workspace">
+        <div class="panel">
+            <div class="panel-header"><span id="fileName">main.js</span></div>
             <textarea id="codeEditor"></textarea>
         </div>
-        <div class="output-panel">
-            <div class="panel-header">
-                <span class="panel-title">Console Output</span>
+        <div class="panel">
+            <div class="terminal-header">
+                <div class="dot" style="background: #FF6B6B;"></div>
+                <div class="dot" style="background: #FFCB57;"></div>
+                <div class="dot" style="background: #35D6A3;"></div>
             </div>
-            <div id="output" class="output-content">> Ready...</div>
+            <div id="output" class="terminal">> Console Ready...</div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
     <script>
-        const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
-            mode: 'javascript', theme: 'dracula', lineNumbers: true, autoCloseBrackets: true
-        });
-        
+        const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), { mode: 'javascript', theme: 'dracula', lineNumbers: true, autoCloseBrackets: true });
         const fileNames = { javascript: 'main.js', python: 'main.py', cpp: 'main.cpp' };
         const modes = { javascript: 'javascript', python: 'python', cpp: 'text/x-c++src' };
-        const defaultCode = {
-            javascript: 'console.log("Hello CodeQuest!");',
-            python: 'print("Hello CodeQuest!")',
-            cpp: '#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello CodeQuest!" << endl;\n    return 0;\n}'
-        };
-
+        const langIds = { python: 71, cpp: 54 };
+        const defaultCode = { javascript: 'console.log("Hello CodeQuest!");', python: 'print("Hello CodeQuest!")', cpp: '#include <iostream>\\nusing namespace std;\\nint main() {\\n    cout << "Hello CodeQuest!" << endl;\\n    return 0;\\n}' };
+        const savedCode = sessionStorage.getItem('playgroundCode');
+        const savedLang = sessionStorage.getItem('playgroundLang');
+        if (savedCode && savedLang) {
+            document.getElementById('langSelect').value = savedLang;
+            document.getElementById('fileName').innerText = fileNames[savedLang];
+            editor.setOption('mode', modes[savedLang]);
+            editor.setValue(savedCode);
+            sessionStorage.removeItem('playgroundCode');
+            sessionStorage.removeItem('playgroundLang');
+        }
         document.getElementById('langSelect').addEventListener('change', (e) => {
             const lang = e.target.value;
             document.getElementById('fileName').innerText = fileNames[lang];
             editor.setOption('mode', modes[lang]);
             editor.setValue(defaultCode[lang]);
-            document.getElementById('output').innerHTML = '> Ready...';
+            document.getElementById('output').innerHTML = '> Console Ready...';
         });
-
         document.getElementById('runBtn').addEventListener('click', async () => {
             const lang = document.getElementById('langSelect').value;
             const code = editor.getValue();
             const outputEl = document.getElementById('output');
             const btn = document.getElementById('runBtn');
-
             btn.disabled = true;
-            outputEl.innerHTML = '> Running...';
-
+            outputEl.innerHTML = '> Compiling and running...';
             if (lang === 'javascript') {
                 let logs = [];
                 const origLog = console.log;
@@ -94,31 +94,23 @@
                 try {
                     new Function(code)();
                     console.log = origLog;
-                    outputEl.innerHTML = logs.length > 0 ? logs.map(l => `> ${l}`).join('<br>') : '> Execution completed with no output.';
+                    outputEl.innerHTML = logs.length > 0 ? logs.map(l => `> ${l}`).join('<br>') : '> Execution completed.';
                 } catch (err) {
                     console.log = origLog;
-                    outputEl.innerHTML = `<span style="color:red;">> Error: ${err.message}</span>`;
+                    outputEl.innerHTML = `<span style="color:#FF6B6B;">> Error: ${err.message}</span>`;
                 }
             } else {
-                let langId = lang === 'python' ? 71 : 54;
                 const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
                 const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
-                
                 try {
-                    const res = await fetch('https://ce.judge0.com/submissions?base64_encoded=true&wait=true', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ source_code: encodeB64(code), language_id: langId })
-                    });
+                    const res = await fetch('https://ce.judge0.com/submissions?base64_encoded=true&wait=true', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_code: encodeB64(code), language_id: langIds[lang] }) });
                     const data = await res.json();
                     let out = '';
                     if (data.stdout) out += decodeB64(data.stdout);
-                    if (data.stderr) out += `<span style="color:red;">${decodeB64(data.stderr)}</span>`;
-                    if (data.compile_output) out += `<span style="color:red;">${decodeB64(data.compile_output)}</span>`;
-                    outputEl.innerHTML = out || '> Execution completed.';
-                } catch (err) {
-                    outputEl.innerHTML = `<span style="color:red;">> Network Error: ${err.message}</span>`;
-                }
+                    if (data.stderr) out += `<span style="color:#FF6B6B;">${decodeB64(data.stderr)}</span>`;
+                    if (data.compile_output) out += `<span style="color:#FF6B6B;">${decodeB64(data.compile_output)}</span>`;
+                    outputEl.innerHTML = out ? out.replace(/\\n/g, '<br>') : '> Execution completed.';
+                } catch (err) { outputEl.innerHTML = `<span style="color:#FF6B6B;">> Network Error: ${err.message}</span>`; }
             }
             btn.disabled = false;
         });

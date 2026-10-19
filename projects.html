@@ -4,25 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مشاريعي | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { background: var(--bg-deep); padding: var(--space-l); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
+        .header h1 { font-size: 2rem; color: var(--text-primary); }
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-m); }
+        .project-card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); display: flex; flex-direction: column; transition: 0.3s; }
+        .project-card:hover { border-color: var(--primary); }
+        .project-icon { font-size: 3rem; color: var(--primary); margin-bottom: var(--space-s); }
+        .project-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-xs); }
+        .project-date { font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-m); }
+        .project-actions { display: flex; gap: 10px; margin-top: auto; }
+        .btn-new { background: var(--bg-panel); border: 2px dashed var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: 0.3s; min-height: 200px; }
+        .btn-new:hover { border-color: var(--primary); color: var(--primary); background: rgba(0, 217, 255, 0.05); }
+        .btn-new i { font-size: 3rem; margin-bottom: 10px; }
+    </style>
 </head>
-<body style="background: var(--bg-base);">
-    <div style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 style="color: var(--text-main);">مشاريعي</h1>
-            <button class="btn btn-primary" onclick="createProject()"><i class="ri-add-line"></i> مشروع جديد</button>
-        </div>
-        
-        <div id="projectsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+<body>
+    <div class="header">
+        <h1>مشاريعي</h1>
+        <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
+    </div>
+    <div class="projects-grid" id="projectsGrid">
+        <div class="btn-new" onclick="createProject()">
+            <i class="ri-add-circle-line"></i>
+            <h3>مشروع جديد</h3>
         </div>
     </div>
-
     <script type="module">
-        import { auth, db, doc, getDoc, setDoc, updateDoc } from './js/app.js';
+        import { auth, db } from './js/app.js';
+        import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { showToast } from './js/ui.js';
-        import { collection, query, where, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         let currentUser = null;
         let projects = [];
@@ -38,29 +54,23 @@
             const q = query(collection(db, "projects"), where("userId", "==", currentUser.uid));
             const querySnapshot = await getDocs(q);
             projects = [];
-            querySnapshot.forEach((doc) => {
-                projects.push({ id: doc.id, ...doc.data() });
-            });
+            querySnapshot.forEach((doc) => { projects.push({ id: doc.id, ...doc.data() }); });
             renderProjects();
         }
 
         function renderProjects() {
             const grid = document.getElementById('projectsGrid');
-            grid.innerHTML = '';
-            if (projects.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">لا توجد مشاريع بعد. ابدأ بإنشاء مشروعك الأول!</p>';
-                return;
-            }
+            grid.innerHTML = `<div class="btn-new" onclick="createProject()"><i class="ri-add-circle-line"></i><h3>مشروع جديد</h3></div>`;
             projects.forEach((proj) => {
                 const card = document.createElement('div');
-                card.className = 'card';
+                card.className = 'project-card';
                 card.innerHTML = `
-                    <div style="font-size: 2rem; color: var(--primary-main); margin-bottom: 10px;"><i class="ri-folder-code-line"></i></div>
-                    <h3 style="margin-bottom: 5px;">${proj.name}</h3>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px;">آخر تعديل: ${proj.date}</p>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-secondary" style="flex: 1; padding: 8px;" onclick="openProject('${proj.id}')">فتح</button>
-                        <button class="btn btn-secondary" style="padding: 8px; color: var(--danger); border-color: var(--danger);" onclick="deleteProject('${proj.id}')"><i class="ri-delete-bin-line"></i></button>
+                    <div class="project-icon"><i class="ri-folder-code-line"></i></div>
+                    <h3 class="project-title">${proj.name}</h3>
+                    <p class="project-date">آخر تعديل: ${proj.date}</p>
+                    <div class="project-actions">
+                        <button class="btn-primary" style="flex: 1; padding: 10px;" onclick="openProject('${proj.id}')">فتح</button>
+                        <button class="btn-secondary" style="padding: 10px; color: var(--accent-coral); border-color: var(--accent-coral);" onclick="deleteProject('${proj.id}')"><i class="ri-delete-bin-line"></i></button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -70,14 +80,9 @@
         window.createProject = async () => {
             const name = prompt('أدخل اسم المشروع الجديد:');
             if (name && currentUser) {
-                const newProj = {
-                    userId: currentUser.uid,
-                    name: name,
-                    date: new Date().toLocaleDateString('ar-EG'),
-                    code: 'console.log("Hello CodeQuest");',
-                    language: 'javascript'
-                };
-                await addDoc(collection(db, "projects"), newProj);
+                await addDoc(collection(db, "projects"), {
+                    userId: currentUser.uid, name: name, date: new Date().toLocaleDateString('ar-EG'), code: 'console.log("Hello CodeQuest");', language: 'javascript'
+                });
                 showToast('تم إنشاء المشروع بنجاح!', 'success');
                 await loadProjects();
             }
