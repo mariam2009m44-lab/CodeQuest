@@ -113,22 +113,36 @@
         });
 
         // الأكواد الافتراضية
-        const defaultCode = {
-            javascript: `// أهلاً بك في CodeQuest Playground!\nlet name = "Cody";\nconsole.log("Hello, " + name + "!");\n`,
-            python: `# أهلاً بك في CodeQuest Playground!\nname = "Cody"\nprint("Hello, " + name + "!")\n`
-        };
+        
 
         editor.setValue(defaultCode.javascript);
 
         // دالة تغيير اللغة
+        
+
+        
+        const defaultCode = {
+            javascript: `// أهلاً بك في CodeQuest Playground!\nlet name = "Cody";\nconsole.log("Hello, " + name + "!");`,
+            python: `# أهلاً بك في CodeQuest Playground!\nname = "Cody"\nprint("Hello, " + name + "!")`,
+            cpp: `// أهلاً بك في CodeQuest Playground!\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello, Cody!" << endl;\n    return 0;\n}`
+        };
+
         function changeLanguage() {
             const lang = document.getElementById('lang-select').value;
             let mode = lang;
-            if (lang === 'cpp') mode = 'text/x-c++src';
+            let filename = 'main.js';
+            
+            if (lang === 'python') { filename = 'main.py'; }
+            else if (lang === 'cpp') { mode = 'text/x-c++src'; filename = 'main.cpp'; }
+            
             editor.setOption("mode", mode);
-            document.getElementById('filename').innerText = lang === 'javascript' ? 'main.js' : 'main.py';
+            document.getElementById('filename').innerText = filename;
             editor.setValue(defaultCode[lang]);
         }
+
+        // تشغيل الكود الافتراضي أول ما الصفحة تفتح
+        setTimeout(() => { changeLanguage(); }, 100);
+    
 
         // دالة التشغيل الرئيسية
         async function runCode() {
