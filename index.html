@@ -32,6 +32,19 @@
             pointer-events: none !important;
         }
     </style>
+
+    <!-- Shield to hide mobile nav on Landing Page -->
+    <style>
+        body > nav.mobile-bottom-nav, 
+        body > .mobile-bottom-nav,
+        #mobile-bottom-nav {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -56,16 +69,7 @@
 
     <!-- Mobile Bottom Navigation -->
     
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
+    
 
     <!-- Curriculum Async Bridge -->
     <script src="js/curriculum.js"></script>
