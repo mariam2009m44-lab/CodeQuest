@@ -1,6 +1,18 @@
-import { loginUser, registerUser, resetPassword, authError } from "./auth.js";
-const form = document.getElementById("loginForm") || document.getElementById("signupForm");
-if (!form) throw new Error("نموذج الحساب غير موجود.");
+
+import {
+  loginUser,
+  registerUser,
+  resetPassword,
+  authError
+} from "./auth.js";
+
+const form =
+  document.getElementById("loginForm") ||
+  document.getElementById("signupForm");
+
+if (!form) {
+  throw new Error("نموذج الحساب غير موجود.");
+}
 
 const isSignup = form.id === "signupForm";
 const submitButton = form.querySelector('[type="submit"]');
@@ -8,7 +20,10 @@ const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const nameInput = document.getElementById("name");
 
-if (nameInput) { nameInput.autocomplete = "nickname"; nameInput.maxLength = 50; }
+if (nameInput) {
+  nameInput.autocomplete = "nickname";
+  nameInput.maxLength = 50;
+}
 
 const message = document.createElement("p");
 message.setAttribute("role", "status");
@@ -21,9 +36,12 @@ function displayMessage(text, isError = false) {
   message.style.color = isError ? "#b91c1c" : "#166534";
 }
 
-form.addEventListener("submit", async event => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!form.reportValidity() || submitButton.disabled) return;
+
+  if (!form.reportValidity() || submitButton.disabled) {
+    return;
+  }
 
   const originalText = submitButton.textContent;
   submitButton.disabled = true;
@@ -32,13 +50,45 @@ form.addEventListener("submit", async event => {
 
   try {
     if (isSignup) {
-      await registerUser(nameInput.value, emailInput.value, passwordInput.value);
+      await registerUser(
+        nameInput.value,
+        emailInput.value,
+        passwordInput.value
+      );
     } else {
-      await loginUser(emailInput.value, passwordInput.value);
+      await loginUser(
+        emailInput.value,
+        passwordInput.value
+      );
     }
-    location.assign("dashboard.html");
+
+    const params = new URLSearchParams(location.search);
+    const requestedPage = params.get("next");
+
+    const allowedPages = new Set([
+      "dashboard.html",
+      "languages.html",
+      "levels.html",
+      "lecture.html",
+      "playground.html",
+      "profile.html",
+      "games.html",
+      "projects.html"
+    ]);
+
+    const destination =
+      requestedPage && allowedPages.has(requestedPage)
+        ? requestedPage
+        : "dashboard.html";
+
+    location.replace(destination);
   } catch (error) {
-    displayMessage(error?.code ? authError(error) : error?.message, true);
+    displayMessage(
+      error?.code
+        ? authError(error)
+        : error?.message || "حدث خطأ. حاولي مرة أخرى.",
+      true
+    );
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = originalText;
