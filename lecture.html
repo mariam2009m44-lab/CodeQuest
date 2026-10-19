@@ -1,357 +1,144 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الدرس | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js">
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        </script>
-        <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js">
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        </script>
-        <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js">
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        </script>
-        
-    <script src="js/firebase-config.js">
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        </script>
-        <script src="js/auth.js">
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        </script>
-        
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        </script>
-        
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحاضرة | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; background: #e5e7eb; margin: 0;}
-        .chat-header { background: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; flex-shrink: 0;}
-        .chat-header a { color: #8b5cf6; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px; font-size: 1rem;}
-        .chat-header h1 { margin: 0; font-size: 1.1rem; color: #333; }
+        body { padding-bottom: 90px; }
+        .cody-chat { display: flex; gap: 15px; margin: 20px; align-items: flex-start; }
+        .cody-avatar { width: 50px; height: 50px; background: rgba(0,255,204,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--primary, #00ffcc); flex-shrink: 0; border: 2px solid var(--primary, #00ffcc); }
+        .cody-message { background: var(--bg-panel, #1e293b); padding: 20px; border-radius: 16px; border-top-right-radius: 0; border: 1px solid rgba(255,255,255,0.1); flex: 1; line-height: 1.6; position: relative; color: #fff; }
         
-        .chat-container { flex: 1; padding: 20px; padding-bottom: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 700px; margin: 0 auto; box-sizing: border-box;}
+        .code-container { background: #1d1f21; border-radius: 12px; overflow: hidden; margin: 0 20px 20px 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .code-header { background: #2d2f31; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .code-header span { color: #a0aec0; font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+        .try-btn { background: var(--primary, #00ffcc); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
+        pre[class*="language-"] { margin: 0 !important; border-radius: 0 0 12px 12px !important; direction: ltr; text-align: left; font-family: 'JetBrains Mono', monospace !important; }
         
-        .message { display: flex; align-items: flex-end; gap: 10px; max-width: 95%; animation: popIn 0.3s ease-out; }
-        @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
-        .message.cody { align-self: flex-start; } .message.user { align-self: flex-end; flex-direction: row-reverse; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #fff; object-fit: cover;}
-        .bubble { padding: 12px 18px; border-radius: 20px; font-size: 1.05rem; line-height: 1.6; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .cody .bubble { background: #ffffff; border-bottom-right-radius: 5px; } .user .bubble { background: #dbeafe; border-bottom-left-radius: 5px; color: #1e3a8a; }
+        .nav-buttons { display: flex; gap: 15px; margin: 20px; }
+        .next-btn { flex: 1; background: var(--primary, #00ffcc); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .next-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
         
-        .action-area { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px; background: #ffffff; display: flex; justify-content: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 100; }
-        .btn-next { background: #8b5cf6; color: #fff; border: none; padding: 15px; border-radius: 30px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: none; transition: 0.3s; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(139,92,246,0.3);}
-        
-        .code-container { display: none; margin-top: 10px; background: #1e1e1e; border-radius: 15px; padding: 20px; direction: ltr; text-align: left; border: 1px solid #444; overflow-x: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
-        .code-container pre { margin: 0; color: #00ff00; font-family: monospace; font-size: 1.1rem; white-space: pre-wrap;}
-        
-        .quiz-container { display: none; margin-top: 15px; background: #fff; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .quiz-title { font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 20px; }
-        .quiz-option { background: #f3f4f6; border: 2px solid transparent; padding: 15px; border-radius: 15px; margin-bottom: 10px; cursor: pointer; font-size: 1.05rem; font-weight: bold; color: #4b5563; transition: 0.2s;}
-        .quiz-option.correct { background: #d1fae5; border-color: #10b981; color: #065f46; pointer-events: none; }
-        .quiz-option.wrong { background: #fee2e2; border-color: #ef4444; color: #991b1b; pointer-events: none; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-panel, #1e293b); margin-bottom: 20px; }
+        .back-btn { color: var(--primary, #00ffcc); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: bold; }
     </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
-    <header class="chat-header">
-        <a href="levels.html"><i class="ri-arrow-right-line"></i> رجوع</a>
-        <h1 id="lessonTitle">جاري التحميل...</h1>
-        <div style="width: 40px;"></div>
-    </header>
-    <div class="chat-container" id="chatContainer"></div>
-    
-    <div class="custom-modal-overlay" id="customModal">
-        <div class="custom-modal">
-            <div class="custom-modal-icon" id="modalIcon">❌</div>
-            <div class="custom-modal-title" id="modalTitle">إجابة خاطئة</div>
-            <div class="custom-modal-text" id="modalText">حاول مرة أخرى!</div>
-            <button class="custom-modal-btn" id="modalBtn" onclick="closeModal()">حاول تاني</button>
+    <div class="header">
+        <a href="levels.html" id="back-btn" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
+        <h2 id="lesson-title" style="margin:0;">جاري التحميل...</h2>
+        <div></div>
+    </div>
+
+    <div id="content-area" style="display:none;">
+        <div class="cody-chat">
+            <div class="cody-avatar"><i class="ri-robot-2-line"></i></div>
+            <div class="cody-message" id="cody-text"></div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span id="code-filename">code.js</span>
+                <button class="try-btn" onclick="tryInPlayground()"><i class="ri-play-line"></i> جرب الكود</button>
+            </div>
+            <pre class="line-numbers"><code class="language-javascript" id="code-block"></code></pre>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="next-btn" id="next-btn" onclick="goToNext()">الدرس التالي <i class="ri-arrow-left-line"></i></button>
         </div>
     </div>
     
-    <div class="action-area"><button class="btn-next" id="nextBtn" onclick="nextStep()">التالي ⬅️</button></div>
+    <div id="loading-text" style="text-align:center; padding:50px; color:var(--primary, #00ffcc);">جاري تحميل الدرس...</div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        let lang = urlParams.get('lang') || 'JavaScript';
-        // فك تشفير اللغة (عشان C++ بتبقى C%2B%2B في الرابط)
-        lang = decodeURIComponent(lang);
-        if (lang === 'C') lang = 'C++';
-        
-        const chIndex = parseInt(urlParams.get('ch')) || 0;
-        const lesIndex = parseInt(urlParams.get('les')) || 0;
-        
-        let jsonFile = 'js_curriculum.json';
-        if (lang === 'Python') jsonFile = 'python_curriculum.json';
-        else if (lang === 'C++') jsonFile = 'cpp_curriculum.json';
-
-        let lessonData = null;
-        let curriculumData = null;
-        let chapterData = null; 
-        let currentStep = 0;
-        let chatIndex = 0;
-        
-        const userAvatar = localStorage.getItem('cq_avatar') || 'https://api.dicebear.com/7.x/adventurer/svg?seed=User';
-        const codyAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff';
-        const chatContainer = document.getElementById('chatContainer');
-
-        document.addEventListener('DOMContentLoaded', () => {
-            Auth.init(l => { if(!l) window.location.href='login.html'; });
-            loadLesson();
-        });
-
-        async function loadLesson() {
-            try {
-                // كسر الكاش عشان نضمن جلب أحدث ملف
-                const res = await fetch(jsonFile + '?v=' + new Date().getTime());
-                const data = await res.json();
-                curriculumData = data;
-                
-                chapterData = data.chapters[chIndex];
-                if (!chapterData) { document.getElementById('lessonTitle').innerText = "خطأ في الفصل"; return; }
-                
-                lessonData = chapterData.lessons[lesIndex];
-                if (!lessonData) { document.getElementById('lessonTitle').innerText = "خطأ في الدرس"; return; }
-
-                document.getElementById('lessonTitle').innerText = lessonData.title;
-                playNextChat();
-            } catch(e) { document.getElementById('lessonTitle').innerText = "خطأ"; }
-        }
-
-        function playNextChat() {
-            if (chatIndex >= lessonData.chat.length) { currentStep = 1; showCode(); return; }
-            const msg = lessonData.chat[chatIndex];
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${msg.sender}`;
-            const avatar = msg.sender === 'cody' ? codyAvatar : userAvatar;
-            msgDiv.innerHTML = `<img src="${avatar}" class="avatar"><div class="bubble">${msg.text}</div>`;
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            chatIndex++;
-            
-            if (chatIndex < lessonData.chat.length) {
-                document.getElementById('nextBtn').style.display = 'block';
-                document.getElementById('nextBtn').innerText = "رد ⬅️";
-            } else {
-                document.getElementById('nextBtn').style.display = 'block';
-                               document.getElementById('nextBtn').innerText = "شوف الكود 💻";
-            }
-        }
-
-        function showCode() {
-            document.getElementById('nextBtn').style.display = 'none';
-            const codeDiv = document.createElement('div');
-            codeDiv.className = 'code-container';
-            codeDiv.id = 'codeBox';
-            codeDiv.innerHTML = `<pre>${lessonData.code}</pre>`;
-            chatContainer.appendChild(codeDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            
-            setTimeout(() => {
-                codeDiv.style.display = 'block';
-                document.getElementById('nextBtn').style.display = 'block';
-                document.getElementById('nextBtn').innerText = "فهمت، جرب الكويز! 📝";
-            }, 300);
-        }
-
-        function showQuiz() {
-            document.getElementById('nextBtn').style.display = 'none';
-            const quizDiv = document.createElement('div');
-            quizDiv.className = 'quiz-container';
-            quizDiv.id = 'quizBox';
-            
-            let optionsHtml = '';
-            lessonData.quiz.options.forEach((opt, i) => {
-                optionsHtml += `<div class="quiz-option" onclick="checkAnswer(${i}, this)">${opt}</div>`;
-            });
-            
-            quizDiv.innerHTML = `<div class="quiz-title">📝 كويز: ${lessonData.quiz.q}</div>${optionsHtml}`;
-            chatContainer.appendChild(quizDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            setTimeout(() => { quizDiv.style.display = 'block'; }, 300);
-        }
-
-        function nextStep() {
-            if (currentStep === 0) playNextChat();
-            else if (currentStep === 1) { currentStep = 2; showQuiz(); }
-        }
-
-        
-        async function checkAnswer(selected, btnElement) {
-            if(selected === lessonData.quiz.a) {
-                btnElement.classList.add('correct');
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                
-                const uid = Auth.getUserId();
-                if(uid) {
-                    const progressKey = `progress.${lang}.ch_${chapterData.id}_les_${lessonData.id}`;
-                    await firebase.firestore().collection('users').doc(uid).update({
-                        points: firebase.firestore.FieldValue.increment(50),
-                        [progressKey]: { stars: 3, completed: true }
-                    });
-                }
-                
-                const isLastLesson = (lesIndex === chapterData.lessons.length - 1);
-                const isLastChapter = (chIndex === curriculumData.chapters.length - 1);
-
-                if (isLastLesson && isLastChapter) {
-                    showModal('success', '🏆 بطل خارق!', 'لقد أنهيت المنهج بالكامل! أنت الآن مبرمج حقيقي.', 'رجوع للمسارات');
-                    document.getElementById('modalBtn').onclick = () => { window.location.href = 'levels.html'; };
-                } else if (isLastLesson) {
-                    showModal('success', '🎉 عاش يا بطل!', 'لقد أكملت كل دروس هذا الفصل! حان وقت الامتحان.', 'اذهب للامتحان');
-                    document.getElementById('modalBtn').onclick = () => { window.location.href = `exam.html?lang=${lang}&ch=${chIndex}`; };
-                } else {
-                    showModal('success', '🌟 ممتاز!', 'لقد أنهيت هذا الدرس بنجاح. هل أنت مستعد للدرس التالي؟', 'الدرس التالي');
-                    document.getElementById('modalBtn').onclick = () => { window.location.href = `lecture.html?lang=${lang}&ch=${chIndex}&les=${lesIndex + 1}`; };
-                }
-
-            } else {
-                btnElement.classList.add('wrong');
-                setTimeout(() => btnElement.classList.remove('wrong'), 1000);
-                showModal('error', '❌ إجابة خاطئة', 'حاول مرة أخرى يا بطل، أنت تقدر!', 'حاول تاني');
-            }
-        }
-    
-    
-        function showModal(type, title, text, btnText) {
-            document.getElementById('customModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalText').innerText = text;
-            const btn = document.getElementById('modalBtn');
-            btn.innerText = btnText;
-            if(type === 'error') { document.getElementById('modalIcon').innerText = '❌'; btn.style.background = '#ef4444'; }
-            else { document.getElementById('modalIcon').innerText = '🎉'; btn.style.background = '#10b981'; }
-        }
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        </script>
-        
-
-    
-    <!-- Prism.js Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || 'javascript';
+        const chapterIdx = parseInt(urlParams.get('chapter')) || 0;
+        const lessonIdx = parseInt(urlParams.get('lesson')) || 0;
+
+        let currentData = null;
+        let currentLesson = null;
+
+        const langMap = {
+            javascript: { file: 'js_curriculum.json', ext: 'js', prism: 'javascript' },
+            python: { file: 'python_curriculum.json', ext: 'py', prism: 'python' },
+            cpp: { file: 'cpp_curriculum.json', ext: 'cpp', prism: 'cpp' }
+        };
+
+        document.getElementById('back-btn').href = `levels.html?lang=${lang}`;
+
+        async function loadLesson() {
+            try {
+                const response = await fetch(langMap[lang].file);
+                if(!response.ok) throw new Error("ملف المنهج غير موجود");
+                currentData = await response.json();
+                
+                const chapter = currentData.chapters[chapterIdx];
+                if (!chapter || !chapter.lessons || !chapter.lessons[lessonIdx]) throw new Error("الدرس غير موجود");
+
+                currentLesson = chapter.lessons[lessonIdx];
+
+                document.getElementById('lesson-title').innerText = chapter.title;
+                document.getElementById('cody-text').innerText = currentLesson.concept || "أهلاً بك!";
+                document.getElementById('code-filename').innerText = `main.${langMap[lang].ext}`;
+                
+                const codeBlock = document.getElementById('code-block');
+                codeBlock.className = `language-${langMap[lang].prism}`;
+                codeBlock.textContent = currentLesson.code || '// لا يوجد كود';
+                Prism.highlightElement(codeBlock);
+
+                document.getElementById('content-area').style.display = 'block';
+                document.getElementById('loading-text').style.display = 'none';
+
+                const isLastLesson = lessonIdx >= chapter.lessons.length - 1;
+                const isLastChapter = chapterIdx >= currentData.chapters.length - 1;
+                
+                if (isLastLesson && isLastChapter) {
+                    const nextBtn = document.getElementById('next-btn');
+                    nextBtn.innerText = '🎉 أكملت المسار!';
+                    nextBtn.disabled = true;
                 }
-            });
-        });
-    </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // البحث عن كل الأكواد في صفحة المحاضرة
-            const codeBlocks = document.querySelectorAll('pre code');
+            } catch (error) {
+                document.getElementById('loading-text').innerText = "خطأ: " + error.message;
+            }
+        }
+
+        function tryInPlayground() {
+            if (!currentLesson || !currentLesson.code) return;
+            sessionStorage.setItem('playgroundCode', currentLesson.code);
+            sessionStorage.setItem('playgroundLang', lang);
+            window.location.href = 'playground.html';
+        }
+
+        function goToNext() {
+            if (!currentData) return;
+            const chapter = currentData.chapters[chapterIdx];
+            const isLastLesson = lessonIdx >= chapter.lessons.length - 1;
             
-            codeBlocks.forEach(block => {
-                const btn = document.createElement('button');
-                btn.className = 'try-code-btn';
-                btn.innerHTML = '<i class="ri-play-line"></i> جرب الكود في الملعب';
-                btn.style.cssText = 'margin-bottom: 12px; background: var(--primary, #00ffcc); color: #000; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-family: Cairo, sans-serif; font-weight: bold; display: flex; align-items: center; gap: 6px; transition: 0.2s;';
-                btn.onmouseover = () => btn.style.transform = 'scale(1.05)';
-                btn.onmouseout = () => btn.style.transform = 'scale(1)';
-                
-                btn.onclick = () => {
-                    const code = block.innerText;
-                    let lang = 'javascript';
-                    if (block.className.includes('python')) lang = 'python';
-                    
-                    if (lang === 'cpp' || block.className.includes('cpp')) {
-                        alert('الملعب التفاعلي يدعم حالياً JavaScript و Python. دعم C++ قادم قريباً جداً! 🚀');
-                        return;
-                    }
-                    
-                    // حفظ الكود واللغة عشان ننقلهم لصفحة الملعب
-                    sessionStorage.setItem('playgroundCode', code);
-                    sessionStorage.setItem('playgroundLang', lang);
-                    window.location.href = 'playground.html';
-                };
-                
-                // إضافة الزرار قبل الكود
-                block.parentElement.parentElement.insertBefore(btn, block.parentElement);
-            });
-        });
+            if (!isLastLesson) {
+                window.location.href = `lecture.html?lang=${lang}&chapter=${chapterIdx}&lesson=${lessonIdx + 1}`;
+            } else {
+                if (chapterIdx < currentData.chapters.length - 1) {
+                    window.location.href = `lecture.html?lang=${lang}&chapter=${chapterIdx + 1}&lesson=0`;
+                }
+            }
+        }
+
+        loadLesson();
     </script>
-    </body>
-    
+</body>
 </html>

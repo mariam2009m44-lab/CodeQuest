@@ -13,6 +13,10 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+            const nameEl = document.getElementById('userNameDisplay');
+            if (nameEl) {
+                nameEl.innerText = user.displayName || user.email.split('@')[0] || "بطل CodeQuest";
+            }
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
