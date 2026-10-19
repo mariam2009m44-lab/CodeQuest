@@ -1,28 +1,23 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // 1. قواعد بيانات المستخدمين (محمية جداً)
-    // كل مستخدم يقدر يقرأ ويكتب في بياناته هو بس
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['xp', 'coins', 'role', 'isAdmin']);
     }
-    
-    // 2. قواعد المناهج والدروس (قراءة فقط للجميع)
-    // ممنوع أي مستخدم يعدل أو يمسح الدروس من المتصفح
-    match /curriculum/{document=**} {
+    match /publicProfiles/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /projects/{projectId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    match /leaderboard/{entryId} {
       allow read: if true;
-      allow write: if false; 
-    }
-    
-    // 3. قواعد النتائج والتقدم (Progress)
-    match /progress/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // 4. قاعدة افتراضية تمنع أي وصول تاني (Zero Trust)
-    match /{document=**} {
-      allow read, write: if false;
+      allow write: if false;
     }
   }
 }

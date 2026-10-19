@@ -3,55 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الملعب | CodeQuest</title>
+    <title>ملعب الأكواد | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
     <style>
-        :root { --bg-dark: #0f172a; --bg-panel: #1e293b; --primary: #00ffcc; --text-main: #e2e8f0; --border: rgba(255,255,255,0.1); }
-        body { margin: 0; padding: 0; font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; }
-        .header { background: var(--bg-panel); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .header h1 { margin: 0; font-size: 1.1rem; color: var(--primary); }
-        .lang-select { background: #0f172a; color: var(--primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-family: 'Cairo'; cursor: pointer; }
-        .run-btn { background: var(--primary); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 8px; }
-        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .workspace { display: flex; flex: 1; overflow: hidden; }
-        .editor-container { flex: 1; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
-        .console-container { flex: 1; display: flex; flex-direction: column; background: #fff; }
-        .panel-title { padding: 10px; background: var(--bg-panel); font-size: 0.9rem; color: #94a3b8; border-bottom: 1px solid var(--border); text-align: center; direction: ltr; }
-        .CodeMirror { height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 15px; direction: ltr; }
-        /* تعديل لون الخط ليكون غامق وواضح */
-        #output { flex: 1; border: none; width: 100%; height: 100%; padding: 15px; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; font-size: 14px; white-space: pre-wrap; overflow-y: auto; text-align: left; direction: ltr; color: #1e293b; }
-        @media (max-width: 768px) { .workspace { flex-direction: column; } .editor-container { border-left: none; border-bottom: 1px solid var(--border); } }
+        .playground-layout { display: flex; height: calc(100vh - 120px); gap: 20px; padding: 20px; }
+        .editor-panel, .output-panel { flex: 1; display: flex; flex-direction: column; background: #1d1f21; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-light); }
+        .panel-header { background: #2d2f31; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { color: #a0aec0; font-family: var(--font-code); font-size: 0.9rem; }
+        .CodeMirror { flex: 1; height: 100% !important; font-family: var(--font-code); font-size: 15px; direction: ltr; }
+        .output-content { flex: 1; background: #fff; padding: 15px; font-family: var(--font-code); font-size: 14px; direction: ltr; color: #1e293b; overflow-y: auto; white-space: pre-wrap; }
+        .controls { display: flex; gap: 10px; align-items: center; }
+        .select-lang { background: #1d1f21; color: #a0aec0; border: 1px solid #4a5568; padding: 6px 12px; border-radius: var(--radius-sm); font-family: var(--font-arabic); }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-right">
-            <a href="dashboard.html" style="color:var(--text-main); text-decoration:none;"><i class="ri-arrow-right-line"></i></a>
-            <h1>ملعب الأكواد</h1>
-            <select id="lang-select" class="lang-select">
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="cpp">C++</option>
-            </select>
-        </div>
-        <button class="run-btn" id="run-btn" onclick="runCode()">
-            <i class="ri-play-fill"></i> تشغيل الكود
-        </button>
+    <div style="padding: 20px 20px 0 20px;">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 8px;"><i class="ri-arrow-right-line"></i></a>
+                <h2 style="color: var(--primary-main);">ملعب الأكواد</h2>
+            </div>
+            <div class="controls">
+                <select id="langSelect" class="select-lang">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="cpp">C++</option>
+                </select>
+                <button id="runBtn" class="btn btn-primary"><i class="ri-play-fill"></i> تشغيل</button>
+            </div>
+        </header>
     </div>
 
-    <div class="workspace">
-        <div class="editor-container">
-            <div class="panel-title" id="filename">main.js</div>
-            <textarea id="code-editor"></textarea>
+    <div class="playground-layout">
+        <div class="editor-panel">
+            <div class="panel-header">
+                <span class="panel-title" id="fileName">main.js</span>
+            </div>
+            <textarea id="codeEditor"></textarea>
         </div>
-        <div class="console-container">
-            <div class="panel-title">Console Output (النتيجة)</div>
-            <div id="output"></div>
+        <div class="output-panel">
+            <div class="panel-header">
+                <span class="panel-title">Console Output</span>
+            </div>
+            <div id="output" class="output-content">> Ready...</div>
         </div>
     </div>
 
@@ -59,140 +57,71 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-
     <script>
-        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
-            mode: "javascript", theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4, tabSize: 4
+        const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+            mode: 'javascript', theme: 'dracula', lineNumbers: true, autoCloseBrackets: true
         });
-
-        const outputEl = document.getElementById('output');
-        const codeJS = "// Welcome to CodeQuest!\nlet name = \"Cody\";\nconsole.log(\"Hello, \" + name + \"!\");";
-        const codePy = "# Welcome to CodeQuest!\nname = \"Cody\"\nprint(\"Hello, \" + name + \"!\")";
-        const codeCpp = "// Welcome to CodeQuest!\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello, Cody!\" << endl;\n    return 0;\n}";
-
-        function showOutput(text, isError = false) {
-            outputEl.innerHTML = '';
-            const span = document.createElement('span');
-            // تعديل لون الخط ليكون غامق
-            span.style.color = isError ? '#dc2626' : '#1e293b'; 
-            span.textContent = text;
-            outputEl.appendChild(span);
-        }
-
-        // دالة تغيير اللغة
-        function updateEditor(lang) {
-            const filenameEl = document.getElementById('filename');
-            const btn = document.getElementById('run-btn');
-            
-            outputEl.innerHTML = ''; 
-            btn.disabled = false;
-            btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
-
-            if (lang === 'cpp') {
-                editor.setOption("mode", "text/x-c++src");
-                filenameEl.innerText = "main.cpp";
-                editor.setValue(codeCpp);
-            } else if (lang === 'python') {
-                editor.setOption("mode", "python");
-                filenameEl.innerText = "main.py";
-                editor.setValue(codePy);
-            } else {
-                editor.setOption("mode", "javascript");
-                filenameEl.innerText = "main.js";
-                editor.setValue(codeJS);
-            }
-        }
-
-        // ربط الدالة بحدث التغيير
-        document.getElementById('lang-select').addEventListener('change', function() {
-            updateEditor(this.value);
-        });
-
-        // 🚀 الحل: تشغيل اللغة الافتراضية (جافا سكريبت) أول ما الصفحة تفتح
-        window.onload = function() {
-            document.getElementById('lang-select').value = 'javascript';
-            updateEditor('javascript');
+        
+        const fileNames = { javascript: 'main.js', python: 'main.py', cpp: 'main.cpp' };
+        const modes = { javascript: 'javascript', python: 'python', cpp: 'text/x-c++src' };
+        const defaultCode = {
+            javascript: 'console.log("Hello CodeQuest!");',
+            python: 'print("Hello CodeQuest!")',
+            cpp: '#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello CodeQuest!" << endl;\n    return 0;\n}'
         };
 
-        async function runCode() {
-            const lang = document.getElementById('lang-select').value;
+        document.getElementById('langSelect').addEventListener('change', (e) => {
+            const lang = e.target.value;
+            document.getElementById('fileName').innerText = fileNames[lang];
+            editor.setOption('mode', modes[lang]);
+            editor.setValue(defaultCode[lang]);
+            document.getElementById('output').innerHTML = '> Ready...';
+        });
+
+        document.getElementById('runBtn').addEventListener('click', async () => {
+            const lang = document.getElementById('langSelect').value;
             const code = editor.getValue();
-            const btn = document.getElementById('run-btn');
+            const outputEl = document.getElementById('output');
+            const btn = document.getElementById('runBtn');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> جاري التشغيل...';
-            outputEl.innerHTML = '<span style="color:#64748b;">جاري التنفيذ...</span>';
+            outputEl.innerHTML = '> Running...';
 
-            try {
-                if (lang === 'javascript') {
-                    let logs = [];
-                    const originalLog = console.log;
-                    console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
-                    
-                    try {
-                        new Function(code)(); 
-                        console.log = originalLog;
-                        if (logs.length === 0) {
-                            showOutput('الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم console.log).');
-                        } else {
-                            showOutput(logs.join('\n'));
-                        }
-                    } catch (e) {
-                        console.log = originalLog;
-                        showOutput('Error: ' + e.message, true);
-                    }
-                    btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
-
-                } else if (lang === 'python') {
-                    if (!window.pyodide) {
-                        outputEl.innerHTML = '<span style="color:#64748b;">جاري تحميل بايثون لأول مرة... (10 ثواني)</span>';
-                        window.pyodide = await loadPyodide({
-                            // تحديد لون الخط هنا عشان يبان غامق
-                            stdout: (text) => { outputEl.innerHTML += `<span style="color:#1e293b;">${text}</span><br>`; },
-                            stderr: (text) => { outputEl.innerHTML += `<span style="color:#dc2626;">${text}</span><br>`; }
-                        });
-                    }
-                    outputEl.innerHTML = ''; 
-                    await window.pyodide.runPythonAsync(code);
-                    if (outputEl.innerHTML === '') {
-                        showOutput('الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم print).');
-                    }
-                    btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
-
-                } else if (lang === 'cpp') {
-                    const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
-                    const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
-                    
-                    const response = await fetch('https://ce.judge0.com/submissions?base64_encoded=true&wait=true', {
+            if (lang === 'javascript') {
+                let logs = [];
+                const origLog = console.log;
+                console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
+                try {
+                    new Function(code)();
+                    console.log = origLog;
+                    outputEl.innerHTML = logs.length > 0 ? logs.map(l => `> ${l}`).join('<br>') : '> Execution completed with no output.';
+                } catch (err) {
+                    console.log = origLog;
+                    outputEl.innerHTML = `<span style="color:red;">> Error: ${err.message}</span>`;
+                }
+            } else {
+                let langId = lang === 'python' ? 71 : 54;
+                const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
+                const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
+                
+                try {
+                    const res = await fetch('https://ce.judge0.com/submissions?base64_encoded=true&wait=true', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            source_code: encodeB64(code),
-                            language_id: 54
-                        })
+                        body: JSON.stringify({ source_code: encodeB64(code), language_id: langId })
                     });
-
-                    if (!response.ok) throw new Error('السيرفر مشغول، جربي تاني.');
-                    
-                    const result = await response.json();
-                    let outText = '';
-                    if (result.stdout) outText += decodeB64(result.stdout);
-                    if (result.stderr) outText += decodeB64(result.stderr);
-                    if (result.compile_output) outText += decodeB64(result.compile_output);
-                    
-                    if (!outText) {
-                        showOutput('الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة.');
-                    } else {
-                        showOutput(outText);
-                    }
-                    btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
+                    const data = await res.json();
+                    let out = '';
+                    if (data.stdout) out += decodeB64(data.stdout);
+                    if (data.stderr) out += `<span style="color:red;">${decodeB64(data.stderr)}</span>`;
+                    if (data.compile_output) out += `<span style="color:red;">${decodeB64(data.compile_output)}</span>`;
+                    outputEl.innerHTML = out || '> Execution completed.';
+                } catch (err) {
+                    outputEl.innerHTML = `<span style="color:red;">> Network Error: ${err.message}</span>`;
                 }
-            } catch (error) {
-                showOutput('حدث خطأ: ' + error.message, true);
-                btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
             }
-        }
+            btn.disabled = false;
+        });
     </script>
 </body>
 </html>

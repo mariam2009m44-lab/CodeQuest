@@ -1,95 +1,40 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مركز الألعاب | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
-        .header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: var(--primary); font-size: 1.5rem; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; max-width: 900px; }
-        @media(min-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-        
-        .game-card { border-radius: 20px; padding: 25px 15px; text-align: center; text-decoration: none; color: #fff; display: flex; flex-direction: column; align-items: center; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
-        .game-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
-        .game-card:nth-child(1) { background: linear-gradient(135deg, #f59e0b, #b45309); }
-        .game-card:nth-child(2) { background: linear-gradient(135deg, #8b5cf6, #5b21b6); }
-        .game-card:nth-child(3) { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-        .game-card:nth-child(4) { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-        .game-card:nth-child(5) { background: linear-gradient(135deg, #10b981, #047857); }
-        .game-card:nth-child(6) { background: linear-gradient(135deg, #ec4899, #be185d); }
-        
-        .game-icon { font-size: 2.5rem; margin-bottom: 10px; }
-        .game-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 5px; }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
-<body>
-    
-    <header class="top-header">
-        <a href="dashboard.html" class="btn-icon"><i class="ri-arrow-right-line"></i></a>
-        <h1 style="font-size:1.1rem; margin:0;">مركز الألعاب</h1>
-        <div style="width: 40px;"></div>
-    </header>
-
+<body style="background: var(--bg-base);">
+    <div style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: var(--text-main);">مركز الألعاب</h1>
+            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🧩</div>
+                <h3 style="margin-bottom: 10px;">حل الألغاز</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">اختبر ذكاءك في ترتيب الأكواد.</p>
+                <button class="btn btn-primary" style="width: 100%;">العب الآن</button>
+            </div>
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">⚡</div>
+                <h3 style="margin-bottom: 10px;">سرعة البديهة</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">أجب على الأسئلة في أسرع وقت.</p>
+                <button class="btn btn-primary" style="width: 100%;">العب الآن</button>
+            </div>
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🕵️</div>
+                <h3 style="margin-bottom: 10px;">اكتشف الخطأ</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">ابحث عن الخطأ البرمجي في الكود.</p>
+                <button class="btn btn-primary" style="width: 100%;">العب الآن</button>
+            </div>
+        </div>
     </div>
-
-    <div class="grid">
-        <a href="game-match.html" class="game-card"><i class="ri-puzzle-line game-icon"></i><div class="game-title">بازل الأكواد</div></a>
-        <a href="game-memory.html" class="game-card"><i class="ri-brain-line game-icon"></i><div class="game-title">لعبة الذاكرة</div></a>
-        <a href="game-bug.html" class="game-card"><i class="ri-bug-line game-icon"></i><div class="game-title">صائد الأخطاء</div></a>
-        <a href="game-speed.html" class="game-card"><i class="ri-flashlight-line game-icon"></i><div class="game-title">تحدي السرعة</div></a>
-        <a href="game-quiz.html" class="game-card"><i class="ri-question-line game-icon"></i><div class="game-title">سيد الأسئلة</div></a>
-        <a href="game-build.html" class="game-card"><i class="ri-code-box-line game-icon"></i><div class="game-title">بناء الكود</div></a>
-    </div>
-
-    
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item active"><i class="ri-home-4-line"></i><span>الرئيسية</span></a>
-        <a href="languages.html" class="nav-item"><i class="ri-book-open-line"></i><span>التعلم</span></a>
-        <a href="games.html" class="nav-item active"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="shop.html" class="nav-item"><i class="ri-shopping-bag-3-line"></i><span>المتجر</span></a>
-        <a href="profile.html" class="nav-item"><i class="ri-user-3-line"></i><span>ملفي</span></a>
-    </nav>
-
-    <script>Auth.init(l => { if(!l) window.location.href='login.html'; });</script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-</body></html>
+</body>
+</html>
