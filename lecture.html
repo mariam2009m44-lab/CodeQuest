@@ -6,55 +6,41 @@
     <title>المحاضرة | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <style>
-        body { padding-bottom: 90px; }
-        .cody-chat { display: flex; gap: 15px; margin: 20px; align-items: flex-start; }
-        .cody-avatar { width: 50px; height: 50px; background: rgba(0,255,204,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--primary, #00ffcc); flex-shrink: 0; border: 2px solid var(--primary, #00ffcc); }
-        .cody-message { background: var(--bg-panel, #1e293b); padding: 20px; border-radius: 16px; border-top-right-radius: 0; border: 1px solid rgba(255,255,255,0.1); flex: 1; line-height: 1.6; position: relative; color: #fff; }
-        
-        .code-container { background: #1d1f21; border-radius: 12px; overflow: hidden; margin: 0 20px 20px 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .code-header { background: #2d2f31; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .code-header span { color: #a0aec0; font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
-        .try-btn { background: var(--primary, #00ffcc); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
-        pre[class*="language-"] { margin: 0 !important; border-radius: 0 0 12px 12px !important; direction: ltr; text-align: left; font-family: 'JetBrains Mono', monospace !important; }
-        
-        .nav-buttons { display: flex; gap: 15px; margin: 20px; }
-        .next-btn { flex: 1; background: var(--primary, #00ffcc); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .next-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-panel, #1e293b); margin-bottom: 20px; }
-        .back-btn { color: var(--primary, #00ffcc); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .cody-box { display: flex; gap: 15px; margin-bottom: 30px; }
+        .cody-avatar { width: 50px; height: 50px; background: var(--primary-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+        .cody-bubble { background: var(--bg-surface); padding: 20px; border-radius: 16px; border-top-right-radius: 0; border: 1px solid var(--border-light); flex: 1; line-height: 1.8; }
+        pre[class*="language-"] { border-radius: var(--radius-md) !important; margin: 0 !important; }
+        .code-wrapper { background: #1d1f21; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 30px; }
+        .code-header { padding: 10px 15px; background: #2d2f31; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="levels.html" id="back-btn" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
-        <h2 id="lesson-title" style="margin:0;">جاري التحميل...</h2>
-        <div></div>
-    </div>
-
-    <div id="content-area" style="display:none;">
-        <div class="cody-chat">
-            <div class="cody-avatar"><i class="ri-robot-2-line"></i></div>
-            <div class="cody-message" id="cody-text"></div>
+    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 id="lessonTitle" style="color: var(--text-main);">جاري التحميل...</h2>
+            <a href="levels.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> رجوع</a>
         </div>
 
-        <div class="code-container">
-            <div class="code-header">
-                <span id="code-filename">code.js</span>
-                <button class="try-btn" onclick="tryInPlayground()"><i class="ri-play-line"></i> جرب الكود</button>
+        <div id="contentArea" style="display: none;">
+            <div class="cody-box">
+                <div class="cody-avatar"><i class="ri-robot-2-line"></i></div>
+                <div class="cody-bubble" id="codyText"></div>
             </div>
-            <pre class="line-numbers"><code class="language-javascript" id="code-block"></code></pre>
-        </div>
 
-        <div class="nav-buttons">
-            <button class="next-btn" id="next-btn" onclick="goToNext()">الدرس التالي <i class="ri-arrow-left-line"></i></button>
+            <div class="code-wrapper">
+                <div class="code-header">
+                    <span style="color: #a0aec0; font-family: var(--font-code); font-size: 0.85rem;">main.code</span>
+                    <button onclick="goToPlayground()" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem; min-height: 30px;"><i class="ri-play-line"></i> جرب الكود</button>
+                </div>
+                <pre><code class="language-javascript" id="codeBlock"></code></pre>
+            </div>
+
+            <button onclick="nextLesson()" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem;">الدرس التالي <i class="ri-arrow-left-line"></i></button>
         </div>
     </div>
-    
-    <div id="loading-text" style="text-align:center; padding:50px; color:var(--primary, #00ffcc);">جاري تحميل الدرس...</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
@@ -65,76 +51,54 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const lang = urlParams.get('lang') || 'javascript';
         const chapterIdx = parseInt(urlParams.get('chapter')) || 0;
-        const lessonIdx = parseInt(urlParams.get('lesson')) || 0;
+        let lessonIdx = parseInt(urlParams.get('lesson')) || 0;
+        
+        const lang = sessionStorage.getItem('selectedLang') || 'javascript';
+        const files = { javascript: 'js_curriculum.json', python: 'python_curriculum.json', cpp: 'cpp_curriculum.json' };
+        const prismLang = { javascript: 'javascript', python: 'python', cpp: 'cpp' };
 
         let currentData = null;
         let currentLesson = null;
 
-        const langMap = {
-            javascript: { file: 'js_curriculum.json', ext: 'js', prism: 'javascript' },
-            python: { file: 'python_curriculum.json', ext: 'py', prism: 'python' },
-            cpp: { file: 'cpp_curriculum.json', ext: 'cpp', prism: 'cpp' }
-        };
-
-        document.getElementById('back-btn').href = `levels.html?lang=${lang}`;
-
         async function loadLesson() {
             try {
-                const response = await fetch(langMap[lang].file);
-                if(!response.ok) throw new Error("ملف المنهج غير موجود");
-                currentData = await response.json();
+                const res = await fetch(files[lang]);
+                currentData = await res.json();
                 
                 const chapter = currentData.chapters[chapterIdx];
-                if (!chapter || !chapter.lessons || !chapter.lessons[lessonIdx]) throw new Error("الدرس غير موجود");
-
                 currentLesson = chapter.lessons[lessonIdx];
 
-                document.getElementById('lesson-title').innerText = chapter.title;
-                document.getElementById('cody-text').innerText = currentLesson.concept || "أهلاً بك!";
-                document.getElementById('code-filename').innerText = `main.${langMap[lang].ext}`;
+                document.getElementById('lessonTitle').innerText = chapter.title;
+                document.getElementById('codyText').innerHTML = currentLesson.concept;
                 
-                const codeBlock = document.getElementById('code-block');
-                codeBlock.className = `language-${langMap[lang].prism}`;
-                codeBlock.textContent = currentLesson.code || '// لا يوجد كود';
+                const codeBlock = document.getElementById('codeBlock');
+                codeBlock.className = `language-${prismLang[lang]}`;
+                codeBlock.textContent = currentLesson.code;
                 Prism.highlightElement(codeBlock);
 
-                document.getElementById('content-area').style.display = 'block';
-                document.getElementById('loading-text').style.display = 'none';
-
-                const isLastLesson = lessonIdx >= chapter.lessons.length - 1;
-                const isLastChapter = chapterIdx >= currentData.chapters.length - 1;
-                
-                if (isLastLesson && isLastChapter) {
-                    const nextBtn = document.getElementById('next-btn');
-                    nextBtn.innerText = '🎉 أكملت المسار!';
-                    nextBtn.disabled = true;
-                }
-
-            } catch (error) {
-                document.getElementById('loading-text').innerText = "خطأ: " + error.message;
+                document.getElementById('contentArea').style.display = 'block';
+            } catch (e) {
+                document.getElementById('lessonTitle').innerText = "خطأ في تحميل الدرس";
             }
         }
 
-        function tryInPlayground() {
-            if (!currentLesson || !currentLesson.code) return;
+        function goToPlayground() {
             sessionStorage.setItem('playgroundCode', currentLesson.code);
             sessionStorage.setItem('playgroundLang', lang);
             window.location.href = 'playground.html';
         }
 
-        function goToNext() {
-            if (!currentData) return;
+        function nextLesson() {
             const chapter = currentData.chapters[chapterIdx];
-            const isLastLesson = lessonIdx >= chapter.lessons.length - 1;
-            
-            if (!isLastLesson) {
-                window.location.href = `lecture.html?lang=${lang}&chapter=${chapterIdx}&lesson=${lessonIdx + 1}`;
+            if (lessonIdx < chapter.lessons.length - 1) {
+                lessonIdx++;
+                window.location.href = `lecture.html?chapter=${chapterIdx}&lesson=${lessonIdx}`;
+            } else if (chapterIdx < currentData.chapters.length - 1) {
+                window.location.href = `lecture.html?chapter=${chapterIdx + 1}&lesson=0`;
             } else {
-                if (chapterIdx < currentData.chapters.length - 1) {
-                    window.location.href = `lecture.html?lang=${lang}&chapter=${chapterIdx + 1}&lesson=0`;
-                }
+                alert('أكملت هذا المسار!');
+                window.location.href = 'levels.html';
             }
         }
 

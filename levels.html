@@ -3,82 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مسار التعلم | CodeQuest</title>
+    <title>خريطة التعلم | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { padding-bottom: 90px; }
-        .chapters-grid { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .chapter-card { background: var(--bg-panel, #1e293b); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
-        .chapter-card:hover { transform: translateY(-3px); border-color: var(--primary, #00ffcc); box-shadow: 0 10px 20px rgba(0,255,204,0.1); }
-        .chapter-info h3 { margin: 0 0 8px 0; font-size: 1.2rem; color: #fff; }
-        .chapter-info p { margin: 0; font-size: 0.9rem; color: #94a3b8; }
-        .chapter-icon { width: 50px; height: 50px; background: rgba(0,255,204,0.1); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: var(--primary, #00ffcc); font-size: 1.5rem; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-panel, #1e293b); margin-bottom: 20px; }
-        .back-btn { color: var(--primary, #00ffcc); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: bold; }
-    </style>
 </head>
 <body>
-    <div class="header">
-        <a href="lessons.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
-        <h2 id="lang-title" style="margin:0; color:var(--primary, #00ffcc);">مسار التعلم</h2>
-        <div></div>
+    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <h1 id="pageTitle" style="color: var(--text-main);">جاري التحميل...</h1>
+            <a href="lessons.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> رجوع</a>
+        </div>
+        
+        <div id="levelsContainer" style="display: flex; flex-direction: column; gap: 16px;">
+        </div>
     </div>
-    <div class="chapters-grid" id="chapters-container">
-        <p style="text-align:center; color:#94a3b8;">جاري تحميل الفصول...</p>
-    </div>
-
-    <!-- Bottom Nav -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item active"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const lang = urlParams.get('lang') || 'javascript';
-            
-            const langTitles = { javascript: 'مسار JavaScript', python: 'مسار Python', cpp: 'مسار C++' };
-            document.getElementById('lang-title').innerText = langTitles[lang] || 'مسار التعلم';
+        const lang = sessionStorage.getItem('selectedLang') || 'javascript';
+        const titles = { javascript: 'مسار JavaScript', python: 'مسار Python', cpp: 'مسار C++' };
+        document.getElementById('pageTitle').innerText = titles[lang];
 
-            const fileMap = { javascript: 'js_curriculum.json', python: 'python_curriculum.json', cpp: 'cpp_curriculum.json' };
+        const files = { javascript: 'js_curriculum.json', python: 'python_curriculum.json', cpp: 'cpp_curriculum.json' };
 
+        async function loadLevels() {
             try {
-                const response = await fetch(fileMap[lang]);
-                if(!response.ok) throw new Error('File not found');
-                const data = await response.json();
+                const res = await fetch(files[lang]);
+                const data = await res.json();
+                const container = document.getElementById('levelsContainer');
                 
-                const container = document.getElementById('chapters-container');
-                container.innerHTML = '';
-
-                if (!data.chapters || data.chapters.length === 0) {
-                    container.innerHTML = '<p style="text-align:center; color:#94a3b8;">لا توجد فصول متاحة لهذه اللغة.</p>';
-                    return;
-                }
-
                 data.chapters.forEach((chapter, index) => {
                     const card = document.createElement('div');
-                    card.className = 'chapter-card';
-                    card.onclick = () => {
-                        window.location.href = `lecture.html?lang=${lang}&chapter=${index}`;
-                    };
+                    card.className = 'card';
+                    card.style.cursor = 'pointer';
                     card.innerHTML = `
-                        <div class="chapter-info">
-                            <h3>${chapter.title}</h3>
-                            <p>${chapter.lessons ? chapter.lessons.length : 0} دروس تفاعلية</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="color: var(--text-main); margin-bottom: 8px;">${chapter.title}</h3>
+                                <p style="color: var(--text-muted); font-size: 0.9rem;">${chapter.lessons.length} دروس تفاعلية</p>
+                            </div>
+                            <div style="width: 50px; height: 50px; background: rgba(101,84,217,0.1); color: var(--primary-main); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="ri-arrow-left-s-line"></i>
+                            </div>
                         </div>
-                        <div class="chapter-icon"><i class="ri-arrow-left-s-line"></i></div>
                     `;
+                    card.onclick = () => {
+                        window.location.href = `lecture.html?chapter=${index}`;
+                    };
                     container.appendChild(card);
                 });
-            } catch (error) {
-                document.getElementById('chapters-container').innerHTML = '<p style="color:red; text-align:center;">حدث خطأ في تحميل البيانات. تأكد من وجود ملفات JSON.</p>';
+            } catch (e) {
+                document.getElementById('levelsContainer').innerHTML = '<p style="color:red;">حدث خطأ في تحميل المنهج.</p>';
             }
-        });
+        }
+        loadLevels();
     </script>
 </body>
 </html>
