@@ -19,8 +19,30 @@
         </div>
     </div>
 
-    <script>
-        let projects = JSON.parse(localStorage.getItem('cq_projects')) || [];
+    <script type="module">
+        import { auth, db, doc, getDoc, setDoc, updateDoc } from './js/app.js';
+        import { showToast } from './js/ui.js';
+        import { collection, query, where, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        let currentUser = null;
+        let projects = [];
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadProjects();
+            }
+        });
+
+        async function loadProjects() {
+            const q = query(collection(db, "projects"), where("userId", "==", currentUser.uid));
+            const querySnapshot = await getDocs(q);
+            projects = [];
+            querySnapshot.forEach((doc) => {
+                projects.push({ id: doc.id, ...doc.data() });
+            });
+            renderProjects();
+        }
 
         function renderProjects() {
             const grid = document.getElementById('projectsGrid');
@@ -29,7 +51,7 @@
                 grid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">لا توجد مشاريع بعد. ابدأ بإنشاء مشروعك الأول!</p>';
                 return;
             }
-            projects.forEach((proj, index) => {
+            projects.forEach((proj) => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
@@ -37,37 +59,46 @@
                     <h3 style="margin-bottom: 5px;">${proj.name}</h3>
                     <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px;">آخر تعديل: ${proj.date}</p>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-secondary" style="flex: 1; padding: 8px;" onclick="openProject(${index})">فتح</button>
-                        <button class="btn btn-secondary" style="padding: 8px; color: var(--danger); border-color: var(--danger);" onclick="deleteProject(${index})"><i class="ri-delete-bin-line"></i></button>
+                        <button class="btn btn-secondary" style="flex: 1; padding: 8px;" onclick="openProject('${proj.id}')">فتح</button>
+                        <button class="btn btn-secondary" style="padding: 8px; color: var(--danger); border-color: var(--danger);" onclick="deleteProject('${proj.id}')"><i class="ri-delete-bin-line"></i></button>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function createProject() {
+        window.createProject = async () => {
             const name = prompt('أدخل اسم المشروع الجديد:');
-            if (name) {
-                projects.push({ name: name, date: new Date().toLocaleDateString('ar-EG'), code: 'console.log("Hello");' });
-                localStorage.setItem('cq_projects', JSON.stringify(projects));
-                renderProjects();
+            if (name && currentUser) {
+                const newProj = {
+                    userId: currentUser.uid,
+                    name: name,
+                    date: new Date().toLocaleDateString('ar-EG'),
+                    code: 'console.log("Hello CodeQuest");',
+                    language: 'javascript'
+                };
+                await addDoc(collection(db, "projects"), newProj);
+                showToast('تم إنشاء المشروع بنجاح!', 'success');
+                await loadProjects();
             }
-        }
+        };
 
-        function deleteProject(index) {
+        window.deleteProject = async (id) => {
             if (confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
-                projects.splice(index, 1);
-                localStorage.setItem('cq_projects', JSON.stringify(projects));
-                renderProjects();
+                await deleteDoc(doc(db, "projects", id));
+                showToast('تم حذف المشروع.', 'info');
+                await loadProjects();
             }
-        }
+        };
 
-        function openProject(index) {
-            sessionStorage.setItem('playgroundCode', projects[index].code);
-            window.location.href = 'playground.html';
-        }
-
-        renderProjects();
+        window.openProject = (id) => {
+            const proj = projects.find(p => p.id === id);
+            if (proj) {
+                sessionStorage.setItem('playgroundCode', proj.code);
+                sessionStorage.setItem('playgroundLang', proj.language || 'javascript');
+                window.location.href = 'playground.html';
+            }
+        };
     </script>
 </body>
 </html>

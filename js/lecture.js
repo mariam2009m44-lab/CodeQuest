@@ -1,4 +1,5 @@
 import { showToast } from './ui.js';
+import { addXP, auth, db, doc, getDoc, setDoc } from './app.js';
 
 const urlParams = new URLSearchParams(window.location.search);
 const lang = urlParams.get('lang') || 'javascript';
@@ -33,7 +34,7 @@ async function initLesson() {
         if (!currentLesson) throw new Error('Lesson not found');
 
         document.getElementById('lessonTitle').innerText = currentLesson.title;
-        document.getElementById('coddocument.getElementById('codyIntro').innerText = currentLesson.cody_intro;
+        document.getElementById('codyIntro').innerText = currentLesson.cody_intro;
         document.getElementById('lessonTask').innerText = currentLesson.task;
         
         const hintsList = document.getElementById('lessonHints');
@@ -137,7 +138,7 @@ window.showQuiz = () => {
     document.getElementById('quizModal').style.display = 'flex';
 };
 
-window.submitQuiz = () => {
+window.submitQuiz = async () => {
     if (selectedOptionIdx === null) return;
     
     const feedback = document.getElementById('quizFeedback');
@@ -145,16 +146,21 @@ window.submitQuiz = () => {
     if (selectedOptionIdx === currentLesson.quiz.correct_index) {
         feedback.innerHTML = `<span style="color: var(--success);">${currentLesson.quiz.success_msg} +${currentLesson.quiz.xp_reward} XP</span>`;
         
-        let completed = JSON.parse(localStorage.getItem('cq_completed')) || [];
-        const lessonKey = `${lang}_ch${chapterIdx}_l${lessonIdx}`;
-        
-        if (!completed.includes(lessonKey)) {
-            completed.push(lessonKey);
-            localStorage.setItem('cq_completed', JSON.stringify(completed));
+        if (auth.currentUser) {
+            const progressRef = doc(db, "progress", auth.currentUser.uid);
+            const progressSnap = await getDoc(progressRef);
+            let completed = progressSnap.exists() ? progressSnap.data().completedLessons || [] : [];
             
-            let currentXP = parseInt(localStorage.getItem('cq_xp')) || 0;
-            localStorage.setItem('cq_xp', currentXP + currentLesson.quiz.xp_reward);
-            showToast('تمت إضافة النقاط بنجاح!', 'success');
+            const lessonKey = `${lang}_ch${chapterIdx}_l${lessonIdx}`;
+            
+            if (!completed.includes(lessonKey)) {
+                completed.push(lessonKey);
+                await setDoc(progressRef, { completedLessons: completed }, { merge: true });
+                await addXP(currentLesson.quiz.xp_reward);
+                showToast('تمت إضافة النقاط بنجاح!', 'success');
+            } else {
+                showToast('لقد أكملت هذا الدرس مسبقاً.', 'info');
+            }
         }
 
         setTimeout(() => {
