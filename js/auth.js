@@ -12,7 +12,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import {
   doc,
-  getDoc,
   runTransaction,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -62,9 +61,9 @@ export async function ensureUserProfile(user, displayName = "") {
 
     if (snapshot.exists()) return;
 
-    const name = String(
-      displayName || user.displayName || "متعلم"
-    ).trim().slice(0, 50);
+    const name = String(displayName || user.displayName || "متعلم")
+      .trim()
+      .slice(0, 50);
 
     transaction.set(reference, {
       displayName: name || "متعلم",
@@ -131,7 +130,12 @@ export async function requireUser() {
   const user = await authReady;
 
   if (!user) {
-    location.assign("login.html");
+    const currentPage = location.pathname.split("/").pop();
+    const next = currentPage && /^[a-zA-Z0-9_-]+\.html$/.test(currentPage)
+      ? currentPage + location.search
+      : "dashboard.html";
+
+    location.replace(`login.html?next=${encodeURIComponent(next)}`);
     throw new Error("يجب تسجيل الدخول.");
   }
 
@@ -140,5 +144,5 @@ export async function requireUser() {
 
 export async function logoutUser() {
   await signOut(auth);
-  location.assign("index.html");
+  location.replace("index.html");
 }
