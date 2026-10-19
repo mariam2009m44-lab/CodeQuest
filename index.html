@@ -3,36 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeQuest | ابدأ رحلتك</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>CodeQuest | عالم البرمجة للأطفال</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css?v=5">
     <style>
-        .landing-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; position: relative; }
-        .top-bar { position: absolute; top: 0; left: 0; right: 0; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.8rem; font-weight: 900; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
-        .logo i { color: var(--primary); }
-        .hero-icon { font-size: 7rem; color: var(--primary); margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.5)); animation: float 4s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .hero-title { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.2; margin-bottom: 15px; color: var(--text-primary); }
-        .hero-title span { background: linear-gradient(135deg, var(--primary), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero-desc { font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin-bottom: 40px; line-height: 1.8; }
-        .cta-group { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 350px; }
-        @media (min-width: 768px) { .cta-group { flex-direction: row; max-width: none; } .cta-group a { min-width: 200px; } }
+        :root {
+            --light-bg: #F8FAFC;
+            --light-surface: #FFFFFF;
+            --light-text-primary: #1E293B;
+            --light-text-secondary: #64748B;
+            --light-primary: #4F46E5;
+            --light-primary-hover: #4338CA;
+            --light-border: #E2E8F0;
+            --light-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+            --dark-bg: #0B0F19;
+            --dark-surface: #111827;
+            --dark-card: #1F2937;
+            --dark-border: #374151;
+            --dark-text-primary: #F9FAFB;
+            --dark-text-secondary: #9CA3AF;
+            --dark-primary: #8B5CF6;
+            --dark-primary-hover: #7C3AED;
+            --dark-accent-cyan: #06B6D4;
+            --dark-accent-green: #10B981;
+            --dark-accent-orange: #F59E0B;
+            --dark-accent-pink: #EC4899;
+
+            --font-arabic: 'Cairo', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-pill: 999px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-arabic); background-color: var(--light-bg); color: var(--light-text-primary); line-height: 1.6; transition: background-color 0.4s ease, color 0.4s ease; overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; border: none; cursor: pointer; }
+
+        .world { display: none; opacity: 0; transition: opacity 0.5s ease; min-height: 100vh; }
+        .world.active { display: block; opacity: 1; }
+
+        .landing-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: var(--light-surface); border-bottom: 1px solid var(--light-border); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.9); }
+        .landing-logo { font-size: 1.8rem; font-weight: 900; color: var(--light-primary); display: flex; align-items: center; gap: 10px; }
+        .landing-logo i { font-size: 2rem; }
+        .landing-nav-links { display: flex; gap: 30px; align-items: center; }
+        .landing-nav-links a { font-weight: 600; color: var(--light-text-secondary); transition: color 0.2s; }
+        .landing-nav-links a:hover { color: var(--light-primary); }
+        .btn-login-light { background: transparent; color: var(--light-primary); font-weight: 700; padding: 10px 20px; border-radius: var(--radius-sm); transition: background 0.2s; }
+        .btn-login-light:hover { background: #EEF2FF; }
+        .btn-signup-light { background: var(--light-primary); color: white; padding: 12px 28px; border-radius: var(--radius-sm); font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
+        .btn-signup-light:hover { background: var(--light-primary-hover); transform: translateY(-2px); }
+
+        .hero-section { display: flex; align-items: center; justify-content: space-between; padding: 80px 10%; max-width: 1300px; margin: 0 auto; gap: 40px; }
+        .hero-text { flex: 1; max-width: 600px; }
+        .hero-badge { display: inline-block; background: #EEF2FF; color: var(--light-primary); padding: 8px 16px; border-radius: var(--radius-pill); font-weight: 700; font-size: 0.9rem; margin-bottom: 20px; }
+        .hero-text h1 { font-size: 4rem; font-weight: 900; line-height: 1.1; margin-bottom: 20px; color: var(--light-text-primary); }
+        .hero-text h1 span { color: var(--light-primary); display: inline-block; }
+        .hero-text p { font-size: 1.2rem; color: var(--light-text-secondary); margin-bottom: 35px; line-height: 1.8; }
+        .hero-actions { display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn-hero-primary { background: var(--light-primary); color: white; padding: 18px 40px; border-radius: var(--radius-sm); font-size: 1.2rem; font-weight: 700; transition: all 0.3s; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); display: inline-flex; align-items: center; gap: 10px; }
+        .btn-hero-primary:hover { background: var(--light-primary-hover); transform: translateY(-3px); box-shadow: 0 15px 35px rgba(79, 70, 229, 0.4); }
+        .btn-hero-secondary { background: transparent; color: var(--light-text-primary); padding: 18px 30px; border: 2px solid var(--light-border); border-radius: var(--radius-sm); font-size: 1.2rem; font-weight: 700; transition: all 0.2s; }
+        .btn-hero-secondary:hover { border-color: var(--light-text-primary); }
+
+        .hero-visual { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        .hero-illustration { width: 100%; max-width: 500px; height: 400px; background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border-radius: var(--radius-lg); display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; box-shadow: var(--light-shadow); }
+        .hero-illustration i { font-size: 12rem; color: var(--light-primary); opacity: 0.8; animation: float 4s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .hero-illustration::before { content: ''; position: absolute; width: 200px; height: 200px; background: rgba(79, 70, 229, 0.1); border-radius: 50%; top: -50px; right: -50px; }
+
+        .features-section { padding: 100px 10%; background: var(--light-surface); }
+        .features-container { max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; font-size: 2.5rem; font-weight: 900; margin-bottom: 20px; }
+        .section-subtitle { text-align: center; color: var(--light-text-secondary); font-size: 1.2rem; margin-bottom: 60px; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .feature-card { background: var(--light-bg); padding: 40px 30px; border-radius: var(--radius-md); text-align: center; transition: transform 0.3s, box-shadow 0.3s; border: 1px solid var(--light-border); }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: var(--light-shadow); }
+        .feature-icon { width: 80px; height: 80px; background: #EEF2FF; color: var(--light-primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; margin: 0 auto 25px; }
+        .feature-card h3 { font-size: 1.4rem; margin-bottom: 15px; color: var(--light-text-primary); }
+        .feature-card p { color: var(--light-text-secondary); font-size: 1rem; line-height: 1.7; }
+
+        .how-it-works { padding: 100px 10%; background: var(--light-bg); }
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .step-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .step-number { width: 60px; height: 60px; background: var(--light-primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; font-weight: 900; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3); }
+        .step-card h4 { font-size: 1.3rem; margin-bottom: 10px; }
+        .step-card p { color: var(--light-text-secondary); }
+        .landing-footer { padding: 40px 10%; background: var(--light-surface); border-top: 1px solid var(--light-border); text-align: center; color: var(--light-text-secondary); font-size: 0.9rem; }
+
+        .dashboard-layout { display: flex; min-height: 100vh; background-color: var(--dark-bg); color: var(--dark-text-primary); background-image: radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%); }
+        .dashboard-sidebar { width: 280px; background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(15px); border-left: 1px solid var(--dark-border); display: flex; flex-direction: column; padding: 30px 20px; position: sticky; top: 0; height: 100vh; z-index: 10; }
+        .sidebar-logo { font-size: 1.6rem; font-weight: 900; color: var(--dark-text-primary); display: flex; align-items: center; gap: 12px; margin-bottom: 50px; padding: 0 10px; }
+        .sidebar-logo i { color: var(--dark-primary); font-size: 2.2rem; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .sidebar-nav-item { display: flex; align-items: center; gap: 15px; padding: 14px 18px; border-radius: var(--radius-sm); color: var(--dark-text-secondary); font-weight: 600; font-size: 1.05rem; transition: all 0.2s; cursor: pointer; }
+        .sidebar-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--dark-text-primary); }
+        .sidebar-nav-item.active { background: linear-gradient(90deg, rgba(139, 92, 246, 0.15), transparent); color: var(--dark-primary); border-right: 3px solid var(--dark-primary); }
+        .sidebar-nav-item i { font-size: 1.4rem; }
+        .sidebar-nav-item.logout { margin-top: auto; color: var(--dark-accent-pink); background: rgba(236, 72, 153, 0.1); }
+
+        .dashboard-main { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; gap: 30px; overflow-y: auto; }
+        .dashboard-topbar { display: flex; justify-content: space-between; align-items: center; background: rgba(31, 41, 55, 0.6); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: var(--radius-pill); border: 1px solid var(--dark-border); }
+        .topbar-user { display: flex; align-items: center; gap: 15px; }
+        .topbar-avatar { width: 55px; height: 55px; background: var(--dark-bg); border: 2px solid var(--dark-primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: var(--dark-primary); box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); }
+        .topbar-user-info h2 { font-size: 1.2rem; font-weight: 800; color: var(--dark-text-primary); margin: 0; }
+        .topbar-user-info p { font-size: 0.9rem; color: var(--dark-text-secondary); margin: 0; }
+        .topbar-stats { display: flex; gap: 15px; }
+        .stat-badge { background: var(--dark-bg); padding: 8px 20px; border-radius: var(--radius-pill); display: flex; align-items: center; gap: 8px; border: 1px solid var(--dark-border); font-weight: 800; font-size: 1.1rem; }
+        .stat-badge.coins { color: var(--dark-accent-orange); border-color: rgba(245, 158, 11, 0.3); }
+        .stat-badge.xp { color: var(--dark-accent-cyan); border-color: rgba(6, 182, 212, 0.3); }
+
+        .dashboard-hero { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        .hero-main-card { background: linear-gradient(135deg, rgba(31, 41, 55, 1), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: var(--radius-lg); padding: 35px; position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(139, 92, 246, 0.15); }
+        .hero-main-card h1 { font-size: 2.2rem; font-weight: 900; color: var(--dark-text-primary); margin-bottom: 10px; }
+        .hero-main-card p { font-size: 1.1rem; color: var(--dark-text-secondary); margin-bottom: 30px; max-width: 70%; }
+        .hero-main-card .btn-dark-primary { background: linear-gradient(135deg, var(--dark-primary), var(--dark-primary-hover)); color: white; padding: 14px 30px; border-radius: var(--radius-sm); font-weight: 700; font-size: 1.1rem; transition: all 0.2s; box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4); }
+        .hero-main-card .btn-dark-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .hero-main-card .hero-cody-bg { position: absolute; left: -20px; bottom: -20px; font-size: 14rem; color: rgba(255, 255, 255, 0.03); transform: rotate(-15deg); pointer-events: none; }
+        .hero-side-card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: var(--radius-lg); padding: 25px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+        .hero-side-card h3 { font-size: 1.2rem; color: var(--dark-text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .hero-side-card p { font-size: 0.95rem; color: var(--dark-text-secondary); margin-bottom: 20px; }
+        .btn-dark-secondary { background: transparent; color: var(--dark-text-primary); border: 1px solid var(--dark-border); padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; transition: all 0.2s; }
+        .btn-dark-secondary:hover { border-color: var(--dark-primary); color: var(--dark-primary); background: rgba(139, 92, 246, 0.05); }
+
+        .dashboard-quick-access { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .quick-card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: var(--radius-md); padding: 25px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .quick-card:hover { transform: translateY(-5px); border-color: var(--dark-primary); box-shadow: 0 10px 30px rgba(139, 92, 246, 0.1); }
+        .quick-icon { width: 65px; height: 65px; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; margin-bottom: 15px; }
+        .quick-icon.cyan { background: rgba(6, 182, 212, 0.1); color: var(--dark-accent-cyan); }
+        .quick-icon.purple { background: rgba(139, 92, 246, 0.1); color: var(--dark-primary); }
+        .quick-icon.orange { background: rgba(245, 158, 11, 0.1); color: var(--dark-accent-orange); }
+        .quick-icon.green { background: rgba(16, 185, 129, 0.1); color: var(--dark-accent-green); }
+        .quick-card h4 { font-size: 1.1rem; font-weight: 700; color: var(--dark-text-primary); margin: 0; }
+
+        .dashboard-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .extra-card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: var(--radius-lg); padding: 25px; }
+        .extra-card h3 { font-size: 1.2rem; color: var(--dark-text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .progress-bar-dark { width: 100%; height: 12px; background: var(--dark-bg); border-radius: var(--radius-pill); overflow: hidden; margin-bottom: 10px; border: 1px solid var(--dark-border); }
+        .progress-fill-dark { height: 100%; background: linear-gradient(90deg, var(--dark-accent-cyan), var(--dark-primary)); border-radius: var(--radius-pill); width: 65%; transition: width 0.5s ease; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--dark-text-secondary); }
+        .achievement-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 8px 16px; border-radius: var(--radius-pill); color: var(--dark-accent-orange); font-weight: 700; font-size: 0.9rem; margin-bottom: 10px; }
+
+        @media (max-width: 1024px) { .features-grid, .steps-grid { grid-template-columns: repeat(2, 1fr); } .dashboard-hero { grid-template-columns: 1fr; } .dashboard-quick-access { grid-template-columns: repeat(2, 1fr); } .dashboard-extra { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .landing-nav-links { display: none; } .hero-section { flex-direction: column; text-align: center; padding: 50px 5%; } .hero-text h1 { font-size: 2.8rem; } .hero-actions { justify-content: center; } .hero-illustration { height: 300px; } .features-grid, .steps-grid { grid-template-columns: 1fr; } .dashboard-layout { flex-direction: column; } .dashboard-sidebar { display: none; } .dashboard-main { padding: 20px; } .dashboard-topbar { flex-direction: column; gap: 15px; border-radius: var(--radius-md); } .dashboard-quick-access { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <div class="logo"><i class="ri-code-box-fill"></i> CodeQuest</div>
+
+    <div id="world-landing" class="world active">
+        <nav class="landing-nav">
+            <div class="landing-logo"><i class="ri-code-box-fill"></i> CodeQuest</div>
+            <div class="landing-nav-links">
+                <a href="#features">المميزات</a>
+                <a href="#how-it-works">كيف يعمل</a>
+                <a href="#pricing">الأسعار</a>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-login-light" onclick="switchWorld('dashboard')">تسجيل الدخول</button>
+                <button class="btn-signup-light" onclick="switchWorld('dashboard')">ابدأ المغامرة</button>
+            </div>
+        </nav>
+
+        <section class="hero-section">
+            <div class="hero-text">
+                <span class="hero-badge"><i class="ri-rocket-line"></i> مصمم للأبطال الصغار</span>
+                <h1>اكتشف عالم <span>البرمجة</span><br>مع كودي!</h1>
+                <p>انضم إلى رحلة تعليمية تفاعلية لتعلم لغات البرمجة، بناء الألعاب، وحل الألغاز. كل ذلك في بيئة آمنة وممتعة مصممة خصيصاً للأطفال من 8 إلى 14 سنة.</p>
+                <div class="hero-actions">
+                    <button class="btn-hero-primary" onclick="switchWorld('dashboard')">ابدأ التعلم الآن <i class="ri-arrow-left-line"></i></button>
+                    <button class="btn-hero-secondary" onclick="switchWorld('dashboard')"><i class="ri-play-circle-line"></i> شاهد العرض</button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-illustration"><i class="ri-robot-2-fill"></i></div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="features-container">
+                <h2 class="section-title">لماذا CodeQuest؟</h2>
+                <p class="section-subtitle">كل ما يحتاجه طفلك لبدء رحلته في عالم البرمجة</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="ri-book-open-line"></i></div>
+                        <h3>دروس تفاعلية</h3>
+                        <p>تعلم JavaScript, Python, C++ بأسلوب قصصي ممتع مع الروبوت كودي.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="ri-terminal-box-line"></i></div>
+                        <h3>محرر أكواد حقيقي</h3>
+                        <p>اكتب الكود الخاص بك وشغله فوراً وشاهد النتيجة في بيئة آمنة.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="ri-gamepad-line"></i></div>
+                        <h3>ألعاب ومكافآت</h3>
+                        <p>اجمع النقاط، اكسب الشارات، والعب ألعاب تعليمية لتثبيت المفاهيم.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-it-works">
+            <div class="features-container">
+                <h2 class="section-title">كيف تبدأ الرحلة؟</h2>
+                <p class="section-subtitle">ثلاث خطوات بسيطة لدخول عالم كودي</p>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h4>أنشئ حسابك<</h4>
+                        <p>سجل بسهولة واختر شخصيتك المفضلة.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h4>اختر مسارك</h4>
+                        <p>اختر لغة البرمجة التي تريد تعلمها.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h4>ابدأ التعلم</h4>
+                        <p>اتبع الدروس التفاعلية واكسب المكافآت.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="landing-footer">
+            <p>© 2026 CodeQuest. جميع الحقوق محفوظة. صُنع بحب للأطفال.</p>
+        </footer>
     </div>
-    <div class="landing-wrapper">
-        <div class="hero-icon"><i class="ri-robot-2-fill"></i></div>
-        <h1 class="hero-title">اكتشف عالم البرمجة<br><span>مع كودي!</span></h1>
-        <p class="hero-desc">انضم إلى رحلة تعليمية ممتعة لتعلم لغات البرمجة، بناء الألعاب، وحل الألغاز. مصمم خصيصاً للأبطال الصغار من 8 إلى 14 سنة.</p>
-        <div class="cta-group">
-            <a href="signup.html" class="btn-primary">إنشاء حساب جديد <i class="ri-user-add-line"></i></a>
-            <a href="login.html" class="btn-secondary">تسجيل الدخول</a>
+
+    <div id="world-dashboard" class="world">
+        <div class="dashboard-layout">
+            <aside class="dashboard-sidebar">
+                <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
+                <nav class="sidebar-nav">
+                    <div class="sidebar-nav-item active"><i class="ri-home-5-line"></i> الرئيسية</div>
+                    <div class="sidebar-nav-item"><i class="ri-map-2-line"></i> مسار التعلم</div>
+                    <div class="sidebar-nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</div>
+                    <div class="sidebar-nav-item"><i class="ri-gamepad-line"></i> الألعاب</div>
+                    <div class="sidebar-nav-item"><i class="ri-store-3-line"></i> المتجر</div>
+                    <div class="sidebar-nav-item"><i class="ri-user-smile-line"></i> ملفي الشخصي</div>
+                    <div class="sidebar-nav-item"><i class="ri-settings-4-line"></i> الإعدادات</div>
+                    <div class="sidebar-nav-item logout" onclick="switchWorld('landing')"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</div>
+                </nav>
+            </aside>
+
+            <main class="dashboard-main">
+                <header class="dashboard-topbar">
+                    <div class="topbar-user">
+                        <div class="topbar-avatar">🤖</div>
+                        <div class="topbar-user-info">
+                            <h2>مرحباً، بطل! 👋</h2>
+                            <p>مستعد لمغامرة جديدة اليوم؟</p>
+                        </div>
+                    </div>
+                    <div class="topbar-stats">
+                        <div class="stat-badge coins"><i class="ri-coins-fill"></i> 500</div>
+                        <div class="stat-badge xp"><i class="ri-star-fill"></i> 0 XP</div>
+                    </div>
+                </header>
+
+                <section class="dashboard-hero">
+                    <div class="hero-main-card">
+                        <h1>أكمل مغامرتك!</h1>
+                        <p>أنت على بعد خطوة واحدة من إتقان لغة جديدة. الدرس التالي ينتظرك.</p>
+                        <button class="btn-dark-primary">استكمال التعلم <i class="ri-arrow-left-line"></i></button>
+                        <i class="ri-robot-2-fill hero-cody-bg"></i>
+                    </div>
+                    <div class="hero-side-card">
+                        <h3><i class="ri-fire-fill" style="color: var(--dark-accent-orange);"></i> مهمة اليوم</h3>
+                        <p>أكمل درساً واحداً اليوم للحفاظ على سلسلة الأيام!</p>
+                        <button class="btn-dark-secondary">اذهب للدروس</button>
+                    </div>
+                </section>
+
+                <section class="dashboard-quick-access">
+                    <div class="quick-card">
+                        <div class="quick-icon cyan"><i class="ri-book-open-line"></i></div>
+                        <h4>الدروس</h4>
+                    </div>
+                    <div class="quick-card">
+                        <div class="quick-icon purple"><i class="ri-code-s-slash-line"></i></div>
+                        <h4>محرر الأكواد</h4>
+                    </div>
+                    <div class="quick-card">
+                        <div class="quick-icon orange"><i class="ri-gamepad-line"></i></div>
+                        <h4>الألعاب</h4>
+                    </div>
+                    <div class="quick-card">
+                        <div class="quick-icon green"><i class="ri-shopping-bag-3-line"></i></div>
+                        <h4>المتجر</h4>
+                    </div>
+                </section>
+
+                <section class="dashboard-extra">
+                    <div class="extra-card">
+                        <h3><i class="ri-bar-chart-line" style="color: var(--dark-accent-cyan);"></i> تقدمك</h3>
+                        <div class="progress-bar-dark">
+                            <div class="progress-fill-dark"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span>المستوى 3</span>
+                            <span>65%</span>
+                        </div>
+                    </div>
+                    <div class="extra-card">
+                        <h3><i class="ri-medal-line" style="color: var(--dark-accent-orange);"></i> إنجازاتك</h3>
+                        <div class="achievement-badge"><i class="ri-trophy-line"></i> بداية موفقة</div>
+                        <div class="achievement-badge"><i class="ri-fire-line"></i> 5 أيام متتالية</div>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
+
+    <script>
+        function switchWorld(worldName) {
+            document.querySelectorAll('.world').forEach(world => { world.classList.remove('active'); });
+            if (worldName === 'landing') {
+                document.getElementById('world-landing').classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (worldName === 'dashboard') {
+                document.getElementById('world-dashboard').classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeWorld = document.querySelector('.world.active');
+            if (activeWorld) { activeWorld.style.opacity = '1'; }
+        });
+    </script>
 </body>
 </html>
