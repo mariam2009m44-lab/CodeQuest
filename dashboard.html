@@ -6,7 +6,7 @@
     <title>لوحة التحكم | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=999">
 </head>
 <body>
     <div class="app-layout">
@@ -15,8 +15,8 @@
             <nav class="nav-menu">
                 <a href="dashboard.html" class="nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
                 <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
-                <a href="#" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="#" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
+                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
                 <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</a>
             </nav>
         </aside>
@@ -25,13 +25,13 @@
                 <div class="user-info">
                     <div class="avatar">🤖</div>
                     <div>
-                        <h2 style="font-size: 1.2rem;">مرحباً، <span id="userName">مريم</span>! 👋</h2>
+                        <h2 style="font-size: 1.2rem;">مرحباً، <span id="userName">بطل</span>! 👋</h2>
                         <p style="color: var(--muted); font-size: 0.9rem;">جاهز لمغامرة جديدة اليوم؟</p>
                     </div>
                 </div>
                 <div class="stats">
-                    <div class="stat-pill coins"><i class="ri-coins-fill"></i> 500</div>
-                    <div class="stat-pill xp"><i class="ri-star-fill"></i> 0 XP</div>
+                    <div class="stat-pill coins"><i class="ri-coins-fill"></i> <span id="userCoins">500</span></div>
+                    <div class="stat-pill xp"><i class="ri-star-fill"></i> <span id="userXP">0</span> XP</div>
                 </div>
             </header>
             <section class="grid-hero">
@@ -48,8 +48,8 @@
             </section>
             <section class="grid-quick">
                 <a href="languages.html" class="quick-card"><div class="quick-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--accent);"><i class="ri-book-open-line"></i></div><h4>الدروس</h4></a>
-                <a href="#" class="quick-card"><div class="quick-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--primary);"><i class="ri-code-s-slash-line"></i></div><h4>الملعب</h4></a>
-                <a href="#" class="quick-card"><div class="quick-icon" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;"><i class="ri-gamepad-line"></i></div><h4>الألعاب</h4></a>
+                <a href="playground.html" class="quick-card"><div class="quick-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--primary);"><i class="ri-code-s-slash-line"></i></div><h4>الملعب</h4></a>
+                <a href="games.html" class="quick-card"><div class="quick-icon" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;"><i class="ri-gamepad-line"></i></div><h4>الألعاب</h4></a>
                 <a href="#" class="quick-card"><div class="quick-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;"><i class="ri-shopping-bag-3-line"></i></div><h4>المتجر</h4></a>
             </section>
         </main>
@@ -57,12 +57,23 @@
     <nav class="mobile-nav">
         <a href="dashboard.html" class="mobile-nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
         <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i> التعلم</a>
-        <a href="#" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
-        <a href="#" class="mobile-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
+        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
     </nav>
     <script>
-        const user = localStorage.getItem('cq_user') || 'مريم';
-        document.getElementById('userName').innerText = user;
+        // إصلاح مشكلة NaN
+        const userName = localStorage.getItem('cq_user') || 'بطل';
+        document.getElementById('userName').innerText = userName;
+        
+        // محاكاة جلب البيانات من Firebase (عشان نضمن مفيش NaN)
+        let xp = parseInt(localStorage.getItem('cq_xp')) || 0;
+        let coins = parseInt(localStorage.getItem('cq_coins')) || 500;
+        
+        if (isNaN(xp)) xp = 0;
+        if (isNaN(coins)) coins = 500;
+        
+        document.getElementById('userXP').innerText = xp;
+        document.getElementById('userCoins').innerText = coins;
     </script>
 </body>
 </html>
