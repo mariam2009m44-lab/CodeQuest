@@ -24,7 +24,6 @@
         .setting-text h3 { margin: 0; font-size: 1.1rem; color: #fff; }
         .setting-text p { margin: 5px 0 0; font-size: 0.85rem; color: var(--text-muted); }
 
-        /* Toggle Switch */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
@@ -32,9 +31,21 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); }
 
+        .btn-action { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; }
         .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 15px; border-radius: 15px; width: 100%; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .btn-danger:hover { background: #ef4444; color: #fff; }
-        .btn-action { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; }
+
+        /* Custom Modal for Password Change */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px); }
+        .modal-content { background: #1a233a; border: 1px solid var(--primary); border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0,229,255,0.2); position: relative; }
+        .modal-title { color: var(--primary); font-size: 1.3rem; margin-top: 0; margin-bottom: 20px; text-align: center; }
+        .modal-input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; color: #fff; font-family: 'Cairo'; outline: none; box-sizing: border-box; }
+        .modal-input:focus { border-color: var(--primary); }
+        .modal-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; border: none; }
+        .modal-btn-cancel { background: #333; color: #fff; }
+        .modal-btn-submit { background: var(--primary); color: #000; }
+        .modal-msg { font-size: 0.85rem; text-align: center; margin-bottom: 10px; display: none; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 17, 40, 0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass-border); z-index: 100; }
         .nav-btn { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: bold; }
@@ -51,45 +62,47 @@
 
     <div class="settings-group">
         <div class="group-title">تفضيلات التطبيق</div>
-        
         <div class="setting-item">
             <div class="setting-info">
                 <div class="setting-icon"><i class="ri-volume-up-line"></i></div>
                 <div class="setting-text"><h3>المؤثرات الصوتية</h3><p>تشغيل أو إيقاف أصوات الألعاب والمحرر</p></div>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="soundToggle" onchange="toggleSound(this)">
-                <span class="slider"></span>
-            </label>
+            <label class="switch"><input type="checkbox" id="soundToggle" onchange="toggleSound(this)"><span class="slider"></span></label>
         </div>
-
         <div class="setting-item">
             <div class="setting-info">
                 <div class="setting-icon"><i class="ri-notification-3-line"></i></div>
                 <div class="setting-text"><h3>الإشعارات</h3><p>استلام تنبيهات التحديثات اليومية</p></div>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="notifToggle" onchange="toggleNotif(this)">
-                <span class="slider"></span>
-            </label>
+            <label class="switch"><input type="checkbox" id="notifToggle" onchange="toggleNotif(this)"><span class="slider"></span></label>
         </div>
     </div>
 
     <div class="settings-group">
         <div class="group-title">أمان الحساب</div>
-        
         <div class="setting-item">
             <div class="setting-info">
                 <div class="setting-icon"><i class="ri-lock-password-line"></i></div>
                 <div class="setting-text"><h3>تغيير كلمة المرور</h3><p>تحديث كلمة المرور الخاصة بحسابك</p></div>
             </div>
-            <button class="btn-action" onclick="changePassword()">تغيير</button>
+            <button class="btn-action" onclick="openPasswordModal()">تغيير</button>
         </div>
-
         <div class="setting-item" style="margin-top: 20px; background: transparent; border: none; padding: 0;">
-            <button class="btn-danger" onclick="Auth.logout()">
-                <i class="ri-logout-box-r-line"></i> تسجيل الخروج من الحساب
-            </button>
+            <button class="btn-danger" onclick="Auth.logout()"><i class="ri-logout-box-r-line"></i> تسجيل الخروج من الحساب</button>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal-content">
+            <h3 class="modal-title">🔐 تغيير كلمة المرور</h3>
+            <div class="modal-msg" id="modalMsg"></div>
+            <input type="password" id="currentPassword" class="modal-input" placeholder="كلمة المرور الحالية...">
+            <input type="password" id="newPassword" class="modal-input" placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)...">
+            <div class="modal-btns">
+                <button class="modal-btn modal-btn-cancel" onclick="closePasswordModal()">إلغاء</button>
+                <button class="modal-btn modal-btn-submit" onclick="submitPasswordChange()">حفظ التغييرات</button>
+            </div>
         </div>
     </div>
 
@@ -103,41 +116,54 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init(l => { if(!l) window.location.href='login.html'; });
-
-            // تحميل التفضيلات المحفوظة
-            const soundEnabled = localStorage.getItem('cq_sound_enabled') !== 'false';
-            const notifEnabled = localStorage.getItem('cq_notif_enabled') !== 'false';
-            
-            document.getElementById('soundToggle').checked = soundEnabled;
-            document.getElementById('notifToggle').checked = notifEnabled;
+            document.getElementById('soundToggle').checked = localStorage.getItem('cq_sound_enabled') !== 'false';
+            document.getElementById('notifToggle').checked = localStorage.getItem('cq_notif_enabled') !== 'false';
         });
 
-        function toggleSound(el) {
-            localStorage.setItem('cq_sound_enabled', el.checked);
-            // ملاحظة: لتطبيق الإعداد في باقي الصفحات، لازم نضيف شرط في ملفات الألعاب
-            // if(localStorage.getItem('cq_sound_enabled') === 'false') { Howler.mute(true); }
+        function toggleSound(el) { localStorage.setItem('cq_sound_enabled', el.checked); }
+        function toggleNotif(el) { localStorage.setItem('cq_notif_enabled', el.checked); }
+
+        function openPasswordModal() { document.getElementById('passwordModal').style.display = 'flex'; }
+        function closePasswordModal() { 
+            document.getElementById('passwordModal').style.display = 'none'; 
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('modalMsg').style.display = 'none';
         }
 
-        function toggleNotif(el) {
-            localStorage.setItem('cq_notif_enabled', el.checked);
-        }
+        async function submitPasswordChange() {
+            const currentPass = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const msgEl = document.getElementById('modalMsg');
+            
+            if (!currentPass || !newPass) { msgEl.innerText = "يرجى ملء جميع الحقول."; msgEl.style.color = "var(--danger)"; msgEl.style.display = 'block'; return; }
+            if (newPass.length < 6) { msgEl.innerText = "كلمة المرور الجديدة قصيرة جداً (6 أحرف على الأقل)."; msgEl.style.color = "var(--danger)"; msgEl.style.display = 'block'; return; }
 
-        async function changePassword() {
-            const newPassword = prompt("أدخل كلمة المرور الجديدة (6 أحرف على الأقل):");
-            if (!newPassword) return;
-            if (newPassword.length < 6) return alert("❌ كلمة المرور قصيرة جداً!");
+            msgEl.innerText = "جاري التحقق..."; msgEl.style.color = "var(--primary)"; msgEl.style.display = 'block';
+
+            const user = firebase.auth().currentUser;
+            const cred = firebase.auth.EmailAuthProvider.credential(user.email, currentPass);
 
             try {
-                const user = firebase.auth().currentUser;
-                await user.updatePassword(newPassword);
-                alert("✅ تم تغيير كلمة المرور بنجاح!");
+                // 1. إعادة المصادقة باستخدام كلمة المرور الحالية للتأكد من الأمان
+                await user.reauthenticateWithCredential(cred);
+                // 2. تحديث كلمة المرور
+                await user.updatePassword(newPass);
+                
+                msgEl.innerText = "✅ تم تغيير كلمة المرور بنجاح!";
+                msgEl.style.color = "var(--success)";
+                setTimeout(() => { closePasswordModal(); }, 2000);
+                
             } catch (error) {
                 console.error(error);
-                if (error.code === 'auth/requires-recent-login') {
-                    alert("⚠️ لأسباب أمنية، يرجى تسجيل الخروج ثم الدخول مرة أخرى قبل تغيير كلمة المرور.");
+                if (error.code === 'auth/wrong-password') {
+                    msgEl.innerText = "❌ كلمة المرور الحالية غير صحيحة.";
+                } else if (error.code === 'auth/requires-recent-login') {
+                    msgEl.innerText = "⚠️ لأسباب أمنية، يرجى تسجيل الخروج ثم الدخول مرة أخرى قبل التغيير.";
                 } else {
-                    alert("❌ حدث خطأ أثناء التغيير: " + error.message);
+                    msgEl.innerText = "❌ حدث خطأ أثناء التغيير: " + error.message;
                 }
+                msgEl.style.color = "var(--danger)";
             }
         }
     </script>
