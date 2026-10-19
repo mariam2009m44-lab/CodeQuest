@@ -1,69 +1,831 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | Cody Academy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=1000">
+
+    <meta name="theme-color" content="#070B14">
+    <meta name="description" content="Cody Coding Academy — تعلّم البرمجة من الصفر، وطبّق مهاراتك من خلال الدروس والتحديات والمشروعات التفاعلية.">
+
+    <title>لوحة التعلم | Cody Coding Academy</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="css/style.css?v=3000">
+
+    <style>
+        /* Dashboard-specific components */
+
+        .dashboard-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-heading h1 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 900;
+            line-height: 1.4;
+        }
+
+        .dashboard-heading p {
+            color: var(--dark-muted);
+            margin-top: 4px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--dark-cyan);
+            font-weight: 700;
+            font-size: 0.88rem;
+            margin-bottom: 10px;
+        }
+
+        .hero-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(240px, 1fr);
+            gap: 20px;
+        }
+
+        .welcome-card {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            min-height: 270px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 14px;
+            background:
+                radial-gradient(
+                    circle at 90% 10%,
+                    rgba(34, 211, 238, 0.14),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    135deg,
+                    rgba(139, 92, 246, 0.17),
+                    rgba(17, 24, 39, 0.88) 65%
+                );
+        }
+
+        .welcome-card::after {
+            content: "</>";
+            position: absolute;
+            z-index: -1;
+            left: 5%;
+            bottom: -35px;
+            font-size: clamp(7rem, 15vw, 12rem);
+            line-height: 1;
+            font-weight: 900;
+            color: rgba(34, 211, 238, 0.055);
+            direction: ltr;
+        }
+
+        .welcome-card h2 {
+            max-width: 600px;
+            font-size: clamp(1.65rem, 3.5vw, 2.5rem);
+            font-weight: 900;
+            line-height: 1.4;
+        }
+
+        .welcome-card p {
+            max-width: 550px;
+            color: var(--dark-muted);
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 46px;
+            padding: 11px 18px;
+            color: var(--dark-text);
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-btn);
+            font-weight: 700;
+            transition: background 180ms ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        .daily-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 22px;
+            background: linear-gradient(
+                160deg,
+                rgba(251, 191, 36, 0.075),
+                rgba(17, 24, 39, 0.7) 65%
+            );
+        }
+
+        .daily-card h3,
+        .section-heading h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+        .daily-icon {
+            display: grid;
+            place-items: center;
+            width: 52px;
+            height: 52px;
+            margin-bottom: 14px;
+            border-radius: 16px;
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--dark-gold);
+            font-size: 1.7rem;
+        }
+
+        .daily-card p {
+            color: var(--dark-muted);
+            font-size: 0.92rem;
+            margin-top: 8px;
+        }
+
+        .text-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            width: fit-content;
+            color: var(--dark-cyan);
+            font-weight: 750;
+        }
+
+        .section-block {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .section-heading p {
+            color: var(--dark-muted);
+            font-size: 0.9rem;
+            margin-top: 3px;
+        }
+
+        .stat-box-info h2 {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .learning-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .learning-card {
+            display: flex;
+            flex-direction: column;
+            gap: 17px;
+            min-width: 0;
+            transition: transform 180ms ease, border-color 180ms ease;
+        }
+
+        .learning-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(34, 211, 238, 0.25);
+        }
+
+        .language-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .language-symbol {
+            display: grid;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            direction: ltr;
+        }
+
+        .language-tag {
+            color: var(--dark-muted);
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-pill);
+            padding: 5px 10px;
+            font-size: 0.76rem;
+            white-space: nowrap;
+        }
+
+        .learning-card h3 {
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .learning-card > p {
+            min-height: 48px;
+            color: var(--dark-muted);
+            font-size: 0.9rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+        }
+
+        .progress-label span:first-child {
+            color: var(--dark-muted);
+        }
+
+        .progress-label span:last-child {
+            color: var(--dark-text);
+            font-weight: 750;
+        }
+
+        .course-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 14px;
+            border-top: 1px solid var(--dark-border);
+            font-size: 0.88rem;
+            font-weight: 750;
+        }
+
+        .course-action i {
+            font-size: 1.15rem;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .quick-card {
+            min-height: 165px;
+            display: flex;
+            align-items: flex-start;
+            text-align: right;
+            gap: 0;
+        }
+
+        .quick-card h3 {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .quick-card p {
+            color: var(--dark-muted);
+            font-size: 0.83rem;
+        }
+
+        .dashboard-footer {
+            padding: 15px 0 5px;
+            text-align: center;
+            color: var(--dark-muted);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1100px) {
+            .hero-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .learning-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-heading {
+                align-items: flex-start;
+            }
+
+            .learning-grid,
+            .quick-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .welcome-card {
+                min-height: 280px;
+            }
+
+            .quick-card {
+                min-height: auto;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .learning-card,
+            .btn-secondary {
+                transition: none;
+            }
+        }
+    </style>
 </head>
+
 <body class="dark-theme">
     <div class="app-layout">
-        <aside class="sidebar">
-            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
+
+        <!-- Main sidebar -->
+        <aside class="sidebar" aria-label="القائمة الرئيسية">
+            <a class="sidebar-logo" href="dashboard.html" aria-label="Cody Academy - الرئيسية">
+                <i class="ri-robot-2-fill" aria-hidden="true"></i>
+                <span>Cody Academy</span>
+            </a>
+
             <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> المسارات</a>
-                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-                <a href="#" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
+                <a href="dashboard.html" class="nav-item active" aria-current="page">
+                    <i class="ri-home-5-line" aria-hidden="true"></i>
+                    <span>الرئيسية</span>
+                </a>
+
+                <a href="languages.html" class="nav-item">
+                    <i class="ri-map-2-line" aria-hidden="true"></i>
+                    <span>مسارات التعلم</span>
+                </a>
+
+                <a href="playground.html" class="nav-item">
+                    <i class="ri-code-box-line" aria-hidden="true"></i>
+                    <span>محرر الأكواد</span>
+                </a>
+
+                <a href="games.html" class="nav-item">
+                    <i class="ri-gamepad-line" aria-hidden="true"></i>
+                    <span>الألعاب والتحديات</span>
+                </a>
+
+                <a href="projects.html" class="nav-item">
+                    <i class="ri-folder-code-line" aria-hidden="true"></i>
+                    <span>مشروعاتي</span>
+                </a>
+
+                <a href="review.html" class="nav-item">
+                    <i class="ri-brain-line" aria-hidden="true"></i>
+                    <span>مركز المراجعة</span>
+                </a>
+
+                <a href="achievements.html" class="nav-item">
+                    <i class="ri-medal-line" aria-hidden="true"></i>
+                    <span>إنجازاتي</span>
+                </a>
+
+                <a href="profile.html" class="nav-item">
+                    <i class="ri-user-smile-line" aria-hidden="true"></i>
+                    <span>حسابي</span>
+                </a>
+
+                <a href="settings.html" class="nav-item">
+                    <i class="ri-settings-3-line" aria-hidden="true"></i>
+                    <span>الإعدادات</span>
+                </a>
+
+                <a href="#" class="nav-item logout" id="logoutButton">
+                    <i class="ri-logout-box-r-line" aria-hidden="true"></i>
+                    <span>تسجيل الخروج</span>
+                </a>
             </nav>
         </aside>
+
+        <!-- Dashboard content -->
         <main class="main-content">
+
             <header class="topbar">
                 <div class="user-info">
-                    <div class="avatar">🤖</div>
+                    <div class="avatar" aria-hidden="true">🤖</div>
+
                     <div>
-                        <h2 style="font-size: 1.2rem; font-weight: 800; margin: 0;">مرحباً، <span class="js-user-name">متعلم</span> 👋</h2>
-                        <p style="color: var(--dark-muted); font-size: 0.9rem; margin: 0;">جاهز لمغامرة اليوم؟</p>
+                        <h2 style="font-size: 1.05rem; font-weight: 800;">
+                            أهلًا بك، <span class="js-user-name">متعلم</span>
+                        </h2>
+
+                        <p style="color: var(--dark-muted); font-size: 0.85rem;">
+                            كل سطر كود جديد هو خطوة للأمام.
+                        </p>
                     </div>
                 </div>
-                <div class="stats">
-                    <div class="stat-pill coins"><i class="ri-coins-fill"></i> <span class="js-user-coins">0</span></div>
-                    <div class="stat-pill xp"><i class="ri-star-fill"></i> <span class="js-user-xp">0</span> XP</div>
+
+                <div class="stats" aria-label="رصيدك">
+                    <div class="stat-pill coins" title="رصيد النقاط">
+                        <i class="ri-coins-fill" aria-hidden="true"></i>
+                        <span class="js-user-coins">0</span>
+                        <span>نقطة</span>
+                    </div>
+
+                    <div class="stat-pill xp" title="نقاط الخبرة">
+                        <i class="ri-star-fill" aria-hidden="true"></i>
+                        <span class="js-user-xp">0</span>
+                        <span>XP</span>
+                    </div>
                 </div>
             </header>
-            <section class="grid-hero">
-                <div class="glass-card card-main">
-                    <h1>أكمل مغامرتك!</h1>
-                    <p>أنت على بعد خطوة واحدة من إتقان لغة جديدة. الدرس التالي ينتظرك.</p>
-                    <a href="languages.html" class="btn-dark-primary">استكمال التعلم <i class="ri-arrow-left-line"></i></a>
-                </div>
-                <div class="glass-card" style="display: flex; flex-direction: column; justify-content: center; gap: 15px;">
-                    <h3 style="color: #fff; font-size: 1.2rem;"><i class="ri-fire-fill" style="color: var(--dark-gold);"></i> مهمة اليوم</h3>
-                    <p style="color: var(--dark-muted); font-size: 0.95rem;">أكمل درساً واحداً اليوم للحفاظ على سلسلة التعلم!</p>
-                    <a href="languages.html" style="color: var(--dark-cyan); font-weight: bold; margin-top: 10px;">اذهب للدروس ←</a>
+
+            <section class="dashboard-heading" aria-labelledby="dashboardTitle">
+                <div>
+                    <span class="eyebrow">
+                        <i class="ri-sparkling-2-line" aria-hidden="true"></i>
+                        مساحة تعلمك
+                    </span>
+
+                    <h1 id="dashboardTitle">رحلتك في البرمجة تبدأ هنا.</h1>
+
+                    <p>تعلّم، جرّب، اكتشف، وابنِ مشروعاتك خطوة بخطوة.</p>
                 </div>
             </section>
-            <section class="grid-quick">
-                <a href="languages.html" class="glass-card quick-card">
-                    <div class="quick-icon" style="background: rgba(0, 217, 255, 0.1); color: var(--dark-cyan);"><i class="ri-book-open-line"></i></div>
-                    <h4>المسارات</h4>
-                </a>
-                <a href="playground.html" class="glass-card quick-card">
-                    <div class="quick-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--dark-purple);"><i class="ri-code-s-slash-line"></i></div>
-                    <h4>الملعب</h4>
-                </a>
+
+            <!-- Welcome and daily goal -->
+            <section class="hero-layout" aria-label="متابعة التعلم">
+
+                <article class="glass-card welcome-card">
+                    <span class="eyebrow">
+                        <i class="ri-rocket-2-line" aria-hidden="true"></i>
+                        مستعد للخطوة التالية؟
+                    </span>
+
+                    <h2>أفكارك تستحق أن تتحول إلى كود.</h2>
+
+                    <p>
+                        كمّل تعلمك مع Cody، وطبّق اللي فهمته بنفسك،
+                        واكتشف إزاي تقدر تبني برامجك الأولى.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="languages.html" class="btn-dark-primary">
+                            استكشف مسارات التعلم
+                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
+                        </a>
+
+                        <a href="playground.html" class="btn-secondary">
+                            جرّب محرر الأكواد
+                            <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="glass-card daily-card">
+                    <div>
+                        <div class="daily-icon">
+                            <i class="ri-focus-3-line" aria-hidden="true"></i>
+                        </div>
+
+                        <h3>هدفك اليومي</h3>
+
+                        <p>
+                            خصص بعض الوقت للتعلم، وأكمل درسًا أو حل تحديًا
+                            جديدًا حسب وقتك.
+                        </p>
+                    </div>
+
+                    <a href="games.html" class="text-link">
+                        اكتشف تحديات اليوم
+                        <i class="ri-arrow-left-line" aria-hidden="true"></i>
+                    </a>
+                </article>
+
             </section>
+
+            <!-- Actual learning statistics should be supplied by app.js -->
+            <section class="section-block" aria-labelledby="statsTitle">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="statsTitle">نظرة على تقدمك</h2>
+                        <p>تابع رحلتك التعليمية من مكان واحد.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <article class="stat-box">
+                        <div class="stat-box-info">
+                            <h4>دروس مكتملة</h4>
+                            <h2 class="js-completed-lessons">0</h2>
+                        </div>
+
+                        <div class="stat-box-icon"
+                             style="background:rgba(52,211,153,.10);color:var(--dark-green)">
+                            <i class="ri-check-double-line" aria-hidden="true"></i>
+                        </div>
+                    </article>
+
+                    <article class="stat-box">
+                        <div class="stat-box-info">
+                            <h4>مستواك الحالي</h4>
+                            <h2 class="js-user-level">1</h2>
+                        </div>
+
+                        <div class="stat-box-icon"
+                             style="background:rgba(251,191,36,.10);color:var(--dark-gold)">
+                            <i class="ri-medal-line" aria-hidden="true"></i>
+                        </div>
+                    </article>
+
+                    <article class="stat-box">
+                        <div class="stat-box-info">
+                            <h4>أيام التعلم المتتالية</h4>
+                            <h2 class="js-learning-streak">0</h2>
+                        </div>
+
+                        <div class="stat-box-icon"
+                             style="background:rgba(167,139,250,.10);color:var(--dark-purple)">
+                            <i class="ri-calendar-check-line" aria-hidden="true"></i>
+                        </div>
+                    </article>
+
+                    <article class="stat-box">
+                        <div class="stat-box-info">
+                            <h4>مشروعات مكتملة</h4>
+                            <h2 class="js-completed-projects">0</h2>
+                        </div>
+
+                        <div class="stat-box-icon"
+                             style="background:rgba(34,211,238,.10);color:var(--dark-cyan)">
+                            <i class="ri-folder-check-line" aria-hidden="true"></i>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Learning paths -->
+            <section class="section-block" aria-labelledby="pathsTitle">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="pathsTitle">مساراتك التعليمية</h2>
+                        <p>اختار لغة وابدأ ببناء أساس قوي في البرمجة.</p>
+                    </div>
+
+                    <a href="languages.html" class="text-link">
+                        كل المسارات
+                        <i class="ri-arrow-left-line" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+                <div class="learning-grid">
+
+                    <a href="languages.html?language=python"
+                       class="glass-card learning-card"
+                       aria-label="استكشف مسار Python">
+
+                        <div class="language-top">
+                            <div class="language-symbol"
+                                 style="background:rgba(34,211,238,.10);color:var(--dark-cyan)">
+                                Py
+                            </div>
+                            <span class="language-tag">للمبتدئين</span>
+                        </div>
+
+                        <div>
+                            <h3>Python</h3>
+                            <p>ابدأ بأساسيات البرمجة والتفكير المنطقي، ثم انتقل إلى بناء برامجك.</p>
+                        </div>
+
+                        <div>
+                            <div class="progress-label">
+                                <span>تقدمك في المسار</span>
+                                <span class="js-python-progress-label">0%</span>
+                            
+                            <div class="progress-track"
+                                 role="progressbar"
+                                 aria-label="التقدم في مسار Python"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-valuenow="0">
+                                <div class="progress-fill"
+                                     data-progress="0"
+                                     style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="course-action">
+                            <span>ابدأ التعلم</span>
+                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
+                        </div>
+                    </a>
+
+                    <a href="languages.html?language=javascript"
+                       class="glass-card learning-card"
+                       aria-label="استكشف مسار JavaScript">
+
+                        <div class="language-top">
+                            <div class="language-symbol"
+                                 style="background:rgba(251,191,36,.10);color:var(--dark-gold)">
+                                JS
+                            </div>
+                            <span class="language-tag">تطوير الويب</span>
+                        </div>
+
+                        <div>
+                            <h3>JavaScript</h3>
+                            <p>تعلّم كيف تجعل صفحات الويب تفاعلية وتضيف إليها الحركة والوظائف.</p>
+                        </div>
+
+                        <div>
+                            <div class="progress-label">
+                                <span>تقدمك في المسار</span>
+                                <span class="js-javascript-progress-label">0%</span>
+                            </div>
+
+                            <div class="progress-track"
+                                 role="progressbar"
+                                 aria-label="التقدم في مسار JavaScript"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-valuenow="0">
+                                <div class="progress-fill"
+                                     data-progress="0"
+                                     style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="course-action">
+                            <span>ابدأ التعلم</span>
+                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
+                        </div>
+                    </a>
+
+                    <a href="languages.html?language=cpp"
+                       class="glass-card learning-card"
+                       aria-label="استكشف مسار C++">
+
+                        <div class="language-top">
+                            <div class="language-symbol"
+                                 style="background:rgba(167,139,250,.12);color:var(--dark-purple)">
+                                C++
+                            </div>
+                            <span class="language-tag">حل المشكلات</span>
+                        </div>
+
+                        <div>
+                            <h3>C++</h3>
+                            <p>طوّر التفكير المنطقي وتدرّب على الخوارزميات وحل المسائل البرمجية.</p>
+                        </div>
+
+                        <div>
+                            <div class="progress-label">
+                                <span>تقدمك في المسار</span>
+                                <span class="js-cpp-progress-label">0%</span>
+                            </div>
+
+                            <div class="progress-track"
+                                 role="progressbar"
+                                 aria-label="التقدم في مسار C++"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-valuenow="0">
+                                <div class="progress-fill"
+                                     data-progress="0"
+                                     style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="course-action">
+                            <span>ابدأ التعلم</span>
+                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
+                        </div>
+                    </a>
+
+                </div>
+            </section>
+
+            <!-- Quick access -->
+            <section class="section-block" aria-labelledby="quickTitle">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="quickTitle">مساحتك للتجربة والتطبيق</h2>
+                        <p>التعلّم الحقيقي يبدأ لما تجرّب بنفسك.</p>
+                    </div>
+                </div>
+
+                <div class="quick-grid">
+
+                    <a href="playground.html" class="glass-card quick-card">
+                        <div>
+                            <div class="daily-icon"
+                                 style="background:rgba(34,211,238,.10);color:var(--dark-cyan)">
+                                <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+                            </div>
+                            <h3>محرر الأكواد</h3>
+                            <p>اكتب الكود وجرّبه وشوف النتيجة بنفسك.</p>
+                        </div>
+                    </a>
+
+                    <a href="games.html" class="glass-card quick-card">
+                        <div>
+                            <div class="daily-icon"
+                                 style="background:rgba(167,139,250,.12);color:var(--dark-purple)">
+                                <i class="ri-gamepad-line" aria-hidden="true"></i>
+                            </div>
+                            <h3>الألعاب والتحديات</h3>
+                            <p>اختبر مهاراتك وحل تحديات برمجية ممتعة.</p>
+                        </div>
+                    </a>
+
+                    <a href="projects.html" class="glass-card quick-card">
+                        <div>
+                            <div class="daily-icon"
+                                 style="background:rgba(52,211,153,.10);color:var(--dark-green)">
+                                <i class="ri-folder-code-line" aria-hidden="true"></i>
+                            </div>
+                            <h3>مشروعاتي</h3>
+                            <p>حوّل أفكارك إلى مشروعات عملية خطوة بخطوة.</p>
+                        </div>
+                    </a>
+
+                    <a href="review.html" class="glass-card quick-card">
+                        <div>
+                            <div class="daily-icon"
+                                 style="background:rgba(251,191,36,.10);color:var(--dark-gold)">
+                                <i class="ri-brain-line" aria-hidden="true"></i>
+                            </div>
+                            <h3>مركز المراجعة</h3>
+                            <p>راجع ما تعلمته واختبر فهمك للمفاهيم.</p>
+                        </div>
+                    </a>
+
+                </div>
+            </section>
+
+            <footer class="dashboard-footer">
+                <p>صُممت رحلتك البرمجية بكل شغف بواسطة Cody Coding Academy 🤖</p>
+            </footer>
+
         </main>
     </div>
-    <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
-        <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i> المسارات</a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
+
+    <!-- Mobile navigation -->
+    <nav class="mobile-nav" aria-label="التنقل السريع">
+        <a href="dashboard.html" class="mobile-nav-item active" aria-current="page">
+            <i class="ri-home-5-line" aria-hidden="true"></i>
+            <span>الرئيسية</span>
+        </a>
+
+        <a href="languages.html" class="mobile-nav-item">
+            <i class="ri-map-2-line" aria-hidden="true"></i>
+            <span>المسارات</span>
+        </a>
+
+        <a href="playground.html" class="mobile-nav-item">
+            <i class="ri-code-box-line" aria-hidden="true"></i>
+            <span>المحرر</span>
+        </a>
+
+        <a href="games.html" class="mobile-nav-item">
+            <i class="ri-gamepad-line" aria-hidden="true"></i>
+            <span>الألعاب</span>
+        </a>
+
+        <a href="profile.html" class="mobile-nav-item">
+            <i class="ri-user-smile-line" aria-hidden="true"></i>
+            <span>حسابي</span>
+        </a>
     </nav>
-    <script type="module" src="js/app.js?v=1000"></script>
+
+    <script src="js/app.js?v=3000" defer></script>
 </body>
 </html>
