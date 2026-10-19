@@ -3,106 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المحاضرة | CodeQuest</title>
+    <title>المحاضرة التفاعلية | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
     <style>
-        .cody-box { display: flex; gap: 15px; margin-bottom: 30px; }
-        .cody-avatar { width: 50px; height: 50px; background: var(--primary-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
-        .cody-bubble { background: var(--bg-surface); padding: 20px; border-radius: 16px; border-top-right-radius: 0; border: 1px solid var(--border-light); flex: 1; line-height: 1.8; }
-        pre[class*="language-"] { border-radius: var(--radius-md) !important; margin: 0 !important; }
-        .code-wrapper { background: #1d1f21; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 30px; }
-        .code-header { padding: 10px 15px; background: #2d2f31; display: flex; justify-content: space-between; align-items: center; }
+        .lecture-container { display: flex; height: calc(100vh - 60px); gap: 0; background: var(--bg-base); }
+        .content-side { flex: 1; display: flex; flex-direction: column; border-left: 1px solid var(--border-light); background: var(--bg-surface); overflow-y: auto; }
+        .editor-side { flex: 1.2; display: flex; flex-direction: column; background: #1d1f21; }
+        
+        .progress-header { padding: 15px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 15px; }
+        .progress-bar-bg { flex: 1; height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--primary-main); width: 0%; transition: width 0.5s ease; border-radius: 4px; }
+
+        .cody-section { padding: 30px 20px; display: flex; gap: 20px; }
+        .cody-avatar { width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary-main), var(--secondary)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; flex-shrink: 0; box-shadow: 0 10px 20px rgba(101, 84, 217, 0.3); }
+        .cody-bubble { background: var(--bg-base); padding: 20px; border-radius: 16px; border-top-right-radius: 0; border: 1px solid var(--border-light); position: relative; flex: 1; }
+        .cody-bubble h2 { color: var(--primary-main); margin-bottom: 10px; font-size: 1.4rem; }
+        .cody-bubble p { color: var(--text-main); line-height: 1.8; font-size: 1.1rem; }
+
+        .task-section { padding: 0 20px 20px 20px; }
+        .task-box { background: #FFF4CC; border: 1px solid #F4B740; padding: 20px; border-radius: 12px; }
+        .task-box h4 { color: #B45309; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+        .task-box p { color: #92400E; line-height: 1.6; font-size: 1rem; }
+        .hints-box { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #F4B740; }
+        .hints-box ul { padding-right: 20px; margin: 0; color: #92400E; font-size: 0.9rem; }
+
+        .editor-header { background: #2d2f31; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #111; }
+        .editor-controls { display: flex; gap: 10px; }
+        .CodeMirror { flex: 1; height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 15px; direction: ltr; }
+        
+        .terminal-container { height: 220px; background: #000; border-top: 1px solid #333; display: flex; flex-direction: column; }
+        .terminal-header { background: #1a1a1a; padding: 8px 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #333; }
+        .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .terminal-output { flex: 1; padding: 15px; color: #00ffcc; font-family: 'JetBrains Mono', monospace; font-size: 14px; direction: ltr; overflow-y: auto; white-space: pre-wrap; }
+
+        .quiz-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
+        .quiz-content { background: var(--bg-surface); padding: 40px; border-radius: 24px; max-width: 550px; width: 100%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .quiz-option { display: block; width: 100%; padding: 16px 20px; margin-bottom: 12px; border: 2px solid var(--border-light); border-radius: 12px; background: var(--bg-base); cursor: pointer; font-weight: 600; font-size: 1.1rem; transition: all 0.2s; color: var(--text-main); text-align: right; }
+        .quiz-option:hover { border-color: var(--primary-main); background: rgba(101, 84, 217, 0.05); }
+        .quiz-option.selected { border-color: var(--primary-main); background: rgba(101, 84, 217, 0.1); box-shadow: 0 0 0 4px rgba(101, 84, 217, 0.1); }
+
+        .btn-finish { margin: 20px; padding: 16px; font-size: 1.2rem; border-radius: 16px; background: linear-gradient(135deg, var(--primary-main), var(--secondary)); border: none; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 10px 20px rgba(101, 84, 217, 0.3); transition: transform 0.2s; font-family: 'Cairo'; }
+        .btn-finish:hover { transform: translateY(-3px); }
+
+        @media (max-width: 900px) { .lecture-container { flex-direction: column; height: auto; } .editor-side { min-height: 600px; } }
     </style>
 </head>
 <body>
-    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h2 id="lessonTitle" style="color: var(--text-main);">جاري التحميل...</h2>
-            <a href="levels.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> رجوع</a>
+    <div class="lecture-container">
+        <div class="content-side">
+            <div class="progress-header">
+                <span style="font-weight: 700; color: var(--text-main); font-size: 0.9rem;">التقدم</span>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar"></div></div>
+                <span id="progressText" style="font-weight: 700; color: var(--primary-main); font-size: 0.9rem;">0%</span>
+            </div>
+
+            <div class="cody-section">
+                <div class="cody-avatar"><i class="ri-robot-2-line"></i></div>
+                <div class="cody-bubble">
+                    <h2 id="lessonTitle">جاري التحميل...</h2>
+                    <p id="codyIntro"></p>
+                </div>
+            </div>
+
+            <div class="task-section">
+                <div class="task-box">
+                    <h4><i class="ri-focus-3-line"></i> المهمة المطلوبة</h4>
+                    <p id="lessonTask"></p>
+                    <div class="hints-box">
+                        <h5 style="margin-bottom: 8px;">💡 تلميحات:</h5>
+                        <ul id="lessonHints"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-finish" onclick="showQuiz()">
+                <i class="ri-check-double-line"></i> أنا جاهز للاختبار!
+            </button>
+            <a href="levels.html" class="btn btn-secondary" style="margin: 0 20px 20px 20px; text-align: center; justify-content: center;">الرجوع للمسار</a>
         </div>
 
-        <div id="contentArea" style="display: none;">
-            <div class="cody-box">
-                <div class="cody-avatar"><i class="ri-robot-2-line"></i></div>
-                <div class="cody-bubble" id="codyText"></div>
-            </div>
-
-            <div class="code-wrapper">
-                <div class="code-header">
-                    <span style="color: #a0aec0; font-family: var(--font-code); font-size: 0.85rem;">main.code</span>
-                    <button onclick="goToPlayground()" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem; min-height: 30px;"><i class="ri-play-line"></i> جرب الكود</button>
+        <div class="editor-side">
+            <div class="editor-header">
+                <span style="color: #a0aec0; font-family: 'JetBrains Mono'; font-size: 0.9rem;" id="fileNameDisplay">main.js</span>
+                <div class="editor-controls">
+                    <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; background: transparent; color: #a0aec0; border: 1px solid #4a5568;" onclick="resetCode()"><i class="ri-refresh-line"></i> مسح</button>
+                    <button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem;" onclick="runUserCode()"><i class="ri-play-fill"></i> تشغيل</button>
                 </div>
-                <pre><code class="language-javascript" id="codeBlock"></code></pre>
             </div>
-
-            <button onclick="nextLesson()" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem;">الدرس التالي <i class="ri-arrow-left-line"></i></button>
+            <textarea id="codeEditor"></textarea>
+            
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <div class="terminal-dot" style="background: #ff5f56;"></div>
+                    <div class="terminal-dot" style="background: #ffbd2e;"></div>
+                    <div class="terminal-dot" style="background: #27c93f;"></div>
+                    <span style="color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem; margin-right: auto; margin-left: 10px;">Terminal</span>
+                </div>
+                <div id="terminalOutput" class="terminal-output">> Console Ready...</div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <div id="quizModal" class="quiz-modal">
+        <div class="quiz-content">
+            <h2 style="color: var(--text-main); margin-bottom: 25px; font-size: 1.5rem;" id="quizQuestion">السؤال هنا؟</h2>
+            <div id="quizOptions"></div>
+            <button id="submitQuizBtn" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 16px; font-size: 1.1rem; opacity: 0.5; pointer-events: none;" onclick="submitQuiz()">تأكيد الإجابة</button>
+            <div id="quizFeedback" style="margin-top: 20px; font-weight: bold; font-size: 1.2rem;"></div>
+        </div>
+    </div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const chapterIdx = parseInt(urlParams.get('chapter')) || 0;
-        let lessonIdx = parseInt(urlParams.get('lesson')) || 0;
-        
-        const lang = sessionStorage.getItem('selectedLang') || 'javascript';
-        const files = { javascript: 'js_curriculum.json', python: 'python_curriculum.json', cpp: 'cpp_curriculum.json' };
-        const prismLang = { javascript: 'javascript', python: 'python', cpp: 'cpp' };
-
-        let currentData = null;
-        let currentLesson = null;
-
-        async function loadLesson() {
-            try {
-                const res = await fetch(files[lang]);
-                currentData = await res.json();
-                
-                const chapter = currentData.chapters[chapterIdx];
-                currentLesson = chapter.lessons[lessonIdx];
-
-                document.getElementById('lessonTitle').innerText = chapter.title;
-                document.getElementById('codyText').innerHTML = currentLesson.concept;
-                
-                const codeBlock = document.getElementById('codeBlock');
-                codeBlock.className = `language-${prismLang[lang]}`;
-                codeBlock.textContent = currentLesson.code;
-                Prism.highlightElement(codeBlock);
-
-                document.getElementById('contentArea').style.display = 'block';
-            } catch (e) {
-                document.getElementById('lessonTitle').innerText = "خطأ في تحميل الدرس";
-            }
-        }
-
-        function goToPlayground() {
-            sessionStorage.setItem('playgroundCode', currentLesson.code);
-            sessionStorage.setItem('playgroundLang', lang);
-            window.location.href = 'playground.html';
-        }
-
-        function nextLesson() {
-            const chapter = currentData.chapters[chapterIdx];
-            if (lessonIdx < chapter.lessons.length - 1) {
-                lessonIdx++;
-                window.location.href = `lecture.html?chapter=${chapterIdx}&lesson=${lessonIdx}`;
-            } else if (chapterIdx < currentData.chapters.length - 1) {
-                window.location.href = `lecture.html?chapter=${chapterIdx + 1}&lesson=0`;
-            } else {
-                alert('أكملت هذا المسار!');
-                window.location.href = 'levels.html';
-            }
-        }
-
-        loadLesson();
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
+    <script type="module" src="js/lecture.js"></script>
 </body>
 </html>

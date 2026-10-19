@@ -7,53 +7,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
+    <style>
+        .chapter-container { margin-bottom: 30px; }
+        .chapter-title { font-size: 1.4rem; color: var(--text-main); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--border-light); padding-bottom: 10px; }
+        .lesson-card { background: var(--bg-surface); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-light); transition: var(--transition); cursor: pointer; }
+        .lesson-card:hover { border-color: var(--primary-main); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .lesson-info h4 { color: var(--text-main); margin-bottom: 5px; font-size: 1.1rem; }
+        .lesson-info p { color: var(--text-muted); font-size: 0.9rem; }
+        .lesson-action { width: 40px; height: 40px; background: rgba(101, 84, 217, 0.1); color: var(--primary-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    </style>
 </head>
-<body>
+<body style="background: var(--bg-base);">
     <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h1 id="pageTitle" style="color: var(--text-main);">جاري التحميل...</h1>
-            <a href="lessons.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> رجوع</a>
+            <a href="lessons.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> تغيير اللغة</a>
         </div>
         
-        <div id="levelsContainer" style="display: flex; flex-direction: column; gap: 16px;">
-        </div>
+        <div id="chaptersContainer"></div>
     </div>
 
     <script>
-        const lang = sessionStorage.getItem('selectedLang') || 'javascript';
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || 'javascript';
         const titles = { javascript: 'مسار JavaScript', python: 'مسار Python', cpp: 'مسار C++' };
+        const files = { javascript: 'json/js_curriculum.json', python: 'json/python_curriculum.json', cpp: 'json/cpp_curriculum.json' };
+        
         document.getElementById('pageTitle').innerText = titles[lang];
-
-        const files = { javascript: 'js_curriculum.json', python: 'python_curriculum.json', cpp: 'cpp_curriculum.json' };
 
         async function loadLevels() {
             try {
                 const res = await fetch(files[lang]);
                 const data = await res.json();
-                const container = document.getElementById('levelsContainer');
+                const container = document.getElementById('chaptersContainer');
                 
-                data.chapters.forEach((chapter, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.style.cursor = 'pointer';
-                    card.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <h3 style="color: var(--text-main); margin-bottom: 8px;">${chapter.title}</h3>
-                                <p style="color: var(--text-muted); font-size: 0.9rem;">${chapter.lessons.length} دروس تفاعلية</p>
+                data.chapters.forEach((chapter, cIdx) => {
+                    const chapDiv = document.createElement('div');
+                    chapDiv.className = 'chapter-container';
+                    chapDiv.innerHTML = `<h2 class="chapter-title"><i class="ri-bookmark-line" style="color: var(--primary-main);"></i> ${chapter.title}</h2>`;
+                    
+                    chapter.lessons.forEach((lesson, lIdx) => {
+                        const card = document.createElement('div');
+                        card.className = 'lesson-card';
+                        card.onclick = () => {
+                            window.location.href = `lecture.html?lang=${lang}&chapter=${cIdx}&lesson=${lIdx}`;
+                        };
+                        card.innerHTML = `
+                            <div class="lesson-info">
+                                <h4>${lesson.title}</h4>
+                                <p>${lesson.objective}</p>
                             </div>
-                            <div style="width: 50px; height: 50px; background: rgba(101,84,217,0.1); color: var(--primary-main); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                                <i class="ri-arrow-left-s-line"></i>
-                            </div>
-                        </div>
-                    `;
-                    card.onclick = () => {
-                        window.location.href = `lecture.html?chapter=${index}`;
-                    };
-                    container.appendChild(card);
+                            <div class="lesson-action"><i class="ri-play-fill"></i></div>
+                        `;
+                        chapDiv.appendChild(card);
+                    });
+                    
+                    container.appendChild(chapDiv);
                 });
             } catch (e) {
-                document.getElementById('levelsContainer').innerHTML = '<p style="color:red;">حدث خطأ في تحميل المنهج.</p>';
+                document.getElementById('chaptersContainer').innerHTML = '<p style="color:red; text-align:center;">حدث خطأ في تحميل المنهج.</p>';
             }
         }
         loadLevels();
