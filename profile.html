@@ -1,111 +1,57 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملفي | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملفي الشخصي | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
-        .header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: var(--primary); font-size: 1.5rem; }
-        .profile-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px 20px; width: 100%; max-width: 500px; text-align: center; }
-        .avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); margin: 0 auto 15px; background: #000; }
-        .name { font-size: 1.8rem; font-weight: 900; color: #fff; margin-bottom: 5px; }
-        .title { color: var(--text-muted); font-size: 1rem; margin-bottom: 25px; }
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; }
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block; }
-        .stat-label { font-size: 0.85rem; color: var(--text-muted); }
-        .logout-btn { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); padding: 12px; border-radius: 12px; width: 100%; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
-<body>
-    
-    <header class="top-header">
-        <a href="dashboard.html" class="btn-icon"><i class="ri-arrow-right-line"></i></a>
-        <h1 style="font-size:1.1rem; margin:0;">ملفي الشخصي</h1>
-        <div style="width: 40px;"></div>
-    </header>
-</div>
-
-    <div class="profile-card">
-        <img src="cody-avatar.svg" id="userAvatar" class="avatar">
-        <div class="name" id="userName">جاري التحميل...</div>
-        <div class="title">مبرمج طموح 🚀</div>
-        
-        <div class="stats">
-            <div class="stat-box"><span class="stat-value" id="userLevel">1</span><span class="stat-label">المستوى</span></div>
-            <div class="stat-box"><span class="stat-value" id="userPoints">0</span><span class="stat-label">النقاط (XP)</span></div>
+<body style="background: var(--bg-base);">
+    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: var(--text-main);">ملفي الشخصي</h1>
+            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
         </div>
-        
-        <button class="logout-btn" onclick="Auth.logout()">تسجيل الخروج 🚪</button>
+
+        <div class="card" style="text-align: center; margin-bottom: 30px;">
+            <div style="width: 100px; height: 100px; background: var(--primary-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 15px auto;">
+                <i class="ri-user-smile-line"></i>
+            </div>
+            <h2 style="color: var(--text-main); margin-bottom: 5px;">مريم البطلة</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">مبرمجة طموحة 🚀</p>
+            <div style="display: flex; justify-content: center; gap: 20px;">
+                <div style="text-align: center;">
+                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary-main);">1,250</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">XP</p>
+                </div>
+                <div style="text-align: center;">
+                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--reward);">15</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">أيام متتالية</p>
+                </div>
+                <div style="text-align: center;">
+                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--success);">24</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">دروس مكتملة</p>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="color: var(--text-main); margin-bottom: 20px;">الشارات المكتسبة</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">🚀</div>
+                <p style="font-size: 0.8rem; font-weight: 600;">البداية الموفقة</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">🔥</div>
+                <p style="font-size: 0.8rem; font-weight: 600;">أسبوع كامل</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">🧠</div>
+                <p style="font-size: 0.8rem; font-weight: 600;">حل الألغاز</p>
+            </div>
+        </div>
     </div>
-
-    
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item active"><i class="ri-home-4-line"></i><span>الرئيسية</span></a>
-        <a href="languages.html" class="nav-item"><i class="ri-book-open-line"></i><span>التعلم</span></a>
-        <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="shop.html" class="nav-item"><i class="ri-shopping-bag-3-line"></i><span>المتجر</span></a>
-        <a href="profile.html" class="nav-item active"><i class="ri-user-3-line"></i><span>ملفي</span></a>
-    </nav>
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('userAvatar').src = av;
-            Auth.init(async (logged) => {
-                if(!logged) return window.location.href = 'login.html';
-                try {
-                    const doc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
-                    if(doc.exists) {
-                        const data = doc.data();
-                        document.getElementById('userName').innerText = data.username || 'البطل';
-                        document.getElementById('userPoints').innerText = data.points || 0;
-                        document.getElementById('userLevel').innerText = Math.floor((data.points || 0) / 100) + 1;
-                        if(data.avatar) document.getElementById('userAvatar').src = data.avatar;
-                    }
-                } catch(e) { console.error(e); }
-            });
-        });
-    </script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-</body></html>
+</body>
+</html>

@@ -1,207 +1,69 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الإعدادات | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; min-height: 100vh; background: #050914; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .header h1 { color: var(--primary); font-size: 1.5rem; }
-        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
-
-        .settings-group { width: 100%; max-width: 600px; margin-bottom: 25px; }
-        .group-title { font-size: 1.1rem; font-weight: bold; color: var(--text-muted); margin-bottom: 15px; padding-right: 10px; }
-        
-        .setting-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: 0.3s; }
-        .setting-item:hover { border-color: var(--primary); }
-        
-        .setting-info { display: flex; align-items: center; gap: 15px; }
-        .setting-icon { width: 40px; height: 40px; background: rgba(0,229,255,0.1); color: var(--primary); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; }
-        .setting-text h3 { margin: 0; font-size: 1.1rem; color: #fff; }
-        .setting-text p { margin: 5px 0 0; font-size: 0.85rem; color: var(--text-muted); }
-
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        .btn-action { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 15px; border-radius: 15px; width: 100%; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .btn-danger:hover { background: #ef4444; color: #fff; }
-
-        /* Custom Modal for Password Change */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px); }
-        .modal-content { background: #1a233a; border: 1px solid var(--primary); border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0,229,255,0.2); position: relative; }
-        .modal-title { color: var(--primary); font-size: 1.3rem; margin-top: 0; margin-bottom: 20px; text-align: center; }
-        .modal-input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; color: #fff; font-family: 'Cairo'; outline: none; box-sizing: border-box; }
-        .modal-input:focus { border-color: var(--primary); }
-        .modal-btns { display: flex; gap: 10px; margin-top: 10px; }
-        .modal-btn { flex: 1; padding: 12px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; border: none; }
-        .modal-btn-cancel { background: #333; color: #fff; }
-        .modal-btn-submit { background: var(--primary); color: #000; }
-        .modal-msg { font-size: 0.85rem; text-align: center; margin-bottom: 10px; display: none; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 17, 40, 0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass-border); z-index: 100; }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: bold; }
-        .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; }
-        .nav-btn.active { color: var(--primary); }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
-<body>
-    <div class="header">
-        <a href="dashboard.html" class="btn-back"><i class="ri-arrow-right-line"></i> رجوع</a>
-        <h1>⚙️ الإعدادات</h1>
-        <div style="width: 50px;"></div>
-    </div>
+<body style="background: var(--bg-base);">
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: var(--text-main);">الإعدادات</h1>
+            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
+        </div>
 
-    <div class="settings-group">
-        <div class="group-title">تفضيلات التطبيق</div>
-        <div class="setting-item">
-            <div class="setting-info">
-                <div class="setting-icon"><i class="ri-volume-up-line"></i></div>
-                <div class="setting-text"><h3>المؤثرات الصوتية</h3><p>تشغيل أو إيقاف أصوات الألعاب والمحرر</p></div>
+        <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h3 style="color: var(--text-main); margin-bottom: 5px;">المؤثرات الصوتية</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">تشغيل أصوات الألعاب والمحرر</p>
+                </div>
+                <input type="checkbox" checked style="width: 20px; height: 20px; accent-color: var(--primary-main);">
             </div>
-            <label class="switch"><input type="checkbox" id="soundToggle" onchange="toggleSound(this)"><span class="slider"></span></label>
-        </div>
-        <div class="setting-item">
-            <div class="setting-info">
-                <div class="setting-icon"><i class="ri-notification-3-line"></i></div>
-                <div class="setting-text"><h3>الإشعارات</h3><p>استلام تنبيهات التحديثات اليومية</p></div>
-            </div>
-            <label class="switch"><input type="checkbox" id="notifToggle" onchange="toggleNotif(this)"><span class="slider"></span></label>
-        </div>
-    </div>
 
-    <div class="settings-group">
-        <div class="group-title">أمان الحساب</div>
-        <div class="setting-item">
-            <div class="setting-info">
-                <div class="setting-icon"><i class="ri-lock-password-line"></i></div>
-                <div class="setting-text"><h3>تغيير كلمة المرور</h3><p>تحديث كلمة المرور الخاصة بحسابك</p></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h3 style="color: var(--text-main); margin-bottom: 5px;">الوضع الداكن</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">تغيير مظهر المنصة</p>
+                </div>
+                <input type="checkbox" id="darkModeToggle" style="width: 20px; height: 20px; accent-color: var(--primary-main);">
             </div>
-            <button class="btn-action" onclick="openPasswordModal()">تغيير</button>
-        </div>
-        <div class="setting-item" style="margin-top: 20px; background: transparent; border: none; padding: 0;">
-            <button class="btn-danger" onclick="Auth.logout()"><i class="ri-logout-box-r-line"></i> تسجيل الخروج من الحساب</button>
-        </div>
-    </div>
 
-    <!-- Password Modal -->
-    <div class="modal-overlay" id="passwordModal">
-        <div class="modal-content">
-            <h3 class="modal-title">🔐 تغيير كلمة المرور</h3>
-            <div class="modal-msg" id="modalMsg"></div>
-            <input type="password" id="currentPassword" class="modal-input" placeholder="كلمة المرور الحالية...">
-            <input type="password" id="newPassword" class="modal-input" placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)...">
-            <div class="modal-btns">
-                <button class="modal-btn modal-btn-cancel" onclick="closePasswordModal()">إلغاء</button>
-                <button class="modal-btn modal-btn-submit" onclick="submitPasswordChange()">حفظ التغييرات</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="color: var(--text-main); margin-bottom: 5px;">حجم الخط</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">تكبير النصوص لتسهيل القراءة</p>
+                </div>
+                <select style="padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+                    <option>عادي</option>
+                    <option>كبير</option>
+                </select>
             </div>
         </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h3 style="color: var(--text-main); margin-bottom: 15px;">الخصوصية والأمان</h3>
+            <a href="parent.html" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--bg-base); border-radius: var(--radius-md); text-decoration: none; color: var(--text-main);">
+                <span>لوحة ولي الأمر</span>
+                <i class="ri-arrow-left-s-line"></i>
+            </a>
+        </div>
+
+        <button class="btn" style="width: 100%; background: #FEE2E2; color: var(--danger); font-weight: bold;">تسجيل الخروج</button>
     </div>
-
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-btn"><i class="ri-home-4-line"></i><span>الرئيسية</span></a>
-        <a href="languages.html" class="nav-btn"><i class="ri-book-open-line"></i><span>التعلم</span></a>
-        <a href="games.html" class="nav-btn"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="settings.html" class="nav-btn active"><i class="ri-settings-4-line"></i><span>الإعدادات</span></a>
-    </nav>
-
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            Auth.init(l => { if(!l) window.location.href='login.html'; });
-            document.getElementById('soundToggle').checked = localStorage.getItem('cq_sound_enabled') !== 'false';
-            document.getElementById('notifToggle').checked = localStorage.getItem('cq_notif_enabled') !== 'false';
-        });
-
-        function toggleSound(el) { localStorage.setItem('cq_sound_enabled', el.checked); }
-        function toggleNotif(el) { localStorage.setItem('cq_notif_enabled', el.checked); }
-
-        function openPasswordModal() { document.getElementById('passwordModal').style.display = 'flex'; }
-        function closePasswordModal() { 
-            document.getElementById('passwordModal').style.display = 'none'; 
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('modalMsg').style.display = 'none';
-        }
-
-        async function submitPasswordChange() {
-            const currentPass = document.getElementById('currentPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const msgEl = document.getElementById('modalMsg');
-            
-            if (!currentPass || !newPass) { msgEl.innerText = "يرجى ملء جميع الحقول."; msgEl.style.color = "var(--danger)"; msgEl.style.display = 'block'; return; }
-            if (newPass.length < 6) { msgEl.innerText = "كلمة المرور الجديدة قصيرة جداً (6 أحرف على الأقل)."; msgEl.style.color = "var(--danger)"; msgEl.style.display = 'block'; return; }
-
-            msgEl.innerText = "جاري التحقق..."; msgEl.style.color = "var(--primary)"; msgEl.style.display = 'block';
-
-            const user = firebase.auth().currentUser;
-            const cred = firebase.auth.EmailAuthProvider.credential(user.email, currentPass);
-
-            try {
-                // 1. إعادة المصادقة باستخدام كلمة المرور الحالية للتأكد من الأمان
-                await user.reauthenticateWithCredential(cred);
-                // 2. تحديث كلمة المرور
-                await user.updatePassword(newPass);
-                
-                msgEl.innerText = "✅ تم تغيير كلمة المرور بنجاح!";
-                msgEl.style.color = "var(--success)";
-                setTimeout(() => { closePasswordModal(); }, 2000);
-                
-            } catch (error) {
-                console.error(error);
-                if (error.code === 'auth/wrong-password') {
-                    msgEl.innerText = "❌ كلمة المرور الحالية غير صحيحة.";
-                } else if (error.code === 'auth/requires-recent-login') {
-                    msgEl.innerText = "⚠️ لأسباب أمنية، يرجى تسجيل الخروج ثم الدخول مرة أخرى قبل التغيير.";
-                } else {
-                    msgEl.innerText = "❌ حدث خطأ أثناء التغيير: " + error.message;
-                }
-                msgEl.style.color = "var(--danger)";
+        const darkToggle = document.getElementById('darkModeToggle');
+        darkToggle.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                document.body.style.backgroundColor = '#0f172a';
+                document.body.style.color = '#fff';
+            } else {
+                document.body.style.backgroundColor = '#F7F9FF';
+                document.body.style.color = '#1E293B';
             }
-        }
-    </script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
         });
     </script>
 </body>

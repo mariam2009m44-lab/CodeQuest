@@ -4,179 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة الشرف | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
-        .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; font-size: 1rem; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
-
-        .podium { display: flex; justify-content: center; align-items: flex-end; gap: 15px; margin-bottom: 40px; width: 100%; max-width: 500px; }
-        
-        .podium-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .podium-avatar { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; background: #000; object-fit: cover; margin-bottom: 10px; }
-        .podium-name { font-weight: bold; font-size: 1rem; margin-bottom: 5px; color: #fff; }
-        .podium-points { font-size: 0.9rem; color: var(--gold); font-weight: bold; }
-        
-        .podium-base { width: 100px; border-radius: 10px 10px 0 0; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: 900; margin-top: 10px;}
-        .first .podium-base { height: 120px; background: linear-gradient(to top, rgba(255,215,0,0.2), rgba(255,215,0,0.8)); border: 2px solid var(--gold); color: #000;}
-        .second .podium-base { height: 90px; background: linear-gradient(to top, rgba(192,192,192,0.2), rgba(192,192,192,0.8)); border: 2px solid #c0c0c0; color: #000;}
-        .third .podium-base { height: 70px; background: linear-gradient(to top, rgba(205,127,50,0.2), rgba(205,127,50,0.8)); border: 2px solid #cd7f32; color: #000;}
-
-        .first .podium-avatar { width: 90px; height: 90px; border-color: var(--gold); box-shadow: 0 0 20px var(--gold); }
-        .second .podium-avatar { border-color: #c0c0c0; box-shadow: 0 0 15px #c0c0c0; }
-        .third .podium-avatar { border-color: #cd7f32; box-shadow: 0 0 15px #cd7f32; }
-
-        .list-container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 10px; }
-        .list-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .list-item:hover { background: rgba(0,229,255,0.05); border-color: var(--primary); transform: scale(1.02); }
-        
-        .rank-info { display: flex; align-items: center; gap: 15px; }
-        .rank-num { font-weight: bold; color: var(--text-muted); width: 25px; }
-        .list-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--text-muted); }
-        .list-name { font-weight: bold; color: #fff; }
-        .list-points { color: var(--gold); font-weight: bold; }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
-<body>
-    <div class="header">
-        <a href="dashboard.html" class="btn-back">← رجوع</a>
-        <h1>🏆 لوحة الشرف</h1>
+<body style="background: var(--bg-base);">
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: var(--text-main);">لوحة الشرف</h1>
+            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="display: flex; align-items: center; padding: 15px 20px; background: #FEF3C7; border-bottom: 1px solid var(--border-light);">
+                <span style="font-size: 1.5rem; width: 40px;">🥇</span>
+                <div style="flex: 1;">
+                    <h4 style="color: var(--text-main);">النجم الساطع</h4>
+                </div>
+                <strong style="color: var(--reward);">2,500 XP</strong>
+            </div>
+            <div style="display: flex; align-items: center; padding: 15px 20px; background: #F1F5F9; border-bottom: 1px solid var(--border-light);">
+                <span style="font-size: 1.5rem; width: 40px;">🥈</span>
+                <div style="flex: 1;">
+                    <h4 style="color: var(--text-main);">مبرمج المستقبل</h4>
+                </div>
+                <strong style="color: var(--text-muted);">2,100 XP</strong>
+            </div>
+            <div style="display: flex; align-items: center; padding: 15px 20px; background: #FFEDD5;">
+                <span style="font-size: 1.5rem; width: 40px;">🥉</span>
+                <div style="flex: 1;">
+                    <h4 style="color: var(--text-main);">مريم (أنت)</h4>
+                </div>
+                <strong style="color: #EA580C;">1,250 XP</strong>
+            </div>
+        </div>
     </div>
-
-    <div class="podium" id="podium"></div>
-    <div class="list-container" id="listContainer"></div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            Auth.init(async (logged) => {
-                if (!logged) { window.location.href = 'login.html'; return; }
-                
-                try {
-                    const snapshot = await firebase.firestore().collection('users').orderBy('points', 'desc').limit(10).get();
-                    const users = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if(data.username && data.points > 0) {
-                            users.push({ name: data.username, points: data.points, avatar: data.avatar || 'cody-avatar.svg' });
-                        }
-                    });
-                    
-                    renderPodium(users);
-                    renderList(users);
-                    
-                } catch(e) { console.error(e); }
-            });
-        });
-
-        
-        function renderPodium(users) {
-            const podium = document.getElementById('podium');
-            podium.innerHTML = '';
-            
-            if(users.length >= 3) {
-                podium.innerHTML = `
-                    <div class="podium-item second">
-                        <img src="${users[1].avatar}" class="podium-avatar">
-                        <div class="podium-name">${users[1].name}</div>
-                        <div class="podium-points">${users[1].points} XP</div>
-                        <div class="podium-base">2</div>
-                    </div>
-                    <div class="podium-item first">
-                        <img src="${users[0].avatar}" class="podium-avatar">
-                        <div class="podium-name">${users[0].name}</div>
-                        <div class="podium-points">${users[0].points} XP</div>
-                        <div class="podium-base">1</div>
-                    </div>
-                    <div class="podium-item third">
-                        <img src="${users[2].avatar}" class="podium-avatar">
-                        <div class="podium-name">${users[2].name}</div>
-                        <div class="podium-points">${users[2].points} XP</div>
-                        <div class="podium-base">3</div>
-                    </div>
-                `;
-            } else {
-                // لو العدد أقل من 3، نعرضهم بشكل عادي في المنصة
-                users.forEach((user, index) => {
-                    podium.innerHTML += `
-                        <div class="podium-item" style="margin: 0 10px;">
-                            <img src="${user.avatar}" class="podium-avatar" style="width:70px; height:70px;">
-                            <div class="podium-name">${user.name}</div>
-                            <div class="podium-points">${user.points} XP</div>
-                            <div class="podium-base" style="height:60px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px;">#${index + 1}</div>
-                        </div>
-                    `;
-                });
-            }
-        }
-    
-
-        function renderList(users) {
-            const list = document.getElementById('listContainer');
-            if(users.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:var(--text-muted);">لا يوجد أبطال بعد. العب واجمع النقاط لتكون الأول!</p>';
-                return;
-            }
-            
-            let html = '';
-            users.forEach((user, index) => {
-                if(index < 3) return;
-                html += `
-                    <div class="list-item">
-                        <div class="rank-info">
-                            <span class="rank-num">#${index + 1}</span>
-                            <img src="${user.avatar}" class="list-avatar">
-                            <span class="list-name">${user.name}</span>
-                        </div>
-                        <span class="list-points">${user.points} XP</span>
-                    </div>
-                `;
-            });
-            list.innerHTML = html;
-        }
-    </script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
 </body>
 </html>
