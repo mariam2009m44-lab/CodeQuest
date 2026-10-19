@@ -131,3 +131,56 @@ code[class*="language-"] {
     display: none;
   }
 }
+
+/* =========================================
+   Skeleton Loading (شاشات التحميل الوهمية)
+   ========================================= */
+.skeleton {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 8px;
+    min-height: 20px;
+    margin-bottom: 12px;
+}
+.skeleton-title {
+    height: 30px;
+    width: 60%;
+    margin-bottom: 20px;
+}
+.skeleton-card {
+    height: 150px;
+    width: 100%;
+    border-radius: 12px;
+}
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* =========================================
+   Micro-interactions (تفاعلات الأزرار والكروت)
+   ========================================= */
+/* تأثير الضغط على الأزرار */
+button, .btn, .mobile-nav-item {
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+button:active, .btn:active, .mobile-nav-item:active {
+    transform: scale(0.95) !important; 
+}
+
+/* تأثير رفع الكروت عند المرور بالماوس */
+.card, .game-card, .level-card, .lesson-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover, .game-card:hover, .level-card:hover, .lesson-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 255, 204, 0.15);
+    border-color: rgba(0, 255, 204, 0.4) !important;
+}
+
+/* تحسين وضوح الـ Focus لمستخدمي الكيبورد */
+:focus-visible {
+    outline: 2px solid var(--primary, #00ffcc);
+    outline-offset: 4px;
+}
