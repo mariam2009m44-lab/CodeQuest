@@ -184,5 +184,36 @@
             });
         });
     </script>
+
+    <!-- Curriculum Async Bridge -->
+    <script src="js/curriculum.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("⏳ جاري تحميل المناهج...");
+            
+            // تحميل المناهج الثلاثة بالتوازي عشان السرعة
+            const [jsData, pyData, cppData] = await Promise.all([
+                window.CodeQuestCurriculum.loadCurriculum('javascript'),
+                window.CodeQuestCurriculum.loadCurriculum('python'),
+                window.CodeQuestCurriculum.loadCurriculum('cpp')
+            ]);
+
+            // تجميعهم في متغير عام عشان الصفحات القديمة متبوظش
+            window.allCurriculums = {
+                javascript: jsData,
+                python: pyData,
+                cpp: cppData
+            };
+            
+            // متغير احتياطي لو الصفحة كانت بتستخدم اسم curriculumData
+            window.curriculumData = window.allCurriculums; 
+
+            console.log("✅ تم تحميل جميع المناهج بنجاح!");
+            
+            // إطلاق حدث مخصص عشان الصفحات تعرف إن الداتا جاهزة
+            document.dispatchEvent(new CustomEvent('curriculumLoaded', { detail: window.allCurriculums }));
+        });
+    </script>
 </body>
+
 </html>
