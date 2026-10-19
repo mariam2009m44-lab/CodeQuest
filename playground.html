@@ -1,66 +1,71 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الملعب | Cody Academy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="dark-theme">
-    <div class="app-layout">
-        <aside class="sidebar">
-            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> المسارات</a>
-                <a href="playground.html" class="nav-item active"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-                <a href="#" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
-            </nav>
-        </aside>
-        <main class="main-content" style="display: flex; flex-direction: column;">
-            <div class="workspace">
-                <div class="editor-panel">
-                    <div class="editor-header">
-                        <span id="fileNameDisplay">main.js</span>
-                        <button class="btn-dark-primary" style="padding: 8px 16px; font-size: 0.9rem;" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
-                    </div>
-                    <textarea id="codeEditor"></textarea>
-                    <div class="terminal-panel">
-                        <div class="terminal-header">
-                            <div class="dot" style="background: #FF6B6B;"></div>
-                            <div class="dot" style="background: #FFCB57;"></div>
-                            <div class="dot" style="background: #35D6A3;"></div>
-                        </div>
-                        <div id="terminalOutput" class="terminal-output">> Console Ready...</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-    <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-        <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i> المسارات</a>
-        <a href="playground.html" class="mobile-nav-item active"><i class="ri-terminal-box-line"></i> الملعب</a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-    </nav>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-    <script type="module">
-        import { App } from './js/app.js';
-        await App.init();
-        
-        var editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), { lineNumbers: true, theme: "dracula", mode: "javascript" });
-        editor.setValue("console.log('Hello Cody Academy!');");
-        
-        window.runCode = () => {
-            const out = document.getElementById('terminalOutput');
-            out.innerHTML = '> جاري التشغيل (يتطلب خادم آمن)...';
-        };
-    </script>
-</body>
-</html>
+
+<script type="module">
+  import { App } from './js/app.js';
+
+  await App.init();
+
+  const editor = CodeMirror.fromTextArea(
+    document.getElementById('codeEditor'),
+    {
+      lineNumbers: true,
+      theme: 'dracula',
+      mode: 'javascript'
+    }
+  );
+
+  editor.setValue("console.log('Hello Cody Academy!');");
+
+  window.runCode = () => {
+    const output = document.getElementById('terminalOutput');
+    const code = editor.getValue();
+
+    output.textContent = 'جارٍ التشغيل...';
+
+    const frame = document.createElement('iframe');
+    frame.setAttribute('sandbox', 'allow-scripts');
+    frame.style.display = 'none';
+
+    const source = `
+      <script>
+        const send = (type, text) => parent.postMessage({
+          source: 'cody-playground',
+          type,
+          text: String(text)
+        }, '*');
+
+        console.log = (...args) => send('log', args.join(' '));
+        console.error = (...args) => send('error', args.join(' '));
+
+        try {
+          new Function(${JSON.stringify(code)})();
+          send('done', '');
+        } catch (error) {
+          send('error', error.message);
+          send('done', '');
+        }
+      <\/script>
+    `;
+
+    const listener = (event) => {
+      if (event.source !== frame.contentWindow) return;
+      if (event.data?.source !== 'cody-playground') return;
+
+      if (event.data.type === 'log') {
+        output.textContent += '\n' + event.data.text;
+      } else if (event.data.type === 'error') {
+        output.textContent += '\nخطأ: ' + event.data.text;
+      } else if (event.data.type === 'done') {
+        window.removeEventListener('message', listener);
+        frame.remove();
+
+        if (output.textContent === 'جارٍ التشغيل...') {
+          output.textContent = 'تم التنفيذ.';
+        }
+      }
+    };
+
+    window.addEventListener('message', listener);
+    document.body.appendChild(frame);
+    frame.srcdoc = source;
+  };
+</script>
