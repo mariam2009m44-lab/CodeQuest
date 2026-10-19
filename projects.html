@@ -1,95 +1,80 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>المشاريع | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { color: var(--primary); font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,229,255,0.5); }
+        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; min-height: 100vh; background: #050914; }
+        .header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .header h1 { color: var(--primary); font-size: 1.5rem; }
         .btn-back { color: var(--primary); text-decoration: none; font-weight: bold; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 10px; }
-
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; width: 100%; max-width: 900px; }
         
-        .project-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; }
-        .project-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; max-width: 900px; }
+        .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; position: relative;}
+        .card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .card i { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
+        .card h3 { margin: 0 0 10px; color: #fff; }
+        .card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; flex: 1; }
+        .btn { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; width: 100%; }
         
-        .project-icon { width: 50px; height: 50px; background: rgba(0,229,255,0.1); border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--primary); margin-bottom: 15px; }
-        .project-title { font-size: 1.3rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
-        .project-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; }
-        
-        .project-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
-        .project-date { font-size: 0.8rem; color: var(--text-muted); }
-        
-        .btn-open { background: rgba(0,229,255,0.1); color: var(--primary); border: 1px solid var(--primary); padding: 8px 15px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-open:hover { background: var(--primary); color: #000; }
-
-        .btn-new-project { background: var(--glass); border: 2px dashed var(--glass-border); border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; min-height: 200px; color: var(--text-muted); }
-        .btn-new-project:hover { border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05); }
-        .btn-new-project i { font-size: 3rem; margin-bottom: 10px; }
-        .btn-new-project span { font-size: 1.1rem; font-weight: bold; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 17, 40, 0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass-border); z-index: 100; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: bold; }
+        .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; }
+        .nav-btn.active { color: var(--primary); }
     </style>
 </head>
 <body>
     <div class="header">
-        <a href="dashboard.html" class="btn-back">← رجوع</a>
+        <a href="dashboard.html" class="btn-back"><i class="ri-arrow-right-line"></i> رجوع</a>
         <h1>💼 المشاريع</h1>
+        <div style="width: 50px;"></div>
     </div>
 
-    <div class="projects-grid">
-        <!-- مشروع جديد -->
-        <div class="btn-new-project" onclick="createNewProject()">
-            <i class="ri-add-line"></i>
-            <span>مشروع جديد</span>
+    <div class="grid" id="projectsGrid">
+        <!-- كارت إنشاء مشروع جديد -->
+        <div class="card" onclick="window.location.href='studio.html'" style="border-style: dashed;">
+            <i class="ri-add-circle-line" style="color: var(--success);"></i>
+            <h3 style="color: var(--success);">مشروع جديد</h3>
+            <p>ابدأ مشروعاً من الصفر واكتب الكود بنفسك.</p>
         </div>
-
-        <!-- مشاريع تجريبية -->
-        <div class="project-card">
-            <div>
-                <div class="project-icon"><i class="ri-calculator-line"></i></div>
-                <h3 class="project-title">آلة حاسبة</h3>
-                <p class="project-desc">مشروع لبناء آلة حاسبة بسيطة باستخدام HTML و CSS و JavaScript.</p>
-            </div>
-            <div class="project-footer">
-                <span class="project-date">منذ يومين</span>
-                <button class="btn-open" onclick="window.location.href='studio.html'">فتح</button>
-            </div>
-        </div>
-
-        <div class="project-card">
-            <div>
-                <div class="project-icon"><i class="ri-gamepad-line"></i></div>
-                <h3 class="project-title">لعبة تخمين الرقم</h3>
-                <p class="project-desc">لعبة تفاعلية حيث يحاول المستخدم تخمين رقم سري.</p>
-            </div>
-            <div class="project-footer">
-                <span class="project-date">منذ أسبوع</span>
-                <button class="btn-open" onclick="window.location.href='studio.html'">فتح</button>
-            </div>
-        </div>
-
-        <div class="project-card">
-            <div>
-                <div class="project-icon"><i class="ri-checkbox-multiple-line"></i></div>
-                <h3 class="project-title">قائمة المهام</h3>
-                <p class="project-desc">تطبيق بسيط لإضافة وحذف المهام اليومية وتنظيمها.</p>
-            </div>
-            <div class="project-footer">
-                <span class="project-date">منذ شهر</span>
-                <button class="btn-open" onclick="window.location.href='studio.html'">فتح</button>
-            </div>
-        </div>
+        <!-- المشاريع المحفوظة هتظهر هنا -->
     </div>
+
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-btn"><i class="ri-home-4-line"></i><span>الرئيسية</span></a>
+        <a href="languages.html" class="nav-btn"><i class="ri-book-open-line"></i><span>التعلم</span></a>
+        <a href="games.html" class="nav-btn"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
+        <a href="projects.html" class="nav-btn active"><i class="ri-folder-3-line"></i><span>المشاريع</span></a>
+    </nav>
 
     <script>
-        function createNewProject() {
-            // توجيه المستخدم للاستوديو لبدء مشروع جديد
-            window.location.href = 'studio.html';
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            Auth.init(async (logged) => {
+                if(!logged) { window.location.href='login.html'; return; }
+                
+                const uid = Auth.getUserId();
+                try {
+                    const snapshot = await firebase.firestore().collection('users').doc(uid).collection('projects').orderBy('createdAt', 'desc').get();
+                    const grid = document.getElementById('projectsGrid');
+                    
+                    snapshot.forEach(doc => {
+                        const project = doc.data();
+                        grid.innerHTML += `
+                            <div class="card">
+                                <i class="ri-code-box-line"></i>
+                                <h3>${project.title}</h3>
+                                <p>لغة: ${project.lang}</p>
+                                <button class="btn" onclick="window.location.href='studio.html?project=${doc.id}'">فتح المشروع</button>
+                            </div>
+                        `;
+                    });
+                } catch(e) { console.error(e); }
+            });
+        });
     </script>
 </body>
 </html>
