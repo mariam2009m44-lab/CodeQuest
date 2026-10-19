@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function show(message, state = 'idle') {
     if (output) output.textContent = message;
     if (runStatus) runStatus.dataset.state = state;
+
     if (statusText) {
       statusText.textContent =
         state === 'running' ? 'جارٍ التنفيذ...' :
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!window.ace) {
     show(
-      'لم يتم تحميل Ace Editor. تأكدي من اتصال الإنترنت ثم أعيدي تحميل الصفحة.',
+      'تعذر تحميل المحرر. تأكدي من الإنترنت وأعيدي تحميل الصفحة.',
       'error'
     );
     runButton.disabled = true;
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
       code: `console.log("Hello Cody Academy!");
 console.log(10 + 20);`
     },
+
     python: {
       name: 'Python',
       file: 'main.py',
@@ -57,6 +59,7 @@ console.log(10 + 20);`
       code: `print("Hello Cody Academy!")
 print(10 + 20)`
     },
+
     cpp: {
       name: 'C++',
       file: 'main.cpp',
@@ -78,7 +81,6 @@ int main() {
   try {
     editor = window.ace.edit(editorBox);
     editor.setTheme('ace/theme/monokai');
-    editor.session.setMode('ace/mode/javascript');
     editor.setOptions({
       fontSize: '15px',
       showPrintMargin: false,
@@ -119,6 +121,7 @@ int main() {
       languageSelect.value = currentLanguage;
       return;
     }
+
     setLanguage(languageSelect.value);
   });
 
@@ -150,58 +153,21 @@ int main() {
     resetButton.disabled = true;
     languageSelect.disabled = true;
 
-    show('جارٍ إرسال الكود إلى خدمة التنفيذ...', 'running');
+    show('جارٍ الاتصال بخدمة تنفيذ الأكواد...', 'running');
 
     try {
-      const response = await fetch(
-        'https://ce.judge0.com/submissions?base64_encoded=false&wait=false',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            source_code: sourceCode,
-            language_id: config.id
-          })
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          'خدمة التنفيذ ردّت برمز HTTP ' + response.status +
-          '. قد تكون الخدمة مزدحمة أو غير متاحة.'
-        );
-      }
-
-      const submission = await response.json();
-
-      if (!submission.token) {
-        throw new Error(
-          submission.error || 'الخدمة لم تُرجع رمز طلب التنفيذ.'
-        );
-      }
-
-      const result = await waitForResult(submission.token);
+      const result = await executeCode(sourceCode, config.id);
       displayResult(result);
-
     } catch (error) {
-      console.error('Cody Academy:', error);
-
-      let message;
-
-      if (error.name === 'TypeError') {
-        message =
-          'تعذر الاتصال بخدمة التنفيذ.\n' +
-          'قد يكون السبب مشكلة إنترنت أو أن الخدمة تمنع طلبات المتصفح (CORS).';
-      } else {
-        message = error.message || 'حدث خطأ غير معروف.';
-      }
+      console.error('Cody Academy execution error:', error);
 
       show(
-        message +
-        '\n\nالمحرر يعمل، لكن تشغيل الكود يحتاج إلى خدمة تنفيذ متاحة.',
+        'تعذر تنفيذ الكود.\n\n' +
+        (error.message || 'حدث خطأ غير معروف.') +
+        '\n\nقد تكون خدمة التنفيذ غير متاحة أو تمنع طلبات المتصفح. ' +
+        'المحرر يعمل، لكن تشغيل اللغات يحتاج إلى خدمة تنفيذ متاحة.',
         'error'
       );
-
     } finally {
       isRunning = false;
       runButton.disabled = false;
@@ -210,20 +176,84 @@ int main() {
     }
   }
 
+  async function executeCode(sourceCode, languageId) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    let response;
+
+    try {
+      response = await fetch(
+        'https://ce.judge0.com/submissions?base64_encoded=false&wait=true',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            source_code: sourceCode,
+            language_id: languageId
+          }),
+          signal: controller.signal
+        }
+      );
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('انتهت مهلة الاتصال. حاولي مرة أخرى.');
+      }
+
+      throw new Error(
+        'فشل الاتصال بالخدمة. تحققي من الإنترنت أو إعدادات CORS.'
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        'خدمة التنفيذ أعادت HTTP ' + response.status +
+        '. جرّبي لاحقًا أو استخدمي خدمة تنفيذ أخرى.'
+      );
+    }
+
+    const result = await response.json();
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    if (!result.status) {
+      throw new Error('خدمة التنفيذ لم تُرجع حالة التنفيذ.');
+    }
+
+    // إذا كانت النتيجة ما زالت قيد التنفيذ، نتابع باستخدام الرمز.
+    if (result.token &&
+        (result.status.id === 1 || result.status.id === 2)) {
+      return await waitForResult(result.token);
+    }
+
+    return result;
+  }
+
   async function waitForResult(token) {
-    for (let attempt = 0; attempt < 30; attempt++) {
+    for (let attempt = 0; attempt < 20; attempt++) {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const url =
-        'https://ce.judge0.com/submissions/' +
-        encodeURIComponent(token) +
-        '?base64_encoded=false&fields=stdout,stderr,compile_output,message,status,time,memory';
+      let response;
 
-      const response = await fetch(url);
+      try {
+        response = await fetch(
+          'https://ce.judge0.com/submissions/' +
+          encodeURIComponent(token) +
+          '?base64_encoded=false&fields=stdout,stderr,compile_output,message,status,time,memory'
+        );
+      } catch {
+        throw new Error('انقطع الاتصال أثناء انتظار النتيجة.');
+      }
 
       if (!response.ok) {
         throw new Error(
-          'تعذر جلب نتيجة التنفيذ. HTTP ' + response.status
+          'تعذر جلب النتيجة. HTTP ' + response.status
         );
       }
 
@@ -235,17 +265,17 @@ int main() {
       }
 
       show(
-        'جارٍ تنفيذ الكود... (' + (attempt + 1) + '/30)',
+        'جارٍ تنفيذ الكود... (' + (attempt + 1) + '/20)',
         'running'
       );
     }
 
-    throw new Error('التنفيذ استغرق وقتًا طويلًا. حاولي مرة أخرى.');
+    throw new Error('استغرق التنفيذ وقتًا طويلًا. حاولي مرة أخرى.');
   }
 
   function displayResult(result) {
     const parts = [];
-    const status = result.status?.description || 'Unknown';
+    const status = result.status?.description || 'غير معروف';
 
     if (result.stdout) {
       parts.push(result.stdout.trimEnd());
@@ -267,7 +297,7 @@ int main() {
       parts.push(
         status === 'Accepted'
           ? 'تم التنفيذ بنجاح، لكن لا توجد مخرجات.'
-          : 'لا توجد مخرجات. راجعي حالة التنفيذ أدناه.'
+          : 'لا توجد مخرجات.'
       );
     }
 
@@ -284,5 +314,6 @@ int main() {
   }
 
   setLanguage(currentLanguage);
+
   console.log('Cody Academy editor initialized successfully.');
 });
