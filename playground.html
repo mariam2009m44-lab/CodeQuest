@@ -127,19 +127,31 @@
                     btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
                 
                 } else if (lang === 'cpp') {
-                    iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; text-align:center; color:#333;">جاري تجميع الكود (C++)...</body></html>';
-                    // استخدام Wandbox API (لا يحتاج مفتاح)
-                    const response = await fetch('https://wandbox.org/api/compile.json', {
+                    // استخدام Judge0 CE API المباشر (بدون مفاتيح)
+                    const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
+                    const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
+                    
+                    const response = await fetch('https://ce.judge0.com/submissions?base64_encoded=true&wait=true', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code: code, compiler: 'gcc-head', options: 'warning,c++17' })
+                        body: JSON.stringify({
+                            source_code: encodeB64(code),
+                            language_id: 54 // C++ (GCC)
+                        })
                     });
-                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error('السيرفر مشغول، جربي تاني بعد شوية.');
+                    }
+
+                    const result = await response.json();
                     let outputHTML = '<div style="font-family:monospace; padding:15px; text-align:left; direction:ltr; color:#333; white-space:pre-wrap;">';
-                    if (data.program_output) outputHTML += data.program_output;
-                    if (data.program_error) outputHTML += '<span style="color:red;">' + data.program_error + '</span>';
-                    if (data.compiler_error) outputHTML += '<span style="color:red;">' + data.compiler_error + '</span>';
-                    if (!data.program_output && !data.program_error && !data.compiler_error) outputHTML += '<span style="color:gray;">الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة.</span>';
+                    
+                    if (result.stdout) outputHTML += decodeB64(result.stdout);
+                    if (result.stderr) outputHTML += '<span style="color:red;">' + decodeB64(result.stderr) + '</span>';
+                    if (result.compile_output) outputHTML += '<span style="color:red;">' + decodeB64(result.compile_output) + '</span>';
+                    if (!result.stdout && !result.stderr && !result.compile_output) outputHTML += '<span style="color:gray;">الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة.</span>';
+                    
                     outputHTML += '</div>';
                     iframe.srcdoc = `<html><body style="margin:0;">${outputHTML}</body></html>`;
                     btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
