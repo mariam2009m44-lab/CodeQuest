@@ -13,6 +13,118 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
 <body>
+
+    <!-- Dashboard Gamification Widget -->
+    <style>
+        .dashboard-widget {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .widget-stats {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .stat-icon {
+            font-size: 2rem;
+            color: #f59e0b; /* لون نار */
+            filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #fff; }
+        .stat-label { font-size: 0.85rem; color: #94a3b8; }
+        
+        .xp-container {
+            flex: 1;
+            min-width: 250px;
+        }
+        .xp-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+        .xp-bar-bg {
+            height: 12px;
+            background: #0f172a;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .xp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffcc, #00bfff);
+            border-radius: 6px;
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+        
+        .cody-tip {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 255, 204, 0.05);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px dashed rgba(0, 255, 204, 0.3);
+        }
+        .cody-tip i { font-size: 2rem; color: #00ffcc; }
+        .cody-tip p { margin: 0; font-size: 0.9rem; color: #e2e8f0; max-width: 200px; }
+    </style>
+
+    <div class="dashboard-widget">
+        <div class="widget-stats">
+            <div class="stat-item">
+                <i class="ri-fire-fill stat-icon"></i>
+                <span class="stat-value">5</span>
+                <span class="stat-label">أيام متتالية</span>
+            </div>
+            <div class="stat-item">
+                <i class="ri-medal-fill stat-icon" style="color:#eab308; filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.5));"></i>
+                <span class="stat-value">12</span>
+                <span class="stat-label">دروس مكتملة</span>
+            </div>
+        </div>
+
+        <div class="xp-container">
+            <div class="xp-header">
+                <span>المستوى 3</span>
+                <span>250 / 500 XP</span>
+            </div>
+            <div class="xp-bar-bg">
+                <div class="xp-bar-fill" id="xp-progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="cody-tip">
+            <i class="ri-robot-2-line"></i>
+            <p><strong>Cody يقول:</strong> استمر في التقدم! أنت تبلي بلاءً حسناً 🚀</p>
+        </div>
+    </div>
+    <script>
+        // أنيميشن لشريط الخبرة عشان يتحرك أول ما الصفحة تفتح
+        setTimeout(() => {
+            const xpBar = document.getElementById('xp-progress-bar');
+            if(xpBar) xpBar.style.width = '50%'; // 250 من 500
+        }, 300);
+    </script>
+>
     <div class="desktop-sidebar">
         <div style="color:var(--primary); font-size:1.5rem; font-weight:900; margin-bottom:30px;"><i class="ri-robot-line"></i> CodeQuest</div>
         <a href="dashboard.html" class="sidebar-link active"><i class="ri-home-4-line"></i> الرئيسية</a>
