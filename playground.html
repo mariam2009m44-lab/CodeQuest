@@ -17,12 +17,13 @@
         .header h1 { margin: 0; font-size: 1.1rem; color: var(--primary); }
         .lang-select { background: #0f172a; color: var(--primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-family: 'Cairo'; cursor: pointer; }
         .run-btn { background: var(--primary); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 8px; }
+        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .workspace { display: flex; flex: 1; overflow: hidden; }
         .editor-container { flex: 1; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
-        .console-container { flex: 1; display: flex; flex-direction: column; background: #000; }
+        .console-container { flex: 1; display: flex; flex-direction: column; background: #fff; }
         .panel-title { padding: 10px; background: var(--bg-panel); font-size: 0.9rem; color: #94a3b8; border-bottom: 1px solid var(--border); text-align: center; direction: ltr; }
         .CodeMirror { height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 15px; direction: ltr; }
-        iframe { flex: 1; border: none; background: #fff; width: 100%; height: 100%; }
+        iframe { flex: 1; border: none; width: 100%; height: 100%; }
         @media (max-width: 768px) { .workspace { flex-direction: column; } .editor-container { border-left: none; border-bottom: 1px solid var(--border); } }
     </style>
 </head>
@@ -58,14 +59,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 
     <script>
         const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
             mode: "javascript", theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4, tabSize: 4
         });
 
-        // الأكواد الافتراضية (الكود كامل عشان يبان قدامه إزاي يطبع)
         const codeJS = "// Welcome to CodeQuest!\nlet name = \"Cody\";\nconsole.log(\"Hello, \" + name + \"!\");";
         const codePy = "# Welcome to CodeQuest!\nname = \"Cody\"\nprint(\"Hello, \" + name + \"!\")";
         const codeCpp = "// Welcome to CodeQuest!\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello, Cody!\" << endl;\n    return 0;\n}";
@@ -76,7 +75,6 @@
             const iframe = document.getElementById('output-frame');
             const btn = document.getElementById('run-btn');
             
-            // تصفير شاشة النتيجة وتفعيل الزرار
             iframe.srcdoc = ""; 
             btn.disabled = false;
             btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
@@ -102,31 +100,53 @@
             const btn = document.getElementById('run-btn');
             const iframe = document.getElementById('output-frame');
 
-            if (lang === 'javascript') {
-                // تنفيذ الكود فوراً
-                iframe.srcdoc = `<html><body style="font-family:monospace; padding:15px;"><script>
-                    const oLog = console.log;
-                    console.log = function(...args) { document.body.innerHTML += '> ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ') + '<br>'; oLog(...args); };
-                    window.onerror = function(msg) { document.body.innerHTML += '<span style="color:red;">Error: ' + msg + '</span><br>'; };
-                <\/script><script>try { ${code} } catch(e) { console.log('Error: ' + e.message); }<\/script></body></html>`;
-            } else if (lang === 'python') {
-                // تعطيل الزرار لحد ما بايثون تحمل
-                btn.disabled = true; btn.innerHTML = 'جاري التشغيل...';
-                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px;">جاري تحميل بايثون (قد يستغرق ثواني)...</body></html>';
-                try {
-                    if (!window.pyodide) {
-                        window.pyodide = await loadPyodide({
-                            stdout: (text) => { iframe.contentWindow.document.body.innerHTML += text + '<br>'; },
-                            stderr: (text) => { iframe.contentWindow.document.body.innerHTML += `<span style="color:red;">${text}</span><br>`; }
-                        });
-                    }
-                    iframe.contentWindow.document.body.innerHTML = '';
-                    await window.pyodide.runPythonAsync(code);
-                } catch (err) { iframe.contentWindow.document.body.innerHTML += `<span style="color:red;">Error: ${err.message}</span>`; }
-                // إرجاع الزرار لطبيعته
-                btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
-            } else if (lang === 'cpp') {
-                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; color:red; direction:rtl; text-align:center; margin-top:50px;">⚠️ تشغيل C++ يحتاج سيرفر خارجي.</body></html>';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> جاري التشغيل...';
+            iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; text-align:center; color:#333;">جاري تنفيذ الكود على السيرفر...</body></html>';
+
+            // تحديد اللغة للسيرفر
+            let apiLang = 'javascript';
+            if (lang === 'python') apiLang = 'python';
+            if (lang === 'cpp') apiLang = 'c++';
+
+            try {
+                // استخدام Piston API لتشغيل الكود
+                const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        language: apiLang,
+                        version: '*', // أحدث إصدار
+                        files: [{ content: code }]
+                    })
+                });
+
+                const result = await response.json();
+                
+                let outputHTML = '<div style="font-family:monospace; padding:15px; text-align:left; direction:ltr; color:#333; white-space:pre-wrap;">';
+                
+                // لو في خطأ في التجميع (زي C++)
+                if (result.compile && result.compile.stderr) {
+                    outputHTML += '<span style="color:red; font-weight:bold;">Compilation Error:</span><br>' + result.compile.stderr;
+                } 
+                // لو الكود اشتغل وطلع نتيجة أو خطأ
+                else if (result.run && (result.run.stdout || result.run.stderr)) {
+                    if (result.run.stdout) outputHTML += result.run.stdout;
+                    if (result.run.stderr) outputHTML += '<span style="color:red;">' + result.run.stderr + '</span>';
+                } 
+                // لو الكود شغال بس مفيش طباعة
+                else {
+                    outputHTML += '<span style="color:gray;">الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم أوامر الطباعة).</span>';
+                }
+                
+                outputHTML += '</div>';
+                iframe.srcdoc = `<html><body style="margin:0;">${outputHTML}</body></html>`;
+
+            } catch (error) {
+                iframe.srcdoc = `<html><body style="margin:0; padding:15px; color:red;">خطأ في الاتصال بالسيرفر: ${error.message}</body></html>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
             }
         }
     </script>
