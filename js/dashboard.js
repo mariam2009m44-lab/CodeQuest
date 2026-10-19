@@ -16,7 +16,14 @@ onAuthStateChanged(auth, async (user) => {
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
+        
+    // تحديث اسم المستخدم في الواجهة
+    const userNameEl = document.getElementById('user-name-display');
+    if (userNameEl) {
+        userNameEl.innerText = user.displayName || "بطل CodeQuest";
+    }
+    
+                if (docSnap.exists()) {
             const data = docSnap.data();
             // تحديث الأرقام في الواجهة
             document.querySelector('.stat-item:nth-child(1) .stat-value').innerText = data.streak || 0;
