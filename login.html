@@ -5,51 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/variables.css?v=5">
     <style>
-        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--bg-base); }
-        .auth-card { background: var(--bg-surface); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 100%; max-width: 400px; text-align: center; }
-        .auth-card h2 { margin-bottom: var(--space-6); color: var(--primary-main); }
-        .form-group { margin-bottom: var(--space-4); text-align: right; }
-        .form-group label { display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--text-main); }
-        .auth-links { margin-top: var(--space-4); font-size: 0.9rem; color: var(--text-muted); }
-        .auth-links a { color: var(--primary-main); font-weight: 600; }
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .auth-card { background: var(--bg-panel); padding: 40px; border-radius: var(--radius-card); box-shadow: var(--shadow-glass); width: 100%; max-width: 420px; text-align: center; border: 1px solid var(--border-soft); backdrop-filter: blur(15px); }
+        .auth-card h2 { margin-bottom: 30px; color: var(--text-primary); font-size: 1.8rem; font-weight: 800; }
+        .form-group { margin-bottom: 20px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; }
+        .auth-links { margin-top: 25px; font-size: 0.9rem; color: var(--text-secondary); }
+        .auth-links a { color: var(--primary); font-weight: 700; cursor: pointer; }
     </style>
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6554D9">
 </head>
 <body>
     <div class="auth-card">
-        <h2>أهلاً بك مجدداً!</h2>
+        <h2>أهلاً بعودتك!</h2>
         <form id="loginForm">
             <div class="form-group">
                 <label>البريد الإلكتروني</label>
-                <input type="email" class="input-field" placeholder="example@email.com" required>
+                <input type="email" id="email" class="input-field" placeholder="example@email.com" required>
             </div>
             <div class="form-group">
                 <label>كلمة المرور</label>
-                <input type="password" class="input-field" placeholder="********" required>
+                <input type="password" id="password" class="input-field" placeholder="********" required>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--space-4);">دخول</button>
+            <button type="submit" id="loginBtn" class="btn-primary" style="width: 100%; margin-top: 10px;">دخول</button>
         </form>
         <div class="auth-links">
-            ليس لديك حساب؟ <a href="#">سجل الآن</a>
+            ليس لديك حساب؟ <a onclick="window.location.href='signup.html'">سجل الآن</a>
         </div>
     </div>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+    <script type="module">
+        import { auth } from './js/app.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { showToast } from './js/ui.js';
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            window.location.href = 'dashboard.html';
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true; btn.innerText = 'جاري الدخول...';
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showToast('تم تسجيل الدخول بنجاح!', 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+            } catch (error) {
+                showToast('خطأ في البريد أو كلمة المرور', 'error');
+                btn.disabled = false; btn.innerText = 'دخول';
+            }
         });
-    </script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
-            });
-        }
     </script>
 </body>
 </html>

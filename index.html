@@ -1,137 +1,38 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeQuest | ابدأ مغامرتك</title>
+    <title>CodeQuest | ابدأ رحلتك</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/variables.css?v=5">
     <style>
-        .landing-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: var(--space-m);
-            text-align: center;
-            position: relative;
-            background: radial-gradient(circle at center, rgba(118, 87, 255, 0.1) 0%, var(--bg-deep) 60%);
-        }
-
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: var(--space-m) var(--space-l);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: var(--space-xs);
-        }
-
-        .hero-icon {
-            font-size: 7rem;
-            color: var(--primary);
-            margin-bottom: var(--space-m);
-            filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.4));
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        .hero-title {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 900;
-            line-height: 1.2;
-            margin-bottom: var(--space-s);
-            color: var(--text-primary);
-        }
-
-        .hero-title span {
-            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-desc {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin-bottom: var(--space-xl);
-            line-height: 1.8;
-        }
-
-        .cta-group {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-s);
-            width: 100%;
-            max-width: 350px;
-        }
-
-        @media (min-width: 768px) {
-            .cta-group {
-                flex-direction: row;
-                max-width: none;
-            }
-            .cta-group button {
-                min-width: 200px;
-            }
-        }
+        .landing-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; position: relative; }
+        .top-bar { position: absolute; top: 0; left: 0; right: 0; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        .logo i { color: var(--primary); }
+        .hero-icon { font-size: 7rem; color: var(--primary); margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.5)); animation: float 4s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .hero-title { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.2; margin-bottom: 15px; color: var(--text-primary); }
+        .hero-title span { background: linear-gradient(135deg, var(--primary), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-desc { font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin-bottom: 40px; line-height: 1.8; }
+        .cta-group { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 350px; }
+        @media (min-width: 768px) { .cta-group { flex-direction: row; max-width: none; } .cta-group a { min-width: 200px; } }
     </style>
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00D9FF">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2721/2721297.png">
 </head>
 <body>
+    <div class="top-bar">
+        <div class="logo"><i class="ri-code-box-fill"></i> CodeQuest</div>
+    </div>
     <div class="landing-wrapper">
-        <div class="top-bar">
-            <div class="logo">
-                <i class="ri-code-box-fill"></i> CodeQuest
-            </div>
-            <button class="btn-secondary" onclick="window.location.href='login.html'">تسجيل الدخول</button>
-        </div>
-
-        <div class="hero-icon">
-            <i class="ri-robot-2-fill"></i>
-        </div>
-
-        <h1 class="hero-title">اتعلم البرمجة...<br><span>مغامرة صغيرة كل يوم!</span></h1>
-        
-        <p class="hero-desc">
-            انضم إلى كودي في رحلة ممتعة لتعلم لغات البرمجة، بناء الألعاب، وحل الألغاز. مصمم للأبطال الصغار من 8 إلى 14 سنة.
-        </p>
-
+        <div class="hero-icon"><i class="ri-robot-2-fill"></i></div>
+        <h1 class="hero-title">اكتشف عالم البرمجة<br><span>مع كودي!</span></h1>
+        <p class="hero-desc">انضم إلى رحلة تعليمية ممتعة لتعلم لغات البرمجة، بناء الألعاب، وحل الألغاز. مصمم خصيصاً للأبطال الصغار من 8 إلى 14 سنة.</p>
         <div class="cta-group">
-            <button class="btn-primary" onclick="window.location.href='signup.html'">
-                ابدأ المغامرة <i class="ri-rocket-line"></i>
-            </button>
+            <a href="signup.html" class="btn-primary">إنشاء حساب جديد <i class="ri-user-add-line"></i></a>
+            <a href="login.html" class="btn-secondary">تسجيل الدخول</a>
         </div>
     </div>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed: ', err));
-            });
-        }
-    </script>
 </body>
 </html>
