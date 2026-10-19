@@ -4,71 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>خريطة التعلم | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
     <style>
-        .chapter-container { margin-bottom: 30px; }
-        .chapter-title { font-size: 1.4rem; color: var(--text-main); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--border-light); padding-bottom: 10px; }
-        .lesson-card { background: var(--bg-surface); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-light); transition: var(--transition); cursor: pointer; }
-        .lesson-card:hover { border-color: var(--primary-main); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-        .lesson-info h4 { color: var(--text-main); margin-bottom: 5px; font-size: 1.1rem; }
-        .lesson-info p { color: var(--text-muted); font-size: 0.9rem; }
-        .lesson-action { width: 40px; height: 40px; background: rgba(101, 84, 217, 0.1); color: var(--primary-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        body { background-color: var(--bg-deep); background-image: radial-gradient(circle at top, rgba(118, 87, 255, 0.1), transparent 50%); margin: 0; padding-bottom: 50px; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: var(--space-m) var(--space-l); background: rgba(14, 23, 64, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-soft); }
+        .page-title { font-size: 1.5rem; font-weight: 900; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        
+        .map-container { max-width: 800px; margin: var(--space-xl) auto; position: relative; display: flex; flex-direction: column; align-items: center; gap: 40px; }
+        
+        .path-line { position: absolute; top: 50px; bottom: 50px; right: 50%; transform: translateX(50%); width: 4px; background: dashed var(--border-soft); z-index: 1; }
+        
+        .chapter-group { display: flex; flex-direction: column; align-items: center; gap: 30px; z-index: 2; width: 100%; }
+        .chapter-header { background: var(--bg-panel); border: 1px solid var(--border-soft); padding: 10px 30px; border-radius: var(--radius-pill); color: var(--text-secondary); font-weight: 700; margin-bottom: 10px; }
+        
+        .level-node { background: var(--bg-panel); border: 2px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-m); width: 100%; max-width: 400px; display: flex; align-items: center; gap: 20px; cursor: pointer; transition: all 0.3s ease; position: relative; }
+        .level-node:hover { border-color: var(--primary); transform: scale(1.02); box-shadow: var(--glow-active); }
+        
+        .node-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; background: var(--bg-deep); border: 2px solid var(--primary); color: var(--primary); flex-shrink: 0; }
+        .node-info h3 { color: var(--text-primary); margin-bottom: 5px; font-size: 1.2rem; }
+        .node-info p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+        
+        .level-node.locked { opacity: 0.6; cursor: not-allowed; border-color: var(--border-soft); }
+        .level-node.locked .node-icon { border-color: var(--border-soft); color: var(--text-muted); }
+        .level-node.locked:hover { transform: none; box-shadow: none; border-color: var(--border-soft); }
+
+        .cody-float { position: fixed; bottom: 30px; left: 30px; font-size: 4rem; color: var(--primary); filter: drop-shadow(0 0 20px rgba(0,217,255,0.4)); animation: float 3s ease-in-out infinite; pointer-events: none; z-index: 99; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        @media (max-width: 768px) { .map-container { padding: 0 20px; } }
     </style>
 </head>
-<body style="background: var(--bg-base);">
-    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 id="pageTitle" style="color: var(--text-main);">جاري التحميل...</h1>
-            <a href="lessons.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> تغيير اللغة</a>
-        </div>
-        
-        <div id="chaptersContainer"></div>
+<body>
+    <nav class="top-nav">
+        <a href="languages.html" class="btn-secondary" style="padding: 8px 16px;"><i class="ri-arrow-right-line"></i> رجوع</a>
+        <div class="page-title" id="pageTitle"><i class="ri-map-2-line"></i> جاري التحميل...</div>
+        <div style="width: 80px;"></div>
+    </nav>
+
+    <div class="map-container" id="mapContainer">
+        <div class="path-line"></div>
+    </div>
+
+    <div class="cody-float">
+        <i class="ri-robot-2-fill"></i>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const lang = urlParams.get('lang') || 'javascript';
+        const lang = urlParams.get('lang') || localStorage.getItem('cq_selected_lang') || 'javascript';
+        
         const titles = { javascript: 'مسار JavaScript', python: 'مسار Python', cpp: 'مسار C++' };
         const files = { javascript: 'json/js_curriculum.json', python: 'json/python_curriculum.json', cpp: 'json/cpp_curriculum.json' };
         
-        document.getElementById('pageTitle').innerText = titles[lang];
+        document.getElementById('pageTitle').innerHTML = `<i class="ri-map-2-line"></i> ${titles[lang]}`;
 
-        async function loadLevels() {
+        async function loadMap() {
             try {
                 const res = await fetch(files[lang]);
                 const data = await res.json();
-                const container = document.getElementById('chaptersContainer');
+                const container = document.getElementById('mapContainer');
                 
+                const completedLessons = JSON.parse(localStorage.getItem('cq_completed')) || [];
+
                 data.chapters.forEach((chapter, cIdx) => {
                     const chapDiv = document.createElement('div');
-                    chapDiv.className = 'chapter-container';
-                    chapDiv.innerHTML = `<h2 class="chapter-title"><i class="ri-bookmark-line" style="color: var(--primary-main);"></i> ${chapter.title}</h2>`;
+                    chapDiv.className = 'chapter-group';
                     
+                    const title = document.createElement('div');
+                    title.className = 'chapter-header';
+                    title.innerText = chapter.title;
+                    chapDiv.appendChild(title);
+
                     chapter.lessons.forEach((lesson, lIdx) => {
-                        const card = document.createElement('div');
-                        card.className = 'lesson-card';
-                        card.onclick = () => {
-                            window.location.href = `lecture.html?lang=${lang}&chapter=${cIdx}&lesson=${lIdx}`;
-                        };
-                        card.innerHTML = `
-                            <div class="lesson-info">
-                                <h4>${lesson.title}</h4>
+                        const lessonKey = `${lang}_ch${cIdx}_l${lIdx}`;
+                        const isUnlocked = cIdx === 0 && lIdx === 0 || completedLessons.includes(`${lang}_ch${cIdx}_l${lIdx - 1}`) || completedLessons.includes(lessonKey);
+                        const isCompleted = completedLessons.includes(lessonKey);
+
+                        const node = document.createElement('div');
+                        node.className = `level-node ${isUnlocked ? '' : 'locked'}`;
+                        
+                        if (isUnlocked) {
+                            node.onclick = () => {
+                                window.location.href = `lecture.html?lang=${lang}&chapter=${cIdx}&lesson=${lIdx}`;
+                            };
+                        }
+
+                        const icon = isCompleted ? '<i class="ri-check-double-line"></i>' : (isUnlocked ? '<i class="ri-play-fill"></i>' : '<i class="ri-lock-fill"></i>');
+                        const statusText = isCompleted ? 'مكتمل' : (isUnlocked ? 'متاح' : 'مقفل');
+
+                        node.innerHTML = `
+                            <div class="node-icon">${icon}</div>
+                            <div class="node-info">
+                                <h3>${lesson.title}</h3>
                                 <p>${lesson.objective}</p>
+                                <span style="font-size: 0.8rem; color: ${isCompleted ? 'var(--accent-green)' : (isUnlocked ? 'var(--primary)' : 'var(--text-muted)')}; font-weight: bold; margin-top: 5px; display: inline-block;">${statusText}</span>
                             </div>
-                            <div class="lesson-action"><i class="ri-play-fill"></i></div>
                         `;
-                        chapDiv.appendChild(card);
+                        chapDiv.appendChild(node);
                     });
-                    
                     container.appendChild(chapDiv);
                 });
             } catch (e) {
-                document.getElementById('chaptersContainer').innerHTML = '<p style="color:red; text-align:center;">حدث خطأ في تحميل المنهج.</p>';
+                document.getElementById('mapContainer').innerHTML = '<p style="color:red; text-align:center;">حدث خطأ في تحميل المنهج. تأكد من وجود ملفات JSON.</p>';
             }
         }
-        loadLevels();
+        loadMap();
     </script>
 </body>
 </html>

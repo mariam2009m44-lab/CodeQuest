@@ -1,109 +1,137 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { background-color: var(--bg-deep); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border-soft); display: flex; flex-direction: column; padding: var(--space-m); z-index: 10; }
+        .logo-area { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 900; color: var(--primary); margin-bottom: var(--space-xl); padding: 0 var(--space-s); }
+        .nav-menu { display: flex; flex-direction: column; gap: var(--space-xs); flex: 1; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-button); color: var(--text-secondary); font-weight: 600; transition: 0.2s; cursor: pointer; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: rgba(0, 217, 255, 0.1); color: var(--primary); }
+        .nav-item i { font-size: 1.4rem; }
+        .logout-btn { margin-top: auto; color: var(--accent-coral); background: rgba(255, 107, 107, 0.1); }
 
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6554D9">
+        .main-content { flex: 1; overflow-y: auto; padding: var(--space-l); display: flex; flex-direction: column; gap: var(--space-l); }
+        
+        .topbar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); padding: 15px 25px; border-radius: var(--radius-card); border: 1px solid var(--border-soft); }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-avatar { width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--bg-deep); }
+        .user-details h2 { font-size: 1.2rem; color: var(--text-primary); margin: 0; }
+        .user-details p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+        .stats-bar { display: flex; gap: var(--space-m); }
+        .stat-pill { background: var(--bg-deep); padding: 8px 16px; border-radius: var(--radius-pill); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-soft); font-weight: 700; }
+        .stat-pill i { color: var(--accent-yellow); }
+        .stat-pill.xp i { color: var(--primary); }
+
+        .hero-section { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-m); }
+        .main-card { background: linear-gradient(135deg, rgba(14, 23, 64, 1), rgba(118, 87, 255, 0.15)); border: 1px solid var(--accent-purple); border-radius: var(--radius-card); padding: var(--space-l); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+        .main-card h1 { font-size: 2rem; color: var(--text-primary); margin-bottom: 10px; }
+        .main-card p { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 25px; max-width: 80%; }
+        .main-card .btn-primary { width: fit-content; }
+        .cody-bg { position: absolute; left: -20px; bottom: -20px; font-size: 10rem; color: rgba(255,255,255,0.05); transform: rotate(-15deg); pointer-events: none; }
+
+        .mission-card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center; }
+        .mission-icon { font-size: 3rem; color: var(--accent-orange); margin-bottom: 15px; }
+        .mission-card h3 { color: var(--text-primary); margin-bottom: 5px; }
+        .mission-card p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px; }
+
+        .quick-access { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-m); }
+        .qa-card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-m); display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: 0.3s; text-decoration: none; }
+        .qa-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: var(--shadow-card); }
+        .qa-icon { width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 15px; }
+        .qa-title { color: var(--text-primary); font-weight: 700; font-size: 1.1rem; }
+
+        @media (max-width: 1024px) {
+            .hero-section { grid-template-columns: 1fr; }
+            .quick-access { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { display: none; }
+            .main-content { padding: var(--space-m); }
+            .topbar { flex-direction: column; gap: 15px; }
+            .quick-access { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-    <div class="app-layout">
-        <aside class="sidebar">
-            <h1 style="color: var(--primary-main); font-size: 1.8rem; margin-bottom: var(--space-8); display: flex; align-items: center; gap: 8px;">
-                <i class="ri-code-box-fill"></i> CodeQuest
-            </h1>
-            <nav class="nav-links">
-                <a href="dashboard.html" class="nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="lessons.html" class="nav-item"><i class="ri-book-open-line"></i> مسار التعلم</a>
-                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> ملعب الأكواد</a>
-                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
-                <a href="projects.html" class="nav-item"><i class="ri-folder-code-line"></i> مشاريعي</a>
-            </nav>
-            <div style="margin-top: auto;">
-                <button onclick="window.logoutUser()" class="btn btn-secondary" style="width: 100%; border-color: var(--danger); color: var(--danger);">
-                    <i class="ri-logout-box-r-line"></i> تسجيل الخروج
-                </button>
-            </div>
-        </aside>
+    <aside class="sidebar">
+        <div class="logo-area">
+            <i class="ri-code-box-fill"></i> CodeQuest
+        </div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
+            <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
+            <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
+            <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+            <a href="shop.html" class="nav-item"><i class="ri-store-3-line"></i> المتجر</a>
+            <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> ملفي الشخصي</a>
+        </nav>
+        <a href="#" onclick="logoutUser()" class="nav-item logout-btn"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</a>
+    </aside>
 
-        <main class="main-content">
-            <header class="topbar">
-                <div>
-                    <h2 style="font-size: 1.2rem; font-weight: 700;">مرحباً بك، <span class="js-user-name">بطل</span> 👋</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">جاهز لمغامرة برمجية جديدة اليوم؟</p>
-                </div>
-                <div style="display: flex; align-items: center; gap: var(--space-3);">
-                    <div style="text-align: left;">
-                        <p style="font-weight: 700; color: var(--reward);"><i class="ri-star-fill"></i> <span class="js-user-xp">0</span> XP</p>
-                    </div>
-                    <div style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-main); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                        <i class="ri-user-smile-line"></i>
-                    </div>
-                </div>
-            </header>
-
-            <div class="grid-dashboard">
-                <div class="card stat-card">
-                    <div class="stat-icon primary"><i class="ri-fire-fill"></i></div>
-                    <div class="stat-info">
-                        <h4>أيام متتالية</h4>
-                        <p>5</p>
-                    </div>
-                </div>
-                <div class="card stat-card">
-                    <div class="stat-icon success"><i class="ri-check-double-line"></i></div>
-                    <div class="stat-info">
-                        <h4>دروس مكتملة</h4>
-                        <p>12</p>
-                    </div>
-                </div>
-                <div class="card stat-card">
-                    <div class="stat-icon reward"><i class="ri-medal-fill"></i></div>
-                    <div class="stat-info">
-                        <h4>المستوى الحالي</h4>
-                        <p>3</p>
-                    </div>
+    <main class="main-content">
+        <header class="topbar">
+            <div class="user-info">
+                <div class="user-avatar"><i class="ri-robot-2-fill"></i></div>
+                <div class="user-details">
+                    <h2>مرحباً، <span class="js-user-name">بطل</span> 👋</h2>
+                    <p>مستعد لمغامرة جديدة اليوم؟</p>
                 </div>
             </div>
-
-            <div class="card" style="background: linear-gradient(135deg, rgba(101, 84, 217, 0.05), rgba(15, 139, 141, 0.05)); display: flex; justify-content: space-between; align-items: center; padding: var(--space-8);">
-                <div>
-                    <h3 style="font-size: 1.5rem; margin-bottom: var(--space-2); color: var(--primary-main);">أكمل مغامرتك!</h3>
-                    <p style="color: var(--text-muted); margin-bottom: var(--space-4);">الدرس القادم: المتغيرات في JavaScript</p>
-                    <a href="lecture.html" class="btn btn-primary">ابدأ الدرس الآن <i class="ri-arrow-left-line"></i></a>
-                </div>
-                <div style="font-size: 4rem; color: var(--primary-main); opacity: 0.2;">
-                    <i class="ri-rocket-line"></i>
-                </div>
+            <div class="stats-bar">
+                <div class="stat-pill"><i class="ri-coins-fill"></i> <span class="js-user-coins">0</span></div>
+                <div class="stat-pill xp"><i class="ri-star-fill"></i> <span class="js-user-xp">0</span> XP</div>
             </div>
-        </main>
-    </div>
+        </header>
 
-    <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item active"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>التعلم</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i><span>الملعب</span></a>
-        <a href="projects.html" class="mobile-nav-item"><i class="ri-folder-code-line"></i><span>مشاريعي</span></a>
-    </nav>
+        <section class="hero-section">
+            <div class="main-card">
+                <h1>أكمل مغامرتك!</h1>
+                <p>أنت على بعد خطوة واحدة من إتقان لغة جديدة. الدرس التالي ينتظرك.</p>
+                <button class="btn-primary" onclick="window.location.href='languages.html'">استكمال التعلم <i class="ri-arrow-left-line"></i></button>
+                <i class="ri-robot-2-fill cody-bg"></i>
+            </div>
+            <div class="mission-card">
+                <i class="ri-fire-fill mission-icon"></i>
+                <h3>مهمة اليوم</h3>
+                <p>أكمل درساً واحداً اليوم للحفاظ على سلسلة الأيام!</p>
+                <button class="btn-secondary" onclick="window.location.href='languages.html'">اذهب للدروس</button>
+            </div>
+        </section>
+
+        <section class="quick-access">
+            <a href="languages.html" class="qa-card">
+                <div class="qa-icon" style="background: rgba(0, 217, 255, 0.1); color: var(--primary);"><i class="ri-book-open-line"></i></div>
+                <div class="qa-title">الدروس</div>
+            </a>
+            <a href="playground.html" class="qa-card">
+                <div class="qa-icon" style="background: rgba(118, 87, 255, 0.1); color: var(--accent-purple);"><i class="ri-code-s-slash-line"></i></div>
+                <div class="qa-title">الملعب</div>
+            </a>
+            <a href="games.html" class="qa-card">
+                <div class="qa-icon" style="background: rgba(255, 159, 67, 0.1); color: var(--accent-orange);"><i class="ri-gamepad-line"></i></div>
+                <div class="qa-title">الألعاب</div>
+            </a>
+            <a href="shop.html" class="qa-card">
+                <div class="qa-icon" style="background: rgba(255, 203, 87, 0.1); color: var(--accent-yellow);"><i class="ri-shopping-bag-3-line"></i></div>
+                <div class="qa-title">المتجر</div>
+            </a>
+        </section>
+    </main>
 
     <script type="module">
         import { initApp, logoutUser } from './js/app.js';
         window.logoutUser = logoutUser;
         initApp();
-    </script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
-            });
-        }
     </script>
 </body>
 </html>
