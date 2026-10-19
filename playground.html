@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملعب | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --primary: #00ffcc;
+            --text-main: #e2e8f0;
+            --border: rgba(255,255,255,0.1);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* الهيدر */
+        .header {
+            background: var(--bg-panel);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .header h1 { margin: 0; font-size: 1.2rem; color: var(--primary); }
+        .run-btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Cairo';
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .run-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--primary); }
+        
+        /* تقسيم الشاشة */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .editor-container {
+            flex: 1;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        .console-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+        }
+        .panel-title {
+            padding: 10px;
+            background: var(--bg-panel);
+            font-size: 0.9rem;
+            color: #94a3b8;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            direction: ltr;
+        }
+        
+        /* CodeMirror Customization */
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            direction: ltr;
+        }
+        
+        /* Output iframe */
+        iframe {
+            flex: 1;
+            border: none;
+            background: #fff;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .workspace { flex-direction: column; }
+            .editor-container { border-left: none; border-bottom: 1px solid var(--border); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <a href="index.html" style="color:var(--text-main); text-decoration:none;"><i class="ri-arrow-right-line"></i></a>
+            <h1>ملعب الأكواد (JavaScript)</h1>
+        </div>
+        <button class="run-btn" onclick="runCode()">
+            <i class="ri-play-fill"></i> تشغيل الكود
+        </button>
+    </div>
+
+    <div class="workspace">
+        <div class="editor-container">
+            <div class="panel-title">main.js</div>
+            <textarea id="code-editor"></textarea>
+        </div>
+        <div class="console-container">
+            <div class="panel-title">Console Output (النتيجة)</div>
+            <iframe id="output-frame" sandbox="allow-scripts"></iframe>
+        </div>
+    </div>
+
+    <!-- CodeMirror Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+
+    <script>
+        // إعداد محرر الأكواد
+        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+            mode: "javascript",
+            theme: "dracula",
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            indentUnit: 4,
+            tabSize: 4
+        });
+
+        // الكود الافتراضي
+        editor.setValue(`// أهلاً بك في CodeQuest Playground!
+// اكتب كود JavaScript هنا واضغط "تشغيل الكود".
+
+let name = "Cody";
+console.log("Hello, " + name + "!");
+
+// جرب تغير اسمك وشوف النتيجة في الشاشة التانية
+`);
+
+        // دالة التشغيل
+        function runCode() {
+            const code = editor.getValue();
+            const iframe = document.getElementById('output-frame');
+            
+            // بنجهز بيئة التشغيل جوه الـ iframe عشان نعزل الكود
+            const htmlContent = `
+                <html>
+                <head>
+                    <style>
+                        body { font-family: monospace; padding: 15px; color: #333; }
+                        .log-line { border-bottom: 1px solid #eee; padding: 5px 0; }
+                        .error { color: red; }
+                    </style>
+                </head>
+                <body>
+                    <script>
+                        // تحويل console.log لعرض النتايج في الصفحة
+                        const originalLog = console.log;
+                        console.log = function(...args) {
+                            const div = document.createElement('div');
+                            div.className = 'log-line';
+                            div.innerText = '> ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+                            document.body.appendChild(div);
+                            originalLog.apply(console, args);
+                        };
+                        
+                        window.onerror = function(msg) {
+                            const div = document.createElement('div');
+                            div.className = 'log-line error';
+                            div.innerText = 'Error: ' + msg;
+                            document.body.appendChild(div);
+                        };
+                    <\/script>
+                    <script>
+                        try {
+                            ${code}
+                        } catch (e) {
+                            console.error(e.message);
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `;
+            
+            // إعادة تحميل الـ iframe بالكود الجديد
+            iframe.srcdoc = htmlContent;
+        }
+    </script>
+</body>
+</html>
