@@ -1,21 +1,46 @@
-const curriculumData = {
-    "javascript": [
-        { level: 1, title: "طباعة النصوص", task: "اكتب كود يطبع الجملة دي: Hello CodeQuest", starter: "// اكتب الكود هنا\n", expected: "Hello CodeQuest" },
-        { level: 2, title: "المتغيرات", task: "اعمل متغير اسمه name وخليه يساوي 'Cody' واطبعه.", starter: "let name = ;\nconsole.log(name);", expected: "Cody" },
-        { level: 3, title: "الشروط (If)", task: "اكتب شرط لو الرقم 10 أكبر من 5، يطبع 'Yes'.", starter: "if ( ) {\n  console.log('Yes');\n}", expected: "Yes" },
-        { level: 4, title: "الحلقات (Loops)", task: "استخدم حلقة for عشان تطبع الأرقام من 1 لـ 3.", starter: "for (let i = 1; i <= ; i++) {\n  console.log(i);\n}", expected: "1\n2\n3" },
-        { level: 5, title: "الدوال (Functions)", task: "اعمل دالة اسمها greet تطبع 'Welcome'.", starter: "function greet() {\n  // اكتب هنا\n}\ngreet();", expected: "Welcome" }
-    ],
-    "python": [
-        { level: 1, title: "طباعة النصوص", task: "استخدم دالة print لتطبع: Hello CodeQuest", starter: "# اكتب الكود هنا\n", expected: "Hello CodeQuest" },
-        { level: 2, title: "المتغيرات", task: "اعمل متغير name = 'Cody' واطبعه.", starter: "name = \nprint(name)", expected: "Cody" },
-        { level: 3, title: "الشروط (If)", task: "لو 10 > 5 اطبع 'Yes'.", starter: "if 10 > :\n    print('Yes')", expected: "Yes" },
-        { level: 4, title: "الحلقات (Loops)", task: "اطبع الأرقام من 1 لـ 3 باستخدام for.", starter: "for i in range(1, ):\n    print(i)", expected: "1\n2\n3" },
-        { level: 5, title: "الدوال (Functions)", task: "اعمل دالة تطبع 'Welcome'.", starter: "def greet():\n    pass\ngreet()", expected: "Welcome" }
-    ],
-    "cpp": [
-        { level: 1, title: "طباعة النصوص", task: "اطبع الجملة: Hello CodeQuest", starter: "#include <iostream>\nusing namespace std;\nint main() {\n  // اكتب الكود\n  return 0;\n}", expected: "Hello CodeQuest" },
-        { level: 2, title: "المتغيرات", task: "اعمل متغير int x = 5 واطبعه.", starter: "#include <iostream>\nusing namespace std;\nint main() {\n  int x = ;\n  cout << x;\n  return 0;\n}", expected: "5" },
-        { level: 3, title: "الشروط (If)", task: "لو 10 > 5 اطبع 'Yes'.", starter: "#include <iostream>\nusing namespace std;\nint main() {\n  if (10 > 5) {\n    // اكتب هنا\n  }\n  return 0;\n}", expected: "Yes" }
-    ]
+/**
+ * CodeQuest Curriculum Loader
+ * المصدر الوحيد للحقيقة هو ملفات الـ JSON الخارجية
+ */
+
+const CURRICULUM_FILES = {
+    javascript: 'js_curriculum.json',
+    python: 'python_curriculum.json',
+    cpp: 'cpp_curriculum.json'
+};
+
+/**
+ * دالة غير متزامنة لتحميل المنهج حسب اللغة
+ * @param {string} language - 'javascript' | 'python' | 'cpp'
+ * @returns {Promise<Object|null>} - بيانات المنهج
+ */
+async function loadCurriculum(language) {
+    const file = CURRICULUM_FILES[language];
+    
+    if (!file) {
+        console.error('❌ اللغة غير مدعومة:', language);
+        return null;
+    }
+
+    try {
+        // جلب الملف من السيرفر
+        const response = await fetch(file);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log(`✅ تم تحميل منهج ${language} بنجاح`);
+        return data;
+        
+    } catch (error) {
+        console.error(`❌ فشل تحميل منهج ${language}:`, error);
+        return null;
+    }
+}
+
+// تصدير الدالة عشان الصفحات التانية تستخدمها
+window.CodeQuestCurriculum = {
+    loadCurriculum
 };
