@@ -65,7 +65,7 @@
             mode: "javascript", theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4, tabSize: 4
         });
 
-        // هنا السر: استخدمنا \n مفردة عشان تنزل سطر جديد
+        // الأكواد الافتراضية (الكود كامل عشان يبان قدامه إزاي يطبع)
         const codeJS = "// Welcome to CodeQuest!\nlet name = \"Cody\";\nconsole.log(\"Hello, \" + name + \"!\");";
         const codePy = "# Welcome to CodeQuest!\nname = \"Cody\"\nprint(\"Hello, \" + name + \"!\")";
         const codeCpp = "// Welcome to CodeQuest!\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello, Cody!\" << endl;\n    return 0;\n}";
@@ -74,9 +74,12 @@
             const lang = this.value;
             const filenameEl = document.getElementById('filename');
             const iframe = document.getElementById('output-frame');
+            const btn = document.getElementById('run-btn');
             
-            // تصفير شاشة النتيجة عشان الرسالة القديمة متفضلش ظاهرة
+            // تصفير شاشة النتيجة وتفعيل الزرار
             iframe.srcdoc = ""; 
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
 
             if (lang === 'cpp') {
                 editor.setOption("mode", "text/x-c++src");
@@ -100,14 +103,16 @@
             const iframe = document.getElementById('output-frame');
 
             if (lang === 'javascript') {
+                // تنفيذ الكود فوراً
                 iframe.srcdoc = `<html><body style="font-family:monospace; padding:15px;"><script>
                     const oLog = console.log;
                     console.log = function(...args) { document.body.innerHTML += '> ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ') + '<br>'; oLog(...args); };
                     window.onerror = function(msg) { document.body.innerHTML += '<span style="color:red;">Error: ' + msg + '</span><br>'; };
                 <\/script><script>try { ${code} } catch(e) { console.log('Error: ' + e.message); }<\/script></body></html>`;
             } else if (lang === 'python') {
+                // تعطيل الزرار لحد ما بايثون تحمل
                 btn.disabled = true; btn.innerHTML = 'جاري التشغيل...';
-                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px;">جاري تحميل بايثون...</body></html>';
+                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px;">جاري تحميل بايثون (قد يستغرق ثواني)...</body></html>';
                 try {
                     if (!window.pyodide) {
                         window.pyodide = await loadPyodide({
@@ -118,7 +123,8 @@
                     iframe.contentWindow.document.body.innerHTML = '';
                     await window.pyodide.runPythonAsync(code);
                 } catch (err) { iframe.contentWindow.document.body.innerHTML += `<span style="color:red;">Error: ${err.message}</span>`; }
-                btn.disabled = false; btn.innerHTML = 'تشغيل الكود';
+                // إرجاع الزرار لطبيعته
+                btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
             } else if (lang === 'cpp') {
                 iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; color:red; direction:rtl; text-align:center; margin-top:50px;">⚠️ تشغيل C++ يحتاج سيرفر خارجي.</body></html>';
             }
