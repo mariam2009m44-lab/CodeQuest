@@ -6,38 +6,37 @@
     <title>ملعب الأكواد | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/variables.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
     <style>
-        body { background: var(--bg-deep); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .topbar { background: var(--bg-panel); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); z-index: 10; }
         .brand { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 900; color: var(--text-primary); }
         .brand i { color: var(--primary); filter: drop-shadow(0 0 10px rgba(0,217,255,0.5)); }
         .controls { display: flex; gap: 15px; align-items: center; }
         .lang-select { background: var(--bg-deep); color: var(--primary); border: 1px solid var(--border-soft); padding: 10px 15px; border-radius: var(--radius-input); font-family: var(--font-arabic); font-weight: 700; outline: none; cursor: pointer; }
         .workspace { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; }
-        .panel { flex: 1; display: flex; flex-direction: column; border-radius: var(--radius-card); border: 1px solid var(--border-soft); background: var(--bg-panel); overflow: hidden; box-shadow: var(--shadow-card); }
+        .panel { flex: 1; display: flex; flex-direction: column; border-radius: var(--radius-card); border: 1px solid var(--border-soft); background: var(--bg-panel); overflow: hidden; box-shadow: var(--shadow-card); min-height: 0; }
         .panel-header { padding: 12px 20px; background: #1E1E24; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; color: #A8B5D9; font-family: var(--font-code); font-size: 0.9rem; }
         .CodeMirror { flex: 1; height: 100% !important; font-family: var(--font-code); font-size: 15px; direction: ltr; }
         .terminal { flex: 1; background: #000; padding: 20px; font-family: var(--font-code); font-size: 14px; color: var(--accent-green); overflow-y: auto; white-space: pre-wrap; direction: ltr; }
         .terminal-header { display: flex; gap: 8px; padding: 10px 20px; background: #111; border-bottom: 1px solid #333; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
-        @media (max-width: 768px) { .workspace { flex-direction: column; } }
+        @media (max-width: 768px) { .workspace { flex-direction: column; } .panel { min-height: 300px; } }
     </style>
 </head>
 <body>
     <header class="topbar">
         <div class="brand"><i class="ri-code-box-fill"></i> CodeQuest Playground</div>
         <div class="controls">
-            <a href="dashboard.html" class="btn-secondary" style="padding: 8px 16px; min-height: 40px;"><i class="ri-home-5-line"></i> الرئيسية</a>
+            <a href="dashboard.html" class="btn-secondary" style="padding: 8px 16px;"><i class="ri-home-5-line"></i> الرئيسية</a>
             <select id="langSelect" class="lang-select">
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
                 <option value="cpp">C++</option>
             </select>
-            <button id="runBtn" class="btn-primary" style="padding: 10px 20px; min-height: 40px;"><i class="ri-play-fill"></i> تشغيل</button>
+            <button id="runBtn" class="btn-primary" style="padding: 10px 20px;"><i class="ri-play-fill"></i> تشغيل</button>
         </div>
     </header>
     <div class="workspace">
@@ -64,7 +63,6 @@
         const modes = { javascript: 'javascript', python: 'python', cpp: 'text/x-c++src' };
         const langIds = { python: 71, cpp: 54 };
         const defaultCode = { javascript: 'console.log("Hello CodeQuest!");', python: 'print("Hello CodeQuest!")', cpp: '#include <iostream>\\nusing namespace std;\\nint main() {\\n    cout << "Hello CodeQuest!" << endl;\\n    return 0;\\n}' };
-        
         const savedCode = sessionStorage.getItem('playgroundCode');
         const savedLang = sessionStorage.getItem('playgroundLang');
         if (savedCode && savedLang) {
@@ -75,7 +73,6 @@
             sessionStorage.removeItem('playgroundCode');
             sessionStorage.removeItem('playgroundLang');
         }
-
         document.getElementById('langSelect').addEventListener('change', (e) => {
             const lang = e.target.value;
             document.getElementById('fileName').innerText = fileNames[lang];
@@ -83,7 +80,6 @@
             editor.setValue(defaultCode[lang]);
             document.getElementById('output').innerHTML = '> Console Ready...';
         });
-
         document.getElementById('runBtn').addEventListener('click', async () => {
             const lang = document.getElementById('langSelect').value;
             const code = editor.getValue();

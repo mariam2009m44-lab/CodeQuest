@@ -4,36 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مركز الألعاب | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/variables.css?v=2">
+    <style>
+        body { padding: var(--space-l); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
+        .header h1 { font-size: 2rem; color: var(--text-primary); font-weight: 900; }
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-m); }
+        .game-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); text-align: center; transition: 0.3s; cursor: pointer; box-shadow: var(--shadow-card); }
+        .game-card:hover { transform: translateY(-5px); box-shadow: var(--glow-primary); border-color: var(--primary); }
+        .game-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto var(--space-m); }
+        .game-title { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: var(--space-xs); }
+        .game-desc { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: var(--space-m); }
+    </style>
 </head>
-<body style="background: var(--bg-base);">
-    <div style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 style="color: var(--text-main);">مركز الألعاب</h1>
-            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
+<body>
+    <div class="header">
+        <h1>مركز الألعاب</h1>
+        <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
+    </div>
+    <div class="games-grid">
+        <div class="game-card" onclick="alert('اللعبة قيد التطوير!')">
+            <div class="game-icon" style="background: rgba(0, 217, 255, 0.1); color: var(--primary);"><i class="ri-puzzle-line"></i></div>
+            <h3 class="game-title">بازل الأكواد</h3>
+            <p class="game-desc">رتب القطع البرمجية بشكل صحيح لتكوين كود يعمل.</p>
         </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
-            <div class="card" style="text-align: center;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🧩</div>
-                <h3 style="margin-bottom: 10px;">حل الألغاز</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">اختبر ذكاءك في ترتيب الأكواد.</p>
-                <button class="btn btn-primary" style="width: 100%;">العب الآن</button>
-            </div>
-            <div class="card" style="text-align: center;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">⚡</div>
-                <h3 style="margin-bottom: 10px;">سرعة البديهة</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">أجب على الأسئلة في أسرع وقت.</p>
-                <button class="btn btn-primary" style="width: 100%;">العب الآن</button>
-            </div>
-            <div class="card" style="text-align: center;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🕵️</div>
-                <h3 style="margin-bottom: 10px;">اكتشف الخطأ</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">ابحث عن الخطأ البرمجي في الكود.</p>
-                <button class="btn btn-primary" style="width: 100%;">العب الآن</button>
-            </div>
+        <div class="game-card" onclick="alert('اللعبة قيد التطوير!')">
+            <div class="game-icon" style="background: rgba(118, 87, 255, 0.1); color: var(--accent-purple);"><i class="ri-brain-line"></i></div>
+            <h3 class="game-title">لعبة الذاكرة</h3>
+            <p class="game-desc">احفظ الأكواد وطابقها في أسرع وقت ممكن.</p>
+        </div>
+        <div class="game-card" onclick="alert('اللعبة قيد التطوير!')">
+            <div class="game-icon" style="background: rgba(255, 159, 67, 0.1); color: var(--accent-orange);"><i class="ri-bug-line"></i></div>
+            <h3 class="game-title">صائد الأخطاء</h3>
+            <p class="game-desc">اكتشف الخطأ البرمجي في الكود وأصلحه.</p>
+        </div>
+        <div class="game-card" onclick="alert('اللعبة قيد التطوير!')">
+            <div class="game-icon" style="background: rgba(255, 203, 87, 0.1); color: var(--accent-yellow);"><i class="ri-flashlight-line"></i></div>
+            <h3 class="game-title">تحدي السرعة</h3>
+            <p class="game-desc">أجب على أكبر عدد من الأسئلة في وقت قياسي.</p>
+        </div>
+        <div class="game-card" onclick="window.location.href='game-quiz.html'">
+            <div class="game-icon" style="background: rgba(53, 214, 163, 0.1); color: var(--accent-green);"><i class="ri-question-answer-line"></i></div>
+            <h3 class="game-title">سيد الأسئلة</h3>
+            <p class="game-desc">اختبر معرفتك البرمجية في تحديات متتالية.</p>
+        </div>
+        <div class="game-card" onclick="alert('اللعبة قيد التطوير!')">
+            <div class="game-icon" style="background: rgba(255, 107, 107, 0.1); color: var(--accent-coral);"><i class="ri-tools-line"></i></div>
+            <h3 class="game-title">بناء الكود</h3>
+            <p class="game-desc">قم ببناء هيكل برمجي كامل خطوة بخطوة.</p>
         </div>
     </div>
 </body>
