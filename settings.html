@@ -4,66 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الإعدادات | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { background: var(--bg-deep); padding: var(--space-l); }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
+        .header h1 { font-size: 2rem; color: var(--text-primary); }
+        
+        .settings-group { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); margin-bottom: var(--space-m); overflow: hidden; }
+        .settings-group-title { padding: 15px 20px; background: rgba(0, 217, 255, 0.05); color: var(--primary); font-weight: 700; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; gap: 10px; }
+        
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-soft); }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-info h3 { color: var(--text-primary); font-size: 1.1rem; margin-bottom: 5px; }
+        .setting-info p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+        
+        .toggle-switch { position: relative; width: 50px; height: 28px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-deep); border: 1px solid var(--border-soft); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 3px; background-color: var(--text-muted); transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); background-color: var(--bg-deep); }
+        
+        .btn-logout { width: 100%; padding: 15px; background: rgba(255, 107, 107, 0.1); border: 1px solid var(--accent-coral); color: var(--accent-coral); border-radius: var(--radius-card); font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.3s; font-family: var(--font-arabic); margin-top: var(--space-l); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-logout:hover { background: var(--accent-coral); color: var(--bg-deep); }
+    </style>
 </head>
-<body style="background: var(--bg-base);">
-    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 style="color: var(--text-main);">الإعدادات</h1>
-            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>الإعدادات</h1>
+            <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
         </div>
 
-        <div class="card" style="margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div>
-                    <h3 style="color: var(--text-main); margin-bottom: 5px;">المؤثرات الصوتية</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">تشغيل أصوات الألعاب والمحرر</p>
+        <div class="settings-group">
+            <div class="settings-group-title"><i class="ri-palette-line"></i> المظهر والعرض</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>الوضع الداكن</h3>
+                    <p>تفعيل الخلفية الفضائية الداكنة</p>
                 </div>
-                <input type="checkbox" checked style="width: 20px; height: 20px; accent-color: var(--primary-main);">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle" checked>
+                    <span class="slider"></span>
+                </label>
             </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div>
-                    <h3 style="color: var(--text-main); margin-bottom: 5px;">الوضع الداكن</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">تغيير مظهر المنصة</p>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>تأثيرات الحركة</h3>
+                    <p>تشغيل الأنيميشن وتأثيرات الروبوت</p>
                 </div>
-                <input type="checkbox" id="darkModeToggle" style="width: 20px; height: 20px; accent-color: var(--primary-main);">
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h3 style="color: var(--text-main); margin-bottom: 5px;">حجم الخط</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">تكبير النصوص لتسهيل القراءة</p>
-                </div>
-                <select style="padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
-                    <option>عادي</option>
-                    <option>كبير</option>
-                </select>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="motionToggle" checked>
+                    <span class="slider"></span>
+                </label>
             </div>
         </div>
 
-        <div class="card" style="margin-bottom: 20px;">
-            <h3 style="color: var(--text-main); margin-bottom: 15px;">الخصوصية والأمان</h3>
-            <a href="parent.html" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--bg-base); border-radius: var(--radius-md); text-decoration: none; color: var(--text-main);">
-                <span>لوحة ولي الأمر</span>
-                <i class="ri-arrow-left-s-line"></i>
-            </a>
+        <div class="settings-group">
+            <div class="settings-group-title"><i class="ri-notification-3-line"></i> الإشعارات والأصوات</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>المؤثرات الصوتية</h3>
+                    <p>أصوات عند إكمال الدروس والنجاح</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="soundToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>تذكير المهام اليومية</h3>
+                    <p>إشعارات لتذكيرك بإكمال دروسك</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="notifToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
-        <button class="btn" style="width: 100%; background: #FEE2E2; color: var(--danger); font-weight: bold;">تسجيل الخروج</button>
+        <div class="settings-group">
+            <div class="settings-group-title"><i class="ri-shield-user-line"></i> الحساب والخصوصية</div>
+            <div class="setting-row" style="cursor: pointer;" onclick="window.location.href='parent.html'">
+                <div class="setting-info">
+                    <h3>لوحة ولي الأمر</h3>
+                    <p>مراجعة تقدم الطفل وإعدادات الخصوصية</p>
+                </div>
+                <i class="ri-arrow-left-s-line" style="color: var(--text-muted); font-size: 1.5rem;"></i>
+            </div>
+        </div>
+
+        <button class="btn-logout" id="logoutBtn">
+            <i class="ri-logout-box-r-line"></i> تسجيل الخروج من الحساب
+        </button>
     </div>
-    <script>
+
+    <script type="module">
+        import { auth, logoutUser } from './js/app.js';
+        import { showToast } from './js/ui.js';
+
         const darkToggle = document.getElementById('darkModeToggle');
+        const soundToggle = document.getElementById('soundToggle');
+        const notifToggle = document.getElementById('notifToggle');
+        const motionToggle = document.getElementById('motionToggle');
+
+        darkToggle.checked = localStorage.getItem('cq_theme') !== 'light';
+        soundToggle.checked = localStorage.getItem('cq_sound') !== 'off';
+        notifToggle.checked = localStorage.getItem('cq_notif') === 'on';
+        motionToggle.checked = localStorage.getItem('cq_motion') !== 'off';
+
         darkToggle.addEventListener('change', (e) => {
+            localStorage.setItem('cq_theme', e.target.checked ? 'dark' : 'light');
             if(e.target.checked) {
-                document.body.style.backgroundColor = '#0f172a';
-                document.body.style.color = '#fff';
+                document.documentElement.style.setProperty('--bg-deep', '#050B1F');
+                document.documentElement.style.setProperty('--text-primary', '#F4F7FF');
             } else {
-                document.body.style.backgroundColor = '#F7F9FF';
-                document.body.style.color = '#1E293B';
+                document.documentElement.style.setProperty('--bg-deep', '#F7F9FF');
+                document.documentElement.style.setProperty('--text-primary', '#1E293B');
             }
+            showToast('تم حفظ إعدادات المظهر', 'success');
+        });
+
+        soundToggle.addEventListener('change', (e) => {
+            localStorage.setItem('cq_sound', e.target.checked ? 'on' : 'off');
+            showToast('تم تحديث إعدادات الصوت', 'info');
+        });
+
+        notifToggle.addEventListener('change', (e) => {
+            localStorage.setItem('cq_notif', e.target.checked ? 'on' : 'off');
+            showToast('تم تحديث الإشعارات', 'info');
+        });
+
+        motionToggle.addEventListener('change', (e) => {
+            localStorage.setItem('cq_motion', e.target.checked ? 'on' : 'off');
+            showToast('تم تحديث تأثيرات الحركة', 'info');
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            logoutUser();
         });
     </script>
 </body>

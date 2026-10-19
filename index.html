@@ -95,6 +95,10 @@
             }
         }
     </style>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00D9FF">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2721/2721297.png">
 </head>
 <body>
     <div class="landing-wrapper">
@@ -121,5 +125,13 @@
             </button>
         </div>
     </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed: ', err));
+            });
+        }
+    </script>
 </body>
 </html>

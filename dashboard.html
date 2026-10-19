@@ -61,6 +61,10 @@
             .quick-access { grid-template-columns: 1fr; }
         }
     </style>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00D9FF">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2721/2721297.png">
 </head>
 <body>
     <aside class="sidebar">
@@ -132,6 +136,14 @@
         import { initApp, logoutUser } from './js/app.js';
         window.logoutUser = logoutUser;
         initApp();
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed: ', err));
+            });
+        }
     </script>
 </body>
 </html>
