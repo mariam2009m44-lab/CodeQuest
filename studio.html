@@ -39,6 +39,7 @@
         .custom-modal-text { font-size: 1rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
         .custom-modal-btn { background: #8b5cf6; color: #fff; border: none; padding: 12px 30px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; }
     </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 </head>
 <body>
     <header class="header">
@@ -75,8 +76,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         let lang = urlParams.get('lang') || 'JavaScript';
         if (lang === 'C') lang = 'C++';
-        const chIndex = parseInt(urlParams.get('ch')) || 0;
-        const lesIndex = parseInt(urlParams.get('les')) || 0;
+        let chIndex = parseInt(urlParams.get('ch')) || 0;
+        let lesIndex = parseInt(urlParams.get('les')) || 0;
         
         let jsonFile = 'js_curriculum.json';
         if (lang === 'Python') jsonFile = 'python_curriculum.json';
@@ -84,7 +85,7 @@
 
         let lessonData = null;
         let chapterData = null;
-        let chIndex = 0; let lesIndex = 0;
+        
 
         document.addEventListener('DOMContentLoaded', async () => {
 
