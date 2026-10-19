@@ -1,53 +1,125 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeQuest | رحلة الكود</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>CodeQuest | ابدأ مغامرتك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/global.css">
     <style>
-        .hero { display: flex; align-items: center; justify-content: space-between; padding: 80px 5%; min-height: 80vh; background: linear-gradient(135deg, var(--bg-surface), var(--bg-base)); }
-        .hero-content { max-width: 600px; }
-        .hero-content h1 { font-size: 3rem; font-weight: 800; color: var(--text-main); margin-bottom: var(--space-4); line-height: 1.2; }
-        .hero-content p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: var(--space-8); }
-        .hero-actions { display: flex; gap: var(--space-4); }
-        .hero-image { font-size: 15rem; color: var(--primary-main); filter: drop-shadow(0 20px 30px rgba(101,84,217,0.2)); }
-        @media (max-width: 768px) { .hero { flex-direction: column; text-align: center; padding: 40px 20px; } .hero-content h1 { font-size: 2rem; } .hero-image { font-size: 8rem; margin-top: 40px; } .hero-actions { justify-content: center; flex-wrap: wrap; } }
-    </style>
+        .landing-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: var(--space-m);
+            text-align: center;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(118, 87, 255, 0.1) 0%, var(--bg-deep) 60%);
+        }
 
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6554D9">
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-m) var(--space-l);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .hero-icon {
+            font-size: 7rem;
+            color: var(--primary);
+            margin-bottom: var(--space-m);
+            filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.4));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: var(--space-s);
+            color: var(--text-primary);
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: var(--space-xl);
+            line-height: 1.8;
+        }
+
+        .cta-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-s);
+            width: 100%;
+            max-width: 350px;
+        }
+
+        @media (min-width: 768px) {
+            .cta-group {
+                flex-direction: row;
+                max-width: none;
+            }
+            .cta-group button {
+                min-width: 200px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header style="padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); box-shadow: var(--shadow-sm);">
-        <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-main); display: flex; align-items: center; gap: 10px;">
-            <i class="ri-code-box-fill"></i> CodeQuest
-        </div>
-        <a href="login.html" class="btn btn-primary">تسجيل الدخول</a>
-    </header>
-
-    <section class="hero">
-        <div class="hero-content">
-            <h1>اتعلّم البرمجة…<br>مغامرة صغيرة كل يوم!</h1>
-            <p>انضم إلى كودي في رحلة ممتعة لتعلم لغات البرمجة، بناء الألعاب، وحل الألغاز. مصمم للأبطال الصغار من 8 إلى 14 سنة.</p>
-            <div class="hero-actions">
-                <a href="login.html" class="btn btn-primary" style="padding: 16px 32px; font-size: 1.2rem;">ابدأ المغامرة <i class="ri-rocket-line"></i></a>
-                <a href="lessons.html" class="btn btn-secondary" style="padding: 16px 32px; font-size: 1.2rem;">جرّب درس مجاني</a>
+    <div class="landing-wrapper">
+        <div class="top-bar">
+            <div class="logo">
+                <i class="ri-code-box-fill"></i> CodeQuest
             </div>
+            <button class="btn-secondary" onclick="window.location.href='login.html'">تسجيل الدخول</button>
         </div>
-        <div class="hero-image">
+
+        <div class="hero-icon">
             <i class="ri-robot-2-fill"></i>
         </div>
-    </section>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
-            });
-        }
-    </script>
+        <h1 class="hero-title">اتعلم البرمجة...<br><span>مغامرة صغيرة كل يوم!</span></h1>
+        
+        <p class="hero-desc">
+            انضم إلى كودي في رحلة ممتعة لتعلم لغات البرمجة، بناء الألعاب، وحل الألغاز. مصمم للأبطال الصغار من 8 إلى 14 سنة.
+        </p>
+
+        <div class="cta-group">
+            <button class="btn-primary" onclick="window.location.href='signup.html'">
+                ابدأ المغامرة <i class="ri-rocket-line"></i>
+            </button>
+        </div>
+    </div>
 </body>
 </html>
