@@ -1,10 +1,8 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyBNWj1X206ZIcUVB7GpdBJ4WKsl_p7MlC4",
-  authDomain: "codequest-6350a.firebaseapp.com",
-  projectId: "codequest-6350a",
-  storageBucket: "codequest-6350a.firebasestorage.app",
-  messagingSenderId: "754471967280",
-  appId: "1:754471967280:web:156c8081ac2b244060ebf5",
-  measurementId: "G-H0HK362SEB"
+export const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
-if (typeof firebase !== 'undefined') { firebase.initializeApp(firebaseConfig); }
