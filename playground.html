@@ -8,7 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    
     <style>
         :root { --bg-dark: #0f172a; --bg-panel: #1e293b; --primary: #00ffcc; --text-main: #e2e8f0; --border: rgba(255,255,255,0.1); }
         body { margin: 0; padding: 0; font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; }
@@ -104,46 +103,55 @@
             btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> جاري التشغيل...';
             iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; text-align:center; color:#333;">جاري تنفيذ الكود على السيرفر...</body></html>';
 
-            // تحديد اللغة للسيرفر
-            let apiLang = 'javascript';
-            if (lang === 'python') apiLang = 'python';
-            if (lang === 'cpp') apiLang = 'c++';
+            let languageId = 63; 
+            if (lang === 'python') languageId = 71;
+            if (lang === 'cpp') languageId = 54;
 
             try {
-                // استخدام Piston API لتشغيل الكود
-                const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+                const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
+                const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
+
+                const submitUrl = `https://corsproxy.io/?url=${encodeURIComponent('https://ce.judge0.com/submissions?base64_encoded=true')}`;
+                const response = await fetch(submitUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        language: apiLang,
-                        version: '*', // أحدث إصدار
-                        files: [{ content: code }]
+                        source_code: encodeB64(code),
+                        language_id: languageId
                     })
                 });
 
+                if (!response.ok) throw new Error('فشل الاتصال بالسيرفر');
                 const result = await response.json();
-                
+                const token = result.token;
+
                 let outputHTML = '<div style="font-family:monospace; padding:15px; text-align:left; direction:ltr; color:#333; white-space:pre-wrap;">';
-                
-                // لو في خطأ في التجميع (زي C++)
-                if (result.compile && result.compile.stderr) {
-                    outputHTML += '<span style="color:red; font-weight:bold;">Compilation Error:</span><br>' + result.compile.stderr;
-                } 
-                // لو الكود اشتغل وطلع نتيجة أو خطأ
-                else if (result.run && (result.run.stdout || result.run.stderr)) {
-                    if (result.run.stdout) outputHTML += result.run.stdout;
-                    if (result.run.stderr) outputHTML += '<span style="color:red;">' + result.run.stderr + '</span>';
-                } 
-                // لو الكود شغال بس مفيش طباعة
-                else {
-                    outputHTML += '<span style="color:gray;">الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم أوامر الطباعة).</span>';
+                let finalOutput = '';
+                let isError = false;
+
+                for (let i = 0; i < 10; i++) {
+                    await new Promise(r => setTimeout(r, 1000));
+                    const checkUrl = `https://corsproxy.io/?url=${encodeURIComponent(`https://ce.judge0.com/submissions/${token}?base64_encoded=true`)}`;
+                    const checkResponse = await fetch(checkUrl);
+                    const checkResult = await checkResponse.json();
+
+                    if (checkResult.status && checkResult.status.id !== 1 && checkResult.status.id !== 2) {
+                        if (checkResult.stdout) finalOutput += decodeB64(checkResult.stdout);
+                        if (checkResult.stderr) { finalOutput += '<span style="color:red;">' + decodeB64(checkResult.stderr) + '</span>'; isError = true; }
+                        if (checkResult.compile_output) { finalOutput += '<span style="color:red;">' + decodeB64(checkResult.compile_output) + '</span>'; isError = true; }
+                        
+                        if (!finalOutput) finalOutput = '<span style="color:gray;">الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم أوامر الطباعة).</span>';
+                        break;
+                    }
                 }
-                
-                outputHTML += '</div>';
+
+                if (!finalOutput) finalOutput = '<span style="color:red;">انتهى الوقت المسموح للتشغيل.</span>';
+
+                outputHTML += finalOutput + '</div>';
                 iframe.srcdoc = `<html><body style="margin:0;">${outputHTML}</body></html>`;
 
             } catch (error) {
-                iframe.srcdoc = `<html><body style="margin:0; padding:15px; color:red;">خطأ في الاتصال بالسيرفر: ${error.message}</body></html>`;
+                iframe.srcdoc = `<html><body style="margin:0; padding:15px; color:red; font-family:monospace; direction:rtl;">حدث خطأ: ${error.message}. يرجى المحاولة مرة أخرى.</body></html>`;
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
