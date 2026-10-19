@@ -8,35 +8,26 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    <link rel="stylesheet" href="css/style.css?v=ultimate3">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="dark-theme">
     <div class="app-layout">
         <aside class="sidebar">
             <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
             <nav class="nav-menu">
                 <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> المسارات</a>
                 <a href="playground.html" class="nav-item active"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
-                <a href="shop.html" class="nav-item"><i class="ri-shopping-bag-3-line"></i> المتجر</a>
                 <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-                <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
+                <a href="#" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
             </nav>
         </aside>
         <main class="main-content" style="display: flex; flex-direction: column;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h1 style="font-size: 1.8rem; color: #fff; font-weight: 800;">ملعب الأكواد الحر</h1>
-                <select id="langSelector" class="btn btn-secondary" style="padding: 10px 20px; outline: none; cursor: pointer;">
-                    <option value="javascript">JavaScript</option>
-                    <option value="python">Python</option>
-                </select>
-            </div>
             <div class="workspace">
                 <div class="editor-panel">
                     <div class="editor-header">
                         <span id="fileNameDisplay">main.js</span>
-                        <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;" onclick="runPlaygroundCode()"><i class="ri-play-fill"></i> تشغيل</button>
+                        <button class="btn-dark-primary" style="padding: 8px 16px; font-size: 0.9rem;" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
                     </div>
                     <textarea id="codeEditor"></textarea>
                     <div class="terminal-panel">
@@ -53,54 +44,22 @@
     </div>
     <nav class="mobile-nav">
         <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-        <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i> التعلم</a>
+        <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i> المسارات</a>
         <a href="playground.html" class="mobile-nav-item active"><i class="ri-terminal-box-line"></i> الملعب</a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
     </nav>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
     <script type="module">
         import { App } from './js/app.js';
-        App.init();
-
-        var editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), { lineNumbers: true, theme: "dracula", mode: "javascript" });
-        editor.setValue("console.log('Hello CodeQuest!');");
+        await App.init();
         
-        document.getElementById('langSelector').addEventListener('change', function() {
-            const lang = this.value;
-            const mode = lang === 'python' ? 'python' : 'javascript';
-            const ext = lang === 'python' ? '.py' : '.js';
-            editor.setOption('mode', mode);
-            document.getElementById('fileNameDisplay').innerText = 'main' + ext;
-            editor.setValue(lang === 'javascript' ? "console.log('Hello CodeQuest!');" : "print('Hello CodeQuest!')");
-        });
-
-        window.runPlaygroundCode = () => {
-            const code = editor.getValue();
-            const lang = document.getElementById('langSelector').value;
+        var editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), { lineNumbers: true, theme: "dracula", mode: "javascript" });
+        editor.setValue("console.log('Hello Cody Academy!');");
+        
+        window.runCode = () => {
             const out = document.getElementById('terminalOutput');
-            out.innerHTML = '> جاري التشغيل...';
-            
-            if (lang === 'javascript') {
-                let logs = []; const origLog = console.log;
-                console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
-                try { new Function(code)(); console.log = origLog; out.innerHTML = logs.length ? logs.map(l => `> ${l}`).join('<br>') : '> Done.'; }
-                catch (e) { console.log = origLog; out.innerHTML = `<span style="color:#FB7185;">> Error: ${e.message}</span>`; }
-            } else if (lang === 'python') {
-                const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
-                const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
-                fetch('https://ce.judge0.com/submissions?base64_encoded=true&wait=true', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source_code: encodeB64(code), language_id: 71 })
-                }).then(res => res.json()).then(data => {
-                    let txt = '';
-                    if(data.stdout) txt += decodeB64(data.stdout);
-                    if(data.stderr) txt += `<span style="color:#FB7185;">${decodeB64(data.stderr)}</span>`;
-                    if(data.compile_output) txt += `<span style="color:#FB7185;">${decodeB64(data.compile_output)}</span>`;
-                    out.innerHTML = txt || '> Done.';
-                }).catch(err => { out.innerHTML = `<span style="color:#FB7185;">> Network Error: ${err.message}</span>`; });
-            }
+            out.innerHTML = '> جاري التشغيل (يتطلب خادم آمن)...';
         };
     </script>
 </body>

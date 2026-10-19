@@ -6,25 +6,23 @@
     <title>المستويات | Cody Academy</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=ultimate2">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="dark-theme">
     <div class="app-layout">
         <aside class="sidebar">
             <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
             <nav class="nav-menu">
                 <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="languages.html" class="nav-item active"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="languages.html" class="nav-item active"><i class="ri-map-2-line"></i> المسارات</a>
                 <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
-                <a href="shop.html" class="nav-item"><i class="ri-shopping-bag-3-line"></i> المتجر</a>
                 <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-                <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
+                <a href="#" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
             </nav>
         </aside>
         <main class="main-content">
             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
-                <a href="languages.html" class="btn btn-secondary" style="padding: 8px 16px;"><i class="ri-arrow-right-line"></i> رجوع</a>
+                <a href="languages.html" class="btn-dark-secondary" style="padding: 8px 16px;"><i class="ri-arrow-right-line"></i> رجوع</a>
                 <h1 style="font-size: 1.8rem; color: #fff; font-weight: 800;" id="pageTitle">جاري التحميل...</h1>
             </div>
             <div class="levels-container" id="levelsContainer"></div>
@@ -32,45 +30,50 @@
     </div>
     <nav class="mobile-nav">
         <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-        <a href="languages.html" class="mobile-nav-item active"><i class="ri-book-open-line"></i> التعلم</a>
+        <a href="languages.html" class="mobile-nav-item active"><i class="ri-book-open-line"></i> المسارات</a>
         <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
     </nav>
     <script type="module">
         import { App } from './js/app.js';
-        import { curriculum } from './js/curriculum.js';
+        import { curriculum, readSelection, lessonUrl } from './js/curriculum.js';
         
-        App.init();
+        try {
+            await App.init();
+            const container = document.getElementById("levelsContainer");
+            const title = document.getElementById("pageTitle");
+            const { language } = readSelection();
+            const labels = { python: "مسار Python", javascript: "مسار JavaScript", cpp: "مسار C++" };
+            title.textContent = labels[language];
+            container.replaceChildren();
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const lang = urlParams.get('lang') || 'javascript';
-        const titles = { javascript: 'مسار JavaScript', python: 'مسار Python', cpp: 'مسار C++' };
-        document.getElementById('pageTitle').innerText = titles[lang];
-        
-        const data = curriculum[lang];
-        const container = document.getElementById('levelsContainer');
-        
-        data.forEach((chapter, chIdx) => {
-            const chapterDiv = document.createElement('div');
-            chapterDiv.innerHTML = `<h3 class="chapter-title">${chapter.title}</h3>`;
-            
-            chapter.lessons.forEach((lesson, lsIdx) => {
-                const item = document.createElement('div');
-                item.className = 'glass-card level-item';
-                item.onclick = () => { 
-                    window.location.href = `lecture.html?lang=${lang}&chapter=${chIdx}&lesson=${lsIdx}`; 
-                };
-                item.innerHTML = `
-                    <div class="level-info">
-                        <h4>${lesson.title}</h4>
-                        <p>${lesson.desc}</p>
-                    </div>
-                    <i class="ri-play-circle-fill level-action-icon"></i>
-                `;
-                chapterDiv.appendChild(item);
+            curriculum[language].forEach((chapter, chapterIndex) => {
+                const section = document.createElement("section");
+                const heading = document.createElement("h2");
+                heading.className = "chapter-title";
+                heading.textContent = chapter.title;
+                section.append(heading);
+
+                chapter.lessons.forEach((lesson, lessonIndex) => {
+                    const link = document.createElement("a");
+                    link.className = "glass-card level-item";
+                    link.href = lessonUrl({ language, chapterIndex, lessonIndex });
+                    const info = document.createElement("div");
+                    info.className = "level-info";
+                    const lessonTitle = document.createElement("h3");
+                    lessonTitle.textContent = lesson.title;
+                    const description = document.createElement("p");
+                    description.textContent = lesson.desc;
+                    info.append(lessonTitle, description);
+                    link.append(info);
+                    section.append(link);
+                });
+                container.append(section);
             });
-            container.appendChild(chapterDiv);
-        });
+        } catch (error) {
+            document.getElementById("pageTitle").textContent = "تعذر فتح المسار";
+            document.getElementById("levelsContainer").textContent = error.message;
+        }
     </script>
 </body>
 </html>
