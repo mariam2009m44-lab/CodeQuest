@@ -1,30 +1,5 @@
-const CACHE_NAME = 'codequest-v2';
-const ASSETS = [
-    './index.html',
-    './dashboard.html',
-    './languages.html',
-    './levels.html',
-    './lecture.html',
-    './playground.html',
-    './css/variables.css',
-    './css/global.css',
-    './js/app.js',
-    './js/ui.js',
-    './js/lecture.js'
-];
-
-self.addEventListener('install', (e) => {
-    e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS);
-        })
-    );
-});
-
-self.addEventListener('fetch', (e) => {
-    e.respondWith(
-        caches.match(e.request).then((response) => {
-            return response || fetch(e.request);
-        })
-    );
-});
+const CACHE_NAME = "cody-public-v3";
+const PUBLIC_ASSETS = ["./index.html"];
+self.addEventListener("install", event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PUBLIC_ASSETS))); });
+self.addEventListener("activate", event => { event.waitUntil(caches.keys().then(names => Promise.all(names.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))))); });
+self.addEventListener("fetch", event => { if (event.request.method !== "GET") return; });

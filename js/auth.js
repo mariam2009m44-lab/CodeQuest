@@ -1,111 +1,90 @@
-const Auth = {
-    currentUser: null, userData: null,
-    init: function(callback) {
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (user) {
-                this.currentUser = user;
-                const cached = localStorage.getItem('cq_username_' + user.uid);
-                if(cached) this.userData = { username: cached };
-                try {
-                    const doc = await firebase.firestore().collection('users').doc(user.uid).get();
-                    if (doc.exists) {
-                        this.userData = doc.data();
-                        localStorage.setItem('cq_username_' + user.uid, this.userData.username);
-                    }
-                } catch(e) {}
-                if (callback) callback(true);
-            } else { this.currentUser = null; this.userData = null; if (callback) callback(false); }
-        });
-    },
-    getUserId: function() { return this.currentUser ? this.currentUser.uid : null; },
-    getCurrentUser: function() { return this.currentUser; },
-    getUserData: function() { return this.userData; },
-    logout: function() { firebase.auth().signOut().then(() => { localStorage.clear(); window.location.href = 'index.html'; }); },
-    getAvatarHtml: function(name) {
-        name = name || this.getCurrentUser();
-        if (name) return '<div class="letter-avatar">'+name[0].toUpperCase()+'</div>';
-        const saved = this.userData ? this.userData.avatar : localStorage.getItem('cq_avatar_' + name);
-        if (saved) return '<img src="'+saved+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-        return '<div class="letter-avatar" style="background:#0e5fff;color:#000;font-weight:bold;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%">'+name.charAt(0).toUpperCase()+'</div>';
-    },
-    async loginUser(username, password) {
-        try {
-            const email = username.includes('@') ? username : `${username}@codequest.app`;
-            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-            return { success: true, user: userCredential.user };
-        } catch (error) {
-            console.error("Login Error:", error);
-            return { success: false, message: error.message };
-        }
-    },
-    async registerUser(username, password) {
-        try {
-            const email = username.includes('@') ? username : `${username}@codequest.app`;
-            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-            await firebase.firestore().collection('users').doc(userCredential.user.uid).set({
-                username: username,
-                points: 0,
-                coins: 0,
-                completedLessons: [],
-                currentLang: "javascript",
-                currentLevelIndex: 0,
-                avatar: null
-            });
-            return { success: true, user: userCredential.user };
-        } catch (error) {
-            console.error("Register Error:", error);
-            return { success: false, message: error.message };
-        }
-    },
-    
-    async addCoins(amount) {
-        if (!this.currentUser) return false;
-        try {
-            const userRef = firebase.firestore().collection('users').doc(this.currentUser.uid);
-            await userRef.update({ coins: firebase.firestore.FieldValue.increment(amount) });
-            if (this.userData) this.userData.coins = (this.userData.coins || 0) + amount;
-            return true;
-        } catch (error) { console.error("Coin Error:", error); return false; }
-    },
-    async saveProgress(lang, levelIndex, lessonId) {
-        if (!this.currentUser) return false;
-        try {
-            const userRef = firebase.firestore().collection('users').doc(this.currentUser.uid);
-            const data = this.getUserData();
-            let completed = data.completedLessons || [];
-            if (!completed.includes(lessonId)) completed.push(lessonId);
-            
-            await userRef.update({
-                currentLang: lang,
-                currentLevelIndex: levelIndex,
-                completedLessons: completed
-            });
-            if(this.userData) {
-                this.userData.currentLang = lang;
-                this.userData.currentLevelIndex = levelIndex;
-                this.userData.completedLessons = completed;
-            }
-            return true;
-        } catch (error) { console.error("Save Progress Error:", error); return false; }
-    }
-,
-    async addPoints(pointsToAdd) {
-        if (!this.currentUser) {
-            console.log("No user logged in");
-            return false;
-        }
-        try {
-            const userRef = firebase.firestore().collection('users').doc(this.currentUser.uid);
-            await userRef.update({
-                points: firebase.firestore.FieldValue.increment(pointsToAdd)
-            });
-            if (this.userData) {
-                this.userData.points = (this.userData.points || 0) + pointsToAdd;
-            }
-            return true;
-        } catch (error) {
-            console.error("Error adding points:", error);
-            return false;
-        }
-    }
-};
+import { auth, db } from "./firebase-config.js";
+import { setPersistence, browserLocalPersistence, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { doc, getDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+await setPersistence(auth, browserLocalPersistence);
+
+export const authReady = new Promise((resolve, reject) => {
+  let unsubscribe;
+  unsubscribe = onAuthStateChanged(auth, user => { unsubscribe?.(); resolve(user); }, reject);
+});
+
+export function authError(error) {
+  const messages = {
+    "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
+    "auth/email-already-in-use": "البريد الإلكتروني مستخدم بالفعل.",
+    "auth/weak-password": "كلمة المرور ضعيفة.",
+    "auth/invalid-credential": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    "auth/too-many-requests": "محاولات كثيرة. انتظري قليلًا ثم أعيدي المحاولة.",
+    "permission-denied": "صلاحيات قاعدة البيانات لا تسمح بهذه العملية.",
+  };
+  return messages[error?.code] || "تعذر تنفيذ العملية. حاولي مرة أخرى.";
+}
+
+function validateEmail(email) {
+  const value = String(email || "").trim();
+  if (value.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    throw new Error("اكتبي بريدًا إلكترونيًا صحيحًا.");
+  }
+  return value;
+}
+
+export async function ensureUserProfile(user, displayName = "") {
+  const reference = doc(db, "users", user.uid);
+  await runTransaction(db, async transaction => {
+    const snapshot = await transaction.get(reference);
+    if (snapshot.exists()) return;
+    const name = String(displayName || user.displayName || "متعلم").trim().slice(0, 50);
+    transaction.set(reference, {
+      displayName: name || "متعلم",
+      currentLang: "python",
+      knowledge: "beginner",
+      onboardingComplete: false,
+      weeklyGoal: 3,
+      theme: "dark",
+      notifications: false,
+      xp: 0,
+      coins: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  });
+  return reference;
+}
+
+export async function registerUser(name, email, password) {
+  const displayName = String(name || "").trim();
+  if (displayName.length < 2 || displayName.length > 50) throw new Error("الاسم المستعار من حرفين إلى 50 حرفًا.");
+  if (typeof password !== "string" || password.length < 6) throw new Error("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");
+  
+  const cleanEmail = validateEmail(email);
+  const credential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+  await updateProfile(credential.user, { displayName });
+  await ensureUserProfile(credential.user, displayName);
+  return credential.user;
+}
+
+export async function loginUser(email, password) {
+  const cleanEmail = validateEmail(email);
+  const credential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+  await ensureUserProfile(credential.user);
+  return credential.user;
+}
+
+export async function resetPassword(email) {
+  await sendPasswordResetEmail(auth, validateEmail(email));
+}
+
+export async function requireUser() {
+  const user = await authReady;
+  if (!user) {
+    location.assign("login.html");
+    throw new Error("يجب تسجيل الدخول.");
+  }
+  return user;
+}
+
+export async function logoutUser() {
+  await signOut(auth);
+  location.assign("index.html");
+}

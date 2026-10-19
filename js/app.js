@@ -1,77 +1,53 @@
+import { auth, db } from "./firebase-config.js";
+import { requireUser, ensureUserProfile, logoutUser } from "./auth.js";
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { showToast } from "./ui.js";
 
 export const App = {
-    user: 'بطل',
-    xp: 0,
-    coins: 500,
+  user: "متعلم",
+  xp: 0,
+  coins: 0,
 
-    init() {
-        this.loadState();
-        this.updateUI();
-        this.setupToasts();
-        this.highlightNav();
-        console.log('✅ Cody Academy Engine Initialized');
-    },
+  async init() {
+    this.highlightNav();
+    const user = await requireUser();
+    await ensureUserProfile(user);
+    
+    const reference = doc(db, "users", user.uid);
+    onSnapshot(reference, snapshot => {
+      if (!snapshot.exists()) return;
+      const data = snapshot.data();
+      this.user = data.displayName || "متعلم";
+      this.xp = Number(data.xp) || 0;
+      this.coins = Number(data.coins) || 0;
+      this.updateUI();
+    });
 
-    loadState() {
-        this.user = localStorage.getItem('cq_user') || 'بطل';
-        let xp = parseInt(localStorage.getItem('cq_xp')) || 0;
-        let coins = parseInt(localStorage.getItem('cq_coins')) || 500;
-        this.xp = isNaN(xp) ? 0 : xp;
-        this.coins = isNaN(coins) ? 500 : coins;
-    },
+    document.querySelectorAll(".logout").forEach(el => {
+      el.addEventListener("click", async e => { e.preventDefault(); await logoutUser(); });
+    });
+  },
 
-    updateUI() {
-        document.querySelectorAll('.js-user-name').forEach(el => el.innerText = this.user);
-        document.querySelectorAll('.js-user-xp').forEach(el => el.innerText = this.xp);
-        document.querySelectorAll('.js-user-coins').forEach(el => el.innerText = this.coins);
-    },
+  updateUI() {
+    document.querySelectorAll(".js-user-name").forEach(el => el.textContent = this.user);
+    document.querySelectorAll(".js-user-xp").forEach(el => el.textContent = this.xp);
+    document.querySelectorAll(".js-user-coins").forEach(el => el.textContent = this.coins);
+  },
 
-    addXP(amount) {
-        this.xp += amount;
-        localStorage.setItem('cq_xp', this.xp);
-        this.updateUI();
-        this.showToast(`+${amount} XP! أحسنت!`, 'success');
-    },
+  highlightNav() {
+    const current = location.pathname.split("/").pop() || "index.html";
+    document.querySelectorAll(".nav-item, .mobile-nav-item").forEach(link => {
+      const dest = new URL(link.getAttribute("href") || ".", location.href).pathname.split("/").pop();
+      link.classList.toggle("active", dest === current);
+    });
+  },
 
-    addCoins(amount) {
-        this.coins += amount;
-        localStorage.setItem('cq_coins', this.coins);
-        this.updateUI();
-    },
-
-    setupToasts() {
-        if (!document.querySelector('.toast-container')) {
-            const container = document.createElement('div');
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-        }
-    },
-
-    showToast(message, type = 'info') {
-        const container = document.querySelector('.toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerText = message;
-        container.appendChild(toast);
-        
-        setTimeout(() => toast.classList.add('show'), 10);
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3500);
-    },
-
-    highlightNav() {
-        const currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
-        document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && currentPath.includes(href)) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
-        });
-    }
+  addXP() { throw new Error("النقاط تُمنح من الخادم فقط."); },
+  addCoins() { throw new Error("العملات لا تُعدل من المتصفح."); }
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => App.init().catch(e => console.error(e)));
+} else {
+  App.init().catch(e => console.error(e));
+}
