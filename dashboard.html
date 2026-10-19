@@ -1,320 +1,98 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
-
-    <style>
-        /* إصلاح قسري للقائمة الجانبية */
-        @media (max-width: 768px) {
-            .sidebar {
-                padding-bottom: 150px !important;
-                height: 100vh !important;
-                overflow-y: auto !important;
-                z-index: 99999 !important;
-            }
-        }
-    </style>
 </head>
 <body>
-
-    <!-- Dashboard Gamification Widget -->
-    <style>
-        .dashboard-widget {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        .widget-stats {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-        .stat-icon {
-            font-size: 2rem;
-            color: #f59e0b; /* لون نار */
-            filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));
-        }
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: #fff; }
-        .stat-label { font-size: 0.85rem; color: #94a3b8; }
-        
-        .xp-container {
-            flex: 1;
-            min-width: 250px;
-        }
-        .xp-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: #cbd5e1;
-        }
-        .xp-bar-bg {
-            height: 12px;
-            background: #0f172a;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .xp-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ffcc, #00bfff);
-            border-radius: 6px;
-            width: 0%;
-            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-        }
-        
-        .cody-tip {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: rgba(0, 255, 204, 0.05);
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px dashed rgba(0, 255, 204, 0.3);
-        }
-        .cody-tip i { font-size: 2rem; color: #00ffcc; }
-        .cody-tip p { margin: 0; font-size: 0.9rem; color: #e2e8f0; max-width: 200px; }
-    </style>
-
-    <div class="dashboard-widget">
-        <div class="widget-stats">
-            <div class="stat-item">
-                <i class="ri-fire-fill stat-icon"></i>
-                <span class="stat-value">5</span>
-                <span class="stat-label">أيام متتالية</span>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <h1 style="color: var(--primary-main); font-size: 1.8rem; margin-bottom: var(--space-8); display: flex; align-items: center; gap: 8px;">
+                <i class="ri-code-box-fill"></i> CodeQuest
+            </h1>
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
+                <a href="lessons.html" class="nav-item"><i class="ri-book-open-line"></i> مسار التعلم</a>
+                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> ملعب الأكواد</a>
+                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+                <a href="projects.html" class="nav-item"><i class="ri-folder-code-line"></i> مشاريعي</a>
+            </nav>
+            <div style="margin-top: auto;">
+                <button onclick="window.logoutUser()" class="btn btn-secondary" style="width: 100%; border-color: var(--danger); color: var(--danger);">
+                    <i class="ri-logout-box-r-line"></i> تسجيل الخروج
+                </button>
             </div>
-            <div class="stat-item">
-                <i class="ri-medal-fill stat-icon" style="color:#eab308; filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.5));"></i>
-                <span class="stat-value">12</span>
-                <span class="stat-label">دروس مكتملة</span>
-            </div>
-        </div>
+        </aside>
 
-        <div class="xp-container">
-            <div class="xp-header">
-                <span>المستوى 3</span>
-                <span>250 / 500 XP</span>
-            </div>
-            <div class="xp-bar-bg">
-                <div class="xp-bar-fill" id="xp-progress-bar"></div>
-            </div>
-        </div>
-
-        <div class="cody-tip">
-            <i class="ri-robot-2-line"></i>
-            <p><strong>Cody يقول:</strong> استمر في التقدم! أنت تبلي بلاءً حسناً 🚀</p>
-        </div>
-    </div>
-    <script>
-        // أنيميشن لشريط الخبرة عشان يتحرك أول ما الصفحة تفتح
-        setTimeout(() => {
-            const xpBar = document.getElementById('xp-progress-bar');
-            if(xpBar) xpBar.style.width = '50%'; // 250 من 500
-        }, 300);
-    </script>
->
-    <div class="desktop-sidebar">
-        <div style="color:var(--primary); font-size:1.5rem; font-weight:900; margin-bottom:30px;"><i class="ri-robot-line"></i> CodeQuest</div>
-        <a href="dashboard.html" class="sidebar-link active"><i class="ri-home-4-line"></i> الرئيسية</a>
-        <a href="languages.html" class="sidebar-link"><i class="ri-road-map-line"></i> مسار التعلم</a>
-        <a href="games.html" class="sidebar-link"><i class="ri-gamepad-line"></i> مركز الألعاب</a>
-        <a href="profile.html" class="sidebar-link"><i class="ri-user-3-line"></i> ملفي</a>
-                    <a href="settings.html" class="sidebar-link"><i class="ri-settings-4-line"></i> الإعدادات</a>
-            <a href="#" onclick="Auth.logout()" class="sidebar-link" style="margin-top:auto; color:var(--danger);"><i class="ri-logout-box-r-line"></i> خروج</a>
-    </div>
-
-    <div class="main-content" style="padding-bottom: 80px;">
-        <header style="display:flex; justify-content:space-between; align-items:center; background:var(--glass); padding:15px 20px; border-radius:15px; border:1px solid var(--glass-border); margin-bottom:20px;">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <img src="cody-avatar.svg" id="nav-avatar" style="width:50px; height:50px; border-radius:50%; border:2px solid var(--primary);">
+        <main class="main-content">
+            <header class="topbar">
                 <div>
-                    <h3 id="nav-name" style="margin:0; font-size:1.1rem;"><span id="user-name-display"><span id="userNameDisplay"><span id="userNameTarget">زائر</span></span></span></h3>
-                    <span style="color:var(--text-muted); font-size:0.85rem;">مبرمج طموح 🚀</span>
+                    <h2 style="font-size: 1.2rem; font-weight: 700;">مرحباً بك، <span class="js-user-name">بطل</span> 👋</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">جاهز لمغامرة برمجية جديدة اليوم؟</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                    <div style="text-align: left;">
+                        <p style="font-weight: 700; color: var(--reward);"><i class="ri-star-fill"></i> <span class="js-user-xp">0</span> XP</p>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-main); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="ri-user-smile-line"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="grid-dashboard">
+                <div class="card stat-card">
+                    <div class="stat-icon primary"><i class="ri-fire-fill"></i></div>
+                    <div class="stat-info">
+                        <h4>أيام متتالية</h4>
+                        <p>5</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon success"><i class="ri-check-double-line"></i></div>
+                    <div class="stat-info">
+                        <h4>دروس مكتملة</h4>
+                        <p>12</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon reward"><i class="ri-medal-fill"></i></div>
+                    <div class="stat-info">
+                        <h4>المستوى الحالي</h4>
+                        <p>3</p>
+                    </div>
                 </div>
             </div>
-            <div style="background:rgba(0,0,0,0.5); border:1px solid var(--gold); padding:8px 15px; border-radius:10px; color:var(--gold); font-weight:bold;">
-                <i class="ri-star-fill"></i> <span id="nav-pts">0</span> XP
+
+            <div class="card" style="background: linear-gradient(135deg, rgba(101, 84, 217, 0.05), rgba(15, 139, 141, 0.05)); display: flex; justify-content: space-between; align-items: center; padding: var(--space-8);">
+                <div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: var(--space-2); color: var(--primary-main);">أكمل مغامرتك!</h3>
+                    <p style="color: var(--text-muted); margin-bottom: var(--space-4);">الدرس القادم: المتغيرات في JavaScript</p>
+                    <a href="lecture.html" class="btn btn-primary">ابدأ الدرس الآن <i class="ri-arrow-left-line"></i></a>
+                </div>
+                <div style="font-size: 4rem; color: var(--primary-main); opacity: 0.2;">
+                    <i class="ri-rocket-line"></i>
+                </div>
             </div>
-        </header>
-
-        <div class="glass-card" style="background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(0,229,255,0.1)); text-align:center; padding:40px 20px; margin-bottom:20px;">
-            <h1 style="color:#fff; margin-bottom:10px;">مرحباً، <span id="hero-name" style="color:var(--primary);">البطل</span>! 👋</h1>
-            <p style="color:var(--text-muted); margin-bottom:20px;">أنت على بعد خطوة واحدة من تحقيق حلمك.</p>
-            <a href="languages.html" class="btn btn-primary">🚀 أكمل التعلم</a>
-        </div>
-
-        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:15px;">
-            <a href="languages.html" class="glass-card" style="text-align:center; padding:20px; color:#fff; border-color:var(--primary);">
-                <i class="ri-book-open-line" style="font-size:2rem; color:var(--primary); margin-bottom:10px; display:block;"></i> المسارات
-            </a>
-            <a href="games.html" class="glass-card" style="text-align:center; padding:20px; color:#fff; border-color:var(--gold);">
-                <i class="ri-gamepad-line" style="font-size:2rem; color:var(--gold); margin-bottom:10px; display:block;"></i> الألعاب
-            </a>
-        </div>
+        </main>
     </div>
 
-    <div class="bottom-nav">
-        <a href="dashboard.html" class="active"><i class="ri-home-4-line"></i> الرئيسية</a>
-        <a href="languages.html"><i class="ri-book-open-line"></i> التعلم</a>
-        <a href="games.html"><i class="ri-gamepad-line"></i> الألعاب</a>
-        <a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('nav-avatar').src = av;
-            Auth.init(async (logged) => {
-                if(!logged) return window.location.href = 'login.html';
-                try {
-                    const doc = await firebase.firestore().collection('users').doc(Auth.getUserId()).get();
-                    if(doc.exists) {
-                        const d = doc.data();
-                        document.getElementById('nav-name').innerText = d.username || 'البطل';
-                        document.getElementById('hero-name').innerText = d.username || 'البطل';
-                        document.getElementById('nav-pts').innerText = d.points || 0;
-                        if(d.avatar) document.getElementById('nav-avatar').src = d.avatar;
-                    }
-                } catch(e) { console.error(e); }
-            });
-        });
-    </script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
+    <nav class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item active"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
+        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>التعلم</span></a>
+        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i><span>الملعب</span></a>
+        <a href="projects.html" class="mobile-nav-item"><i class="ri-folder-code-line"></i><span>مشاريعي</span></a>
     </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
 
-    <!-- Curriculum Async Bridge -->
-    <script src="js/curriculum.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log("⏳ جاري تحميل المناهج...");
-            
-            // تحميل المناهج الثلاثة بالتوازي عشان السرعة
-            const [jsData, pyData, cppData] = await Promise.all([
-                window.CodeQuestCurriculum.loadCurriculum('javascript'),
-                window.CodeQuestCurriculum.loadCurriculum('python'),
-                window.CodeQuestCurriculum.loadCurriculum('cpp')
-            ]);
-
-            // تجميعهم في متغير عام عشان الصفحات القديمة متبوظش
-            window.allCurriculums = {
-                javascript: jsData,
-                python: pyData,
-                cpp: cppData
-            };
-            
-            // متغير احتياطي لو الصفحة كانت بتستخدم اسم curriculumData
-            window.curriculumData = window.allCurriculums; 
-
-            console.log("✅ تم تحميل جميع المناهج بنجاح!");
-            
-            // إطلاق حدث مخصص عشان الصفحات تعرف إن الداتا جاهزة
-            document.dispatchEvent(new CustomEvent('curriculumLoaded', { detail: window.allCurriculums }));
-        });
-    </script>
-    <script type="module" src="js/dashboard.js"></script>
-
-    <!-- Firebase Script to get Username -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-        // هنجيب إعدادات Firebase من المتغير العام اللي موجود في المشروع بتاعك
-        // لو مش موجود، هنستخدم الإعدادات الافتراضية
-        const firebaseConfig = window.firebaseConfig || {
-            // لو إعداداتك في مكان تاني، الكود ده هيشتغل لو الملف الأساسي محمل
-        };
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    const nameEl = document.getElementById('userNameTarget');
-                    if (nameEl) {
-                        // لو الاسم مش موجود في الحساب، هياخد الإيميل قبل @
-                        let finalName = "بطل CodeQuest";
-                        if (user.displayName) {
-                            finalName = user.displayName;
-                        } else if (user.email) {
-                            finalName = user.email.split('@')[0];
-                        }
-                        nameEl.innerText = finalName;
-                        console.log("✅ تم تحديث الاسم بنجاح إلى: " + finalName);
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Firebase config error:", error);
-        }
+        import { initApp, logoutUser } from './js/app.js';
+        window.logoutUser = logoutUser;
+        initApp();
     </script>
-
-    <script>
-        // كود تجريبي للتأكد من عمل الجافاسكريبت
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const nameEl = document.getElementById('userNameTarget');
-                if (nameEl) {
-                    nameEl.innerText = "مريم"; // اسم تجريبي
-                    console.log("✅ الكود التجريبي اشتغل وتم تغيير الاسم");
-                } else {
-                    console.error("❌ لم يتم العثور على العنصر userNameTarget");
-                }
-            }, 1000); // استنى ثانية عشان الصفحة تحمل
-        });
-    </script>
-    </body>
-</html> 
+</body>
+</html>
