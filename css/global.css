@@ -280,3 +280,17 @@ button:active, .btn:active, .mobile-nav-item:active {
         z-index: 10000 !important;
     }
 }
+
+/* إصلاح جذري للقائمة الجانبية في الموبايل */
+@media (max-width: 768px) {
+    .sidebar {
+        padding-bottom: 150px !important; /* مساحة كبيرة جداً عشان زرار الخروج */
+        height: 100vh !important;
+        overflow-y: auto !important;
+        z-index: 99999 !important; /* رفع القائمة فوق الشريط السفلي */
+    }
+    /* إخفاء الشريط السفلي لما القائمة الجانبية تفتح (اختياري لتحسين الشكل) */
+    body:has(.sidebar.active) .mobile-bottom-nav {
+        display: none !important;
+    }
+}
