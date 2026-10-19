@@ -311,5 +311,41 @@
             });
         });
     </script>
-</body>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // البحث عن كل الأكواد في صفحة المحاضرة
+            const codeBlocks = document.querySelectorAll('pre code');
+            
+            codeBlocks.forEach(block => {
+                const btn = document.createElement('button');
+                btn.className = 'try-code-btn';
+                btn.innerHTML = '<i class="ri-play-line"></i> جرب الكود في الملعب';
+                btn.style.cssText = 'margin-bottom: 12px; background: var(--primary, #00ffcc); color: #000; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-family: Cairo, sans-serif; font-weight: bold; display: flex; align-items: center; gap: 6px; transition: 0.2s;';
+                btn.onmouseover = () => btn.style.transform = 'scale(1.05)';
+                btn.onmouseout = () => btn.style.transform = 'scale(1)';
+                
+                btn.onclick = () => {
+                    const code = block.innerText;
+                    let lang = 'javascript';
+                    if (block.className.includes('python')) lang = 'python';
+                    
+                    if (lang === 'cpp' || block.className.includes('cpp')) {
+                        alert('الملعب التفاعلي يدعم حالياً JavaScript و Python. دعم C++ قادم قريباً جداً! 🚀');
+                        return;
+                    }
+                    
+                    // حفظ الكود واللغة عشان ننقلهم لصفحة الملعب
+                    sessionStorage.setItem('playgroundCode', code);
+                    sessionStorage.setItem('playgroundLang', lang);
+                    window.location.href = 'playground.html';
+                };
+                
+                // إضافة الزرار قبل الكود
+                block.parentElement.parentElement.insertBefore(btn, block.parentElement);
+            });
+        });
+    </script>
+    </body>
+    
 </html>

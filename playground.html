@@ -193,6 +193,20 @@
                 iframe.contentWindow.document.getElementById('py-out').innerHTML += `<span style="color:red;">Error: ${err.message}</span>`;
             }
         }
+    
+        // استقبال الكود من صفحة الدروس
+        window.addEventListener('load', () => {
+            const savedCode = sessionStorage.getItem('playgroundCode');
+            const savedLang = sessionStorage.getItem('playgroundLang');
+            if (savedCode && savedLang) {
+                document.getElementById('lang-select').value = savedLang;
+                changeLanguage(); 
+                editor.setValue(savedCode);
+                sessionStorage.removeItem('playgroundCode');
+                sessionStorage.removeItem('playgroundLang');
+            }
+        });
     </script>
+    
 </body>
 </html>
