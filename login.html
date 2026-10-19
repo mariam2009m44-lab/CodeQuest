@@ -15,6 +15,9 @@
         .auth-links { margin-top: var(--space-4); font-size: 0.9rem; color: var(--text-muted); }
         .auth-links a { color: var(--primary-main); font-weight: 600; }
     </style>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6554D9">
 </head>
 <body>
     <div class="auth-card">
@@ -39,6 +42,14 @@
             e.preventDefault();
             window.location.href = 'dashboard.html';
         });
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
     </script>
 </body>
 </html>

@@ -16,6 +16,9 @@
         .hero-image { font-size: 15rem; color: var(--primary-main); filter: drop-shadow(0 20px 30px rgba(101,84,217,0.2)); }
         @media (max-width: 768px) { .hero { flex-direction: column; text-align: center; padding: 40px 20px; } .hero-content h1 { font-size: 2rem; } .hero-image { font-size: 8rem; margin-top: 40px; } .hero-actions { justify-content: center; flex-wrap: wrap; } }
     </style>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6554D9">
 </head>
 <body>
     <header style="padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); box-shadow: var(--shadow-sm);">
@@ -38,5 +41,13 @@
             <i class="ri-robot-2-fill"></i>
         </div>
     </section>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>

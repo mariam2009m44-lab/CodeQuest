@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6554D9">
 </head>
 <body>
     <div class="app-layout">
@@ -93,6 +96,14 @@
         import { initApp, logoutUser } from './js/app.js';
         window.logoutUser = logoutUser;
         initApp();
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
