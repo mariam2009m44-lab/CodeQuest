@@ -2,305 +2,290 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#070B14">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101522">
+  <title>Code Playground | Cody Academy</title>
 
-    <title>محرر الأكواد | Cody Academy</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.5/ace.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.5/ext-language_tools.min.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c101a;
+      --panel: #141b29;
+      --border: #293449;
+      --text: #edf2ff;
+      --muted: #98a6bf;
+      --accent: #8b7cff;
+      --green: #50d6a0;
+    }
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * { box-sizing: border-box; }
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: #070B14;
-            color: #F8FAFC;
-            min-height: 100vh;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top right, #24264a, transparent 40%), var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
 
-        .app-layout {
-            display: flex;
-            min-height: 100vh;
-        }
+    button, select { font: inherit; }
 
-        .sidebar {
-            width: 250px;
-            background: #0D1422;
-            border-left: 1px solid #1E293B;
-            padding: 25px 16px;
-            position: fixed;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            z-index: 10;
-        }
+    .page {
+      width: min(1100px, 100%);
+      margin: auto;
+      padding: 24px;
+    }
 
-        .sidebar-logo {
-            font-size: 1.2rem;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            text-decoration: none;
-        }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 30px;
+    }
 
-        .sidebar-logo i {
-            color: #22D3EE;
-            font-size: 2rem;
-        }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-        .nav-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #9285ff, #5d50d8);
+      font-size: 21px;
+      font-weight: 800;
+    }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            border-radius: 12px;
-            color: #A6B0C2;
-            font-weight: 600;
-            text-decoration: none;
-            transition: 0.2s;
-        }
+    .brand h1 { margin: 0; font-size: 20px; }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(34, 211, 238, 0.1);
-            color: #22D3EE;
-        }
+    .back-link {
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 10px 13px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
 
-        .main-content {
-            flex: 1;
-            margin-right: 250px;
-            padding: 20px;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+    .intro { margin-bottom: 22px; }
+    .intro h2 { margin: 0 0 8px; font-size: clamp(25px, 4vw, 34px); }
+    .intro p { color: var(--muted); margin: 0; line-height: 1.8; }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            padding: 18px 22px;
-            background: #111827;
-            border: 1px solid #263247;
-            border-radius: 18px;
-        }
+    .workspace {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: 0 24px 80px #0003;
+    }
 
-        .header h1 {
-            font-size: 1.35rem;
-            font-weight: 900;
-        }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px;
+      background: #171f2f;
+      border-bottom: 1px solid var(--border);
+    }
 
-        .header p {
-            color: #94A3B8;
-            font-size: 0.88rem;
-            margin-top: 4px;
-        }
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
 
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #34D399;
-            font-size: 0.85rem;
-            font-weight: 700;
-        }
+    .filename {
+      direction: ltr;
+      color: #c5cee0;
+      font-size: 14px;
+    }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #34D399;
-        }
+    select, .btn {
+      border: 1px solid var(--border);
+      background: #1b2435;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 13px;
+    }
 
-        .editor-panel {
-            overflow: hidden;
-            border: 1px solid #263247;
-            border-radius: 18px;
-            background: #0D1422;
-        }
+    select { min-width: 140px; }
+    .btn { cursor: pointer; transition: .2s; }
+    .btn:hover:not(:disabled) { border-color: var(--accent); }
+    .btn:disabled { opacity: .6; cursor: wait; }
 
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 14px 18px;
-            border-bottom: 1px solid #263247;
-        }
+    .run-btn {
+      background: var(--green);
+      border-color: var(--green);
+      color: #06251a;
+      font-weight: 750;
+    }
 
-        .panel-title {
-            font-weight: 700;
-        }
+    .editor-wrap { direction: ltr; background: #101522; }
+    #editor { width: 100%; height: 390px; font-size: 15px; }
 
-        .panel-caption {
-            font-size: 0.8rem;
-            color: #94A3B8;
-        }
+    .editor-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      direction: ltr;
+    }
 
-        .editor-frame {
-            width: 100%;
-            height: 760px;
-            border: 0;
-            display: block;
-            background: #0D1422;
-        }
+    .output-section { padding: 16px; }
 
-        .info {
-            background: #111827;
-            border: 1px solid #263247;
-            border-radius: 14px;
-            padding: 15px 18px;
-            color: #CBD5E1;
-            line-height: 1.9;
-            font-size: 0.9rem;
-        }
+    .output-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
 
-        .info strong {
-            color: #22D3EE;
-        }
+    .output-heading h3 { margin: 0; font-size: 15px; }
 
-        .footer {
-            text-align: center;
-            padding: 12px;
-            color: #64748B;
-            font-size: 0.8rem;
-        }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
 
-        @media (max-width: 900px) {
-            .sidebar {
-                display: none;
-            }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8190a8;
+    }
 
-            .main-content {
-                margin-right: 0;
-                padding: 12px;
-            }
+    .status[data-state="running"] .dot { background: #f5c45d; }
+    .status[data-state="success"] .dot { background: var(--green); }
+    .status[data-state="error"] .dot { background: #ff747e; }
 
-            .header {
-                padding: 15px;
-            }
+    #output {
+      min-height: 125px;
+      max-height: 300px;
+      overflow: auto;
+      margin: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0b1019;
+      color: #dce7fa;
+      font: 13px/1.8 ui-monospace, Consolas, monospace;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
 
-            .header h1 {
-                font-size: 1.1rem;
-            }
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+      margin: 12px 2px 0;
+    }
 
-            .editor-frame {
-                height: 720px;
-            }
-        }
-    </style>
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 22px 0;
+    }
+
+    @media (max-width: 600px) {
+      .page { padding: 15px 12px; }
+      .brand h1 { font-size: 17px; }
+      .toolbar-group { width: 100%; }
+      .toolbar-group select { flex: 1; }
+      .toolbar-group .btn { flex: 1; }
+      #editor { height: 330px; font-size: 14px; }
+      .output-section { padding: 12px; }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="app-layout">
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">&lt;/&gt;</div>
+        <div>
+          <h1>Cody Academy</h1>
+          <p>Learn · Code · Create</p>
+        </div>
+      </div>
+      <a class="back-link" href="./index.html">العودة للرئيسية ↗</a>
+    </header>
 
-        <aside class="sidebar">
-            <a href="dashboard.html" class="sidebar-logo">
-                <i class="ri-robot-2-fill"></i>
-                <span>Cody Academy</span>
-            </a>
+    <section class="intro">
+      <h2>مساحة تجربة الأكواد</h2>
+      <p>اختاري لغة البرمجة، اكتبي الكود، وشوفي النتيجة بسهولة.</p>
+    </section>
 
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item">
-                    <i class="ri-home-5-line"></i>
-                    <span>الرئيسية</span>
-                </a>
+    <section class="workspace">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <span class="filename" id="fileName">main.js</span>
+          <select id="langSelector" aria-label="لغة البرمجة">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+          </select>
+        </div>
 
-                <a href="languages.html" class="nav-item">
-                    <i class="ri-map-2-line"></i>
-                    <span>مسارات التعلم</span>
-                </a>
+        <div class="toolbar-group">
+          <button class="btn" id="resetBtn" type="button">إعادة المثال</button>
+          <button class="btn run-btn" id="runBtn" type="button">▶ تشغيل الكود</button>
+        </div>
+      </div>
 
-                <a href="playground.html" class="nav-item active">
-                    <i class="ri-code-box-line"></i>
-                    <span>محرر الأكواد</span>
-                </a>
+      <div class="editor-wrap">
+        <div id="editor"></div>
+      </div>
 
-                <a href="profile.html" class="nav-item">
-                    <i class="ri-user-smile-line"></i>
-                    <span>حسابي</span>
-                </a>
+      <div class="editor-footer">
+        <span id="editorLanguage">JavaScript</span>
+        <span>Tab: 4 spaces</span>
+      </div>
 
-                <a href="index.html" class="nav-item logout">
-                    <i class="ri-logout-box-r-line"></i>
-                    <span>تسجيل الخروج</span>
-                </a>
-            </nav>
-        </aside>
+      <section class="output-section">
+        <div class="output-heading">
+          <h3>نتيجة التشغيل</h3>
+          <div class="status" id="runStatus" data-state="idle">
+            <span class="dot"></span>
+            <span id="statusText">جاهز</span>
+          </div>
+        </div>
 
-        <main class="main-content">
+        <pre id="output" aria-live="polite">أهلًا بكِ في Cody Academy!
+اضغطي تشغيل الكود لعرض النتيجة.</pre>
 
-            <header class="header">
-                <div>
-                    <h1>محرر الأكواد الاحترافي</h1>
-                    <p>اكتبي الكود وشغّليه داخل بيئة البرمجة.</p>
-                </div>
+        <p class="hint">
+          يتم إرسال الكود إلى خدمة خارجية لتشغيله. لا تضعي بيانات شخصية أو كلمات مرور في المحرر.
+        </p>
+      </section>
+    </section>
 
-                <div class="status">
-                    <span class="status-dot"></span>
-                    <span id="editorStatus">جاري تحميل المحرر...</span>
-                </div>
-            </header>
+    <footer>Cody Academy · مساحة تعلّم البرمجة</footer>
+  </main>
 
-            <section class="editor-panel">
-                <div class="panel-header">
-                    <span class="panel-title">
-                        <i class="ri-code-s-slash-line"></i>
-                        مساحة كتابة وتشغيل الكود
-                    </span>
-
-                    <span class="panel-caption">
-                        Powered by Judge0 IDE
-                    </span>
-                </div>
-
-                <iframe
-                    id="judge0Editor"
-                    class="editor-frame"
-                    src="https://ide.judge0.com/"
-                    title="Cody Academy Online Code Editor"
-                    loading="eager"
-                    allow="clipboard-read; clipboard-write"
-                    referrerpolicy="strict-origin-when-cross-origin">
-                </iframe>
-            </section>
-
-            <section class="info">
-                <strong>طريقة الاستخدام:</strong>
-                اختاري لغة البرمجة من داخل المحرر، اكتبي الكود،
-                ثم اضغطي زر التشغيل داخل المحرر لمشاهدة النتيجة.
-                يلزم اتصال بالإنترنت لاستخدام الخدمة.
-            </section>
-
-            <footer class="footer">
-                Cody Academy · Learn, Build, Create
-            </footer>
-
-        </main>
-    </div>
-
-    <script src="./js/playground.js?v=9200"></script>
+  <script src="./js/playground.js?v=1"></script>
 </body>
 </html>
