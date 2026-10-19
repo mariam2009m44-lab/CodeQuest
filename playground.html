@@ -103,51 +103,35 @@
             btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> جاري التشغيل...';
             iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; text-align:center; color:#333;">جاري تنفيذ الكود على السيرفر...</body></html>';
 
-            let languageId = 63; 
-            if (lang === 'python') languageId = 71;
-            if (lang === 'cpp') languageId = 54;
+            let apiLang = 'js';
+            if (lang === 'python') apiLang = 'py';
+            if (lang === 'cpp') apiLang = 'cpp';
 
             try {
-                const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
-                const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
-
-                const submitUrl = `https://corsproxy.io/?url=${encodeURIComponent('https://ce.judge0.com/submissions?base64_encoded=true')}`;
-                const response = await fetch(submitUrl, {
+                const response = await fetch('https://api.codex.jaagrav.in', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        source_code: encodeB64(code),
-                        language_id: languageId
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        code: code,
+                        language: apiLang,
+                        input: ''
                     })
                 });
 
-                if (!response.ok) throw new Error('فشل الاتصال بالسيرفر');
                 const result = await response.json();
-                const token = result.token;
-
                 let outputHTML = '<div style="font-family:monospace; padding:15px; text-align:left; direction:ltr; color:#333; white-space:pre-wrap;">';
-                let finalOutput = '';
-                let isError = false;
 
-                for (let i = 0; i < 10; i++) {
-                    await new Promise(r => setTimeout(r, 1000));
-                    const checkUrl = `https://corsproxy.io/?url=${encodeURIComponent(`https://ce.judge0.com/submissions/${token}?base64_encoded=true`)}`;
-                    const checkResponse = await fetch(checkUrl);
-                    const checkResult = await checkResponse.json();
-
-                    if (checkResult.status && checkResult.status.id !== 1 && checkResult.status.id !== 2) {
-                        if (checkResult.stdout) finalOutput += decodeB64(checkResult.stdout);
-                        if (checkResult.stderr) { finalOutput += '<span style="color:red;">' + decodeB64(checkResult.stderr) + '</span>'; isError = true; }
-                        if (checkResult.compile_output) { finalOutput += '<span style="color:red;">' + decodeB64(checkResult.compile_output) + '</span>'; isError = true; }
-                        
-                        if (!finalOutput) finalOutput = '<span style="color:gray;">الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم أوامر الطباعة).</span>';
-                        break;
-                    }
+                if (result.output) {
+                    outputHTML += result.output;
+                }
+                if (result.error) {
+                    outputHTML += '<span style="color:red;">' + result.error + '</span>';
+                }
+                if (!result.output && !result.error) {
+                    outputHTML += '<span style="color:gray;">الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم أوامر الطباعة).</span>';
                 }
 
-                if (!finalOutput) finalOutput = '<span style="color:red;">انتهى الوقت المسموح للتشغيل.</span>';
-
-                outputHTML += finalOutput + '</div>';
+                outputHTML += '</div>';
                 iframe.srcdoc = `<html><body style="margin:0;">${outputHTML}</body></html>`;
 
             } catch (error) {
