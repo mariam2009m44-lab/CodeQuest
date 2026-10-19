@@ -11,6 +11,18 @@
     <!-- Prism.js Dark Theme -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+
+    <style>
+        /* إصلاح قسري للقائمة الجانبية */
+        @media (max-width: 768px) {
+            .sidebar {
+                padding-bottom: 150px !important;
+                height: 100vh !important;
+                overflow-y: auto !important;
+                z-index: 99999 !important;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -253,5 +265,41 @@
         });
     </script>
     <script type="module" src="js/dashboard.js"></script>
+
+    <!-- Firebase Script to get Username -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        // هنجيب إعدادات Firebase من المتغير العام اللي موجود في المشروع بتاعك
+        // لو مش موجود، هنستخدم الإعدادات الافتراضية
+        const firebaseConfig = window.firebaseConfig || {
+            // لو إعداداتك في مكان تاني، الكود ده هيشتغل لو الملف الأساسي محمل
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    const nameEl = document.getElementById('userNameTarget');
+                    if (nameEl) {
+                        // لو الاسم مش موجود في الحساب، هياخد الإيميل قبل @
+                        let finalName = "بطل CodeQuest";
+                        if (user.displayName) {
+                            finalName = user.displayName;
+                        } else if (user.email) {
+                            finalName = user.email.split('@')[0];
+                        }
+                        nameEl.innerText = finalName;
+                        console.log("✅ تم تحديث الاسم بنجاح إلى: " + finalName);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Firebase config error:", error);
+        }
+    </script>
 </body>
 </html>
