@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الاستوديو | CodeQuest</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body { margin: 0; padding: 0; background: transparent; color: #fff; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(10, 25, 47, 0.95); border-bottom: 2px solid var(--glass-border); z-index: 100; }
+        .header h1 { margin: 0; font-size: 1rem; color: var(--primary); }
+        .btn-group { display: flex; gap: 8px; }
+        .btn-sm { padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; border: none; display: flex; align-items: center; gap: 5px; font-family: 'Cairo';}
+        .btn-hint { background: #8b5cf6; color: #fff; }
+        .btn-run { background: var(--success); color: #fff; }
+        .btn-finish { background: var(--gold); color: #000; }
+        
+        .studio-layout { display: flex; flex: 1; overflow: hidden; flex-direction: column; }
+        .editor-section { flex: 1; display: flex; flex-direction: column; position: relative; min-height: 200px; background: #1e1e1e;}
+        #editor-container { width: 100%; flex: 1; }
+        
+        .terminal-wrapper { height: 35%; background: #0a0a0a; border-top: 2px solid #333; display: flex; flex-direction: column; }
+        .terminal-header { background: #1a1a1a; color: #888; padding: 5px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; font-family: monospace; }
+        .terminal-output { flex: 1; padding: 10px; font-family: monospace; color: #00ff00; overflow-y: auto; direction: ltr; text-align: left; font-size: 0.9rem; }
+        
+        @media (min-width: 768px) {
+            .studio-layout { flex-direction: row; }
+            .terminal-wrapper { height: 100%; width: 35%; border-top: none; border-right: 2px solid #333; }
+        }
+        
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px); }
+        .custom-modal { background: #fff; border-radius: 25px; padding: 30px; text-align: center; width: 90%; max-width: 350px; }
+        .custom-modal-icon { font-size: 4rem; margin-bottom: 15px; }
+        .custom-modal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .custom-modal-text { font-size: 1rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
+        .custom-modal-btn { background: #8b5cf6; color: #fff; border: none; padding: 12px 30px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="levels.html" style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:0.9rem;"><i class="ri-arrow-right-line"></i> الفصول</a>
+        <h1 id="lessonTitle">جاري التحميل...</h1>
+        <div class="btn-group" id="headerBtns" style="display:none;">
+            <button class="btn-sm btn-hint" onclick="showHint()"><i class="ri-lightbulb-line"></i> تلميح</button>
+            <button class="btn-sm btn-run" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
+            <button class="btn-sm btn-finish" onclick="completeLesson()"><i class="ri-check-line"></i> إنهاء</button>
+        </div>
+    </header>
+
+    <div class="studio-layout">
+        <div class="editor-section">
+            <div id="editor-container"></div>
+        </div>
+        <div class="terminal-wrapper">
+            <div class="terminal-header"><span>Console Output</span><span onclick="document.getElementById('terminalOutput').innerHTML='> Ready...'" style="cursor:pointer; color:#ff4444;">مسح</span></div>
+            <div class="terminal-output" id="terminalOutput">> Ready...</div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" id="customModal">
+        <div class="custom-modal">
+            <div class="custom-modal-icon" id="modalIcon">❌</div>
+            <div class="custom-modal-title" id="modalTitle">إجابة خاطئة</div>
+            <div class="custom-modal-text" id="modalText">حاول مرة أخرى!</div>
+            <button class="custom-modal-btn" id="modalBtn" onclick="closeModal()">حاول تاني</button>
+        </div>
+    </div>
+
+    <script>
+        let editor;
+        const urlParams = new URLSearchParams(window.location.search);
+        let lang = urlParams.get('lang') || 'JavaScript';
+        if (lang === 'C') lang = 'C++';
+        const chIndex = parseInt(urlParams.get('ch')) || 0;
+        const lesIndex = parseInt(urlParams.get('les')) || 0;
+        
+        let jsonFile = 'js_curriculum.json';
+        if (lang === 'Python') jsonFile = 'python_curriculum.json';
+        else if (lang === 'C++') jsonFile = 'cpp_curriculum.json';
+
+        let lessonData = null;
+        let chapterData = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            Auth.init(l => { if(!l) window.location.href='login.html'; });
+            
+            try {
+                const res = await fetch(jsonFile + '?v=' + new Date().getTime());
+                const data = await res.json();
+                chapterData = data.chapters[chIndex];
+                lessonData = chapterData.lessons[lesIndex];
+                
+                document.getElementById('lessonTitle').innerText = lessonData.title;
+                initEditor(lessonData.code);
+            } catch(e) { 
+                document.getElementById('lessonTitle').innerText = "خطأ في تحميل الدرس"; 
+            }
+        });
+
+        function initEditor(initialCode) {
+            require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+            require(['vs/editor/editor.main'], function() {
+                editor = monaco.editor.create(document.getElementById('editor-container'), {
+                    value: initialCode, 
+                    language: lang === 'JavaScript' ? 'javascript' : (lang === 'Python' ? 'python' : 'cpp'),
+                    theme: 'vs-dark', fontSize: 15, minimap: { enabled: false }, automaticLayout: true
+                });
+                document.getElementById('headerBtns').style.display = 'flex';
+            });
+        }
+
+        function runCode() {
+            if(!editor) return;
+            const code = editor.getValue();
+            const terminal = document.getElementById('terminalOutput');
+            terminal.innerHTML += `<br><span style="color:#888;">> Running in Sandbox...</span><br>`;
+
+            if (lang === 'JavaScript') {
+                // إنشاء بيئة معزولة
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.sandbox = 'allow-scripts';
+                document.body.appendChild(iframe);
+
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write('<html><body><script>window.onerror = function(msg){ window.parent.postMessage({type:"err", msg:msg}, "*"); }; const oLog = console.log; console.log = function(...a){ window.parent.postMessage({type:"log", msg:a.join(" ")}, "*"); oLog(...a); };<\/script></body></html>');
+                iframeDoc.close();
+
+                const msgHandler = (event) => {
+                    if (event.data.type === 'log') {
+                        terminal.innerHTML += `<span style="color:#00ff00;">> ${event.data.msg}</span><br>`;
+                    } else if (event.data.type === 'err') {
+                        terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${event.data.msg}</span><br>`;
+                    }
+                    terminal.scrollTop = terminal.scrollHeight;
+                };
+                window.addEventListener('message', msgHandler);
+
+                try {
+                    const script = iframeDoc.createElement('script');
+                    script.textContent = code;
+                    iframeDoc.body.appendChild(script);
+                } catch (e) {
+                    terminal.innerHTML += `<span style="color:#ff4444;">❌ خطأ: ${e.message}</span><br>`;
+                }
+
+                setTimeout(() => {
+                    window.removeEventListener('message', msgHandler);
+                    document.body.removeChild(iframe);
+                }, 2000); // تنظيف البيئة بعد ثانيتين
+
+            } else {
+                // Python & C++ (API)
+                const langMap = { 'Python': { language: 'python', version: '3.10.0' }, 'C++': { language: 'c++', version: '10.2.0' } };
+                const config = langMap[lang] || langMap['Python'];
+                
+                fetch('https://emkc.org/api/v2/piston/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ language: config.language, version: config.version, files: [{ content: code }] })
+                }).then(res => res.json()).then(data => {
+                    if (data.run) {
+                        if (data.run.stdout) terminal.innerHTML += `<span style="color:#00ff00;">> ${data.run.stdout.replace(/\n/g, '<br>')}</span><br>`;
+                        if (data.run.stderr) terminal.innerHTML += `<span style="color:#ff4444;">❌ Error: ${data.run.stderr.replace(/\n/g, '<br>')}</span><br>`;
+                        if (!data.run.stdout && !data.run.stderr) terminal.innerHTML += `<span style="color:#888;">تم التنفيذ بدون مخرجات.</span><br>`;
+                    } else { terminal.innerHTML += `<span style="color:#ffd700;">⚠️ تعذر التنفيذ.</span><br>`; }
+                    terminal.scrollTop = terminal.scrollHeight;
+                }).catch(e => { terminal.innerHTML += `<span style="color:#ff4444;">❌ خطأ في الاتصال.</span><br>`; });
+            }
+        }
+
+        function showHint() {
+            alert(lessonData.hint ? "💡 " + lessonData.hint : "ركز وجرب!");
+        }
+
+        async function completeLesson() {
+            confetti({ particleCount: 150, spread: 70 });
+            const uid = Auth.getUserId();
+            if (uid) {
+                try {
+                    const progressKey = `progress.${lang}.ch_${chapterData.id}_les_${lessonData.id}`;
+                    await firebase.firestore().collection('users').doc(uid).update({
+                        points: firebase.firestore.FieldValue.increment(50),
+                        [progressKey]: { stars: 3, completed: true }
+                    });
+                } catch(e) { console.error(e); }
+            }
+            setTimeout(() => { alert("🎉 مبروك! +50 نقطة"); window.location.href = 'levels.html'; }, 1000);
+        }
+    </script>
+</body>
+</html>
