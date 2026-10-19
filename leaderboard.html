@@ -76,31 +76,47 @@
             });
         });
 
+        
         function renderPodium(users) {
             const podium = document.getElementById('podium');
-            if(users.length < 3) return;
+            podium.innerHTML = '';
             
-            podium.innerHTML = `
-                <div class="podium-item second">
-                    <img src="${users[1].avatar}" class="podium-avatar">
-                    <div class="podium-name">${users[1].name}</div>
-                    <div class="podium-points">${users[1].points} XP</div>
-                    <div class="podium-base">2</div>
-                </div>
-                <div class="podium-item first">
-                    <img src="${users[0].avatar}" class="podium-avatar">
-                    <div class="podium-name">${users[0].name}</div>
-                    <div class="podium-points">${users[0].points} XP</div>
-                    <div class="podium-base">1</div>
-                </div>
-                <div class="podium-item third">
-                    <img src="${users[2].avatar}" class="podium-avatar">
-                    <div class="podium-name">${users[2].name}</div>
-                    <div class="podium-points">${users[2].points} XP</div>
-                    <div class="podium-base">3</div>
-                </div>
-            `;
+            if(users.length >= 3) {
+                podium.innerHTML = `
+                    <div class="podium-item second">
+                        <img src="${users[1].avatar}" class="podium-avatar">
+                        <div class="podium-name">${users[1].name}</div>
+                        <div class="podium-points">${users[1].points} XP</div>
+                        <div class="podium-base">2</div>
+                    </div>
+                    <div class="podium-item first">
+                        <img src="${users[0].avatar}" class="podium-avatar">
+                        <div class="podium-name">${users[0].name}</div>
+                        <div class="podium-points">${users[0].points} XP</div>
+                        <div class="podium-base">1</div>
+                    </div>
+                    <div class="podium-item third">
+                        <img src="${users[2].avatar}" class="podium-avatar">
+                        <div class="podium-name">${users[2].name}</div>
+                        <div class="podium-points">${users[2].points} XP</div>
+                        <div class="podium-base">3</div>
+                    </div>
+                `;
+            } else {
+                // لو العدد أقل من 3، نعرضهم بشكل عادي في المنصة
+                users.forEach((user, index) => {
+                    podium.innerHTML += `
+                        <div class="podium-item" style="margin: 0 10px;">
+                            <img src="${user.avatar}" class="podium-avatar" style="width:70px; height:70px;">
+                            <div class="podium-name">${user.name}</div>
+                            <div class="podium-points">${user.points} XP</div>
+                            <div class="podium-base" style="height:60px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:10px;">#${index + 1}</div>
+                        </div>
+                    `;
+                });
+            }
         }
+    
 
         function renderList(users) {
             const list = document.getElementById('listContainer');

@@ -122,25 +122,38 @@
             }, 1000);
         }
 
+        
         async function endExam() {
             document.getElementById('examContainer').style.display = 'none';
             document.getElementById('resultScreen').style.display = 'block';
+            
+            const passMark = Math.ceil(questions.length * 0.5); // 50% للنجاح
+            const isPassed = score >= passMark;
+            
             document.getElementById('scoreText').innerText = score + " / " + questions.length;
             
-            // إضافة نقاط لو نجح
-            if(score >= questions.length / 2) {
+            const titleEl = document.querySelector('.result-screen h1');
+            const msgEl = document.querySelector('.result-screen p:first-of-type');
+            
+            if(isPassed) {
+                titleEl.innerText = "🏆 عاش يا بطل!";
+                titleEl.style.color = "#10b981";
+                msgEl.innerText = "لقد نجحت في الامتحان بتفوق!";
                 confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+                
                 const uid = Auth.getUserId();
                 if(uid) {
                     await firebase.firestore().collection('users').doc(uid).update({
-                        points: firebase.firestore.FieldValue.increment(100) // 100 نقطة للامتحان
+                        points: firebase.firestore.FieldValue.increment(100)
                     });
                 }
-                alert("🎉 مبروك! لقد نجحت في الامتحان وحصلت على 100 نقطة!");
             } else {
-                alert("❌ للأسف لم تنجح، حاول مراجعة الدروس والامتحان مرة أخرى.");
+                titleEl.innerText = "❌ للأسف، لم تنجح";
+                titleEl.style.color = "#ef4444";
+                msgEl.innerText = "تحتاج لمراجعة الدروس والمحاولة مرة أخرى.";
             }
         }
+    
     </script>
 </body>
 </html>
