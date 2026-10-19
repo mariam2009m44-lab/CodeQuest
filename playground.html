@@ -61,20 +61,22 @@
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 
     <script>
-        // 1. إعداد المحرر
         const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
             mode: "javascript", theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4, tabSize: 4
         });
 
-        // 2. الأكواد الافتراضية
-        const codeJS = '// Welcome to CodeQuest!\\nlet name = "Cody";\\nconsole.log("Hello, " + name + "!");';
-        const codePy = '# Welcome to CodeQuest!\\nname = "Cody"\\nprint("Hello, " + name + "!")';
-        const codeCpp = '// Welcome to CodeQuest!\\n#include <iostream>\\nusing namespace std;\\nint main() {\\n    cout << "Hello, Cody!" << endl;\\n    return 0;\\n}';
+        // هنا السر: استخدمنا \n مفردة عشان تنزل سطر جديد
+        const codeJS = "// Welcome to CodeQuest!\nlet name = \"Cody\";\nconsole.log(\"Hello, \" + name + \"!\");";
+        const codePy = "# Welcome to CodeQuest!\nname = \"Cody\"\nprint(\"Hello, \" + name + \"!\")";
+        const codeCpp = "// Welcome to CodeQuest!\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello, Cody!\" << endl;\n    return 0;\n}";
 
-        // 3. دالة تغيير اللغة (مباشرة وواضحة جداً)
         document.getElementById('lang-select').addEventListener('change', function() {
             const lang = this.value;
             const filenameEl = document.getElementById('filename');
+            const iframe = document.getElementById('output-frame');
+            
+            // تصفير شاشة النتيجة عشان الرسالة القديمة متفضلش ظاهرة
+            iframe.srcdoc = ""; 
 
             if (lang === 'cpp') {
                 editor.setOption("mode", "text/x-c++src");
@@ -91,7 +93,6 @@
             }
         });
 
-        // 4. دالة التشغيل
         async function runCode() {
             const lang = document.getElementById('lang-select').value;
             const code = editor.getValue();
@@ -119,7 +120,7 @@
                 } catch (err) { iframe.contentWindow.document.body.innerHTML += `<span style="color:red;">Error: ${err.message}</span>`; }
                 btn.disabled = false; btn.innerHTML = 'تشغيل الكود';
             } else if (lang === 'cpp') {
-                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; color:red; direction:rtl; text-align:center;">⚠️ تشغيل C++ يحتاج سيرفر خارجي.</body></html>';
+                iframe.srcdoc = '<html><body style="font-family:monospace; padding:15px; color:red; direction:rtl; text-align:center; margin-top:50px;">⚠️ تشغيل C++ يحتاج سيرفر خارجي.</body></html>';
             }
         }
     </script>
