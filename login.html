@@ -88,4 +88,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
 
     
-</body></html>
+
+    <script>
+        // 🚨 قتل شريط التنقل السفلي في هذه الصفحة فقط
+        document.addEventListener('DOMContentLoaded', function() {
+            const killNav = () => {
+                const navs = document.querySelectorAll('.mobile-bottom-nav, nav');
+                navs.forEach(nav => {
+                    if (nav.classList.contains('mobile-bottom-nav') || nav.innerHTML.includes('الرئيسية')) {
+                        nav.remove();
+                        nav.style.display = 'none';
+                        console.log("🗑️ تم تدمير الشريط السفلي");
+                    }
+                });
+            };
+            killNav(); // جرب فوراً
+            setTimeout(killNav, 500); // جرب تاني بعد نص ثانية لو اتحمل متأخر
+            setTimeout(killNav, 1500); // جرب تالت بعد ثانية ونص
+        });
+    </script>
+</body>
+</html>
