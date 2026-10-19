@@ -86,6 +86,13 @@
         let chapterData = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
+
+        // التحقق من إعدادات الصوت
+        const isSoundEnabled = localStorage.getItem('cq_sound_enabled') !== 'false';
+        if(!isSoundEnabled) {
+            Howler.mute(true);
+        }
+    
             Auth.init(l => { if(!l) window.location.href='login.html'; });
             
             try {
