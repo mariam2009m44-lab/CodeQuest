@@ -20,6 +20,39 @@ const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const nameInput = document.getElementById("name");
 
+const params = new URLSearchParams(location.search);
+const allowedPages = new Set([
+  "dashboard.html",
+  "languages.html",
+  "levels.html",
+  "lecture.html",
+  "playground.html",
+  "profile.html",
+  "games.html",
+  "projects.html"
+]);
+
+function getNextPage() {
+  const raw = params.get("next") || "dashboard.html";
+
+  try {
+    const url = new URL(raw, location.origin);
+    const page = url.pathname.split("/").pop();
+
+    if (
+      url.origin === location.origin &&
+      !url.pathname.includes("/../") &&
+      allowedPages.has(page)
+    ) {
+      return page + url.search + url.hash;
+    }
+  } catch (error) {
+    // استخدام الصفحة الافتراضية عند وجود عنوان غير صالح.
+  }
+
+  return "dashboard.html";
+}
+
 if (nameInput) {
   nameInput.autocomplete = "nickname";
   nameInput.maxLength = 50;
@@ -28,7 +61,6 @@ if (nameInput) {
 const message = document.createElement("p");
 message.setAttribute("role", "status");
 message.setAttribute("aria-live", "polite");
-message.style.marginTop = "16px";
 form.after(message);
 
 function displayMessage(text, isError = false) {
@@ -36,12 +68,10 @@ function displayMessage(text, isError = false) {
   message.style.color = isError ? "#b91c1c" : "#166534";
 }
 
-form.addEventListener("submit", async (event) => {
+form.addEventListener("submit", async event => {
   event.preventDefault();
 
-  if (!form.reportValidity() || submitButton.disabled) {
-    return;
-  }
+  if (!form.reportValidity() || submitButton.disabled) return;
 
   const originalText = submitButton.textContent;
   submitButton.disabled = true;
@@ -62,31 +92,10 @@ form.addEventListener("submit", async (event) => {
       );
     }
 
-    const params = new URLSearchParams(location.search);
-    const requestedPage = params.get("next");
-
-    const allowedPages = new Set([
-      "dashboard.html",
-      "languages.html",
-      "levels.html",
-      "lecture.html",
-      "playground.html",
-      "profile.html",
-      "games.html",
-      "projects.html"
-    ]);
-
-    const destination =
-      requestedPage && allowedPages.has(requestedPage)
-        ? requestedPage
-        : "dashboard.html";
-
-    location.replace(destination);
+    location.replace(getNextPage());
   } catch (error) {
     displayMessage(
-      error?.code
-        ? authError(error)
-        : error?.message || "حدث خطأ. حاولي مرة أخرى.",
+      error?.code ? authError(error) : error?.message || "حدث خطأ غير متوقع.",
       true
     );
   } finally {
@@ -94,3 +103,19 @@ form.addEventListener("submit", async (event) => {
     submitButton.textContent = originalText;
   }
 });
+
+const resetButton = document.getElementById("resetPassword");
+
+if (resetButton && !isSignup) {
+  resetButton.addEventListener("click", async () => {
+    try {
+      await resetPassword(emailInput.value);
+      displayMessage("لو البريد مسجل، هتوصلك رسالة لإعادة تعيين كلمة المرور.");
+    } catch (error) {
+      displayMessage(
+        error?.code ? authError(error) : error?.message || "تعذر إرسال الرسالة.",
+        true
+      );
+    }
+  });
+}
