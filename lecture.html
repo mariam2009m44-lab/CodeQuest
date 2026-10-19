@@ -4,107 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المحاضرة | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    <style>
-        body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .progress-bar-container { width: 100%; height: 6px; background: var(--border-soft); }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-grad-2)); width: 0%; transition: width 0.5s ease; }
-        .main-layout { display: flex; flex: 1; overflow: hidden; }
-        .content-side { width: 45%; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; border-left: 1px solid var(--border-soft); }
-        .editor-side { width: 55%; display: flex; flex-direction: column; background: var(--bg-panel); }
-        .header-nav { display: flex; justify-content: space-between; align-items: center; }
-        .header-nav h1 { font-size: 1.4rem; color: var(--text-primary); font-weight: 900; }
-        .cody-box { display: flex; gap: 15px; }
-        .cody-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--accent-purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; flex-shrink: 0; box-shadow: var(--glow-primary); }
-        .cody-bubble { background: var(--bg-card); border: 1px solid var(--border-soft); padding: 20px; border-radius: var(--radius-card); border-top-right-radius: 0; }
-        .cody-bubble h3 { color: var(--primary); margin-bottom: 10px; font-size: 1.2rem; font-weight: 800; }
-        .cody-bubble p { color: var(--text-secondary); line-height: 1.8; font-size: 1.1rem; }
-        .task-box { background: rgba(255, 159, 67, 0.1); border: 1px solid var(--accent-orange); border-radius: var(--radius-card); padding: 20px; }
-        .task-box h4 { color: var(--accent-orange); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .task-box p { color: var(--text-primary); line-height: 1.7; }
-        .hints-box { margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255, 159, 67, 0.3); }
-        .hints-box ul { padding-right: 20px; color: var(--text-secondary); font-size: 0.95rem; margin: 0; }
-        .actions { margin-top: auto; }
-        .btn-finish { width: 100%; padding: 18px; font-size: 1.2rem; background: linear-gradient(135deg, var(--accent-green), #059669); color: white; border: none; border-radius: var(--radius-button); font-weight: 800; font-family: var(--font-arabic); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 20px rgba(53, 214, 163, 0.3); }
-        .btn-finish:hover { transform: translateY(-3px); filter: brightness(1.1); }
-        .editor-header { padding: 15px 25px; background: rgba(16, 27, 61, 0.95); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); }
-        .editor-controls { display: flex; gap: 10px; }
-        .CodeMirror { flex: 1; height: 100% !important; font-family: var(--font-code); font-size: 15px; direction: ltr; }
-        .terminal-container { height: 180px; background: #000; display: flex; flex-direction: column; border-top: 1px solid var(--border-soft); }
-        .terminal-header { padding: 10px 20px; background: #111; display: flex; gap: 8px; align-items: center; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .terminal-output { flex: 1; padding: 15px 20px; color: var(--accent-green); font-family: var(--font-code); font-size: 14px; direction: ltr; overflow-y: auto; white-space: pre-wrap; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(5, 11, 31, 0.9); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .quiz-modal { background: var(--bg-card); border: 2px solid var(--primary); border-radius: var(--radius-card); padding: 30px; max-width: 550px; width: 100%; text-align: center; box-shadow: var(--glow-primary); }
-        .quiz-modal h2 { color: var(--text-primary); margin-bottom: 25px; font-size: 1.4rem; }
-        .quiz-option { display: block; width: 100%; padding: 16px 20px; margin-bottom: 12px; background: var(--bg-deep); border: 2px solid var(--border-soft); border-radius: var(--radius-button); color: var(--text-primary); font-family: var(--font-arabic); font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-align: right; }
-        .quiz-option:hover { border-color: var(--primary); }
-        .quiz-option.selected { background: rgba(0, 217, 255, 0.1); border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 217, 255, 0.2); }
-        @media (max-width: 900px) { .main-layout { flex-direction: column; overflow-y: auto; } .content-side, .editor-side { width: 100%; height: auto; } .editor-side { min-height: 500px; } }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="main-layout">
-        <div class="content-side">
-            <div class="header-nav">
-                <a href="levels.html" class="btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;"><i class="ri-arrow-right-line"></i> رجوع</a>
-                <h1 id="lessonTitle">جاري التحميل...</h1>
-            </div>
-            <div class="cody-box">
-                <div class="cody-avatar"><i class="ri-robot-2-fill"></i></div>
-                <div class="cody-bubble">
-                    <h3>كودي يقول:</h3>
-                    <p id="codyIntro"></p>
+<body class="dark-mode">
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
+                <a href="levels.html" class="nav-item active"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
+                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+            </nav>
+        </aside>
+        <main class="main-content" style="display: flex; flex-direction: column;">
+            <div class="workspace">
+                <div class="panel" style="background: var(--dark-card); border: 1px solid var(--dark-border);">
+                    <div style="padding: 25px;">
+                        <h2 style="color: #06B6D4; margin-bottom: 15px;">كودي يقول:</h2>
+                        <p style="font-size: 1.1rem; line-height: 1.8;">أهلاً بك! المتغيرات هي صناديق تخزين البيانات. في JavaScript نستخدم <code>let</code> لإنشاء متغير.</p>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>main.js</span>
+                        <button style="background: #8B5CF6; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">تشغيل</button>
+                    </div>
+                    <textarea id="code"></textarea>
+                    <div class="terminal">> Console Ready...</div>
                 </div>
             </div>
-            <div class="task-box">
-                <h4><i class="ri-focus-3-line"></i> المهمة المطلوبة</h4>
-                <p id="lessonTask"></p>
-                <div class="hints-box">
-                    <p style="color: var(--accent-orange); font-weight: 800; font-size: 0.9rem; margin-bottom: 8px;">💡 تلميحات:</p>
-                    <ul id="lessonHints"></ul>
-                </div>
-            </div>
-            <div class="actions">
-                <button class="btn-finish" onclick="showQuiz()"><i class="ri-check-double-line"></i> أنا جاهز للاختبار!</button>
-            </div>
-        </div>
-        <div class="editor-side">
-            <div class="editor-header">
-                <span id="fileNameDisplay" style="color: var(--text-secondary); font-family: var(--font-code); font-size: 0.9rem;">main.js</span>
-                <div class="editor-controls">
-                    <button class="btn-secondary" style="padding: 6px 15px; font-size: 0.85rem;" onclick="resetCode()"><i class="ri-refresh-line"></i> مسح</button>
-                    <button class="btn-primary" style="padding: 6px 15px; font-size: 0.85rem;" onclick="runUserCode()"><i class="ri-play-fill"></i> تشغيل</button>
-                </div>
-            </div>
-            <textarea id="codeEditor"></textarea>
-            <div class="terminal-container">
-                <div class="terminal-header">
-                    <div class="dot" style="background: #FF6B6B;"></div>
-                    <div class="dot" style="background: #FFCB57;"></div>
-                    <div class="dot" style="background: #35D6A3;"></div>
-                </div>
-                <div id="terminalOutput" class="terminal-output">> Console Ready...</div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="quizModal">
-        <div class="quiz-modal">
-            <h2 id="quizQuestion">السؤال هنا؟</h2>
-            <div id="quizOptions"></div>
-            <button class="btn-primary" style="width: 100%; margin-top: 20px; display: none; padding: 15px; font-size: 1.1rem;" id="submitQuizBtn" onclick="submitQuiz()">تأكيد الإجابة</button>
-            <div id="quizFeedback" style="margin-top: 20px; font-size: 1.2rem; font-weight: 800;"></div>
-        </div>
+        </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
-    <script type="module" src="js/lecture.js?v=2"></script>
+    <script>
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true, theme: "dracula", mode: "javascript"
+        });
+        editor.setValue("let name = 'Cody';\nconsole.log('Hello ' + name);");
+    </script>
 </body>
 </html>

@@ -6,109 +6,64 @@
     <title>لوحة التحكم | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <style>
-        :root {
-            --dark-bg: #0B0F19; --dark-surface: #111827; --dark-card: #1F2937;
-            --dark-border: #374151; --dark-text-primary: #F9FAFB; --dark-text-secondary: #9CA3AF;
-            --dark-primary: #8B5CF6; --dark-primary-hover: #7C3AED; --dark-accent-cyan: #06B6D4;
-            --dark-accent-green: #10B981; --dark-accent-orange: #F59E0B; --dark-accent-pink: #EC4899;
-            --radius-sm: 8px; --radius-md: 16px; --radius-lg: 24px; --radius-pill: 999px;
-        }
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Cairo', sans-serif; background-color: var(--dark-bg); color: var(--dark-text-primary); line-height: 1.6; }
-        .dashboard-layout { display: flex; min-height: 100vh; background-image: radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%); }
-        .dashboard-sidebar { width: 280px; background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(15px); border-left: 1px solid var(--dark-border); display: flex; flex-direction: column; padding: 30px 20px; }
-        .sidebar-logo { font-size: 1.6rem; font-weight: 900; color: var(--dark-text-primary); display: flex; align-items: center; gap: 12px; margin-bottom: 50px; }
-        .sidebar-logo i { color: var(--dark-primary); font-size: 2.2rem; }
-        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .sidebar-nav-item { display: flex; align-items: center; gap: 15px; padding: 14px 18px; border-radius: var(--radius-sm); color: var(--dark-text-secondary); font-weight: 600; cursor: pointer; text-decoration: none; }
-        .sidebar-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--dark-text-primary); }
-        .sidebar-nav-item.active { background: linear-gradient(90deg, rgba(139, 92, 246, 0.15), transparent); color: var(--dark-primary); border-right: 3px solid var(--dark-primary); }
-        .sidebar-nav-item.logout { margin-top: auto; color: var(--dark-accent-pink); background: rgba(236, 72, 153, 0.1); }
-        .dashboard-main { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; gap: 30px; }
-        .dashboard-topbar { display: flex; justify-content: space-between; align-items: center; background: rgba(31, 41, 55, 0.6); padding: 15px 30px; border-radius: var(--radius-pill); border: 1px solid var(--dark-border); }
-        .topbar-user { display: flex; align-items: center; gap: 15px; }
-        .topbar-avatar { width: 55px; height: 55px; background: var(--dark-bg); border: 2px solid var(--dark-primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: var(--dark-primary); }
-        .topbar-user-info h2 { font-size: 1.2rem; font-weight: 800; margin: 0; }
-        .topbar-user-info p { font-size: 0.9rem; color: var(--dark-text-secondary); margin: 0; }
-        .topbar-stats { display: flex; gap: 15px; }
-        .stat-badge { background: var(--dark-bg); padding: 8px 20px; border-radius: var(--radius-pill); display: flex; align-items: center; gap: 8px; border: 1px solid var(--dark-border); font-weight: 800; }
-        .stat-badge.coins { color: var(--dark-accent-orange); border-color: rgba(245, 158, 11, 0.3); }
-        .stat-badge.xp { color: var(--dark-accent-cyan); border-color: rgba(6, 182, 212, 0.3); }
-        .dashboard-hero { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
-        .hero-main-card { background: linear-gradient(135deg, rgba(31, 41, 55, 1), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: var(--radius-lg); padding: 35px; position: relative; overflow: hidden; }
-        .hero-main-card h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 10px; }
-        .hero-main-card p { font-size: 1.1rem; color: var(--dark-text-secondary); margin-bottom: 30px; max-width: 70%; }
-        .btn-dark-primary { background: linear-gradient(135deg, var(--dark-primary), var(--dark-primary-hover)); color: white; padding: 14px 30px; border-radius: var(--radius-sm); font-weight: 700; font-size: 1.1rem; cursor: pointer; border: none; }
-        .hero-side-card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: var(--radius-lg); padding: 25px; display: flex; flex-direction: column; justify-content: center; }
-        .hero-side-card h3 { font-size: 1.2rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        .hero-side-card p { font-size: 0.95rem; color: var(--dark-text-secondary); margin-bottom: 20px; }
-        .btn-dark-secondary { background: transparent; color: var(--dark-text-primary); border: 1px solid var(--dark-border); padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; }
-        .dashboard-quick-access { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .quick-card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: var(--radius-md); padding: 25px 20px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .quick-icon { width: 65px; height: 65px; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; margin-bottom: 15px; }
-        .quick-icon.cyan { background: rgba(6, 182, 212, 0.1); color: var(--dark-accent-cyan); }
-        .quick-icon.purple { background: rgba(139, 92, 246, 0.1); color: var(--dark-primary); }
-        .quick-icon.orange { background: rgba(245, 158, 11, 0.1); color: var(--dark-accent-orange); }
-        .quick-icon.green { background: rgba(16, 185, 129, 0.1); color: var(--dark-accent-green); }
-        @media (max-width: 1024px) { .dashboard-hero { grid-template-columns: 1fr; } .dashboard-quick-access { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 768px) { .dashboard-layout { flex-direction: column; } .dashboard-sidebar { display: none; } .dashboard-main { padding: 20px; } .dashboard-topbar { flex-direction: column; gap: 15px; border-radius: var(--radius-md); } .dashboard-quick-access { grid-template-columns: 1fr; } .hero-main-card p { max-width: 100%; } }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="dashboard-layout">
-        <aside class="dashboard-sidebar">
+<body class="dark-mode">
+    <div class="app-layout">
+        <aside class="sidebar">
             <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
-            <nav class="sidebar-nav">
-                <a href="#" class="sidebar-nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="#" class="sidebar-nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
-                <a href="#" class="sidebar-nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="#" class="sidebar-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
-                <a href="#" class="sidebar-nav-item"><i class="ri-store-3-line"></i> المتجر</a>
-                <a href="index.html" class="sidebar-nav-item logout"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</a>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
+                <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
+                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+                <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</a>
             </nav>
         </aside>
-        <main class="dashboard-main">
-            <header class="dashboard-topbar">
-                <div class="topbar-user">
-                    <div class="topbar-avatar">🤖</div>
-                    <div class="topbar-user-info">
-                        <h2>مرحباً، <span id="userNameDisplay">بطل</span>! 👋</h2>
-                        <p>مستعد لمغامرة جديدة اليوم؟</p>
+        <main class="main-content">
+            <header class="topbar">
+                <div class="user-info">
+                    <div class="avatar">🤖</div>
+                    <div>
+                        <h2 style="font-size: 1.2rem; font-weight: 800;">مرحباً، <span id="userName">بطل</span>! 👋</h2>
+                        <p style="color: var(--dark-text-muted); font-size: 0.9rem;">مستعد لمغامرة جديدة؟</p>
                     </div>
                 </div>
-                <div class="topbar-stats">
-                    <div class="stat-badge coins"><i class="ri-coins-fill"></i> 500</div>
-                    <div class="stat-badge xp"><i class="ri-star-fill"></i> 0 XP</div>
+                <div class="stats">
+                    <div class="stat-pill coins"><i class="ri-coins-fill"></i> 500</div>
+                    <div class="stat-pill xp"><i class="ri-star-fill"></i> 0 XP</div>
                 </div>
             </header>
-            <section class="dashboard-hero">
-                <div class="hero-main-card">
+            <section class="grid-hero">
+                <div class="card-main">
                     <h1>أكمل مغامرتك!</h1>
                     <p>أنت على بعد خطوة واحدة من إتقان لغة جديدة. الدرس التالي ينتظرك.</p>
-                    <button class="btn-dark-primary">استكمال التعلم <i class="ri-arrow-left-line"></i></button>
+                    <a href="languages.html" class="btn-dark">استكمال التعلم <i class="ri-arrow-left-line"></i></a>
                 </div>
-                <div class="hero-side-card">
-                    <h3><i class="ri-fire-fill" style="color: var(--dark-accent-orange);"></i> مهمة اليوم</h3>
-                    <p>أكمل درساً واحداً اليوم للحفاظ على سلسلة الأيام!</p>
-                    <button class="btn-dark-secondary">اذهب للدروس</button>
+                <div class="card-side">
+                    <h3 style="margin-bottom: 10px;"><i class="ri-fire-fill" style="color: #F59E0B;"></i> مهمة اليوم</h3>
+                    <p style="color: var(--dark-text-muted); font-size: 0.9rem; margin-bottom: 20px;">أكمل درساً واحداً اليوم للحفاظ على سلسلة الأيام!</p>
+                    <a href="languages.html" style="color: var(--dark-primary); font-weight: bold;">اذهب للدروس</a>
                 </div>
             </section>
-            <section class="dashboard-quick-access">
-                <div class="quick-card"><div class="quick-icon cyan"><i class="ri-book-open-line"></i></div><h4>الدروس</h4></div>
-                <div class="quick-card"><div class="quick-icon purple"><i class="ri-code-s-slash-line"></i></div><h4>محرر الأكواد</h4></div>
-                <div class="quick-card"><div class="quick-icon orange"><i class="ri-gamepad-line"></i></div><h4>الألعاب</h4></div>
-                <div class="quick-card"><div class="quick-icon green"><i class="ri-shopping-bag-3-line"></i></div><h4>المتجر</h4></div>
+            <section class="grid-quick">
+                <a href="languages.html" class="quick-card"><div class="quick-icon" style="background: rgba(6, 182, 212, 0.1); color: #06B6D4;"><i class="ri-book-open-line"></i></div><h4>الدروس</h4></a>
+                <a href="playground.html" class="quick-card"><div class="quick-icon" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;"><i class="ri-code-s-slash-line"></i></div><h4>الملعب</h4></a>
+                <a href="games.html" class="quick-card"><div class="quick-icon" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;"><i class="ri-gamepad-line"></i></div><h4>الألعاب</h4></a>
+                <a href="#" class="quick-card"><div class="quick-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;"><i class="ri-shopping-bag-3-line"></i></div><h4>المتجر</h4></a>
             </section>
         </main>
     </div>
+    <nav class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item active"><i class="ri-home-5-line"></i> الرئيسية</a>
+        <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i> التعلم</a>
+        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
+        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+    </nav>
     <script>
         const user = localStorage.getItem('cq_user');
-        if (!user) {
-            window.location.href = 'login.html';
-        } else {
-            document.getElementById('userNameDisplay').innerText = user;
-        }
+        if (!user) window.location.href = 'login.html';
+        else document.getElementById('userName').innerText = user;
     </script>
 </body>
 </html>

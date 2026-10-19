@@ -1,123 +1,48 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>اختر مسارك | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; min-height: 100vh; background: #050914; padding-bottom: 70px; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(10, 17, 40, 0.95); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
-        .top-bar a { color: var(--primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .top-bar h1 { margin: 0; font-size: 1.2rem; color: #fff; }
-        .content { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .intro-box { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; }
-        .intro-box img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--primary); background: #000; }
-        .intro-box p { margin: 0; font-size: 1rem; color: #e0e0e0; line-height: 1.5; }
-        .lang-grid { display: flex; flex-direction: column; gap: 15px; }
-        .lang-card { background: rgba(255,255,255,0.05); border: 2px solid var(--glass-border); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; text-decoration: none; color: #fff; transition: 0.3s; cursor: pointer; }
-        .lang-card:hover { border-color: var(--primary); transform: translateY(-5px); background: rgba(0,229,255,0.05); }
-        .lang-card img { width: 60px; height: 60px; }
-        .lang-info h2 { margin: 0 0 5px; font-size: 1.3rem; }
-        .lang-info p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 17, 40, 0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass-border); z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: bold; }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 4px; }
-        .nav-item.active { color: var(--primary); }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسار التعلم | CodeQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    
-    <header class="top-header">
-        <a href="dashboard.html" class="btn-icon"><i class="ri-arrow-right-line"></i></a>
-        <h1 style="font-size:1.1rem; margin:0;">اختر مسارك</h1>
-        <div style="width: 40px;"></div>
-    </header>
-
-
-    <div class="content">
-        <div class="intro-box">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cody&backgroundColor=00e5ff">
-            <p>أهلاً بك! اختر لغة البرمجة التي تريد تعلمها، وسأكون معك خطوة بخطوة.</p>
-        </div>
-
-        <div class="lang-grid">
-            <div class="lang-card" onclick="selectLang('JavaScript')">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg">
-                <div class="lang-info"><h2>JavaScript</h2><p>لغة الويب التفاعلية والألعاب</p></div>
+<body class="dark-mode">
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
+                <a href="languages.html" class="nav-item active"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
+                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+                <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1 style="font-size: 2rem; margin-bottom: 30px;">اختر مسارك البرمجي</h1>
+            <div class="lang-grid">
+                <div class="lang-card" onclick="window.location.href='levels.html?lang=javascript'">
+                    <div class="lang-icon">🟨</div>
+                    <div class="lang-info"><h3>JavaScript</h3><p>لغة الويب التفاعلية</p></div>
+                </div>
+                <div class="lang-card" onclick="window.location.href='levels.html?lang=python'">
+                    <div class="lang-icon">🐍</div>
+                    <div class="lang-info"><h3>Python</h3><p>لغة الذكاء الاصطناعي</p></div>
+                </div>
+                <div class="lang-card" onclick="window.location.href='levels.html?lang=cpp'">
+                    <div class="lang-icon">⚙️</div>
+                    <div class="lang-info"><h3>C++</h3><p>لغة الأنظمة والألعاب</p></div>
+                </div>
             </div>
-
-            <div class="lang-card" onclick="selectLang('Python')">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg">
-                <div class="lang-info"><h2>Python</h2><p>لغة الذكاء الاصطناعي وتحليل البيانات</p></div>
-            </div>
-
-            <div class="lang-card" onclick="selectLang('C++')">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg">
-                <div class="lang-info"><h2>C++</h2><p>لغة القوة والسرعة والأنظمة</p></div>
-            </div>
-        </div>
+        </main>
     </div>
-
-    
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item active"><i class="ri-home-4-line"></i><span>الرئيسية</span></a>
-        <a href="languages.html" class="nav-item active"><i class="ri-book-open-line"></i><span>التعلم</span></a>
-        <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="shop.html" class="nav-item"><i class="ri-shopping-bag-3-line"></i><span>المتجر</span></a>
-        <a href="profile.html" class="nav-item"><i class="ri-user-3-line"></i><span>ملفي</span></a>
+    <nav class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
+        <a href="languages.html" class="mobile-nav-item active"><i class="ri-book-open-line"></i> التعلم</a>
+        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
+        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
     </nav>
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            Auth.init((logged) => { if (!logged) window.location.href = 'login.html'; });
-        });
-
-        function selectLang(lang) {
-            // بنحفظ الاسم بالظبط زي ما هو
-            localStorage.setItem('cq_language', lang);
-            window.location.href = 'levels.html';
-        }
-    </script>
-
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
 </body>
 </html>

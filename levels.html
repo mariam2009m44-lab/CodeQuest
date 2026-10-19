@@ -3,78 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خريطة التعلم | CodeQuest</title>
+    <title>المستويات | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css?v=2">
-    <style>
-        body { padding: var(--space-l); background-image: radial-gradient(circle at center, rgba(118, 87, 255, 0.1), transparent 60%); }
-        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
-        .page-title { font-size: 1.8rem; font-weight: 900; color: var(--text-primary); }
-        .map-container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative; }
-        .path-line { position: absolute; top: 40px; bottom: 40px; right: 50%; transform: translateX(50%); width: 4px; background: dashed var(--border-soft); z-index: 1; }
-        .chapter-title { background: var(--bg-card); border: 1px solid var(--border-soft); padding: 8px 24px; border-radius: var(--radius-pill); color: var(--text-secondary); font-weight: 700; z-index: 2; margin-top: 20px; }
-        .level-node { background: var(--bg-card); border: 2px solid var(--border-soft); border-radius: var(--radius-card); padding: 15px 25px; width: 100%; display: flex; align-items: center; gap: 20px; cursor: pointer; transition: 0.3s; z-index: 2; }
-        .level-node:hover { border-color: var(--primary); transform: scale(1.02); box-shadow: var(--glow-primary); }
-        .node-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: var(--bg-deep); border: 2px solid var(--primary); color: var(--primary); flex-shrink: 0; }
-        .node-info h3 { color: var(--text-primary); margin-bottom: 5px; font-size: 1.1rem; }
-        .node-info p { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
-        .level-node.locked { opacity: 0.6; cursor: not-allowed; border-color: var(--border-soft); }
-        .level-node.locked .node-icon { border-color: var(--border-soft); color: var(--text-muted); }
-        .cody-float { position: fixed; bottom: 30px; left: 30px; font-size: 4rem; color: var(--primary); filter: drop-shadow(0 0 20px rgba(0,217,255,0.4)); animation: float 3s ease-in-out infinite; pointer-events: none; z-index: 99; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="top-nav">
-        <a href="languages.html" class="btn-secondary"><i class="ri-arrow-right-line"></i> رجوع</a>
-        <div class="page-title" id="pageTitle">جاري التحميل...</div>
-        <div style="width: 80px;"></div>
+<body class="dark-mode">
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
+                <a href="languages.html" class="nav-item active"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
+                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+                <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+                <a href="languages.html" class="btn-dark" style="padding: 8px 15px; background: transparent; border: 1px solid var(--dark-border);"><i class="ri-arrow-right-line"></i> رجوع</a>
+                <h1 style="font-size: 1.8rem;" id="pageTitle">مسار JavaScript</h1>
+            </div>
+            <div class="levels-list">
+                <div class="level-item" onclick="window.location.href='lecture.html'">
+                    <div>
+                        <h4>المتغيرات (Variables)</h4>
+                        <p>فهم كيفية تخزين البيانات</p>
+                    </div>
+                    <i class="ri-play-circle-fill" style="font-size: 2rem; color: #06B6D4;"></i>
+                </div>
+                <div class="level-item locked">
+                    <div>
+                        <h4>العمليات الحسابية</h4>
+                        <p>استخدام العمليات الأساسية</p>
+                    </div>
+                    <i class="ri-lock-fill" style="font-size: 1.5rem; color: #6B7AAB;"></i>
+                </div>
+            </div>
+        </main>
     </div>
-    <div class="map-container" id="mapContainer">
-        <div class="path-line"></div>
-    </div>
-    <div class="cody-float"><i class="ri-robot-2-fill"></i></div>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const lang = urlParams.get('lang') || localStorage.getItem('cq_selected_lang') || 'javascript';
-        const titles = { javascript: 'مسار JavaScript', python: 'مسار Python', cpp: 'مسار C++' };
-        const files = { javascript: 'json/js_curriculum.json', python: 'json/python_curriculum.json', cpp: 'json/cpp_curriculum.json' };
-        document.getElementById('pageTitle').innerHTML = `${titles[lang]}`;
-        async function loadMap() {
-            try {
-                const res = await fetch(files[lang]);
-                const data = await res.json();
-                const container = document.getElementById('mapContainer');
-                const completedLessons = JSON.parse(localStorage.getItem('cq_completed')) || [];
-                data.chapters.forEach((chapter, cIdx) => {
-                    const title = document.createElement('div');
-                    title.className = 'chapter-title';
-                    title.innerText = chapter.title;
-                    container.appendChild(title);
-                    chapter.lessons.forEach((lesson, lIdx) => {
-                        const lessonKey = `${lang}_ch${cIdx}_l${lIdx}`;
-                        const isUnlocked = cIdx === 0 && lIdx === 0 || completedLessons.includes(`${lang}_ch${cIdx}_l${lIdx - 1}`) || completedLessons.includes(lessonKey);
-                        const isCompleted = completedLessons.includes(lessonKey);
-                        const node = document.createElement('div');
-                        node.className = `level-node ${isUnlocked ? '' : 'locked'}`;
-                        if (isUnlocked) {
-                            node.onclick = () => { window.location.href = `lecture.html?lang=${lang}&chapter=${cIdx}&lesson=${lIdx}`; };
-                        }
-                        const icon = isCompleted ? '<i class="ri-check-double-line"></i>' : (isUnlocked ? '<i class="ri-play-fill"></i>' : '<i class="ri-lock-fill"></i>');
-                        node.innerHTML = `
-                            <div class="node-icon">${icon}</div>
-                            <div class="node-info">
-                                <h3>${lesson.title}</h3>
-                                <p>${lesson.objective}</p>
-                            </div>
-                        `;
-                        container.appendChild(node);
-                    });
-                });
-            } catch (e) { document.getElementById('mapContainer').innerHTML = '<p style="color:red;">حدث خطأ في التحميل.</p>'; }
-        }
-        loadMap();
+        const lang = urlParams.get('lang') || 'javascript';
+        if(lang === 'python') document.getElementById('pageTitle').innerText = 'مسار Python';
+        if(lang === 'cpp') document.getElementById('pageTitle').innerText = 'مسار C++';
     </script>
 </body>
 </html>
