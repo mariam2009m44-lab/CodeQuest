@@ -70,7 +70,6 @@
         const codePy = "# Welcome to CodeQuest!\nname = \"Cody\"\nprint(\"Hello, \" + name + \"!\")";
         const codeCpp = "// Welcome to CodeQuest!\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello, Cody!\" << endl;\n    return 0;\n}";
 
-        // دالة عرض النتيجة
         function showOutput(text, isError = false) {
             outputEl.innerHTML = '';
             const span = document.createElement('span');
@@ -114,13 +113,13 @@
 
             try {
                 if (lang === 'javascript') {
-                    // JavaScript: نستخدم eval مع اعتراض console.log
+                    // استخدام new Function عشان يشتغل أكتر من مرة من غير مشاكل
                     let logs = [];
                     const originalLog = console.log;
                     console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
                     
                     try {
-                        eval(code);
+                        new Function(code)(); // تشغيل الكود في نطاق منفصل
                         console.log = originalLog;
                         if (logs.length === 0) {
                             showOutput('الكود اشتغل بنجاح، ولكن لم يطبع أي نتيجة (استخدم console.log).');
@@ -149,7 +148,6 @@
                     btn.disabled = false; btn.innerHTML = '<i class="ri-play-fill"></i> تشغيل الكود';
 
                 } else if (lang === 'cpp') {
-                    // C++: نستخدم Judge0 API العام (بدون مفاتيح) ونعرض النتيجة في div
                     const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
                     const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
                     
