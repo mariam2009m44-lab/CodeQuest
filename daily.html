@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>التحدي اليومي | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="css/global.css">
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; justify-content: center; min-height: 100vh; }
-        .challenge-card { background: var(--glass); border: 1px solid var(--gold); border-radius: 25px; padding: 40px 20px; text-align: center; width: 100%; max-width: 500px; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
-        .challenge-icon { font-size: 4rem; margin-bottom: 20px; text-shadow: 0 0 20px var(--gold); }
-        .btn-claim { background: linear-gradient(135deg, var(--gold), #ff8c00); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; width: 100%; cursor: pointer; margin-top: 20px; display: none; }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #050914; padding: 20px; }
+        .challenge-card { background: var(--glass); border: 2px solid var(--gold); border-radius: 25px; padding: 40px 20px; text-align: center; width: 100%; max-width: 500px; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
+        .icon { font-size: 4rem; margin-bottom: 20px; text-shadow: 0 0 20px var(--gold); }
+        .btn-claim { background: linear-gradient(135deg, var(--gold), #ff8c00); color: #000; border: none; padding: 15px; border-radius: 15px; font-family: 'Cairo'; font-weight: bold; font-size: 1.2rem; width: 100%; cursor: pointer; margin-top: 20px; display: none; box-shadow: 0 4px 15px rgba(255,215,0,0.4); transition: 0.3s; }
+        .btn-claim:hover { transform: scale(1.05); }
         .btn-back { margin-top: 20px; color: var(--text-muted); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="challenge-card">
-        <div class="challenge-icon">⚡</div>
+        <div class="icon">⚡</div>
         <h1 style="color:var(--gold); margin:0 0 10px;">التحدي اليومي</h1>
         <p style="color:var(--text-muted); margin-bottom:30px;">أجب على السؤال لتحصل على 50 نقطة!</p>
         
@@ -32,7 +31,7 @@
             </div>
         </div>
         
-        <p id="statusMsg" style="color:var(--text-muted); font-weight:bold;"></p>
+        <p id="statusMsg" style="color:var(--text-muted); font-weight:bold; margin-top:20px;"></p>
         <button class="btn-claim" id="claimBtn" onclick="claimReward()">احصل على المكافأة 🎁</button>
     </div>
     <a href="dashboard.html" class="btn-back">← العودة للوحة التحكم</a>
@@ -40,18 +39,28 @@
     <script>
         const today = new Date().toDateString();
         let isCorrect = false;
+        let userRef = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             Auth.init(async (logged) => {
                 if (!logged) { window.location.href = 'login.html'; return; }
                 
                 const uid = Auth.getUserId();
-                const doc = await firebase.firestore().collection('users').doc(uid).get();
+                userRef = firebase.firestore().collection('users').doc(uid);
                 
-                if(doc.data().lastDailyDate === today) {
-                    document.getElementById('statusMsg').innerText = "لقد حصلت على مكافأتك اليوم! عد غداً 🌟";
-                } else {
-                    document.getElementById('quizArea').style.display = 'block';
+                try {
+                    const doc = await userRef.get();
+                    const lastDate = doc.data().lastDailyDate;
+                    
+                    if(lastDate === today) {
+                        document.getElementById('statusMsg').innerText = "لقد حصلت على مكافأتك اليوم! عد غداً 🌟";
+                        document.getElementById('statusMsg').style.color = "var(--primary)";
+                    } else {
+                        document.getElementById('quizArea').style.display = 'block';
+                    }
+                } catch(e) {
+                    console.error(e);
+                    document.getElementById('statusMsg').innerText = "حدث خطأ في تحميل البيانات.";
                 }
             });
         });
@@ -69,17 +78,43 @@
         }
 
         async function claimReward() {
-            if(!isCorrect) return;
-            const uid = Auth.getUserId();
+            if(!isCorrect || !userRef) return;
+            
+            document.getElementById('claimBtn').innerText = "جاري التحقق...";
+            document.getElementById('claimBtn').disabled = true;
+
             try {
-                await firebase.firestore().collection('users').doc(uid).update({
-                    points: firebase.firestore.FieldValue.increment(50),
-                    lastDailyDate: today
+                // استخدام Transaction لمنع الغش نهائياً
+                await firebase.firestore().runTransaction(async (transaction) => {
+                    const doc = await transaction.get(userRef);
+                    const data = doc.data();
+                    
+                    // التحقق مرة أخرى داخل الـ Transaction (عشان لو فتح الصفحة في تابين)
+                    if (data.lastDailyDate === today) {
+                        throw new Error("ALREADY_CLAIMED");
+                    }
+
+                    // تحديث النقاط والتاريخ بشكل آمن
+                    transaction.update(userRef, {
+                        points: firebase.firestore.FieldValue.increment(50),
+                        lastDailyDate: today
+                    });
                 });
-                confetti({ particleCount: 200 });
+                
+                // لو نجح الـ Transaction
+                confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
                 alert("🎉 مبروك! حصلت على 50 نقطة.");
                 window.location.href = 'dashboard.html';
-            } catch(e) { console.error(e); }
+
+            } catch (e) {
+                if (e.message === "ALREADY_CLAIMED") {
+                    alert("❌ لقد حصلت على المكافأة بالفعل اليوم!");
+                } else {
+                    alert("❌ حدث خطأ، حاول مرة أخرى.");
+                    console.error(e);
+                }
+                window.location.reload(); // إعادة تحميل الصفحة لتحديث الحالة
+            }
         }
     </script>
 </body>
