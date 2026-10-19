@@ -3,110 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المتجر | CodeQuest</title>
+    <title>المتجر | Cody Academy</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { background: var(--bg-deep); padding: var(--space-l); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
-        .header h1 { font-size: 2rem; color: var(--text-primary); }
-        .balance { display: flex; align-items: center; gap: 10px; background: var(--bg-panel); padding: 10px 20px; border-radius: var(--radius-pill); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-size: 1.2rem; font-weight: 700; }
-        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-m); }
-        .store-item { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); text-align: center; transition: 0.3s; display: flex; flex-direction: column; }
-        .store-item:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: var(--shadow-card); }
-        .item-icon { font-size: 4rem; margin-bottom: var(--space-s); }
-        .item-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-xs); }
-        .item-price { color: var(--accent-yellow); font-weight: 700; font-size: 1.1rem; margin-bottom: var(--space-m); display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-buy { width: 100%; padding: 12px; border-radius: var(--radius-button); border: none; background: linear-gradient(135deg, var(--primary), var(--primary-grad-2)); color: var(--bg-deep); font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; font-family: var(--font-arabic); margin-top: auto; }
-        .btn-buy:hover { filter: brightness(1.1); }
-        .btn-buy:disabled { background: var(--border-soft); color: var(--text-muted); cursor: not-allowed; }
-    </style>
+    <link rel="stylesheet" href="css/style.css?v=ultimate3">
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>متجر كودي</h1>
-            <p style="color: var(--text-secondary);">طوّر شخصيتك وتميز في الفضاء!</p>
-        </div>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <div class="balance"><i class="ri-coins-fill"></i> <span id="userCoins">0</span></div>
-            <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i></a>
-        </div>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
+                <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
+                <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+                <a href="shop.html" class="nav-item active"><i class="ri-shopping-bag-3-line"></i> المتجر</a>
+                <a href="profile.html" class="nav-item "><i class="ri-user-smile-line"></i> حسابي</a>
+                <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1 style="font-size: 2.2rem; margin-bottom: 30px; color: #fff; font-weight: 900;">المتجر</h1>
+            <div class="glass-card" style="padding: 50px; text-align: center;">
+                <i class="ri-shopping-bag-3-line" style="font-size: 5rem; color: var(--primary-cyan); margin-bottom: 20px; display: block; filter: drop-shadow(0 0 20px rgba(0,217,255,0.4));"></i>
+                <h2 style="color: #fff; font-size: 1.8rem; margin-bottom: 10px;">قريباً...</h2>
+                <p style="color: var(--text-muted); margin-top: 10px; font-size: 1.1rem;">هذه الصفحة قيد التطوير.</p>
+            </div>
+        </main>
     </div>
-
-    <div class="store-grid" id="storeGrid"></div>
-
+    <nav class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
+        <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i> التعلم</a>
+        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
+        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+    </nav>
     <script type="module">
-        import { auth, db, doc, getDoc, updateDoc, increment } from './js/app.js';
-        import { showToast } from './js/ui.js';
-
-        const items = [
-            { id: 'crown', name: 'تاج الملك', icon: '👑', price: 200 },
-            { id: 'glasses', name: 'نظارة كودي', icon: '👓', price: 150 },
-            { id: 'stars', name: 'تأثير النجوم', icon: '✨', price: 100 },
-            { id: 'suit', name: 'زي المغامر', icon: '🧥', price: 300 }
-        ];
-
-        let currentUser = null;
-        let userCoins = 0;
-        let userInventory = [];
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
-                if (snap.exists()) {
-                    userCoins = snap.data().coins || 0;
-                    userInventory = snap.data().inventory || [];
-                    document.getElementById('userCoins').innerText = userCoins;
-                    renderStore();
-                }
-            }
-        });
-
-        function renderStore() {
-            const grid = document.getElementById('storeGrid');
-            grid.innerHTML = '';
-            items.forEach(item => {
-                const owned = userInventory.includes(item.id);
-                const div = document.createElement('div');
-                div.className = 'store-item';
-                div.innerHTML = `
-                    <div class="item-icon">${item.icon}</div>
-                    <div class="item-title">${item.name}</div>
-                    <div class="item-price"><i class="ri-coins-fill"></i> ${item.price}</div>
-                    <button class="btn-buy" ${owned ? 'disabled' : ''} onclick="buyItem('${item.id}', ${item.price})">
-                        ${owned ? 'تم الشراء' : 'شراء الآن'}
-                    </button>
-                `;
-                grid.appendChild(div);
-            });
-        }
-
-        window.buyItem = async (itemId, price) => {
-            if (userCoins < price) {
-                showToast('عذراً، لا تمتلك عملات كافية!', 'error');
-                return;
-            }
-            try {
-                const userRef = doc(db, "users", currentUser.uid);
-                const newInventory = [...userInventory, itemId];
-                await updateDoc(userRef, {
-                    coins: increment(-price),
-                    inventory: newInventory
-                });
-                userCoins -= price;
-                userInventory = newInventory;
-                document.getElementById('userCoins').innerText = userCoins;
-                showToast('تم الشراء بنجاح! 🎉', 'success');
-                renderStore();
-            } catch (error) {
-                showToast('حدث خطأ أثناء الشراء.', 'error');
-            }
-        };
+        import { App } from './js/app.js';
+        App.init();
     </script>
 </body>
 </html>

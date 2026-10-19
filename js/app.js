@@ -1,51 +1,77 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { firebaseConfig } from './firebase-config.js';
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+export const App = {
+    user: 'بطل',
+    xp: 0,
+    coins: 500,
 
-export const initApp = () => {
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-            
-            let userData = { displayName: user.displayName || user.email.split('@')[0], xp: 0, coins: 0 };
-            if (userSnap.exists()) { userData = userSnap.data(); } 
-            else { await setDoc(userRef, userData); }
+    init() {
+        this.loadState();
+        this.updateUI();
+        this.setupToasts();
+        this.highlightNav();
+        console.log('✅ Cody Academy Engine Initialized');
+    },
 
-            document.querySelectorAll('.js-user-name').forEach(el => el.textContent = userData.displayName);
-            document.querySelectorAll('.js-user-xp').forEach(el => el.textContent = Number(userData.xp) || 0);
-            document.querySelectorAll('.js-user-coins').forEach(el => el.textContent = Number(userData.coins) || 0);
-            
-            window.currentUser = user;
-            window.currentUserData = userData;
-        } else if (window.location.pathname.includes('dashboard') || window.location.pathname.includes('lecture')) {
-            window.location.href = 'login.html';
+    loadState() {
+        this.user = localStorage.getItem('cq_user') || 'بطل';
+        let xp = parseInt(localStorage.getItem('cq_xp')) || 0;
+        let coins = parseInt(localStorage.getItem('cq_coins')) || 500;
+        this.xp = isNaN(xp) ? 0 : xp;
+        this.coins = isNaN(coins) ? 500 : coins;
+    },
+
+    updateUI() {
+        document.querySelectorAll('.js-user-name').forEach(el => el.innerText = this.user);
+        document.querySelectorAll('.js-user-xp').forEach(el => el.innerText = this.xp);
+        document.querySelectorAll('.js-user-coins').forEach(el => el.innerText = this.coins);
+    },
+
+    addXP(amount) {
+        this.xp += amount;
+        localStorage.setItem('cq_xp', this.xp);
+        this.updateUI();
+        this.showToast(`+${amount} XP! أحسنت!`, 'success');
+    },
+
+    addCoins(amount) {
+        this.coins += amount;
+        localStorage.setItem('cq_coins', this.coins);
+        this.updateUI();
+    },
+
+    setupToasts() {
+        if (!document.querySelector('.toast-container')) {
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
         }
-    });
+    },
+
+    showToast(message, type = 'info') {
+        const container = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerText = message;
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    },
+
+    highlightNav() {
+        const currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
+        document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && currentPath.includes(href)) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
 };
 
-export const logoutUser = async () => {
-    await signOut(auth);
-    window.location.href = 'index.html';
-};
-
-export const addXP = async (amount) => {
-    if (!auth.currentUser) return;
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userRef, { xp: increment(amount) });
-    if (window.currentUserData) window.currentUserData.xp = (Number(window.currentUserData.xp) || 0) + amount;
-};
-
-export const addCoins = async (amount) => {
-    if (!auth.currentUser) return;
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userRef, { coins: increment(amount) });
-    if (window.currentUserData) window.currentUserData.coins = (Number(window.currentUserData.coins) || 0) + amount;
-};
-
-export { auth, db, doc, getDoc, setDoc, updateDoc, increment };
+document.addEventListener('DOMContentLoaded', () => App.init());

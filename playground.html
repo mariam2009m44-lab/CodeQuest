@@ -3,40 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الملعب | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>الملعب | Cody Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=ultimate3">
 </head>
-<body class="dark-mode">
+<body>
     <div class="app-layout">
         <aside class="sidebar">
             <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
             <nav class="nav-menu">
                 <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="levels.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
+                <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
                 <a href="playground.html" class="nav-item active"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
                 <a href="games.html" class="nav-item"><i class="ri-gamepad-line"></i> الألعاب</a>
+                <a href="shop.html" class="nav-item"><i class="ri-shopping-bag-3-line"></i> المتجر</a>
+                <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
+                <a href="index.html" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
             </nav>
         </aside>
         <main class="main-content" style="display: flex; flex-direction: column;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <h1 style="font-size: 1.5rem;">ملعب الأكواد الحر</h1>
-                <select style="background: var(--dark-card); color: white; border: 1px solid var(--dark-border); padding: 8px 15px; border-radius: 8px;">
-                    <option>JavaScript</option>
-                    <option>Python</option>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 style="font-size: 1.8rem; color: #fff; font-weight: 800;">ملعب الأكواد الحر</h1>
+                <select id="langSelector" class="btn btn-secondary" style="padding: 10px 20px; outline: none; cursor: pointer;">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
                 </select>
             </div>
             <div class="workspace">
-                <div class="panel">
-                    <div class="panel-header"><span>main.js</span><button style="background: #8B5CF6; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">تشغيل الكود</button></div>
-                    <textarea id="code"></textarea>
-                </div>
-                <div class="panel">
-                    <div class="panel-header"><span>Console Output</span></div>
-                    <div class="terminal" style="height: 100%;">> Console Ready...</div>
+                <div class="editor-panel">
+                    <div class="editor-header">
+                        <span id="fileNameDisplay">main.js</span>
+                        <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;" onclick="runPlaygroundCode()"><i class="ri-play-fill"></i> تشغيل</button>
+                    </div>
+                    <textarea id="codeEditor"></textarea>
+                    <div class="terminal-panel">
+                        <div class="terminal-header">
+                            <div class="dot" style="background: #FF6B6B;"></div>
+                            <div class="dot" style="background: #FFCB57;"></div>
+                            <div class="dot" style="background: #35D6A3;"></div>
+                        </div>
+                        <div id="terminalOutput" class="terminal-output">> Console Ready...</div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -49,11 +59,49 @@
     </nav>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-    <script>
-        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-            lineNumbers: true, theme: "dracula", mode: "javascript"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
+    <script type="module">
+        import { App } from './js/app.js';
+        App.init();
+
+        var editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), { lineNumbers: true, theme: "dracula", mode: "javascript" });
+        editor.setValue("console.log('Hello CodeQuest!');");
+        
+        document.getElementById('langSelector').addEventListener('change', function() {
+            const lang = this.value;
+            const mode = lang === 'python' ? 'python' : 'javascript';
+            const ext = lang === 'python' ? '.py' : '.js';
+            editor.setOption('mode', mode);
+            document.getElementById('fileNameDisplay').innerText = 'main' + ext;
+            editor.setValue(lang === 'javascript' ? "console.log('Hello CodeQuest!');" : "print('Hello CodeQuest!')");
         });
-        editor.setValue("console.log('Hello World');");
+
+        window.runPlaygroundCode = () => {
+            const code = editor.getValue();
+            const lang = document.getElementById('langSelector').value;
+            const out = document.getElementById('terminalOutput');
+            out.innerHTML = '> جاري التشغيل...';
+            
+            if (lang === 'javascript') {
+                let logs = []; const origLog = console.log;
+                console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
+                try { new Function(code)(); console.log = origLog; out.innerHTML = logs.length ? logs.map(l => `> ${l}`).join('<br>') : '> Done.'; }
+                catch (e) { console.log = origLog; out.innerHTML = `<span style="color:#FB7185;">> Error: ${e.message}</span>`; }
+            } else if (lang === 'python') {
+                const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
+                const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
+                fetch('https://ce.judge0.com/submissions?base64_encoded=true&wait=true', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source_code: encodeB64(code), language_id: 71 })
+                }).then(res => res.json()).then(data => {
+                    let txt = '';
+                    if(data.stdout) txt += decodeB64(data.stdout);
+                    if(data.stderr) txt += `<span style="color:#FB7185;">${decodeB64(data.stderr)}</span>`;
+                    if(data.compile_output) txt += `<span style="color:#FB7185;">${decodeB64(data.compile_output)}</span>`;
+                    out.innerHTML = txt || '> Done.';
+                }).catch(err => { out.innerHTML = `<span style="color:#FB7185;">> Network Error: ${err.message}</span>`; });
+            }
+        };
     </script>
 </body>
 </html>
