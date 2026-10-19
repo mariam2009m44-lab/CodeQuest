@@ -222,3 +222,51 @@ button:active, .btn:active, .mobile-nav-item:active {
         padding-bottom: 100px !important;
     }
 }
+
+
+/* =========================================
+   Fix Dashboard Layout
+========================================= */
+
+/* =========================================
+   إصلاحات شاملة لتصميم الموبايل (Dashboard & Sidebar)
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. إصلاح القائمة الجانبية (Sidebar) */
+    .sidebar {
+        /* إضافة مسافة سفلية كبيرة عشان زرار الخروج ميتغطاش بالشريط السفلي */
+        padding-bottom: 100px !important; 
+        height: 100vh !important;
+        overflow-y: auto !important;
+        /* رفع الـ z-index عشان القائمة تظهر فوق الشريط السفلي */
+        z-index: 10000 !important; 
+    }
+
+    /* 2. تقليل المسافات الكبيرة جداً بين عناصر القائمة الجانبية */
+    .sidebar a, .sidebar .nav-item, .sidebar li {
+        margin-bottom: 5px !important;
+        padding-top: 10px !important;
+        padding-bottom: 10px !important;
+    }
+
+    /* 3. إضافة مسافة في أسفل المحتوى الأساسي عشان الشريط السفلي ميغطيهوش */
+    main, .main-content, .dashboard-container {
+        padding-bottom: 100px !important;
+    }
+
+    /* 4. تحسين شكل الكروت العلوية (Header) في الداشبورد */
+    .dashboard-header {
+        flex-direction: column !important;
+        gap: 15px !important;
+        text-align: center !important;
+        padding: 15px !important;
+    }
+
+    /* 5. تكبير أيقونات الشريط السفلي شوية وتظبيط المسافات */
+    .mobile-bottom-nav {
+        padding: 0 10px !important;
+    }
+    .mobile-nav-item {
+        gap: 2px !important;
+    }
+}
