@@ -5,31 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول | CodeQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #F8FAFC; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .auth-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 420px; text-align: center; border: 1px solid #E2E8F0; }
+        .logo { font-size: 1.8rem; font-weight: 900; color: #4F46E5; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .auth-card h2 { color: #1E293B; margin-bottom: 30px; font-size: 1.6rem; font-weight: 800; }
+        .form-group { margin-bottom: 20px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #64748B; font-size: 0.9rem; }
+        .input-field { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid #D1D5DB; font-size: 1rem; outline: none; transition: 0.2s; background: #F9FAFB; }
+        .input-field:focus { border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); background: white; }
+        .btn-submit { width: 100%; padding: 14px; background: #4F46E5; color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-submit:hover { background: #4338CA; transform: translateY(-2px); }
+        .auth-links { margin-top: 25px; font-size: 0.95rem; color: #64748B; }
+        .auth-links a { color: #4F46E5; font-weight: 700; cursor: pointer; text-decoration: none; }
+        .back-home { display: inline-block; margin-top: 20px; color: #64748B; font-size: 0.9rem; text-decoration: none; }
+        .back-home:hover { color: #1E293B; }
+    </style>
 </head>
-<body class="light-mode">
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2>أهلاً بعودتك!</h2>
-            <form id="loginForm">
-                <div class="input-group">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" required placeholder="example@email.com">
-                </div>
-                <div class="input-group">
-                    <label>كلمة المرور</label>
-                    <input type="password" required placeholder="********">
-                </div>
-                <button type="submit" class="btn-full">دخول إلى عالم كودي</button>
-            </form>
-            <p style="margin-top: 20px; font-size: 0.9rem;">ليس لديك حساب؟ <a href="signup.html" style="color: var(--light-primary); font-weight: bold;">سجل الآن</a></p>
+<body>
+    <div class="auth-card">
+        <div class="logo"><i class="ri-code-box-fill"></i> CodeQuest</div>
+        <h2>أهلاً بعودتك!</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="email" class="input-field" placeholder="example@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="password" class="input-field" placeholder="********" required>
+            </div>
+            <button type="submit" class="btn-submit">دخول إلى عالم كودي</button>
+        </form>
+        <div class="auth-links">
+            ليس لديك حساب؟ <a href="signup.html">سجل الآن</a>
         </div>
+        <a href="index.html" class="back-home">← العودة للرئيسية</a>
     </div>
     <script>
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            localStorage.setItem('cq_user', 'بطل');
-            window.location.href = 'dashboard.html';
+            const btn = document.querySelector('.btn-submit');
+            btn.innerText = 'جاري الدخول...';
+            setTimeout(() => {
+                localStorage.setItem('cq_user', 'بطل');
+                window.location.href = 'dashboard.html';
+            }, 800);
         });
     </script>
 </body>
