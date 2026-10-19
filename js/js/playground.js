@@ -1,198 +1,179 @@
-
 import { App } from './app.js';
 
-const output = document.getElementById('terminalOutput');
-const runButton = document.getElementById('runButton');
-const clearButton = document.getElementById('clearButton');
+const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+    lineNumbers: true,
+    theme: 'dracula',
+    mode: 'javascript',
+    autoCloseBrackets: true,
+    indentUnit: 4,
+    tabSize: 4
+});
 
-let editor;
+editor.setValue("console.log('Hello Cody Academy!');");
 
-function formatValue(value) {
-  if (typeof value === 'string') return value;
+App.init().catch(err => console.log("Auth status:", err.message));
 
-  if (value instanceof Error) {
-    return value.stack || value.message;
-  }
+document.getElementById('langSelector').addEventListener('change', (e) => {
+    const lang = e.target.value;
+    const fileName = document.getElementById('fileName');
+    const output = document.getElementById('terminalOutput');
+    
+    output.textContent = '> جاهز للتشغيل...';
 
-  try {
-    const result = JSON.stringify(value, null, 2);
-    return result === undefined ? String(value) : result;
-  } catch {
-    return String(value);
-  }
-}
-
-function showOutput(message) {
-  output.textContent += message + '\n';
-}
-
-function runCode() {
-  if (!editor || runButton.disabled) return;
-
-  const code = editor.getValue();
-
-  output.textContent = 'جارٍ التشغيل...\n';
-  runButton.disabled = true;
-
-  const frame = document.createElement('iframe');
-  frame.setAttribute('sandbox', 'allow-scripts');
-  frame.setAttribute('title', 'JavaScript code runner');
-  frame.style.display = 'none';
-
-  let finished = false;
-  let timeoutId;
-
-  function finish() {
-    if (finished) return;
-
-    finished = true;
-    clearTimeout(timeoutId);
-    window.removeEventListener('message', onMessage);
-    frame.remove();
-    runButton.disabled = false;
-
-    if (!output.textContent.trim() ||
-        output.textContent === 'جارٍ التشغيل...\n') {
-      output.textContent = 'تم التنفيذ، ولم يظهر أي ناتج.';
+    if (lang === 'javascript') {
+        editor.setOption('mode', 'javascript');
+        fileName.textContent = 'main.js';
+        editor.setValue("console.log('Hello Cody Academy!');");
+    } else if (lang === 'python') {
+        editor.setOption('mode', 'python');
+        fileName.textContent = 'main.py';
+        editor.setValue("print('Hello Cody Academy!')");
+    } else if (lang === 'cpp') {
+        editor.setOption('mode', 'text/x-c++src');
+        fileName.textContent = 'main.cpp';
+        editor.setValue("#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << \"Hello Cody Academy!\" << endl;\n    return 0;\n}");
     }
-  }
+});
 
-  function onMessage(event) {
-    if (event.source !== frame.contentWindow) return;
+document.getElementById('runBtn').addEventListener('click', async () => {
+    const lang = document.getElementById('langSelector').value;
+    const code = editor.getValue();
+    const output = document.getElementById('terminalOutput');
+    const runBtn = document.getElementById('runBtn');
 
-    const data = event.data;
-
-    if (!data || data.source !== 'cody-playground') return;
-    if (finished) return;
-
-    if (data.type === 'log') {
-      if (output.textContent === 'جارٍ التشغيل...\n') {
-        output.textContent = '';
-      }
-
-      showOutput(data.text);
+    if (!code.trim()) {
+        output.textContent = '> اكتب الكود أولاً.';
+        return;
     }
 
-    if (data.type === 'error') {
-      if (output.textContent === 'جارٍ التشغيل...\n') {
-        output.textContent = '';
-      }
-
-      showOutput('خطأ: ' + data.text);
-    }
-
-    if (data.type === 'done') {
-      finish();
-    }
-  }
-
-  window.addEventListener('message', onMessage);
-
-  const source = `<!doctype html>
-<html>
-<body>
-<script>
-  const send = (type, text) => {
-    parent.postMessage({
-      source: 'cody-playground',
-      type,
-      text: String(text)
-    }, '*');
-  };
-
-  function format(value) {
-    if (typeof value === 'string') return value;
+    runBtn.disabled = true;
+    output.textContent = '> جاري التشغيل...';
 
     try {
-      const result = JSON.stringify(value);
-      return result === undefined ? String(value) : result;
-    } catch {
-      return String(value);
-    }
-  }
-
-  console.log = (...args) => {
-    send('log', args.map(format).join(' '));
-  };
-
-  console.error = (...args) => {
-    send('error', args.map(format).join(' '));
-  };
-
-  console.warn = (...args) => {
-    send('log', 'تحذير: ' + args.map(format).join(' '));
-  };
-
-  window.onerror = (message) => {
-    send('error', message);
-    return true;
-  };
-
-  try {
-    const userCode = ${JSON.stringify(code)};
-    new Function('"use strict";\\n' + userCode)();
-  } catch (error) {
-    send('error', error && error.message ? error.message : error);
-  } finally {
-    send('done', '');
-  }
-<\/script>
-</body>
-</html>`;
-
-  document.body.appendChild(frame);
-  frame.srcdoc = source;
-
-  // تنبيه عند تجاوز الوقت المحدد.
-  // هذا المؤقت ليس ضمانًا لإيقاف كل حلقة لا نهائية.
-  timeoutId = setTimeout(() => {
-    if (!finished) {
-      if (output.textContent === 'جارٍ التشغيل...\n') {
-        output.textContent = '';
-      }
-
-      showOutput('انتهى الوقت المحدد. قد تحتاجين إلى إعادة تحميل الصفحة.');
-      finish();
-    }
-  }, 3000);
-}
-
-async function initPlayground() {
-  try {
-    // app.js يتولى التهيئة تلقائيًا في المشروع الحالي.
-    // ننتظر تهيئة المستخدم إذا كانت الصفحة تعتمد عليها.
-    if (window.CodeMirror) {
-      editor = CodeMirror.fromTextArea(
-        document.getElementById('codeEditor'),
-        {
-          lineNumbers: true,
-          theme: 'dracula',
-          mode: 'javascript',
-          tabSize: 2,
-          indentUnit: 2,
-          lineWrapping: true
+        if (lang === 'javascript') {
+            runJavaScript(code, output);
+        } else if (lang === 'python') {
+            await runPython(code, output);
+        } else if (lang === 'cpp') {
+            await runCpp(code, output);
         }
-      );
-
-      editor.setValue(
-        "console.log('Hello Cody Academy!');\n" +
-        "console.log({ name: 'Ali', age: 10 });\n" +
-        "console.log([1, 2, 3]);"
-      );
-
-      runButton.addEventListener('click', runCode);
-
-      clearButton.addEventListener('click', () => {
-        output.textContent = '';
-      });
-    } else {
-      output.textContent = 'تعذر تحميل محرر الأكواد. تحققي من اتصال الإنترنت.';
-      runButton.disabled = true;
+    } catch (error) {
+        output.textContent = `> خطأ: ${error.message}`;
+    } finally {
+        runBtn.disabled = false;
     }
-  } catch (error) {
-    console.error('Playground initialization error:', error);
-    output.textContent = 'حدث خطأ أثناء تجهيز المحرر.';
-  }
+});
+
+function runJavaScript(code, outputElement) {
+    const frame = document.createElement('iframe');
+    frame.setAttribute('sandbox', 'allow-scripts');
+    frame.style.display = 'none';
+
+    const source = `
+        <!doctype html>
+        <html>
+        <body>
+        <script>
+            const send = (type, text) => {
+                parent.postMessage({ source: 'cody-playground', type, text: String(text) }, '*');
+            };
+
+            const format = (value) => {
+                if (typeof value === 'string') return value;
+                try { return JSON.stringify(value); }
+                catch { return String(value); }
+            };
+
+            console.log = (...args) => send('log', args.map(format).join(' '));
+            console.error = (...args) => send('error', args.map(format).join(' '));
+            window.onerror = (message) => send('error', message);
+
+            try {
+                const code = ${JSON.stringify(code)};
+                new Function('"use strict";\\n' + code)();
+                send('done', '');
+            } catch (error) {
+                send('error', error.message);
+                send('done', '');
+            }
+        <\/script>
+        </body>
+        </html>
+    `;
+
+    const listener = (event) => {
+        if (event.source !== frame.contentWindow) return;
+        if (event.data?.source !== 'cody-playground') return;
+
+        if (event.data.type === 'log') {
+            if (outputElement.textContent === '> جاري التشغيل...') outputElement.textContent = '';
+            outputElement.textContent += '> ' + event.data.text + '\n';
+        }
+        if (event.data.type === 'error') {
+            if (outputElement.textContent === '> جاري التشغيل...') outputElement.textContent = '';
+            outputElement.textContent += '> خطأ: ' + event.data.text + '\n';
+        }
+        if (event.data.type === 'done') {
+            window.removeEventListener('message', listener);
+            frame.remove();
+            if (!outputElement.textContent.trim() || outputElement.textContent === '> جاري التشغيل...') {
+                outputElement.textContent = '> تم التنفيذ بدون مخرجات.';
+            }
+        }
+    };
+
+    window.addEventListener('message', listener);
+    document.body.appendChild(frame);
+    frame.srcdoc = source;
+
+    setTimeout(() => {
+        if (document.body.contains(frame)) {
+            window.removeEventListener('message', listener);
+            frame.remove();
+            outputElement.textContent += '\n> خطأ: انتهى الوقت المسموح.';
+        }
+    }, 3000);
 }
 
-initPlayground();
+async function runPython(code, outputElement) {
+    if (!window.pyodide) {
+        outputElement.textContent = "> جاري تحميل بيئة بايثون لأول مرة (قد يستغرق 10 ثواني)...";
+        window.pyodide = await loadPyodide();
+    }
+    
+    let finalOutput = "";
+    window.pyodide.setStdout({ batched: (str) => { finalOutput += str + "\n"; } });
+    window.pyodide.setStderr({ batched: (str) => { finalOutput += "Error: " + str + "\n"; } });
+    
+    try {
+        await window.pyodide.runPythonAsync(code);
+        outputElement.textContent = finalOutput || "> تم التنفيذ بدون مخرجات.";
+    } catch (e) {
+        outputElement.textContent = finalOutput + `\n> خطأ: ${e.message}`;
+    }
+}
+
+async function runCpp(code, outputElement) {
+    const encodeB64 = (str) => btoa(unescape(encodeURIComponent(str)));
+    const decodeB64 = (str) => decodeURIComponent(escape(atob(str)));
+
+    const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent('https://ce.judge0.com/submissions?base64_encoded=true&wait=true')}`;
+    
+    try {
+        const response = await fetch(proxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ source_code: encodeB64(code), language_id: 54 })
+        });
+        
+        const data = await response.json();
+        let out = "";
+        if (data.stdout) out += decodeB64(data.stdout);
+        if (data.stderr) out += decodeB64(data.stderr);
+        if (data.compile_output) out += decodeB64(data.compile_output);
+        
+        outputElement.textContent = out || "> تم التنفيذ بدون مخرجات.";
+    } catch (error) {
+        outputElement.textContent = `> خطأ في الاتصال بخدمة C++: ${error.message}`;
+    }
+}
