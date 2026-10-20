@@ -29,6 +29,11 @@ function showToast(message, type = "info") {
   }, 3500);
 }
 
+function setText(selector, value) {
+  const element = document.querySelector(selector);
+  if (element) element.textContent = String(value);
+}
+
 function setProgress(selector, value) {
   const progress = Math.min(100, Number(value) || 0);
   const bar = document.querySelector(selector);
@@ -115,9 +120,15 @@ export const App = {
   },
 
   updateUI(data = {}) {
-    document.querySelectorAll(".js-user-name").forEach(el => el.textContent = this.user);
-    document.querySelectorAll(".js-user-xp").forEach(el => el.textContent = this.xp);
-    document.querySelectorAll(".js-user-coins").forEach(el => el.textContent = this.coins);
+    const level = Math.floor(this.xp / 100) + 1;
+
+    setText(".js-user-name", this.user);
+    setText(".js-user-xp", this.xp);
+    setText(".js-user-coins", this.coins);
+    setText(".js-user-level", level);
+    setText(".js-completed-lessons", this.toSafeNumber(data.completedLessons));
+    setText(".js-completed-projects", this.toSafeNumber(data.completedProjects));
+    setText(".js-learning-streak", this.toSafeNumber(data.streak));
 
     const progress = data.languageProgress || {};
     if (Object.prototype.hasOwnProperty.call(progress, "python")) {
