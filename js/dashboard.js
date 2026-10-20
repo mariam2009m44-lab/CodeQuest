@@ -1,49 +1,118 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-// تأكد إن إعدادات Firebase موجودة (لو مش موجودة، ممكن تضيفها هنا)
-const firebaseConfig = window.firebaseConfig || {
-    // حط الـ config بتاعك هنا لو مش متسجل
-};
+import { auth, db } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import {
+  doc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+const select = selector => document.querySelector(selector);
 
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-            const nameEl = document.getElementById('userNameDisplay');
-            if (nameEl) {
-                nameEl.innerText = user.displayName || user.email.split('@')[0] || "بطل CodeQuest";
-            }
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
+function safeNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : 0;
+}
 
-        
-    // تحديث اسم المستخدم في الواجهة
-    const userNameEl = document.getElementById('user-name-display');
-    if (userNameEl) {
-        userNameEl.innerText = user.displayName || "بطل CodeQuest";
+function setText(selector, value) {
+  const element = select(selector);
+  if (element) element.textContent = String(value);
+}
+
+function setProgress(selector, value) {
+  const progress = Math.min(100, safeNumber(value));
+  const bar = select(selector);
+
+  if (!bar) return;
+
+  const fill = bar.querySelector(".course-progress-fill");
+
+  if (fill) {
+    fill.style.width = `${progress}%`;
+  }
+
+  bar.setAttribute("aria-valuenow", String(progress));
+
+  const card = bar.closest(".course-card");
+  const label = card?.querySelector(
+    ".course-progress-info strong"
+  );
+
+  if (label) label.textContent = `${progress}%`;
+}
+
+function updateDashboard(data) {
+  const xp = safeNumber(data.xp);
+  const level = Math.floor(xp / 100) + 1;
+
+  setText(".js-user-name", data.displayName || "بطل البرمجة");
+  setText(".js-user-xp", xp);
+  setText(".js-user-coins", safeNumber(data.coins));
+  setText(".js-user-level", level);
+
+  setText(
+    ".js-completed-lessons",
+    safeNumber(data.completedLessons)
+  );
+
+  setText(
+    ".js-completed-projects",
+    safeNumber(data.completedProjects)
+  );
+
+  setText(
+    ".js-learning-streak",
+    safeNumber(data.streak)
+  );
+
+  // Update progress only when saved progress data exists.
+  const progress = data.languageProgress || {};
+
+  if (Object.prototype.hasOwnProperty.call(progress, "python")) {
+    setProgress(
+      ".course-python .course-progress",
+      progress.python
+    );
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(progress, "javascript")
+  ) {
+    setProgress(
+      ".course-javascript .course-progress",
+      progress.javascript
+    );
+  }
+
+  if (Object.prototype.hasOwnProperty.call(progress, "cpp")) {
+    setProgress(
+      ".course-cpp .course-progress",
+      progress.cpp
+    );
+  }
+}
+
+let unsubscribeProfile = null;
+
+onAuthStateChanged(auth, user => {
+  unsubscribeProfile?.();
+  unsubscribeProfile = null;
+
+  if (!user) return;
+
+  const profileRef = doc(db, "users", user.uid);
+
+  unsubscribeProfile = onSnapshot(
+    profileRef,
+    snapshot => {
+      if (!snapshot.exists()) {
+        console.warn("User profile was not found.");
+        return;
+      }
+
+      updateDashboard(snapshot.data());
+    },
+    error => {
+      console.error("Dashboard data error:", error);
     }
-    
-                if (docSnap.exists()) {
-            const data = docSnap.data();
-            // تحديث الأرقام في الواجهة
-            document.querySelector('.stat-item:nth-child(1) .stat-value').innerText = data.streak || 0;
-            document.querySelector('.stat-item:nth-child(2) .stat-value').innerText = data.completedLessons || 0;
-            
-            const xp = data.xp || 0;
-            const level = Math.floor(xp / 100) + 1;
-            const nextLevelXp = level * 100;
-            const xpPercentage = (xp / nextLevelXp) * 100;
-
-            document.querySelector('.xp-header span:nth-child(1)').innerText = `المستوى ${level}`;
-            document.querySelector('.xp-header span:nth-child(2)').innerText = `${xp} / ${nextLevelXp} XP`;
-
-            setTimeout(() => {
-                document.getElementById('xp-progress-bar').style.width = `${xpPercentage}%`;
-            }, 500);
-        }
-    }
+  );
 });
