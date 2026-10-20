@@ -2,830 +2,880 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F7F5FF">
+  <meta name="description" content="Cody Academy — تعلّم البرمجة والعب واكتشف عالم الإبداع خطوة بخطوة.">
+  <title>مغامرتي البرمجية | Cody Academy</title>
 
-    <meta name="theme-color" content="#070B14">
-    <meta name="description" content="Cody Coding Academy — تعلّم البرمجة من الصفر، وطبّق مهاراتك من خلال الدروس والتحديات والمشروعات التفاعلية.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=3001">
 
-    <title>لوحة التعلم | Cody Coding Academy</title>
+  <style>
+    :root {
+      --kid-bg: #F7F5FF;
+      --kid-card: #FFFFFF;
+      --kid-ink: #282447;
+      --kid-muted: #77738F;
+      --kid-purple: #7955E8;
+      --kid-purple-light: #EEE8FF;
+      --kid-cyan: #36BFE5;
+      --kid-yellow: #FFD66B;
+      --kid-green: #43C99A;
+      --kid-pink: #FF8FB8;
+      --kid-border: #ECE8F7;
+      --kid-shadow: 0 12px 35px rgba(61, 43, 112, .07);
+      --kid-radius: 24px;
+    }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    * { box-sizing: border-box; }
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-    >
+    body {
+      margin: 0;
+      background: var(--kid-bg);
+      color: var(--kid-ink);
+      font-family: "Cairo", sans-serif;
+      line-height: 1.7;
+    }
 
-    <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
-        rel="stylesheet"
-    >
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
 
-    <link rel="stylesheet" href="css/style.css?v=3000">
+    .kid-app {
+      display: grid;
+      grid-template-columns: 245px minmax(0, 1fr);
+      min-height: 100vh;
+    }
 
-    <style>
-        /* Dashboard-specific components */
+    .kid-sidebar {
+      background: #fff;
+      border-left: 1px solid var(--kid-border);
+      padding: 25px 17px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
 
-        .dashboard-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
+    .kid-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px;
+      font-weight: 900;
+      font-size: 1.12rem;
+    }
 
-        .dashboard-heading h1 {
-            font-size: clamp(1.5rem, 3vw, 2rem);
-            font-weight: 900;
-            line-height: 1.4;
-        }
+    .kid-logo-icon {
+      width: 47px;
+      height: 47px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #8B6BFA, #5BBAF5);
+      border-radius: 17px;
+      color: white;
+      font-size: 1.8rem;
+      box-shadow: 0 7px 17px #8b6bfa38;
+    }
 
-        .dashboard-heading p {
-            color: var(--dark-muted);
-            margin-top: 4px;
-        }
+    .kid-nav-label {
+      padding: 0 12px;
+      margin-bottom: 8px;
+      color: #A09BB5;
+      font-size: .77rem;
+      font-weight: 800;
+    }
 
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--dark-cyan);
-            font-weight: 700;
-            font-size: 0.88rem;
-            margin-bottom: 10px;
-        }
+    .kid-nav {
+      display: grid;
+      gap: 7px;
+    }
 
-        .hero-layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1.7fr) minmax(240px, 1fr);
-            gap: 20px;
-        }
+    .kid-nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 15px;
+      color: var(--kid-muted);
+      font-size: .9rem;
+      font-weight: 750;
+      transition: background .18s, transform .18s;
+    }
 
-        .welcome-card {
-            position: relative;
-            overflow: hidden;
-            isolation: isolate;
-            min-height: 270px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 14px;
-            background:
-                radial-gradient(
-                    circle at 90% 10%,
-                    rgba(34, 211, 238, 0.14),
-                    transparent 35%
-                ),
-                linear-gradient(
-                    135deg,
-                    rgba(139, 92, 246, 0.17),
-                    rgba(17, 24, 39, 0.88) 65%
-                );
-        }
+    .kid-nav a i { font-size: 1.25rem; }
 
-        .welcome-card::after {
-            content: "</>";
-            position: absolute;
-            z-index: -1;
-            left: 5%;
-            bottom: -35px;
-            font-size: clamp(7rem, 15vw, 12rem);
-            line-height: 1;
-            font-weight: 900;
-            color: rgba(34, 211, 238, 0.055);
-            direction: ltr;
-        }
+    .kid-nav a:hover {
+      background: #F6F2FF;
+      transform: translateX(-2px);
+    }
 
-        .welcome-card h2 {
-            max-width: 600px;
-            font-size: clamp(1.65rem, 3.5vw, 2.5rem);
-            font-weight: 900;
-            line-height: 1.4;
-        }
+    .kid-nav a.active {
+      background: var(--kid-purple-light);
+      color: var(--kid-purple);
+    }
 
-        .welcome-card p {
-            max-width: 550px;
-            color: var(--dark-muted);
-        }
+    .sidebar-mascot {
+      margin-top: auto;
+      text-align: center;
+      padding: 20px 14px;
+      border-radius: 23px;
+      background: linear-gradient(145deg, #F0E9FF, #E9F7FF);
+    }
 
-        .hero-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
+    .sidebar-mascot .robot {
+      font-size: 3rem;
+      line-height: 1.5;
+      display: block;
+    }
 
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-height: 46px;
-            padding: 11px 18px;
-            color: var(--dark-text);
-            background: rgba(255, 255, 255, 0.045);
-            border: 1px solid var(--dark-border);
-            border-radius: var(--radius-btn);
-            font-weight: 700;
-            transition: background 180ms ease;
-        }
+    .sidebar-mascot strong {
+      display: block;
+      font-size: .95rem;
+    }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.09);
-        }
+    .sidebar-mascot p {
+      margin: 5px 0 0;
+      color: var(--kid-muted);
+      font-size: .78rem;
+    }
 
-        .daily-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 22px;
-            background: linear-gradient(
-                160deg,
-                rgba(251, 191, 36, 0.075),
-                rgba(17, 24, 39, 0.7) 65%
-            );
-        }
+    .kid-main {
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px clamp(16px, 3vw, 40px) 42px;
+      display: flex;
+      flex-direction: column;
+      gap: 27px;
+      min-width: 0;
+    }
 
-        .daily-card h3,
-        .section-heading h2 {
-            font-size: 1.15rem;
-            font-weight: 800;
-        }
+    .kid-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
 
-        .daily-icon {
-            display: grid;
-            place-items: center;
-            width: 52px;
-            height: 52px;
-            margin-bottom: 14px;
-            border-radius: 16px;
-            background: rgba(251, 191, 36, 0.1);
-            color: var(--dark-gold);
-            font-size: 1.7rem;
-        }
+    .kid-greeting {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
 
-        .daily-card p {
-            color: var(--dark-muted);
-            font-size: 0.92rem;
-            margin-top: 8px;
-        }
+    .kid-avatar {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      background: #EAE4FF;
+      border-radius: 18px;
+      font-size: 1.7rem;
+    }
 
-        .text-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            width: fit-content;
-            color: var(--dark-cyan);
-            font-weight: 750;
-        }
+    .kid-greeting h1 {
+      margin: 0;
+      font-size: clamp(1.1rem, 2vw, 1.45rem);
+      font-weight: 900;
+    }
 
-        .section-block {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+    .kid-greeting p {
+      margin: 2px 0 0;
+      color: var(--kid-muted);
+      font-size: .83rem;
+    }
 
-        .section-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+    .kid-wallet {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
 
-        .section-heading p {
-            color: var(--dark-muted);
-            font-size: 0.9rem;
-            margin-top: 3px;
-        }
+    .kid-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 13px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--kid-border);
+      font-size: .84rem;
+      font-weight: 850;
+    }
 
-        .stat-box-info h2 {
-            font-variant-numeric: tabular-nums;
-        }
+    .kid-pill i { font-size: 1.15rem; }
+    .kid-pill.coins i { color: #E6A91A; }
+    .kid-pill.xp i { color: var(--kid-purple); }
 
-        .learning-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 18px;
-        }
+    .kid-hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(150px, .55fr);
+      align-items: center;
+      gap: 15px;
+      padding: clamp(24px, 4vw, 42px);
+      border-radius: 30px;
+      background: linear-gradient(120deg, #E9E2FF 0%, #E5F5FF 58%, #FFF0F6 100%);
+      border: 1px solid #E8E1FC;
+    }
 
-        .learning-card {
-            display: flex;
-            flex-direction: column;
-            gap: 17px;
-            min-width: 0;
-            transition: transform 180ms ease, border-color 180ms ease;
-        }
+    .kid-hero::before {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: .3;
+      left: -80px;
+      top: -100px;
+    }
 
-        .learning-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(34, 211, 238, 0.25);
-        }
+    .kid-hero-copy, .kid-hero-art {
+      position: relative;
+      z-index: 1;
+    }
 
-        .language-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
+    .kid-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: 100px;
+      background: #fff;
+      color: var(--kid-purple);
+      font-size: .78rem;
+      font-weight: 850;
+    }
 
-        .language-symbol {
-            display: grid;
-            place-items: center;
-            width: 50px;
-            height: 50px;
-            border-radius: 15px;
-            font-size: 1.5rem;
-            font-weight: 900;
-            direction: ltr;
-        }
+    .kid-hero h2 {
+      margin: 13px 0 8px;
+      max-width: 560px;
+      font-size: clamp(1.65rem, 3.5vw, 2.7rem);
+      font-weight: 900;
+      line-height: 1.4;
+    }
 
-        .language-tag {
-            color: var(--dark-muted);
-            background: rgba(255, 255, 255, 0.045);
-            border: 1px solid var(--dark-border);
-            border-radius: var(--radius-pill);
-            padding: 5px 10px;
-            font-size: 0.76rem;
-            white-space: nowrap;
-        }
+    .kid-hero p {
+      max-width: 510px;
+      margin: 0;
+      color: #68627F;
+      font-size: .95rem;
+    }
 
-        .learning-card h3 {
-            font-size: 1.08rem;
-            font-weight: 800;
-        }
+    .kid-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 23px;
+    }
 
-        .learning-card > p {
-            min-height: 48px;
-            color: var(--dark-muted);
-            font-size: 0.9rem;
-        }
+    .kid-btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 11px 18px;
+      border-radius: 14px;
+      font-weight: 850;
+      font-size: .88rem;
+      transition: transform .18s, box-shadow .18s;
+    }
 
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 8px;
-            font-size: 0.82rem;
-        }
+    .kid-btn:hover { transform: translateY(-2px); }
 
-        .progress-label span:first-child {
-            color: var(--dark-muted);
-        }
+    .kid-btn-primary {
+      background: var(--kid-purple);
+      color: #fff;
+      box-shadow: 0 7px 18px #7955e832;
+    }
 
-        .progress-label span:last-child {
-            color: var(--dark-text);
-            font-weight: 750;
-        }
+    .kid-btn-white {
+      background: #fff;
+      color: var(--kid-ink);
+      border: 1px solid #E6E0F6;
+    }
 
-        .course-action {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin-top: auto;
-            padding-top: 14px;
-            border-top: 1px solid var(--dark-border);
-            font-size: 0.88rem;
-            font-weight: 750;
-        }
+    .kid-hero-art {
+      display: grid;
+      place-items: center;
+      min-height: 190px;
+    }
 
-        .course-action i {
-            font-size: 1.15rem;
-        }
+    .kid-robot {
+      display: grid;
+      place-items: center;
+      width: clamp(135px, 17vw, 205px);
+      aspect-ratio: 1;
+      border-radius: 38% 42% 35% 43%;
+      background: #fff;
+      border: 8px solid #FFFFFFA8;
+      box-shadow: 0 22px 40px #6d5bc326;
+      font-size: clamp(5rem, 9vw, 8rem);
+      transform: rotate(-4deg);
+    }
 
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-        }
+    .kid-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-        .quick-card {
-            min-height: 165px;
-            display: flex;
-            align-items: flex-start;
-            text-align: right;
-            gap: 0;
-        }
+    .kid-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-        .quick-card h3 {
-            font-size: 1rem;
-            font-weight: 800;
-            margin-bottom: 5px;
-        }
+    .kid-section-head h2 {
+      margin: 0;
+      font-size: 1.18rem;
+      font-weight: 900;
+    }
 
-        .quick-card p {
-            color: var(--dark-muted);
-            font-size: 0.83rem;
-        }
+    .kid-section-head p {
+      margin: 3px 0 0;
+      color: var(--kid-muted);
+      font-size: .83rem;
+    }
 
-        .dashboard-footer {
-            padding: 15px 0 5px;
-            text-align: center;
-            color: var(--dark-muted);
-            font-size: 0.8rem;
-        }
+    .kid-text-link {
+      color: var(--kid-purple);
+      font-size: .86rem;
+      font-weight: 850;
+    }
 
-        @media (max-width: 1100px) {
-            .hero-layout {
-                grid-template-columns: minmax(0, 1fr);
-            }
+    .kid-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
 
-            .learning-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
+    .kid-stat {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      padding: 19px 16px;
+      border: 1px solid var(--kid-border);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 5px 18px #3d2b7008;
+    }
 
-            .quick-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
+    .kid-stat-icon {
+      flex: 0 0 47px;
+      height: 47px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      font-size: 1.45rem;
+    }
 
-        @media (max-width: 600px) {
-            .dashboard-heading {
-                align-items: flex-start;
-            }
+    .stat-purple { background: #EEE8FF; color: #7955E8; }
+    .stat-yellow { background: #FFF4D4; color: #C38A12; }
+    .stat-green { background: #DFF8ED; color: #20A777; }
+    .stat-blue { background: #E1F5FF; color: #299BC8; }
 
-            .learning-grid,
-            .quick-grid {
-                grid-template-columns: minmax(0, 1fr);
-            }
+    .kid-stat-label {
+      color: var(--kid-muted);
+      font-size: .76rem;
+      font-weight: 700;
+    }
 
-            .welcome-card {
-                min-height: 280px;
-            }
+    .kid-stat-value {
+      display: block;
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1.5;
+    }
 
-            .quick-card {
-                min-height: auto;
-            }
-        }
+    .kid-courses {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
 
-        @media (prefers-reduced-motion: reduce) {
-            .learning-card,
-            .btn-secondary {
-                transition: none;
-            }
-        }
-    </style>
+    .kid-course {
+      min-width: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      border-radius: 22px;
+      border: 1px solid var(--kid-border);
+      background: #fff;
+      box-shadow: 0 6px 22px #3d2b7007;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .kid-course:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--kid-shadow);
+    }
+
+    .kid-course-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .kid-course-icon {
+      width: 51px;
+      height: 51px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      font-size: 1.6rem;
+      font-weight: 900;
+    }
+
+    .python-icon { color: #287DB3; background: #E2F4FF; }
+    .js-icon { color: #9A7511; background: #FFF3C6; }
+    .cpp-icon { color: #7654D7; background: #EEE8FF; }
+
+    .kid-tag {
+      border-radius: 100px;
+      padding: 5px 10px;
+      background: #F6F3FC;
+      color: #77718E;
+      font-size: .72rem;
+      font-weight: 800;
+    }
+
+    .kid-course h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 900;
+    }
+
+    .kid-course p {
+      margin: 5px 0 0;
+      min-height: 51px;
+      color: var(--kid-muted);
+      font-size: .83rem;
+    }
+
+    .kid-progress-info {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: .78rem;
+      font-weight: 800;
+    }
+
+    .kid-progress-info span:first-child { color: var(--kid-muted); }
+
+    .kid-progress {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 100px;
+      background: #F0EDF7;
+    }
+
+    .kid-progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      transition: width .5s ease;
+    }
+
+    .kid-course-action {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid #F0EDF7;
+      color: var(--kid-purple);
+      font-size: .84rem;
+      font-weight: 900;
+    }
+
+    .kid-activities {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .kid-activity {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px;
+      background: #fff;
+      border: 1px solid var(--kid-border);
+      border-radius: 20px;
+      transition: transform .18s;
+    }
+
+    .kid-activity:hover { transform: translateY(-3px); }
+
+    .kid-activity-icon {
+      flex: 0 0 49px;
+      height: 49px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      font-size: 1.5rem;
+    }
+
+    .kid-activity h3 {
+      margin: 0;
+      font-size: .93rem;
+      font-weight: 900;
+    }
+
+    .kid-activity p {
+      margin: 3px 0 0;
+      color: var(--kid-muted);
+      font-size: .76rem;
+    }
+
+    .kid-footer {
+      text-align: center;
+      color: #9892AC;
+      font-size: .78rem;
+      padding-top: 4px;
+    }
+
+    .kid-mobile-nav { display: none; }
+
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid #36BFE5;
+      outline-offset: 4px;
+    }
+
+    @media (max-width: 1150px) {
+      .kid-app { grid-template-columns: 205px minmax(0, 1fr); }
+      .kid-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kid-courses { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kid-activities { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .kid-app { display: block; }
+      .kid-sidebar { display: none; }
+      .kid-main { padding: 18px 15px 100px; gap: 23px; }
+      .kid-hero { grid-template-columns: minmax(0, 1fr); padding: 24px; }
+      .kid-hero-art { min-height: 125px; }
+      .kid-robot { width: 125px; font-size: 5rem; border-width: 5px; }
+      .kid-courses { grid-template-columns: 1fr; }
+      .kid-course p { min-height: auto; }
+      .kid-mobile-nav {
+        position: fixed;
+        z-index: 20;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 2px;
+        padding: 9px 5px calc(9px + env(safe-area-inset-bottom));
+        background: #FFFFFFF5;
+        border-top: 1px solid var(--kid-border);
+        backdrop-filter: blur(15px);
+      }
+      .kid-mobile-nav a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        min-width: 0;
+        color: var(--kid-muted);
+        font-size: .66rem;
+        font-weight: 800;
+      }
+      .kid-mobile-nav i { font-size: 1.35rem; }
+      .kid-mobile-nav a.active { color: var(--kid-purple); }
+    }
+
+    @media (max-width: 390px) {
+      .kid-stats { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .kid-stat { padding: 12px 10px; gap: 8px; }
+      .kid-stat-icon { flex-basis: 37px; height: 37px; font-size: 1.15rem; }
+      .kid-stat-value { font-size: 1.15rem; }
+      .kid-stat-label { font-size: .69rem; }
+      .kid-wallet { width: 100%; }
+      .kid-pill { flex: 1; justify-content: center; }
+      .kid-hero-actions .kid-btn { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
 </head>
 
-<body class="dark-theme">
-    <div class="app-layout">
+<body>
+  <div class="kid-app">
 
-        <!-- Main sidebar -->
-        <aside class="sidebar" aria-label="القائمة الرئيسية">
-            <a class="sidebar-logo" href="dashboard.html" aria-label="Cody Academy - الرئيسية">
-                <i class="ri-robot-2-fill" aria-hidden="true"></i>
-                <span>Cody Academy</span>
+    <aside class="kid-sidebar" aria-label="القائمة الرئيسية">
+      <a class="kid-logo" href="dashboard.html">
+        <span class="kid-logo-icon"><i class="ri-robot-2-fill" aria-hidden="true"></i></span>
+        <span>Cody Academy</span>
+      </a>
+
+      <div>
+        <div class="kid-nav-label">مغامرتك التعليمية</div>
+        <nav class="kid-nav">
+          <a href="dashboard.html" class="active" aria-current="page"><i class="ri-home-5-fill"></i> الرئيسية</a>
+          <a href="languages.html"><i class="ri-map-2-line"></i> مسارات التعلم</a>
+          <a href="playground.html"><i class="ri-code-box-line"></i> محرر الأكواد</a>
+          <a href="games.html"><i class="ri-gamepad-line"></i> الألعاب والتحديات</a>
+          <a href="projects.html"><i class="ri-folder-code-line"></i> مشروعاتي</a>
+          <a href="review.html"><i class="ri-brain-line"></i> مركز المراجعة</a>
+          <a href="achievements.html"><i class="ri-medal-line"></i> إنجازاتي</a>
+          <a href="profile.html"><i class="ri-user-smile-line"></i> شخصيتي</a>
+          <a href="settings.html"><i class="ri-settings-3-line"></i> الإعدادات</a>
+          <a href="#" id="logoutButton"><i class="ri-logout-box-r-line"></i> تسجيل الخروج</a>
+        </nav>
+      </div>
+
+      <div class="sidebar-mascot">
+        <span class="robot" aria-hidden="true">🤖</span>
+        <strong>أنا كودي!</strong>
+        <p>كل يوم فرصة لاكتشاف حاجة جديدة ✨</p>
+      </div>
+    </aside>
+
+    <main class="kid-main">
+      <header class="kid-topbar">
+        <div class="kid-greeting">
+          <div class="kid-avatar" aria-hidden="true">🧑‍🚀</div>
+          <div>
+            <h1>أهلًا يا <span class="js-user-name">بطل البرمجة</span>! 👋</h1>
+            <p>جاهز لمغامرة جديدة النهارده؟</p>
+          </div>
+        </div>
+
+        <div class="kid-wallet" aria-label="رصيدك">
+          <div class="kid-pill coins"><i class="ri-coins-fill"></i><span class="js-user-coins">0</span> نقطة</div>
+          <div class="kid-pill xp"><i class="ri-star-fill"></i><span class="js-user-xp">0</span> XP</div>
+        </div>
+      </header>
+
+      <section class="kid-hero" aria-labelledby="hero-title">
+        <div class="kid-hero-copy">
+          <span class="kid-eyebrow"><i class="ri-sparkling-fill"></i> مكانك للإبداع والاكتشاف</span>
+          <h2 id="hero-title">كل بطل عظيم بدأ بأول سطر كود! 🚀</h2>
+          <p>اتعلم البرمجة باللعب والتجربة، وابنِ أفكارك واحدة واحدة. كودي هنا يشجعك في كل خطوة!</p>
+          <div class="kid-hero-actions">
+            <a class="kid-btn kid-btn-primary" href="languages.html">يلا نبدأ! <i class="ri-arrow-left-line"></i></a>
+            <a class="kid-btn kid-btn-white" href="playground.html"><i class="ri-code-s-slash-line"></i> جرّب الكود</a>
+          </div>
+        </div>
+        <div class="kid-hero-art">
+          <div class="kid-robot" role="img" aria-label="روبوت كودي الودود">🤖</div>
+        </div>
+      </section>
+
+      <section class="kid-section" aria-labelledby="stats-title">
+        <div class="kid-section-head">
+          <div>
+            <h2 id="stats-title">إنجازاتك لحد دلوقتي 🌟</h2>
+            <p>كل خطوة صغيرة بتقربك من هدفك.</p>
+          </div>
+        </div>
+
+        <div class="kid-stats">
+          <article class="kid-stat">
+            <div class="kid-stat-icon stat-green"><i class="ri-checkbox-circle-line"></i></div>
+            <div><span class="kid-stat-label">دروس مكتملة</span><strong class="kid-stat-value js-completed-lessons">0</strong></div>
+          </article>
+          <article class="kid-stat">
+            <div class="kid-stat-icon stat-yellow"><i class="ri-medal-line"></i></div>
+            <div><span class="kid-stat-label">مستواك</span><strong class="kid-stat-value js-user-level">1</strong></div>
+          </article>
+          <article class="kid-stat">
+            <div class="kid-stat-icon stat-purple"><i class="ri-calendar-check-line"></i></div>
+            <div><span class="kid-stat-label">أيام التعلم المتتالية</span><strong class="kid-stat-value js-learning-streak">0</strong></div>
+          </article>
+          <article class="kid-stat">
+            <div class="kid-stat-icon stat-blue"><i class="ri-folder-check-line"></i></div>
+            <div><span class="kid-stat-label">مشروعات مكتملة</span><strong class="kid-stat-value js-completed-projects">0</strong></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="kid-section" aria-labelledby="courses-title">
+        <div class="kid-section-head">
+          <div>
+            <h2 id="courses-title">اختار مغامرتك البرمجية 🎨</h2>
+            <p>كل لغة هتفتح لك باب جديد من الإبداع.</p>
+          </div>
+          <a href="languages.html" class="kid-text-link">كل المسارات ←</a>
+        </div>
+
+        <div class="kid-courses">
+          <a href="languages.html?language=python" class="kid-course">
+            <div class="kid-course-top">
+              <div class="kid-course-icon python-icon">Py</div>
+              <span class="kid-tag">بداية سهلة</span>
+            </div>
+            <div>
+              <h3>مغامرة Python 🐍</h3>
+              <p>خلّي الكمبيوتر يفهم أوامرك وابدأ بصناعة برامجك.</p>
+            </div>
+            <div>
+              <div class="kid-progress-info"><span>تقدمك</span><span class="js-python-progress-label">0%</span></div>
+              <div class="kid-progress" role="progressbar" aria-label="التقدم في Python" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="kid-progress-fill" data-progress="0" style="background:#36BFE5"></div>
+              </div>
+            </div>
+            <div 
+                <span>اكتشف المسار</span>
+                <i class="ri-arrow-left-line" aria-hidden="true"></i>
+              </div>
             </a>
 
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item active" aria-current="page">
-                    <i class="ri-home-5-line" aria-hidden="true"></i>
-                    <span>الرئيسية</span>
-                </a>
-
-                <a href="languages.html" class="nav-item">
-                    <i class="ri-map-2-line" aria-hidden="true"></i>
-                    <span>مسارات التعلم</span>
-                </a>
-
-                <a href="playground.html" class="nav-item">
-                    <i class="ri-code-box-line" aria-hidden="true"></i>
-                    <span>محرر الأكواد</span>
-                </a>
-
-                <a href="games.html" class="nav-item">
-                    <i class="ri-gamepad-line" aria-hidden="true"></i>
-                    <span>الألعاب والتحديات</span>
-                </a>
-
-                <a href="projects.html" class="nav-item">
-                    <i class="ri-folder-code-line" aria-hidden="true"></i>
-                    <span>مشروعاتي</span>
-                </a>
-
-                <a href="review.html" class="nav-item">
-                    <i class="ri-brain-line" aria-hidden="true"></i>
-                    <span>مركز المراجعة</span>
-                </a>
-
-                <a href="achievements.html" class="nav-item">
-                    <i class="ri-medal-line" aria-hidden="true"></i>
-                    <span>إنجازاتي</span>
-                </a>
-
-                <a href="profile.html" class="nav-item">
-                    <i class="ri-user-smile-line" aria-hidden="true"></i>
-                    <span>حسابي</span>
-                </a>
-
-                <a href="settings.html" class="nav-item">
-                    <i class="ri-settings-3-line" aria-hidden="true"></i>
-                    <span>الإعدادات</span>
-                </a>
-
-                <a href="#" class="nav-item logout" id="logoutButton">
-                    <i class="ri-logout-box-r-line" aria-hidden="true"></i>
-                    <span>تسجيل الخروج</span>
-                </a>
-            </nav>
-        </aside>
-
-        <!-- Dashboard content -->
-        <main class="main-content">
-
-            <header class="topbar">
-                <div class="user-info">
-                    <div class="avatar" aria-hidden="true">🤖</div>
-
-                    <div>
-                        <h2 style="font-size: 1.05rem; font-weight: 800;">
-                            أهلًا بك، <span class="js-user-name">متعلم</span>
-                        </h2>
-
-                        <p style="color: var(--dark-muted); font-size: 0.85rem;">
-                            كل سطر كود جديد هو خطوة للأمام.
-                        </p>
-                    </div>
+            <a href="languages.html?language=javascript" class="kid-course">
+              <div class="kid-course-top">
+                <div class="kid-course-icon js-icon">JS</div>
+                <span class="kid-tag">إبداع تفاعلي</span>
+              </div>
+              <div>
+                <h3>مغامرة JavaScript ✨</h3>
+                <p>اصنع صفحات ويب تفاعلية وحوّل أفكارك لتجارب ممتعة.</p>
+              </div>
+              <div>
+                <div class="kid-progress-info">
+                  <span>تقدمك</span>
+                  <span class="js-javascript-progress-label">0%</span>
                 </div>
-
-                <div class="stats" aria-label="رصيدك">
-                    <div class="stat-pill coins" title="رصيد النقاط">
-                        <i class="ri-coins-fill" aria-hidden="true"></i>
-                        <span class="js-user-coins">0</span>
-                        <span>نقطة</span>
-                    </div>
-
-                    <div class="stat-pill xp" title="نقاط الخبرة">
-                        <i class="ri-star-fill" aria-hidden="true"></i>
-                        <span class="js-user-xp">0</span>
-                        <span>XP</span>
-                    </div>
+                <div class="kid-progress" role="progressbar"
+                     aria-label="التقدم في JavaScript"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                  <div class="kid-progress-fill"
+                       data-progress="0"
+                       style="background:#FFD66B"></div>
                 </div>
-            </header>
+              </div>
+              <div class="kid-course-action">
+                <span>اكتشف المسار</span>
+                <i class="ri-arrow-left-line" aria-hidden="true"></i>
+              </div>
+            </a>
 
-            <section class="dashboard-heading" aria-labelledby="dashboardTitle">
-                <div>
-                    <span class="eyebrow">
-                        <i class="ri-sparkling-2-line" aria-hidden="true"></i>
-                        مساحة تعلمك
-                    </span>
-
-                    <h1 id="dashboardTitle">رحلتك في البرمجة تبدأ هنا.</h1>
-
-                    <p>تعلّم، جرّب، اكتشف، وابنِ مشروعاتك خطوة بخطوة.</p>
+            <a href="languages.html?language=cpp" class="kid-course">
+              <div class="kid-course-top">
+                <div class="kid-course-icon cpp-icon">C++</div>
+                <span class="kid-tag">تحدي جديد</span>
+              </div>
+              <div>
+                <h3>مغامرة C++ 🚀</h3>
+                <p>اكتشف عالم الخوارزميات وحل المشكلات بطريقة ذكية.</p>
+              </div>
+              <div>
+                <div class="kid-progress-info">
+                  <span>تقدمك</span>
+                  <span class="js-cpp-progress-label">0%</span>
                 </div>
-            </section>
-
-            <!-- Welcome and daily goal -->
-            <section class="hero-layout" aria-label="متابعة التعلم">
-
-                <article class="glass-card welcome-card">
-                    <span class="eyebrow">
-                        <i class="ri-rocket-2-line" aria-hidden="true"></i>
-                        مستعد للخطوة التالية؟
-                    </span>
-
-                    <h2>أفكارك تستحق أن تتحول إلى كود.</h2>
-
-                    <p>
-                        كمّل تعلمك مع Cody، وطبّق اللي فهمته بنفسك،
-                        واكتشف إزاي تقدر تبني برامجك الأولى.
-                    </p>
-
-                    <div class="hero-actions">
-                        <a href="languages.html" class="btn-dark-primary">
-                            استكشف مسارات التعلم
-                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
-                        </a>
-
-                        <a href="playground.html" class="btn-secondary">
-                            جرّب محرر الأكواد
-                            <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-                        </a>
-                    </div>
-                </article>
-
-                <article class="glass-card daily-card">
-                    <div>
-                        <div class="daily-icon">
-                            <i class="ri-focus-3-line" aria-hidden="true"></i>
-                        </div>
-
-                        <h3>هدفك اليومي</h3>
-
-                        <p>
-                            خصص بعض الوقت للتعلم، وأكمل درسًا أو حل تحديًا
-                            جديدًا حسب وقتك.
-                        </p>
-                    </div>
-
-                    <a href="games.html" class="text-link">
-                        اكتشف تحديات اليوم
-                        <i class="ri-arrow-left-line" aria-hidden="true"></i>
-                    </a>
-                </article>
-
-            </section>
-
-            <!-- Actual learning statistics should be supplied by app.js -->
-            <section class="section-block" aria-labelledby="statsTitle">
-                <div class="section-heading">
-                    <div>
-                        <h2 id="statsTitle">نظرة على تقدمك</h2>
-                        <p>تابع رحلتك التعليمية من مكان واحد.</p>
-                    </div>
+                <div class="kid-progress" role="progressbar"
+                     aria-label="التقدم في C++"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                  <div class="kid-progress-fill"
+                       data-progress="0"
+                       style="background:#7955E8"></div>
                 </div>
+              </div>
+              <div class="kid-course-action">
+                <span>اكتشف المسار</span>
+                <i class="ri-arrow-left-line" aria-hidden="true"></i>
+              </div>
+            </a>
+          </div>
+        </section>
 
-                <div class="stats-grid">
-                    <article class="stat-box">
-                        <div class="stat-box-info">
-                            <h4>دروس مكتملة</h4>
-                            <h2 class="js-completed-lessons">0</h2>
-                        </div>
+        <section class="kid-section" aria-labelledby="activities-title">
+          <div class="kid-section-head">
+            <div>
+              <h2 id="activities-title">مستعد لتحدي جديد؟ 🎮</h2>
+              <p>اختار نشاطك الجاي وخلي التعلم مغامرة!</p>
+            </div>
+          </div>
 
-                        <div class="stat-box-icon"
-                             style="background:rgba(52,211,153,.10);color:var(--dark-green)">
-                            <i class="ri-check-double-line" aria-hidden="true"></i>
-                        </div>
-                    </article>
+          <div class="kid-activities">
+            <a href="games.html" class="kid-activity">
+              <div class="kid-activity-icon stat-yellow">
+                <i class="ri-gamepad-fill" aria-hidden="true"></i>
+              </div>
+              <div>
+                <h3>الألعاب والتحديات</h3>
+                <p>اتعلم من خلال اللعب وحل الألغاز.</p>
+              </div>
+              <i class="ri-arrow-left-s-line" aria-hidden="true"></i>
+            </a>
 
-                    <article class="stat-box">
-                        <div class="stat-box-info">
-                            <h4>مستواك الحالي</h4>
-                            <h2 class="js-user-level">1</h2>
-                        </div>
+            <a href="playground.html" class="kid-activity">
+              <div class="kid-activity-icon stat-blue">
+                <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+              </div>
+              <div>
+                <h3>مختبر الأكواد</h3>
+                <p>جرّب أفكارك واكتب أول برنامج ليك.</p>
+              </div>
+              <i class="ri-arrow-left-s-line" aria-hidden="true"></i>
+            </a>
 
-                        <div class="stat-box-icon"
-                             style="background:rgba(251,191,36,.10);color:var(--dark-gold)">
-                            <i class="ri-medal-line" aria-hidden="true"></i>
-                        </div>
-                    </article>
+            <a href="projects.html" class="kid-activity">
+              <div class="kid-activity-icon stat-green">
+                <i class="ri-lightbulb-flash-line" aria-hidden="true"></i>
+              </div>
+              <div>
+                <h3>مشروعاتي الإبداعية</h3>
+                <p>حوّل اللي اتعلمته لمشروعات من صنعك.</p>
+              </div>
+              <i class="ri-arrow-left-s-line" aria-hidden="true"></i>
+            </a>
+          </div>
+        </section>
 
-                    <article class="stat-box">
-                        <div class="stat-box-info">
-                            <h4>أيام التعلم المتتالية</h4>
-                            <h2 class="js-learning-streak">0</h2>
-                        </div>
-
-                        <div class="stat-box-icon"
-                             style="background:rgba(167,139,250,.10);color:var(--dark-purple)">
-                            <i class="ri-calendar-check-line" aria-hidden="true"></i>
-                        </div>
-                    </article>
-
-                    <article class="stat-box">
-                        <div class="stat-box-info">
-                            <h4>مشروعات مكتملة</h4>
-                            <h2 class="js-completed-projects">0</h2>
-                        </div>
-
-                        <div class="stat-box-icon"
-                             style="background:rgba(34,211,238,.10);color:var(--dark-cyan)">
-                            <i class="ri-folder-check-line" aria-hidden="true"></i>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <!-- Learning paths -->
-            <section class="section-block" aria-labelledby="pathsTitle">
-                <div class="section-heading">
-                    <div>
-                        <h2 id="pathsTitle">مساراتك التعليمية</h2>
-                        <p>اختار لغة وابدأ ببناء أساس قوي في البرمجة.</p>
-                    </div>
-
-                    <a href="languages.html" class="text-link">
-                        كل المسارات
-                        <i class="ri-arrow-left-line" aria-hidden="true"></i>
-                    </a>
-                </div>
-
-                <div class="learning-grid">
-
-                    <a href="languages.html?language=python"
-                       class="glass-card learning-card"
-                       aria-label="استكشف مسار Python">
-
-                        <div class="language-top">
-                            <div class="language-symbol"
-                                 style="background:rgba(34,211,238,.10);color:var(--dark-cyan)">
-                                Py
-                            </div>
-                            <span class="language-tag">للمبتدئين</span>
-                        </div>
-
-                        <div>
-                            <h3>Python</h3>
-                            <p>ابدأ بأساسيات البرمجة والتفكير المنطقي، ثم انتقل إلى بناء برامجك.</p>
-                        </div>
-
-                        <div>
-                            <div class="progress-label">
-                                <span>تقدمك في المسار</span>
-                                <span class="js-python-progress-label">0%</span>
-                            
-                            <div class="progress-track"
-                                 role="progressbar"
-                                 aria-label="التقدم في مسار Python"
-                                 aria-valuemin="0"
-                                 aria-valuemax="100"
-                                 aria-valuenow="0">
-                                <div class="progress-fill"
-                                     data-progress="0"
-                                     style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <div class="course-action">
-                            <span>ابدأ التعلم</span>
-                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
-                        </div>
-                    </a>
-
-                    <a href="languages.html?language=javascript"
-                       class="glass-card learning-card"
-                       aria-label="استكشف مسار JavaScript">
-
-                        <div class="language-top">
-                            <div class="language-symbol"
-                                 style="background:rgba(251,191,36,.10);color:var(--dark-gold)">
-                                JS
-                            </div>
-                            <span class="language-tag">تطوير الويب</span>
-                        </div>
-
-                        <div>
-                            <h3>JavaScript</h3>
-                            <p>تعلّم كيف تجعل صفحات الويب تفاعلية وتضيف إليها الحركة والوظائف.</p>
-                        </div>
-
-                        <div>
-                            <div class="progress-label">
-                                <span>تقدمك في المسار</span>
-                                <span class="js-javascript-progress-label">0%</span>
-                            </div>
-
-                            <div class="progress-track"
-                                 role="progressbar"
-                                 aria-label="التقدم في مسار JavaScript"
-                                 aria-valuemin="0"
-                                 aria-valuemax="100"
-                                 aria-valuenow="0">
-                                <div class="progress-fill"
-                                     data-progress="0"
-                                     style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <div class="course-action">
-                            <span>ابدأ التعلم</span>
-                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
-                        </div>
-                    </a>
-
-                    <a href="languages.html?language=cpp"
-                       class="glass-card learning-card"
-                       aria-label="استكشف مسار C++">
-
-                        <div class="language-top">
-                            <div class="language-symbol"
-                                 style="background:rgba(167,139,250,.12);color:var(--dark-purple)">
-                                C++
-                            </div>
-                            <span class="language-tag">حل المشكلات</span>
-                        </div>
-
-                        <div>
-                            <h3>C++</h3>
-                            <p>طوّر التفكير المنطقي وتدرّب على الخوارزميات وحل المسائل البرمجية.</p>
-                        </div>
-
-                        <div>
-                            <div class="progress-label">
-                                <span>تقدمك في المسار</span>
-                                <span class="js-cpp-progress-label">0%</span>
-                            </div>
-
-                            <div class="progress-track"
-                                 role="progressbar"
-                                 aria-label="التقدم في مسار C++"
-                                 aria-valuemin="0"
-                                 aria-valuemax="100"
-                                 aria-valuenow="0">
-                                <div class="progress-fill"
-                                     data-progress="0"
-                                     style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <div class="course-action">
-                            <span>ابدأ التعلم</span>
-                            <i class="ri-arrow-left-line" aria-hidden="true"></i>
-                        </div>
-                    </a>
-
-                </div>
-            </section>
-
-            <!-- Quick access -->
-            <section class="section-block" aria-labelledby="quickTitle">
-                <div class="section-heading">
-                    <div>
-                        <h2 id="quickTitle">مساحتك للتجربة والتطبيق</h2>
-                        <p>التعلّم الحقيقي يبدأ لما تجرّب بنفسك.</p>
-                    </div>
-                </div>
-
-                <div class="quick-grid">
-
-                    <a href="playground.html" class="glass-card quick-card">
-                        <div>
-                            <div class="daily-icon"
-                                 style="background:rgba(34,211,238,.10);color:var(--dark-cyan)">
-                                <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-                            </div>
-                            <h3>محرر الأكواد</h3>
-                            <p>اكتب الكود وجرّبه وشوف النتيجة بنفسك.</p>
-                        </div>
-                    </a>
-
-                    <a href="games.html" class="glass-card quick-card">
-                        <div>
-                            <div class="daily-icon"
-                                 style="background:rgba(167,139,250,.12);color:var(--dark-purple)">
-                                <i class="ri-gamepad-line" aria-hidden="true"></i>
-                            </div>
-                            <h3>الألعاب والتحديات</h3>
-                            <p>اختبر مهاراتك وحل تحديات برمجية ممتعة.</p>
-                        </div>
-                    </a>
-
-                    <a href="projects.html" class="glass-card quick-card">
-                        <div>
-                            <div class="daily-icon"
-                                 style="background:rgba(52,211,153,.10);color:var(--dark-green)">
-                                <i class="ri-folder-code-line" aria-hidden="true"></i>
-                            </div>
-                            <h3>مشروعاتي</h3>
-                            <p>حوّل أفكارك إلى مشروعات عملية خطوة بخطوة.</p>
-                        </div>
-                    </a>
-
-                    <a href="review.html" class="glass-card quick-card">
-                        <div>
-                            <div class="daily-icon"
-                                 style="background:rgba(251,191,36,.10);color:var(--dark-gold)">
-                                <i class="ri-brain-line" aria-hidden="true"></i>
-                            </div>
-                            <h3>مركز المراجعة</h3>
-                            <p>راجع ما تعلمته واختبر فهمك للمفاهيم.</p>
-                        </div>
-                    </a>
-
-                </div>
-            </section>
-
-            <footer class="dashboard-footer">
-                <p>صُممت رحلتك البرمجية بكل شغف بواسطة Cody Coding Academy 🤖</p>
-            </footer>
-
-        </main>
+        <footer class="kid-footer">
+          <p>صُنع بحب لكل المبرمجين الصغيرين 💜</p>
+          <p>Cody Academy — تعلّم، جرّب، ابتكر!</p>
+        </footer>
+      </main>
     </div>
 
-    <!-- Mobile navigation -->
-    <nav class="mobile-nav" aria-label="التنقل السريع">
-        <a href="dashboard.html" class="mobile-nav-item active" aria-current="page">
-            <i class="ri-home-5-line" aria-hidden="true"></i>
-            <span>الرئيسية</span>
-        </a>
-
-        <a href="languages.html" class="mobile-nav-item">
-            <i class="ri-map-2-line" aria-hidden="true"></i>
-            <span>المسارات</span>
-        </a>
-
-        <a href="playground.html" class="mobile-nav-item">
-            <i class="ri-code-box-line" aria-hidden="true"></i>
-            <span>المحرر</span>
-        </a>
-
-        <a href="games.html" class="mobile-nav-item">
-            <i class="ri-gamepad-line" aria-hidden="true"></i>
-            <span>الألعاب</span>
-        </a>
-
-        <a href="profile.html" class="mobile-nav-item">
-            <i class="ri-user-smile-line" aria-hidden="true"></i>
-            <span>حسابي</span>
-        </a>
+    <nav class="kid-mobile-nav" aria-label="التنقل السريع">
+      <a href="dashboard.html" class="active" aria-current="page">
+        <i class="ri-home-5-fill" aria-hidden="true"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a href="languages.html">
+        <i class="ri-map-2-line" aria-hidden="true"></i>
+        <span>التعلم</span>
+      </a>
+      <a href="playground.html">
+        <i class="ri-code-box-line" aria-hidden="true"></i>
+        <span>الأكواد</span>
+      </a>
+      <a href="games.html">
+        <i class="ri-gamepad-line" aria-hidden="true"></i>
+        <span>الألعاب</span>
+      </a>
+      <a href="profile.html">
+        <i class="ri-user-smile-line" aria-hidden="true"></i>
+        <span>شخصيتي</span>
+      </a>
     </nav>
 
-    <script src="js/app.js?v=3000" defer></script>
-</body>
+    <script type="module" src="js/app.js?v=3001"></script>
+  </body>
 </html>
