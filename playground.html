@@ -1,1107 +1,334 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#100e26">
-<title>كودي | Cody Academy</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
-
-<style>
-:root {
-  --bg: #100e26;
-  --panel: #191630;
-  --panel2: #211d3d;
-  --border: #34304f;
-  --purple: #8b75ff;
-  --purple-light: #a89aff;
-  --mint: #65e6c1;
-  --text: #f6f4ff;
-  --muted: #aaa6c6;
-  --red: #ff7b92;
-  --radius: 20px;
-}
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(ellipse at 5% 0%, #35245e66, transparent 40%),
-    radial-gradient(ellipse at 95% 20%, #263e7040, transparent 35%),
-    var(--bg);
-  color: var(--text);
-  font-family: 'Cairo', sans-serif;
-}
-
-button, select { font: inherit; }
-button { cursor: pointer; }
-button:disabled, select:disabled {
-  opacity: .55;
-  cursor: wait;
-}
-
-button:focus-visible, select:focus-visible {
-  outline: 2px solid var(--mint);
-  outline-offset: 3px;
-}
-
-a { color: inherit; text-decoration: none; }
-
-.app {
-  max-width: 1440px;
-  margin: auto;
-  padding: 24px 32px 36px;
-}
-
-/* Header */
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #ffffff12;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #a18aff, #6952e8);
-  border-radius: 16px;
-  font-size: 25px;
-  box-shadow: 0 8px 30px #8068ff30;
-}
-
-.brand-name {
-  font-size: 23px;
-  font-weight: 900;
-  letter-spacing: -.5px;
-}
-
-.brand-name span { color: var(--purple-light); }
-
-.brand-caption {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: -5px;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.nav-links a {
-  padding: 9px 15px;
-  border-radius: 12px;
-  color: var(--muted);
-  font-size: 13px;
-  transition: .2s;
-}
-
-.nav-links a:hover,
-.nav-links a.active {
-  background: #8b75ff18;
-  color: white;
-}
-
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 12px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #ffffff05;
-}
-
-.profile-avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 11px;
-  background: #f6c86e;
-  display: grid;
-  place-items: center;
-  font-size: 20px;
-}
-
-.profile-name { font-size: 12px; font-weight: 800; }
-.profile-caption { color: var(--muted); font-size: 10px; }
-
-/* Welcome */
-
-.hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
-  padding: 32px 0 26px;
-}
-
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 12px;
-  border-radius: 30px;
-  background: #8b75ff19;
-  border: 1px solid #8b75ff35;
-  color: #c0b5ff;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.hero h1 {
-  margin: 12px 0 8px;
-  font-size: clamp(25px, 3vw, 38px);
-  line-height: 1.5;
-  font-weight: 900;
-}
-
-.hero h1 span {
-  color: var(--purple-light);
-}
-
-.hero p {
-  color: var(--muted);
-  font-size: 14px;
-  margin: 0;
-  line-height: 1.9;
-}
-
-.hero-art {
-  width: 145px;
-  min-width: 120px;
-  height: 130px;
-  display: grid;
-  place-items: center;
-  position: relative;
-  border-radius: 35px;
-  background: linear-gradient(145deg, #31265a, #211e40);
-  border: 1px solid #8b75ff35;
-}
-
-.robot {
-  font-size: 65px;
-  filter: drop-shadow(0 10px 16px #0005);
-}
-
-.spark {
-  position: absolute;
-  color: #ffe28b;
-  font-size: 23px;
-}
-.spark.one { top: 12px; left: 18px; }
-.spark.two { bottom: 13px; right: 16px; font-size: 17px; }
-
-/* Stats */
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 28px;
-}
-
-.stat {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 16px;
-  background: #ffffff05;
-  border: 1px solid var(--border);
-  border-radius: 17px;
-}
-
-.stat-icon {
-  width: 43px;
-  height: 43px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 13px;
-  font-size: 22px;
-  background: #8b75ff20;
-}
-
-.stat:nth-child(2) .stat-icon { background: #65e6c118; }
-.stat:nth-child(3) .stat-icon { background: #ffc76a18; }
-
-.stat-label { color: var(--muted); font-size: 11px; }
-.stat-value { font-size: 17px; font-weight: 800; }
-
-/* Workspace */
-
-.section-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 14px;
-}
-
-.section-heading h2 {
-  margin: 0;
-  font-size: 19px;
-  font-weight: 800;
-}
-
-.section-heading p {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 3px 0 0;
-}
-
-.live-status {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  color: var(--mint);
-}
-
-.live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--mint);
-}
-
-.workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(270px, .8fr);
-  gap: 16px;
-  align-items: stretch;
-}
-
-.card {
-  min-width: 0;
-  background: linear-gradient(145deg, #1b1835, #17142d);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.card-header {
-  min-height: 66px;
-  padding: 15px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid #ffffff0e;
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.card-title-icon {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 11px;
-  background: #8b75ff20;
-  font-size: 17px;
-}
-
-.window-dots {
-  display: flex;
-  gap: 5px;
-  direction: ltr;
-}
-.window-dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ff7c86;
-}
-.window-dots span:nth-child(2) { background: #ffd36f; }
-.window-dots span:nth-child(3) { background: #65e6a4; }
-
-.editor-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 13px 16px;
-  border-bottom: 1px solid #ffffff0d;
-}
-
-.language-select {
-  flex: 1;
-  min-width: 130px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  background: #100e26;
-  color: var(--text);
-  border-radius: 11px;
-  outline: none;
-  font-size: 12px;
-  direction: ltr;
-}
-
-.language-select option {
-  background: #191630;
-  color: white;
-}
-
-.btn {
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  padding: 10px 13px;
-  font-size: 12px;
-  font-weight: 800;
-  transition: transform .15s, filter .15s;
-}
-
-.btn:hover { filter: brightness(1.13); }
-.btn:active { transform: scale(.97); }
-
-.btn-reset {
-  background: #ffffff08;
-  color: #d7d3ef;
-}
-
-.btn-run {
-  color: #fff;
-  border-color: transparent;
-  background: linear-gradient(135deg, #947bff, #6d50e8);
-  box-shadow: 0 5px 18px #7558ed30;
-}
-
-.editor-wrap {
-  padding: 0 12px 12px;
-  direction: ltr;
-}
-
-.CodeMirror {
-  height: 370px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  line-height: 1.8;
-  border-radius: 12px;
-  padding-top: 8px;
-  background: #111020 !important;
-  direction: ltr;
-  text-align: left;
-}
-
-.CodeMirror-gutters {
-  background: #111020 !important;
-  border-right: 1px solid #ffffff0b !important;
-}
-
-.CodeMirror-linenumber { color: #65617f; }
-.CodeMirror-cursor { border-left-color: white !important; }
-.CodeMirror-selected { background: #8b75ff35 !important; }
-
-.editor-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 10px 16px 14px;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.editor-footer span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Output */
-
-.output-content { padding: 16px; }
-
-.output-label {
-  color: var(--muted);
-  font-size: 11px;
-  margin-bottom: 10px;
-}
-
-.output-box {
-  min-height: 190px;
-  max-height: 290px;
-  overflow: auto;
-  padding: 15px;
-  background: #0e0c1d;
-  border: 1px solid #34304f;
-  border-radius: 13px;
-  color: #8ef0c9;
-  font: 12px/1.9 'JetBrains Mono', monospace;
-  direction: ltr;
-  text-align: left;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.output-message {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  margin-top: 12px;
-  border-radius: 12px;
-  background: #65e6c10c;
-  border: 1px solid #65e6c11b;
-}
-
-.output-message.error {
-  background: #ff7b9210;
-  border-color: #ff7b922a;
-}
-
-.message-icon { font-size: 19px; }
-.message-title { font-size: 12px; font-weight: 800; }
-.message-text { color: var(--muted); font-size: 11px; line-height: 1.8; }
-
-.challenge {
-  margin-top: 15px;
-  padding: 15px;
-  background: linear-gradient(135deg, #30244c, #242043);
-  border: 1px solid #8b75ff35;
-  border-radius: 15px;
-}
-
-.challenge-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.challenge-tag {
-  font-size: 10px;
-  color: #d0c5ff;
-  background: #8b75ff24;
-  padding: 5px 8px;
-  border-radius: 20px;
-}
-
-.challenge h3 {
-  font-size: 14px;
-  margin: 0 0 5px;
-}
-
-.challenge p {
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.8;
-  margin: 0 0 12px;
-}
-
-.btn-hint {
-  width: 100%;
-  color: #dcd4ff;
-  background: #8b75ff16;
-  border: 1px solid #8b75ff40;
-}
-
-.hint-text {
-  display: none;
-  margin-top: 10px;
-  font-size: 11px;
-  line-height: 1.9;
-  color: var(--mint);
-}
-.hint-text.visible { display: block; }
-
-/* Learning note */
-
-.bottom-note {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 20px;
-  padding: 16px 19px;
-  border-radius: 16px;
-  background: #65e6c108;
-  border: 1px solid #65e6c11b;
-}
-
-.note-icon { font-size: 27px; }
-.note-title { font-size: 13px; font-weight: 800; }
-.note-text { color: var(--muted); font-size: 11px; line-height: 1.8; }
-
-/* Responsive */
-
-@media (min-width: 1100px) {
-  .output-box { min-height: 235px; }
-}
-
-@media (max-width: 900px) {
-  .app { padding: 20px; }
-  .nav-links { display: none; }
-  .workspace { grid-template-columns: 1fr; }
-  .output-box { min-height: 130px; }
-  .hero-art { width: 115px; height: 115px; }
-}
-
-@media (max-width: 550px) {
-  .app { padding: 12px; }
-  .navbar { padding-bottom: 15px; }
-  .logo { width: 42px; height: 42px; }
-  .brand-name { font-size: 20px; }
-  .profile { padding: 5px; }
-  .profile-name { font-size: 10px; }
-  .profile-caption { font-size: 9px; }
-  .profile-avatar { width: 30px; height: 30px; }
-  .hero { padding: 24px 0 18px; }
-  .hero h1 { font-size: 25px; }
-  .hero p { font-size: 12px; }
-  .hero-art { min-width: 78px; width: 78px; height: 88px; border-radius: 22px; }
-  .robot { font-size: 43px; }
-  .spark.one { top: 6px; left: 8px; font-size: 16px; }
-  .spark.two { bottom: 7px; right: 8px; }
-  .stats { gap: 7px; margin-bottom: 22px; }
-  .stat { padding: 10px 7px; gap: 7px; flex-direction: column; align-items: flex-start; }
-  .stat-icon { width: 31px; height: 31px; font-size: 16px; border-radius: 9px; }
-  .stat-label { font-size: 10px; }
-  .stat-value { font-size: 14px; }
-  .section-heading h2 { font-size: 17px; }
-  .section-heading p { font-size: 10px; }
-  .card-header { min-height: 58px; padding: 12px; }
-  .editor-toolbar { padding: 10px; gap: 7px; }
-  .language-select { width: 100%; flex-basis: 100%; }
-  .btn { padding: 9px 10px; font-size: 11px; }
-  .editor-toolbar .btn { flex: 1; }
-  .editor-wrap { padding: 0 7px 8px; }
-  .CodeMirror { height: 320px; font-size: 12px; }
-  .editor-footer { padding: 8px 11px 12px; }
-  .output-content { padding: 11px; }
-  .bottom-note { padding: 12px; }
-}
-
-/* Reduced motion */
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    transition-duration: .01ms !important;
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cody Academy | Code Playground</title>
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0b1020;
+      color: #e5e7eb;
+      font-family: system-ui, Arial, sans-serif;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1000px;
+      margin: 20px auto;
+      border: 1px solid #273449;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #111827;
+    }
+
+    .top {
+      padding: 20px;
+      background: #151e30;
+      border-bottom: 1px solid #273449;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 23px;
+    }
+
+    .subtitle { color: #9ca3af; font-size: 14px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 14px;
+    }
+
+    select, button {
+      border: 1px solid #374151;
+      border-radius: 9px;
+      padding: 10px 14px;
+      font: inherit;
+      color: #f9fafb;
+      background: #1f2937;
+    }
+
+    select { flex: 1; min-width: 130px; }
+
+    button { cursor: pointer; }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .run {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .editor-wrap {
+      direction: ltr;
+      padding: 0 14px 14px;
+    }
+
+    .CodeMirror {
+      height: 360px;
+      font-size: 15px;
+      line-height: 1.6;
+      border-radius: 10px;
+      border: 1px solid #374151;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .output-wrap { padding: 0 14px 16px; }
+
+    .output-title {
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    #output {
+      min-height: 90px;
+      max-height: 300px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      direction: ltr;
+      text-align: left;
+      background: #080d18;
+      color: #d1fae5;
+      border: 1px solid #273449;
+      border-radius: 10px;
+      padding: 14px;
+      font: 14px/1.6 monospace;
+    }
+
+    #status {
+      color: #9ca3af;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 550px) {
+      body { padding: 8px; }
+      .app { margin: 8px auto; }
+      .CodeMirror { height: 300px; }
+      .toolbar button { flex: 1; }
+    }
+  </style>
 </head>
 
 <body>
-<main class="app">
-
-  <header class="navbar">
-    <a class="brand" href="#" aria-label="كودي الرئيسية">
-      <div class="logo">⌘</div>
-      <div>
-        <div class="brand-name">كودي<span>.</span></div>
-        <div class="brand-caption">CODY ACADEMY</div>
+  <main class="app">
+    <header class="top">
+      <h1>💻 Cody Academy Playground</h1>
+      <div class="subtitle">
+        اكتبي الكود، اختاري اللغة، وشغّلي برنامجك.
       </div>
-    </a>
+    </header>
 
-    <nav class="nav-links" aria-label="القائمة الرئيسية">
-      <a href="#" class="active">مساحة البرمجة</a>
-      <a href="#challenge">التحدي اليومي</a>
-      <a href="#tips">نصائح للمبرمج</a>
-    </nav>
+    <div class="toolbar">
+      <select id="language" aria-label="اختاري لغة البرمجة">
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+        <option value="cpp">C++</option>
+      </select>
 
-    <div class="profile">
-      <div class="profile-avatar">🧑‍🚀</div>
-      <div>
-        <div class="profile-name">مستكشف الأكواد</div>
-        <div class="profile-caption">مبرمج المستقبل ✨</div>
-      </div>
-    </div>
-  </header>
-
-  <section class="hero">
-    <div>
-      <div class="eyebrow">🚀 عالمك البرمجي يبدأ هنا</div>
-      <h1>فكرتك الأولى تبدأ<br>بـ <span>سطر كود!</span></h1>
-      <p>
-        جرّب، اكتشف، وخلّي أفكارك تتحول لحقيقة.<br>
-        كل مبرمج عظيم بدأ بخطوة صغيرة!
-      </p>
+      <button id="reset" type="button">إعادة المثال</button>
+      <button id="run" class="run" type="button">▶ تشغيل الكود</button>
     </div>
 
-    <div class="hero-art" aria-hidden="true">
-      <span class="spark one">✦</span>
-      <span class="robot">🤖</span>
-      <span class="spark two">✧</span>
-    </div>
-  </section>
+    <section class="editor-wrap">
+      <textarea id="code" aria-label="محرر الكود"></textarea>
+    </section>
 
-  <section class="stats" aria-label="معلومات مساحة البرمجة">
-    <div class="stat">
-      <div class="stat-icon">💻</div>
-      <div>
-        <div class="stat-label">لغات البرمجة</div>
-        <div class="stat-value">3 لغات</div>
-      </div>
-    </div>
+    <section class="output-wrap">
+      <div class="output-title">نتيجة التنفيذ</div>
+      <pre id="output">أهلًا بكِ في Cody Academy!</pre>
+      <div id="status" role="status">جاهز للكتابة.</div>
+    </section>
+  </main>
 
-    <div class="stat">
-      <div class="stat-icon">⚡</div>
-      <div>
-        <div class="stat-label">مساحة التجربة</div>
-        <div class="stat-value">شغّل كودك</div>
-      </div>
-    </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
 
-    <div class="stat">
-      <div class="stat-icon">🌟</div>
-      <div>
-        <div class="stat-label">مهمتك القادمة</div>
-        <div class="stat-value">تحدّي جديد</div>
-      </div>
-    </div>
-  </section>
+  <script>
+    (() => {
+      const $ = id => document.getElementById(id);
+      const language = $('language');
+      const runButton = $('run');
+      const resetButton = $('reset');
+      const output = $('output');
+      const status = $('status');
 
-  <section>
-    <div class="section-heading">
-      <div>
-        <h2>مساحة التجربة 🧩</h2>
-        <p>اكتب الكود بنفسك وشوف النتيجة فورًا.</p>
-      </div>
-      <div class="live-status">
-        <span class="live-dot"></span>
-        جاهز للتجربة
-      </div>
-    </div>
-
-    <div class="workspace">
-
-      <!-- Code Editor -->
-      <section class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <div class="card-title-icon">⌨️</div>
-            محرر الأكواد
-          </div>
-          <div class="window-dots" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-        </div>
-
-        <div class="editor-toolbar">
-          <select id="language" class="language-select"
-                  aria-label="اختار لغة البرمجة">
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="cpp">C++</option>
-          </select>
-
-          <button id="reset" class="btn btn-reset" type="button">
-            ↻ إعادة المثال
-          </button>
-
-          <button id="run" class="btn btn-run" type="button">
-            ▶ شغّل الكود
-          </button>
-        </div>
-
-        <div class="editor-wrap">
-          <textarea id="code" aria-label="محرر الكود"></textarea>
-        </div>
-
-        <div class="editor-footer">
-          <span>✦ اكتب وجرب براحتك</span>
-          <span id="editor-language">JavaScript · UTF-8</span>
-        </div>
-      </section>
-
-      <!-- Output and Challenge -->
-      <aside>
-        <section class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <div class="card-title-icon">✨</div>
-              شوف النتيجة!
-            </div>
-          </div>
-
-          <div class="output-content">
-            <div class="output-label">OUTPUT / نتيجة التنفيذ</div>
-
-            <pre id="output" class="output-box">أهلًا بك في كودي!
-اضغط على «شغّل الكود»
-عشان تشوف النتيجة هنا.</pre>
-
-            <div id="output-message" class="output-message">
-              <div class="message-icon">💡</div>
-              <div>
-                <div id="message-title" class="message-title">
-                  مستعد للمغامرة؟
-                </div>
-                <div id="message-text" class="message-text">
-                  جرّب المثال الأول، وبعدها غيّر الكود بنفسك!
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="challenge" id="challenge">
-          <div class="challenge-top">
-            <span class="challenge-tag">🎯 تحدّي المبرمج</span>
-            <span>⭐</span>
-          </div>
-
-          <h3>خلّي الكمبيوتر يعرف اسمك!</h3>
-          <p>
-            غيّر النص الموجود في المثال، واكتب اسمك بدلًا من
-            Hello Cody Academy!
-          </p>
-
-          <button id="hint-button" class="btn btn-hint" type="button"
-                  aria-expanded="false">
-            💡 ورّيني تلميح
-          </button>
-
-          <div id="hint-text" class="hint-text">
-            دور على النص المكتوب بين علامتي التنصيص " "،
-            وغيّره لاسمك، وبعدها اضغط تشغيل!
-          </div>
-        </section>
-      </aside>
-    </div>
-  </section>
-
-  <section class="bottom-note" id="tips">
-    <div class="note-icon">🌱</div>
-    <div>
-      <div class="note-title">كل غلطة فرصة تتعلّم منها!</div>
-      <div class="note-text">
-        لو ظهر خطأ، اقرأ الرسالة وحاول تفهم السبب.
-        البرمجة مش حفظ أكواد، البرمجة هي إنك تفكر وتجرّب وتكتشف.
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
-
-<script>
-(() => {
-  'use strict';
-
-  const $ = id => document.getElementById(id);
-
-  const language = $('language');
-  const runButton = $('run');
-  const resetButton = $('reset');
-  const output = $('output');
-  const outputMessage = $('output-message');
-  const messageTitle = $('message-title');
-  const messageText = $('message-text');
-  const editorLanguage = $('editor-language');
-  const hintButton = $('hint-button');
-  const hintText = $('hint-text');
-
-  const examples = {
-    javascript: {
-      mode: 'javascript',
-      id: 63,
-      label: 'JavaScript',
-      code:
-`console.log("Hello Cody Academy!");
-console.log(10 + 20);`
-    },
-
-    python: {
-      mode: 'python',
-      id: 71,
-      label: 'Python',
-      code:
-`print("Hello Cody Academy!")
-print(10 + 20)`
-    },
-
-    cpp: {
-      mode: 'text/x-c++src',
-      id: 54,
-      label: 'C++',
-      code:
-`#include <iostream>
-using namespace std;
-
-int main() {
-    cout << "Hello Cody Academy!" << endl;
-    cout << 10 + 20 << endl;
-    return 0;
-}`
-    }
-  };
-
-  function setMessage(title, message, error = false) {
-    messageTitle.textContent = title;
-    messageText.textContent = message;
-    outputMessage.classList.toggle('error', error);
-    outputMessage.querySelector('.message-icon').textContent =
-      error ? '🛠️' : '✨';
-  }
-
-  function setStatus(text) {
-    $('message-title').textContent = text;
-  }
-
-  if (!window.CodeMirror) {
-    output.textContent =
-      'تعذر تحميل محرر الأكواد. تأكد من اتصال الإنترنت وأعد تحميل الصفحة.';
-    setMessage('المحرر غير متاح', 'تحقق من اتصال الإنترنت.', true);
-    runButton.disabled = true;
-    resetButton.disabled = true;
-    return;
-  }
-
-  const editor = CodeMirror.fromTextArea($('code'), {
-    mode: 'javascript',
-    theme: 'material-darker',
-    lineNumbers: true,
-    indentUnit: 4,
-    tabSize: 4,
-    indentWithTabs: false,
-    lineWrapping: true,
-    autofocus: false,
-    viewportMargin: 20,
-    extraKeys: {
-      'Ctrl-Enter': () => runButton.click(),
-      'Cmd-Enter': () => runButton.click()
-    }
-  });
-
-  function setLanguage(resetCode = true) {
-    const config = examples[language.value];
-
-  
-    editor.setOption('mode', config.mode);
-    editorLanguage.textContent = config.label + ' · UTF-8';
-
-    if (resetCode) {
-      editor.setValue(config.code);
-      output.textContent = 'الكود جاهز للتجربة!';
-      setMessage(
-        'يلا نجرب! 🚀',
-        'اضغط على شغّل الكود عشان تشوف النتيجة.'
-      );
-    }
-
-    editor.refresh();
-  }
-
-  language.addEventListener('change', () => setLanguage(true));
-
-  resetButton.addEventListener('click', () => {
-    setLanguage(true);
-    editor.focus();
-  });
-
-  hintButton.addEventListener('click', () => {
-    const visible = hintText.classList.toggle('visible');
-
-    hintButton.setAttribute('aria-expanded', String(visible));
-    hintButton.textContent = visible
-      ? 'إخفاء التلميح ↑'
-      : '💡 ورّيني تلميح';
-  });
-
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  async function runCode() {
-    if (runButton.disabled) return;
-
-    const config = examples[language.value];
-    const source = editor.getValue();
-
-    if (!source.trim()) {
-      output.textContent = 'اكتب شوية كود الأول! 👀';
-
-      setMessage(
-        'المحرر مستنيك',
-        'اكتب الكود وبعدها جرّب تشغيله.',
-        true
-      );
-
-      editor.focus();
-      return;
-    }
-
-    runButton.disabled = true;
-    resetButton.disabled = true;
-    language.disabled = true;
-
-    output.textContent = 'جارٍ تشغيل الكود...\nلحظة واحدة! 🚀';
-
-    setMessage(
-      'بنجهّز النتيجة...',
-      'جاري الاتصال بخدمة التنفيذ.'
-    );
-
-    try {
-      const response = await fetch(
-        'https://ce.judge0.com/submissions?base64_encoded=false&wait=false',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            source_code: source,
-            language_id: config.id
-          })
+      const examples = {
+        javascript: {
+          mode: 'javascript',
+          id: 63,
+          code: 'console.log("Hello Cody Academy!");\nconsole.log(10 + 20);'
+        },
+        python: {
+          mode: 'python',
+          id: 71,
+          code: 'print("Hello Cody Academy!")\nprint(10 + 20)'
+        },
+        cpp: {
+          mode: 'text/x-c++src',
+          id: 54,
+          code: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello Cody Academy!" << endl;\n    cout << 10 + 20 << endl;\n    return 0;\n}'
         }
-      );
+      };
 
-      if (!response.ok) {
-        throw new Error(
-          'خدمة التنفيذ غير متاحة حاليًا (HTTP ' +
-          response.status + ').'
-        );
-      }
-
-      const submission = await response.json();
-
-      if (!submission.token) {
-        throw new Error(
-          submission.error || 'لم نتمكن من بدء التنفيذ.'
-        );
-      }
-
-      let result = null;
-
-      for (let i = 0; i < 30; i++) {
-        await sleep(1000);
-
-        const check = await fetch(
-          'https://ce.judge0.com/submissions/' +
-          encodeURIComponent(submission.token) +
-          '?base64_encoded=false&fields=stdout,stderr,compile_output,message,status,time'
-        );
-
-        if (!check.ok) {
-          throw new Error('تعذر الحصول على نتيجة التنفيذ.');
-        }
-
-        result = await check.json();
-
-        const statusId = result.status && result.status.id;
-
-        if (statusId !== 1 && statusId !== 2) break;
-
+      if (!window.CodeMirror) {
         output.textContent =
-          'جارٍ تنفيذ برنامجك... (' + (i + 1) + '/30)';
+          'تعذر تحميل المحرر. تحققي من الإنترنت ثم أعيدي تحميل الصفحة.';
+        status.textContent = 'فشل تحميل CodeMirror.';
+        runButton.disabled = true;
+        return;
       }
 
-      if (
-        !result ||
-        !result.status ||
-        result.status.id === 1 ||
-        result.status.id === 2
-      ) {
-        throw new Error(
-          'التنفيذ استغرق وقتًا طويلًا. حاول مرة أخرى.'
-        );
+      const editor = CodeMirror.fromTextArea($('code'), {
+        mode: 'javascript',
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        lineWrapping: true,
+        autofocus: true,
+        viewportMargin: Infinity
+      });
+
+      function setLanguage() {
+        const config = examples[language.value];
+        editor.setOption('mode', config.mode);
+        editor.setValue(config.code);
+        output.textContent = 'الكود جاهز للتشغيل.';
+        status.textContent = 'جاهز للكتابة.';
+        editor.refresh();
+        editor.focus();
       }
 
-      const lines = [];
+      language.addEventListener('change', setLanguage);
+      resetButton.addEventListener('click', setLanguage);
 
-      if (result.stdout) {
-        lines.push(result.stdout.trimEnd());
-      }
+      runButton.addEventListener('click', async () => {
+        if (runButton.disabled) return;
 
-      if (result.stderr) {
-        lines.push('Runtime error:\n' + result.stderr);
-      }
+        const config = examples[language.value];
+        const source = editor.getValue();
 
-      if (result.compile_output) {
-        lines.push('Compilation error:\n' + result.compile_output);
-      }
+        if (!source.trim()) {
+          output.textContent = 'اكتبي الكود أولًا.';
+          status.textContent = 'لا يوجد كود للتنفيذ.';
+          editor.focus();
+          return;
+        }
 
-      if (result.message) {
-        lines.push('Message:\n' + result.message);
-      }
+        runButton.disabled = true;
+        resetButton.disabled = true;
+        language.disabled = true;
+        output.textContent = 'جارٍ إرسال الكود للتنفيذ...';
+        status.textContent = 'جارٍ الاتصال بخدمة التنفيذ.';
 
-      if (!lines.length) {
-        lines.push(
-          result.status.id === 3
-            ? 'تم التنفيذ بنجاح، لكن لا توجد مخرجات.'
-            : 'انتهى التنفيذ بدون مخرجات.'
-        );
-      }
+        try {
+          const response = await fetch(
+            'https://ce.judge0.com/submissions?base64_encoded=false&wait=false',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                source_code: source,
+                language_id: config.id
+              })
+            }
+          );
 
-      lines.push(
-        '\nStatus: ' + result.status.description
-      );
+          if (!response.ok) {
+            throw new Error('خدمة التنفيذ أعادت HTTP ' + response.status);
+          }
 
-      output.textContent = lines.join('\n\n');
+          const submission = await response.json();
 
-      if (result.status.id === 3) {
-        setMessage(
-          'عاش يا مبرمج! 🎉',
-          'الكود اشتغل بنجاح. جرّب تغيّر حاجة وتشغّله تاني!'
-        );
-      } else {
-        setMessage(
-          'ولا يهمك، نتعلّم من الخطأ! 💪',
-          'اقرأ رسالة الخطأ في النتيجة وحاول تصلح الكود.',
-          true
-        );
-      }
+          if (!submission.token) {
+            throw new Error(
+              submission.error || 'لم يتم استلام رمز التنفيذ.'
+            );
+          }
 
-    } catch (error) {
-      console.error('Cody execution error:', error);
+          let result = null;
 
-      output.textContent =
-        'تعذر تشغيل الكود.\n\n' +
-        error.message +
-        '\n\nتأكد من اتصال الإنترنت وحاول مرة أخرى.';
+          for (let i = 0; i < 30; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-      setMessage(
-        'مش قادرين نشغّل الكود دلوقتي',
-        'ممكن تكون خدمة التنفيذ غير متاحة. حاول لاحقًا.',
-        true
-      );
+            const check = await fetch(
+              'https://ce.judge0.com/submissions/' +
+              encodeURIComponent(submission.token) +
+              '?base64_encoded=false&fields=stdout,stderr,compile_output,message,status,time'
+            );
 
-    } finally {
-      runButton.disabled = false;
-      resetButton.disabled = false;
-      language.disabled = false;
-    }
-  }
+            if (!check.ok) {
+              throw new Error('تعذر جلب النتيجة: HTTP ' + check.status);
+            }
 
-  runButton.addEventListener('click', runCode);
+            result = await check.json();
+            const id = result.status && result.status.id;
 
-  setLanguage(true);
+            if (id !== 1 && id !== 2) break;
 
-})();
-</script>
+            output.textContent = 'جارٍ التنفيذ... (' + (i + 1) + '/30)';
+          }
+
+          if (!result || !result.status ||
+              result.status.id === 1 || result.status.id === 2) {
+            throw new Error('التنفيذ استغرق وقتًا طويلًا.');
+          }
+
+          const lines = [];
+          if (result.stdout) lines.push(result.stdout.trimEnd());
+          if (result.stderr) lines.push('خطأ أثناء التشغيل:\n' + result.stderr);
+          if (result.compile_output) {
+            lines.push('خطأ في الترجمة:\n' + result.compile_output);
+          }
+          if (result.message) lines.push('رسالة:\n' + result.message);
+
+          if (!lines.length) {
+            lines.push(
+              result.status.id === 3
+                ? 'تم التنفيذ، لكن لا توجد مخرجات.'
+                : 'لا توجد مخرجات.'
+            );
+          }
+
+          lines.push('\nحالة التنفيذ: ' + result.status.description);
+          output.textContent = lines.join('\n\n');
+          status.textContent =
+            result.status.id === 3 ? 'اكتمل التنفيذ.' : 'انتهى التنفيذ مع ملاحظة.';
+        } catch (error) {
+          console.error(error);
+          output.textContent =
+            'تعذر تشغيل الكود.\n\n' +
+            error.message +
+            '\n\nقد تكون خدمة التنفيذ غير متاحة، أو قد يمنع المتصفح الاتصال بها (CORS).';
+          status.textContent = 'تعذر الاتصال بخدمة التنفيذ.';
+        } finally {
+          runButton.disabled = false;
+          resetButton.disabled = false;
+          language.disabled = false;
+        }
+      });
+
+      setLanguage();
+    })();
+  </script>
 </body>
 </html>
