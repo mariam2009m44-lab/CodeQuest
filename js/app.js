@@ -5,7 +5,7 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// دالة مبسطة للرسائل المنبثقة للتنبيهات داخل الواجهة
+
 function showToast(message, type = "info") {
   let container = document.getElementById("toast-container");
   if (!container) {
