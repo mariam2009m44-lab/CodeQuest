@@ -1,319 +1,543 @@
 
-'use strict';
+"use strict";
 
-document.addEventListener('DOMContentLoaded', () => {
-  const $ = (id) => document.getElementById(id);
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = id => document.getElementById(id);
 
-  const editorBox = $('editor');
-  const languageSelect = $('langSelector');
-  const runButton = $('runBtn');
-  const resetButton = $('resetBtn');
-  const output = $('output');
-  const fileName = $('fileName');
-  const languageLabel = $('editorLanguage');
-  const runStatus = $('runStatus');
-  const statusText = $('statusText');
+  const languageSelect = $("language");
+  const runButton = $("run");
+  const resetButton = $("reset");
+  const codeElement = $("code");
+  const output = $("output");
+  const status = $("status");
 
-  function show(message, state = 'idle') {
-    if (output) output.textContent = message;
-    if (runStatus) runStatus.dataset.state = state;
-
-    if (statusText) {
-      statusText.textContent =
-        state === 'running' ? 'جارٍ التنفيذ...' :
-        state === 'success' ? 'اكتمل التنفيذ' :
-        state === 'error' ? 'حدث خطأ' : 'جاهز';
-    }
-  }
-
-  if (!editorBox || !languageSelect || !runButton ||
-      !resetButton || !output) {
-    console.error('Cody Academy: عناصر المحرر غير مكتملة.');
+  if (!languageSelect || !runButton || !resetButton ||
+      !codeElement || !output || !status) {
+    console.error("Playground: عناصر HTML المطلوبة غير موجودة.");
     return;
   }
 
-  if (!window.ace) {
-    show(
-      'تعذر تحميل المحرر. تأكدي من الإنترنت وأعيدي تحميل الصفحة.',
-      'error'
-    );
+  if (!window.CodeMirror) {
+    output.textContent = "تعذر تحميل CodeMirror. تحققي من الإنترنت.";
+    status.textContent = "فشل تحميل المحرر.";
     runButton.disabled = true;
     return;
   }
+
+  const TOTAL_TIMEOUT_MS = 30_000;
+  const POLL_INTERVAL_MS = 1_000;
+  const MAX_CODE_LENGTH = 50_000;
 
   const examples = {
     javascript: {
-      name: 'JavaScript',
-      file: 'main.js',
-      mode: 'ace/mode/javascript',
-      id: 63,
-      code: `console.log("Hello Cody Academy!");
-console.log(10 + 20);`
+      mode: "javascript",
+      code: 'console.log("Hello Cody Academy!");\nconsole.log(10 + 20);'
     },
-
     python: {
-      name: 'Python',
-      file: 'main.py',
-      mode: 'ace/mode/python',
-      id: 71,
-      code: `print("Hello Cody Academy!")
-print(10 + 20)`
+      mode: "python",
+      code: 'print("Hello Cody Academy!")\nprint(10 + 20)'
     },
-
     cpp: {
-      name: 'C++',
-      file: 'main.cpp',
-      mode: 'ace/mode/c_cpp',
-      id: 54,
-      code: `#include <iostream>
-using namespace std;
-
-int main() {
-    cout << "Hello Cody Academy!" << endl;
-    cout << 10 + 20 << endl;
-    return 0;
-}`
+      mode: "text/x-c++src",
+      code: [
+        "#include <iostream>",
+        "using namespace std;",
+        "",
+        "int main() {",
+        '    cout << "Hello Cody Academy!" << endl;',
+        "    cout << 10 + 20 << endl;",
+        "    return 0;",
+        "}"
+      ].join("\n")
     }
   };
 
-  let editor;
+  const editor = CodeMirror.fromTextArea(codeElement, {
+    mode: "javascript",
+    lineNumbers: true,
+    indentUnit: 4,
+    tabSize: 4,
+    indentWithTabs: false,
+    lineWrapping: true,
+    autofocus: false,
+    viewportMargin: 30
+  });
 
-  try {
-    editor = window.ace.edit(editorBox);
-    editor.setTheme('ace/theme/monokai');
-    editor.setOptions({
-      fontSize: '15px',
-      showPrintMargin: false,
-      tabSize: 4,
-      useSoftTabs: true,
-      wrap: true,
-      enableBasicAutocompletion: true,
-      enableLiveAutocompletion: true
+  let runId = 0;
+  let activeController = null;
+  let pyodidePromise = null;
+
+  function setStatus(message) {
+    status.textContent = message;
+  }
+
+  function setOutput(message) {
+    output.textContent = message || "";
+  }
+
+  function setBusy(busy) {
+    runButton.disabled = busy;
+    resetButton.disabled = busy;
+    languageSelect.disabled = busy;
+    runButton.textContent = busy ? "جارٍ التنفيذ..." : "▶ تشغيل الكود";
+  }
+
+  function getLanguage() {
+    const value = languageSelect.value.toLowerCase();
+    if (value === "js") return "javascript";
+    if (value === "c++") return "cpp";
+    return value;
+  }
+
+  function getRemaining(deadline) {
+    const remaining = deadline - Date.now();
+
+    if (remaining <= 0) {
+      throw new Error("انتهت مهلة التنفيذ (30 ثانية).");
+    }
+
+    return remaining;
+  }
+
+  function checkRun(id) {
+    if (id !== runId) {
+      throw new Error("تم إلغاء التنفيذ.");
+    }
+
+    if (activeController?.signal.aborted) {
+      throw new Error("تم إلغاء التنفيذ.");
+    }
+  }
+
+  function cancelCurrentRun() {
+    runId++;
+
+    if (activeController) {
+      activeController.abort();
+      activeController = null;
+    }
+
+    setBusy(false);
+  }
+
+  function wait(ms, signal, deadline) {
+    return new Promise((resolve, reject) => {
+      const remaining = deadline - Date.now();
+
+      if (remaining <= 0) {
+        reject(new Error("انتهت مهلة التنفيذ."));
+        return;
+      }
+
+      const timer = setTimeout(
+        () => {
+          cleanup();
+          resolve();
+        },
+        Math.min(ms, remaining)
+      );
+
+      function onAbort() {
+        clearTimeout(timer);
+        cleanup();
+        reject(new Error("تم إلغاء التنفيذ."));
+      }
+
+      function cleanup() {
+        signal.removeEventListener("abort", onAbort);
+      }
+
+      if (signal.aborted) {
+        onAbort();
+      } else {
+        signal.addEventListener("abort", onAbort, { once: true });
+      }
     });
-  } catch (error) {
-    show('تعذر إعداد المحرر: ' + error.message, 'error');
-    return;
   }
 
-  let currentLanguage = examples[languageSelect.value]
-    ? languageSelect.value
-    : 'javascript';
+  async function fetchWithDeadline(url, options, deadline, id) {
+    checkRun(id);
 
-  let isRunning = false;
+    const controller = activeController;
+    const requestController = new AbortController();
 
-  function setLanguage(language, resetCode = true) {
-    const config = examples[language];
-    if (!config) return;
+    const abortRequest = () => requestController.abort();
 
-    currentLanguage = language;
-    editor.session.setMode(config.mode);
+    controller.signal.addEventListener("abort", abortRequest, {
+      once: true
+    });
 
-    if (fileName) fileName.textContent = config.file;
-    if (languageLabel) languageLabel.textContent = config.name;
-
-    if (resetCode) editor.setValue(config.code, -1);
-
-    show('اكتبي الكود واضغطي «تشغيل الكود» لعرض النتيجة.');
-  }
-
-  languageSelect.addEventListener('change', () => {
-    if (isRunning) {
-      languageSelect.value = currentLanguage;
-      return;
-    }
-
-    setLanguage(languageSelect.value);
-  });
-
-  resetButton.addEventListener('click', () => {
-    if (!isRunning) setLanguage(currentLanguage);
-  });
-
-  runButton.addEventListener('click', runCode);
-
-  async function runCode() {
-    if (isRunning) return;
-
-    const config = examples[currentLanguage];
-    const sourceCode = editor.getValue();
-
-    if (!config) {
-      show('اللغة المحددة غير مدعومة.', 'error');
-      return;
-    }
-
-    if (!sourceCode.trim()) {
-      show('اكتبي الكود أولًا.', 'error');
-      editor.focus();
-      return;
-    }
-
-    isRunning = true;
-    runButton.disabled = true;
-    resetButton.disabled = true;
-    languageSelect.disabled = true;
-
-    show('جارٍ الاتصال بخدمة تنفيذ الأكواد...', 'running');
+    const timer = setTimeout(
+      abortRequest,
+      getRemaining(deadline)
+    );
 
     try {
-      const result = await executeCode(sourceCode, config.id);
-      displayResult(result);
+      const response = await fetch(url, {
+        ...options,
+        signal: requestController.signal
+      });
+
+      checkRun(id);
+      return response;
     } catch (error) {
-      console.error('Cody Academy execution error:', error);
+      checkRun(id);
 
-      show(
-        'تعذر تنفيذ الكود.\n\n' +
-        (error.message || 'حدث خطأ غير معروف.') +
-        '\n\nقد تكون خدمة التنفيذ غير متاحة أو تمنع طلبات المتصفح. ' +
-        'المحرر يعمل، لكن تشغيل اللغات يحتاج إلى خدمة تنفيذ متاحة.',
-        'error'
-      );
-    } finally {
-      isRunning = false;
-      runButton.disabled = false;
-      resetButton.disabled = false;
-      languageSelect.disabled = false;
-    }
-  }
-
-  async function executeCode(sourceCode, languageId) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-
-    let response;
-
-    try {
-      response = await fetch(
-        'https://ce.judge0.com/submissions?base64_encoded=false&wait=true',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            source_code: sourceCode,
-            language_id: languageId
-          }),
-          signal: controller.signal
-        }
-      );
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        throw new Error('انتهت مهلة الاتصال. حاولي مرة أخرى.');
+      if (Date.now() >= deadline || requestController.signal.aborted) {
+        throw new Error("انتهت مهلة الاتصال بخدمة التنفيذ.");
       }
 
       throw new Error(
-        'فشل الاتصال بالخدمة. تحققي من الإنترنت أو إعدادات CORS.'
+        "تعذر الاتصال بخدمة التنفيذ. تحققي من الإنترنت أو من إعدادات CORS."
       );
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(timer);
+      controller.signal.removeEventListener("abort", abortRequest);
     }
+  }
+
+  function loadPyodide() {
+    if (window.loadPyodide) {
+      if (!pyodidePromise) {
+        pyodidePromise = window.loadPyodide({
+          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"
+        }).catch(error => {
+          pyodidePromise = null;
+          throw error;
+        });
+      }
+
+      return pyodidePromise;
+    }
+
+    if (!pyodidePromise) {
+      pyodidePromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src =
+          "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js";
+        script.async = true;
+
+        const timer = setTimeout(() => {
+          script.remove();
+          reject(new Error("انتهت مهلة تحميل Python."));
+        }, TOTAL_TIMEOUT_MS);
+
+        script.onload = async () => {
+          clearTimeout(timer);
+
+          try {
+            if (typeof window.loadPyodide !== "function") {
+              throw new Error("تعذر تحميل محرك Python.");
+            }
+
+            resolve(await window.loadPyodide({
+              indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"
+            }));
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        script.onerror = () => {
+          clearTimeout(timer);
+          reject(new Error("فشل تحميل Python. تحققي من الإنترنت."));
+        };
+
+        document.head.appendChild(script);
+      }).catch(error => {
+        pyodidePromise = null;
+        throw error;
+      });
+    }
+
+    return pyodidePromise;
+  }
+
+  async function runPython(source, deadline, id) {
+    const pyodide = await loadPyodide();
+
+    checkRun(id);
+    getRemaining(deadline);
+
+    const captured = [];
+
+    pyodide.setStdout({
+      batched: text => captured.push(text)
+    });
+
+    pyodide.setStderr({
+      batched: text => captured.push(text)
+    });
+
+    try {
+      pyodide.runPython(source);
+      checkRun(id);
+
+      if (Date.now() > deadline) {
+        throw new Error("تجاوز تنفيذ Python المهلة المحددة.");
+      }
+
+      return captured.join("\n") || "تم التنفيذ دون مخرجات.";
+    } catch (error) {
+      if (id !== runId) throw error;
+
+      return [
+        captured.join("\n"),
+        "خطأ: " + (error.message || String(error))
+      ].filter(Boolean).join("\n");
+    } finally {
+      pyodide.setStdout({});
+      pyodide.setStderr({});
+    }
+  }
+
+  async function runJavaScript(source, deadline, id) {
+    getRemaining(deadline);
+
+    return new Promise((resolve, reject) => {
+      const frame = document.createElement("iframe");
+
+      frame.setAttribute("sandbox", "allow-scripts");
+      frame.setAttribute("title", "JavaScript execution");
+      frame.style.display = "none";
+
+      let finished = false;
+
+      function finish(error, result) {
+        if (finished) return;
+        finished = true;
+
+        clearTimeout(timer);
+        window.removeEventListener("message", onMessage);
+        frame.remove();
+
+        if (error) reject(error);
+        else resolve(result);
+      }
+
+      function onMessage(event) {
+        if (event.source !== frame.contentWindow) return;
+        if (event.data?.channel !== "cody-playground") return;
+        if (id !== runId) return;
+
+        if (event.data.type === "done") {
+          finish(null, event.data.output || "تم التنفيذ دون مخرجات.");
+        } else if (event.data.type === "error") {
+          finish(null, "خطأ: " + event.data.message);
+        }
+      }
+
+      const timer = setTimeout(() => {
+        finish(new Error("انتهت مهلة JavaScript."));
+      }, getRemaining(deadline));
+
+      window.addEventListener("message", onMessage);
+
+      const safeSource = JSON.stringify(source);
+
+      frame.srcdoc = `
+        <!doctype html>
+        <html>
+        <body>
+        <script>
+          (() => {
+            const channel = "cody-playground";
+            const logs = [];
+
+            const stringify = value => {
+              if (typeof value === "string") return value;
+              try { return JSON.stringify(value); }
+              catch { return String(value); }
+            };
+
+            console.log = (...args) =>
+              logs.push(args.map(stringify).join(" "));
+            console.info = console.log;
+            console.warn = (...args) =>
+              logs.push("تحذير: " + args.map(stringify).join(" "));
+            console.error = (...args) =>
+              logs.push("خطأ: " + args.map(stringify).join(" "));
+
+            window.onerror = (message, url, line, column, error) => {
+              parent.postMessage({
+                channel,
+                type: "error",
+                message: error?.message || String(message)
+              }, "*");
+              return true;
+            };
+
+            Promise.resolve()
+              .then(() => (new Function("console", ${safeSource}))(console))
+              .then(() => {
+                parent.postMessage({
+                  channel,
+                  type: "done",
+                  output: logs.join("\\n")
+                }, "*");
+              })
+              .catch(error => {
+                parent.postMessage({
+                  channel,
+                  type: "error",
+                  message: error?.message || String(error)
+                }, "*");
+              });
+          })();
+        <\/script>
+        </body>
+        </html>
+      `;
+
+      document.body.appendChild(frame);
+
+      activeController.signal.addEventListener("abort", () => {
+        finish(new Error("تم إلغاء التنفيذ."));
+      }, { once: true });
+    });
+  }
+
+  async function runCpp(source, deadline, id) {
+    const baseUrl = "https://ce.judge0.com";
+
+    const response = await fetchWithDeadline(
+      `${baseUrl}/submissions?base64_encoded=false&wait=false`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          source_code: source,
+          language_id: 54
+        })
+      },
+      deadline,
+      id
+    );
 
     if (!response.ok) {
-      throw new Error(
-        'خدمة التنفيذ أعادت HTTP ' + response.status +
-        '. جرّبي لاحقًا أو استخدمي خدمة تنفيذ أخرى.'
+      throw new Error(`خدمة C++ أعادت HTTP ${response.status}.`);
+    }
+
+    const submission = await response.json();
+
+    if (!submission.token) {
+      throw new Error(submission.error || "لم يصل رمز التنفيذ.");
+    }
+
+    while (true) {
+      checkRun(id);
+
+      const check = await fetchWithDeadline(
+        `${baseUrl}/submissions/${encodeURIComponent(submission.token)}?base64_encoded=false&fields=stdout,stderr,compile_output,message,status`,
+        { method: "GET" },
+        deadline,
+        id
       );
-    }
 
-    const result = await response.json();
-
-    if (result.error) {
-      throw new Error(result.error);
-    }
-
-    if (!result.status) {
-      throw new Error('خدمة التنفيذ لم تُرجع حالة التنفيذ.');
-    }
-
-    // إذا كانت النتيجة ما زالت قيد التنفيذ، نتابع باستخدام الرمز.
-    if (result.token &&
-        (result.status.id === 1 || result.status.id === 2)) {
-      return await waitForResult(result.token);
-    }
-
-    return result;
-  }
-
-  async function waitForResult(token) {
-    for (let attempt = 0; attempt < 20; attempt++) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      let response;
-
-      try {
-        response = await fetch(
-          'https://ce.judge0.com/submissions/' +
-          encodeURIComponent(token) +
-          '?base64_encoded=false&fields=stdout,stderr,compile_output,message,status,time,memory'
-        );
-      } catch {
-        throw new Error('انقطع الاتصال أثناء انتظار النتيجة.');
+      if (!check.ok) {
+        throw new Error(`تعذر جلب النتيجة: HTTP ${check.status}.`);
       }
 
-      if (!response.ok) {
-        throw new Error(
-          'تعذر جلب النتيجة. HTTP ' + response.status
-        );
-      }
-
-      const result = await response.json();
-      const statusId = result.status && result.status.id;
+      const result = await check.json();
+      const statusId = result.status?.id;
 
       if (statusId !== 1 && statusId !== 2) {
-        return result;
+        return [
+          result.stdout,
+          result.stderr ? "خطأ أثناء التشغيل:\n" + result.stderr : "",
+          result.compile_output
+            ? "خطأ في الترجمة:\n" + result.compile_output
+            : "",
+          result.message ? "رسالة:\n" + result.message : "",
+          result.status?.description
+            ? "حالة التنفيذ: " + result.status.description
+            : ""
+        ].filter(Boolean).join("\n\n") || "تم التنفيذ دون مخرجات.";
       }
 
-      show(
-        'جارٍ تنفيذ الكود... (' + (attempt + 1) + '/20)',
-        'running'
-      );
+      await wait(POLL_INTERVAL_MS, activeController.signal, deadline);
     }
-
-    throw new Error('استغرق التنفيذ وقتًا طويلًا. حاولي مرة أخرى.');
   }
 
-  function displayResult(result) {
-    const parts = [];
-    const status = result.status?.description || 'غير معروف';
+  async function executeCode() {
+    if (runButton.disabled) return;
 
-    if (result.stdout) {
-      parts.push(result.stdout.trimEnd());
+    const language = getLanguage();
+    const source = editor.getValue();
+
+    if (!source.trim()) {
+      setOutput("اكتبي الكود أولًا.");
+      setStatus("لا يوجد كود للتنفيذ.");
+      return;
     }
 
-    if (result.stderr) {
-      parts.push('خطأ أثناء التشغيل:\n' + result.stderr.trim());
+    if (source.length > MAX_CODE_LENGTH) {
+      setOutput("حجم الكود أكبر من الحد المسموح.");
+      return;
     }
 
-    if (result.compile_output) {
-      parts.push('خطأ في الترجمة:\n' + result.compile_output.trim());
+    if (!examples[language]) {
+      setOutput("اللغة المحددة غير مدعومة.");
+      return;
     }
 
-    if (result.message) {
-      parts.push('رسالة الخدمة:\n' + result.message);
+    cancelCurrentRun();
+
+    const id = runId;
+    const deadline = Date.now() + TOTAL_TIMEOUT_MS;
+
+    activeController = new AbortController();
+    setBusy(true);
+    setOutput("جارٍ تنفيذ الكود...");
+    setStatus("جارٍ التنفيذ، برجاء الانتظار.");
+
+    try {
+      let result;
+
+      if (language === "javascript") {
+        result = await runJavaScript(source, deadline, id);
+      } else if (language === "python") {
+        result = await runPython(source, deadline, id);
+      } else {
+        result = await runCpp(source, deadline, id);
+      }
+
+      checkRun(id);
+      setOutput(result);
+      setStatus("انتهى التنفيذ.");
+    } catch (error) {
+      if (id === runId) {
+        setOutput(error.message || "حدث خطأ غير متوقع.");
+        setStatus("تعذر إكمال التنفيذ.");
+      }
+    } finally {
+      if (id === runId) {
+        activeController = null;
+        setBusy(false);
+      }
     }
-
-    if (parts.length === 0) {
-      parts.push(
-        status === 'Accepted'
-          ? 'تم التنفيذ بنجاح، لكن لا توجد مخرجات.'
-          : 'لا توجد مخرجات.'
-      );
-    }
-
-    parts.push('حالة التنفيذ: ' + status);
-
-    if (result.time != null) {
-      parts.push('وقت التنفيذ: ' + result.time + ' ثانية');
-    }
-
-    show(
-      parts.join('\n\n'),
-      status === 'Accepted' ? 'success' : 'error'
-    );
   }
 
-  setLanguage(currentLanguage);
+  function resetEditor() {
+    cancelCurrentRun();
 
-  console.log('Cody Academy editor initialized successfully.');
+    const language = getLanguage();
+    editor.setOption("mode", examples[language].mode);
+    editor.setValue(examples[language].code);
+
+    setOutput("الكود جاهز للتشغيل.");
+    setStatus("جاهز للكتابة.");
+    editor.refresh();
+    editor.focus();
+  }
+
+  languageSelect.addEventListener("change", resetEditor);
+  resetButton.addEventListener("click", resetEditor);
+  runButton.addEventListener("click", executeCode);
+
+  setOutput("أهلًا بكِ في Cody Academy!");
+  setStatus("جاهز للكتابة.");
+  resetEditor();
 });
