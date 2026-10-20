@@ -1,7 +1,14 @@
 
 import { db } from "./firebase-config.js";
-import { requireUser, ensureUserProfile, logoutUser } from "./auth.js";
-import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import {
+  requireUser,
+  ensureUserProfile,
+  logoutUser
+} from "./auth.js";
+import {
+  doc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { showToast } from "./ui.js";
 
 export const App = {
@@ -27,7 +34,8 @@ export const App = {
 
         const data = snapshot.data();
 
-        this.user = data.displayName || user.displayName || "متعلم";
+        this.user =
+          data.displayName || user.displayName || "متعلم";
         this.xp = Number(data.xp) || 0;
         this.coins = Number(data.coins) || 0;
 
@@ -35,26 +43,35 @@ export const App = {
       },
       error => {
         console.error("Profile loading error:", error);
-        showToast?.("تعذر تحميل بيانات حسابك. تحققي من الاتصال.", "error");
+        showToast?.(
+          "تعذر تحميل بيانات حسابك. تحققي من الاتصال.",
+          "error"
+        );
       }
     );
 
-    document.querySelectorAll(".logout").forEach(element => {
-      if (element.dataset.logoutBound === "true") return;
+    
+    document
+      .querySelectorAll(".logout, #logoutButton")
+      .forEach(element => {
+        if (element.dataset.logoutBound === "true") return;
 
-      element.dataset.logoutBound = "true";
+        element.dataset.logoutBound = "true";
 
-      element.addEventListener("click", async event => {
-        event.preventDefault();
+        element.addEventListener("click", async event => {
+          event.preventDefault();
 
-        try {
-          await logoutUser();
-        } catch (error) {
-          console.error("Logout error:", error);
-          showToast?.("تعذر تسجيل الخروج. حاولي مرة أخرى.", "error");
-        }
+          try {
+            await logoutUser();
+          } catch (error) {
+            console.error("Logout error:", error);
+            showToast?.(
+              "تعذر تسجيل الخروج. حاولي مرة أخرى.",
+              "error"
+            );
+          }
+        });
       });
-    });
   },
 
   updateUI() {
@@ -72,16 +89,26 @@ export const App = {
   },
 
   highlightNav() {
-    const current = location.pathname.split("/").pop() || "index.html";
+    const current =
+      location.pathname.split("/").pop() || "index.html";
 
-    document.querySelectorAll(".nav-item, .mobile-nav-item").forEach(link => {
-      const href = link.getAttribute("href");
-      if (!href || href === "#") return;
+    document
+      .querySelectorAll(".nav-item, .mobile-nav-item")
+      .forEach(link => {
+        const href = link.getAttribute("href");
 
-      const destination = new URL(href, location.href).pathname.split("/").pop();
+        if (!href || href === "#") return;
 
-      link.classList.toggle("active", destination === current);
-    });
+        const destination = new URL(
+          href,
+          location.href
+        ).pathname.split("/").pop();
+
+        link.classList.toggle(
+          "active",
+          destination === current
+        );
+      });
   },
 
   addXP() {
@@ -95,8 +122,12 @@ export const App = {
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
-    App.init().catch(error => console.error("App initialization error:", error));
+    App.init().catch(error => {
+      console.error("App initialization error:", error);
+    });
   });
 } else {
-  App.init().catch(error => console.error("App initialization error:", error));
+  App.init().catch(error => {
+    console.error("App initialization error:", error);
+  });
 }
