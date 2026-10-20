@@ -16,8 +16,22 @@ export const App = {
   xp: 0,
   coins: 0,
   unsubscribeProfile: null,
+  initPromise: null,
 
-  async init() {
+  init() {
+    // Prevent duplicate initialization.
+    if (this.initPromise) return this.initPromise;
+
+    this.initPromise = this.initialize();
+
+    this.initPromise.catch(() => {
+      this.initPromise = null;
+    });
+
+    return this.initPromise;
+  },
+
+  async initialize() {
     this.highlightNav();
 
     const user = await requireUser();
@@ -30,27 +44,48 @@ export const App = {
     this.unsubscribeProfile = onSnapshot(
       reference,
       snapshot => {
-        if (!snapshot.exists()) return;
+        if (!snapshot.exists()) {
+          showToast(
+            "لم يتم العثور على بيانات حسابك.",
+            "warning"
+          );
+          return;
+        }
 
         const data = snapshot.data();
 
         this.user =
-          data.displayName || user.displayName || "متعلم";
-        this.xp = Number(data.xp) || 0;
-        this.coins = Number(data.coins) || 0;
+          data.displayName ||
+          user.displayName ||
+          "متعلم";
+
+        this.xp = this.toSafeNumber(data.xp);
+        this.coins = this.toSafeNumber(data.coins);
 
         this.updateUI();
       },
       error => {
         console.error("Profile loading error:", error);
-        showToast?.(
+
+        showToast(
           "تعذر تحميل بيانات حسابك. تحققي من الاتصال.",
           "error"
         );
       }
     );
 
-    
+    this.bindLogout();
+  },
+
+  toSafeNumber(value) {
+    const number = Number(value);
+
+    return Number.isFinite(number) && number >= 0
+      ? number
+      : 0;
+  },
+
+  bindLogout() {
     document
       .querySelectorAll(".logout, #logoutButton")
       .forEach(element => {
@@ -61,11 +96,16 @@ export const App = {
         element.addEventListener("click", async event => {
           event.preventDefault();
 
+          element.setAttribute("aria-busy", "true");
+
           try {
             await logoutUser();
           } catch (error) {
             console.error("Logout error:", error);
-            showToast?.(
+
+            element.removeAttribute("aria-busy");
+
+            showToast(
               "تعذر تسجيل الخروج. حاولي مرة أخرى.",
               "error"
             );
@@ -99,33 +139,48 @@ export const App = {
 
         if (!href || href === "#") return;
 
-        const destination = new URL(
-          href,
-          location.href
-        ).pathname.split("/").pop();
+        try {
+          const destination = new URL(
+            href,
+            location.href
+          ).pathname.split("/").pop();
 
-        link.classList.toggle(
-          "active",
-          destination === current
-        );
+          link.classList.toggle(
+            "active",
+            destination === current
+          );
+        } catch (error) {
+          console.warn("Invalid navigation link:", href);
+        }
       });
   },
 
+  // Rewards must be handled by trusted server-side logic.
   addXP() {
     throw new Error("النقاط تُمنح من الخادم فقط.");
   },
 
   addCoins() {
     throw new Error("العملات لا تُعدل من المتصفح.");
+  },
+
+  destroy() {
+    this.unsubscribeProfile?.();
+    this.unsubscribeProfile = null;
+    this.initPromise = null;
   }
 };
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    App.init().catch(error => {
-      console.error("App initialization error:", error);
-    });
-  });
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      App.init().catch(error => {
+        console.error("App initialization error:", error);
+      });
+    },
+    { once: true }
+  );
 } else {
   App.init().catch(error => {
     console.error("App initialization error:", error);
