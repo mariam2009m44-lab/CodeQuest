@@ -12,226 +12,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
 
-  <style>
-    :root {
-      --bg-base: #050810;
-      --bg-surface: #0B1121;
-      --bg-glass: rgba(15, 23, 42, 0.75);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-glow: rgba(34, 211, 238, 0.3);
-      --accent-cyan: #22D3EE;
-      --accent-purple: #A78BFA;
-      --accent-gold: #FBBF24;
-      --accent-green: #34D399;
-      --text-main: #F8FAFC;
-      --text-muted: #94A3B8;
-      --radius-card: 24px;
-      --font-main: 'Cairo', sans-serif;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      background-color: var(--bg-base) !important;
-      color: var(--text-main) !important;
-      font-family: var(--font-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      background-image: 
-        radial-gradient(circle at 15% 50%, rgba(34, 211, 238, 0.04) 0%, transparent 40%),
-        radial-gradient(circle at 85% 30%, rgba(167, 139, 250, 0.04) 0%, transparent 40%) !important;
-    }
-
-    a { text-decoration: none; color: inherit; }
-
-    .space-app { display: flex; min-height: 100vh; }
-    
-    .space-sidebar {
-      width: 280px;
-      background: var(--bg-surface);
-      border-left: 1px solid var(--border-subtle);
-      padding: 30px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      z-index: 100;
-    }
-
-    .space-brand { display: flex; align-items: center; gap: 12px; font-size: 1.5rem; font-weight: 900; color: #fff; }
-    .brand-mark { color: var(--accent-cyan); font-size: 2rem; display: grid; place-items: center; filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.4)); }
-    .brand-name span { color: var(--accent-cyan); }
-    
-    .sidebar-caption { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-top: 10px; }
-
-    .space-nav { display: flex; flex-direction: column; gap: 8px; }
-    .nav-link {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 18px; border-radius: 16px;
-      color: var(--text-muted); font-weight: 700; font-size: 0.95rem;
-      transition: all 0.3s ease; border: 1px solid transparent;
-    }
-    .nav-link i { font-size: 1.2rem; transition: 0.3s; }
-    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.03); }
-    .nav-link.active { 
-      background: linear-gradient(90deg, rgba(34, 211, 238, 0.1) 0%, transparent 100%);
-      color: var(--accent-cyan); border-right: 3px solid var(--accent-cyan); 
-      border-radius: 0 16px 16px 0;
-    }
-    .nav-link.active i { filter: drop-shadow(0 0 8px var(--accent-cyan)); }
-
-    .sidebar-mission {
-      background: linear-gradient(145deg, rgba(34, 211, 238, 0.08), rgba(167, 139, 250, 0.08));
-      border: 1px solid var(--border-glow);
-      padding: 20px; border-radius: var(--radius-card);
-      text-align: center; margin-top: auto; position: relative;
-    }
-    .mission-label { font-size: 0.75rem; color: var(--accent-cyan); font-weight: 800; letter-spacing: 1px; }
-    .sidebar-mission strong { display: block; color: #fff; margin: 8px 0; font-size: 1rem; }
-    .sidebar-mission p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; }
-    .mission-link { display: inline-block; color: var(--bg-base); background: var(--accent-cyan); padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; transition: 0.2s; }
-    .mission-link:hover { filter: brightness(1.2); transform: translateY(-2px); }
-    
-    .logout-link { display: flex; align-items: center; gap: 10px; color: #FB7185; font-weight: 700; padding: 14px; border-radius: 16px; transition: 0.2s; }
-    .logout-link:hover { background: rgba(251, 113, 133, 0.1); }
-    .sidebar-version { text-align: center; font-size: 0.65rem; color: rgba(255,255,255,0.2); letter-spacing: 1px; }
-
-    .space-main {
-      flex: 1; margin-right: 280px; padding: 30px 40px;
-      display: flex; flex-direction: column; gap: 30px;
-      max-width: 1400px;
-    }
-
-    .space-topbar { display: flex; justify-content: space-between; align-items: center; }
-    .page-kicker { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
-    .online-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); }
-    .topbar-title h1 { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 6px; }
-    .topbar-title h1 span.js-user-name { color: var(--accent-cyan); text-shadow: 0 0 15px rgba(34,211,238,0.3); }
-    .topbar-title p { color: var(--text-muted); font-size: 0.95rem; margin-top: 4px; }
-    
-    .topbar-actions { display: flex; align-items: center; gap: 16px; }
-    .icon-action { width: 45px; height: 45px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 1.2rem; transition: 0.3s; }
-    .icon-action:hover { color: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(251,191,36,0.2); }
-    .topbar-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--bg-surface); border: 2px solid var(--accent-purple); display: grid; place-items: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 15px rgba(167,139,250,0.2); }
-
-    .wallet-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .wallet-card { 
-      background: var(--bg-glass); backdrop-filter: blur(12px);
-      border: 1px solid var(--border-subtle); border-radius: 20px;
-      padding: 20px; display: flex; align-items: center; gap: 16px;
-      position: relative; overflow: hidden;
-    }
-    .wallet-icon { width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; font-size: 1.5rem; }
-    .wallet-coins .wallet-icon { background: rgba(251,191,36,0.1); color: var(--accent-gold); }
-    .wallet-xp .wallet-icon { background: rgba(34,211,238,0.1); color: var(--accent-cyan); }
-    .wallet-copy small { display: block; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
-    .wallet-copy strong { font-size: 1.5rem; font-weight: 900; color: #fff; }
-    .wallet-copy strong small { display: inline; font-size: 0.8rem; color: var(--text-muted); }
-
-    .space-hero {
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(11, 17, 33, 0.9));
-      border: 1px solid var(--border-subtle); border-radius: var(--radius-card);
-      padding: 50px; display: flex; justify-content: space-between; align-items: center;
-      position: relative; overflow: hidden;
-    }
-    .space-hero::before {
-      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(167,139,250,0.05) 0%, transparent 60%);
-      z-index: 0;
-    }
-    .hero-content { position: relative; z-index: 1; max-width: 500px; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(34,211,238,0.1); color: var(--accent-cyan); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; margin-bottom: 20px; border: 1px solid rgba(34,211,238,0.2); }
-    .hero-content h2 { font-size: 2.5rem; font-weight: 900; color: #fff; line-height: 1.3; margin-bottom: 16px; }
-    .hero-content h2 span { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero-content p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 30px; }
-    .hero-actions { display: flex; gap: 16px; }
-    .button-primary { background: var(--accent-cyan); color: var(--bg-base); padding: 14px 28px; border-radius: 16px; font-weight: 900; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 10px 25px rgba(34,211,238,0.2); }
-    .button-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(34,211,238,0.4); filter: brightness(1.1); }
-    .button-ghost { background: transparent; color: #fff; padding: 14px 28px; border-radius: 16px; font-weight: 800; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border-subtle); transition: 0.3s; }
-    .button-ghost:hover { background: rgba(255,255,255,0.05); }
-
-    .dashboard-section { display: flex; flex-direction: column; gap: 20px; }
-    .section-heading { display: flex; justify-content: space-between; align-items: flex-end; }
-    .section-eyebrow { font-size: 0.75rem; color: var(--accent-purple); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-    .section-heading h2 { font-size: 1.6rem; font-weight: 900; color: #fff; margin: 4px 0 8px; }
-    .section-heading p { color: var(--text-muted); font-size: 0.9rem; }
-    .section-link { color: var(--accent-cyan); font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-    .section-link:hover { gap: 10px; }
-
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .stat-card { background: var(--bg-glass); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 24px; position: relative; overflow: hidden; transition: 0.3s; }
-    .stat-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-3px); }
-    .stat-icon { font-size: 1.8rem; margin-bottom: 16px; }
-    .stat-label { display: block; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
-    .stat-number { font-size: 2rem; font-weight: 900; color: #fff; display: block; margin-bottom: 8px; }
-    .stat-foot { font-size: 0.8rem; color: var(--text-muted); }
-    .stat-lessons .stat-icon { color: var(--accent-cyan); }
-    .stat-level .stat-icon { color: var(--accent-gold); }
-    .stat-streak .stat-icon { color: #FB7185; }
-    .stat-projects .stat-icon { color: var(--accent-green); }
-
-    .courses-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .course-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; }
-    .course-card:hover { border-color: var(--accent-cyan); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(34,211,238,0.05); }
-    .course-art { height: 140px; background: #0B1121; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border-subtle); }
-    .course-planet { font-size: 3rem; font-weight: 900; color: #fff; z-index: 2; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
-    .course-tag { position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.5); color: var(--text-muted); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--border-subtle); }
-    .course-content { padding: 24px; display: flex; flex-direction: column; flex: 1; }
-    .course-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .course-title-row h3 { font-size: 1.2rem; font-weight: 900; color: #fff; }
-    .course-content p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 24px; flex: 1; }
-    .course-progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
-    .course-progress { height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-    .course-progress-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); border-radius: 10px; width: 0%; transition: width 1s ease; }
-    .course-footer { display: flex; justify-content: space-between; align-items: center; color: var(--accent-cyan); font-weight: 800; font-size: 0.9rem; }
-
-    .activities-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .activity-card { background: var(--bg-glass); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: 0.3s; }
-    .activity-card:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.15); }
-    .activity-icon { width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; font-size: 1.5rem; }
-    .activity-game { background: rgba(167,139,250,0.1); color: var(--accent-purple); }
-    .activity-code { background: rgba(34,211,238,0.1); color: var(--accent-cyan); }
-    .activity-project { background: rgba(251,191,36,0.1); color: var(--accent-gold); }
-    .activity-copy strong { display: block; color: #fff; font-size: 1rem; font-weight: 800; margin-bottom: 4px; }
-    .activity-copy small { color: var(--text-muted); font-size: 0.8rem; }
-    .activity-arrow { margin-right: auto; color: var(--text-muted); }
-
-    .space-footer { text-align: center; padding: 40px 0 20px; border-top: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 0.9rem; }
-    .footer-brand { color: #fff; font-weight: 900; font-size: 1.2rem; margin-bottom: 8px; display: flex; justify-content: center; align-items: center; gap: 8px; }
-
-    .mobile-nav { display: none; }
-
-    @media (max-width: 1024px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .courses-grid { grid-template-columns: repeat(2, 1fr); }
-      .activities-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 768px) {
-      .space-sidebar { display: none; }
-      .space-main { margin-right: 0; padding: 20px; padding-bottom: 100px; }
-      .space-hero { flex-direction: column; text-align: center; padding: 30px; }
-      .hero-actions { justify-content: center; flex-direction: column; }
-      .wallet-row { grid-template-columns: 1fr; }
-      .stats-grid, .courses-grid, .activities-grid { grid-template-columns: 1fr; }
-      .section-heading { flex-direction: column; align-items: flex-start; gap: 12px; }
-      
-      .mobile-nav {
-        display: flex; position: fixed; bottom: 0; left: 0; right: 0;
-        background: rgba(11, 17, 33, 0.95); backdrop-filter: blur(10px);
-        border-top: 1px solid var(--border-subtle);
-        padding: 10px 5px calc(10px + env(safe-area-inset-bottom));
-        justify-content: space-around; z-index: 1000;
-      }
-      .mobile-nav a { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; gap: 4px; padding: 5px; }
-      .mobile-nav a.active { color: var(--accent-cyan); }
-      .mobile-nav a i { font-size: 1.4rem; }
-    }
-  </style>
+  <!-- ربط ملف الـ CSS الجديد بتاعك -->
+  <link rel="stylesheet" href="css/space-theme.css">
 </head>
 
-<body>
+<body class="cody-dashboard">
   <div class="space-app">
     <aside class="space-sidebar">
       <a class="space-brand" href="dashboard.html">
@@ -293,7 +78,7 @@
           </div>
         </div>
         <div class="hero-universe">
-           <div class="cody-mascot" style="font-size: 8rem; filter: drop-shadow(0 0 40px rgba(34,211,238,0.2));">🤖</div>
+           <div class="cody-mascot">🤖</div>
         </div>
       </section>
 
@@ -315,7 +100,7 @@
           </article>
           <article class="stat-card stat-level">
             <div class="stat-icon"><i class="ri-trophy-fill"></i></div>
-                   <span class="stat-label">مستواك الحالي</span>
+            <span class="stat-label">مستواك الحالي</span>
             <strong class="stat-number"><span class="js-user-level">1</span></strong>
             <span class="stat-foot">بطل بيتطور كل يوم 🏆</span>
           </article>
@@ -345,7 +130,7 @@
         </div>
         <div class="courses-grid">
           <a href="languages.html?language=python" class="course-card">
-            <div class="course-art" style="background: linear-gradient(135deg, rgba(52,211,153,0.1), transparent);">
+            <div class="course-art">
               <span class="course-planet">Py</span>
               <span class="course-tag">بداية سهلة</span>
             </div>
@@ -358,7 +143,7 @@
             </div>
           </a>
           <a href="languages.html?language=javascript" class="course-card">
-            <div class="course-art" style="background: linear-gradient(135deg, rgba(251,191,36,0.1), transparent);">
+            <div class="course-art">
               <span class="course-planet">JS</span>
               <span class="course-tag">تجارب تفاعلية</span>
             </div>
@@ -371,7 +156,7 @@
             </div>
           </a>
           <a href="languages.html?language=cpp" class="course-card">
-            <div class="course-art" style="background: linear-gradient(135deg, rgba(167,139,250,0.1), transparent);">
+            <div class="course-art">
               <span class="course-planet">C++</span>
               <span class="course-tag">مستكشف شجاع</span>
             </div>
