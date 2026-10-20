@@ -1,10 +1,9 @@
 import { db } from "./firebase-config.js";
-import { logoutUser } from "./auth.js";
+import { logoutUser, requireUser, ensureUserProfile } from "./auth.js";
 import {
   doc,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
 
 function showToast(message, type = "info") {
   let container = document.getElementById("toast-container");
@@ -30,6 +29,21 @@ function showToast(message, type = "info") {
   }, 3500);
 }
 
+function setProgress(selector, value) {
+  const progress = Math.min(100, Number(value) || 0);
+  const bar = document.querySelector(selector);
+  if (!bar) return;
+
+  const fill = bar.querySelector(".course-progress-fill");
+  if (fill) fill.style.width = `${progress}%`;
+
+  bar.setAttribute("aria-valuenow", String(progress));
+
+  const card = bar.closest(".course-card");
+  const label = card?.querySelector(".course-progress-info strong");
+  if (label) label.textContent = `${progress}%`;
+}
+
 export const App = {
   user: "متعلم",
   xp: 0,
@@ -39,60 +53,42 @@ export const App = {
 
   init() {
     if (this.initPromise) return this.initPromise;
-
     this.initPromise = this.initialize();
-
-    this.initPromise.catch(() => {
-      this.initPromise = null;
-    });
-
+    this.initPromise.catch(() => { this.initPromise = null; });
     return this.initPromise;
   },
 
   async initialize() {
     this.highlightNav();
-
-    // التحقق من حالة المصادقة من خلال جلب المستخدِم الحالي عبر authReady إن وجد
-    import("./auth.js").then(async ({ requireUser, ensureUserProfile }) => {
-      try {
-        const user = await requireUser();
-        await ensureUserProfile(user);
-
-        const reference = doc(db, "users", user.uid);
-
-        this.unsubscribeProfile?.();
-
-        this.unsubscribeProfile = onSnapshot(
-          reference,
-          snapshot => {
-            if (!snapshot.exists()) {
-              showToast("لم يتم العثور على بيانات حسابك.", "warning");
-              return;
-            }
-
-            const data = snapshot.data();
-
-            this.user =
-              data.displayName ||
-              user.displayName ||
-              "متعلم";
-
-            this.xp = this.toSafeNumber(data.xp);
-            this.coins = this.toSafeNumber(data.coins);
-
-            this.updateUI();
-          },
-          error => {
-            console.error("Profile loading error:", error);
-            showToast("تعذر تحميل بيانات حسابك. تحققي من الاتصال.", "error");
-          }
-        );
-      } catch (err) {
-        // إذا كان المستخدم غير مسجل دخول سيقوم requireUser بالتوجيه للـ login تلقائياً
-      }
-    });
-
     this.bindLogout();
+
+    try {
+      const user = await requireUser();
+      await ensureUserProfile(user);
+      const reference = doc(db, "users", user.uid);
+
+      this.unsubscribeProfile?.();
+      this.unsubscribeProfile = onSnapshot(
+        reference,
+        snapshot => {
+          if (!snapshot.exists()) {
+            showToast("لم يتم العثور على بيانات حسابك.", "warning");
+            return;
+          }
+          const data = snapshot.data();
+          this.user = data.displayName || user.displayName || "متعلم";
+          this.xp = this.toSafeNumber(data.xp);
+          this.coins = this.toSafeNumber(data.coins);
+          this.updateUI(data);
+        },
+        error => {
+          console.error("Profile loading error:", error);
+          showToast("تعذر تحميل بيانات حسابك. تحققي من الاتصال.", "error");
+        }
+      );
+    } catch (err) {
+      console.error("Authentication error:", err);
+    }
   },
 
   toSafeNumber(value) {
@@ -101,67 +97,56 @@ export const App = {
   },
 
   bindLogout() {
-    document
-      .querySelectorAll(".logout, #logoutButton")
-      .forEach(element => {
-        if (element.dataset.logoutBound === "true") return;
-
-        element.dataset.logoutBound = "true";
-
-        element.addEventListener("click", async event => {
-          event.preventDefault();
-          element.setAttribute("aria-busy", "true");
-
-          try {
-            await logoutUser();
-          } catch (error) {
-            console.error("Logout error:", error);
-            element.removeAttribute("aria-busy");
-            showToast("تعذر تسجيل الخروج. حاولي مرة أخرى.", "error");
-          }
-        });
+    document.querySelectorAll(".logout, #logoutButton").forEach(element => {
+      if (element.dataset.logoutBound === "true") return;
+      element.dataset.logoutBound = "true";
+      element.addEventListener("click", async event => {
+        event.preventDefault();
+        element.setAttribute("aria-busy", "true");
+        try {
+          await logoutUser();
+        } catch (error) {
+          console.error("Logout error:", error);
+          element.removeAttribute("aria-busy");
+          showToast("تعذر تسجيل الخروج. حاولي مرة أخرى.", "error");
+        }
       });
+    });
   },
 
-  updateUI() {
-    document.querySelectorAll(".js-user-name").forEach(element => {
-      element.textContent = this.user;
-    });
+  updateUI(data = {}) {
+    document.querySelectorAll(".js-user-name").forEach(el => el.textContent = this.user);
+    document.querySelectorAll(".js-user-xp").forEach(el => el.textContent = this.xp);
+    document.querySelectorAll(".js-user-coins").forEach(el => el.textContent = this.coins);
 
-    document.querySelectorAll(".js-user-xp").forEach(element => {
-      element.textContent = this.xp;
-    });
-
-    document.querySelectorAll(".js-user-coins").forEach(element => {
-      element.textContent = this.coins;
-    });
+    const progress = data.languageProgress || {};
+    if (Object.prototype.hasOwnProperty.call(progress, "python")) {
+      setProgress(".course-python .course-progress", progress.python);
+    }
+    if (Object.prototype.hasOwnProperty.call(progress, "javascript")) {
+      setProgress(".course-javascript .course-progress", progress.javascript);
+    }
+    if (Object.prototype.hasOwnProperty.call(progress, "cpp")) {
+      setProgress(".course-cpp .course-progress", progress.cpp);
+    }
   },
 
   highlightNav() {
     const current = location.pathname.split("/").pop() || "index.html";
-
-    document
-      .querySelectorAll(".nav-link, .mobile-nav a, .nav-item")
-      .forEach(link => {
-        const href = link.getAttribute("href");
-        if (!href || href === "#") return;
-
-        try {
-          const destination = new URL(href, location.href).pathname.split("/").pop();
-          link.classList.toggle("active", destination === current);
-        } catch (error) {
-          console.warn("Invalid navigation link:", href);
-        }
-      });
+    document.querySelectorAll(".nav-link, .mobile-nav a, .nav-item").forEach(link => {
+      const href = link.getAttribute("href");
+      if (!href || href === "#") return;
+      try {
+        const destination = new URL(href, location.href).pathname.split("/").pop();
+        link.classList.toggle("active", destination === current);
+      } catch (error) {
+        console.warn("Invalid navigation link:", href);
+      }
+    });
   },
 
-  addXP() {
-    throw new Error("النقاط تُمنح من الخادم فقط.");
-  },
-
-  addCoins() {
-    throw new Error("العملات لا تُعدل من المتصفح.");
-  },
+  addXP() { throw new Error("النقاط تُمنح من الخادم فقط."); },
+  addCoins() { throw new Error("العملات لا تُعدل من المتصفح."); },
 
   destroy() {
     this.unsubscribeProfile?.();
@@ -171,17 +156,9 @@ export const App = {
 };
 
 if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-      App.init().catch(error => {
-        console.error("App initialization error:", error);
-      });
-    },
-    { once: true }
-  );
+  document.addEventListener("DOMContentLoaded", () => {
+    App.init().catch(error => console.error("App initialization error:", error));
+  }, { once: true });
 } else {
-  App.init().catch(error => {
-    console.error("App initialization error:", error);
-  });
+  App.init().catch(error => console.error("App initialization error:", error));
 }
