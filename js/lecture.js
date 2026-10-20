@@ -1,6 +1,4 @@
 
-import { showToast } from "./ui.js";
-
 const params = new URLSearchParams(location.search);
 const lang = params.get("lang") || "javascript";
 const chapterIdx = Number.parseInt(params.get("chapter") || "0", 10);
@@ -24,23 +22,23 @@ const languages = {
   }
 };
 
-const config = languages[lang] || languages.javascript;
-
+const config = languages[lang];
 const $ = (id) => document.getElementById(id);
 
 const editorElement = $("codeEditor");
 const terminal = $("terminalOutput");
 
-let editor;
+let editor = null;
 let currentLesson = null;
 let currentData = null;
 let selectedOptionIdx = null;
 let pythonWorker = null;
 let executionId = 0;
 let running = false;
+let pythonTimeout = null;
 
 function showOutput(message) {
-  terminal.textContent = String(message ?? "");
+  if (terminal) terminal.textContent = String(message ?? "");
 }
 
 function showError(message) {
@@ -57,13 +55,9 @@ function setRunning(value) {
   }
 }
 
-function escapeText(value) {
-  return String(value ?? "");
-}
-
 function displayLessonText(id, value) {
   const element = $(id);
-  if (element) element.textContent = escapeText(value);
+  if (element) element.textContent = String(value ?? "");
 }
 
 function getLessonCode(lesson) {
@@ -71,6 +65,11 @@ function getLessonCode(lesson) {
 }
 
 function stopPythonWorker() {
+  if (pythonTimeout !== null) {
+    clearTimeout(pythonTimeout);
+    pythonTimeout = null;
+  }
+
   if (pythonWorker) {
     pythonWorker.terminate();
     pythonWorker = null;
@@ -92,7 +91,11 @@ function makePythonWorker() {
 
       try {
         if (!pyodide) {
-          self.postMessage({ id, type: "status", text: "تحميل بيئة Python..." });
+          self.postMessage({
+            id,
+            type: "status",
+            text: "تحميل بيئة Python..."
+          });
 
           importScripts(
             "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"
@@ -134,11 +137,11 @@ function makePythonWorker() {
 
   const workerUrl = URL.createObjectURL(blob);
 
-  const worker = new Worker(workerUrl);
-
-  URL.revokeObjectURL(workerUrl);
-
-  return worker;
+  try {
+    return new Worker(workerUrl);
+  } finally {
+    URL.revokeObjectURL(workerUrl);
+  }
 }
 
 function runPython(code, id) {
@@ -164,28 +167,32 @@ function runPython(code, id) {
       return;
     }
 
-    showOutput(data.text);
+    if (data.type === "error") {
+      showError(data.text);
+    } else {
+      showOutput(data.text);
+    }
+
     stopPythonWorker();
     setRunning(false);
   };
 
   worker.onerror = () => {
-    if (id !== executionId) return;
+    if (id !== executionId || worker !== pythonWorker) return;
 
     showError("تعذر تشغيل Python. تأكدي من اتصال الإنترنت.");
     stopPythonWorker();
     setRunning(false);
   };
 
-  worker.postMessage({ id, code });
-
-  // حد زمني تقريبي للتنفيذ داخل عامل Python.
-  setTimeout(() => {
-    if (id !== executionId || !running) return;
+  pythonTimeout = setTimeout(() => {
+    if (id !== executionId || worker !== pythonWorker) return;
 
     showError("انتهى الوقت المسموح للتنفيذ. جرّبي كودًا أبسط.");
     resetExecution();
   }, 10000);
+
+  worker.postMessage({ id, code });
 }
 
 function runJavaScript(code, id) {
@@ -195,96 +202,111 @@ function runJavaScript(code, id) {
   frame.setAttribute("title", "JavaScript code sandbox");
   frame.style.display = "none";
 
-  const source = `
-    <!doctype html>
-    <html>
-    <body>
-    <script>
-      (() => {
-        const send = (type, text) => {
-          parent.postMessage({
-            source: "cody-js-runner",
-            id: ${JSON.stringify(id)},
-            type,
-            text: String(text)
-          }, "*");
-        };
-
-        const format = (value) => {
-          if (typeof value === "string") return value;
-          try { return JSON.stringify(value); }
-          catch { return String(value); }
-        };
-
-        console.log = (...args) => send("log", args.map(format).join(" "));
-        console.error = (...args) => send("error", args.map(format).join(" "));
-        console.warn = (...args) => send("log", args.map(format).join(" "));
-
-        window.onerror = (message) => {
-          send("error", message);
-        };
-
-        try {
-          const code = ${JSON.stringify(code)};
-          const result = new Function('"use strict";\\n' + code)();
-
-          if (result && typeof result.then === "function") {
-            result.catch(error => send("error", error?.message || error));
-          }
-        } catch (error) {
-          send("error", error?.stack || error?.message || error);
-        }
-
-        send("done", "");
-      })();
-    <\/script>
-    </body>
-    </html>
-  `;
-
   const outputs = [];
+  let finished = false;
+
+  const finish = (message = null) => {
+    if (finished) return;
+    finished = true;
+
+    clearTimeout(timeout);
+    window.removeEventListener("message", listener);
+    frame.remove();
+
+    if (id !== executionId) return;
+
+    if (message) outputs.push(message);
+
+    showOutput(outputs.join("\n") || "تم التنفيذ.");
+    setRunning(false);
+  };
+
+  const source = `<!doctype html>
+<html>
+<body>
+<script>
+(async () => {
+  const send = (type, text = "") => {
+    parent.postMessage({
+      source: "cody-js-runner",
+      id: ${JSON.stringify(id)},
+      type,
+      text: String(text)
+    }, "*");
+  };
+
+  const format = (value) => {
+    if (typeof value === "string") return value;
+
+    try {
+      const result = JSON.stringify(value);
+      return result === undefined ? String(value) : result;
+    } catch {
+      return String(value);
+    }
+  };
+
+  console.log = (...args) =>
+    send("log", args.map(format).join(" "));
+
+  console.warn = (...args) =>
+    send("log", args.map(format).join(" "));
+
+  console.error = (...args) =>
+    send("error", args.map(format).join(" "));
+
+  window.onerror = (message) => {
+    send("error", message);
+  };
+
+  window.onunhandledrejection = (event) => {
+    send("error", event.reason?.message || event.reason);
+  };
+
+  try {
+    const code = ${JSON.stringify(code)};
+    await new Function('"use strict";\\n' + code)();
+  } catch (error) {
+    send("error", error?.stack || error?.message || error);
+  }
+
+  send("done");
+})();
+<\/script>
+</body>
+</html>`;
 
   const listener = (event) => {
     if (event.source !== frame.contentWindow) return;
     if (event.data?.source !== "cody-js-runner") return;
-    if (event.data?.id !== id) return;
+    if (event.data?.id !== id || finished) return;
 
     if (event.data.type === "log") {
       outputs.push(event.data.text);
-      showOutput(outputs.join("\n") || "جارٍ التنفيذ...");
+      showOutput(outputs.join("\n"));
     } else if (event.data.type === "error") {
       outputs.push("Error: " + event.data.text);
       showOutput(outputs.join("\n"));
     } else if (event.data.type === "done") {
-      window.removeEventListener("message", listener);
-      frame.remove();
-      setRunning(false);
-
-      if (!outputs.length) showOutput("تم التنفيذ.");
+      finish();
     }
   };
 
+  const timeout = setTimeout(() => {
+    finish("انتهى الوقت المسموح للتنفيذ.");
+  }, 3000);
+
   window.addEventListener("message", listener);
   document.body.appendChild(frame);
-
   frame.srcdoc = source;
-
-  setTimeout(() => {
-    if (id !== executionId || !running) return;
-
-    window.removeEventListener("message", listener);
-    frame.remove();
-
-    showError("انتهى الوقت المسموح للتنفيذ.");
-    setRunning(false);
-  }, 3000);
 }
 
-async function runCpp(code) {
+async function runCpp() {
   showOutput(
-    "تشغيل C++ غير مفعّل في هذه النسخة.\n" +
-    "نحتاج اختيار خدمة تنفيذ موثوقة تدعم CORS وحدود الاستخدام قبل تفعيلها."
+    "تشغيل C++ غير مفعّل حاليًا.\n" +
+    "سنحتاج خدمة تنفيذ مناسبة تدعم CORS وحدود الاستخدام قبل تفعيله."
   );
+
   setRunning(false);
 }
 
@@ -308,7 +330,7 @@ async function runUserCode() {
     runJavaScript(code, id);
   } else if (lang === "python") {
     runPython(code, id);
-  } else {
+  } else if (lang === "cpp") {
     await runCpp(code);
   }
 }
@@ -324,11 +346,12 @@ window.resetCode = () => {
 };
 
 window.showQuiz = () => {
-  if ($("quizModal")) $("quizModal").style.display = "flex";
+  const modal = $("quizModal");
+  if (modal) modal.style.display = "flex";
 };
 
 async function initLesson() {
-  if (!languages[lang]) {
+  if (!config) {
     showError("لغة البرمجة المحددة غير مدعومة.");
     return;
   }
@@ -351,17 +374,27 @@ async function initLesson() {
 
     displayLessonText("lessonTitle", currentLesson.title);
     displayLessonText("codyIntro", currentLesson.cody_intro);
-    displayLessonText("lessonDescription", currentLesson.description || currentLesson.desc || "");
+    displayLessonText(
+      "lessonDescription",
+      currentLesson.description || currentLesson.desc || ""
+    );
     displayLessonText("lessonTask", currentLesson.task);
 
     const hintsList = $("lessonHints");
-    hintsList.replaceChildren();
 
-    (currentLesson.hints || []).forEach((hint) => {
-      const li = document.createElement("li");
-      li.textContent = hint;
-      hintsList.appendChild(li);
-    });
+    if (hintsList) {
+      hintsList.replaceChildren();
+
+      (currentLesson.hints || []).forEach((hint) => {
+        const li = document.createElement("li");
+        li.textContent = hint;
+        hintsList.appendChild(li);
+      });
+    }
+
+    if (!window.CodeMirror || !editorElement) {
+      throw new Error("تعذر تحميل محرر الأكواد. أعيدي تحميل الصفحة.");
+    }
 
     editor = CodeMirror.fromTextArea(editorElement, {
       mode: config.mode,
@@ -375,52 +408,76 @@ async function initLesson() {
 
     editor.setValue(getLessonCode(currentLesson));
 
-    displayLessonText(
-      "fileNameDisplay",
-      "main" + config.ext
+    displayLessonText("fileNameDisplay", "main" + config.ext);
+
+    const chapters = Array.isArray(currentData.chapters)
+      ? currentData.chapters
+      : [];
+
+    const lessons = chapters.flatMap((item) =>
+      Array.isArray(item.lessons) ? item.lessons : []
     );
 
-    const lessons = currentData.chapters.flatMap((item) => item.lessons || []);
     const currentIndex = lessons.indexOf(currentLesson);
-    const percentage = lessons.length > 0
-      ? Math.round(((Math.max(0, currentIndex) + 1) / lessons.length) * 100)
+
+    const percentage = lessons.length > 0 && currentIndex >= 0
+      ? Math.round(((currentIndex + 1) / lessons.length) * 100)
       : 0;
 
-    if ($("progressBar")) $("progressBar").style.width = percentage + "%";
+    if ($("progressBar")) {
+      $("progressBar").style.width = percentage + "%";
+    }
+
     displayLessonText("progressText", percentage + "%");
 
-    displayLessonText("quizQuestion", currentLesson.quiz?.question || "لا يوجد سؤال لهذا الدرس.");
+    const quiz = currentLesson.quiz;
+    displayLessonText(
+      "quizQuestion",
+      quiz?.question || "لا يوجد سؤال لهذا الدرس."
+    );
 
     const optionsDiv = $("quizOptions");
-    optionsDiv.replaceChildren();
 
-    (currentLesson.quiz?.options || []).forEach((option, index) => {
-      const button = document.createElement("button");
+    if (optionsDiv) {
+      optionsDiv.replaceChildren();
+      selectedOptionIdx = null;
 
-      button.type = "button";
-      button.className = "quiz-option";
-      button.textContent = option;
+      (quiz?.options || []).forEach((option, index) => {
+        const button = document.createElement("button");
 
-      button.addEventListener("click", () => {
-        selectedOptionIdx = index;
+        button.type = "button";
+        button.className = "quiz-option";
+        button.textContent = option;
 
-        optionsDiv.querySelectorAll(".quiz-option").forEach((item) => {
-          item.classList.toggle("selected", item === button);
+        button.addEventListener("click", () => {
+          selectedOptionIdx = index;
+
+          optionsDiv.querySelectorAll(".quiz-option").forEach((item) => {
+            item.classList.toggle("selected", item === button);
+          });
+
+          const submitButton = $("submitQuizBtn");
+          if (submitButton) submitButton.style.display = "block";
+
+          displayLessonText("quizFeedback", "");
         });
 
-        $("submitQuizBtn").style.display = "block";
+        optionsDiv.appendChild(button);
       });
+    }
 
-      optionsDiv.appendChild(button);
-    });
+    const submitButton = $("submitQuizBtn");
+    if (submitButton) submitButton.style.display = "none";
 
     showOutput("Console Ready...");
   } catch (error) {
     console.error("Lesson loading error:", error);
+
     displayLessonText(
       "codyIntro",
-      "تعذر تحميل الدرس. تأكدي من وجود ملف المنهج واتصلي بالإنترنت ثم أعيدي المحاولة."
+      "تعذر تحميل الدرس. تأكدي من وجود ملف المنهج واتصال الإنترنت."
     );
+
     showError(error.message);
   }
 }
@@ -431,14 +488,13 @@ window.submitQuiz = async () => {
   const feedback = $("quizFeedback");
   const quiz = currentLesson.quiz;
 
+  if (!feedback) return;
+
   if (selectedOptionIdx === quiz.correct_index) {
     feedback.textContent = quiz.success_msg || "إجابة صحيحة! أحسنتِ.";
 
-    // لا نمنح XP من المتصفح قبل مراجعة نظام التحقق وقواعد قاعدة البيانات.
-    feedback.textContent +=
-      "\nإجابة صحيحة! نظام النقاط سيُفعّل بعد تأمين التحقق من الإجابات.";
-
-    $("submitQuizBtn").style.display = "none";
+    const submitButton = $("submitQuizBtn");
+    if (submitButton) submitButton.style.display = "none";
   } else {
     feedback.textContent = quiz.fail_msg || "الإجابة غير صحيحة. حاولي مرة أخرى.";
 
@@ -446,17 +502,20 @@ window.submitQuiz = async () => {
       feedback.textContent = "";
       selectedOptionIdx = null;
 
-      $("quizOptions").querySelectorAll(".quiz-option").forEach((button) => {
-        button.classList.remove("selected");
-      });
+      $("quizOptions")
+        ?.querySelectorAll(".quiz-option")
+        .forEach((button) => {
+          button.classList.remove("selected");
+        });
 
-      $("submitQuizBtn").style.display = "none";
+      const submitButton = $("submitQuizBtn");
+      if (submitButton) submitButton.style.display = "none";
     }, 1800);
   }
 };
 
 window.addEventListener("beforeunload", () => {
-  stopPythonWorker();
+  resetExecution();
 });
 
 initLesson();
