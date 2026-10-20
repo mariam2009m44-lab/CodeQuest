@@ -1,15 +1,34 @@
-
 import { db } from "./firebase-config.js";
-import {
-  requireUser,
-  ensureUserProfile,
-  logoutUser
-} from "./auth.js";
+import { logoutUser } from "./auth.js";
 import {
   doc,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { showToast } from "./ui.js";
+
+// دالة مبسطة للرسائل المنبثقة للتنبيهات داخل الواجهة
+function showToast(message, type = "info") {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.style.cssText = "position: fixed; bottom: 20px; left: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;";
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.style.cssText = `
+    padding: 12px 20px; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 600;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: opacity 0.3s ease;
+    background: ${type === "error" ? "#e74c3c" : type === "warning" ? "#f39c12" : "#2ecc71"};
+  `;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
 
 export const App = {
   user: "متعلم",
@@ -19,7 +38,6 @@ export const App = {
   initPromise: null,
 
   init() {
-    // Prevent duplicate initialization.
     if (this.initPromise) return this.initPromise;
 
     this.initPromise = this.initialize();
@@ -34,55 +52,52 @@ export const App = {
   async initialize() {
     this.highlightNav();
 
-    const user = await requireUser();
-    await ensureUserProfile(user);
+    // التحقق من حالة المصادقة من خلال جلب المستخدِم الحالي عبر authReady إن وجد
+    import("./auth.js").then(async ({ requireUser, ensureUserProfile }) => {
+      try {
+        const user = await requireUser();
+        await ensureUserProfile(user);
 
-    const reference = doc(db, "users", user.uid);
+        const reference = doc(db, "users", user.uid);
 
-    this.unsubscribeProfile?.();
+        this.unsubscribeProfile?.();
 
-    this.unsubscribeProfile = onSnapshot(
-      reference,
-      snapshot => {
-        if (!snapshot.exists()) {
-          showToast(
-            "لم يتم العثور على بيانات حسابك.",
-            "warning"
-          );
-          return;
-        }
+        this.unsubscribeProfile = onSnapshot(
+          reference,
+          snapshot => {
+            if (!snapshot.exists()) {
+              showToast("لم يتم العثور على بيانات حسابك.", "warning");
+              return;
+            }
 
-        const data = snapshot.data();
+            const data = snapshot.data();
 
-        this.user =
-          data.displayName ||
-          user.displayName ||
-          "متعلم";
+            this.user =
+              data.displayName ||
+              user.displayName ||
+              "متعلم";
 
-        this.xp = this.toSafeNumber(data.xp);
-        this.coins = this.toSafeNumber(data.coins);
+            this.xp = this.toSafeNumber(data.xp);
+            this.coins = this.toSafeNumber(data.coins);
 
-        this.updateUI();
-      },
-      error => {
-        console.error("Profile loading error:", error);
-
-        showToast(
-          "تعذر تحميل بيانات حسابك. تحققي من الاتصال.",
-          "error"
+            this.updateUI();
+          },
+          error => {
+            console.error("Profile loading error:", error);
+            showToast("تعذر تحميل بيانات حسابك. تحققي من الاتصال.", "error");
+          }
         );
+      } catch (err) {
+        // إذا كان المستخدم غير مسجل دخول سيقوم requireUser بالتوجيه للـ login تلقائياً
       }
-    );
+    });
 
     this.bindLogout();
   },
 
   toSafeNumber(value) {
     const number = Number(value);
-
-    return Number.isFinite(number) && number >= 0
-      ? number
-      : 0;
+    return Number.isFinite(number) && number >= 0 ? number : 0;
   },
 
   bindLogout() {
@@ -95,20 +110,14 @@ export const App = {
 
         element.addEventListener("click", async event => {
           event.preventDefault();
-
           element.setAttribute("aria-busy", "true");
 
           try {
             await logoutUser();
           } catch (error) {
             console.error("Logout error:", error);
-
             element.removeAttribute("aria-busy");
-
-            showToast(
-              "تعذر تسجيل الخروج. حاولي مرة أخرى.",
-              "error"
-            );
+            showToast("تعذر تسجيل الخروج. حاولي مرة أخرى.", "error");
           }
         });
       });
@@ -129,33 +138,23 @@ export const App = {
   },
 
   highlightNav() {
-    const current =
-      location.pathname.split("/").pop() || "index.html";
+    const current = location.pathname.split("/").pop() || "index.html";
 
     document
-      .querySelectorAll(".nav-item, .mobile-nav-item")
+      .querySelectorAll(".nav-link, .mobile-nav a, .nav-item")
       .forEach(link => {
         const href = link.getAttribute("href");
-
         if (!href || href === "#") return;
 
         try {
-          const destination = new URL(
-            href,
-            location.href
-          ).pathname.split("/").pop();
-
-          link.classList.toggle(
-            "active",
-            destination === current
-          );
+          const destination = new URL(href, location.href).pathname.split("/").pop();
+          link.classList.toggle("active", destination === current);
         } catch (error) {
           console.warn("Invalid navigation link:", href);
         }
       });
   },
 
-  // Rewards must be handled by trusted server-side logic.
   addXP() {
     throw new Error("النقاط تُمنح من الخادم فقط.");
   },
