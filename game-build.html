@@ -6,91 +6,66 @@
   <title>بازل الأكواد | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/dashboard.css">
   <style>
-    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
-    .game-box { width: 100%; max-width: 600px; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-    .back-btn { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-    .back-btn:hover { color: var(--green); }
-    .task-box { background: rgba(118,233,192,0.1); border: 1px solid var(--green); padding: 15px; border-radius: var(--radius-md); text-align: center; margin-bottom: 20px; }
-    .task-box h2 { font-size: 1.1rem; color: var(--green); font-weight: 800; }
-    .drop-zone { display: flex; flex-direction: column; gap: 10px; min-height: 150px; padding: 15px; border: 2px dashed var(--border); border-radius: var(--radius-md); margin-bottom: 20px; background: rgba(0,0,0,0.2); }
-    .code-block { padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: #fff; font-family: monospace; font-size: 1.1rem; cursor: pointer; transition: 0.2s; direction: ltr; text-align: left; }
-    .code-block:hover { background: rgba(255,255,255,0.1); transform: scale(1.02); }
+    :root { --pop-yellow: #FFD166; --pop-coral: #FF6B6B; --pop-teal: #4ECDC4; --pop-dark: #1A1A2E; --pop-white: #F8F9FA; }
+    body { font-family: 'Playpen Sans Arabic', sans-serif; background: #E2E8F0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; margin: 0; }
+    .game-box { width: 100%; max-width: 600px; background: var(--pop-white); border: 4px solid var(--pop-dark); border-radius: 24px; padding: 30px; box-shadow: 8px 8px 0 var(--pop-dark); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-btn { color: var(--pop-dark); text-decoration: none; font-weight: 800; }
+    .task { background: #FEF3C7; border: 3px solid var(--pop-dark); border-radius: 16px; padding: 15px; text-align: center; font-weight: 800; margin-bottom: 20px; }
+    .drop-zone { display: flex; flex-direction: column; gap: 10px; min-height: 150px; padding: 15px; border: 3px dashed #94A3B8; border-radius: 16px; margin-bottom: 20px; background: #F1F5F9; }
+    .code-block { padding: 12px 16px; background: #fff; border: 3px solid var(--pop-dark); border-radius: 12px; font-family: monospace; font-size: 1.1rem; cursor: pointer; box-shadow: 3px 3px 0 var(--pop-dark); transition: 0.2s; direction: ltr; text-align: left; }
+    .code-block:hover { transform: translateY(-2px); background: var(--pop-teal); color: #fff; }
     .code-block.selected { opacity: 0.5; pointer-events: none; }
-    .btn-check { width: 100%; padding: 14px; background: var(--green); color: var(--bg-deep); font-weight: 900; font-size: 1.1rem; border: none; border-radius: var(--radius-md); cursor: pointer; transition: 0.3s; font-family: 'Playpen Sans Arabic'; }
-    .btn-check:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(118,233,192,0.3); }
-    .btn-check:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-check { width: 100%; padding: 14px; background: var(--pop-coral); color: #fff; font-weight: 800; font-size: 1.1rem; border: 3px solid var(--pop-dark); border-radius: 16px; cursor: pointer; box-shadow: 4px 4px 0 var(--pop-dark); font-family: 'Playpen Sans Arabic'; }
   </style>
 </head>
 <body>
   <div class="game-box">
     <div class="header">
       <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
-      <span style="font-weight: 800; color: var(--green);"><i class="ri-puzzle-2-fill"></i> بازل الأكواد</span>
+      <h2 style="color: var(--pop-dark); margin: 0;">بازل الأكواد 🧩</h2>
     </div>
-    <div class="task-box"><h2>رتّب الأكواد بالترتيب الصحيح لطباعة "Hello World"</h2></div>
+    <div class="task">رتب القطع لتكوين كود يطبع "Hello"</div>
     <div class="drop-zone" id="dropZone"></div>
     <div class="drop-zone" id="sourceZone">
-      <div class="code-block" onclick="selectBlock(this, 'print(\"Hello World\")')">print("Hello World")</div>
-      <div class="code-block" onclick="selectBlock(this, 'console.log(\"Hello World\")')">console.log("Hello World")</div>
-      <div class="code-block" onclick="selectBlock(this, 'cout << \"Hello World\"')">cout << "Hello World"</div>
+      <div class="code-block" onclick="select(this, 'print(\"Hello\")')">print("Hello")</div>
+      <div class="code-block" onclick="select(this, 'console.log(\"Hello\")')">console.log("Hello")</div>
+      <div class="code-block" onclick="select(this, 'echo \"Hello\"')">echo "Hello"</div>
     </div>
-    <button class="btn-check" onclick="checkOrder()" id="checkBtn" disabled>تحقق من الترتيب</button>
+    <button class="btn-check" onclick="check()" id="btn" disabled>تحقق</button>
   </div>
 
   <script>
-    let selectedSequence = [];
-    const correctSequence = ['print("Hello World")', 'console.log("Hello World")', 'cout << "Hello World"'];
-    const dropZone = document.getElementById('dropZone');
-    const checkBtn = document.getElementById('checkBtn');
+    let seq = [], correct = ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'];
+    const drop = document.getElementById('dropZone'), btn = document.getElementById('btn');
 
-    function selectBlock(element, code) {
-      element.classList.add('selected');
-      selectedSequence.push(code);
-      const newBlock = document.createElement('div');
-      newBlock.className = 'code-block';
-      newBlock.textContent = code;
-      newBlock.onclick = () => removeBlock(newBlock, code);
-      dropZone.appendChild(newBlock);
-      checkBtn.disabled = selectedSequence.length !== correctSequence.length;
+    function select(el, code) {
+      el.classList.add('selected'); seq.push(code);
+      const newEl = document.createElement('div');
+      newEl.className = 'code-block'; newEl.textContent = code;
+      newEl.onclick = () => remove(newEl, code);
+      drop.appendChild(newEl);
+      btn.disabled = seq.length !== 3;
     }
 
-    function removeBlock(element, code) {
-      const index = selectedSequence.indexOf(code);
-      if (index > -1) {
-        selectedSequence.splice(index, 1);
-        element.remove();
-        const sourceBlocks = document.querySelectorAll('#sourceZone .code-block');
-        sourceBlocks.forEach(block => {
-          if (block.textContent.includes(code) && block.classList.contains('selected')) {
-            block.classList.remove('selected');
-          }
+    function remove(el, code) {
+      const i = seq.indexOf(code);
+      if (i > -1) {
+        seq.splice(i, 1); el.remove();
+        document.querySelectorAll('#sourceZone .code-block').forEach(b => {
+          if (b.textContent.includes(code)) b.classList.remove('selected');
         });
-        checkBtn.disabled = selectedSequence.length !== correctSequence.length;
+        btn.disabled = seq.length !== 3;
       }
     }
 
-    function checkOrder() {
-      const isCorrect = selectedSequence.every((val, index) => val === correctSequence[index]);
-      if (isCorrect) {
-        dropZone.style.borderColor = 'var(--green)';
-        dropZone.style.background = 'rgba(118,233,192,0.1)';
-        checkBtn.textContent = 'أحسنت! الترتيب صحيح 🎉';
-        checkBtn.style.background = 'var(--green)';
-        checkBtn.disabled = true;
+    function check() {
+      if (seq.every((v, i) => v === correct[i])) {
+        btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--pop-teal)'; btn.disabled = true;
       } else {
-        dropZone.style.borderColor = 'var(--red)';
-        dropZone.style.background = 'rgba(255,145,169,0.1)';
-        checkBtn.textContent = 'ترتيب خاطئ، حاول مرة أخرى!';
-        checkBtn.style.background = 'var(--red)';
-        setTimeout(() => {
-          dropZone.style.borderColor = 'var(--border)';
-          dropZone.style.background = 'rgba(0,0,0,0.2)';
-          checkBtn.textContent = 'تحقق من الترتيب';
-          checkBtn.style.background = 'var(--green)';
-        }, 2000);
+        btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = '#EF4444';
+        setTimeout(() => { btn.textContent = 'تحقق'; btn.style.background = 'var(--pop-coral)'; }, 1500);
       }
     }
   </script>
