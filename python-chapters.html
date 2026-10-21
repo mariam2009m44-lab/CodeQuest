@@ -23,15 +23,11 @@
     .chapter-number { width: 50px; height: 50px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-size: 1.5rem; font-weight: 900; color: var(--cyan); border: 2px solid var(--border); margin-bottom: 15px; }
     .chapter-node.completed .chapter-number { background: var(--green); color: #000; border-color: var(--green); }
     .chapter-node h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; }
-    .stars { display: flex; gap: 4px; margin-top: auto; }
-    .stars i { color: var(--muted); font-size: 1.2rem; }
-    .stars i.filled { color: var(--gold); text-shadow: 0 0 10px rgba(255,212,138,0.5); }
     .exam-node { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(169, 154, 255, 0.1), rgba(255, 212, 138, 0.1)); border: 2px solid var(--purple); border-radius: 20px; padding: 30px; text-align: center; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
     .exam-node.locked { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
     .exam-node h2 { font-size: 1.5rem; color: #fff; }
     .btn-exam { background: var(--purple); color: #000; padding: 12px 30px; border-radius: 12px; font-weight: 900; text-decoration: none; transition: 0.3s; }
-    .btn-exam:hover { box-shadow: 0 0 20px var(--purple); transform: scale(1.05); }
-    @media (max-width: 600px) { .exam-node { flex-direction: column; gap: 20px; } .header-section h1 { font-size: 1.7rem; } }
+    @media (max-width: 600px) { .exam-node { flex-direction: column; gap: 20px; } }
   </style>
 </head>
 <body>
@@ -47,74 +43,34 @@
   <div class="map-container" id="mapContainer"></div>
   <script>
     "use strict";
-    const chapters = [
-      { id: 1, title: "الطباعة (Print)" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" },
-      { id: 4, title: "الشروط (If/Else)" }, { id: 5, title: "التكرار (Loops)" }, { id: 6, title: "القوائم (Lists)" },
-      { id: 7, title: "الدوال (Functions)" }, { id: 8, title: "النصوص (Strings)" }, { id: 9, title: "الأخطاء (Try/Except)" },
-      { id: 10, title: "القواميس (Dictionaries)" }, { id: 11, title: "المكتبات (Libraries)" }, { id: 12, title: "المشروع النهائي" }
-    ];
+    const chapters = [{ id: 1, title: "الطباعة" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" }, { id: 4, title: "الشروط" }, { id: 5, title: "التكرار" }, { id: 6, title: "القوائم" }, { id: 7, title: "الدوال" }, { id: 8, title: "النصوص" }, { id: 9, title: "الأخطاء" }, { id: 10, title: "القواميس" }, { id: 11, title: "المكتبات" }, { id: 12, title: "المشروع النهائي" }];
     const PROGRESS_KEY = "cody_python_progress";
     const XP_KEY = "cody_xp";
     function readProgress() {
       try {
         const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
-        return { completed: Array.isArray(saved.completed) ? saved.completed.filter(id => Number.isInteger(id) && id >= 1 && id <= chapters.length) : [], stars: saved.stars && typeof saved.stars === "object" && !Array.isArray(saved.stars) ? saved.stars : {} };
+        return { completed: Array.isArray(saved.completed) ? saved.completed : [], stars: saved.stars || {} };
       } catch { return { completed: [], stars: {} }; }
     }
-    function renderXp() {
-      const value = Number(localStorage.getItem(XP_KEY));
-      document.getElementById("xpDisplay").textContent = Number.isFinite(value) && value >= 0 ? String(value) : "0";
-    }
-    function buildChapterUrl(chapterId) {
-      const params = new URLSearchParams({ ch: String(chapterId), lesson: "1" });
-      return `python-lesson.html?${params.toString()}`;
-    }
-    function buildChapterNode(chapter, index, progress) {
-      const isDone = progress.completed.includes(chapter.id);
-      const isUnlocked = index === 0 || progress.completed.includes(chapters[index - 1].id);
-      const node = document.createElement("a");
-      node.className = `chapter-node ${isDone ? "completed" : ""} ${isUnlocked ? "" : "locked"}`;
-      node.href = isUnlocked ? buildChapterUrl(chapter.id) : "#";
-      if (!isUnlocked) {
-        node.setAttribute("aria-disabled", "true"); node.tabIndex = -1;
-        node.addEventListener("click", event => event.preventDefault());
-      }
-      const number = document.createElement("div"); number.className = "chapter-number";
-      if (isDone) {
-        const icon = document.createElement("i"); icon.className = "ri-check-line"; icon.setAttribute("aria-label", "مكتمل"); number.appendChild(icon);
-      } else { number.textContent = String(chapter.id); }
-      const title = document.createElement("h3"); title.textContent = chapter.title;
-      node.append(number, title);
-      if (isDone) {
-        const earned = Math.max(0, Math.min(3, Number(progress.stars[chapter.id]) || 0));
-        const stars = document.createElement("div"); stars.className = "stars"; stars.setAttribute("aria-label", `${earned} من 3 نجوم`);
-        for (let star = 1; star <= 3; star++) {
-          const starIcon = document.createElement("i"); starIcon.className = `ri-star-fill ${earned >= star ? "filled" : ""}`; stars.appendChild(starIcon);
-        }
-        node.appendChild(stars);
-      }
-      if (!isUnlocked) {
-        const lock = document.createElement("i"); lock.className = "ri-lock-fill"; lock.style.position = "absolute"; lock.style.top = "15px"; lock.style.left = "15px"; lock.style.fontSize = "1.5rem"; lock.setAttribute("aria-label", "الفصل مقفول"); node.appendChild(lock);
-      }
-      return node;
-    }
-    function buildExamNode(progress) {
-      const allDone = chapters.every(chapter => progress.completed.includes(chapter.id));
-      const examNode = document.createElement("div"); examNode.className = `exam-node ${allDone ? "" : "locked"}`;
-      const info = document.createElement("div"); const title = document.createElement("h2"); title.textContent = "الامتحان والمشروع النهائي";
-      const description = document.createElement("p"); description.style.color = "var(--muted)"; description.style.marginTop = "5px"; description.textContent = "أكملت الـ 12 فصل! حان وقت التطبيق العملي.";
-      info.append(title, description); examNode.appendChild(info);
-      if (allDone) {
-        const link = document.createElement("a"); link.href = "python-exam.html"; link.className = "btn-exam"; link.textContent = "ابدأ الامتحان الشامل"; examNode.appendChild(link);
-      } else {
-        const locked = document.createElement("span"); locked.style.color = "var(--muted)"; const lock = document.createElement("i"); lock.className = "ri-lock-fill"; locked.append(lock, document.createTextNode(" أكمل الـ 12 فصل أولاً")); examNode.appendChild(locked);
-      }
-      return examNode;
-    }
+    function renderXp() { document.getElementById("xpDisplay").textContent = localStorage.getItem(XP_KEY) || "0"; }
+    function buildChapterUrl(chapterId) { return `python-lessons.html?ch=${chapterId}&lesson=1`; }
     function renderMap() {
       const progress = readProgress(); const container = document.getElementById("mapContainer"); const fragment = document.createDocumentFragment();
-      chapters.forEach((chapter, index) => { fragment.appendChild(buildChapterNode(chapter, index, progress)); });
-      fragment.appendChild(buildExamNode(progress)); container.replaceChildren(fragment);
+      chapters.forEach((chapter, index) => {
+        const isDone = progress.completed.includes(chapter.id);
+        const isUnlocked = index === 0 || progress.completed.includes(chapters[index - 1].id);
+        const node = document.createElement("a");
+        node.className = `chapter-node ${isDone ? "completed" : ""} ${isUnlocked ? "" : "locked"}`;
+        node.href = isUnlocked ? buildChapterUrl(chapter.id) : "#";
+        if (!isUnlocked) node.addEventListener("click", e => e.preventDefault());
+        node.innerHTML = `<div class="chapter-number">${isDone ? '<i class="ri-check-line"></i>' : chapter.id}</div><h3>${chapter.title}</h3>`;
+        fragment.appendChild(node);
+      });
+      const allDone = chapters.every(c => progress.completed.includes(c.id));
+      const examNode = document.createElement("div"); examNode.className = `exam-node ${allDone ? "" : "locked"}`;
+      examNode.innerHTML = `<div><h2>الامتحان والمشروع النهائي</h2><p style="color:var(--muted);">أكمل الـ 12 فصل!</p></div>`;
+      if (allDone) { const link = document.createElement("a"); link.href = "python-exam.html"; link.className = "btn-exam"; link.textContent = "ابدأ الامتحان"; examNode.appendChild(link); }
+      fragment.appendChild(examNode); container.replaceChildren(fragment);
     }
     renderXp(); renderMap();
   </script>
