@@ -74,16 +74,6 @@
 
   <script src="js/chapters/ch1.js"></script>
   <script src="js/chapters/ch2.js"></script>
-  <script src="js/chapters/ch3.js"></script>
-  <script src="js/chapters/ch4.js"></script>
-  <script src="js/chapters/ch5.js"></script>
-  <script src="js/chapters/ch6.js"></script>
-  <script src="js/chapters/ch7.js"></script>
-  <script src="js/chapters/ch8.js"></script>
-  <script src="js/chapters/ch9.js"></script>
-  <script src="js/chapters/ch10.js"></script>
-  <script src="js/chapters/ch11.js"></script>
-  <script src="js/chapters/ch12.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
@@ -104,7 +94,6 @@
       const xp = parseInt(localStorage.getItem(XP_KEY)) || 0;
       document.getElementById("xpDisplay").textContent = `XP: ${xp}`;
     }
-
     function loadLesson() {
       const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
       if (!chapter) { window.location.href = "python-chapters.html"; return; }
@@ -117,7 +106,6 @@
       updateXpDisplay();
       processStep();
     }
-
     function processStep() {
       if (currentStepIndex >= currentLesson.steps.length) { endLesson(); return; }
       const step = currentLesson.steps[currentStepIndex];
@@ -141,7 +129,6 @@
         currentStepIndex++;
       }
     }
-
     function addBubble(type, text) {
       const row = document.createElement("div");
       row.className = `message-row ${type} show`;
@@ -156,7 +143,6 @@
       document.getElementById("chatContainer").appendChild(row);
       scrollToBottom();
     }
-
     function renderChoices(options, replies) {
       const container = document.createElement("div");
       container.className = "choices-container";
@@ -176,7 +162,6 @@
       document.getElementById("chatContainer").appendChild(container);
       scrollToBottom();
     }
-
     function renderQuiz(options, correctIndex, explanation) {
       const container = document.createElement("div");
       container.className = "choices-container";
@@ -201,10 +186,8 @@
       document.getElementById("chatContainer").appendChild(container);
       scrollToBottom();
     }
-
     function showNextButton() { document.getElementById("bottomAction").classList.add("show"); }
     function advanceChat() { document.getElementById("bottomAction").classList.remove("show"); processStep(); }
-
     function showEditor(step) {
       document.getElementById("editorWrapper").classList.add("show");
       editor.setValue(step.defaultCode);
@@ -214,12 +197,10 @@
       challengeSolved = false;
       scrollToBottom();
     }
-
     function builtinRead(x) {
       if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'";
       return Sk.builtinFiles["files"][x];
     }
-
     async function runCode() {
       const outputArea = document.getElementById("outputArea");
       const code = editor.getValue();
@@ -253,13 +234,11 @@
       }
       scrollToBottom();
     }
-
     function addXp(amount) {
       let xp = parseInt(localStorage.getItem(XP_KEY)) || 0;
       localStorage.setItem(XP_KEY, xp + amount);
       updateXpDisplay();
     }
-
     function endLesson() {
       addBubble("cody", "🎉 مبروك! أتممت الدرس بنجاح.");
       const chapter = window.CHAPTERS[chapterId];
@@ -275,11 +254,9 @@
       showNextButton();
       scrollToBottom();
     }
-
     function scrollToBottom() {
       setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
     }
-
     loadLesson();
   </script>
 </body>
