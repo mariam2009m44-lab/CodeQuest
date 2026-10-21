@@ -4,70 +4,170 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>سيد الأسئلة | Cody</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
-    :root { --pop-yellow: #FFD166; --pop-coral: #FF6B6B; --pop-teal: #4ECDC4; --pop-purple: #A78BFA; --pop-dark: #1A1A2E; --pop-white: #F8F9FA; }
-    body { font-family: 'Playpen Sans Arabic', sans-serif; background: #E2E8F0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; margin: 0; }
-    .quiz-box { width: 100%; max-width: 600px; background: var(--pop-white); border: 4px solid var(--pop-dark); border-radius: 24px; padding: 30px; box-shadow: 8px 8px 0 var(--pop-dark); }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px dashed #CBD5E1; padding-bottom: 15px; }
-    .back-btn { color: var(--pop-dark); text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-    .stats { display: flex; gap: 15px; font-weight: 800; }
-    .timer { color: var(--pop-coral); } .score { color: var(--pop-teal); }
+    :root {
+      --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.8);
+      --border: rgba(107, 232, 255, 0.2); --cyan: #6be8ff; --purple: #a99aff; 
+      --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --text: #ffffff; --muted: #8892b0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(107, 232, 255, 0.1), transparent 50%); }
     
-    .q-text { font-size: 1.4rem; font-weight: 800; color: var(--pop-dark); margin-bottom: 24px; text-align: center; line-height: 1.5; }
+    .screen { display: none; width: 100%; max-width: 650px; }
+    .screen.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
+    .level-box h2 { font-size: 2rem; margin-bottom: 30px; color: var(--cyan); }
+    .levels-grid { display: flex; flex-direction: column; gap: 15px; }
+    .lvl-btn { padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
+    .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118, 233, 192, 0.1); transform: scale(1.02); }
+    .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255, 212, 138, 0.1); transform: scale(1.02); }
+    .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255, 145, 169, 0.1); transform: scale(1.02); }
+
+    .quiz-container { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+    .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; cursor: pointer; background: none; border: none; font-family: 'Cairo'; font-size: 1rem; }
+    .back-btn:hover { color: var(--cyan); }
+    .stats { display: flex; gap: 15px; font-weight: 900; font-size: 1.1rem; }
+    .timer { color: var(--red); } .score { color: var(--gold); } .combo { color: var(--green); }
+
+    .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--cyan); width: 0%; transition: 0.4s; box-shadow: 0 0 10px var(--cyan); }
+
+    .q-text { font-size: 1.4rem; font-weight: 800; margin-bottom: 25px; text-align: center; line-height: 1.6; min-height: 80px; }
     .options { display: flex; flex-direction: column; gap: 12px; }
-    .opt-btn { padding: 16px; border-radius: 16px; border: 3px solid var(--pop-dark); background: #fff; font-size: 1.1rem; font-weight: 700; color: var(--pop-dark); cursor: pointer; transition: 0.2s; text-align: right; font-family: 'Playpen Sans Arabic'; }
-    .opt-btn:hover { background: var(--pop-yellow); transform: translateY(-2px); box-shadow: 0 4px 0 var(--pop-dark); }
-    .opt-btn.correct { background: #D1FAE5; border-color: #10B981; }
-    .opt-btn.wrong { background: #FEE2E2; border-color: #EF4444; }
-    
-    .cody-hint { display: flex; align-items: center; gap: 10px; background: #FEF3C7; border: 3px solid var(--pop-dark); border-radius: 16px; padding: 12px; margin-top: 20px; font-weight: 700; color: #92400E; display: none; }
-    .cody-hint img { width: 40px; }
-    
-    .result { text-align: center; display: none; }
-    .btn-restart { background: var(--pop-teal); color: var(--pop-dark); border: 3px solid var(--pop-dark); padding: 14px 30px; border-radius: 16px; font-weight: 800; font-size: 1.2rem; cursor: pointer; margin-top: 20px; box-shadow: 4px 4px 0 var(--pop-dark); font-family: 'Playpen Sans Arabic'; }
+    .opt-btn { padding: 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); font-size: 1.1rem; font-weight: 700; color: var(--text); cursor: pointer; transition: 0.2s; text-align: right; font-family: 'Cairo'; }
+    .opt-btn:hover { background: rgba(107,232,255,0.1); border-color: var(--cyan); transform: translateX(-5px); }
+    .opt-btn.correct { background: rgba(118,233,192,0.2); border-color: var(--green); color: var(--green); }
+    .opt-btn.wrong { background: rgba(255,145,169,0.2); border-color: var(--red); color: var(--red); }
+
+    .result-box { text-align: center; }
+    .result-box h2 { font-size: 2.5rem; color: var(--cyan); margin-bottom: 15px; }
+    .result-box p { font-size: 1.3rem; color: var(--muted); margin-bottom: 25px; }
+    .btn-restart { background: var(--cyan); color: #000; border: none; padding: 15px 40px; border-radius: 12px; font-weight: 900; font-size: 1.2rem; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; }
+    .btn-restart:hover { box-shadow: 0 0 20px var(--cyan); transform: scale(1.05); }
   </style>
 </head>
 <body>
-  <div class="quiz-box" id="quizBox">
-    <div class="header">
-      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
-      <div class="stats">
-        <div class="timer"><i class="ri-timer-line"></i> <span id="time">15</span></div>
-        <div class="score"><i class="ri-trophy-line"></i> <span id="score">0</span></div>
+
+  <div class="screen active" id="levelScreen">
+    <div class="level-box">
+      <h2>اختر مستوى التحدي</h2>
+      <div class="levels-grid">
+        <button class="lvl-btn lvl-easy" onclick="startGame('easy')"><span>مبتدئ</span> <span>10 أسئلة</span></button>
+        <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>15 سؤال</span></button>
+        <button class="lvl-btn lvl-hard" onclick="startGame('hard')"><span>متقدم</span> <span>20 سؤال</span></button>
       </div>
-    </div>
-    <div class="q-text" id="question">جاري التحميل...</div>
-    <div class="options" id="options"></div>
-    <div class="cody-hint" id="hintBox">
-      <span style="font-size: 1.5rem;">🤖</span>
-      <span id="hintText"></span>
+      <a href="games.html" class="back-btn" style="display:block; margin-top:20px;"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
     </div>
   </div>
 
-  <div class="quiz-box result" id="resultBox">
-    <h2 style="color: var(--pop-dark); font-size: 2rem;">انتهى التحدي! 🎉</h2>
-    <p style="font-size: 1.5rem; font-weight: 800; color: var(--pop-teal);">النقاط: <span id="finalScore">0</span></p>
-    <button class="btn-restart" onclick="location.reload()">العب مرة أخرى</button>
+  <div class="screen" id="gameScreen">
+    <div class="quiz-container">
+      <div class="header">
+        <button class="back-btn" onclick="location.reload()"><i class="ri-arrow-right-line"></i> خروج</button>
+        <div class="stats">
+          <div class="combo"><i class="ri-fire-fill"></i> <span id="combo">0</span></div>
+          <div class="timer"><i class="ri-timer-line"></i> <span id="time">20</span></div>
+          <div class="score"><i class="ri-trophy-line"></i> <span id="score">0</span></div>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+      <div class="q-text" id="question">...</div>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="resultScreen">
+    <div class="level-box result-box">
+      <h2>انتهى التحدي! 🏁</h2>
+      <p>لقد جمعت <strong id="finalScore" style="color: var(--gold); font-size: 1.8rem;">0</strong> نقطة.</p>
+      <button class="btn-restart" onclick="location.reload()">العب مرة أخرى</button>
+    </div>
   </div>
 
   <script>
-    const questions = [
-      { q: "ما هو الكود الصحيح لطباعة 'مرحباً' في بايثون؟", opts: ["echo 'مرحباً'", "print('مرحباً')", "console.log('مرحباً')"], a: 1, hint: "في بايثون نستخدم دالة الطباعة الشهيرة." },
-      { q: "إذا كان لدينا مصفوفة [1, 2, 3] وأردنا الوصول للرقم 2، ماذا نكتب؟", opts: ["array[1]", "array[2]", "array(2)"], a: 0, hint: "الترقيم يبدأ من الصفر في معظم اللغات." },
-      { q: "أي من هذه الرموز يستخدم لكتابة تعليق في JavaScript؟", opts: ["#", "//", "<!--"], a: 1, hint: "نفس الرمز المستخدم في C++." },
-      { q: "ما هو ناتج الكود: let x = 5; let y = 2; console.log(x * y);", opts: ["7", "10", "52"], a: 1, hint: "العلامة * تعني الضرب." }
-    ];
-    let curr = 0, score = 0, timeLeft = 15, timerInt;
-    const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score');
+    const questionBank = {
+      easy: [
+        { q: "ما هي اللغة المستخدمة لتصميم هيكل صفحات الويب؟", opts: ["Python", "HTML", "C++", "Java"], a: 1 },
+        { q: "ما هي الدالة المستخدمة للطباعة في بايثون؟", opts: ["console.log()", "print()", "echo()", "write()"], a: 1 },
+        { q: "أي من هذه اللغات تستخدم في تنسيق الألوان؟", opts: ["HTML", "CSS", "JS", "SQL"], a: 1 },
+        { q: "ماذا تعني كلمة Bug في البرمجة؟", opts: ["لعبة", "خطأ", "ميزة", "كمبيوتر"], a: 1 },
+        { q: "ما هو الرمز المستخدم للتعليق في بايثون؟", opts: ["//", "<!--", "#", "**"], a: 2 },
+        { q: "ما هي اللغة التي تعمل داخل المتصفح؟", opts: ["Python", "C++", "JavaScript", "Java"], a: 2 },
+        { q: "ماذا نسمي البيانات التي نخزنها في متغير؟", opts: ["Value", "Loop", "Function", "Array"], a: 0 },
+        { q: "أي من هذه اللغات تستخدم في الذكاء الاصطناعي؟", opts: ["HTML", "CSS", "Python", "SQL"], a: 2 },
+        { q: "ما هو العنصر الذي يسمح بتخزين عدة قيم؟", opts: ["Variable", "List", "Function", "Loop"], a: 1 },
+        { q: "كيف نكتب تعليق في JavaScript؟", opts: ["#", "//", "<!--", "**"], a: 1 }
+      ],
+      medium: [
+        { q: "ما هو ناتج الكود: let x = 5; let y = 2; console.log(x * y);", opts: ["7", "10", "52", "25"], a: 1 },
+        { q: "إذا كان لدينا مصفوفة [1, 2, 3]، ماذا نكتب للوصول للرقم 2؟", opts: ["array[1]", "array[2]", "array(2)", "array{1}"], a: 0 },
+        { q: "ما هي الدالة التي تحول النص إلى رقم صحيح في بايثون؟", opts: ["str()", "int()", "float()", "num()"], a: 1 },
+        { q: "ما هو الرمز المستخدم للتحقق من التساوي في C++؟", opts: ["=", "==", "===", "!="], a: 1 },
+        { q: "في JavaScript، ماذا يعني '===' ؟", opts: ["تساوي القيمة", "تساوي القيمة والنوع", "لا يساوي", "أكبر من"], a: 1 },
+        { q: "ما هي الكلمة المفتاحية لتعريف متغير في JS حديثاً؟", opts: ["var", "let", "int", "string"], a: 1 },
+        { q: "أي مما يلي لغة برمجة كائنية التوجه (OOP)؟", opts: ["HTML", "CSS", "C++", "SQL"], a: 2 },
+        { q: "كيف نكتب حلقة تكرار 'لكل عنصر' في بايثون؟", opts: ["for i in range():", "for i:", "foreach i:", "loop i:"], a: 0 },
+        { q: "ما هو الخطأ الذي يسبب توقف البرنامج فجأة؟", opts: ["Syntax Error", "Logic Error", "Runtime Error", "All"], a: 2 },
+        { q: "ما هي الدالة المستخدمة لطباعة النص في C++؟", opts: ["print()", "cout", "console.log()", "echo"], a: 1 },
+        { q: "ما هي اللغة التي تستخدم في قواعد البيانات؟", opts: ["Python", "C++", "JavaScript", "SQL"], a: 3 },
+        { q: "ما هو اسم الدالة التي تنفذ أولاً في بايثون؟", opts: ["main()", "__init__()", "start()", "run()"], a: 0 },
+        { q: "كيف نعرف مصفوفة في JavaScript؟", opts: ["[]", "{}", "()", "<>"], a: 0 },
+        { q: "ما هي الكلمة المستخدمة لإنهاء الحلقة في بايثون؟", opts: ["stop", "break", "exit", "end"], a: 1 },
+        { q: "أي مما يلي يصف HTML بشكل صحيح؟", opts: ["لغة برمجة", "لغة ترميز", "قاعدة بيانات", "نظام تشغيل"], a: 1 }
+      ],
+      hard: [
+        { q: "ما هو ناتج الكود: let x = [1, 2, 3]; x.push(4); console.log(x.length);", opts: ["3", "4", "5", "Error"], a: 1 },
+        { q: "ما هو الفرق بين let و const في JS؟", opts: ["لا فرق", "const لا يمكن إعادة تعيينها", "let أسرع", "const أبطأ"], a: 1 },
+        { q: "ما هو الـ Closure في JavaScript؟", opts: ["دالة داخل دالة", "حلقة تكرار", "متغير عام", "كائن"], a: 0 },
+        { q: "كيف نتعامل مع الاستثناءات في بايثون؟", opts: ["if/else", "try/except", "for/while", "switch/case"], a: 1 },
+        { q: "ما هو الـ Pointer في C++؟", opts: ["متغير يخزن عنوان ذاكرة", "دالة", "حلقة", "مصفوفة"], a: 0 },
+        { q: "ما هو ناتج الكود: console.log(typeof []);", opts: ["array", "object", "list", "undefined"], a: 1 },
+        { q: "ما هو الـ Hoisting في JavaScript؟", opts: ["رفع المتغيرات لأعلى", "حذف المتغيرات", "تعديل المتغيرات", "طباعة المتغيرات"], a: 0 },
+        { q: "كيف نحسب طول النص في بايثون؟", opts: ["size()", "len()", "length()", "count()"], a: 1 },
+        { q: "ما هو الـ Virtual Function في C++؟", opts: ["دالة وهمية", "دالة يمكن تجاوزها", "دالة ثابتة", "دالة عشوائية"], a: 1 },
+        { q: "ما هو ناتج الكود: let a = 10; let b = '10'; console.log(a == b);", opts: ["true", "false", "Error", "undefined"], a: 0 },
+        { q: "ما هو الـ Asynchronous في JS؟", opts: ["كود متزامن", "كود غير متزامن", "كود خاطئ", "كود سريع"], a: 1 },
+        { q: "كيف نتعامل مع الملفات في بايثون؟", opts: ["open()", "file()", "read()", "write()"], a: 0 },
+        { q: "ما هو الـ Constructor في OOP؟", opts: ["دالة بناء", "دالة تدمير", "دالة طباعة", "دالة تحقق"], a: 0 },
+        { q: "ما هو الفرق بين == و === في JS؟", opts: ["لا فرق", "=== يقارن النوع والقيمة", "== يقارن النوع", "=== أبطأ"], a: 1 },
+        { q: "ما هو الـ Recursion؟", opts: ["حلقة تكرار", "دالة تستدعي نفسها", "متغير", "كائن"], a: 1 },
+        { q: "كيف نضيف عنصر لنهاية مصفوفة في JS؟", opts: ["push()", "pop()", "shift()", "unshift()"], a: 0 },
+        { q: "ما هو الـ Garbage Collector؟", opts: ["جامع القمامة", "مدير الذاكرة", "محلل الكود", "مترجم"], a: 1 },
+        { q: "ما هو ناتج الكود: print(3 // 2) في بايثون؟", opts: ["1.5", "1", "2", "0"], a: 1 },
+        { q: "ما هو الـ API؟", opts: ["واجهة برمجة التطبيقات", "لغة برمجة", "قاعدة بيانات", "نظام تشغيل"], a: 0 },
+        { q: "ما هو الـ Git؟", opts: ["لغة برمجة", "نظام تحكم في الإصدارات", "قاعدة بيانات", "محرر نصوص"], a: 1 }
+      ]
+    };
+
+    let currentLevelQuestions = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0;
+    const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), progressEl = document.getElementById('progress');
+
+    function startGame(level) {
+      let questions = questionBank[level];
+      currentLevelQuestions = questions.sort(() => Math.random() - 0.5).slice(0, (level === 'easy' ? 10 : level === 'medium' ? 15 : 20));
+      curr = 0; score = 0; streak = 0;
+      document.getElementById('levelScreen').classList.remove('active');
+      document.getElementById('gameScreen').classList.add('active');
+      loadQ();
+    }
+
+    function updateGlobalScore(points) {
+      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
+      total += points;
+      localStorage.setItem('codyTotalScore', total);
+    }
 
     function loadQ() {
-      if (curr >= questions.length) return endGame();
-      const q = questions[curr];
+      if (curr >= currentLevelQuestions.length) return endGame();
+      const q = currentLevelQuestions[curr];
       qEl.textContent = q.q;
       optsEl.innerHTML = '';
-      document.getElementById('hintBox').style.display = 'none';
+      progressEl.style.width = `${(curr / currentLevelQuestions.length) * 100}%`;
       
       q.opts.forEach((opt, i) => {
         const btn = document.createElement('button');
@@ -75,42 +175,51 @@
         btn.onclick = () => checkAns(i, btn);
         optsEl.appendChild(btn);
       });
-      startTimer(q.hint);
+      startTimer();
     }
 
     function checkAns(i, btn) {
       clearInterval(timerInt);
-      if (i === questions[curr].a) {
-        btn.classList.add('correct'); score += 10; scoreEl.textContent = score;
+      const correctIndex = currentLevelQuestions[curr].a;
+      document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+      
+      if (i === correctIndex) {
+        btn.classList.add('correct');
+        streak++;
+        let points = 10 + (streak * 2);
+        score += points;
+        scoreEl.textContent = score;
+        comboEl.textContent = streak;
+        updateGlobalScore(points);
       } else {
         btn.classList.add('wrong');
-        optsEl.children[questions[curr].a].classList.add('correct');
-        document.getElementById('hintText').textContent = questions[curr].hint;
-        document.getElementById('hintBox').style.display = 'flex';
+        optsEl.children[correctIndex].classList.add('correct');
+        streak = 0;
+        comboEl.textContent = streak;
       }
-      setTimeout(() => { curr++; loadQ(); }, 2500);
+      setTimeout(() => { curr++; loadQ(); }, 1500);
     }
 
-    function startTimer(hint) {
-      clearInterval(timerInt); timeLeft = 15; timeEl.textContent = timeLeft;
+    function startTimer() {
+      clearInterval(timerInt); timeLeft = 20; timeEl.textContent = timeLeft;
       timerInt = setInterval(() => {
         timeLeft--; timeEl.textContent = timeLeft;
         if (timeLeft <= 0) {
           clearInterval(timerInt);
-          optsEl.children[questions[curr].a].classList.add('correct');
-          document.getElementById('hintText').textContent = hint;
-          document.getElementById('hintBox').style.display = 'flex';
-          setTimeout(() => { curr++; loadQ(); }, 2500);
+          document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+          optsEl.children[currentLevelQuestions[curr].a].classList.add('correct');
+          streak = 0; comboEl.textContent = streak;
+          setTimeout(() => { curr++; loadQ(); }, 1500);
         }
       }, 1000);
     }
 
     function endGame() {
-      document.getElementById('quizBox').style.display = 'none';
-      document.getElementById('resultBox').style.display = 'block';
+      progressEl.style.width = '100%';
+      document.getElementById('gameScreen').classList.remove('active');
+      document.getElementById('resultScreen').classList.add('active');
       document.getElementById('finalScore').textContent = score;
     }
-    loadQ();
   </script>
 </body>
 </html>
