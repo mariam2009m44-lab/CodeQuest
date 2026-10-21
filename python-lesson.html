@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدرس | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(107,232,255,0.1), transparent 60%); }
+    .top-nav { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-btn { display: flex; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; }
+    .lesson-container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 20px; }
+    
+    .cody-dialogue { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 20px; display: flex; gap: 15px; transition: 0.5s; }
+    .cody-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #00d2ff, #3a7bd5); display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0; }
+    .bubble-text { font-size: 1.05rem; line-height: 1.7; }
+    .bubble-text code { background: rgba(0,0,0,0.3); color: var(--gold); padding: 2px 6px; border-radius: 6px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; }
+    
+    .task-box { background: rgba(255,212,138,0.1); border: 1px solid var(--gold); border-radius: 12px; padding: 15px; color: var(--gold); font-weight: 700; font-size: 1rem; }
+    
+    .editor-section { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .editor-header { display: flex; justify-content: space-between; align-items: center; }
+    .btn-run { background: var(--green); color: #000; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn-run:hover { box-shadow: 0 0 15px var(--green); transform: scale(1.02); }
+    
+    .code-area { display: flex; gap: 15px; height: 250px; }
+    .CodeMirror { flex: 1; height: 100% !important; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 1rem; direction: ltr; }
+    .output-area { flex: 1; background: #000; border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.95rem; }
+    
+    .nav-buttons { display: flex; gap: 10px; margin-top: 10px; }
+    .btn-next { flex: 1; background: var(--cyan); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; display: none; transition: 0.3s; text-align: center; text-decoration: none; }
+    .btn-next:hover { box-shadow: 0 0 20px var(--cyan); transform: scale(1.01); }
+    .btn-next.show { display: block; }
+    .btn-map { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; text-decoration: none; text-align: center; transition: 0.3s; }
+    .btn-map:hover { background: rgba(255,255,255,0.05); }
+
+    @media (max-width: 600px) { .code-area { flex-direction: column; height: 400px; } }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <a href="python-chapters.html" class="back-btn"><i class="ri-arrow-right-line"></i> خريطة الفصول</a>
+    <div style="font-weight: 900; color: var(--gold);" id="headerTitle">جاري التحميل...</div>
+  </div>
+
+  <div class="lesson-container">
+    <div class="cody-dialogue" id="codyDialogue">
+      <div class="cody-avatar">🤖</div>
+      <div class="bubble-text" id="codyText"></div>
+    </div>
+
+    <div class="task-box" id="taskText"></div>
+
+    <div class="editor-section">
+      <div class="editor-header">
+        <span style="font-family: 'Fira Code', monospace; color: var(--muted);">main.py</span>
+        <button class="btn-run" onclick="runCode()"><i class="ri-play-circle-fill"></i> تشغيل الكود</button>
+      </div>
+      <div class="code-area">
+        <textarea id="codeEditor"></textarea>
+        <div class="output-area" id="outputArea">> Output...</div>
+      </div>
+      <div class="nav-buttons">
+        <a href="python-chapters.html" class="btn-map" style="flex:1;">الخريطة</a>
+        <button class="btn-next" id="nextBtn" onclick="goToNextChapter()">التالي: الفصل القادم <i class="ri-arrow-left-line"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script>
+    // هنا بنك المعلومات الكامل (12 فصل)
+    const lessonData = {
+      1: {
+        title: "الفصل 1: الطباعة",
+        cody: "أهلاً بك! في الدرس ده هنتعلم إزاي نطبع رسالة على الشاشة باستخدام أمر <code>print()</code>. جرب تكتب الكود اللي بيطبع <code>Hello, World!</code>",
+        task: "اكتب كود يطبع الجملة Hello, World!",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "استخدم دالة الطباعة هكذا: print(\"Hello, World!\")",
+        solutionCheck: (code) => code.includes('print("Hello, World!")') || code.includes("print('Hello, World!')"),
+        successMsg: "> Hello, World!<br><br><span style='color: var(--green);'>✓ أحسنت!</span>",
+        successCody: "رائع جدًا! لقد طبعت أول رسالة لك في بايثون."
+      },
+      2: {
+        title: "الفصل 2: المتغيرات",
+        cody: "المتغير هو صندوق بنحط فيه قيمة ونستخدمها بعدين. هنكتب <code>name = \"Cody\"</code>، وبعدين نطبعه.",
+        task: "أنشئ متغير اسمه name وضع فيه قيمتك المفضلة ثم اطبعه.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "اكتب name = \"اسمك\" في سطر، وفي السطر اللي بعده اكتب print(name)",
+        solutionCheck: (code) => code.includes('name =') && code.includes('print(name)'),
+        successMsg: "> [اسمك]<br><br><span style='color: var(--green);'>✓ ممتاز! استخدمت المتغير بنجاح.</span>",
+        successCody: "عاش جداً! المتغيرات هتسهل عليك شغلك كتير بعد كده."
+      },
+      3: {
+        title: "الفصل 3: العمليات الحسابية",
+        cody: "بايثون بيشتغل كآلة حاسبة. ممكن نكتب <code>print(5 + 3)</code> وهيطلع 8. جرب تجمع رقمين.",
+        task: "اطبع ناتج جمع 10 + 20.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "استخدم print(10 + 20)",
+        solutionCheck: (code) => code.includes('print(10 + 20)') || code.includes('print(10+20)'),
+        successMsg: "> 30<br><br><span style='color: var(--green);'>✓ عبقري!</span>",
+        successCody: "أنت بتفهم بسرعة! العمليات الحسابية أساس أي برنامج."
+      },
+      4: {
+        title: "الفصل 4: الشروط (if)",
+        cody: "عشان نخلي البرنامج ياخد قرار، بنستخدم <code>if</code>. يعني لو الرقم أكبر من 10، اطبع \"كبير\". متنساش المسافة البادئة.",
+        task: "اكتب شرط لو الرقم 15 أكبر من 10، اطبع كلمة \"كبير\".",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "if 15 > 10:\n    print(\"كبير\")",
+        solutionCheck: (code) => code.includes('if 15 > 10:') && code.includes('print("كبير")'),
+        successMsg: "> كبير<br><br><span style='color: var(--green);'>✓ رائع!</span>",
+        successCody: "ده تقدم عظيم! الشروط هي اللي بتخلي البرنامج ذكي."
+      },
+      5: {
+        title: "الفصل 5: التكرار (Loops)",
+        cody: "بدل ما تكرر الكود 5 مرات، بنستخدم <code>for</code> loop. مثلاً <code>for i in range(3): print(\"مرحباً\")</code>.",
+        task: "اكتب حلقة تكرار تطبع \"مرحباً\" 3 مرات.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "for i in range(3):\n    print(\"مرحباً\")",
+        solutionCheck: (code) => (code.includes('for') && code.includes('range(3)') && code.includes('print("مرحباً")')),
+        successMsg: "> مرحباً<br>> مرحباً<br>> مرحباً<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        successCody: "الحلقات بتوفر وقت كبير! أنت بتفكر كمبرمج حقيقي."
+      },
+      6: {
+        title: "الفصل 6: القوائم (Lists)",
+        cody: "القائمة بتخزن أكتر من قيمة. مثلاً <code>fruits = [\"Apple\", \"Banana\"]</code>. عايزين نطبع أول عنصر.",
+        task: "أنشئ قائمة اسمها fruits فيها Apple و Banana واطبع أول عنصر.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "fruits = [\"Apple\", \"Banana\"]\nprint(fruits[0])",
+        solutionCheck: (code) => code.includes('fruits =') && code.includes('print(fruits[0])'),
+        successMsg: "> Apple<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        successCody: "رائع! القوائم هتحتاجها كتير في شغلك."
+      },
+      7: {
+        title: "الفصل 7: الدوال (Functions)",
+        cody: "الدالة هي أداة بنعملها مرة ونستخدمها كتير. بنكتب <code>def greet():</code> وبعدين ننادي عليها.",
+        task: "أنشئ دالة اسمها greet تطبع \"Hi\" ثم نادي عليها.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "def greet():\n    print(\"Hi\")\ngreet()",
+        solutionCheck: (code) => code.includes('def greet():') && code.includes('greet()'),
+        successMsg: "> Hi<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        successCody: "ممتاز! الدوال بتخلي الكود منظم ومكررش."
+      },
+      8: {
+        title: "الفصل 8: النصوص (Strings)",
+        cody: "تقدر تدمج النصوص باستخدام <code>+</code>. لو عندك <code>x = \"Hello\"</code> و <code>y = \"World\"</code>، ممكن تطبعهم مع بعض.",
+        task: "اطبع كلمة Hello World باستخدام متغيرين ودمجهم.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "x = \"Hello\"\ny = \"World\"\nprint(x + \" \" + y)",
+        solutionCheck: (code) => code.includes('+') && code.includes('print'),
+        successMsg: "> Hello World<br><br><span style='color: var(--green);'>✓ رائع!</span>",
+        successCody: "تمام! دمج النصوص مفيد جداً في الطباعة."
+      },
+      9: {
+        title: "الفصل 9: محقق الأخطاء (Errors)",
+        cody: "عشان نمنع البرنامج يوقف لو حصل خطأ، بنستخدم <code>try</code> و <code>except</code>.",
+        task: "اكتب كود يحاول يقسم رقم على صفر، ويطبع \"Error\" لو حصل خطأ.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "try:\n    print(10/0)\nexcept:\n    print(\"Error\")",
+        solutionCheck: (code) => code.includes('try:') && code.includes('except:'),
+        successMsg: "> Error<br><br><span style='color: var(--green);'>✓ عبقري!</span>",
+        successCody: "أنت دلوقتي مبرمج محترف بتعرف تتعامل مع الأخطاء."
+      },
+      10: {
+        title: "الفصل 10: القواميس (Dictionaries)",
+        cody: "القاموس بيخزن بيانات على شكل مفتاح وقيمة. مثلاً <code>student = {\"name\": \"Cody\", \"age\": 10}</code>.",
+        task: "أنشئ قاموس اسمه person فيه name و age واطبع الاسم.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "person = {\"name\": \"Ali\", \"age\": 15}\nprint(person[\"name\"])",
+        solutionCheck: (code) => code.includes('person =') && code.includes('print(person'),
+        successMsg: "> Ali<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        successCody: "رائع! القواميس ممتازة لتنظيم البيانات."
+      },
+      11: {
+        title: "الفصل 11: المكتبات (Libraries)",
+        cody: "بايثون فيه مكتبات جاهزة. مثلاً <code>import math</code> عشان نستخدم الجذر التربيعي.",
+        task: "استورد مكتبة math واطبع الجذر التربيعي لـ 16.",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "import math\nprint(math.sqrt(16))",
+        solutionCheck: (code) => code.includes('import math') && code.includes('sqrt'),
+        successMsg: "> 4.0<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        successCody: "عاش! استخدام المكتبات بيوفر وقت ومجهود كبير."
+      },
+      12: {
+        title: "الفصل 12: مشروع المبرمج",
+        cody: "مبروك! وصلت لآخر فصل. دلوقتي هنستخدم كل اللي اتعلمناه: متغيرات، حلقات، وشروط عشان نعمل برنامج صغير.",
+        task: "أنشئ حلقة تكرار من 1 لـ 3، ولو الرقم زوجي اطبع \"Even\"، ولو فردي اطبع \"Odd\".",
+        defaultCode: '# اكتب الكود هنا\n',
+        hint: "for i in range(1, 4):\n    if i % 2 == 0:\n        print(\"Even\")\n    else:\n        print(\"Odd\")",
+        solutionCheck: (code) => code.includes('for') && code.includes('if') && code.includes('%'),
+        successMsg: "> Odd<br>> Even<br>> Odd<br><br><span style='color: var(--green);'>✓ مشروع ناجح!</span>",
+        successCody: "مذهل! أنت دلوقتي مبرمج بايثون. اذهب واختر تخصصك في صفحة الفروع!"
+      }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let chapterId = parseInt(urlParams.get('ch')) || 1;
+    let currentLesson = lessonData[chapterId];
+
+    const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+      lineNumbers: true,
+      mode: 'python',
+      theme: 'dracula',
+      indentUnit: 4,
+      matchBrackets: true
+    });
+
+    let isCompleted = false;
+
+    function loadLesson(id) {
+      currentLesson = lessonData[id];
+      document.getElementById('headerTitle').textContent = currentLesson.title;
+      document.getElementById('codyText').innerHTML = currentLesson.cody;
+      document.getElementById('taskText').innerHTML = `<i class="ri-lightbulb-fill"></i> ${currentLesson.task}`;
+      editor.setValue(currentLesson.defaultCode);
+      document.getElementById('outputArea').innerHTML = "> Output...";
+      document.getElementById('nextBtn').classList.remove('show');
+      isCompleted = false;
+      
+      // تغيير الرابط في المتصفح عشان لو عمل ريفريش يفضل في نفس الدرس
+      window.history.replaceState(null, '', `?ch=${id}`);
+    }
+
+    function runCode() {
+      const code = editor.getValue();
+      const output = document.getElementById('outputArea');
+      output.innerHTML = '> Executing...<br>';
+      
+      setTimeout(() => {
+        if (currentLesson.solutionCheck(code)) {
+          output.innerHTML += currentLesson.successMsg;
+          document.getElementById('nextBtn').classList.add('show');
+          document.getElementById('codyText').innerHTML = currentLesson.successCody;
+          
+          // تأثير الاحتفال (ألعاب نارية)
+          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+          if (!isCompleted) {
+            saveProgress(chapterId);
+            isCompleted = true;
+          }
+        } else {
+          output.innerHTML += `<span style="color: var(--red);">> خطأ في الكود. جرب تاني.</span><br><br><span style="color: var(--gold);">💡 تلميح: ${currentLesson.hint}</span>`;
+          document.getElementById('codyText').innerHTML = "متقلقش، كلنا بنغلط! جرب تقرأ التلميح اللي في الشاشة السوداء وتعدل الكود.";
+        }
+      }, 500);
+    }
+
+    function saveProgress(id) {
+      let xp = parseInt(localStorage.getItem('cody_xp')) || 0;
+      let completed = JSON.parse(localStorage.getItem('cody_completed_python')) || [];
+      
+      if (!completed.includes(id)) {
+        xp += 50; // 50 نقطة لكل فصل
+        completed.push(id);
+        localStorage.setItem('cody_xp', xp);
+        localStorage.setItem('cody_completed_python', JSON.stringify(completed));
+      }
+    }
+
+    function goToNextChapter() {
+      if (chapterId < 12) {
+        chapterId++;
+        loadLesson(chapterId);
+        window.scrollTo(0, 0);
+      } else {
+        // لو خلص 12 فصل، يروح لصفحة الفروع
+        window.location.href = 'python-branches.html';
+      }
+    }
+
+    // تحميل الدرس عند فتح الصفحة
+    loadLesson(chapterId);
+  </script>
+</body>
+</html>
