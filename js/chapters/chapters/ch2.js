@@ -14,7 +14,6 @@ window.CHAPTERS[2] = {
         { type: "challenge", expected: "10", defaultCode: '# اكتب الكود هنا\n', hint: 'age = 10\nprint(age)', check: (code) => /age\s*=\s*10/.test(code) && /print\s*\(\s*age\s*\)/.test(code), successMsg: "أحسنت! 🎉 لقد أنشأت أول متغير لك وطبعت قيمته." },
         { type: "cody", text: "الآن، جرب أن تضع نصاً في متغير. أنشئ متغيراً اسمه <code>greeting</code> وضع فيه النص <code>\"Hello\"</code>، ثم اطبعه." },
         { type: "challenge", expected: "Hello", defaultCode: '# اكتب الكود هنا\n', hint: 'greeting = "Hello"\nprint(greeting)', check: (code) => /greeting\s*=\s*(['"])Hello\1/.test(code) && /print\s*\(\s*greeting\s*\)/.test(code), successMsg: "مذهل! المتغيرات يمكنها تخزين النصوص أيضاً، وليس الأرقام فقط." },
-        { type: "quiz", question: "ما هو المتغير في البرمجة؟", options: ["أداة لحذف الأكواد.", "مكان لتخزين قيمة واستخدامها لاحقاً.", "أمر لطباعة النصوص."], correct: 1, explanation: "المتغير هو بمثابة وعاء أو صندوق نضع فيه قيمة (رقم، نص، إلخ) ونعطيه اسماً لنستخدمه وقت الحاجة." },
         { type: "cody", text: "رائع! لقد أتممت الدرس الأول. الآن أنت تعرف كيف تخزن البيانات. في الدرس التالي، ستتعلم كيف تغير هذه القيم." }
       ]
     },
@@ -47,14 +46,13 @@ window.CHAPTERS[2] = {
         { type: "cody", text: "هناك طريقة أخرى لدمج النصوص والأرقام معاً، وهي استخدام الفاصلة <code>,</code> داخل دالة الطباعة. على سبيل المثال: <code>print(\"My age is\", age)</code>. هذه الطريقة تضيف مسافة تلقائياً وتسمح بدمج أنواع بيانات مختلفة." },
         { type: "cody", text: "جربها! أنشئ متغيراً <code>name</code> وضع فيه اسمك، ثم اطبع جملة <code>My name is [اسمك]</code> باستخدام الفاصلة." },
         { type: "challenge", expected: "My name is Ali", defaultCode: '# اكتب الكود هنا\n', hint: 'name = "Ali"\nprint("My name is", name)', check: (code) => /name\s*=\s*(['"])Ali\1/.test(code) && /print\s*\(\s*(['"])My name is\1\s*,\s*name\s*\)/.test(code), successMsg: "رائع! استخدام الفاصلة يجعل الكود أنظف وأسهل." },
-        { type: "quiz", question: "أي طريقة صحيحة لدمج نص ورقم في الطباعة؟", options: ["print(\"Age:\" + 10)", "print(\"Age:\", 10)", "كلاهما صحيح"], correct: 1, explanation: "لا يمكن استخدام + لدمج نص مع رقم مباشرة (سيسبب خطأ). يجب استخدام الفاصلة , أو تحويل الرقم إلى نص أولاً." },
         { type: "cody", text: "أحسنت! الآن يمكنك بناء جمل كاملة من أجزاء مختلفة. استعد للدرس الأخير في هذا الفصل." }
       ]
     },
     {
       title: "الدرس 4: قواعد تسمية المتغيرات",
       steps: [
-        { type: "cody", text: "أهلاً بك في الدرس الأخير من فصل المتغيرات! كما أن لكل شخص اسماً، لكل متغير اسم. لكن هناك قواعد لتسمية المتغيرات." },
+        { type: "cody", text: "أهلاً بك في الدرس الرابع! كما أن لكل شخص اسماً، لكل متغير اسم. لكن هناك قواعد لتسمية المتغيرات." },
         { type: "cody", text: "القاعدة الأولى: اسم المتغير يجب أن يبدأ بحرف (a-z أو A-Z) أو شرطة سفلية (_). لا يمكن أن يبدأ برقم." },
         { type: "cody", text: "القاعدة الثانية: يمكن أن يحتوي الاسم على أحرف وأرقام وشرطات سفلية، لكن لا يمكن أن يحتوي على مسافات أو رموز خاصة مثل @ أو #." },
         { type: "cody", text: "القاعدة الثالثة: بايثون حساسة لحالة الأحرف. لذا <code>Name</code> و <code>name</code> هما متغيران مختلفان تماماً." },
@@ -64,8 +62,20 @@ window.CHAPTERS[2] = {
         { type: "cody", text: "من الأفضل دائماً استخدام أسماء وصفية. <code>user_age</code> أفضل من <code>a</code>. هذا يجعل الكود أسهل للقراءة والفهم." },
         { type: "cody", text: "أنشئ متغيراً باسم <code>student_name</code> وضع فيه اسمك، ثم اطبعه." },
         { type: "challenge", expected: "Ali", defaultCode: '# اكتب الكود هنا\n', hint: 'student_name = "Ali"\nprint(student_name)', check: (code) => /student_name\s*=\s*(['"])Ali\1/.test(code) && /print\s*\(\s*student_name\s*\)/.test(code), successMsg: "عمل رائع! لقد اتبعت قواعد التسمية واستخدمت اسماً وصفياً." },
-        { type: "cody", text: "🎉 مبروك! لقد أكملت فصل المتغيرات بالكامل. تعلمت كيف تنشئ المتغيرات، تغير قيمها، تدمج النصوص، وتسميها بشكل صحيح." },
-        { type: "cody", text: "في الفصل القادم، سنتعلم كيف نجعل البرنامج يتخذ قرارات باستخدام الشروط (if/else). استعد!" }
+        { type: "cody", text: "استعد الآن للامتحان الشامل للفصل الثاني!" }
+      ]
+    },
+    {
+      title: "امتحان الفصل الثاني",
+      steps: [
+        { type: "cody", text: "أهلاً بك في امتحان الفصل الثاني! 🎓 حان وقت اختبار معلوماتك حول المتغيرات." },
+        { type: "quiz", question: "1. كيف ننشئ متغيراً باسم score يحمل القيمة 50؟", options: ["score == 50", "score = 50", "let score = 50"], correct: 1, explanation: "علامة = المفردة تستخدم لتعيين القيم للمتغيرات." },
+        { type: "quiz", question: "2. ما هي القيمة النهائية للمتغير x في الكود التالي؟<br>x = 5<br>x = x + 10", options: ["5", "10", "15"], correct: 2, explanation: "x أصبح 15 لأننا أضفنا 10 إلى قيمته السابقة (5)." },
+        { type: "quiz", question: "3. أي من هذه الأسماء يعتبر متغيراً صالحاً في بايثون؟", options: ["my var", "1st_var", "my_var"], correct: 2, explanation: "لا يمكن استخدام المسافات أو البدء برقم. my_var هو الخيار الصحيح." },
+        { type: "quiz", question: "4. كيف نطبع متغيراً اسمه name؟", options: ["print(name)", "print(\"name\")", "echo(name)"], correct: 0, explanation: "بدون علامات تنصيص، لكي يقرأ الكمبيوتر قيمة المتغير." },
+        { type: "cody", text: "تحدي برمجي أخير للامتحان: أنشئ متغيراً باسم <code>hero</code> وضع فيه اسمك، ثم اطبع الجملة <code>I am [اسمك]</code> باستخدام الفاصلة داخل دالة الطباعة." },
+        { type: "challenge", expected: "I am Ali", defaultCode: '# اكتب الكود هنا\n', hint: 'hero = "Ali"\nprint("I am", hero)', check: (code) => /hero\s*=\s*(['"])Ali\1/.test(code) && /print\s*\(\s*(['"])I am\1\s*,\s*hero\s*\)/.test(code), successMsg: "ممتاز! 🌟 لقد أثبت إتقانك للمتغيرات واجتزت الامتحان." },
+        { type: "cody", text: "🎉 مبروك! لقد أكملت الفصل الثاني وحصلت على 3 نجوم. استعد للفصل الثالث: العمليات الحسابية!" }
       ]
     }
   ]
