@@ -22,9 +22,9 @@
     .level-box h2 { margin-bottom: 20px; color: var(--cyan); }
     .levels-grid { display: flex; flex-direction: column; gap: 12px; }
     .lvl-btn { padding: 16px; border-radius: 14px; font-size: 1.1rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; }
-    .lvl-easy { color: var(--green); border-color: var(--green); }
-    .lvl-med { color: var(--gold); border-color: var(--gold); }
-    .lvl-hard { color: var(--red); border-color: var(--red); }
+    .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118,233,192,0.1); }
+    .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255,212,138,0.1); }
+    .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255,145,169,0.1); }
     .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--cyan); width: 0%; transition: 0.4s; }
     .q-text { font-size: 1.3rem; font-weight: 800; margin-bottom: 20px; text-align: center; line-height: 1.6; min-height: 70px; }
@@ -35,6 +35,8 @@
     .opt-btn.wrong { background: rgba(255,145,169,0.2); border-color: var(--red); color: var(--red); }
     .result-box { text-align: center; }
     .btn-restart { background: var(--cyan); color: #000; border: none; padding: 14px 30px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; margin-top: 15px; }
+    .result-emoji { font-size: 4rem; margin-bottom: 10px; }
+    .result-message { font-size: 1.2rem; color: var(--muted); margin-bottom: 15px; }
     @media (max-width: 600px) { .top-nav { flex-direction: column; gap: 10px; } .stats { width: 100%; justify-content: space-between; } }
   </style>
 </head>
@@ -66,9 +68,12 @@
   </div>
   <div class="screen" id="resultScreen">
     <div class="level-box result-box">
-      <h2>انتهى التحدي! 🏁</h2>
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <h2>أحسنت! لقد أكملت المستوى!</h2>
+      <p class="result-message" id="resultMessage"></p>
       <p>لقد جمعت <strong id="finalScore" style="color: var(--gold); font-size: 1.5rem;">0</strong> نقطة.</p>
-      <button class="btn-restart" onclick="restartGame()">العب مرة أخرى</button>
+      <button class="btn-restart" onclick="restartGame()">العب مستوى آخر</button>
+      <button class="btn-restart" onclick="window.location.href='games.html'" style="background:transparent; border:1px solid var(--border); color:var(--text); margin-top:10px;">العودة للألعاب</button>
     </div>
   </div>
   <script>
@@ -131,8 +136,10 @@
       currentLevel = level; let qs = questionBank[level];
       currentQs = qs.sort(() => Math.random() - 0.5).slice(0, (level === 'easy' ? 10 : level === 'medium' ? 15 : 20));
       curr = 0; score = 0; streak = 0;
-      document.getElementById('levelScreen').classList.remove('active'); document.getElementById('resultScreen').classList.remove('active');
-      document.getElementById('gameScreen').classList.add('active'); loadQ();
+      document.getElementById('levelScreen').classList.remove('active');
+      document.getElementById('resultScreen').classList.remove('active');
+      document.getElementById('gameScreen').classList.add('active');
+      loadQ();
     }
     function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
     function loadQ() {
@@ -160,10 +167,20 @@
       }, 1000);
     }
     function endGame() {
-      progressEl.style.width = '100%'; document.getElementById('gameScreen').classList.remove('active');
-      document.getElementById('resultScreen').classList.add('active'); document.getElementById('finalScore').textContent = score;
+      progressEl.style.width = '100%';
+      document.getElementById('gameScreen').classList.remove('active');
+      document.getElementById('resultScreen').classList.add('active');
+      document.getElementById('finalScore').textContent = score;
+      const emoji = document.getElementById('resultEmoji');
+      const msg = document.getElementById('resultMessage');
+      if (score >= 100) { emoji.textContent = '🏆'; msg.textContent = 'أنت أسطورة! أداء مبهر جداً.'; }
+      else if (score >= 50) { emoji.textContent = '🌟'; msg.textContent = 'عمل رائع! يمكنك تحقيق الأفضل.'; }
+      else { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة! استمر في التعلم.'; }
     }
-    function restartGame() { startGame(currentLevel); }
+    function restartGame() {
+      document.getElementById('resultScreen').classList.remove('active');
+      document.getElementById('levelScreen').classList.add('active');
+    }
   </script>
 </body>
 </html>
