@@ -52,6 +52,8 @@
     .card.matched .card-back { border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(118,233,192,0.3); }
     .win-screen { display: none; text-align: center; margin-top: 20px; }
     .btn-restart { background: var(--cyan); color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; }
+    .result-emoji { font-size: 4rem; margin-bottom: 10px; }
+    .result-message { font-size: 1.2rem; color: var(--muted); margin-bottom: 15px; }
     @media (max-width: 500px) { .memory-grid { gap: 6px; } .card-front { font-size: 1.2rem; } .card-back { font-size: 0.7rem; } }
   </style>
 </head>
@@ -74,8 +76,11 @@
     <div class="level-box">
       <div id="gameGrid" class="memory-grid"></div>
       <div id="winScreen" class="win-screen">
-        <h2>أحسنت! 🎉</h2>
+        <div class="result-emoji" id="resultEmoji">🏆</div>
+        <h2 id="resultTitle">أحسنت! لقد أكملت اللعبة 🎉</h2>
+        <p class="result-message" id="resultMessage"></p>
         <button class="btn-restart" onclick="restartCurrentLevel()">العب مرة أخرى</button>
+        <button class="btn-restart" onclick="window.location.href='games.html'" style="background:transparent; border:1px solid var(--border); color:var(--text); margin-top:10px;">العودة للألعاب</button>
       </div>
     </div>
   </div>
@@ -115,7 +120,14 @@
         c1.el.classList.add('matched'); c2.el.classList.add('matched');
         matchedCount++; score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
         flippedCards = []; lock = false;
-        if (matchedCount === totalPairs) setTimeout(() => { winScreen.style.display = 'block'; gameGrid.style.display = 'none'; }, 500);
+        if (matchedCount === totalPairs) {
+          setTimeout(() => {
+            winScreen.style.display = 'block'; gameGrid.style.display = 'none';
+            document.getElementById('resultEmoji').textContent = '🏆';
+            document.getElementById('resultTitle').textContent = 'رائع! لقد أكملت اللعبة!';
+            document.getElementById('resultMessage').textContent = `لقد جمعت ${score} نقطة.`;
+          }, 500);
+        }
       } else {
         score = Math.max(0, score - 5); scoreDisplay.textContent = score;
         setTimeout(() => { c1.el.classList.remove('flipped'); c2.el.classList.remove('flipped'); flippedCards = []; lock = false; }, 800);
