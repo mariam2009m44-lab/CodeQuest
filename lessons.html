@@ -1,45 +1,488 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختيار المسار | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدرس | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(107,232,255,0.08), transparent 60%); }
+    
+    .lesson-container { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 20px; }
+    
+    .steps-indicator { display: flex; justify-content: space-between; background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 15px 25px; }
+    .step-item { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 700; font-size: 0.95rem; transition: 0.3s; }
+    .step-icon { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); display: grid; place-items: center; border: 1px solid var(--border); }
+    .step-item.active { color: var(--cyan); }
+    .step-item.active .step-icon { background: var(--cyan); color: #000; border-color: var(--cyan); }
+    .step-item.completed { color: var(--green); }
+    .step-item.completed .step-icon { background: var(--green); color: #000; border-color: var(--green); }
+
+    .chat-container { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 25px; display: flex; flex-direction: column; gap: 15px; min-height: 250px; }
+    .cody-msg { display: flex; gap: 15px; align-self: flex-start; max-width: 90%; animation: fadeIn 0.4s ease; }
+    .cody-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #00d2ff, #3a7bd5); display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0; }
+    .cody-bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 16px; border-top-right-radius: 4px; padding: 18px 22px; font-size: 1.1rem; line-height: 1.8; }
+    .cody-bubble code { background: rgba(0,0,0,0.3); color: var(--gold); padding: 3px 8px; border-radius: 6px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; margin: 0 4px; }
+    .cody-bubble pre { background: #000; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px solid #1e293b; direction: ltr; text-align: left; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.95rem; color: #a5d6ff; }
+    
+    .user-options { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; justify-content: flex-end; }
+    .opt-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--cyan); padding: 12px 24px; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; transition: 0.3s; font-size: 1rem; }
+    .opt-btn:hover { background: var(--cyan); color: #000; transform: scale(1.02); }
+
+    .editor-section { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 20px; display: none; flex-direction: column; gap: 15px; }
+    .editor-section.active { display: flex; animation: fadeIn 0.5s ease; }
+    .task-box { background: rgba(255,212,138,0.1); border: 1px solid var(--gold); border-radius: 12px; padding: 15px; color: var(--gold); font-weight: 700; }
+    .btn-run { background: var(--green); color: #000; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; align-self: flex-start; }
+    .code-area { display: flex; gap: 15px; height: 200px; }
+    .CodeMirror { flex: 1; height: 100% !important; border-radius: 12px; font-family: 'Fira Code', monospace; direction: ltr; }
+    .output-area { flex: 1; background: #000; border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; }
+
+    /* الامتحان */
+    .quiz-section { display: none; background: var(--glass); border: 1px solid var(--purple); border-radius: 20px; padding: 25px; flex-direction: column; gap: 15px; }
+    .quiz-section.active { display: flex; animation: fadeIn 0.5s ease; }
+    .quiz-question { font-size: 1.2rem; font-weight: 800; color: var(--gold); margin-bottom: 10px; }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+    .quiz-opt { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); padding: 15px; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-size: 1rem; text-align: right; transition: 0.2s; }
+    .quiz-opt:hover { background: rgba(169,154,255,0.1); }
+    .quiz-opt.correct { background: rgba(118,233,192,0.2); border-color: var(--green); color: var(--green); }
+    .quiz-opt.wrong { background: rgba(255,145,169,0.2); border-color: var(--red); color: var(--red); }
+
+    .btn-next { background: var(--cyan); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; display: none; text-decoration: none; text-align: center; margin-top: 10px; }
+    .btn-next.show { display: block; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 600px) { .code-area { flex-direction: column; height: 350px; } }
+  </style>
 </head>
 <body>
-    <div style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
-            <h1 style="color: var(--text-main);">اختر مسارك البرمجي</h1>
-            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
-            <div class="card" onclick="selectLang('javascript')" style="cursor: pointer; text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 15px;">🟨</div>
-                <h2 style="color: var(--text-main); margin-bottom: 10px;">JavaScript</h2>
-                <p style="color: var(--text-muted);">لغة الويب التفاعلية. الأفضل للبدء وبناء الألعاب والمواقع.</p>
-            </div>
-            
-            <div class="card" onclick="selectLang('python')" style="cursor: pointer; text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 15px;">🐍</div>
-                <h2 style="color: var(--text-main); margin-bottom: 10px;">Python</h2>
-                <p style="color: var(--text-muted);">لغة الذكاء الاصطناعي والبيانات. سهلة وبسيطة وقوية.</p>
-            </div>
-            
-            <div class="card" onclick="selectLang('cpp')" style="cursor: pointer; text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 15px;">⚙️</div>
-                <h2 style="color: var(--text-main); margin-bottom: 10px;">C++</h2>
-                <p style="color: var(--text-muted);">لغة الألعاب والأنظمة السريعة. للمبرمجين الطموحين.</p>
-            </div>
-        </div>
+  <div class="lesson-container">
+    <div class="steps-indicator">
+      <div class="step-item" id="step1"><div class="step-icon">1</div> <span>الشرح</span></div>
+      <div class="step-item" id="step2"><div class="step-icon">2</div> <span>أمثلة</span></div>
+      <div class="step-item" id="step3"><div class="step-icon">3</div> <span>التطبيق</span></div>
+      <div class="step-item" id="step4"><div class="step-icon">4</div> <span>الامتحان</span></div>
     </div>
-    <script>
-        function selectLang(lang) {
-            sessionStorage.setItem('selectedLang', lang);
-            window.location.href = 'levels.html';
+
+    <div class="chat-container" id="chatContainer">
+      <div class="cody-msg">
+        <div class="cody-avatar">🤖</div>
+        <div class="cody-bubble" id="codyText">جاري التحميل...</div>
+      </div>
+      <div class="user-options" id="userOptions"></div>
+    </div>
+
+    <div class="editor-section" id="editorSection">
+      <div class="task-box" id="taskText"></div>
+      <div class="code-area">
+        <textarea id="codeEditor"></textarea>
+        <div class="output-area" id="outputArea">> Output...</div>
+      </div>
+      <button class="btn-run" onclick="runCode()">تشغيل الكود</button>
+    </div>
+
+    <div class="quiz-section" id="quizSection">
+      <div class="quiz-question" id="quizQuestion"></div>
+      <div class="quiz-options" id="quizOptions"></div>
+    </div>
+
+    <a href="python-chapters.html" class="btn-next" id="nextBtn" onclick="saveProgress()">إتمام الدرس والعودة للخريطة <i class="ri-check-double-line"></i></a>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const chId = parseInt(urlParams.get('ch')) || 1;
+
+    // بنك المحتوى الشامل (12 فصل - كل فصل فيه شرح، مثالين، تطبيق، وامتحان)
+    const lessons = {
+      1: {
+        explain: "أهلاً بك يا بطل! أنا كودي. في الدرس ده هنتعلم إزاي نخلي الكمبيوتر يطبع كلام. الأمر اللي بنستخدمه اسمه <code>print</code>.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "ولا يهمك! تخيل إن <code>print</code> دي زي مكبر الصوت. إنت بتقولها الكلام، وهي بتطلعه على الشاشة.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'print("Hello")', desc: "هنا طبعنا كلمة Hello." },
+          { code: 'print("I love Python")', desc: "وطبعنا جملة كاملة." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "اكتب كود يطبع الجملة Hello, World!",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('print("Hello, World!")') || c.includes("print('Hello, World!')"),
+        successMsg: "> Hello, World!<br><br><span style='color: var(--green);'>✓ أحسنت!</span>",
+        quiz: {
+          q: "أي أمر يستخدم لطباعة النص في بايثون؟",
+          opts: ["echo", "print", "console.log", "write"],
+          a: 1
         }
-    </script>
+      },
+      2: {
+        explain: "المتغير هو صندوق بنحط فيه قيمة ونستخدمها بعدين. عشان نعمل متغير بنكتب اسمه وبعدين علامة يساوي وبعدين القيمة.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "تخيل إن المتغير ده درج، إنت بتحط فيه ورقة مكتوب عليها اسمك، وبتقفل الدرج، ولما تحتاجه بتفتحه وتاخد الورقة.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'name = "Cody"\nprint(name)', desc: "حطينا Cody في صندوق اسمه name وطبعناه." },
+          { code: 'age = 15\nprint(age)', desc: "حطينا الرقم 15 في صندوق اسمه age." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "أنشئ متغير اسمه name وضع فيه اسمك، ثم اطبعه.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('name =') && c.includes('print(name)'),
+        successMsg: "> [اسمك]<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        quiz: {
+          q: "ما هو المتغير؟",
+          opts: ["أمر للطباعة", "صندوق لتخزين البيانات", "حلقة تكرار", "شرط"],
+          a: 1
+        }
+      },
+      3: {
+        explain: "بايثون بيشتغل كآلة حاسبة ذكية. ممكن نجمع، نطرح، نضرب، ونقسم. بنستخدم علامات الرياضيات المعروفة (+، -، *، /).",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي الحاسبة اللي في الموبايل، بتكتب الأرقام والعلامة (مثلاً +) وبتدوس يساوي عشان يطلعلك الناتج.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'print(10 + 5)', desc: "جمع رقمين." },
+          { code: 'print(20 * 2)', desc: "ضرب رقمين." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "اطبع ناتج جمع 10 + 20.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('print(10 + 20)'),
+        successMsg: "> 30<br><br><span style='color: var(--green);'>✓ عبقري!</span>",
+        quiz: {
+          q: "ما هو ناتج 5 * 3؟",
+          opts: ["8", "15", "2", "53"],
+          a: 1
+        }
+      },
+      4: {
+        explain: "عشان نخلي البرنامج ياخد قرار، بنستخدم أداة اسمها <code>if</code> (لو). يعني لو حصل شرط معين، نفذ الكود اللي جواه.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي لما بتقول 'لو المطر نزل، هاخد الشمسية'. الـ if بتخلي البرنامج ياخد قرار بناءً على حاجة.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'if 10 > 5:\n    print("10 أكبر")', desc: "الشرط تحقق فطبع الجملة." },
+          { code: 'if 3 > 5:\n    print("مش هيطبع")', desc: "الشرط لم يتحقق فلن يطبع شيء." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "لو الرقم 15 أكبر من 10، اطبع كلمة \"كبير\".",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('if 15 > 10:') && c.includes('print("كبير")'),
+        successMsg: "> كبير<br><br><span style='color: var(--green);'>✓ رائع!</span>",
+        quiz: {
+          q: "متى نستخدم if؟",
+          opts: ["لتكرار الكود", "لاتخاذ قرار", "لطباعة النص", "لحفظ البيانات"],
+          a: 1
+        }
+      },
+      5: {
+        explain: "عشان نكرر كود كذا مرة، مش هنكتبه كذا مرة، بنستخدم حاجة اسمها <code>for loop</code> (حلقة تكرار).",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "تخيل إنك بتجري 3 لفات حوالين الملعب. بدل ما الكابتن يقولك 'جري لفة، جري لفة، جري لفة'، هيقولك 'جري 3 لفات'.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'for i in range(3):\n    print("Hi")', desc: "طبع Hi ثلاث مرات." },
+          { code: 'for i in range(2):\n    print(i)', desc: "طبع الأرقام 0 و 1." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "اكتب حلقة تكرار تطبع \"مرحباً\" 3 مرات.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('for') && c.includes('range(3)') && c.includes('print("مرحباً")'),
+        successMsg: "> مرحباً<br>> مرحباً<br>> مرحباً<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        quiz: {
+          q: "ما هي وظيفة الـ loop؟",
+          opts: ["اتخاذ قرار", "تكرار الأوامر", "طباعة النص", "تعريف متغير"],
+          a: 1
+        }
+      },
+      6: {
+        explain: "القوائم بتخزن أكتر من قيمة في مكان واحد. بنكتب القيم بين قوسين مربعين [ ].",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي شنطة الكتب، بتحط فيها أكتر من كتاب، وكل كتاب ليه مكان ورقم.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'colors = ["Red", "Blue"]\nprint(colors[0])', desc: "طبع أول لون (Red)." },
+          { code: 'numbers = [1, 2, 3]\nprint(numbers[2])', desc: "طبع الرقم الثالث (3)." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "أنشئ قائمة اسمها fruits فيها Apple و Banana واطبع أول عنصر.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('fruits =') && c.includes('print(fruits[0])'),
+        successMsg: "> Apple<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        quiz: {
+          q: "كيف نصل للعنصر الأول في القائمة؟",
+          opts: ["list[1]", "list[0]", "list.first", "list(0)"],
+          a: 1
+        }
+      },
+      7: {
+        explain: "الدالة هي أداة بنعملها مرة واحدة، ونستخدمها كتير. بنكتب <code>def</code> وبعدين اسم الدالة.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي وصفة الكيك، بتكتبها مرة، وكل مرة عايز تعمل كيك بتقراها وتنفذها.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'def say_hi():\n    print("Hi")\nsay_hi()', desc: "أنشأنا دالة ونادينا عليها." },
+          { code: 'def add(a, b):\n    print(a + b)\nadd(5, 3)', desc: "دالة بتاخد متغيرات (باراميترز)." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "أنشئ دالة اسمها greet تطبع \"Hi\" ثم نادي عليها.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('def greet():') && c.includes('greet()'),
+        successMsg: "> Hi<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        quiz: {
+          q: "ما هي الكلمة المفتاحية لتعريف دالة؟",
+          opts: ["function", "def", "func", "define"],
+          a: 1
+        }
+      },
+      8: {
+        explain: "تقدر تدمج النصوص مع بعض باستخدام علامة +. ده بيساعدك تطبع جمل مفيدة.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي لما تلزق كلمتين في بعض عشان يكونوا جملة مفيدة.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'x = "Hello"\ny = "World"\nprint(x + " " + y)', desc: "دمجنا النصين بمسافة." },
+          { code: 'name = "Ali"\nprint("Hello " + name)', desc: "دمجنا نص ثابت مع متغير." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "اطبع كلمة Hello World باستخدام متغيرين ودمجهم.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('+') && c.includes('print'),
+        successMsg: "> Hello World<br><br><span style='color: var(--green);'>✓ رائع!</span>",
+        quiz: {
+          q: "كيف ندمج نصين؟",
+          opts: ["باستخدام *", "باستخدام +", "باستخدام -", "باستخدام /"],
+          a: 1
+        }
+      },
+      9: {
+        explain: "عشان نمنع البرنامج إنه يقف فجأة لو حصل خطأ، بنستخدم <code>try</code> و <code>except</code>.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي لما تكون ماشي وفجأة لقيت حفرة، بتحاول تتجنبها (try) ولو وقعت (except) بتقوم تكمل.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'try:\n    print(10/0)\nexcept:\n    print("Error")', desc: "منعنا الخطأ وطبعنا Error." },
+          { code: 'try:\n    x = int("abc")\nexcept:\n    print("Not a number")', desc: "خطأ في تحويل النص لرقم." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "اكتب كود يحاول يقسم رقم على صفر، ويطبع \"Error\" لو حصل خطأ.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('try:') && c.includes('except:'),
+        successMsg: "> Error<br><br><span style='color: var(--green);'>✓ عبقري!</span>",
+        quiz: {
+          q: "ماذا نفعل إذا حدث خطأ في try؟",
+          opts: ["يتوقف البرنامج", "ينتقل إلى except", "يطبع الخطأ", "يعيد التشغيل"],
+          a: 1
+        }
+      },
+      10: {
+        explain: "القاموس بيخزن بيانات على شكل مفتاح وقيمة. بنستخدم الأقواس العريضة { }.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي دفتر التليفونات، بتدور على الاسم (المفتاح) عشان تلاقي الرقم (القيمة).",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'person = {"name": "Ali", "age": 10}\nprint(person["name"])', desc: "قاموس فيه اسم وعمر." },
+          { code: 'car = {"brand": "BMW"}\nprint(car["brand"])', desc: "قاموس بسيط." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "أنشئ قاموس اسمه person فيه name و age واطبع الاسم.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('person =') && c.includes('print(person'),
+        successMsg: "> Ali<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        quiz: {
+          q: "بماذا نكتب القاموس؟",
+          opts: ["[ ]", "( )", "{ }", "< >"],
+          a: 2
+        }
+      },
+      11: {
+        explain: "بايثون فيه مكتبات جاهزة كتير بتوفر وقتك. بنستخدم <code>import</code> عشان نستخدمها.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "زي لما تروح تاخد أدوات من صندوق الأدوات بدل ما تصنعها بنفسك.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'import math\nprint(math.sqrt(25))', desc: "استخدمنا math للجذر التربيعي." },
+          { code: 'import random\nprint(random.randint(1, 10))', desc: "استخدمنا random لرقم عشوائي." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "استورد مكتبة math واطبع الجذر التربيعي لـ 16.",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('import 'math') && c.includes('sqrt'),
+        successMsg: "> 4.0<br><br><span style='color: var(--green);'>✓ ممتاز!</span>",
+        quiz: {
+          q: "كيف نستخدم مكتبة؟",
+          opts: ["include", "import", "require", "use"],
+          a: 1
+        }
+      },
+      12: {
+        explain: "مبروك! وصلت لآخر فصل. دلوقتي هنجمع كل اللي اتعلمناه: متغيرات، شروط، وحلقات.",
+        explainOpts: [{text: "فاهم، وضحلي بمثال.", next: 1}, {text: "مش فاهم", next: 'explain_again'}],
+        explainAgain: "هنجمع بين الحلقة (للتكرار) والشرط (للقرار) عشان نعمل برنامج ذكي.",
+        explainAgainOpts: [{text: "آه فهمت، وضحلي بمثال.", next: 1}],
+        examples: [
+          { code: 'for i in range(1, 4):\n    if i % 2 == 0:\n        print("Even")\n    else:\n        print("Odd")', desc: "حلقة بتفحص الزوجي والفردي." }
+        ],
+        exampleOpts: [{text: "تمام، يلا نطبق!", next: 2}],
+        task: "أنشئ حلقة تكرار من 1 لـ 3، ولو الرقم زوجي اطبع \"Even\"، ولو فردي اطبع \"Odd\".",
+        defaultCode: "# اكتب الكود هنا\n",
+        check: (c) => c.includes('for') && c.includes('if') && c.includes('%'),
+        successMsg: "> Odd<br>> Even<br>> Odd<br><br><span style='color: var(--green);'>✓ مشروع ناجح!</span>",
+        quiz: {
+          q: "ما هو الرمز المستخدم لمعرفة باقي القسمة؟",
+          opts: ["/", "//", "%", "*"],
+          a: 2
+        }
+      }
+    };
+
+    const lesson = lessons[chId] || lessons[1];
+    const codyText = document.getElementById('codyText');
+    const userOptions = document.getElementById('userOptions');
+    const editorSection = document.getElementById('editorSection');
+    const quizSection = document.getElementById('quizSection');
+    let wrongAttempts = 0;
+
+    const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), { 
+      lineNumbers: true, 
+      mode: 'python', 
+      theme: 'dracula', 
+      indentUnit: 4,
+      matchBrackets: true
+    });
+
+    function updateStepsUI(activeStep) {
+      for(let i=1; i<=4; i++) {
+        const el = document.getElementById(`step${i}`);
+        el.className = `step-item ${i < activeStep ? 'completed' : ''} ${i === activeStep ? 'active' : ''}`;
+        if (i < activeStep) {
+          el.querySelector('.step-icon').innerHTML = '<i class="ri-check-line"></i>';
+        } else {
+          el.querySelector('.step-icon').innerHTML = i;
+        }
+      }
+    }
+
+    function loadStep(step) {
+      userOptions.innerHTML = '';
+      editorSection.classList.remove('active');
+      quizSection.classList.remove('active');
+      
+      if (step === 1) {
+        updateStepsUI(1);
+        codyText.innerHTML = lesson.explain;
+        renderOptions(lesson.explainOpts);
+      } else if (step === 'explain_again') {
+        codyText.innerHTML = lesson.explainAgain;
+        renderOptions(lesson.explainAgainOpts);
+      } else if (step === 2) {
+        updateStepsUI(2);
+        
+        let examplesHTML = '';
+        lesson.examples.forEach((ex, index) => {
+            examplesHTML += `<b>المثال ${index + 1}:</b><pre>${ex.code}</pre>${ex.desc}<br><br>`;
+        });
+        
+        codyText.innerHTML = examplesHTML;
+        renderOptions(lesson.exampleOpts);
+      } else if (step === 3) {
+        updateStepsUI(3);
+        codyText.innerHTML = "دلوقتي دورك! اكتب الكود في المحرر اللي تحت واختبره.";
+        editorSection.classList.add('active');
+        document.getElementById('taskText').innerHTML = `<i class="ri-lightbulb-fill"></i> ${lesson.task}`;
+        editor.setValue(lesson.defaultCode);
+        setTimeout(() => editorSection.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+      } else if (step === 4) {
+        updateStepsUI(4);
+        codyText.innerHTML = "عاش جداً! قبل ما تاخد النجوم، جاوب على السؤال ده عشان نتأكد إنك فهمت.";
+        quizSection.classList.add('active');
+        loadQuiz();
+        setTimeout(() => quizSection.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+      }
+    }
+
+    function renderOptions(opts) {
+      opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt.text;
+        btn.onclick = () => loadStep(opt.next);
+        userOptions.appendChild(btn);
+      });
+    }
+
+    function runCode() {
+      const code = editor.getValue();
+      const output = document.getElementById('outputArea');
+      output.innerHTML = '> Executing...<br>';
+      
+      setTimeout(() => {
+        if (lesson.check(code)) {
+          output.innerHTML += lesson.successMsg;
+          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+          setTimeout(() => loadStep(4), 1500); 
+        } else {
+          wrongAttempts++;
+          output.innerHTML += `<span style="color: var(--red);">> خطأ في الكود. جرب تاني.</span>`;
+          codyText.innerHTML = "متقلقش، كلنا بنغلط! ركز في المطلوب وحاول تاني. لو محتاج مساعدة، ممكن ترجع تقرأ الشرح تاني.";
+        }
+      }, 500);
+    }
+
+    function loadQuiz() {
+      document.getElementById('quizQuestion').textContent = lesson.quiz.q;
+      const optsContainer = document.getElementById('quizOptions');
+      optsContainer.innerHTML = '';
+      
+      lesson.quiz.opts.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-opt';
+        btn.textContent = opt;
+        btn.onclick = () => checkQuiz(index, btn);
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function checkQuiz(selected, btn) {
+      document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+      
+      if (selected === lesson.quiz.a) {
+        btn.classList.add('correct');
+        codyText.innerHTML = "إجابة صحيحة! أنت بطل حقيقي.";
+      } else {
+        btn.classList.add('wrong');
+        document.querySelectorAll('.quiz-opt')[lesson.quiz.a].classList.add('correct');
+        codyText.innerHTML = "الإجابة كانت غلط شوية، بس عادي! الإجابة الصح معلجة بالأخضر.";
+        wrongAttempts++;
+      }
+      
+      document.getElementById('nextBtn').classList.add('show');
+    }
+
+    function saveProgress() {
+      let progress = JSON.parse(localStorage.getItem('cody_python_progress')) || { completed: [], stars: {} };
+      
+      if (!progress.completed.includes(chId)) {
+        progress.completed.push(chId);
+        let stars = wrongAttempts === 0 ? 3 : (wrongAttempts <= 2 ? 2 : 1);
+        progress.stars[chId] = stars;
+        
+        let xp = parseInt(localStorage.getItem('cody_xp')) || 0;
+        localStorage.setItem('cody_xp', xp + 50);
+      }
+      
+      localStorage.setItem('cody_python_progress', JSON.stringify(progress));
+    }
+
+    loadStep(1);
+  </script>
 </body>
 </html>
