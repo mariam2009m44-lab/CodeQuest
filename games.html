@@ -70,12 +70,6 @@
     .c-build { --card-color: #76e9c0; --card-glow: rgba(118,233,192,0.3); --icon-color1: #11998e; --icon-color2: #38ef7d; }
     .c-bug { --card-color: #ff91a9; --card-glow: rgba(255,145,169,0.3); --icon-color1: #ff512f; --icon-color2: #dd2476; }
     .c-speed { --card-color: #ffd48a; --card-glow: rgba(255,212,138,0.3); --icon-color1: #f7971e; --icon-color2: #ffd200; }
-    .reset-btn {
-      margin-top: 40px; background: transparent; border: 1px solid #ff91a9; color: #ff91a9;
-      padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Cairo';
-      font-weight: 700; transition: 0.3s;
-    }
-    .reset-btn:hover { background: rgba(255,145,169,0.1); }
     @media (max-width: 600px) {
       .top-bar { flex-direction: column; gap: 15px; }
       .header h1 { font-size: 1.8rem; }
@@ -125,17 +119,10 @@
       <span class="btn-play">ابدأ التحدي</span>
     </a>
   </section>
-  <button class="reset-btn" onclick="resetScore()"><i class="ri-refresh-line"></i> تصفير النقاط</button>
   <script>
     function updateGlobalScore() {
       const score = parseInt(localStorage.getItem('codyTotalScore')) || 0;
       document.getElementById('globalScore').textContent = score;
-    }
-    function resetScore() {
-      if (confirm('هل أنت متأكد من تصفير جميع النقاط؟')) {
-        localStorage.setItem('codyTotalScore', 0);
-        updateGlobalScore();
-      }
     }
     window.onload = updateGlobalScore;
   </script>
