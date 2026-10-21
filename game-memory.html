@@ -1,96 +1,107 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الذاكرة | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
-        .header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: var(--primary); font-size: 1.3rem; }
-        .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 500px; }
-        .card { aspect-ratio: 1/1; background: #1e1e1e; border: 2px solid #333; border-radius: 15px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 0.9rem; font-weight: bold; transition: 0.3s; text-align: center; padding: 5px; }
-        .card.flipped { background: var(--glass); border-color: var(--primary); color: var(--primary); }
-        .card.matched { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success); pointer-events: none; }
-        .card .front { display: block; font-size: 2rem;} .card .back { display: none; font-family: monospace;}
-        .card.flipped .front, .card.matched .front { display: none; }
-        .card.flipped .back, .card.matched .back { display: block; }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لعبة الذاكرة | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
+    .game-box { width: 100%; max-width: 600px; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .back-btn { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .back-btn:hover { color: var(--purple); }
+    .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .card { aspect-ratio: 1; perspective: 1000px; cursor: pointer; }
+    .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
+    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+    .card-front { background: linear-gradient(135deg, var(--purple), #8B5CF6); color: #fff; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 2rem; }
+    .card-back { background: var(--surface); border: 1px solid var(--border); transform: rotateY(180deg); color: var(--text); font-size: 0.9rem; padding: 10px; }
+    .card.matched .card-inner { transform: rotateY(180deg); }
+    .card.matched .card-back { border-color: var(--green); color: var(--green); background: rgba(118,233,192,0.1); }
+    .status-text { font-size: 1.1rem; color: var(--muted); font-weight: 700; }
+    @media (max-width: 500px) { .memory-grid { grid-template-columns: repeat(3, 1fr); } .card-back { font-size: 0.8rem; } }
+  </style>
 </head>
 <body>
-    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>🧠 لعبة الذاكرة</h1><div style="width:50px;"></div></div>
-    <div class="board" id="board"></div>
-    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
-    <script>
-        const data = [{ id: 1, text: 'console.log', match: 'يطبع' }, { id: 2, text: 'let', match: 'متغير' }, { id: 3, text: 'if', match: 'شرط' }, { id: 4, text: 'for', match: 'حلقة' }, { id: 5, text: 'function', match: 'دالة' }, { id: 6, text: 'array', match: 'مصفوفة' }];
-        let cards = [], flipped = [], matched = 0;
-        function init() {
-            cards = [];
-            data.forEach(item => { cards.push({ id: item.id, text: item.text }); cards.push({ id: item.id, text: item.match }); });
-            cards.sort(() => Math.random() - 0.5);
-            const board = document.getElementById('board'); board.innerHTML = '';
-            cards.forEach((c, i) => {
-                const el = document.createElement('div'); el.className = 'card';
-                el.innerHTML = `<span class="front">❓</span><span class="back">${c.text}</span>`;
-                el.onclick = () => flip(el, i); board.appendChild(el);
-            });
-        }
-        function flip(el, i) {
-            if(el.classList.contains('flipped') || el.classList.contains('matched') || flipped.length === 2) return;
-            el.classList.add('flipped'); flipped.push({ el, i });
-            if(flipped.length === 2) {
-                if(cards[flipped[0].i].id === cards[flipped[1].i].id) {
-                    flipped[0].el.classList.add('matched'); flipped[1].el.classList.add('matched');
-                    matched++; flipped = [];
-                    if(matched === 6) { confetti({ particleCount: 200 }); setTimeout(claimReward, 1000); }
-                } else { setTimeout(() => { flipped[0].el.classList.remove('flipped'); flipped[1].el.classList.remove('flipped'); flipped = []; }, 1000); }
-            }
-        }
-        async function claimReward() {
-            const uid = Auth.getUserId();
-            if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(80) }); }
-            alert("🎉 مبروك! +80 نقطة"); window.location.href = 'games.html';
-        }
-        Auth.init((l) => { if(!l) window.location.href = 'login.html'; else init(); });
-    </script>
+  <div class="game-box">
+    <div class="header">
+      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
+      <span style="font-weight: 800; color: var(--purple);"><i class="ri-brain-fill"></i> الذاكرة</span>
+    </div>
+    <div class="memory-grid" id="grid"></div>
+    <div class="status-text" id="status">طابق الكلمات مع معانيها!</div>
+  </div>
 
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script>
+    const pairs = [
+      { term: 'HTML', def: 'هيكل الويب' },
+      { term: 'CSS', def: 'التنسيق والألوان' },
+      { term: 'JS', def: 'التفاعل والحركة' },
+      { term: 'Python', def: 'الذكاء الاصطناعي' },
+      { term: 'Bug', def: 'خطأ برمجي' },
+      { term: 'Code', def: 'أوامر الكمبيوتر' }
+    ];
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+    let cards = [];
+    let flippedCards = [];
+    let matchedCount = 0;
+    let lockBoard = false;
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-</body></html>
+    function initGame() {
+      cards = [...pairs, ...pairs].sort(() => Math.random() - 0.5);
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      cards.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'card';
+        cardEl.dataset.term = card.term;
+        cardEl.innerHTML = `
+          <div class="card-inner">
+            <div class="card-front">?</div>
+            <div class="card-back">${card.term ? card.term : card.def}</div>
+          </div>
+        `;
+        cardEl.addEventListener('click', () => flipCard(cardEl, card));
+        grid.appendChild(cardEl);
+      });
+    }
+
+    function flipCard(cardEl, card) {
+      if (lockBoard) return;
+      if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+      cardEl.classList.add('flipped');
+      flippedCards.push({ el: cardEl, data: card });
+      if (flippedCards.length === 2) checkMatch();
+    }
+
+    function checkMatch() {
+      lockBoard = true;
+      const [first, second] = flippedCards;
+      const isMatch = (first.data.term && second.data.def) || (first.data.def && second.data.term);
+      if (isMatch) {
+        first.el.classList.add('matched');
+        second.el.classList.add('matched');
+        flippedCards = [];
+        matchedCount++;
+        lockBoard = false;
+        if (matchedCount === 6) {
+          document.getElementById('status').textContent = 'أحسنت! لقد أكملت اللعبة 🎉';
+          document.getElementById('status').style.color = 'var(--green)';
+        }
+      } else {
+        setTimeout(() => {
+          first.el.classList.remove('flipped');
+          second.el.classList.remove('flipped');
+          flippedCards = [];
+          lockBoard = false;
+        }, 1000);
+      }
+    }
+    initGame();
+  </script>
+</body>
+</html>
