@@ -4,21 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>بازل الأكواد | Cody</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
-    :root {
-      --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.8);
-      --border: rgba(118, 233, 192, 0.2); --green: #76e9c0; --red: #ff91a9; 
-      --gold: #ffd48a; --text: #ffffff; --muted: #8892b0; --cyan: #6be8ff;
-    }
+    :root { --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.8); --border: rgba(118, 233, 192, 0.2); --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --text: #ffffff; --muted: #8892b0; --cyan: #6be8ff; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(118, 233, 192, 0.1), transparent 50%); }
-    
     .screen { display: none; width: 100%; max-width: 650px; }
     .screen.active { display: block; animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
     .level-box h2 { font-size: 2rem; margin-bottom: 30px; color: var(--green); }
     .levels-grid { display: flex; flex-direction: column; gap: 15px; }
@@ -26,7 +20,6 @@
     .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118, 233, 192, 0.1); transform: scale(1.02); }
     .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255, 212, 138, 0.1); transform: scale(1.02); }
     .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255, 145, 169, 0.1); transform: scale(1.02); }
-
     .game-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 25px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; cursor: pointer; background: none; border: none; font-family: 'Cairo'; font-size: 1rem; }
@@ -34,7 +27,7 @@
     .score-board { font-weight: 900; font-size: 1.2rem; color: var(--gold); }
     .task { background: rgba(118,233,192,0.1); border: 1px solid var(--green); border-radius: 12px; padding: 15px; text-align: center; font-weight: 800; margin-bottom: 20px; color: var(--green); }
     .drop-zone { display: flex; flex-direction: column; gap: 10px; min-height: 120px; padding: 15px; border: 2px dashed var(--border); border-radius: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.3); }
-    .code-block { padding: 12px 16px; background: #151b33; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 1rem; cursor: pointer; transition: 0.2s; direction: ltr; text-align: left; color: var(--cyan); }
+    .code-block { padding: 12px 16px; background: #151b33; border: 1px solid var(--border); border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 1rem; cursor: grab; transition: 0.2s; direction: ltr; text-align: left; color: var(--cyan); }
     .code-block:hover { border-color: var(--cyan); background: rgba(107,232,255,0.1); }
     .code-block.selected { opacity: 0.4; pointer-events: none; }
     .btn-check { width: 100%; padding: 14px; background: var(--green); color: #000; font-weight: 900; font-size: 1.1rem; border: none; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; transition: 0.2s; }
@@ -42,7 +35,6 @@
   </style>
 </head>
 <body>
-
   <div class="screen active" id="levelScreen">
     <div class="level-box">
       <h2>اختر مستوى البازل</h2>
@@ -54,7 +46,6 @@
       <a href="games.html" class="back-btn" style="display:block; margin-top:20px;"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
     </div>
   </div>
-
   <div class="screen" id="gameScreen">
     <div class="game-box">
       <div class="header">
@@ -65,88 +56,56 @@
       <div class="drop-zone" id="dropZone"></div>
       <div class="drop-zone" id="sourceZone"></div>
       <button class="btn-check" onclick="check()" id="btn" disabled>تحقق من الترتيب</button>
+      <button class="btn-check" onclick="restartGame()" id="btnRestart" style="display:none; margin-top:10px; background:var(--cyan);">العب مرة أخرى</button>
     </div>
   </div>
-
   <script>
     const puzzles = {
-      easy: {
-        task: "رتب الكود لطباعة 'Hello'",
-        correct: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'],
-        options: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"']
-      },
-      medium: {
-        task: "رتب دالة ترحب بالمستخدم",
-        correct: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True'],
-        options: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True']
-      },
-      hard: {
-        task: "رتب كلاس بسيط للسيارة",
-        correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'],
-        options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)']
-      }
+      easy: { task: "رتب الكود لطباعة 'Hello'", correct: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'], options: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'] },
+      medium: { task: "رتب دالة ترحب بالمستخدم", correct: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True'], options: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True'] },
+      hard: { task: "رتب كلاس بسيط للسيارة", correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'], options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'] }
     };
-    let seq = [], correctSeq = [], currentPuzzle, score = 0;
-    const drop = document.getElementById('dropZone'), source = document.getElementById('sourceZone'), btn = document.getElementById('btn'), scoreDisplay = document.getElementById('scoreDisplay'), taskText = document.getElementById('taskText');
-
-    function updateGlobalScore(points) {
-      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
-      total += points;
-      localStorage.setItem('codyTotalScore', total);
-    }
-
+    let seq = [], correctSeq = [], currentPuzzle, score = 0, currentLevel = 'easy';
+    const drop = document.getElementById('dropZone'), source = document.getElementById('sourceZone'), btn = document.getElementById('btn'), scoreDisplay = document.getElementById('scoreDisplay'), taskText = document.getElementById('taskText'), btnRestart = document.getElementById('btnRestart');
+    function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
     function startGame(level) {
+      currentLevel = level;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
-      currentPuzzle = puzzles[level];
-      correctSeq = currentPuzzle.correct;
-      taskText.textContent = currentPuzzle.task;
-      
+      currentPuzzle = puzzles[level]; correctSeq = currentPuzzle.correct; taskText.textContent = currentPuzzle.task;
       const shuffledOptions = [...currentPuzzle.options].sort(() => Math.random() - 0.5);
-      source.innerHTML = '';
-      drop.innerHTML = '';
-      seq = [];
-      btn.disabled = true;
-      
+      source.innerHTML = ''; drop.innerHTML = ''; seq = []; btn.disabled = true; btn.style.display = 'block'; btnRestart.style.display = 'none';
       shuffledOptions.forEach(opt => {
         const el = document.createElement('div');
-        el.className = 'code-block';
-        el.textContent = opt;
-        el.onclick = () => select(el, opt);
-        source.appendChild(el);
+        el.className = 'code-block'; el.textContent = opt; el.onclick = () => select(el, opt); source.appendChild(el);
       });
     }
-
     function select(el, code) {
       el.classList.add('selected'); seq.push(code);
       const newEl = document.createElement('div');
-      newEl.className = 'code-block'; newEl.textContent = code;
-      newEl.onclick = () => remove(newEl, code);
-      drop.appendChild(newEl);
+      newEl.className = 'code-block'; newEl.textContent = code; newEl.onclick = () => remove(newEl, code); drop.appendChild(newEl);
       btn.disabled = seq.length !== correctSeq.length;
     }
-
     function remove(el, code) {
       const i = seq.indexOf(code);
       if (i > -1) {
         seq.splice(i, 1); el.remove();
-        document.querySelectorAll('#sourceZone .code-block').forEach(b => {
-          if (b.textContent.includes(code)) b.classList.remove('selected');
-        });
+        document.querySelectorAll('#sourceZone .code-block').forEach(b => { if (b.textContent.includes(code)) b.classList.remove('selected'); });
         btn.disabled = seq.length !== correctSeq.length;
       }
     }
-
     function check() {
       if (seq.every((v, i) => v === correctSeq[i])) {
         btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
         score += 50; scoreDisplay.textContent = score; updateGlobalScore(50);
         drop.style.borderColor = 'var(--green)'; drop.style.background = 'rgba(118,233,192,0.1)';
+        btnRestart.style.display = 'block';
       } else {
         btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
         setTimeout(() => { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; }, 1500);
       }
     }
+    function restartGame() { startGame(currentLevel); }
   </script>
 </body>
 </html>
