@@ -8,43 +8,58 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
     :root {
-      --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.8);
-      --border: rgba(169, 154, 255, 0.2); --purple: #a99aff; --green: #76e9c0; 
-      --red: #ff91a9; --gold: #ffd48a; --text: #ffffff; --muted: #8892b0; --cyan: #6be8ff;
+      --bg: #050810; --glass: rgba(13, 20, 40, 0.8);
+      --border: rgba(255, 255, 255, 0.1); --text: #ffffff; --muted: #8892b0;
+      --cyan: #6be8ff; --purple: #a99aff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 100%, rgba(169, 154, 255, 0.1), transparent 50%); }
+    body {
+      font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text);
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px;
+      background-image: radial-gradient(circle at 50% 100%, rgba(169, 154, 255, 0.1), transparent 50%);
+    }
+    .top-nav {
+      width: 100%; max-width: 650px; display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 20px;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px; background: var(--glass);
+      border: 1px solid var(--border); color: var(--text); padding: 8px 16px;
+      border-radius: 10px; text-decoration: none; font-weight: 800; transition: 0.3s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); }
+    .score-board { background: var(--glass); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; font-weight: 900; color: var(--gold); }
     .screen { display: none; width: 100%; max-width: 650px; }
-    .screen.active { display: block; animation: fadeIn 0.4s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
-    .level-box h2 { font-size: 2rem; margin-bottom: 30px; color: var(--purple); }
-    .levels-grid { display: flex; flex-direction: column; gap: 15px; }
-    .lvl-btn { padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
-    .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118, 233, 192, 0.1); transform: scale(1.02); }
-    .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255, 212, 138, 0.1); transform: scale(1.02); }
-    .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255, 145, 169, 0.1); transform: scale(1.02); }
-    .game-container { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 25px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; cursor: pointer; background: none; border: none; font-family: 'Cairo'; font-size: 1rem; }
-    .back-btn:hover { color: var(--purple); }
-    .score-board { font-weight: 900; font-size: 1.2rem; color: var(--gold); }
+    .screen.active { display: block; }
+    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 30px; backdrop-filter: blur(20px); text-align: center; }
+    .level-box h2 { margin-bottom: 20px; color: var(--purple); }
+    .levels-grid { display: flex; flex-direction: column; gap: 12px; }
+    .lvl-btn { padding: 16px; border-radius: 14px; font-size: 1.1rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; }
+    .lvl-easy { color: var(--green); border-color: var(--green); }
+    .lvl-med { color: var(--gold); border-color: var(--gold); }
+    .lvl-hard { color: var(--red); border-color: var(--red); }
     .memory-grid { display: grid; gap: 10px; margin-top: 15px; }
-    .card { position: relative; width: 100%; aspect-ratio: 1 / 1; cursor: pointer; perspective: 1000px; }
-    .card-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
+    .card { position: relative; width: 100%; aspect-ratio: 1; cursor: pointer; perspective: 1000px; }
+    .card-inner { position: absolute; inset: 0; transition: transform 0.5s; transform-style: preserve-3d; }
     .card.flipped .card-inner, .card.matched .card-inner { transform: rotateY(180deg); }
-    .card-front, .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 2px solid var(--border); }
-    .card-front { background: #151b33; color: var(--purple); font-size: 1.8rem; box-shadow: inset 0 0 15px rgba(169,154,255,0.1); }
-    .card-back { background: #0d1422; transform: rotateY(180deg); color: var(--cyan); font-size: 0.9rem; text-align: center; padding: 5px; word-break: break-word; }
-    .card.matched .card-back { background: rgba(118, 233, 192, 0.15); border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(118,233,192,0.3); }
+    .card-front, .card-back {
+      position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-weight: 900;
+      border: 2px solid var(--border);
+    }
+    .card-front { background: linear-gradient(135deg, #1e293b, #0f172a); color: var(--purple); font-size: 1.5rem; }
+    .card-back { background: linear-gradient(135deg, #1e293b, #0f172a); transform: rotateY(180deg); color: var(--cyan); font-size: 0.9rem; padding: 5px; text-align: center; }
+    .card.matched .card-back { border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(118,233,192,0.3); }
     .win-screen { display: none; text-align: center; margin-top: 20px; }
-    .win-screen h2 { color: var(--green); font-size: 1.8rem; margin-bottom: 15px; }
-    .btn-restart { background: var(--cyan); color: #000; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; }
-    .btn-restart:hover { box-shadow: 0 0 20px var(--cyan); transform: scale(1.05); }
-    @media (max-width: 500px) { .memory-grid { gap: 6px; } .card-front { font-size: 1.3rem; } .card-back { font-size: 0.7rem; } }
+    .btn-restart { background: var(--cyan); color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; }
+    @media (max-width: 500px) { .memory-grid { gap: 6px; } .card-front { font-size: 1.2rem; } .card-back { font-size: 0.7rem; } }
   </style>
 </head>
 <body>
+  <div class="top-nav">
+    <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
+    <div class="score-board">النقاط: <span id="scoreDisplay">0</span></div>
+  </div>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
       <h2>اختر مستوى الذاكرة</h2>
@@ -53,72 +68,60 @@
         <button class="lvl-btn lvl-med" onclick="startGame(10)"><span>متوسط</span> <span>10 أزواج</span></button>
         <button class="lvl-btn lvl-hard" onclick="startGame(15)"><span>متقدم</span> <span>15 زوج</span></button>
       </div>
-      <a href="games.html" class="back-btn" style="display:block; margin-top:20px;"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
     </div>
   </div>
   <div class="screen" id="gameScreen">
-    <div class="game-container">
-      <div class="header">
-        <button class="back-btn" onclick="location.reload()"><i class="ri-arrow-right-line"></i> خروج</button>
-        <div class="score-board">النقاط: <span id="scoreDisplay">0</span></div>
-      </div>
+    <div class="level-box">
       <div id="gameGrid" class="memory-grid"></div>
       <div id="winScreen" class="win-screen">
-        <h2>أحسنت! لقد أكملت اللعبة 🎉</h2>
+        <h2>أحسنت! 🎉</h2>
         <button class="btn-restart" onclick="restartCurrentLevel()">العب مرة أخرى</button>
       </div>
     </div>
   </div>
   <script>
     const allPairs = [
-      { id: 1, term: 'HTML', def: 'هيكل' }, { id: 2, term: 'CSS', def: 'تنسيق' }, { id: 3, term: 'JS', def: 'تفاعل' }, 
+      { id: 1, term: 'HTML', def: 'هيكل' }, { id: 2, term: 'CSS', def: 'تنسيق' }, { id: 3, term: 'JS', def: 'تفاعل' },
       { id: 4, term: 'Python', def: 'ذكاء اصطناعي' }, { id: 5, term: 'Bug', def: 'خطأ' }, { id: 6, term: 'Code', def: 'أوامر' },
       { id: 7, term: 'Loop', def: 'تكرار' }, { id: 8, term: 'Array', def: 'مصفوفة' }, { id: 9, term: 'Function', def: 'دالة' },
       { id: 10, term: 'Variable', def: 'متغير' }, { id: 11, term: 'API', def: 'واجهة برمجة' }, { id: 12, term: 'Git', def: 'إصدارات' },
       { id: 13, term: 'SQL', def: 'قواعد بيانات' }, { id: 14, term: 'C++', def: 'لغة عالية الأداء' }, { id: 15, term: 'Java', def: 'كائنية التوجه' }
     ];
-    let flippedCards = [], matchedPairsCount = 0, totalPairsToMatch = 0, score = 0, lockBoard = false, currentPairsCount = 0;
+    let flippedCards = [], matchedCount = 0, totalPairs = 0, score = 0, lock = false, currentPairs = 0;
     const scoreDisplay = document.getElementById('scoreDisplay'), gameGrid = document.getElementById('gameGrid'), winScreen = document.getElementById('winScreen');
     function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
     function startGame(pairsCount) {
-      currentPairsCount = pairsCount; totalPairsToMatch = pairsCount; score = 0; scoreDisplay.textContent = score;
-      document.getElementById('levelScreen').classList.remove('active');
-      document.getElementById('gameScreen').classList.add('active');
+      currentPairs = pairsCount; totalPairs = pairsCount; score = 0; scoreDisplay.textContent = score;
+      document.getElementById('levelScreen').classList.remove('active'); document.getElementById('gameScreen').classList.add('active');
       winScreen.style.display = 'none'; gameGrid.style.display = 'grid';
-      let gridCols = 4;
-      if (pairsCount === 15) gridCols = 5; else if (pairsCount === 10) gridCols = 4;
-      gameGrid.style.gridTemplateColumns = `repeat(${gridCols}, 1fr)`;
-      const selectedPairs = allPairs.slice(0, pairsCount);
-      const cards = [...selectedPairs, ...selectedPairs].map(item => { const isTerm = Math.random() < 0.5; return { id: item.id, text: isTerm ? item.term : item.def }; }).sort(() => Math.random() - 0.5);
-      gameGrid.innerHTML = ''; flippedCards = []; matchedPairsCount = 0; lockBoard = false;
-      cards.forEach((cardData) => {
-        const cardEl = document.createElement('div');
-        cardEl.classList.add('card'); cardEl.dataset.id = cardData.id;
+      let cols = pairsCount === 15 ? 5 : 4; gameGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      const selected = allPairs.slice(0, pairsCount);
+      const cards = [...selected, ...selected].map(item => ({ id: item.id, text: Math.random() < 0.5 ? item.term : item.def })).sort(() => Math.random() - 0.5);
+      gameGrid.innerHTML = ''; flippedCards = []; matchedCount = 0; lock = false;
+      cards.forEach(cardData => {
+        const cardEl = document.createElement('div'); cardEl.classList.add('card'); cardEl.dataset.id = cardData.id;
         cardEl.innerHTML = `<div class="card-inner"><div class="card-front">?</div><div class="card-back">${cardData.text}</div></div>`;
-        cardEl.addEventListener('click', () => flipCard(cardEl, cardData));
-        gameGrid.appendChild(cardEl);
+        cardEl.addEventListener('click', () => flipCard(cardEl, cardData)); gameGrid.appendChild(cardEl);
       });
     }
     function flipCard(cardEl, cardData) {
-      if (lockBoard) return;
-      if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
-      cardEl.classList.add('flipped'); flippedCards.push({ element: cardEl, data: cardData });
+      if (lock || cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+      cardEl.classList.add('flipped'); flippedCards.push({ el: cardEl, data: cardData });
       if (flippedCards.length === 2) checkMatch();
     }
     function checkMatch() {
-      lockBoard = true;
-      const c1 = flippedCards[0], c2 = flippedCards[1];
+      lock = true; const [c1, c2] = flippedCards;
       if (c1.data.id === c2.data.id) {
-        c1.element.classList.add('matched'); c2.element.classList.add('matched');
-        matchedPairsCount++; score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
-        flippedCards = []; lockBoard = false;
-        if (matchedPairsCount === totalPairsToMatch) { setTimeout(() => { winScreen.style.display = 'block'; gameGrid.style.display = 'none'; }, 500); }
+        c1.el.classList.add('matched'); c2.el.classList.add('matched');
+        matchedCount++; score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
+        flippedCards = []; lock = false;
+        if (matchedCount === totalPairs) setTimeout(() => { winScreen.style.display = 'block'; gameGrid.style.display = 'none'; }, 500);
       } else {
         score = Math.max(0, score - 5); scoreDisplay.textContent = score;
-        setTimeout(() => { c1.element.classList.remove('flipped'); c2.element.classList.remove('flipped'); flippedCards = []; lockBoard = false; }, 800);
+        setTimeout(() => { c1.el.classList.remove('flipped'); c2.el.classList.remove('flipped'); flippedCards = []; lock = false; }, 800);
       }
     }
-    function restartCurrentLevel() { startGame(currentPairsCount); }
+    function restartCurrentLevel() { startGame(currentPairs); }
   </script>
 </body>
 </html>
