@@ -3,108 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لعبة الذاكرة | Cody</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <title>مركز الألعاب | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
-    :root { --pop-yellow: #FFD166; --pop-coral: #FF6B6B; --pop-teal: #4ECDC4; --pop-dark: #1A1A2E; --pop-white: #F8F9FA; }
-    body { font-family: 'Playpen Sans Arabic', sans-serif; background: #E2E8F0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; margin: 0; }
-    .game-box { width: 100%; max-width: 650px; background: var(--pop-white); border: 4px solid var(--pop-dark); border-radius: 24px; padding: 30px; box-shadow: 8px 8px 0 var(--pop-dark); text-align: center; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px dashed #CBD5E1; padding-bottom: 15px; }
-    .back-btn { color: var(--pop-dark); text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 6px; background: #E2E8F0; padding: 8px 16px; border-radius: 12px; border: 2px solid var(--pop-dark); }
-    .stats { font-weight: 800; font-size: 1.2rem; color: var(--pop-dark); }
+    :root {
+      --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.7);
+      --border: rgba(107, 232, 255, 0.15); --cyan: #6be8ff; --purple: #a99aff; 
+      --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --text: #ffffff; --muted: #8892b0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', sans-serif; background-color: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 40px 20px; display: flex; flex-direction: column; align-items: center;
+      background-image: radial-gradient(circle at 50% 0%, rgba(107, 232, 255, 0.1) 0%, transparent 60%),
+                        radial-gradient(circle at 100% 100%, rgba(169, 154, 255, 0.08) 0%, transparent 50%);
+    }
+    .top-bar { width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+    .logo-area { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 900; color: var(--cyan); }
+    .global-score { background: var(--glass); border: 1px solid var(--border); padding: 12px 24px; border-radius: 16px; font-size: 1.2rem; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 10px; box-shadow: 0 0 20px rgba(255, 212, 138, 0.1); }
     
-    .level-select { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-    .level-btn { padding: 16px; font-size: 1.2rem; font-weight: 800; border: 3px solid var(--pop-dark); border-radius: 16px; cursor: pointer; font-family: 'Playpen Sans Arabic'; transition: 0.2s; color: #fff; box-shadow: 4px 4px 0 var(--pop-dark); }
-    .level-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--pop-dark); }
-    .lvl-easy { background: var(--pop-teal); } .lvl-med { background: var(--pop-yellow); color: var(--pop-dark); } .lvl-hard { background: var(--pop-coral); }
+    .header { text-align: center; margin-bottom: 50px; }
+    .header h1 { font-size: 2.5rem; font-weight: 900; text-shadow: 0 0 25px rgba(107, 232, 255, 0.4); }
+    .header p { color: var(--muted); font-size: 1.1rem; margin-top: 10px; }
+    
+    .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; width: 100%; max-width: 1100px; }
+    
+    .game-card {
+      background: var(--glass); border: 1px solid var(--border); border-radius: 24px;
+      padding: 35px 25px; display: flex; flex-direction: column; align-items: center; text-align: center;
+      text-decoration: none; color: var(--text); backdrop-filter: blur(20px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden;
+    }
+    .game-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, var(--card-glow) 0%, transparent 100%); opacity: 0; transition: 0.3s; }
+    .game-card:hover { border-color: var(--card-color); transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px var(--card-glow); }
+    .game-card:hover::before { opacity: 0.1; }
+    
+    .icon-box { width: 90px; height: 90px; border-radius: 26px; display: grid; place-items: center; font-size: 3rem; margin-bottom: 25px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); color: var(--card-color); box-shadow: inset 0 0 20px var(--card-glow); transition: 0.3s; }
+    .game-card:hover .icon-box { transform: scale(1.1); background: var(--card-color); color: #000; box-shadow: 0 0 30px var(--card-glow); }
+    
+    .game-card h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 12px; }
+    .game-card p { color: var(--muted); font-size: 1rem; margin-bottom: 25px; flex: 1; line-height: 1.6; }
+    
+    .btn-play { width: 100%; padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--card-color); font-weight: 900; font-size: 1.1rem; transition: 0.3s; }
+    .game-card:hover .btn-play { background: var(--card-color); color: #000; border-color: var(--card-color); box-shadow: 0 0 20px var(--card-glow); }
 
-    .memory-grid { display: none; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
-    .card { aspect-ratio: 1; perspective: 1000px; cursor: pointer; }
-    .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
-    .card.flipped .card-inner { transform: rotateY(180deg); }
-    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--pop-dark); font-weight: 800; }
-    .card-front { background: #A78BFA; color: #fff; font-size: 2rem; box-shadow: inset -3px -3px 0 rgba(0,0,0,0.2); }
-    .card-back { background: #fff; transform: rotateY(180deg); color: var(--pop-dark); font-size: 0.9rem; padding: 8px; text-align: center; }
-    .card.matched .card-back { background: #D1FAE5; border-color: #10B981; }
-    .msg { margin-top: 20px; font-weight: 800; font-size: 1.2rem; color: var(--pop-teal); display: none; }
-    @media (max-width: 500px) { .memory-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } .card-back { font-size: 0.75rem; } }
+    .c-quiz { --card-color: var(--cyan); --card-glow: rgba(107,232,255,0.3); }
+    .c-memory { --card-color: var(--purple); --card-glow: rgba(169,154,255,0.3); }
+    .c-build { --card-color: var(--green); --card-glow: rgba(118,233,192,0.3); }
+    .c-bug { --card-color: var(--red); --card-glow: rgba(255,145,169,0.3); }
+    .c-speed { --card-color: var(--gold); --card-glow: rgba(255,212,138,0.3); }
+
+    .reset-btn { margin-top: 50px; background: transparent; border: 1px solid var(--red); color: var(--red); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; transition: 0.3s; }
+    .reset-btn:hover { background: rgba(255,145,169,0.1); box-shadow: 0 0 15px rgba(255,145,169,0.3); }
   </style>
 </head>
 <body>
-  <div class="game-box">
-    <div class="header">
-      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
-      <div class="stats">النقاط: <span id="score">0</span></div>
-    </div>
-    
-    <div id="levelScreen" class="level-select">
-      <h2 style="color: var(--pop-dark);">اختر مستوى التحدي</h2>
-      <button class="level-btn lvl-easy" onclick="startGame(3, 6)">سهل (3 أزواج)</button>
-      <button class="level-btn lvl-med" onclick="startGame(6, 12)">متوسط (6 أزواج)</button>
-      <button class="level-btn lvl-hard" onclick="startGame(8, 16)">صعب (8 أزواج)</button>
-    </div>
-
-    <div id="grid" class="memory-grid"></div>
-    <div id="winMsg" class="msg">أحسنت! لقد أكملت اللعبة 🎉</div>
+  <div class="top-bar">
+    <div class="logo-area"><i class="ri-rocket-2-fill"></i> Cody</div>
+    <div class="global-score"><i class="ri-trophy-fill"></i> مجموع النقاط: <span id="globalScore">0</span></div>
   </div>
 
+  <div class="header">
+    <h1>مركز الألعاب الفضائي 🎮</h1>
+    <p>اختر لعبتك المفضلة، وتحدَّ نفسك في 3 مستويات مختلفة!</p>
+  </div>
+
+  <section class="games-grid">
+    <a href="game-quiz.html" class="game-card c-quiz">
+      <div class="icon-box"><i class="ri-question-fill"></i></div>
+      <h3>سيد الأسئلة</h3>
+      <p>أسئلة برمجية متدرجة في 3 مستويات لاكتشاف عبقرية التفكير.</p>
+      <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
+    </a>
+
+    <a href="game-memory.html" class="game-card c-memory">
+      <div class="icon-box"><i class="ri-brain-fill"></i></div>
+      <h3>لعبة الذاكرة</h3>
+      <p>طابق المصطلحات مع معانيها في مستويات تتطلب تركيزاً عالياً.</p>
+      <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
+    </a>
+
+    <a href="game-build.html" class="game-card c-build">
+      <div class="icon-box"><i class="ri-puzzle-2-fill"></i></div>
+      <h3>بازل الأكواد</h3>
+      <p>رتّب القطع لبناء كود سليم، من السطر الواحد للكلاس المعقد.</p>
+      <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
+    </a>
+
+    <a href="game-bug.html" class="game-card c-bug">
+      <div class="icon-box"><i class="ri-bug-2-fill"></i></div>
+      <h3>صائد الأخطاء</h3>
+      <p>ابحث عن الخطأ البرمجي الخفي وأصلحه كأنك مبرمج محترف.</p>
+      <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
+    </a>
+
+    <a href="game-speed.html" class="game-card c-speed">
+      <div class="icon-box"><i class="ri-flashlight-fill"></i></div>
+      <h3>تحدي السرعة</h3>
+      <p>أسئلة سريعة وضغط وقت عالي، هل يمكنك الصمود حتى النهاية؟</p>
+      <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
+    </a>
+  </section>
+
+  <button class="reset-btn" onclick="resetScore()"><i class="ri-refresh-line"></i> تصفير النقاط</button>
+
   <script>
-    const pairs = [
-      { t: 'HTML', d: 'هيكل' }, { t: 'CSS', d: 'تنسيق' }, { t: 'JS', d: 'تفاعل' }, 
-      { t: 'Python', d: 'ذكاء اصطناعي' }, { t: 'Bug', d: 'خطأ' }, { t: 'Code', d: 'أوامر' },
-      { t: 'Loop', d: 'تكرار' }, { t: 'Array', d: 'مصفوفة' }
-    ];
-    let cards = [], flipped = [], matched = 0, score = 0, lock = false, totalPairs = 0;
-
-    function startGame(pairsCount, totalCards) {
-      totalPairs = pairsCount;
-      document.getElementById('levelScreen').style.display = 'none';
-      const grid = document.getElementById('grid');
-      grid.style.display = 'grid';
-      if (totalCards === 16) grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
-      else if (totalCards === 12) grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
-      else grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
-
-      const selected = pairs.slice(0, pairsCount);
-      cards = [...selected, ...selected].sort(() => Math.random() - 0.5);
-      grid.innerHTML = '';
-      
-      cards.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.dataset.term = c.t;
-        el.innerHTML = `<div class="card-inner"><div class="card-front">?</div><div class="card-back">${c.t ? c.t : c.d}</div></div>`;
-        el.onclick = () => flip(el, c);
-        grid.appendChild(el);
-      });
+    function updateGlobalScore() {
+      const score = parseInt(localStorage.getItem('codyTotalScore')) || 0;
+      document.getElementById('globalScore').textContent = score;
     }
-
-    function flip(el, card) {
-      if (lock || el.classList.contains('flipped') || el.classList.contains('matched')) return;
-      el.classList.add('flipped');
-      flipped.push({ el, data: card });
-      if (flipped.length === 2) checkMatch();
-    }
-
-    function checkMatch() {
-      lock = true;
-      const [a, b] = flipped;
-      const isMatch = (a.data.t && b.data.d) || (a.data.d && b.data.t);
-      
-      if (isMatch) {
-        a.el.classList.add('matched'); b.el.classList.add('matched');
-        matched++; score += 10; document.getElementById('score').textContent = score;
-        flipped = []; lock = false;
-        if (matched === totalPairs) document.getElementById('winMsg').style.display = 'block';
-      } else {
-        score = Math.max(0, score - 2); document.getElementById('score').textContent = score;
-        setTimeout(() => {
-          a.el.classList.remove('flipped'); b.el.classList.remove('flipped');
-          flipped = []; lock = false;
-        }, 1000);
+    function resetScore() {
+      if (confirm('هل أنت متأكد من تصفير جميع النقاط؟')) {
+        localStorage.setItem('codyTotalScore', 0);
+        updateGlobalScore();
       }
     }
+    window.onload = updateGlobalScore;
   </script>
 </body>
 </html>
