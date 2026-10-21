@@ -1,55 +1,147 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المسارات | Cody Academy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b18">
+  <title>مسارات التعلم | Cody</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/dashboard.css">
+
+  <style>
+    .page-header { margin-bottom: 30px; }
+    .page-header h1 { font-size: 1.8rem; font-weight: 900; color: var(--text); margin-bottom: 8px; }
+    .page-header p { color: var(--muted); font-size: 1rem; }
+
+    .paths-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+    
+    .path-card {
+      display: flex; flex-direction: column; padding: 30px;
+      background: var(--surface-glass); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); text-decoration: none;
+      color: var(--text); transition: all var(--transition);
+      position: relative; overflow: hidden;
+    }
+    
+    .path-card:hover { transform: translateY(-8px); border-color: var(--cyan); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    
+    .path-icon {
+      width: 70px; height: 70px; border-radius: var(--radius-md);
+      display: grid; place-items: center; margin-bottom: 24px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+      transition: transform 0.3s ease;
+    }
+    .path-card:hover .path-icon { transform: scale(1.1) rotate(-3deg); }
+    .path-icon svg { width: 42px; height: 42px; }
+
+    .path-card h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; }
+    .path-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 24px; flex: 1; }
+    
+    .path-btn {
+      display: inline-flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.03); color: var(--cyan); padding: 12px 20px;
+      border-radius: var(--radius-sm); font-weight: 800; font-size: 0.95rem;
+      border: 1px solid var(--border); transition: 0.3s;
+    }
+    .path-card:hover .path-btn { background: var(--cyan); color: var(--bg-deep); border-color: var(--cyan); }
+
+    .mobile-nav { display: none; }
+    @media (max-width: 768px) {
+      .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(9, 13, 29, 0.95); border-top: 1px solid var(--border); backdrop-filter: blur(15px); padding: 10px 5px calc(10px + env(safe-area-inset-bottom)); justify-content: space-around; z-index: 1000; }
+      .mobile-nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: var(--radius-sm); text-decoration: none; }
+      .mobile-nav a.active { color: var(--cyan); background: rgba(107,232,255,0.05); }
+      .mobile-nav a i { font-size: 1.3rem; }
+      body { padding-bottom: 70px; }
+    }
+  </style>
 </head>
-<body class="dark-theme">
-    <div class="app-layout">
-        <aside class="sidebar">
-            <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-                <a href="languages.html" class="nav-item active"><i class="ri-map-2-line"></i> المسارات</a>
-                <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-                <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-                <a href="#" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
-            </nav>
-        </aside>
-        <main class="main-content">
-            <h1 style="font-size: 2.2rem; margin-bottom: 30px; color: #fff; font-weight: 900;">اختر مسارك</h1>
-            <div class="grid-quick" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-                <a href="levels.html?lang=python" class="glass-card quick-card" style="padding: 40px; align-items: flex-start; text-align: right;">
-                    <div class="quick-icon" style="background: rgba(251, 191, 36, 0.1); color: var(--dark-gold); font-size: 3rem; width: 80px; height: 80px;">🐍</div>
-                    <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 5px;">Python</h3>
-                    <p style="color: var(--dark-muted);">لغة الذكاء الاصطناعي والبيانات</p>
-                </a>
-                <a href="levels.html?lang=javascript" class="glass-card quick-card" style="padding: 40px; align-items: flex-start; text-align: right;">
-                    <div class="quick-icon" style="background: rgba(0, 217, 255, 0.1); color: var(--dark-cyan); font-size: 3rem; width: 80px; height: 80px;">🟨</div>
-                    <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 5px;">JavaScript</h3>
-                    <p style="color: var(--dark-muted);">لغة الويب والتفاعل</p>
-                </a>
-                <a href="levels.html?lang=cpp" class="glass-card quick-card" style="padding: 40px; align-items: flex-start; text-align: right;">
-                    <div class="quick-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--dark-purple); font-size: 3rem; width: 80px; height: 80px;">⚙️</div>
-                    <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 5px;">C++</h3>
-                    <p style="color: var(--dark-muted);">لغة الأنظمة والألعاب</p>
-                </a>
-            </div>
-        </main>
-    </div>
-    <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-        <a href="languages.html" class="mobile-nav-item active"><i class="ri-book-open-line"></i> المسارات</a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-terminal-box-line"></i> الملعب</a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-    </nav>
-    <script type="module">
-        import { App } from './js/app.js';
-        App.init();
-    </script>
+<body>
+  <div class="space-app">
+    <aside class="space-sidebar" id="sidebar">
+      <a class="space-brand" href="dashboard.html" aria-label="Cody الرئيسية">
+        <span class="brand-mark">C</span>
+        <span class="brand-name">Cody</span>
+      </a>
+      <div class="sidebar-caption">مساحة التعلم</div>
+      <nav class="space-nav" aria-label="التنقل الرئيسي">
+        <a class="nav-link" href="dashboard.html"><i class="ri-layout-grid-fill"></i><span>لوحة التحكم</span></a>
+        <a class="nav-link active" href="languages.html"><i class="ri-route-line"></i><span>مسارات التعلم</span></a>
+        <a class="nav-link" href="playground.html"><i class="ri-code-s-slash-line"></i><span>مختبر الأكواد</span></a>
+        <a class="nav-link" href="games.html"><i class="ri-gamepad-line"></i><span>الألعاب والتحديات</span></a>
+        <a class="nav-link" href="projects.html"><i class="ri-folder-code-line"></i><span>مشروعاتي</span></a>
+        <a class="nav-link" href="achievements.html"><i class="ri-medal-2-line"></i><span>إنجازاتي</span></a>
+        <a class="nav-link" href="profile.html"><i class="ri-user-settings-line"></i><span>ملفي الشخصي</span></a>
+      </nav>
+      <a href="#" id="logoutButton" class="logout-link logout"><i class="ri-logout-box-r-line"></i><span>تسجيل الخروج</span></a>
+      <div class="sidebar-version"><span class="version-dot"></span>CODY <span>·</span> SPACE EDITION</div>
+    </aside>
+
+    <main class="space-main">
+      <header class="space-topbar">
+        <div class="topbar-title">
+          <div class="page-kicker"><span class="online-dot"></span> اختر وجهتك</div>
+          <h1>مساراتك البرمجية</h1>
+          <p>اختر اللغة التي تريد استكشافها، وابدأ التعلم خطوة بخطوة.</p>
+        </div>
+      </header>
+
+      <section class="paths-grid">
+        <!-- Python -->
+        <a href="lessons.html?lang=python" class="path-card">
+          <div class="path-icon">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23.488 9.14v2.966a4.284 4.284 0 01-4.173 4.236h-6.672a3.408 3.408 0 00-3.34 3.394v6.36c0 1.81 1.574 2.876 3.34 3.395a11.176 11.176 0 006.672 0c1.682-.487 3.34-1.467 3.34-3.394V23.55h-6.672v-.849h10.012c1.941 0 2.665-1.354 3.34-3.386a11.464 11.464 0 000-6.79c-.48-1.932-1.396-3.386-3.34-3.386Zm-3.752 16.108a1.273 1.273 0 11-1.254 1.269 1.26 1.26 0 011.254-1.27Z" fill="#387EB8"/>
+              <path d="M15.835 2a19.072 19.072 0 00-3.192.273c-2.827.499-3.34 1.544-3.34 3.472V8.29h6.68v.849H6.796a4.17 4.17 0 00-4.173 3.387 12.486 12.486 0 000 6.789c.475 1.977 1.609 3.386 3.55 3.386H8.47V19.65a4.245 4.245 0 014.173-4.15h6.672a3.365 3.365 0 003.34-3.394V5.745a3.729 3.729 0 00-3.34-3.472A20.838 20.838 0 0015.835 2Zm-3.612 2.048a1.273 1.273 0 11-1.254 1.277 1.268 1.268 0 011.254-1.277Z" fill="#FFE052"/>
+            </svg>
+          </div>
+          <h3>Python</h3>
+          <p>لغة سهلة وقوية، مثالية للمبتدئين وعلوم البيانات والذكاء الاصطناعي.</p>
+          <span class="path-btn">استكشف المسار <i class="ri-arrow-left-line"></i></span>
+        </a>
+
+        <!-- JavaScript -->
+        <a href="lessons.html?lang=js" class="path-card">
+          <div class="path-icon">
+            <svg viewBox="0 0 1052 1052" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#f0db4f" d="M0 0h1052v1052H0z"/>
+              <path d="M965.9 801.1c-7.7-48-39-88.3-131.7-125.9-32.2-14.8-68.1-25.399-78.8-49.8-3.8-14.2-4.3-22.2-1.9-30.8 6.9-27.9 40.2-36.6 66.6-28.6 17 5.7 33.1 18.801 42.8 39.7 45.4-29.399 45.3-29.2 77-49.399-11.6-18-17.8-26.301-25.4-34-27.3-30.5-64.5-46.2-124-45-10.3 1.3-20.699 2.699-31 4-29.699 7.5-58 23.1-74.6 44-49.8 56.5-35.6 155.399 25 196.1 59.7 44.8 147.4 55 158.6 96.9 10.9 51.3-37.699 67.899-86 62-35.6-7.4-55.399-25.5-76.8-58.4-39.399 22.8-39.399 22.8-79.899 46.1 9.6 21 19.699 30.5 35.8 48.7 76.2 77.3 266.899 73.5 301.1-43.5 1.399-4.001 10.6-30.801 3.199-72.101zm-394-317.6h-98.4c0 85-.399 169.4-.399 254.4 0 54.1 2.8 103.7-6 118.9-14.4 29.899-51.7 26.2-68.7 20.399-17.3-8.5-26.1-20.6-36.3-37.699-2.8-4.9-4.9-8.7-5.601-9-26.699 16.3-53.3 32.699-80 49 13.301 27.3 32.9 51 58 66.399 37.5 22.5 87.9 29.4 140.601 17.3 34.3-10 63.899-30.699 79.399-62.199 22.4-41.3 17.6-91.3 17.4-146.6.5-90.2 0-180.4 0-270.9z" fill="#323330"/>
+            </svg>
+          </div>
+          <h3>JavaScript</h3>
+          <p>لغة الويب التفاعلية. اصنع صفحات ويب حية وألعاباً ممتعة.</p>
+          <span class="path-btn">استكشف المسار <i class="ri-arrow-left-line"></i></span>
+        </a>
+
+        <!-- C++ -->
+        <a href="lessons.html?lang=cpp" class="path-card">
+          <div class="path-icon">
+            <svg viewBox="0 0 256 288" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#649AD2" d="M255.987 84.59c-.002-4.837-1.037-9.112-3.13-12.781-2.054-3.608-5.133-6.632-9.261-9.023-34.08-19.651-68.195-39.242-102.264-58.913-9.185-5.303-18.09-5.11-27.208.27-13.565 8-81.48 46.91-101.719 58.632C4.071 67.6.015 74.984.013 84.58 0 124.101.013 163.62 0 203.141c0 4.73.993 8.923 2.993 12.537 2.056 3.717 5.177 6.824 9.401 9.269 20.24 11.722 88.164 50.63 101.726 58.631 9.121 5.382 18.027 5.575 27.215.27 34.07-19.672 68.186-39.262 102.272-58.913 4.224-2.444 7.345-5.553 9.401-9.267 1.997-3.614 2.992-7.806 2.992-12.539 0 0 0-79.018-.013-118.539"/>
+              <path fill="#004482" d="m128.392 143.476-125.4 72.202c2.057 3.717 5.178 6.824 9.402 9.269 20.24 11.722 88.164 50.63 101.726 58.631 9.121 5.382 18.027 5.575 27.215.27 34.07-19.672 68.186-39.262 102.272-58.913 4.224-2.444 7.345-5.553 9.401-9.267l-124.616-72.192"/>
+              <path fill="#1A4674" d="M91.25 164.863c7.297 12.738 21.014 21.33 36.75 21.33 15.833 0 29.628-8.7 36.888-21.576l-36.496-21.141-37.142 21.387"/>
+              <path fill="#01589C" d="M255.987 84.59c-.002-4.837-1.037-9.112-3.13-12.781l-124.465 71.667 124.616 72.192c1.997-3.614 2.99-7.806 2.992-12.539 0 0 0-79.018-.013-118.539"/>
+              <path fill="#FFF" d="M249.135 148.636h-9.738v9.74h-9.74v-9.74h-9.737V138.9h9.737v-9.738h9.74v9.738h9.738v9.737ZM128 58.847c31.135 0 58.358 16.74 73.17 41.709l.444.759-37.001 21.307c-7.333-12.609-20.978-21.094-36.613-21.094-23.38 0-42.338 18.958-42.338 42.338 0 23.38 18.958 42.338 42.338 42.338 15.635 0 29.28-8.485 36.613-21.094l37.001 21.307-.444.759C213.358 211.343 186.135 228.083 128 228.083c-42.405 0-76.77-34.365-76.77-76.77 0-42.405 34.365-76.77 76.77-76.77Z"/>
+            </svg>
+          </div>
+          <h3>C++</h3>
+          <p>لغة الأداء العالي والخوارزميات. تحدَّ نفسك في حل المشكلات.</p>
+          <span class="path-btn">استكشف المسار <i class="ri-arrow-left-line"></i></span>
+        </a>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav">
+    <a href="dashboard.html"><i class="ri-layout-grid-fill"></i><span>الرئيسية</span></a>
+    <a href="languages.html" class="active"><i class="ri-route-line"></i><span>التعلم</span></a>
+    <a href="playground.html"><i class="ri-code-box-line"></i><span>الأكواد</span></a>
+    <a href="games.html"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
+    <a href="profile.html"><i class="ri-user-settings-line"></i><span>حسابي</span></a>
+  </nav>
 </body>
 </html>
