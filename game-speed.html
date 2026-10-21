@@ -1,102 +1,103 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي السرعة | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: #8b5cf6; font-size: 1.3rem; }
-        .game-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .timer { font-size: 3rem; font-weight: bold; color: var(--danger); text-shadow: 0 0 15px rgba(239,68,68,0.5); }
-        .question-box { background: var(--glass); padding: 30px; border-radius: 20px; text-align: center; width: 100%; box-sizing: border-box; border: 1px solid var(--glass-border); }
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 20px;}
-        .opt-btn { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
-        .opt-btn:hover { background: rgba(139,92,246,0.2); border-color: #8b5cf6; }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحدي السرعة | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
+    .game-box { width: 100%; max-width: 500px; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .back-btn { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .back-btn:hover { color: var(--gold); }
+    .timer-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+    .timer-fill { height: 100%; background: var(--gold); width: 100%; transition: width 0.1s linear; }
+    .question-box { min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+    .question-box h2 { font-size: 1.6rem; color: var(--text); font-weight: 800; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .btn-ans { padding: 20px; border-radius: var(--radius-md); font-size: 1.3rem; font-weight: 900; border: 2px solid transparent; cursor: pointer; transition: 0.2s; font-family: 'Playpen Sans Arabic'; }
+    .btn-true { background: rgba(118,233,192,0.1); color: var(--green); border-color: var(--green); }
+    .btn-true:hover { background: var(--green); color: var(--bg-deep); }
+    .btn-false { background: rgba(255,145,169,0.1); color: var(--red); border-color: var(--red); }
+    .btn-false:hover { background: var(--red); color: var(--bg-deep); }
+    .score-display { font-size: 1.2rem; font-weight: 800; color: var(--gold); margin-top: 20px; }
+    .result-screen { display: none; }
+    .result-screen h2 { font-size: 2rem; color: var(--gold); margin-bottom: 10px; }
+    .result-screen p { color: var(--muted); font-size: 1.2rem; margin-bottom: 20px; }
+    .btn-restart { background: var(--gold); color: var(--bg-deep); padding: 15px 30px; border-radius: var(--radius-md); font-weight: 900; font-size: 1.1rem; border: none; cursor: pointer; width: 100%; font-family: 'Playpen Sans Arabic'; }
+  </style>
 </head>
 <body>
-    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>⚡ تحدي السرعة</h1><div style="width:50px;"></div></div>
-    <div class="game-area">
-        <div class="timer" id="timer">15</div>
-        <div class="question-box">
-            <h2 id="question" style="margin:0;">جاري التحميل...</h2>
-            <div class="options" id="options"></div>
-        </div>
+  <div class="game-box" id="gameUI">
+    <div class="header">
+      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
+      <span style="font-weight: 800; color: var(--gold);"><i class="ri-flashlight-fill"></i> السرعة</span>
     </div>
-    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
-    <script>
-        const qs = [
-            { q: "ناتج 5 + 3 هو:", o: ["7", "8", "9", "10"], c: 1 },
-            { q: "أي مما يلي لتعريف متغير؟", o: ["var", "int", "let", "def"], c: 2 },
-            { q: "ناتج 'Hello' + ' World' هو:", o: ["Hello World", "HelloWorld", "Error", "None"], c: 0 },
-            { q: "كيف نكتب تعليقاً؟", o: ["//", "#", "<!--", "/*"], c: 0 }
-        ];
-        let cq = 0, score = 0, time = 15, timer;
-        function start() {
-            cq = 0; score = 0; time = 15; document.getElementById('timer').innerText = time;
-            clearInterval(timer);
-            timer = setInterval(() => { time--; document.getElementById('timer').innerText = time; if(time <= 0) end(); }, 1000);
-            show();
-        }
-        function show() {
-            if(cq >= qs.length) return end();
-            const q = qs[cq]; document.getElementById('question').innerText = q.q;
-            const opts = document.getElementById('options'); opts.innerHTML = '';
-            q.o.forEach((o, i) => {
-                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = o;
-                b.onclick = () => { if(i === q.c) score++; cq++; show(); }; opts.appendChild(b);
-            });
-        }
-        function end() {
-            clearInterval(timer); confetti({ particleCount: 150 }); setTimeout(claim, 1000);
-        }
-        async function claim() {
-            const uid = Auth.getUserId(); const pts = score * 10;
-            if(uid && pts > 0) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(pts) }); }
-            alert(`🎉 مبروك! نتيجتك ${score} وحصلت على ${pts} نقطة.`); window.location.href = 'games.html';
-        }
-        Auth.init((l) => { if(!l) window.location.href = 'login.html'; else start(); });
-    </script>
+    <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+    <div class="question-box"><h2 id="questionText">هل Python هي لغة برمجة؟</h2></div>
+    <div class="actions">
+      <button class="btn-ans btn-true" onclick="answer(true)">صح</button>
+      <button class="btn-ans btn-false" onclick="answer(false)">خطأ</button>
+    </div>
+    <div class="score-display">النقاط: <span id="score">0</span></div>
+  </div>
 
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <div class="game-box result-screen" id="resultUI">
+    <h2>انتهى الوقت!</h2>
+    <p>لقد جمعت <strong id="finalScore">0</strong> نقطة.</p>
+    <button class="btn-restart" onclick="location.reload()">العب مرة أخرى</button>
+  </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+  <script>
+    const questions = [
+      { q: "هل HTML تستخدم لتصميم صفحات الويب؟", a: true },
+      { q: "هل JavaScript لغة برمجة؟", a: true },
+      { q: "هل C++ لغة سهلة للمبتدئين؟", a: false },
+      { q: "هل يمكن استخدام Python في الذكاء الاصطناعي؟", a: true },
+      { q: "هل CSS تستخدم للتفاعل مع الأزرار؟", a: false },
+      { q: "هل print() تستخدم للطباعة في بايثون؟", a: true },
+      { q: "هل console.log() تستخدم في C++؟", a: false },
+      { q: "هل الأكواد تكتب باللغة العربية؟", a: false }
+    ];
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-</body></html>
+    let currentQ = 0, score = 0, timeLeft = 100;
+    let timerInterval;
+    const totalTime = 100;
+
+    function loadQuestion() {
+      if (currentQ >= questions.length) { endGame(); return; }
+      document.getElementById('questionText').textContent = questions[currentQ].q;
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft -= 1;
+        document.getElementById('timerFill').style.width = `${(timeLeft / totalTime) * 100}%`;
+        if (timeLeft <= 0) { clearInterval(timerInterval); endGame(); }
+      }, 100);
+    }
+
+    function answer(choice) {
+      if (choice === questions[currentQ].a) {
+        score += 10;
+        document.getElementById('score').textContent = score;
+      }
+      currentQ++;
+      loadQuestion();
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      document.getElementById('gameUI').style.display = 'none';
+      document.getElementById('resultUI').style.display = 'block';
+      document.getElementById('finalScore').textContent = score;
+    }
+
+    loadQuestion();
+    startTimer();
+  </script>
+</body>
+</html>
