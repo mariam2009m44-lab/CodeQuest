@@ -30,6 +30,8 @@
     .line.correct { background: rgba(118,233,192,0.15); border-left: 4px solid var(--green); }
     .line.wrong { background: rgba(255,145,169,0.15); border-left: 4px solid var(--red); }
     .msg { text-align: center; font-weight: 900; font-size: 1.1rem; min-height: 25px; }
+    .result-emoji { font-size: 4rem; margin-bottom: 10px; }
+    .result-message { font-size: 1.2rem; color: var(--muted); margin-bottom: 15px; }
     @media (max-width: 600px) { .top-nav { flex-direction: column; gap: 10px; } }
   </style>
 </head>
@@ -55,6 +57,15 @@
       <div class="msg" id="msg"></div>
     </div>
   </div>
+  <div class="screen" id="resultScreen">
+    <div class="level-box result-box">
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <h2 id="resultTitle">أحسنت!</h2>
+      <p class="result-message" id="resultMessage"></p>
+      <button class="btn-restart" onclick="restartGame()" style="background: var(--cyan); color:#000; border:none; padding:12px 24px; border-radius:10px; font-weight:900; cursor:pointer; font-family:'Cairo'; margin-top:10px;">العب مستوى آخر</button>
+      <button class="btn-restart" onclick="window.location.href='games.html'" style="background:transparent; border:1px solid var(--border); color:var(--text); margin-top:10px;">العودة للألعاب</button>
+    </div>
+  </div>
   <script>
     const levels = {
       easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, msg: 'إجابة صحيحة! الخطأ هو reslt 🎯' },
@@ -66,7 +77,7 @@
     function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
     function startGame(level) {
       currentLevel = level; ended = false; score = 0; scoreDisplay.textContent = score;
-      document.getElementById('levelScreen').classList.remove('active'); document.getElementById('gameScreen').classList.add('active');
+      document.getElementById('levelScreen').classList.remove('active'); document.getElementById('resultScreen').classList.remove('active'); document.getElementById('gameScreen').classList.add('active');
       const lvl = levels[level]; codeContainer.innerHTML = ''; msg.textContent = '';
       lvl.lines.forEach((line, index) => {
         const lineEl = document.createElement('div'); lineEl.className = 'line';
@@ -79,8 +90,16 @@
       if (index === levels[currentLevel].bugIndex) {
         lineEl.classList.add('correct'); msg.textContent = levels[currentLevel].msg; msg.style.color = 'var(--green)'; ended = true;
         score += 30; scoreDisplay.textContent = score; updateGlobalScore(30);
+        setTimeout(() => {
+          document.getElementById('gameScreen').classList.remove('active');
+          document.getElementById('resultScreen').classList.add('active');
+          document.getElementById('resultEmoji').textContent = '🏆';
+          document.getElementById('resultTitle').textContent = 'رائع! لقد وجدت الخطأ!';
+          document.getElementById('resultMessage').textContent = `لقد جمعت ${score} نقطة.`;
+        }, 1000);
       } else { lineEl.classList.add('wrong'); msg.textContent = 'خطأ! حاول في سطر آخر.'; msg.style.color = 'var(--red)'; setTimeout(() => lineEl.classList.remove('wrong'), 800); }
     }
+    function restartGame() { document.getElementById('resultScreen').classList.remove('active'); document.getElementById('levelScreen').classList.add('active'); }
   </script>
 </body>
 </html>
