@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,34 +8,37 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
-    :root { --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.8); --border: rgba(118, 233, 192, 0.2); --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --text: #ffffff; --muted: #8892b0; --cyan: #6be8ff; }
+    :root { --bg: #050810; --glass: rgba(13, 20, 40, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #8892b0; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(118, 233, 192, 0.1), transparent 50%); }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(118,233,192,0.08), transparent 50%); }
+    .top-nav { width: 100%; max-width: 650px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-btn { display: flex; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; transition: 0.3s; }
+    .back-btn:hover { background: rgba(255,255,255,0.1); }
+    .score-board { background: var(--glass); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; font-weight: 900; color: var(--gold); }
     .screen { display: none; width: 100%; max-width: 650px; }
-    .screen.active { display: block; animation: fadeIn 0.4s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
-    .level-box h2 { font-size: 2rem; margin-bottom: 30px; color: var(--green); }
-    .levels-grid { display: flex; flex-direction: column; gap: 15px; }
-    .lvl-btn { padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
-    .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118, 233, 192, 0.1); transform: scale(1.02); }
-    .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255, 212, 138, 0.1); transform: scale(1.02); }
-    .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255, 145, 169, 0.1); transform: scale(1.02); }
-    .game-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 25px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; cursor: pointer; background: none; border: none; font-family: 'Cairo'; font-size: 1rem; }
-    .back-btn:hover { color: var(--green); }
-    .score-board { font-weight: 900; font-size: 1.2rem; color: var(--gold); }
-    .task { background: rgba(118,233,192,0.1); border: 1px solid var(--green); border-radius: 12px; padding: 15px; text-align: center; font-weight: 800; margin-bottom: 20px; color: var(--green); }
-    .drop-zone { display: flex; flex-direction: column; gap: 10px; min-height: 120px; padding: 15px; border: 2px dashed var(--border); border-radius: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.3); }
-    .code-block { padding: 12px 16px; background: #151b33; border: 1px solid var(--border); border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 1rem; cursor: grab; transition: 0.2s; direction: ltr; text-align: left; color: var(--cyan); }
+    .screen.active { display: block; }
+    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 30px; backdrop-filter: blur(20px); text-align: center; }
+    .level-box h2 { margin-bottom: 20px; color: var(--green); }
+    .levels-grid { display: flex; flex-direction: column; gap: 12px; }
+    .lvl-btn { padding: 16px; border-radius: 14px; font-size: 1.1rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; }
+    .lvl-easy { color: var(--green); border-color: var(--green); }
+    .lvl-med { color: var(--gold); border-color: var(--gold); }
+    .lvl-hard { color: var(--red); border-color: var(--red); }
+    .task { background: rgba(118,233,192,0.1); border: 1px solid var(--green); border-radius: 12px; padding: 12px; text-align: center; font-weight: 800; margin-bottom: 20px; color: var(--green); }
+    .drop-zone { display: flex; flex-direction: column; gap: 8px; min-height: 100px; padding: 12px; border: 2px dashed var(--border); border-radius: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.2); }
+    .code-block { padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.95rem; cursor: grab; transition: 0.2s; direction: ltr; text-align: left; color: var(--cyan); }
     .code-block:hover { border-color: var(--cyan); background: rgba(107,232,255,0.1); }
     .code-block.selected { opacity: 0.4; pointer-events: none; }
-    .btn-check { width: 100%; padding: 14px; background: var(--green); color: #000; font-weight: 900; font-size: 1.1rem; border: none; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; transition: 0.2s; }
+    .btn-check { width: 100%; padding: 12px; background: var(--green); color: #000; font-weight: 900; font-size: 1rem; border: none; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; }
     .btn-check:disabled { opacity: 0.5; cursor: not-allowed; }
+    @media (max-width: 600px) { .top-nav { flex-direction: column; gap: 10px; } }
   </style>
 </head>
 <body>
+  <div class="top-nav">
+    <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
+    <div class="score-board">النقاط: <span id="scoreDisplay">0</span></div>
+  </div>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
       <h2>اختر مستوى البازل</h2>
@@ -43,20 +47,14 @@
         <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>4 قطع</span></button>
         <button class="lvl-btn lvl-hard" onclick="startGame('hard')"><span>متقدم</span> <span>5 قطع</span></button>
       </div>
-      <a href="games.html" class="back-btn" style="display:block; margin-top:20px;"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
     </div>
   </div>
   <div class="screen" id="gameScreen">
-    <div class="game-box">
-      <div class="header">
-        <button class="back-btn" onclick="location.reload()"><i class="ri-arrow-right-line"></i> خروج</button>
-        <div class="score-board">النقاط: <span id="scoreDisplay">0</span></div>
-      </div>
+    <div class="level-box">
       <div class="task" id="taskText">المهمة هنا...</div>
       <div class="drop-zone" id="dropZone"></div>
       <div class="drop-zone" id="sourceZone"></div>
       <button class="btn-check" onclick="check()" id="btn" disabled>تحقق من الترتيب</button>
-      <button class="btn-check" onclick="restartGame()" id="btnRestart" style="display:none; margin-top:10px; background:var(--cyan);">العب مرة أخرى</button>
     </div>
   </div>
   <script>
@@ -65,47 +63,32 @@
       medium: { task: "رتب دالة ترحب بالمستخدم", correct: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True'], options: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True'] },
       hard: { task: "رتب كلاس بسيط للسيارة", correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'], options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'] }
     };
-    let seq = [], correctSeq = [], currentPuzzle, score = 0, currentLevel = 'easy';
-    const drop = document.getElementById('dropZone'), source = document.getElementById('sourceZone'), btn = document.getElementById('btn'), scoreDisplay = document.getElementById('scoreDisplay'), taskText = document.getElementById('taskText'), btnRestart = document.getElementById('btnRestart');
+    let seq = [], correctSeq = [], score = 0, currentLevel = 'easy';
+    const drop = document.getElementById('dropZone'), source = document.getElementById('sourceZone'), btn = document.getElementById('btn'), scoreDisplay = document.getElementById('scoreDisplay'), taskText = document.getElementById('taskText');
     function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
     function startGame(level) {
-      currentLevel = level;
-      document.getElementById('levelScreen').classList.remove('active');
-      document.getElementById('gameScreen').classList.add('active');
-      currentPuzzle = puzzles[level]; correctSeq = currentPuzzle.correct; taskText.textContent = currentPuzzle.task;
-      const shuffledOptions = [...currentPuzzle.options].sort(() => Math.random() - 0.5);
-      source.innerHTML = ''; drop.innerHTML = ''; seq = []; btn.disabled = true; btn.style.display = 'block'; btnRestart.style.display = 'none';
-      shuffledOptions.forEach(opt => {
-        const el = document.createElement('div');
-        el.className = 'code-block'; el.textContent = opt; el.onclick = () => select(el, opt); source.appendChild(el);
-      });
+      currentLevel = level; document.getElementById('levelScreen').classList.remove('active'); document.getElementById('gameScreen').classList.add('active');
+      const p = puzzles[level]; correctSeq = p.correct; taskText.textContent = p.task;
+      const shuffled = [...p.options].sort(() => Math.random() - 0.5);
+      source.innerHTML = ''; drop.innerHTML = ''; seq = []; btn.disabled = true;
+      shuffled.forEach(opt => { const el = document.createElement('div'); el.className = 'code-block'; el.textContent = opt; el.onclick = () => select(el, opt); source.appendChild(el); });
     }
     function select(el, code) {
       el.classList.add('selected'); seq.push(code);
-      const newEl = document.createElement('div');
-      newEl.className = 'code-block'; newEl.textContent = code; newEl.onclick = () => remove(newEl, code); drop.appendChild(newEl);
+      const newEl = document.createElement('div'); newEl.className = 'code-block'; newEl.textContent = code; newEl.onclick = () => remove(newEl, code); drop.appendChild(newEl);
       btn.disabled = seq.length !== correctSeq.length;
     }
     function remove(el, code) {
       const i = seq.indexOf(code);
-      if (i > -1) {
-        seq.splice(i, 1); el.remove();
-        document.querySelectorAll('#sourceZone .code-block').forEach(b => { if (b.textContent.includes(code)) b.classList.remove('selected'); });
-        btn.disabled = seq.length !== correctSeq.length;
-      }
+      if (i > -1) { seq.splice(i, 1); el.remove(); document.querySelectorAll('#sourceZone .code-block').forEach(b => { if (b.textContent.includes(code)) b.classList.remove('selected'); }); btn.disabled = seq.length !== correctSeq.length; }
     }
     function check() {
       if (seq.every((v, i) => v === correctSeq[i])) {
         btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
         score += 50; scoreDisplay.textContent = score; updateGlobalScore(50);
         drop.style.borderColor = 'var(--green)'; drop.style.background = 'rgba(118,233,192,0.1)';
-        btnRestart.style.display = 'block';
-      } else {
-        btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
-        setTimeout(() => { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; }, 1500);
-      }
+      } else { btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)'; setTimeout(() => { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; }, 1500); }
     }
-    function restartGame() { startGame(currentLevel); }
   </script>
 </body>
 </html>
