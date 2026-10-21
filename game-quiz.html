@@ -6,114 +6,111 @@
   <title>سيد الأسئلة | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/dashboard.css">
   <style>
-    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
-    .quiz-container { max-width: 600px; width: 100%; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(20px); }
-    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-    .btn-back { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-    .btn-back:hover { color: var(--cyan); }
-    .quiz-stats { display: flex; gap: 20px; font-weight: 800; font-size: 1.1rem; }
-    .stat-score { color: var(--gold); } .stat-timer { color: var(--red); }
-    .progress-container { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
-    .progress-bar { height: 100%; background: var(--cyan); width: 0%; transition: width 0.4s ease; box-shadow: 0 0 10px var(--cyan); }
-    .question-box { text-align: center; margin-bottom: 30px; }
-    .question-box h2 { font-size: 1.5rem; color: var(--text); font-weight: 800; line-height: 1.5; }
-    .options { display: flex; flex-direction: column; gap: 14px; }
-    .option-btn { padding: 16px; border-radius: var(--radius-md); background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; text-align: right; font-family: 'Playpen Sans Arabic'; }
-    .option-btn:hover:not(:disabled) { background: rgba(107, 232, 255, 0.1); border-color: var(--cyan); transform: translateX(-5px); }
-    .option-btn.correct { background: rgba(118, 233, 192, 0.15); border-color: var(--green); color: var(--green); }
-    .option-btn.wrong { background: rgba(255, 145, 169, 0.15); border-color: var(--red); color: var(--red); animation: shake 0.4s ease; }
-    .result-screen { display: none; text-align: center; }
-    .result-icon { font-size: 5rem; margin-bottom: 20px; }
-    .result-screen h2 { font-size: 2rem; color: var(--cyan); margin-bottom: 10px; }
-    .final-score { font-size: 3rem; font-weight: 900; color: var(--gold); margin-bottom: 30px; }
-    .btn-restart { background: var(--cyan); color: var(--bg-deep); padding: 16px 32px; border-radius: var(--radius-md); font-weight: 900; font-size: 1.1rem; border: none; cursor: pointer; width: 100%; font-family: 'Playpen Sans Arabic'; }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
+    :root { --pop-yellow: #FFD166; --pop-coral: #FF6B6B; --pop-teal: #4ECDC4; --pop-purple: #A78BFA; --pop-dark: #1A1A2E; --pop-white: #F8F9FA; }
+    body { font-family: 'Playpen Sans Arabic', sans-serif; background: #E2E8F0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; margin: 0; }
+    .quiz-box { width: 100%; max-width: 600px; background: var(--pop-white); border: 4px solid var(--pop-dark); border-radius: 24px; padding: 30px; box-shadow: 8px 8px 0 var(--pop-dark); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px dashed #CBD5E1; padding-bottom: 15px; }
+    .back-btn { color: var(--pop-dark); text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+    .stats { display: flex; gap: 15px; font-weight: 800; }
+    .timer { color: var(--pop-coral); } .score { color: var(--pop-teal); }
+    
+    .q-text { font-size: 1.4rem; font-weight: 800; color: var(--pop-dark); margin-bottom: 24px; text-align: center; line-height: 1.5; }
+    .options { display: flex; flex-direction: column; gap: 12px; }
+    .opt-btn { padding: 16px; border-radius: 16px; border: 3px solid var(--pop-dark); background: #fff; font-size: 1.1rem; font-weight: 700; color: var(--pop-dark); cursor: pointer; transition: 0.2s; text-align: right; font-family: 'Playpen Sans Arabic'; }
+    .opt-btn:hover { background: var(--pop-yellow); transform: translateY(-2px); box-shadow: 0 4px 0 var(--pop-dark); }
+    .opt-btn.correct { background: #D1FAE5; border-color: #10B981; }
+    .opt-btn.wrong { background: #FEE2E2; border-color: #EF4444; }
+    
+    .cody-hint { display: flex; align-items: center; gap: 10px; background: #FEF3C7; border: 3px solid var(--pop-dark); border-radius: 16px; padding: 12px; margin-top: 20px; font-weight: 700; color: #92400E; display: none; }
+    .cody-hint img { width: 40px; }
+    
+    .result { text-align: center; display: none; }
+    .btn-restart { background: var(--pop-teal); color: var(--pop-dark); border: 3px solid var(--pop-dark); padding: 14px 30px; border-radius: 16px; font-weight: 800; font-size: 1.2rem; cursor: pointer; margin-top: 20px; box-shadow: 4px 4px 0 var(--pop-dark); font-family: 'Playpen Sans Arabic'; }
   </style>
 </head>
 <body>
-  <div class="quiz-container" id="quiz-wrapper">
-    <div class="quiz-header">
-      <a href="games.html" class="btn-back"><i class="ri-arrow-right-line"></i> رجوع</a>
-      <div class="quiz-stats">
-        <div class="stat-score"><i class="ri-trophy-fill"></i> <span id="score">0</span></div>
-        <div class="stat-timer"><i class="ri-timer-line"></i> <span id="timer">15</span>s</div>
+  <div class="quiz-box" id="quizBox">
+    <div class="header">
+      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
+      <div class="stats">
+        <div class="timer"><i class="ri-timer-line"></i> <span id="time">15</span></div>
+        <div class="score"><i class="ri-trophy-line"></i> <span id="score">0</span></div>
       </div>
     </div>
-    <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
-    <div class="question-box"><h2 id="question-text"></h2></div>
-    <div class="options" id="options-container"></div>
+    <div class="q-text" id="question">جاري التحميل...</div>
+    <div class="options" id="options"></div>
+    <div class="cody-hint" id="hintBox">
+      <span style="font-size: 1.5rem;">🤖</span>
+      <span id="hintText"></span>
+    </div>
   </div>
 
-  <div class="quiz-container result-screen" id="result-wrapper">
-    <div class="result-icon" id="result-emoji">🏆</div>
-    <h2>انتهى التحدي!</h2>
-    <p id="result-msg" style="color: var(--muted); margin-bottom:10px;"></p>
-    <div class="final-score"><span id="final-score">0</span> <span style="font-size:1.5rem; color:var(--muted);">نقطة</span></div>
-    <button class="btn-restart" onclick="location.reload()"><i class="ri-refresh-line"></i> العب مرة أخرى</button>
+  <div class="quiz-box result" id="resultBox">
+    <h2 style="color: var(--pop-dark); font-size: 2rem;">انتهى التحدي! 🎉</h2>
+    <p style="font-size: 1.5rem; font-weight: 800; color: var(--pop-teal);">النقاط: <span id="finalScore">0</span></p>
+    <button class="btn-restart" onclick="location.reload()">العب مرة أخرى</button>
   </div>
 
   <script>
     const questions = [
-      { q: "ما هي اللغة المستخدمة لتصميم هيكل صفحات الويب؟", options: ["Python", "HTML", "C++", "Java"], answer: 1 },
-      { q: "ما هي الدالة المستخدمة للطباعة في لغة بايثون؟", options: ["console.log()", "echo()", "print()", "write()"], answer: 2 },
-      { q: "ماذا تعني كلمة JavaScript؟", options: ["لغة برمجة", "لعبة فيديو", "نوع من الأجهزة", "شركة"], answer: 0 },
-      { q: "أي من هذه اللغات تستخدم في تطوير تطبيقات الأندرويد؟", options: ["Kotlin", "Swift", "HTML", "CSS"], answer: 0 },
-      { q: "ما هو الرمز المستخدم للتعليق في لغة C++؟", options: ["#", "//", "<!--", "**"], answer: 1 }
+      { q: "ما هو الكود الصحيح لطباعة 'مرحباً' في بايثون؟", opts: ["echo 'مرحباً'", "print('مرحباً')", "console.log('مرحباً')"], a: 1, hint: "في بايثون نستخدم دالة الطباعة الشهيرة." },
+      { q: "إذا كان لدينا مصفوفة [1, 2, 3] وأردنا الوصول للرقم 2، ماذا نكتب؟", opts: ["array[1]", "array[2]", "array(2)"], a: 0, hint: "الترقيم يبدأ من الصفر في معظم اللغات." },
+      { q: "أي من هذه الرموز يستخدم لكتابة تعليق في JavaScript؟", opts: ["#", "//", "<!--"], a: 1, hint: "نفس الرمز المستخدم في C++." },
+      { q: "ما هو ناتج الكود: let x = 5; let y = 2; console.log(x * y);", opts: ["7", "10", "52"], a: 1, hint: "العلامة * تعني الضرب." }
     ];
-    let currentQuestion = 0, score = 0, timeLeft = 15, timerInterval;
-    const qText = document.getElementById('question-text'), optsContainer = document.getElementById('options-container'), progressBar = document.getElementById('progress'), scoreDisplay = document.getElementById('score'), timerDisplay = document.getElementById('timer'), quizWrapper = document.getElementById('quiz-wrapper'), resultWrapper = document.getElementById('result-wrapper');
+    let curr = 0, score = 0, timeLeft = 15, timerInt;
+    const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score');
 
-    function startTimer() {
-      clearInterval(timerInterval); timeLeft = 15; timerDisplay.textContent = timeLeft;
-      timerInterval = setInterval(() => {
-        timeLeft--; timerDisplay.textContent = timeLeft;
-        if (timeLeft <= 0) { clearInterval(timerInterval); handleTimeout(); }
+    function loadQ() {
+      if (curr >= questions.length) return endGame();
+      const q = questions[curr];
+      qEl.textContent = q.q;
+      optsEl.innerHTML = '';
+      document.getElementById('hintBox').style.display = 'none';
+      
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn'; btn.textContent = opt;
+        btn.onclick = () => checkAns(i, btn);
+        optsEl.appendChild(btn);
+      });
+      startTimer(q.hint);
+    }
+
+    function checkAns(i, btn) {
+      clearInterval(timerInt);
+      if (i === questions[curr].a) {
+        btn.classList.add('correct'); score += 10; scoreEl.textContent = score;
+      } else {
+        btn.classList.add('wrong');
+        optsEl.children[questions[curr].a].classList.add('correct');
+        document.getElementById('hintText').textContent = questions[curr].hint;
+        document.getElementById('hintBox').style.display = 'flex';
+      }
+      setTimeout(() => { curr++; loadQ(); }, 2500);
+    }
+
+    function startTimer(hint) {
+      clearInterval(timerInt); timeLeft = 15; timeEl.textContent = timeLeft;
+      timerInt = setInterval(() => {
+        timeLeft--; timeEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInt);
+          optsEl.children[questions[curr].a].classList.add('correct');
+          document.getElementById('hintText').textContent = hint;
+          document.getElementById('hintBox').style.display = 'flex';
+          setTimeout(() => { curr++; loadQ(); }, 2500);
+        }
       }, 1000);
     }
 
-    function loadQuestion() {
-      if (currentQuestion >= questions.length) { endQuiz(); return; }
-      const q = questions[currentQuestion];
-      qText.textContent = q.q; optsContainer.innerHTML = '';
-      progressBar.style.width = `${((currentQuestion) / questions.length) * 100}%`;
-      q.options.forEach((opt, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn'; btn.textContent = opt;
-        btn.onclick = () => checkAnswer(index, btn);
-        optsContainer.appendChild(btn);
-      });
-      startTimer();
+    function endGame() {
+      document.getElementById('quizBox').style.display = 'none';
+      document.getElementById('resultBox').style.display = 'block';
+      document.getElementById('finalScore').textContent = score;
     }
-
-    function checkAnswer(selectedIndex, btn) {
-      clearInterval(timerInterval);
-      const correctIndex = questions[currentQuestion].answer;
-      document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-      if (selectedIndex === correctIndex) {
-        btn.classList.add('correct'); score += 10; scoreDisplay.textContent = score;
-      } else {
-        btn.classList.add('wrong');
-        document.querySelectorAll('.option-btn')[correctIndex].classList.add('correct');
-      }
-      setTimeout(() => { currentQuestion++; loadQuestion(); }, 1500);
-    }
-
-    function handleTimeout() {
-      document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-      document.querySelectorAll('.option-btn')[questions[currentQuestion].answer].classList.add('correct');
-      setTimeout(() => { currentQuestion++; loadQuestion(); }, 1500);
-    }
-
-    function endQuiz() {
-      progressBar.style.width = '100%'; quizWrapper.style.display = 'none'; resultWrapper.style.display = 'block';
-      document.getElementById('final-score').textContent = score;
-      if (score >= 40) { document.getElementById('result-emoji').textContent = '🏆'; document.getElementById('result-msg').textContent = 'أسطورة! أداء مبهر.'; } 
-      else if (score >= 20) { document.getElementById('result-emoji').textContent = '🌟'; document.getElementById('result-msg').textContent = 'عمل رائع!'; } 
-      else { document.getElementById('result-emoji').textContent = '🚀'; document.getElementById('result-msg').textContent = 'بداية جيدة!'; }
-    }
-    loadQuestion();
+    loadQ();
   </script>
 </body>
 </html>
