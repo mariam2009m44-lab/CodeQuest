@@ -35,6 +35,8 @@
     .result-box h2 { color: var(--gold); font-size: 1.8rem; margin-bottom: 10px; }
     .result-box p { color: var(--muted); font-size: 1.1rem; margin-bottom: 20px; }
     .btn-restart { background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; width: 100%; font-family: 'Cairo'; }
+    .result-emoji { font-size: 4rem; margin-bottom: 10px; }
+    .result-message { font-size: 1.2rem; color: var(--muted); margin-bottom: 15px; }
     @media (max-width: 600px) { .top-nav { flex-direction: column; gap: 10px; } }
   </style>
 </head>
@@ -65,9 +67,12 @@
   </div>
   <div class="screen" id="resultScreen">
     <div class="level-box result-box">
-      <h2>انتهى الوقت! ⏰</h2>
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <h2 id="resultTitle">انتهى التحدي!</h2>
+      <p class="result-message" id="resultMessage"></p>
       <p>لقد جمعت <strong id="final" style="color: var(--green); font-size: 1.5rem;">0</strong> نقطة.</p>
       <button class="btn-restart" onclick="restartGame()">العب مجدداً</button>
+      <button class="btn-restart" onclick="window.location.href='games.html'" style="background:transparent; border:1px solid var(--border); color:var(--text); margin-top:10px;">العودة للألعاب</button>
     </div>
   </div>
   <script>
@@ -87,7 +92,7 @@
     const fill = document.getElementById('fill'), qText = document.getElementById('qText'), scoreEl = document.getElementById('score');
     function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
     function startGame(level) {
-      currentLevel = level; document.getElementById('levelScreen').classList.remove('active'); document.getElementById('gameScreen').classList.add('active');
+      currentLevel = level; document.getElementById('levelScreen').classList.remove('active'); document.getElementById('resultScreen').classList.remove('active'); document.getElementById('gameScreen').classList.add('active');
       let count = level === 'easy' ? 10 : level === 'medium' ? 15 : 20;
       let timePerQ = level === 'easy' ? 30 : level === 'medium' ? 40 : 50;
       time = timePerQ * 10; currentQs = allQs.sort(() => Math.random() - 0.5).slice(0, count);
@@ -96,8 +101,18 @@
     function load() { if (curr >= currentQs.length) return end(); qText.textContent = currentQs[curr].q; }
     function ans(choice) { if (choice === currentQs[curr].a) { score += 10; scoreEl.textContent = score; updateGlobalScore(10); } curr++; load(); }
     function startTimer() { int = setInterval(() => { time -= 1; fill.style.width = `${(time/100)*100}%`; if (time <= 0) end(); }, 100); }
-    function end() { clearInterval(int); document.getElementById('gameScreen').classList.remove('active'); document.getElementById('resultScreen').classList.add('active'); document.getElementById('final').textContent = score; }
-    function restartGame() { startGame(currentLevel); }
+    function end() {
+      clearInterval(int);
+      document.getElementById('gameScreen').classList.remove('active');
+      document.getElementById('resultScreen').classList.add('active');
+      document.getElementById('final').textContent = score;
+      const emoji = document.getElementById('resultEmoji');
+      const msg = document.getElementById('resultMessage');
+      if (score >= 80) { emoji.textContent = '🏆'; msg.textContent = 'أنت سريع جداً! أداء رائع.'; }
+      else if (score >= 40) { emoji.textContent = '🌟'; msg.textContent = 'جيد جداً! يمكنك التحسن.'; }
+      else { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة، استمر!'; }
+    }
+    function restartGame() { document.getElementById('resultScreen').classList.remove('active'); document.getElementById('levelScreen').classList.add('active'); }
   </script>
 </body>
 </html>
