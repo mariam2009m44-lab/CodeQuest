@@ -15,7 +15,9 @@
     :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --purple: #a99aff; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; background-image: radial-gradient(circle at 50% 0%, rgba(107,232,255,0.08), transparent 60%); overflow: hidden; }
-    .sidebar { width: 320px; background: rgba(5, 8, 16, 0.95); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; }
+    
+    /* Sidebar - القائمة الجانبية */
+    .sidebar { width: 320px; background: rgba(5, 8, 16, 0.95); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; transition: 0.3s; }
     .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); text-align: center; }
     .sidebar-header h2 { color: var(--cyan); font-size: 1.2rem; font-weight: 900; }
     .chapters-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
@@ -26,17 +28,22 @@
     .lessons-list.open { display: flex; }
     .lesson-link { padding: 12px 20px; color: var(--muted); text-decoration: none; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.3s; display: flex; align-items: center; gap: 10px; }
     .lesson-link:hover, .lesson-link.active { color: var(--cyan); background: rgba(107,232,255,0.05); }
-    .main-area { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; }
-    .top-bar { padding: 20px; background: rgba(5, 8, 16, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 20px; z-index: 10; }
+    
+    /* Main Area - منطقة الشات */
+    .main-area { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; width: 100%; }
+    .top-bar { padding: 15px 20px; background: rgba(5, 8, 16, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; z-index: 10; }
+    .menu-btn { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
     .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 10px; }
     .back-btn:hover { color: var(--text); }
     .progress-container { flex: 1; }
-    .progress-text { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; color: var(--gold); }
-    .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+    .progress-text { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; color: var(--gold); }
+    .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--green)); width: 0%; transition: 0.5s; }
-    .xp-badge { background: rgba(255, 212, 138, 0.1); color: var(--gold); padding: 8px 15px; border-radius: 20px; font-weight: 900; border: 1px solid rgba(255, 212, 138, 0.3); }
-    .chat-container { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
-    .message-row { display: flex; gap: 15px; align-items: flex-end; opacity: 0; transform: translateY(20px); transition: all 0.4s ease; }
+    .xp-badge { background: rgba(255, 212, 138, 0.1); color: var(--gold); padding: 6px 12px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; border: 1px solid rgba(255, 212, 138, 0.3); white-space: nowrap; }
+    
+    /* Chat - الدردشة */
+    .chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+    .message-row { display: flex; gap: 10px; align-items: flex-end; opacity: 0; transform: translateY(20px); transition: all 0.4s ease; }
     .message-row.show { opacity: 1; transform: translateY(0); }
     .message-row.cody { flex-direction: row; }
     .message-row.cody .avatar { background: linear-gradient(135deg, #00d2ff, #3a7bd5); }
@@ -44,41 +51,57 @@
     .message-row.student { flex-direction: row-reverse; }
     .message-row.student .avatar { background: linear-gradient(135deg, #a99aff, #6b4eff); }
     .message-row.student .bubble { background: rgba(169,154,255,0.1); border: 1px solid rgba(169,154,255,0.3); border-radius: 20px 20px 20px 0; }
-    .avatar { width: 45px; height: 45px; border-radius: 50%; display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
-    .bubble { padding: 15px 20px; font-size: 1.1rem; line-height: 1.7; max-width: 80%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+    .bubble { padding: 12px 18px; font-size: 1rem; line-height: 1.7; max-width: 85%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .bubble code { background: rgba(0,0,0,0.5); color: var(--gold); padding: 2px 6px; border-radius: 6px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; }
-    .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin-right: 60px; margin-top: -5px; }
-    .choice-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); padding: 15px 20px; border-radius: 12px; font-family: 'Cairo'; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s; text-align: right; }
+    
+    /* Choices - الأزرار */
+    .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin-right: 50px; margin-top: -5px; }
+    .choice-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); padding: 12px 15px; border-radius: 12px; font-family: 'Cairo'; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.3s; text-align: right; }
     .choice-btn:hover { background: rgba(107,232,255,0.1); border-color: var(--cyan); transform: translateX(-5px); }
-    .editor-wrapper { display: none; width: calc(100% - 60px); margin-right: 60px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 20px; animation: slideDown 0.5s ease; }
+    
+    /* Editor - محرر الأكواد */
+    .editor-wrapper { display: none; width: calc(100% - 50px); margin-right: 50px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 15px; animation: slideDown 0.5s ease; }
     .editor-wrapper.show { display: block; }
-    .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .btn-run { background: var(--green); color: #000; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .btn-run { background: var(--green); color: #000; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
     .btn-run:hover { box-shadow: 0 0 15px var(--green); transform: scale(1.05); }
-    .code-area { display: flex; gap: 15px; height: 250px; }
-    .CodeMirror { flex: 1; height: 100% !important; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 1rem; direction: ltr; text-align: left; }
-    .output-area { flex: 1; background: #000; border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.95rem; white-space: pre-wrap; }
-    .bottom-action { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, var(--bg) 60%, transparent); padding: 20px; display: none; justify-content: center; }
+    .code-area { display: flex; gap: 10px; height: 220px; }
+    .CodeMirror { flex: 1; height: 100% !important; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 0.95rem; direction: ltr; text-align: left; }
+    .output-area { flex: 1; background: #000; border: 1px solid var(--border); border-radius: 12px; padding: 10px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.9rem; white-space: pre-wrap; }
+    
+    /* Bottom Button - زر المتابعة */
+    .bottom-action { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, var(--bg) 70%, transparent); padding: 15px; display: none; justify-content: center; }
     .bottom-action.show { display: flex; }
-    .btn-next { background: var(--cyan); color: #000; border: none; padding: 15px 50px; border-radius: 50px; font-weight: 900; font-size: 1.2rem; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; box-shadow: 0 5px 20px rgba(107,232,255,0.3); display: flex; align-items: center; gap: 10px; }
+    .btn-next { background: var(--cyan); color: #000; border: none; padding: 12px 40px; border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; box-shadow: 0 5px 20px rgba(107,232,255,0.3); display: flex; align-items: center; gap: 10px; }
     .btn-next:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(107,232,255,0.5); }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Mobile - التجاوب مع الموبايل */
     @media (max-width: 900px) {
       body { flex-direction: column; }
-      .sidebar { width: 100%; height: auto; max-height: 250px; border-left: none; border-bottom: 1px solid var(--border); }
-      .main-area { height: calc(100vh - 250px); }
-      .code-area { flex-direction: column; height: 400px; }
+      .sidebar { position: fixed; top: 0; right: -100%; height: 100vh; z-index: 999; width: 280px; }
+      .sidebar.open { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
+      .menu-btn { display: block; }
+      .main-area { height: 100vh; }
+      .code-area { flex-direction: column; height: 350px; }
       .editor-wrapper, .choices-container { width: 100%; margin-right: 0; }
+      .bubble { max-width: 90%; font-size: 0.95rem; }
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
+
+  <!-- القائمة الجانبية -->
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header"><h2>🐍 رحلة بايثون</h2></div>
     <div class="chapters-list" id="chaptersList"></div>
   </div>
+
+  <!-- المنطقة الرئيسية -->
   <div class="main-area">
     <div class="top-bar">
+      <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="ri-menu-line"></i></button>
       <a href="python-chapters.html" class="back-btn"><i class="ri-arrow-right-line"></i> الخريطة</a>
       <div class="progress-container">
         <div class="progress-text"><span>تقدمك في الرحلة</span><span id="progressPercent">0%</span></div>
@@ -86,13 +109,15 @@
       </div>
       <div class="xp-badge" id="xpDisplay">XP: 0</div>
     </div>
+
     <div class="chat-container" id="chatContainer"></div>
+
     <div class="bottom-action" id="bottomAction">
       <button class="btn-next" id="nextBtn" onclick="advanceChat()">متابعة <i class="ri-arrow-left-line"></i></button>
     </div>
   </div>
 
-  <!-- استدعاء ملفات الفصول -->
+  <!-- ربط ملفات الفصول -->
   <script src="js/chapters/ch1.js"></script>
   <script src="js/chapters/ch2.js"></script>
   <script src="js/chapters/ch3.js"></script>
@@ -108,7 +133,7 @@
     let chapterId = parseInt(urlParams.get("ch")) || 1;
     let lessonId = parseInt(urlParams.get("lesson")) || 1;
     let currentLesson = null, currentStepIndex = 0, challengeSolved = false, editorInstance = null;
-    
+
     function renderSidebar() {
       const list = document.getElementById("chaptersList");
       list.innerHTML = "";
@@ -130,7 +155,6 @@
             const lessonEl = document.createElement("a");
             lessonEl.className = `lesson-link ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
             lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> ${lesson.title}`;
-            // تم تعديل اللينك هنا كمان ليكون بدون حرف S
             lessonEl.href = `python-lesson.html?ch=${chap.id}&lesson=${lIndex + 1}`;
             lessonsEl.appendChild(lessonEl);
           });
@@ -147,7 +171,7 @@
         list.appendChild(chapEl);
       });
     }
-    
+
     function updateProgressBar() {
       const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
       const percent = Math.round((progress.completed.length / 12) * 100);
@@ -155,7 +179,7 @@
       document.getElementById("progressPercent").textContent = percent + "%";
       document.getElementById("xpDisplay").textContent = `XP: ${localStorage.getItem(XP_KEY) || 0}`;
     }
-    
+
     function loadLesson() {
       const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
       if (!chapter || !chapter.lessons[lessonId - 1]) {
@@ -167,14 +191,14 @@
       currentStepIndex = 0; challengeSolved = false;
       processStep(); renderSidebar(); updateProgressBar();
     }
-    
+
     function processStep() {
       if (currentStepIndex >= currentLesson.steps.length) { endLesson(); return; }
       const step = currentLesson.steps[currentStepIndex];
       document.getElementById("bottomAction").classList.remove("show");
       const oldEditor = document.querySelector(".editor-wrapper");
       if (oldEditor) oldEditor.remove();
-      
+
       if (step.type === "cody") {
         addBubble("cody", step.text); showNextButton(); currentStepIndex++;
       } else if (step.type === "choice") {
@@ -185,7 +209,7 @@
         addBubble("cody", step.question); renderQuiz(step.options, step.correct, step.explanation); currentStepIndex++;
       }
     }
-    
+
     function addBubble(type, text) {
       const row = document.createElement("div");
       row.className = `message-row ${type} show`;
@@ -193,7 +217,7 @@
       document.getElementById("chatContainer").appendChild(row);
       scrollToBottom();
     }
-    
+
     function renderChoices(options, replies) {
       const container = document.createElement("div");
       container.className = "choices-container";
@@ -209,7 +233,7 @@
       });
       document.getElementById("chatContainer").appendChild(container); scrollToBottom();
     }
-    
+
     function renderQuiz(options, correctIndex, explanation) {
       const container = document.createElement("div");
       container.className = "choices-container";
@@ -226,17 +250,17 @@
       });
       document.getElementById("chatContainer").appendChild(container); scrollToBottom();
     }
-    
+
     function showNextButton() { document.getElementById("bottomAction").classList.add("show"); }
     function advanceChat() { document.getElementById("bottomAction").classList.remove("show"); processStep(); }
-    
+
     function showEditor(step) {
       const wrapper = document.createElement("div");
       wrapper.className = "editor-wrapper show";
       wrapper.innerHTML = `
         <div class="editor-header">
           <span style="font-family: 'Fira Code', monospace; color: var(--muted);">main.py</span>
-          <button class="btn-run" onclick="runCode()"><i class="ri-play-circle-fill"></i> تشغيل الكود</button>
+          <button class="btn-run" onclick="runCode()"><i class="ri-play-circle-fill"></i> تشغيل</button>
         </div>
         <div class="code-area">
           <textarea id="dynamicCodeEditor"></textarea>
@@ -251,12 +275,12 @@
       }, 50);
       window.currentChallenge = step; challengeSolved = false; scrollToBottom();
     }
-    
+
     function builtinRead(x) {
       if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'";
       return Sk.builtinFiles["files"][x];
     }
-    
+
     async function runCode() {
       const outputArea = document.getElementById("outputArea");
       const code = editorInstance ? editorInstance.getValue() : document.getElementById("dynamicCodeEditor").value;
@@ -284,31 +308,51 @@
       }
       scrollToBottom();
     }
-    
+
+         scrollToBottom();
+    }
+
     function addXp(amount) {
       let xp = parseInt(localStorage.getItem(XP_KEY)) || 0;
-      localStorage.setItem(XP_KEY, xp + amount); updateProgressBar();
+      localStorage.setItem(XP_KEY, xp + amount); 
+      updateProgressBar();
     }
-    
+
     function endLesson() {
-      addBubble("cody", "🎉 مبروك! أتممت هذا الدرس بنجاح.");
-      let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
-      if (lessonId === window.CHAPTERS[chapterId].lessons.length && !progress.completed.includes(chapterId)) {
-        progress.completed.push(chapterId);
-        localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-        updateProgressBar(); renderSidebar();
-      }
+      addBubble("cody", "🎉 مبروك! لقد أتممت هذا الدرس بنجاح.");
+      addBubble("cody", "📝 <b>مراجعة سريعة:</b> لقد تعلمنا في هذا الدرس كيف نستخدم الأوامر البرمجية وطبقناها عملياً. تأكد دائماً من قراءة الكود جيداً قبل تشغيله!");
+
       const btn = document.getElementById("nextBtn");
-            btn.innerHTML = 'العودة للخريطة <i class="ri-map-pin-line"></i>';
-      btn.onclick = () => { window.location.href = "python-chapters.html"; };
-      showNextButton(); scrollToBottom();
+
+      if (lessonId < window.CHAPTERS[chapterId].lessons.length) {
+        btn.innerHTML = 'الدرس التالي <i class="ri-arrow-left-line"></i>';
+        btn.onclick = () => {
+          window.location.href = `python-lesson.html?ch=${chapterId}&lesson=${lessonId + 1}`;
+        };
+      } else {
+        let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
+        if (!progress.completed.includes(chapterId)) {
+          progress.completed.push(chapterId);
+          localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+        }
+        btn.innerHTML = 'الفصل التالي <i class="ri-arrow-left-line"></i>';
+        btn.onclick = () => {
+          if (chapterId < 12) {
+            window.location.href = `python-lesson.html?ch=${chapterId + 1}&lesson=1`;
+          } else {
+            window.location.href = "python-chapters.html";
+          }
+        };
+      }
+      showNextButton(); 
+      scrollToBottom();
     }
-    
+
     function scrollToBottom() {
       const chat = document.getElementById("chatContainer");
       setTimeout(() => chat.scrollTop = chat.scrollHeight, 100);
     }
-    
+
     window.CHAPTERS = window.CHAPTERS || {};
     loadLesson();
   </script>
