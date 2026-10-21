@@ -7,37 +7,42 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
-    :root { --bg: #050810; --glass: rgba(13, 20, 40, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #8892b0; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; }
+    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 100%, rgba(255,212,138,0.08), transparent 50%); }
-    .top-nav { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .back-btn { display: flex; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; transition: 0.3s; }
-    .back-btn:hover { background: rgba(255,255,255,0.1); }
-    .score-board { background: var(--glass); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; font-weight: 900; color: var(--gold); }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 100%, rgba(255,212,138,0.1), transparent 60%); }
+    .top-nav { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .back-btn { display: flex; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: 0.3s; backdrop-filter: blur(10px); }
+    .back-btn:hover { background: rgba(255,255,255,0.15); transform: translateX(-3px); }
+    .score-board { background: var(--glass); border: 1px solid var(--border); padding: 10px 18px; border-radius: 12px; font-weight: 900; color: var(--gold); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(255, 212, 138, 0.1); }
     .screen { display: none; width: 100%; max-width: 500px; }
-    .screen.active { display: block; }
-    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 30px; backdrop-filter: blur(20px); text-align: center; }
-    .level-box h2 { margin-bottom: 20px; color: var(--gold); }
-    .levels-grid { display: flex; flex-direction: column; gap: 12px; }
-    .lvl-btn { padding: 16px; border-radius: 14px; font-size: 1.1rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; }
-    .lvl-easy { color: var(--green); border-color: var(--green); }
-    .lvl-med { color: var(--gold); border-color: var(--gold); }
-    .lvl-hard { color: var(--red); border-color: var(--red); }
-    .timer-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
-    .fill { height: 100%; background: var(--gold); width: 100%; transition: width 0.1s linear; }
-    .question { font-size: 1.4rem; font-weight: 900; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center; }
-    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .btn { padding: 18px; font-size: 1.2rem; font-weight: 900; border: 2px solid transparent; border-radius: 14px; cursor: pointer; font-family: 'Cairo'; transition: 0.2s; }
+    .screen.active { display: block; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 35px; backdrop-filter: blur(20px); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+    .level-box h2 { margin-bottom: 25px; color: var(--gold); font-size: 1.8rem; font-weight: 900; }
+    .levels-grid { display: flex; flex-direction: column; gap: 15px; }
+    .lvl-btn { padding: 18px 24px; border-radius: 16px; font-size: 1.1rem; font-weight: 900; border: 2px solid; background: rgba(255,255,255,0.02); cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
+    .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118,233,192,0.15); transform: scale(1.02); }
+    .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255,212,138,0.15); transform: scale(1.02); }
+    .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255,145,169,0.15); transform: scale(1.02); }
+    .timer-bar { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 25px; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+    .fill { height: 100%; background: linear-gradient(90deg, var(--gold), #f7971e); width: 100%; transition: width 0.1s linear; box-shadow: 0 0 15px var(--gold); }
+    .question { font-size: 1.5rem; font-weight: 900; margin-bottom: 30px; min-height: 100px; display: flex; align-items: center; justify-content: center; line-height: 1.5; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .btn { padding: 22px; font-size: 1.3rem; font-weight: 900; border: 2px solid transparent; border-radius: 16px; cursor: pointer; font-family: 'Cairo'; transition: 0.2s; }
     .btn-true { background: rgba(118,233,192,0.1); color: var(--green); border-color: var(--green); }
-    .btn-true:hover { background: var(--green); color: #000; }
+    .btn-true:hover { background: var(--green); color: #000; box-shadow: 0 0 20px rgba(118,233,192,0.4); }
     .btn-false { background: rgba(255,145,169,0.1); color: var(--red); border-color: var(--red); }
-    .btn-false:hover { background: var(--red); color: #000; }
-    .result-box h2 { color: var(--gold); font-size: 1.8rem; margin-bottom: 10px; }
-    .result-box p { color: var(--muted); font-size: 1.1rem; margin-bottom: 20px; }
-    .btn-restart { background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; width: 100%; font-family: 'Cairo'; }
-    .result-emoji { font-size: 4rem; margin-bottom: 10px; }
-    .result-message { font-size: 1.2rem; color: var(--muted); margin-bottom: 15px; }
-    @media (max-width: 600px) { .top-nav { flex-direction: column; gap: 10px; } }
+    .btn-false:hover { background: var(--red); color: #000; box-shadow: 0 0 20px rgba(255,145,169,0.4); }
+    .result-box { text-align: center; }
+    .result-emoji { font-size: 5rem; margin-bottom: 15px; animation: bounce 1s infinite alternate; }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+    .result-box h2 { font-size: 1.8rem; margin-bottom: 10px; color: var(--cyan); }
+    .result-message { font-size: 1.2rem; color: var(--muted); margin-bottom: 25px; }
+    .final-score-text { font-size: 1.4rem; font-weight: 900; color: var(--gold); margin-bottom: 25px; }
+    .btn-restart { background: var(--cyan); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; width: 100%; margin-bottom: 10px; transition: 0.3s; }
+    .btn-restart:hover { box-shadow: 0 0 20px var(--cyan); transform: scale(1.02); }
+    .btn-back { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; width: 100%; transition: 0.3s; }
+    .btn-back:hover { background: rgba(255,255,255,0.05); }
   </style>
 </head>
 <body>
@@ -70,9 +75,9 @@
       <div class="result-emoji" id="resultEmoji">🏆</div>
       <h2 id="resultTitle">انتهى التحدي!</h2>
       <p class="result-message" id="resultMessage"></p>
-      <p>لقد جمعت <strong id="final" style="color: var(--green); font-size: 1.5rem;">0</strong> نقطة.</p>
+      <p class="final-score-text">لقد جمعت <span id="final" style="color: var(--green);">0</span> نقطة.</p>
       <button class="btn-restart" onclick="restartGame()">العب مجدداً</button>
-      <button class="btn-restart" onclick="window.location.href='games.html'" style="background:transparent; border:1px solid var(--border); color:var(--text); margin-top:10px;">العودة للألعاب</button>
+      <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
     </div>
   </div>
   <script>
@@ -88,19 +93,46 @@
       { q: "هل الـ Loop هو حلقة تكرار؟", a: true }, { q: "هل الـ Array يخزن قيمة واحدة فقط؟", a: false },
       { q: "هل يمكن استخدام دالة كمتغير؟", a: true }, { q: "هل OOP تعني البرمجة الكائنية؟", a: true }
     ];
-    let curr = 0, score = 0, time = 100, int, currentQs = [], currentLevel = 'easy';
+    let curr = 0, score = 0, maxTime = 0, time = 0, int, currentQs = [], currentLevel = 'easy';
     const fill = document.getElementById('fill'), qText = document.getElementById('qText'), scoreEl = document.getElementById('score');
-    function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
+
+    function updateGlobalScore(points) {
+      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
+      total += points; localStorage.setItem('codyTotalScore', total);
+    }
+
     function startGame(level) {
-      currentLevel = level; document.getElementById('levelScreen').classList.remove('active'); document.getElementById('resultScreen').classList.remove('active'); document.getElementById('gameScreen').classList.add('active');
+      currentLevel = level;
+      document.getElementById('levelScreen').classList.remove('active');
+      document.getElementById('resultScreen').classList.remove('active');
+      document.getElementById('gameScreen').classList.add('active');
       let count = level === 'easy' ? 10 : level === 'medium' ? 15 : 20;
       let timePerQ = level === 'easy' ? 30 : level === 'medium' ? 40 : 50;
-      time = timePerQ * 10; currentQs = allQs.sort(() => Math.random() - 0.5).slice(0, count);
-      curr = 0; score = 0; scoreEl.textContent = score; load(); startTimer();
+      maxTime = timePerQ * 10; time = maxTime;
+      currentQs = allQs.sort(() => Math.random() - 0.5).slice(0, count);
+      curr = 0; score = 0; scoreEl.textContent = score;
+      fill.style.width = '100%'; load(); startTimer();
     }
-    function load() { if (curr >= currentQs.length) return end(); qText.textContent = currentQs[curr].q; }
-    function ans(choice) { if (choice === currentQs[curr].a) { score += 10; scoreEl.textContent = score; updateGlobalScore(10); } curr++; load(); }
-    function startTimer() { int = setInterval(() => { time -= 1; fill.style.width = `${(time/100)*100}%`; if (time <= 0) end(); }, 100); }
+
+    function load() {
+      if (curr >= currentQs.length) return end();
+      qText.textContent = currentQs[curr].q;
+    }
+
+    function ans(choice) {
+      if (choice === currentQs[curr].a) {
+        score += 10; scoreEl.textContent = score; updateGlobalScore(10);
+      }
+      curr++; load();
+    }
+
+    function startTimer() {
+      int = setInterval(() => {
+        time -= 1; fill.style.width = `${(time / maxTime) * 100}%`;
+        if (time <= 0) end();
+      }, 100);
+    }
+
     function end() {
       clearInterval(int);
       document.getElementById('gameScreen').classList.remove('active');
@@ -112,7 +144,11 @@
       else if (score >= 40) { emoji.textContent = '🌟'; msg.textContent = 'جيد جداً! يمكنك التحسن.'; }
       else { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة، استمر!'; }
     }
-    function restartGame() { document.getElementById('resultScreen').classList.remove('active'); document.getElementById('levelScreen').classList.add('active'); }
+
+    function restartGame() {
+      document.getElementById('resultScreen').classList.remove('active');
+      document.getElementById('levelScreen').classList.add('active');
+    }
   </script>
 </body>
 </html>
