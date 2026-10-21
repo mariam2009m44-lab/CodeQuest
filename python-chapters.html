@@ -5,23 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#050810">
   <title>خريطة مغامرة بايثون | Cody</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
-
   <style>
-    :root {
-      --bg: #050810;
-      --glass: rgba(15, 23, 42, 0.8);
-      --border: rgba(255,255,255,0.1);
-      --text: #ffffff;
-      --muted: #94a3b8;
-      --cyan: #6be8ff;
-      --green: #76e9c0;
-      --gold: #ffd48a;
-      --purple: #a99aff;
-      --surface: rgba(15, 23, 42, 0.8);
-    }
+    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --gold: #ffd48a; --purple: #a99aff; --surface: rgba(15, 23, 42, 0.8); }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; background-image: radial-gradient(circle at 50% 0%, rgba(107,232,255,0.08), transparent 60%); }
     .top-nav { width: 100%; max-width: 1000px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -44,24 +31,14 @@
     .exam-node h2 { font-size: 1.5rem; color: #fff; }
     .btn-exam { background: var(--purple); color: #000; padding: 12px 30px; border-radius: 12px; font-weight: 900; text-decoration: none; transition: 0.3s; }
     .btn-exam:hover { box-shadow: 0 0 20px var(--purple); transform: scale(1.05); }
-    @media (max-width: 600px) {
-      .exam-node { flex-direction: column; gap: 20px; }
-      .header-section h1 { font-size: 1.7rem; }
-    }
+    @media (max-width: 600px) { .exam-node { flex-direction: column; gap: 20px; } .header-section h1 { font-size: 1.7rem; } }
   </style>
 </head>
-
 <body>
   <div class="top-nav">
-    <a href="languages.html" class="back-btn">
-      <i class="ri-arrow-right-line"></i>
-      رجوع للمسارات
-    </a>
-    <div style="font-weight: 900; color: var(--gold);">
-      XP: <span id="xpDisplay">0</span>
-    </div>
+    <a href="languages.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للمسارات</a>
+    <div style="font-weight: 900; color: var(--gold);">XP: <span id="xpDisplay">0</span></div>
   </div>
-
   <div class="header-section">
     <svg class="python-logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Python" role="img">
       <path d="M23.488 9.14v2.966a4.284 4.284 0 01-4.173 4.236h-6.672a3.408 3.408 0 00-3.34 3.394v6.36c0 1.81 1.574 2.876 3.34 3.395a11.176 11.176 0 006.672 0c1.682-.487 3.34-1.467 3.34-3.394V23.55h-6.672v-.849h10.012c1.941 0 2.665-1.354 3.34-3.386a11.464 11.464 0 000-6.79c-.48-1.932-1.396-3.386-3.34-3.386Zm-3.752 16.108a1.273 1.273 0 11-1.254 1.269 1.26 1.26 0 011.254-1.27Z" fill="#387EB8"/>
@@ -70,167 +47,80 @@
     <h1>خريطة مغامرة بايثون</h1>
     <p style="color: var(--muted);">أكمل الفصول لجمع النجوم وفتح المشروع النهائي!</p>
   </div>
-
   <div class="map-container" id="mapContainer"></div>
-
   <script>
     "use strict";
-
     const chapters = [
-      { id: 1, title: "الطباعة (Print)" },
-      { id: 2, title: "المتغيرات" },
-      { id: 3, title: "العمليات الحسابية" },
-      { id: 4, title: "الشروط (If/Else)" },
-      { id: 5, title: "التكرار (Loops)" },
-      { id: 6, title: "القوائم (Lists)" },
-      { id: 7, title: "الدوال (Functions)" },
-      { id: 8, title: "النصوص (Strings)" },
-      { id: 9, title: "الأخطاء (Try/Except)" },
-      { id: 10, title: "القواميس (Dictionaries)" },
-      { id: 11, title: "المكتبات (Libraries)" },
-      { id: 12, title: "المشروع النهائي" }
+      { id: 1, title: "الطباعة (Print)" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" },
+      { id: 4, title: "الشروط (If/Else)" }, { id: 5, title: "التكرار (Loops)" }, { id: 6, title: "القوائم (Lists)" },
+      { id: 7, title: "الدوال (Functions)" }, { id: 8, title: "النصوص (Strings)" }, { id: 9, title: "الأخطاء (Try/Except)" },
+      { id: 10, title: "القواميس (Dictionaries)" }, { id: 11, title: "المكتبات (Libraries)" }, { id: 12, title: "المشروع النهائي" }
     ];
-
     const PROGRESS_KEY = "cody_python_progress";
     const XP_KEY = "cody_xp";
-
     function readProgress() {
       try {
         const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
-        return {
-          completed: Array.isArray(saved.completed)
-            ? saved.completed.filter(id => Number.isInteger(id) && id >= 1 && id <= chapters.length)
-            : [],
-          stars: saved.stars && typeof saved.stars === "object" && !Array.isArray(saved.stars)
-            ? saved.stars
-            : {}
-        };
-      } catch {
-        return { completed: [], stars: {} };
-      }
+        return { completed: Array.isArray(saved.completed) ? saved.completed.filter(id => Number.isInteger(id) && id >= 1 && id <= chapters.length) : [], stars: saved.stars && typeof saved.stars === "object" && !Array.isArray(saved.stars) ? saved.stars : {} };
+      } catch { return { completed: [], stars: {} }; }
     }
-
     function renderXp() {
       const value = Number(localStorage.getItem(XP_KEY));
-      document.getElementById("xpDisplay").textContent =
-        Number.isFinite(value) && value >= 0 ? String(value) : "0";
+      document.getElementById("xpDisplay").textContent = Number.isFinite(value) && value >= 0 ? String(value) : "0";
     }
-
     function buildChapterUrl(chapterId) {
       const params = new URLSearchParams({ ch: String(chapterId), lesson: "1" });
       return `python-lessons.html?${params.toString()}`;
     }
-
     function buildChapterNode(chapter, index, progress) {
       const isDone = progress.completed.includes(chapter.id);
       const isUnlocked = index === 0 || progress.completed.includes(chapters[index - 1].id);
-
       const node = document.createElement("a");
       node.className = `chapter-node ${isDone ? "completed" : ""} ${isUnlocked ? "" : "locked"}`;
       node.href = isUnlocked ? buildChapterUrl(chapter.id) : "#";
-
       if (!isUnlocked) {
-        node.setAttribute("aria-disabled", "true");
-        node.tabIndex = -1;
+        node.setAttribute("aria-disabled", "true"); node.tabIndex = -1;
         node.addEventListener("click", event => event.preventDefault());
       }
-
       const number = document.createElement("div");
       number.className = "chapter-number";
-
       if (isDone) {
-        const icon = document.createElement("i");
-        icon.className = "ri-check-line";
-        icon.setAttribute("aria-label", "مكتمل");
-        number.appendChild(icon);
-      } else {
-        number.textContent = String(chapter.id);
-      }
-
-      const title = document.createElement("h3");
-      title.textContent = chapter.title;
-
+        const icon = document.createElement("i"); icon.className = "ri-check-line"; icon.setAttribute("aria-label", "مكتمل"); number.appendChild(icon);
+      } else { number.textContent = String(chapter.id); }
+      const title = document.createElement("h3"); title.textContent = chapter.title;
       node.append(number, title);
-
       if (isDone) {
         const earned = Math.max(0, Math.min(3, Number(progress.stars[chapter.id]) || 0));
-        const stars = document.createElement("div");
-        stars.className = "stars";
-        stars.setAttribute("aria-label", `${earned} من 3 نجوم`);
-
+        const stars = document.createElement("div"); stars.className = "stars"; stars.setAttribute("aria-label", `${earned} من 3 نجوم`);
         for (let star = 1; star <= 3; star++) {
-          const starIcon = document.createElement("i");
-          starIcon.className = `ri-star-fill ${earned >= star ? "filled" : ""}`;
-          stars.appendChild(starIcon);
+          const starIcon = document.createElement("i"); starIcon.className = `ri-star-fill ${earned >= star ? "filled" : ""}`; stars.appendChild(starIcon);
         }
-
         node.appendChild(stars);
       }
-
       if (!isUnlocked) {
-        const lock = document.createElement("i");
-        lock.className = "ri-lock-fill";
-        lock.style.position = "absolute";
-        lock.style.top = "15px";
-        lock.style.left = "15px";
-        lock.style.fontSize = "1.5rem";
-        lock.setAttribute("aria-label", "الفصل مقفول");
-        node.appendChild(lock);
+        const lock = document.createElement("i"); lock.className = "ri-lock-fill"; lock.style.position = "absolute"; lock.style.top = "15px"; lock.style.left = "15px"; lock.style.fontSize = "1.5rem"; lock.setAttribute("aria-label", "الفصل مقفول"); node.appendChild(lock);
       }
-
       return node;
     }
-
     function buildExamNode(progress) {
       const allDone = chapters.every(chapter => progress.completed.includes(chapter.id));
-      const examNode = document.createElement("div");
-      examNode.className = `exam-node ${allDone ? "" : "locked"}`;
-
-      const info = document.createElement("div");
-      const title = document.createElement("h2");
-      title.textContent = "الامتحان والمشروع النهائي";
-
-      const description = document.createElement("p");
-      description.style.color = "var(--muted)";
-      description.style.marginTop = "5px";
-      description.textContent = "أكملت الـ 12 فصل! حان وقت التطبيق العملي.";
-
-      info.append(title, description);
-      examNode.appendChild(info);
-
+      const examNode = document.createElement("div"); examNode.className = `exam-node ${allDone ? "" : "locked"}`;
+      const info = document.createElement("div"); const title = document.createElement("h2"); title.textContent = "الامتحان والمشروع النهائي";
+      const description = document.createElement("p"); description.style.color = "var(--muted)"; description.style.marginTop = "5px"; description.textContent = "أكملت الـ 12 فصل! حان وقت التطبيق العملي.";
+      info.append(title, description); examNode.appendChild(info);
       if (allDone) {
-        const link = document.createElement("a");
-        link.href = "python-exam.html";
-        link.className = "btn-exam";
-        link.textContent = "ابدأ الامتحان الشامل";
-        examNode.appendChild(link);
+        const link = document.createElement("a"); link.href = "python-exam.html"; link.className = "btn-exam"; link.textContent = "ابدأ الامتحان الشامل"; examNode.appendChild(link);
       } else {
-        const locked = document.createElement("span");
-        locked.style.color = "var(--muted)";
-        const lock = document.createElement("i");
-        lock.className = "ri-lock-fill";
-        locked.append(lock, document.createTextNode(" أكمل الـ 12 فصل أولاً"));
-        examNode.appendChild(locked);
+        const locked = document.createElement("span"); locked.style.color = "var(--muted)"; const lock = document.createElement("i"); lock.className = "ri-lock-fill"; locked.append(lock, document.createTextNode(" أكمل الـ 12 فصل أولاً")); examNode.appendChild(locked);
       }
-
       return examNode;
     }
-
     function renderMap() {
-      const progress = readProgress();
-      const container = document.getElementById("mapContainer");
-      const fragment = document.createDocumentFragment();
-
-      chapters.forEach((chapter, index) => {
-        fragment.appendChild(buildChapterNode(chapter, index, progress));
-      });
-
-      fragment.appendChild(buildExamNode(progress));
-      container.replaceChildren(fragment);
+      const progress = readProgress(); const container = document.getElementById("mapContainer"); const fragment = document.createDocumentFragment();
+      chapters.forEach((chapter, index) => { fragment.appendChild(buildChapterNode(chapter, index, progress)); });
+      fragment.appendChild(buildExamNode(progress)); container.replaceChildren(fragment);
     }
-
-    renderXp();
-    renderMap();
+    renderXp(); renderMap();
   </script>
 </body>
 </html>
