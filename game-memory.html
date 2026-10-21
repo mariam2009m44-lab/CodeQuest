@@ -14,11 +14,9 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 100%, rgba(169, 154, 255, 0.1), transparent 50%); }
-    
     .screen { display: none; width: 100%; max-width: 650px; }
     .screen.active { display: block; animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
     .level-box h2 { font-size: 2rem; margin-bottom: 30px; color: var(--purple); }
     .levels-grid { display: flex; flex-direction: column; gap: 15px; }
@@ -26,28 +24,27 @@
     .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118, 233, 192, 0.1); transform: scale(1.02); }
     .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255, 212, 138, 0.1); transform: scale(1.02); }
     .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255, 145, 169, 0.1); transform: scale(1.02); }
-
     .game-container { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 25px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; cursor: pointer; background: none; border: none; font-family: 'Cairo'; font-size: 1rem; }
     .back-btn:hover { color: var(--purple); }
     .score-board { font-weight: 900; font-size: 1.2rem; color: var(--gold); }
-
     .memory-grid { display: grid; gap: 10px; margin-top: 15px; }
     .card { position: relative; width: 100%; aspect-ratio: 1 / 1; cursor: pointer; perspective: 1000px; }
-    .card-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+    .card-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
     .card.flipped .card-inner, .card.matched .card-inner { transform: rotateY(180deg); }
     .card-front, .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 2px solid var(--border); }
-    .card-front { background: #151b33; color: var(--purple); font-size: 1.8rem; }
+    .card-front { background: #151b33; color: var(--purple); font-size: 1.8rem; box-shadow: inset 0 0 15px rgba(169,154,255,0.1); }
     .card-back { background: #0d1422; transform: rotateY(180deg); color: var(--cyan); font-size: 0.9rem; text-align: center; padding: 5px; word-break: break-word; }
-    .card.matched .card-back { background: rgba(118, 233, 192, 0.15); border-color: var(--green); color: var(--green); }
-    .win-message { display: none; text-align: center; margin-top: 15px; font-size: 1.5rem; font-weight: 900; color: var(--green); }
-    
+    .card.matched .card-back { background: rgba(118, 233, 192, 0.15); border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(118,233,192,0.3); }
+    .win-screen { display: none; text-align: center; margin-top: 20px; }
+    .win-screen h2 { color: var(--green); font-size: 1.8rem; margin-bottom: 15px; }
+    .btn-restart { background: var(--cyan); color: #000; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; }
+    .btn-restart:hover { box-shadow: 0 0 20px var(--cyan); transform: scale(1.05); }
     @media (max-width: 500px) { .memory-grid { gap: 6px; } .card-front { font-size: 1.3rem; } .card-back { font-size: 0.7rem; } }
   </style>
 </head>
 <body>
-
   <div class="screen active" id="levelScreen">
     <div class="level-box">
       <h2>اختر مستوى الذاكرة</h2>
@@ -59,7 +56,6 @@
       <a href="games.html" class="back-btn" style="display:block; margin-top:20px;"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
     </div>
   </div>
-
   <div class="screen" id="gameScreen">
     <div class="game-container">
       <div class="header">
@@ -67,80 +63,62 @@
         <div class="score-board">النقاط: <span id="scoreDisplay">0</span></div>
       </div>
       <div id="gameGrid" class="memory-grid"></div>
-      <div id="winMessage" class="win-message">أحسنت! لقد أكملت اللعبة 🎉</div>
+      <div id="winScreen" class="win-screen">
+        <h2>أحسنت! لقد أكملت اللعبة 🎉</h2>
+        <button class="btn-restart" onclick="restartCurrentLevel()">العب مرة أخرى</button>
+      </div>
     </div>
   </div>
-
   <script>
     const allPairs = [
-      { term: 'HTML', def: 'هيكل' }, { term: 'CSS', def: 'تنسيق' }, { term: 'JS', def: 'تفاعل' }, 
-      { term: 'Python', def: 'ذكاء اصطناعي' }, { term: 'Bug', def: 'خطأ' }, { term: 'Code', def: 'أوامر' },
-      { term: 'Loop', def: 'تكرار' }, { term: 'Array', def: 'مصفوفة' }, { term: 'Function', def: 'دالة' },
-      { term: 'Variable', def: 'متغير' }, { term: 'API', def: 'واجهة برمجة' }, { term: 'Git', def: 'إصدارات' },
-      { term: 'SQL', def: 'قواعد بيانات' }, { term: 'C++', def: 'لغة عالية الأداء' }, { term: 'Java', def: 'كائنية التوجه' }
+      { id: 1, term: 'HTML', def: 'هيكل' }, { id: 2, term: 'CSS', def: 'تنسيق' }, { id: 3, term: 'JS', def: 'تفاعل' }, 
+      { id: 4, term: 'Python', def: 'ذكاء اصطناعي' }, { id: 5, term: 'Bug', def: 'خطأ' }, { id: 6, term: 'Code', def: 'أوامر' },
+      { id: 7, term: 'Loop', def: 'تكرار' }, { id: 8, term: 'Array', def: 'مصفوفة' }, { id: 9, term: 'Function', def: 'دالة' },
+      { id: 10, term: 'Variable', def: 'متغير' }, { id: 11, term: 'API', def: 'واجهة برمجة' }, { id: 12, term: 'Git', def: 'إصدارات' },
+      { id: 13, term: 'SQL', def: 'قواعد بيانات' }, { id: 14, term: 'C++', def: 'لغة عالية الأداء' }, { id: 15, term: 'Java', def: 'كائنية التوجه' }
     ];
-    let flippedCards = [], matchedPairsCount = 0, totalPairsToMatch = 0, score = 0, lockBoard = false;
-    const scoreDisplay = document.getElementById('scoreDisplay'), gameGrid = document.getElementById('gameGrid'), winMessage = document.getElementById('winMessage');
-
-    function updateGlobalScore(points) {
-      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
-      total += points;
-      localStorage.setItem('codyTotalScore', total);
-    }
-
+    let flippedCards = [], matchedPairsCount = 0, totalPairsToMatch = 0, score = 0, lockBoard = false, currentPairsCount = 0;
+    const scoreDisplay = document.getElementById('scoreDisplay'), gameGrid = document.getElementById('gameGrid'), winScreen = document.getElementById('winScreen');
+    function updateGlobalScore(points) { let total = parseInt(localStorage.getItem('codyTotalScore')) || 0; total += points; localStorage.setItem('codyTotalScore', total); }
     function startGame(pairsCount) {
-      totalPairsToMatch = pairsCount;
+      currentPairsCount = pairsCount; totalPairsToMatch = pairsCount; score = 0; scoreDisplay.textContent = score;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
-      
+      winScreen.style.display = 'none'; gameGrid.style.display = 'grid';
       let gridCols = 4;
-      if (pairsCount === 15) gridCols = 5;
-      else if (pairsCount === 10) gridCols = 4;
+      if (pairsCount === 15) gridCols = 5; else if (pairsCount === 10) gridCols = 4;
       gameGrid.style.gridTemplateColumns = `repeat(${gridCols}, 1fr)`;
-
       const selectedPairs = allPairs.slice(0, pairsCount);
-      const cards = [...selectedPairs, ...selectedPairs].sort(() => Math.random() - 0.5);
-      
-      gameGrid.innerHTML = ''; flippedCards = []; matchedPairsCount = 0; score = 0; scoreDisplay.textContent = score; lockBoard = false;
-
+      const cards = [...selectedPairs, ...selectedPairs].map(item => { const isTerm = Math.random() < 0.5; return { id: item.id, text: isTerm ? item.term : item.def }; }).sort(() => Math.random() - 0.5);
+      gameGrid.innerHTML = ''; flippedCards = []; matchedPairsCount = 0; lockBoard = false;
       cards.forEach((cardData) => {
         const cardEl = document.createElement('div');
-        cardEl.classList.add('card'); cardEl.dataset.term = cardData.term;
-        const displayText = cardData.term ? cardData.term : cardData.def;
-        cardEl.innerHTML = `<div class="card-inner"><div class="card-front">?</div><div class="card-back">${displayText}</div></div>`;
+        cardEl.classList.add('card'); cardEl.dataset.id = cardData.id;
+        cardEl.innerHTML = `<div class="card-inner"><div class="card-front">?</div><div class="card-back">${cardData.text}</div></div>`;
         cardEl.addEventListener('click', () => flipCard(cardEl, cardData));
         gameGrid.appendChild(cardEl);
       });
     }
-
     function flipCard(cardEl, cardData) {
       if (lockBoard) return;
       if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
-      cardEl.classList.add('flipped');
-      flippedCards.push({ element: cardEl, data: cardData });
+      cardEl.classList.add('flipped'); flippedCards.push({ element: cardEl, data: cardData });
       if (flippedCards.length === 2) checkMatch();
     }
-
     function checkMatch() {
       lockBoard = true;
       const c1 = flippedCards[0], c2 = flippedCards[1];
-      const isMatch = (c1.data.term === c2.data.term && c1.data.def !== c2.data.def) || (c1.data.def === c2.data.def && c1.data.term !== c2.data.term);
-
-      if (isMatch) {
+      if (c1.data.id === c2.data.id) {
         c1.element.classList.add('matched'); c2.element.classList.add('matched');
         matchedPairsCount++; score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
         flippedCards = []; lockBoard = false;
-        if (matchedPairsCount === totalPairsToMatch) {
-          setTimeout(() => { winMessage.style.display = 'block'; }, 500);
-        }
+        if (matchedPairsCount === totalPairsToMatch) { setTimeout(() => { winScreen.style.display = 'block'; gameGrid.style.display = 'none'; }, 500); }
       } else {
         score = Math.max(0, score - 5); scoreDisplay.textContent = score;
-        setTimeout(() => {
-          c1.element.classList.remove('flipped'); c2.element.classList.remove('flipped');
-          flippedCards = []; lockBoard = false;
-        }, 800);
+        setTimeout(() => { c1.element.classList.remove('flipped'); c2.element.classList.remove('flipped'); flippedCards = []; lockBoard = false; }, 800);
       }
     }
+    function restartCurrentLevel() { startGame(currentPairsCount); }
   </script>
 </body>
 </html>
