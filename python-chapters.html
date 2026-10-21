@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -53,7 +54,12 @@
       } catch { return { completed: [], stars: {} }; }
     }
     function renderXp() { document.getElementById("xpDisplay").textContent = localStorage.getItem(XP_KEY) || "0"; }
-    function buildChapterUrl(chapterId) { return `python-lessons.html?ch=${chapterId}&lesson=1`; }
+    
+    // تم تعديل السطر ده ليكون بدون حرف S
+    function buildChapterUrl(chapterId) { 
+      return `python-lesson.html?ch=${chapterId}&lesson=1`; 
+    }
+    
     function renderMap() {
       const progress = readProgress(); const container = document.getElementById("mapContainer"); const fragment = document.createDocumentFragment();
       chapters.forEach((chapter, index) => {
