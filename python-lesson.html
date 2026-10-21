@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -27,35 +28,16 @@
       --gold: #fbbf24; 
       --safe-bottom: env(safe-area-inset-bottom, 20px);
     }
-    
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-    
     body { background: var(--bg); color: var(--text); display: flex; height: 100dvh; overflow: hidden; }
-
-    /* الستارة للموبايل */
-    .overlay { 
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
-      backdrop-filter: blur(4px); z-index: 999; transition: 0.3s; 
-    }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 999; transition: 0.3s; }
     .overlay.open { display: block; }
-
-    /* القائمة الجانبية */
-    .sidebar { 
-      width: 320px; background: var(--sidebar-bg); border-left: 1px solid var(--border); 
-      display: flex; flex-direction: column; height: 100dvh; z-index: 1000; transition: 0.3s ease;
-    }
-    
-    .sidebar-header { 
-      padding: 15px; border-bottom: 1px solid var(--border); 
-      display: flex; align-items: center; justify-content: space-between; 
-    }
+    .sidebar { width: 320px; background: var(--sidebar-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100dvh; z-index: 1000; transition: 0.3s ease; }
+    .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; }
     .sidebar-brand img { width: 28px; height: 28px; }
     .sidebar-brand h2 { color: var(--cyan); font-size: 1.1rem; font-weight: 900; }
-    
     .close-btn { display: none; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-    
-    /* تصغير المسافات عشان الـ 12 فصل يظهروا */
     .chapters-list { flex: 1; overflow-y: auto; padding: 10px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 8px; }
     .chapter-item { background: #1e293b; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
     .chapter-title { padding: 12px 15px; font-weight: 700; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
@@ -64,66 +46,31 @@
     .lessons-list.open { display: flex; }
     .lesson-link { padding: 10px 15px; color: var(--muted); text-decoration: none; font-size: 0.85rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; transition: 0.2s; }
     .lesson-link:hover, .lesson-link.active { color: var(--cyan); background: #1e293b; font-weight: 700; }
-    
-    /* المنطقة الرئيسية */
     .main-area { flex: 1; display: flex; flex-direction: column; height: 100dvh; position: relative; width: 100%; background: var(--bg); }
-    
-    /* الشريط العلوي */
-    .top-bar { 
-      padding: 12px 15px; background: var(--sidebar-bg); border-bottom: 1px solid var(--border); 
-      display: flex; align-items: center; justify-content: space-between; gap: 10px; z-index: 10; flex-wrap: wrap;
-    }
-    
+    .top-bar { padding: 12px 15px; background: var(--sidebar-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; z-index: 10; flex-wrap: wrap; }
     .menu-btn { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
-    
-    .back-btn { 
-      color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.85rem; 
-      display: flex; align-items: center; gap: 5px; background: #1e293b; 
-      padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); transition: 0.2s; 
-    }
+    .back-btn { color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; background: #1e293b; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); transition: 0.2s; }
     .back-btn:hover { background: var(--cyan); color: #000; }
-    
     .progress-container { flex: 1; min-width: 100px; }
     .progress-text { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; margin-bottom: 4px; color: var(--gold); }
     .progress-bar { width: 100%; height: 6px; background: #1e293b; border-radius: 10px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); width: 0%; transition: 0.5s ease; }
-    
-    .stats-badge { 
-      background: rgba(251, 191, 36, 0.1); color: var(--gold); 
-      padding: 4px 10px; border-radius: 15px; font-weight: 900; font-size: 0.8rem; 
-      border: 1px solid rgba(251, 191, 36, 0.3); display: flex; align-items: center; gap: 5px; white-space: nowrap;
-    }
-    
-    /* الشات */
-    .chat-container { 
-      flex: 1; padding: 15px; padding-bottom: 100px; 
-      overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; background: var(--bg); 
-    }
+    .stats-badge { background: rgba(251, 191, 36, 0.1); color: var(--gold); padding: 4px 10px; border-radius: 15px; font-weight: 900; font-size: 0.8rem; border: 1px solid rgba(251, 191, 36, 0.3); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .chat-container { flex: 1; padding: 15px; padding-bottom: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; background: var(--bg); }
     .message-row { display: flex; gap: 10px; align-items: flex-end; animation: slideUp 0.3s ease; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
     .message-row.cody { flex-direction: row; }
     .message-row.cody .avatar { background: #0ea5e9; }
     .message-row.cody .bubble { background: var(--cody-bubble); border: 1px solid var(--border); border-radius: 16px 16px 0 16px; }
-    
     .message-row.student { flex-direction: row-reverse; }
     .message-row.student .avatar { background: var(--student-bubble); }
     .message-row.student .bubble { background: var(--student-bubble); border: 1px solid var(--student-bubble); border-radius: 16px 16px 16px 0; }
-    
     .avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
     .bubble { padding: 12px 16px; font-size: 0.95rem; line-height: 1.7; max-width: 85%; color: #fff; }
     .bubble code { background: #0f172a; color: var(--cyan); padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; margin: 5px 0; }
-    
-    /* الخيارات */
     .choices-container { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 500px; margin-right: 48px; }
-    .choice-btn { 
-      background: #1e293b; border: 1px solid var(--border); color: var(--text); padding: 12px 15px; 
-      border-radius: 10px; font-family: 'Cairo'; font-size: 0.9rem; font-weight: 700; 
-      cursor: pointer; transition: 0.2s; text-align: right; 
-    }
+    .choice-btn { background: #1e293b; border: 1px solid var(--border); color: var(--text); padding: 12px 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-align: right; }
     .choice-btn:hover { background: #334155; border-color: var(--cyan); }
-    
-    /* محرر الأكواد */
     .editor-wrapper { display: none; width: calc(100% - 48px); margin-right: 48px; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-top: 10px; }
     .editor-wrapper.show { display: block; }
     .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -131,22 +78,10 @@
     .code-area { display: flex; flex-direction: column; gap: 10px; }
     .CodeMirror { height: 200px !important; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.9rem; direction: ltr; text-align: left; }
     .output-area { height: 100px; background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.85rem; white-space: pre-wrap; }
-    
-    /* زر المتابعة العائم (تم إصلاحه ليكون ثابت فوق شريط الموبايل) */
-    .bottom-action { 
-      position: fixed; bottom: calc(var(--safe-bottom) + 15px); left: 50%; transform: translateX(-50%); 
-      display: none; justify-content: center; z-index: 9999; width: 90%; max-width: 350px;
-    }
+    .bottom-action { position: fixed; bottom: calc(var(--safe-bottom) + 15px); left: 50%; transform: translateX(-50%); display: none; justify-content: center; z-index: 9999; width: 90%; max-width: 350px; }
     .bottom-action.show { display: flex; }
-    .btn-next { 
-      background: var(--cyan); color: #000; border: none; padding: 14px 20px; width: 100%;
-      border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer; 
-      font-family: 'Cairo'; display: flex; justify-content: center; align-items: center; gap: 8px; 
-      box-shadow: 0 10px 25px rgba(6, 182, 212, 0.5); transition: 0.2s; 
-    }
+    .btn-next { background: var(--cyan); color: #000; border: none; padding: 14px 20px; width: 100%; border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(6, 182, 212, 0.5); transition: 0.2s; }
     .btn-next:hover { transform: scale(1.02); }
-    
-    /* التصميم للموبايل */
     @media (max-width: 900px) {
       .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 280px; box-shadow: -5px 0 20px rgba(0,0,0,0.5); }
       .sidebar.open { right: 0; }
@@ -155,7 +90,6 @@
       .back-btn { order: 2; }
       .stats-badge { order: 3; }
       .progress-container { order: 4; width: 100%; margin-top: 5px; }
-      
       .chat-container { padding: 10px; padding-bottom: 120px; }
       .bubble { max-width: 90%; font-size: 0.9rem; padding: 10px 14px; }
       .choices-container, .editor-wrapper { margin-right: 0; width: 100%; }
@@ -180,16 +114,8 @@
   <div class="main-area">
     <div class="top-bar">
       <button class="menu-btn" onclick="toggleSidebar()"><i class="ri-menu-line"></i></button>
-      
-      <a href="python-chapters.html" class="back-btn">
-        <i class="ri-map-2-line"></i> الخريطة
-      </a>
-      
-      <div class="stats-badge">
-        <i class="ri-star-fill"></i> 
-        <span id="xpDisplay">0</span> XP
-      </div>
-
+      <a href="python-chapters.html" class="back-btn"><i class="ri-map-2-line"></i> الخريطة</a>
+      <div class="stats-badge"><i class="ri-star-fill"></i> <span id="xpDisplay">0</span> XP</div>
       <div class="progress-container">
         <div class="progress-text"><span>تقدمك في الرحلة</span><span id="progressPercent">0%</span></div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -203,38 +129,329 @@
     </div>
   </div>
 
-  <script src="js/chapters/ch1.js"></script>
-  <script src="js/chapters/ch2.js"></script>
-  <script src="js/chapters/ch3.js"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script>
     "use strict";
     
-    const chapterList = [
-      { id: 1, title: "الطباعة" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" },
-      { id: 4, title: "الشروط" }, { id: 5, title: "التكرار" }, { id: 6, title: "القوائم" },
-      { id: 7, title: "الدوال" }, { id: 8, title: "النصوص" }, { id: 9, title: "الأخطاء" },
-      { id: 10, title: "القواميس" }, { id: 11, title: "المكتبات" }, { id: 12, title: "المشروع النهائي" }
-    ];
-
-    window.CHAPTERS = window.CHAPTERS || {};
-    if (!window.CHAPTERS[1]) {
-        window.CHAPTERS[1] = { title: "الطباعة", lessons: [
-            { title: "الدرس 1", steps: [{ type: "cody", text: "أهلاً بك يا بطل! 🤖 أنا كودي، سنتعلم اليوم أول أمر: <code>print()</code>." }, { type: "challenge", expected: "Hello", defaultCode: 'print("Hello")', hint: 'print("Hello")', check: (code) => code.includes("Hello"), successMsg: "عظيم!" }] },
-            { title: "الدرس 2", steps: [{ type: "cody", text: "مرحباً مجدداً!" }] }, { title: "الدرس 3", steps: [{ type: "cody", text: "مرحباً!" }] },
-            { title: "الدرس 4", steps: [{ type: "cody", text: "مرحباً!" }] }, { title: "امتحان الفصل", steps: [{ type: "cody", text: "امتحان!" }] }
-        ]};
-    }
-    for(let i=2; i<=12; i++) {
-        if(!window.CHAPTERS[i]) {
-            window.CHAPTERS[i] = { title: chapterList[i-1].title, lessons: [
-                { title: "الدرس 1", steps: [{ type: "cody", text: "هذا الفصل قيد التطوير حالياً! ✨" }] },
-                { title: "الدرس 2", steps: [] }, { title: "الدرس 3", steps: [] }, { title: "الدرس 4", steps: [] }, { title: "امتحان الفصل", steps: [] }
-            ]};
-        }
-    }
+    // ================== المحتوى الكامل للـ 12 فصل ==================
+    const allChapters = {
+      1: {
+        title: "الطباعة",
+        lessons: [
+          { title: "الدرس 1: أول أمر", steps: [
+            { type: "cody", text: "أهلاً بك يا بطل! 🤖 أنا كودي. سنتعلم اليوم أول أمر برمجي: <code>print()</code>." },
+            { type: "choice", question: "هل أنت مستعد للبدء؟", options: ["نعم، جاهز!", "ممكن توضيح أكثر؟"], replies: ["رائع! لنتحرك.", "بالتأكيد. الأمر print يطلب من الكمبيوتر عرض شيء على الشاشة."] },
+            { type: "cody", text: "اكتب <code>print(\"Hello\")</code> في المحرر." },
+            { type: "challenge", expected: "Hello", defaultCode: '# اكتب هنا\n', hint: 'print("Hello")', check: (code) => /print\s*\(\s*(['"])Hello\1\s*\)/m.test(code.trim()), successMsg: "ممتاز! 🎉 لقد كتبت أول كود لك." }
+          ]},
+          { title: "الدرس 2: الأرقام", steps: [
+            { type: "cody", text: "الأمر print يطبع الأرقام أيضاً. اكتب <code>print(25)</code>." },
+            { type: "challenge", expected: "25", defaultCode: '# اكتب هنا\n', hint: 'print(25)', check: (code) => /print\s*\(\s*25\s*\)/m.test(code.trim()), successMsg: "عمل رائع! الأرقام لا تحتاج لعلامات تنصيص." }
+          ]},
+          { title: "الدرس 3: الحساب", steps: [
+            { type: "cody", text: "الكمبيوتر ذكي! اكتب <code>print(5 + 3)</code> ليقوم بالجمع." },
+            { type: "challenge", expected: "8", defaultCode: '# اكتب هنا\n', hint: 'print(5 + 3)', check: (code) => /print\s*\(\s*5\s*\+\s*3\s*\)/m.test(code.trim()), successMsg: "عبقري! الكمبيوتر أجرى العملية." }
+          ]},
+          { title: "الدرس 4: نصوص متعددة", steps: [
+            { type: "cody", text: "يمكنك طباعة أكثر من سطر. اطبع <code>Hi</code> ثم <code>Bye</code>." },
+            { type: "challenge", expected: "Hi\nBye", defaultCode: '# اكتب هنا\n', hint: 'print("Hi")\nprint("Bye")', check: (code) => code.includes('print("Hi")') && code.includes('print("Bye")'), successMsg: "مذهل! الكمبيوتر ينفذ الأوامر بالترتيب." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ما وظيفة print؟", options: ["عرض النصوص والأرقام", "حذف الكود", "إيقاف الكمبيوتر"], correct: 0, explanation: "الأمر print يعرض المخرجات على الشاشة." },
+            { type: "cody", text: "تحدي أخير: اطبع <code>Done</code>." },
+            { type: "challenge", expected: "Done", defaultCode: '# اكتب هنا\n', hint: 'print("Done")', check: (code) => code.includes('print("Done")'), successMsg: "مبروك! اجتزت الفصل الأول." }
+          ]}
+        ]
+      },
+      2: {
+        title: "المتغيرات",
+        lessons: [
+          { title: "الدرس 1: المتغير", steps: [
+            { type: "cody", text: "المتغير هو صندوق نخزن فيه قيمة. اكتب <code>age = 10</code> ثم اطبعها." },
+            { type: "challenge", expected: "10", defaultCode: '# اكتب هنا\n', hint: 'age = 10\nprint(age)', check: (code) => code.includes('age = 10') && code.includes('print(age)'), successMsg: "أحسنت! خزنت القيمة وطبعت المتغير." }
+          ]},
+          { title: "الدرس 2: تغيير القيمة", steps: [
+            { type: "cody", text: "يمكنك تغيير القيمة. اكتب <code>score = 5</code> ثم غيرها لـ <code>score = 20</code> واطبعها." },
+            { type: "challenge", expected: "20", defaultCode: '# اكتب هنا\n', hint: 'score = 5\nscore = 20\nprint(score)', check: (code) => code.includes('score = 5') && code.includes('score = 20') && code.includes('print(score)'), successMsg: "ممتاز! الكمبيوتر يأخذ آخر قيمة." }
+          ]},
+          { title: "الدرس 3: دمج النصوص", steps: [
+            { type: "cody", text: "اجمع نصين معاً. <code>x = \"Hello\"</code> و <code>y = \"World\"</code>. اطبعهما مع مسافة." },
+            { type: "challenge", expected: "Hello World", defaultCode: '# اكتب هنا\n', hint: 'x = "Hello"\ny = "World"\nprint(x + " " + y)', check: (code) => code.includes('x = "Hello"') && code.includes('y = "World"') && code.includes('x + " " + y'), successMsg: "رائع! دمج النصوص مفيد جداً." }
+          ]},
+          { title: "الدرس 4: قواعد التسمية", steps: [
+            { type: "quiz", question: "أي اسم متغير صحيح؟", options: ["2user", "user name", "user_name"], correct: 2, explanation: "لا يبدأ برقم ولا يحتوي على مسافات." },
+            { type: "cody", text: "أنشئ متغير <code>user_name</code> وضع فيه اسمك واطبعه." },
+            { type: "challenge", expected: "Ali", defaultCode: '# اكتب هنا\n', hint: 'user_name = "Ali"\nprint(user_name)', check: (code) => code.includes('user_name = "Ali"') && code.includes('print(user_name)'), successMsg: "عمل رائع! اتبعت قواعد التسمية." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "كيف ننشئ متغير باسم x وقيمته 5؟", options: ["x == 5", "x = 5", "let x = 5"], correct: 1, explanation: "علامة = المفردة للتعيين." },
+            { type: "cody", text: "تحدي أخير: أنشئ متغير <code>hero</code> واطبع <code>I am [اسمك]</code>." },
+            { type: "challenge", expected: "I am Ali", defaultCode: '# اكتب هنا\n', hint: 'hero = "Ali"\nprint("I am", hero)', check: (code) => code.includes('hero = "Ali"') && code.includes('print("I am", hero)'), successMsg: "مبروك! اجتزت الفصل الثاني." }
+          ]}
+        ]
+      },
+      3: {
+        title: "العمليات الحسابية",
+        lessons: [
+          { title: "الدرس 1: الجمع والطرح", steps: [
+            { type: "cody", text: "استخدم + و - في بايثون. اطبع <code>25 + 35</code> و <code>100 - 40</code>." },
+            { type: "challenge", expected: "60\n60", defaultCode: '# اكتب هنا\n', hint: 'print(25 + 35)\nprint(100 - 40)', check: (code) => code.includes('print(25 + 35)') && code.includes('print(100 - 40)'), successMsg: "ممتاز! العمليات الأساسية سهلة." }
+          ]},
+          { title: "الدرس 2: الضرب والقسمة", steps: [
+            { type: "cody", text: "للضرب نستخدم * وللقسمة /. اطبع <code>8 * 7</code> و <code>50 / 2</code>." },
+            { type: "challenge", expected: "56\n25.0", defaultCode: '# اكتب هنا\n', hint: 'print(8 * 7)\nprint(50 / 2)', check: (code) => code.includes('print(8 * 7)') && code.includes('print(50 / 2)'), successMsg: "رائع! لاحظ أن القسمة تعطي رقماً عشرياً." }
+          ]},
+          { title: "الدرس 3: باقي القسمة", steps: [
+            { type: "cody", text: "علامة % تجيب باقي القسمة. اطبع <code>15 % 4</code>." },
+            { type: "challenge", expected: "3", defaultCode: '# اكتب هنا\n', hint: 'print(15 % 4)', check: (code) => code.includes('print(15 % 4)'), successMsg: "عبقري! 15 على 4 تساوي 3 والباقي 3." }
+          ]},
+          { title: "الدرس 4: أولويات العمليات", steps: [
+            { type: "cody", text: "الأقواس تغير الأولويات. اطبع <code>(10 + 5) * 2</code> ثم <code>10 + (5 * 2)</code>." },
+            { type: "challenge", expected: "30\n20", defaultCode: '# اكتب هنا\n', hint: 'print((10 + 5) * 2)\nprint(10 + (5 * 2))', check: (code) => code.includes('print((10 + 5) * 2)') && code.includes('print(10 + (5 * 2))'), successMsg: "مذهل! الأقواس غيرت الناتج." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ما ناتج print(10 - 2 * 3)؟", options: ["24", "4", "8"], correct: 1, explanation: "الضرب أولاً: 2*3=6، ثم 10-6=4." },
+            { type: "cody", text: "تحدي أخير: اطبع ناتج (5 + 5) * 2 ثم باقي قسمة 10 على 3." },
+            { type: "challenge", expected: "20\n1", defaultCode: '# اكتب هنا\n', hint: 'print((5 + 5) * 2)\nprint(10 % 3)', check: (code) => code.includes('print((5 + 5) * 2)') && code.includes('print(10 % 3)'), successMsg: "مبروك! اجتزت الفصل الثالث." }
+          ]}
+        ]
+      },
+      4: {
+        title: "الشروط",
+        lessons: [
+          { title: "الدرس 1: أول قرار", steps: [
+            { type: "cody", text: "الشرط if يتحقق من شيء. اكتب <code>if 10 > 5:</code> ثم اطبع <code>Yes</code>." },
+            { type: "challenge", expected: "Yes", defaultCode: '# اكتب هنا\n', hint: 'if 10 > 5:\n    print("Yes")', check: (code) => code.includes('if 10 > 5:') && code.includes('print("Yes")'), successMsg: "رائع! الشرط تحقق فتم التنفيذ." }
+          ]},
+          { title: "الدرس 2: خيار آخر", steps: [
+            { type: "cody", text: "استخدم else لتنفيذ شيء إذا كان الشرط خطأ. اكتب: إذا كان 5 > 10 اطبع Yes، وإلا اطبع No." },
+            { type: "challenge", expected: "No", defaultCode: '# اكتب هنا\n', hint: 'if 5 > 10:\n    print("Yes")\nelse:\n    print("No")', check: (code) => code.includes('if 5 > 10:') && code.includes('else:') && code.includes('print("No")'), successMsg: "عبقري! انتقل الكمبيوتر إلى else." }
+          ]},
+          { title: "الدرس 3: شروط متعددة", steps: [
+            { type: "cody", text: "استخدم elif. أنشئ <code>score = 75</code> واطبع A إذا كان >= 90 أو B إذا كان >= 75." },
+            { type: "challenge", expected: "B", defaultCode: '# اكتب هنا\n', hint: 'score = 75\nif score >= 90:\n    print("A")\nelif score >= 75:\n    print("B")', check: (code) => code.includes('score = 75') && code.includes('elif score >= 75:') && code.includes('print("B")'), successMsg: "ممتاز! elif يفحص الشروط بالترتيب." }
+          ]},
+          { title: "الدرس 4: العمليات المنطقية", steps: [
+            { type: "cody", text: "استخدم and لدمج شرطين. اطبع <code>True</code> إذا كان 10>5 و 5>3." },
+            { type: "challenge", expected: "True", defaultCode: '# اكتب هنا\n', hint: 'if 10 > 5 and 5 > 3:\n    print("True")', check: (code) => code.includes('10 > 5 and 5 > 3') && code.includes('print("True")'), successMsg: "عمل رائع! دمجت شرطين بنجاح." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ماذا نستخدم إذا كان الشرط غير صحيح؟", options: ["if", "else", "print"], correct: 1, explanation: "else لتنفيذ كود بديل." },
+            { type: "cody", text: "تحدي أخير: أنشئ <code>age = 15</code> واطبع Teen إذا كان أكبر من 12 وأقل من 20." },
+            { type: "challenge", expected: "Teen", defaultCode: '# اكتب هنا\n', hint: 'age = 15\nif age > 12 and age < 20:\n    print("Teen")', check: (code) => code.includes('age = 15') && code.includes('if age > 12 and age < 20:') && code.includes('print("Teen")'), successMsg: "مبروك! اجتزت الفصل الرابع." }
+          ]}
+        ]
+      },
+      5: {
+        title: "التكرار",
+        lessons: [
+          { title: "الدرس 1: حلقة For", steps: [
+            { type: "cody", text: "التكرار يريحنا من كتابة الكود مراراً. اكتب حلقة تطبع Hi ثلاث مرات." },
+            { type: "challenge", expected: "Hi\nHi\nHi", defaultCode: '# اكتب هنا\n', hint: 'for i in range(3):\n    print("Hi")', check: (code) => code.includes('for i in range(3):') && code.includes('print("Hi")'), successMsg: "ممتاز! وفرت على نفسك الوقت." }
+          ]},
+          { title: "الدرس 2: حلقة While", steps: [
+            { type: "cody", text: "طالما الشرط صحيح، تتكرر الحلقة. اكتب <code>count = 1</code> وطالما <code>count <= 3</code> اطبع مرحبا وزد العداد." },
+            { type: "challenge", expected: "مرحبا\nمرحبا\nمرحبا", defaultCode: '# اكتب هنا\n', hint: 'count = 1\nwhile count <= 3:\n    print("مرحبا")\n    count += 1', check: (code) => code.includes('count = 1') && code.includes('while count <= 3:') && code.includes('count += 1'), successMsg: "رائع! while تستمر حتى يتوقف الشرط." }
+          ]},
+          { title: "الدرس 3: التوقف (Break)", steps: [
+            { type: "cody", text: "استخدم break لإيقاف الحلقة. كرر 10 مرات لكن توقف عند 3." },
+            { type: "challenge", expected: "Stop", defaultCode: '# اكتب هنا\n', hint: 'for i in range(10):\n    if i == 3:\n        print("Stop")\n        break', check: (code) => code.includes('if i == 3:') && code.includes('break') && code.includes('print("Stop")'), successMsg: "عمل ممتاز! break يوقف فوراً." }
+          ]},
+          { title: "الدرس 4: التخطي (Continue)", steps: [
+            { type: "cody", text: "استخدم continue لتخطي دورة. اطبع الأرقام من 1 لـ 5 وتخطى 3." },
+            { type: "challenge", expected: "1\n2\n4\n5", defaultCode: '# اكتب هنا\n', hint: 'for i in range(1, 6):\n    if i == 3:\n        continue\n    print(i)', check: (code) => code.includes('if i == 3:') && code.includes('continue') && code.includes('print(i)'), successMsg: "عبقري! continue يتخطى ويكمل." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ماذا تفعل break؟", options: ["تتخطى", "توقف الحلقة", "تكرر"], correct: 1, explanation: "break توقف الحلقة نهائياً." },
+            { type: "cody", text: "تحدي أخير: اطبع الأرقام الزوجية من 1 إلى 10." },
+            { type: "challenge", expected: "2\n4\n6\n8\n10", defaultCode: '# اكتب هنا\n', hint: 'for i in range(1, 11):\n    if i % 2 == 0:\n        print(i)', check: (code) => code.includes('for i in range(1, 11):') && code.includes('if i % 2 == 0:'), successMsg: "مبروك! اجتزت الفصل الخامس." }
+          ]}
+        ]
+      },
+      6: {
+        title: "القوائم",
+        lessons: [
+          { title: "الدرس 1: إنشاء قائمة", steps: [
+            { type: "cody", text: "القوائم تجمع قيم متعددة. أنشئ <code>fruits = [\"Apple\", \"Banana\"]</code> واطبعها." },
+            { type: "challenge", expected: "['Apple', 'Banana']", defaultCode: '# اكتب هنا\n', hint: 'fruits = ["Apple", "Banana"]\nprint(fruits)', check: (code) => code.includes('fruits = ["Apple", "Banana"]') && code.includes('print(fruits)'), successMsg: "ممتاز! أنشأت قائمتك الأولى." }
+          ]},
+          { title: "الدرس 2: الوصول للعناصر", steps: [
+            { type: "cody", text: "العنصر الأول رقمه 0. اطبع أول عنصر في القائمة." },
+            { type: "challenge", expected: "Apple", defaultCode: '# اكتب هنا\n', hint: 'fruits = ["Apple", "Banana"]\nprint(fruits[0])', check: (code) => code.includes('fruits[0]'), successMsg: "أحسنت! العنصر الأول دائماً 0." }
+          ]},
+          { title: "الدرس 3: إضافة عنصر", steps: [
+            { type: "cody", text: "استخدم append لإضافة عنصر. أضف <code>Cherry</code> إلى القائمة." },
+            { type: "challenge", expected: "['Apple', 'Banana', 'Cherry']", defaultCode: '# اكتب هنا\n', hint: 'fruits = ["Apple", "Banana"]\nfruits.append("Cherry")\nprint(fruits)', check: (code) => code.includes('fruits.append("Cherry")'), successMsg: "رائع! القائمة أصبحت أطول." }
+          ]},
+          { title: "الدرس 4: طول القائمة", steps: [
+            { type: "cody", text: "استخدم len لمعرفة عدد العناصر. اطبع طول قائمة فيها 3 عناصر." },
+            { type: "challenge", expected: "3", defaultCode: '# اكتب هنا\n', hint: 'nums = [1, 2, 3]\nprint(len(nums))', check: (code) => code.includes('len(nums)'), successMsg: "مذهل! len تسهل علينا معرفة الحجم." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ما رقم العنصر الأول؟", options: ["1", "0", "-1"], correct: 1, explanation: "بايثون تبدأ العد من الصفر." },
+            { type: "cody", text: "تحدي أخير: أنشئ <code>grades = [80, 90, 85]</code> واطبع العنصر الأخير." },
+            { type: "challenge", expected: "85", defaultCode: '# اكتب هنا\n', hint: 'grades = [80, 90, 85]\nprint(grades[2])', check: (code) => code.includes('grades[2]'), successMsg: "مبروك! اجتزت الفصل السادس." }
+          ]}
+        ]
+      },
+      7: {
+        title: "الدوال",
+        lessons: [
+          { title: "الدرس 1: تعريف دالة", steps: [
+            { type: "cody", text: "الدالة تجمع أوامر. استخدم def لتعريفها. أنشئ دالة <code>greet</code> تطبع Hi واستدعها." },
+            { type: "challenge", expected: "Hi", defaultCode: '# اكتب هنا\n', hint: 'def greet():\n    print("Hi")\ngreet()', check: (code) => code.includes('def greet():') && code.includes('greet()'), successMsg: "عمل رائع! استدعيت دالتك." }
+          ]},
+          { title: "الدرس 2: تمرير المتغيرات", steps: [
+            { type: "cody", text: "يمكنك تمرير قيم للدالة. دالة <code>add(a, b)</code> تطبع ناتج a+b." },
+            { type: "challenge", expected: "15", defaultCode: '# اكتب هنا\n', hint: 'def add(a, b):\n    print(a + b)\nadd(10, 5)', check: (code) => code.includes('def add(a, b):') && code.includes('add(10, 5)'), successMsg: "ممتاز! الدوال تستقبل قيماً." }
+          ]},
+          { title: "الدرس 3: إرجاع القيمة", steps: [
+            { type: "cody", text: "استخدم return لإرجاع قيمة. دالة <code>square(x)</code> ترجع x*x." },
+            { type: "challenge", expected: "16", defaultCode: '# اكتب هنا\n', hint: 'def square(x):\n    return x * x\nprint(square(4))', check: (code) => code.includes('return x * x') && code.includes('square(4)'), successMsg: "عبقري! return ترجع القيمة." }
+          ]},
+          { title: "الدرس 4: دالة ترحيب", steps: [
+            { type: "cody", text: "أنشئ دالة <code>welcome(name)</code> تطبع <code>Welcome name</code>." },
+            { type: "challenge", expected: "Welcome Ali", defaultCode: '# اكتب هنا\n', hint: 'def welcome(name):\n    print("Welcome", name)\nwelcome("Ali")', check: (code) => code.includes('def welcome(name):') && code.includes('welcome("Ali")'), successMsg: "مذهل! دمجت النصوص والمتغيرات في دالة." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ما الكلمة المفتاحية لتعريف دالة؟", options: ["function", "def", "func"], correct: 1, explanation: "نستخدم def في بايثون." },
+            { type: "cody", text: "تحدي أخير: أنشئ دالة <code>multiply(a, b)</code> ترجع ناتج a*b، ثم اطبع <code>multiply(3, 4)</code>." },
+            { type: "challenge", expected: "12", defaultCode: '# اكتب هنا\n', hint: 'def multiply(a, b):\n    return a * b\nprint(multiply(3, 4))', check: (code) => code.includes('def multiply(a, b):') && code.includes('multiply(3, 4)'), successMsg: "مبروك! اجتزت الفصل السابع." }
+          ]}
+        ]
+      },
+      8: {
+        title: "النصوص",
+        lessons: [
+          { title: "الدرس 1: طول النص", steps: [
+            { type: "cody", text: "استخدم len لمعرفة طول النص. اطبع طول <code>Hello</code>." },
+            { type: "challenge", expected: "5", defaultCode: '# اكتب هنا\n', hint: 'print(len("Hello"))', check: (code) => code.includes('len("Hello")'), successMsg: "ممتاز! طول النص 5 حروف." }
+          ]},
+          { title: "الدرس 2: التحويل للحروف الكبيرة", steps: [
+            { type: "cody", text: "استخدم .upper() لتحويل النص لحروف كبيرة." },
+            { type: "challenge", expected: "HELLO", defaultCode: '# اكتب هنا\n', hint: 'text = "hello"\nprint(text.upper())', check: (code) => code.includes('.upper()'), successMsg: "رائع! النص تحول لحروف كبيرة." }
+          ]},
+          { title: "الدرس 3: استبدال نص", steps: [
+            { type: "cody", text: "استخدم .replace() لاستبدال كلمة. استبدل <code>Hello</code> بـ <code>Hi</code> في <code>Hello World</code>." },
+            { type: "challenge", expected: "Hi World", defaultCode: '# اكتب هنا\n', hint: 'text = "Hello World"\nprint(text.replace("Hello", "Hi"))', check: (code) => code.includes('.replace("Hello", "Hi")'), successMsg: "عبقري! استبدلت النص بنجاح." }
+          ]},
+          { title: "الدرس 4: تقسيم النص", steps: [
+            { type: "cody", text: "استخدم .split() لتقسيم النص إلى قائمة كلمات." },
+            { type: "challenge", expected: "['Hello', 'World']", defaultCode: '# اكتب هنا\n', hint: 'text = "Hello World"\nprint(text.split())', check: (code) => code.includes('.split()'), successMsg: "مذهل! النص أصبح قائمة." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ماذا تفعل .upper()؟", options: ["تحول لحروف كبيرة", "تحول لحروف صغيرة", "تحذف النص"], correct: 0, explanation: "تحول كل الحروف إلى Capital." },
+            { type: "cody", text: "تحدي أخير: حول النص <code>python</code> إلى حروف كبيرة." },
+            { type: "challenge", expected: "PYTHON", defaultCode: '# اكتب هنا\n', hint: 'print("python".upper())', check: (code) => code.includes('.upper()'), successMsg: "مبروك! اجتزت الفصل الثامن." }
+          ]}
+        ]
+      },
+      9: {
+        title: "الأخطاء",
+        lessons: [
+          { title: "الدرس 1: try/except", steps: [
+            { type: "cody", text: "لمنع توقف البرنامج عند الخطأ، استخدم try و except. جرب قسمة 10 على 0 واطبع Error." },
+            { type: "challenge", expected: "Error", defaultCode: '# اكتب هنا\n', hint: 'try:\n    print(10 / 0)\nexcept:\n    print("Error")', check: (code) => code.includes('try:') && code.includes('except:') && code.includes('print("Error")'), successMsg: "ممتاز! البرنامج لم يتوقف." }
+          ]},
+          { title: "الدرس 2: أخطاء محددة", steps: [
+            { type: "cody", text: "يمكنك تحديد نوع الخطأ. استخدم <code>except ZeroDivisionError:</code> للقسمة على صفر." },
+            { type: "challenge", expected: "Cannot divide by zero", defaultCode: '# اكتب هنا\n', hint: 'try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print("Cannot divide by zero")', check: (code) => code.includes('except ZeroDivisionError:'), successMsg: "رائع! حددت نوع الخطأ بدقة." }
+          ]},
+          { title: "الدرس 3: تحويل الأنواع", steps: [
+            { type: "cody", text: "استخدم int() لتحويل النص لرقم. جرب <code>int("5") + 3</code>." },
+            { type: "challenge", expected: "8", defaultCode: '# اكتب هنا\n', hint: 'print(int("5") + 3)', check: (code) => code.includes('int("5")'), successMsg: "عبقري! حولت النص لرقم." }
+          ]},
+          { title: "الدرس 4: التحقق من الخطأ", steps: [
+            { type: "cody", text: "جرب <code>int("Hello")</code> وتوقع حدوث خطأ ValueError." },
+            { type: "challenge", expected: "ValueError", defaultCode: '# اكتب هنا\n', hint: 'try:\n    int("Hello")\nexcept ValueError:\n    print("ValueError")', check: (code) => code.includes('except ValueError:'), successMsg: "مذهل! تعرفت على خطأ القيمة." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ماذا يحدث إذا لم نضع try/except؟", options: ["يتوقف البرنامج", "يكمل", "يطبع الخطأ"], correct: 0, explanation: "البرنامج يتوقف عند الخطأ إذا لم نتعامل معه." },
+            { type: "cody", text: "تحدي أخير: استخدم try/except لطباعة <code>Done</code> إذا نجحت القسمة 10/2." },
+            { type: "challenge", expected: "5.0", defaultCode: '# اكتب هنا\n', hint: 'try:\n    print(10 / 2)\nexcept:\n    print("Error")', check: (code) => code.includes('try:') && code.includes('print(10 / 2)'), successMsg: "مبروك! اجتزت الفصل التاسع." }
+          ]}
+        ]
+      },
+      10: {
+        title: "القواميس",
+        lessons: [
+          { title: "الدرس 1: إنشاء قاموس", steps: [
+            { type: "cody", text: "القاموس يخزن مفاتيح وقيم. أنشئ <code>person = {\"name\": \"Ali\"}</code>." },
+            { type: "challenge", expected: "{'name': 'Ali'}", defaultCode: '# اكتب هنا\n', hint: 'person = {"name": "Ali"}\nprint(person)', check: (code) => code.includes('person = {"name": "Ali"}'), successMsg: "ممتاز! أنشأت قاموسك الأول." }
+          ]},
+          { title: "الدرس 2: الوصول للقيمة", steps: [
+            { type: "cody", text: "اطبع قيمة المفتاح name." },
+            { type: "challenge", expected: "Ali", defaultCode: '# اكتب هنا\n', hint: 'person = {"name": "Ali"}\nprint(person["name"])', check: (code) => code.includes('person["name"]'), successMsg: "رائع! وصلت للقيمة." }
+          ]},
+          { title: "الدرس 3: إضافة عنصر", steps: [
+            { type: "cody", text: "أضف مفتاح age = 15 للقاموس." },
+            { type: "challenge", expected: "15", defaultCode: '# اكتب هنا\n', hint: 'person = {"name": "Ali"}\nperson["age"] = 15\nprint(person["age"])', check: (code) => code.includes('person["age"] = 15'), successMsg: "عبقري! أضفت مفتاح جديد." }
+          ]},
+          { title: "الدرس 4: الحصول على المفاتيح", steps: [
+            { type: "cody", text: "استخدم .keys() للحصول على كل المفاتيح." },
+            { type: "challenge", expected: "dict_keys(['name'])", defaultCode: '# اكتب هنا\n', hint: 'person = {"name": "Ali"}\nprint(person.keys())', check: (code) => code.includes('.keys()'), successMsg: "مذهل! استخرجت المفاتيح." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "كيف نكتب قاموس؟", options: ["[ ]", "{ }", "( )"], correct: 1, explanation: "القواميس بين أقواس معقوفة {}." },
+            { type: "cody", text: "تحدي أخير: أنشئ قاموس <code>car = {\"brand\": \"BMW\"}</code> واطبع الماركة." },
+            { type: "challenge", expected: "BMW", defaultCode: '# اكتب هنا\n', hint: 'car = {"brand": "BMW"}\nprint(car["brand"])', check: (code) => code.includes('car["brand"]'), successMsg: "مبروك! اجتزت الفصل العاشر." }
+          ]}
+        ]
+      },
+      11: {
+        title: "المكتبات",
+        lessons: [
+          { title: "الدرس 1: استيراد مكتبة", steps: [
+            { type: "cody", text: "المكتبات توفر أدوات جاهزة. استورد <code>math</code> واطبع <code>math.sqrt(16)</code>." },
+            { type: "challenge", expected: "4.0", defaultCode: '# اكتب هنا\n', hint: 'import math\nprint(math.sqrt(16))', check: (code) => code.includes('import math') && code.includes('math.sqrt(16)'), successMsg: "ممتاز! حسبت الجذر التربيعي." }
+          ]},
+          { title: "الدرس 2: قيمة باي", steps: [
+            { type: "cody", text: "مكتبة math فيها قيمة باي. اطبع <code>math.pi</code>." },
+            { type: "challenge", expected: "3.141592653589793", defaultCode: '# اكتب هنا\n', hint: 'import math\nprint(math.pi)', check: (code) => code.includes('math.pi'), successMsg: "رائع! استخدمت قيمة ثابتة من المكتبة." }
+          ]},
+          { title: "الدرس 3: مكتبة random", steps: [
+            { type: "cody", text: "مكتبة random لتوليد أرقام عشوائية. استوردها واطبع رقم عشوائي بين 1 و 10." },
+            { type: "challenge", expected: "", defaultCode: '# اكتب هنا\n', hint: 'import random\nprint(random.randint(1, 10))', check: (code) => code.includes('import random') && code.includes('random.randint'), successMsg: "عبقري! ولدت رقماً عشوائياً." }
+          ]},
+          { title: "الدرس 4: تقليل الاستيراد", steps: [
+            { type: "cody", text: "استورد جزءاً محدداً: <code>from math import sqrt</code>." },
+            { type: "challenge", expected: "5.0", defaultCode: '# اكتب هنا\n', hint: 'from math import sqrt\nprint(sqrt(25))', check: (code) => code.includes('from math import sqrt'), successMsg: "مذهل! استوردت دالة محددة." }
+          ]},
+          { title: "امتحان الفصل", steps: [
+            { type: "quiz", question: "ما الكلمة المستخدمة لاستدعاء مكتبة؟", options: ["include", "import", "require"], correct: 1, explanation: "نستخدم import." },
+            { type: "cody", text: "تحدي أخير: استورد random واطبع <code>random.choice([1, 2, 3])</code>." },
+            { type: "challenge", expected: "", defaultCode: '# اكتب هنا\n', hint: 'import random\nprint(random.choice([1, 2, 3]))', check: (code) => code.includes('random.choice'), successMsg: "مبروك! اجتزت الفصل الحادي عشر." }
+          ]}
+        ]
+      },
+      12: {
+        title: "المشروع النهائي",
+        lessons: [
+          { title: "الدرس 1: دمج المهارات", steps: [
+            { type: "cody", text: "مبروك وصولك للنهاية! سنستخدم كل ما تعلمناه. اطبع <code>Welcome</code>." },
+            { type: "challenge", expected: "Welcome", defaultCode: '# اكتب هنا\n', hint: 'print("Welcome")', check: (code) => code.includes('print("Welcome")'), successMsg: "عظيم! بدأنا المشروع." }
+          ]},
+          { title: "الدرس 2: المتغيرات والحساب", steps: [
+            { type: "cody", text: "أنشئ متغير <code>x = 10</code> واطبع <code>x * 5</code>." },
+            { type: "challenge", expected: "50", defaultCode: '# اكتب هنا\n', hint: 'x = 10\nprint(x * 5)', check: (code) => code.includes('x = 10') && code.includes('print(x * 5)'), successMsg: "رائع! دمجت المتغيرات بالحساب." }
+          ]},
+          { title: "الدرس 3: الشروط", steps: [
+            { type: "cody", text: "اكتب شرطاً: إذا كان x > 5 اطبع <code>Big</code>." },
+            { type: "challenge", expected: "Big", defaultCode: '# اكتب هنا\n', hint: 'x = 10\nif x > 5:\n    print("Big")', check: (code) => code.includes('if x > 5:') && code.includes('print("Big")'), successMsg: "عبقري! استخدمت الشروط." }
+          ]},
+          { title: "الدرس 4: التكرار", steps: [
+            { type: "cody", text: "استخدم حلقة لطباعة الأرقام من 1 إلى 3." },
+            { type: "challenge", expected: "1\n2\n3", defaultCode: '# اكتب هنا\n', hint: 'for i in range(1, 4):\n    print(i)', check: (code) => code.includes('for i in range(1, 4):') && code.includes('print(i)'), successMsg: "مذهل! استخدمت التكرار." }
+          ]},
+          { title: "امتحان الفصل النهائي", steps: [
+            { type: "quiz", question: "ما أهم مهارة تعلمتها؟", options: ["حفظ الأوامر", "التفكير المنطقي وحل المشكلات", "الطباعة فقط"], correct: 1, explanation: "البرمجة هي فن حل المشكلات." },
+            { type: "cody", text: "تحدي أخير: أنشئ قائمة [1, 2, 3] واطبع طولها." },
+            { type: "challenge", expected: "3", defaultCode: '# اكتب هنا\n', hint: 'nums = [1, 2, 3]\nprint(len(nums))', check: (code) => code.includes('len(nums)'), successMsg: "🎉 مبروك! لقد أكملت رحلة بايثون بالكامل." }
+          ]}
+        ]
+      }
+    };
 
     const PROGRESS_KEY = "cody_python_progress";
     const XP_KEY = "cody_xp";
@@ -249,32 +466,30 @@
     }
 
     function renderSidebar() {
-      const list = document.getElementById("chaptersList");
+      const list = document.g      const list = document.getElementById("chaptersList");
       list.innerHTML = "";
-      chapterList.forEach((chap) => {
-        const chapData = window.CHAPTERS[chap.id];
+      Object.keys(allChapters).forEach((id) => {
+        const chap = allChapters[id];
         const chapEl = document.createElement("div");
         chapEl.className = "chapter-item";
         
         const titleEl = document.createElement("div");
         titleEl.className = "chapter-title";
-        titleEl.innerHTML = `<span>${chap.id}. ${chap.title}</span> <i class="ri-arrow-down-s-line"></i>`;
+        titleEl.innerHTML = `<span>${id}. ${chap.title}</span> <i class="ri-arrow-down-s-line"></i>`;
         
         const lessonsEl = document.createElement("div");
         lessonsEl.className = "lessons-list";
-        if (String(chapterId) === String(chap.id)) lessonsEl.classList.add("open");
+        if (String(chapterId) === id) lessonsEl.classList.add("open");
         
-        if (chapData) {
-          chapData.lessons.forEach((lesson, lIndex) => {
-            const lessonEl = document.createElement("a");
-            lessonEl.className = `lesson-link ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
-            lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> ${lesson.title}`;
-            lessonEl.href = `python-lesson.html?ch=${chap.id}&lesson=${lIndex + 1}`;
-            lessonEl.onclick = () => { if(window.innerWidth <= 900) toggleSidebar(); };
-            lessonsEl.appendChild(lessonEl);
-          });
-          titleEl.onclick = () => lessonsEl.classList.toggle("open");
-        }
+        chap.lessons.forEach((lesson, lIndex) => {
+          const lessonEl = document.createElement("a");
+          lessonEl.className = `lesson-link ${String(chapterId) === id && (lIndex + 1) === lessonId ? "active" : ""}`;
+          lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> ${lesson.title}`;
+          lessonEl.href = `python-lesson.html?ch=${id}&lesson=${lIndex + 1}`;
+          lessonEl.onclick = () => { if(window.innerWidth <= 900) toggleSidebar(); };
+          lessonsEl.appendChild(lessonEl);
+        });
+        titleEl.onclick = () => lessonsEl.classList.toggle("open");
         
         chapEl.appendChild(titleEl);
         chapEl.appendChild(lessonsEl);
@@ -291,7 +506,7 @@
     }
 
     function loadLesson() {
-      const chapter = window.CHAPTERS[chapterId];
+      const chapter = allChapters[chapterId];
       if (!chapter || !chapter.lessons[lessonId - 1]) {
         document.getElementById("chatContainer").innerHTML = `<div style="text-align:center; padding: 50px;"><h2>هذا الدرس قيد التطوير 🚧</h2></div>`;
         renderSidebar(); updateProgressBar(); return;
@@ -369,7 +584,7 @@
       wrapper.className = "editor-wrapper show";
       wrapper.innerHTML = `
         <div class="editor-header">
-          <span style="font-family: 'Fira Code', monospace; color: var(--muted); font-size:0.8rem;">main.py</span>
+          <span style="font-family: 'Fira Code', monospace; color: var(--muted); font-size:0.85rem;">main.py</span>
           <button class="btn-run" onclick="runCode()"><i class="ri-play-circle-fill"></i> تشغيل</button>
         </div>
         <div class="code-area">
@@ -380,8 +595,7 @@
       document.getElementById("chatContainer").appendChild(wrapper);
       setTimeout(() => {
         if (editorInstance) editorInstance.toTextArea();
-        editorInstance = CodeMirror.fromTextArea(document.getEleme
-ment.getElementById("dynamicCodeEditor"), { lineNumbers: true, mode: "python", theme: "dracula", indentUnit: 4, lineWrapping: true });
+        editorInstance = CodeMirror.fromTextArea(document.getElementById("dynamicCodeEditor"), { lineNumbers: true, mode: "python", theme: "dracula", indentUnit: 4, lineWrapping: true });
         editorInstance.setValue(step.defaultCode);
       }, 50);
       window.currentChallenge = step; challengeSolved = false; scrollToBottom();
@@ -403,7 +617,8 @@ ment.getElementById("dynamicCodeEditor"), { lineNumbers: true, mode: "python", t
       try {
         await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true));
         const actual = outputText.trim();
-        const passed = challenge.check(code) && actual === challenge.expected.trim();
+        const passed = challenge.check(code) && (challenge.expected === "" || actual === challenge.expected.trim());
+        
         if (passed) {
           outputArea.textContent = actual + "\n\n✅ إجابة صحيحة!"; outputArea.style.color = "var(--green)";
           if (!challengeSolved) {
@@ -432,7 +647,7 @@ ment.getElementById("dynamicCodeEditor"), { lineNumbers: true, mode: "python", t
       
       const btn = document.getElementById("nextBtn");
       
-      if (lessonId < window.CHAPTERS[chapterId].lessons.length) {
+      if (lessonId < allChapters[chapterId].lessons.length) {
         btn.innerHTML = 'الدرس التالي <i class="ri-arrow-left-line"></i>';
         btn.onclick = () => { window.location.href = `python-lesson.html?ch=${chapterId}&lesson=${lessonId + 1}`; };
       } else {
