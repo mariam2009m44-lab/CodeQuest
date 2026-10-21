@@ -9,8 +9,7 @@
   <style>
     :root {
       --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.7);
-      --border: rgba(107, 232, 255, 0.15); --cyan: #6be8ff; --purple: #a99aff; 
-      --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --text: #ffffff; --muted: #8892b0;
+      --border: rgba(107, 232, 255, 0.15); --text: #ffffff; --muted: #8892b0;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -20,41 +19,39 @@
                         radial-gradient(circle at 100% 100%, rgba(169, 154, 255, 0.08) 0%, transparent 50%);
     }
     .top-bar { width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-    .logo-area { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 900; color: var(--cyan); }
-    .global-score { background: var(--glass); border: 1px solid var(--border); padding: 12px 24px; border-radius: 16px; font-size: 1.2rem; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 10px; box-shadow: 0 0 20px rgba(255, 212, 138, 0.1); }
-    
+    .logo-area { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 900; color: #6be8ff; text-shadow: 0 0 10px rgba(107,232,255,0.5); }
+    .global-score { background: var(--glass); border: 1px solid var(--border); padding: 12px 24px; border-radius: 16px; font-size: 1.2rem; font-weight: 900; color: #ffd48a; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 20px rgba(255, 212, 138, 0.15); }
     .header { text-align: center; margin-bottom: 50px; }
     .header h1 { font-size: 2.5rem; font-weight: 900; text-shadow: 0 0 25px rgba(107, 232, 255, 0.4); }
     .header p { color: var(--muted); font-size: 1.1rem; margin-top: 10px; }
-    
-    .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; width: 100%; max-width: 1100px; }
-    
+    .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; width: 100%; max-width: 1100px; }
     .game-card {
       background: var(--glass); border: 1px solid var(--border); border-radius: 24px;
       padding: 35px 25px; display: flex; flex-direction: column; align-items: center; text-align: center;
       text-decoration: none; color: var(--text); backdrop-filter: blur(20px);
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden;
     }
     .game-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, var(--card-glow) 0%, transparent 100%); opacity: 0; transition: 0.3s; }
     .game-card:hover { border-color: var(--card-color); transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px var(--card-glow); }
     .game-card:hover::before { opacity: 0.1; }
-    
-    .icon-box { width: 90px; height: 90px; border-radius: 26px; display: grid; place-items: center; font-size: 3rem; margin-bottom: 25px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); color: var(--card-color); box-shadow: inset 0 0 20px var(--card-glow); transition: 0.3s; }
-    .game-card:hover .icon-box { transform: scale(1.1); background: var(--card-color); color: #000; box-shadow: 0 0 30px var(--card-glow); }
-    
+    .icon-box { 
+      width: 100px; height: 100px; border-radius: 30px; display: grid; place-items: center; 
+      font-size: 3.5rem; margin-bottom: 25px; 
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+      color: var(--card-color); box-shadow: inset 0 0 25px var(--card-glow);
+      transition: 0.3s; 
+    }
+    .game-card:hover .icon-box { transform: scale(1.1) rotate(-5deg); background: var(--card-color); color: #000; box-shadow: 0 0 35px var(--card-glow); }
     .game-card h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 12px; }
     .game-card p { color: var(--muted); font-size: 1rem; margin-bottom: 25px; flex: 1; line-height: 1.6; }
-    
     .btn-play { width: 100%; padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--card-color); font-weight: 900; font-size: 1.1rem; transition: 0.3s; }
     .game-card:hover .btn-play { background: var(--card-color); color: #000; border-color: var(--card-color); box-shadow: 0 0 20px var(--card-glow); }
-
-    .c-quiz { --card-color: var(--cyan); --card-glow: rgba(107,232,255,0.3); }
-    .c-memory { --card-color: var(--purple); --card-glow: rgba(169,154,255,0.3); }
-    .c-build { --card-color: var(--green); --card-glow: rgba(118,233,192,0.3); }
-    .c-bug { --card-color: var(--red); --card-glow: rgba(255,145,169,0.3); }
-    .c-speed { --card-color: var(--gold); --card-glow: rgba(255,212,138,0.3); }
-
-    .reset-btn { margin-top: 50px; background: transparent; border: 1px solid var(--red); color: var(--red); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; transition: 0.3s; }
+    .c-quiz { --card-color: #6be8ff; --card-glow: rgba(107,232,255,0.4); }
+    .c-memory { --card-color: #a99aff; --card-glow: rgba(169,154,255,0.4); }
+    .c-build { --card-color: #76e9c0; --card-glow: rgba(118,233,192,0.4); }
+    .c-bug { --card-color: #ff91a9; --card-glow: rgba(255,145,169,0.4); }
+    .c-speed { --card-color: #ffd48a; --card-glow: rgba(255,212,138,0.4); }
+    .reset-btn { margin-top: 50px; background: transparent; border: 1px solid #ff91a9; color: #ff91a9; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; transition: 0.3s; }
     .reset-btn:hover { background: rgba(255,145,169,0.1); box-shadow: 0 0 15px rgba(255,145,169,0.3); }
   </style>
 </head>
@@ -63,12 +60,10 @@
     <div class="logo-area"><i class="ri-rocket-2-fill"></i> Cody</div>
     <div class="global-score"><i class="ri-trophy-fill"></i> مجموع النقاط: <span id="globalScore">0</span></div>
   </div>
-
   <div class="header">
     <h1>مركز الألعاب الفضائي 🎮</h1>
     <p>اختر لعبتك المفضلة، وتحدَّ نفسك في 3 مستويات مختلفة!</p>
   </div>
-
   <section class="games-grid">
     <a href="game-quiz.html" class="game-card c-quiz">
       <div class="icon-box"><i class="ri-question-fill"></i></div>
@@ -76,28 +71,24 @@
       <p>أسئلة برمجية متدرجة في 3 مستويات لاكتشاف عبقرية التفكير.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
-
     <a href="game-memory.html" class="game-card c-memory">
       <div class="icon-box"><i class="ri-brain-fill"></i></div>
       <h3>لعبة الذاكرة</h3>
       <p>طابق المصطلحات مع معانيها في مستويات تتطلب تركيزاً عالياً.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
-
     <a href="game-build.html" class="game-card c-build">
       <div class="icon-box"><i class="ri-puzzle-2-fill"></i></div>
       <h3>بازل الأكواد</h3>
       <p>رتّب القطع لبناء كود سليم، من السطر الواحد للكلاس المعقد.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
-
     <a href="game-bug.html" class="game-card c-bug">
       <div class="icon-box"><i class="ri-bug-2-fill"></i></div>
       <h3>صائد الأخطاء</h3>
       <p>ابحث عن الخطأ البرمجي الخفي وأصلحه كأنك مبرمج محترف.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
-
     <a href="game-speed.html" class="game-card c-speed">
       <div class="icon-box"><i class="ri-flashlight-fill"></i></div>
       <h3>تحدي السرعة</h3>
@@ -105,9 +96,7 @@
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
   </section>
-
   <button class="reset-btn" onclick="resetScore()"><i class="ri-refresh-line"></i> تصفير النقاط</button>
-
   <script>
     function updateGlobalScore() {
       const score = parseInt(localStorage.getItem('codyTotalScore')) || 0;
