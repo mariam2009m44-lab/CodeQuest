@@ -19,7 +19,7 @@
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 999; }
     .overlay.open { display: block; }
     
-    /* تعديلات القائمة الجانبية لضمان السحب السلس وعدم اختفاء الفصول */
+    /* القائمة الجانبية */
     .sidebar { width: 320px; background: var(--sidebar); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100dvh; z-index: 1000; transition: 0.3s; }
     .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; }
@@ -27,23 +27,24 @@
     .sidebar-brand h2 { color: var(--cyan); font-size: 1.1rem; font-weight: 900; }
     .close-btn { display: none; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
     
+    /* تظبيط المساحة عشان السحب */
     .chapters-list { 
       flex: 1; 
       overflow-y: auto; 
-      -webkit-overflow-scrolling: touch; /* سحب سلس للموبايل */
+      -webkit-overflow-scrolling: touch; 
       padding: 10px; 
-      padding-bottom: 120px; /* مساحة كبيرة تحت عشان الفصل 12 ميختفيش */
+      padding-bottom: 150px; /* مساحة ضخمة تحت عشان اخر فصل يطلع فوق */
       display: flex; 
       flex-direction: column; 
-      gap: 8px; 
+      gap: 10px; 
     }
     
-    .chapter-item { background: #1e293b; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .chapter-title { padding: 12px 15px; font-weight: 700; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .chapter-item { background: #1e293b; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .chapter-title { padding: 14px 15px; font-weight: 700; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
     .chapter-title:hover { background: #334155; }
     .lessons-list { display: none; flex-direction: column; background: #0f172a; }
     .lessons-list.open { display: flex; }
-    .lesson-link { padding: 10px 15px; color: var(--muted); text-decoration: none; font-size: 0.85rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+    .lesson-link { padding: 12px 15px; color: var(--muted); text-decoration: none; font-size: 0.9rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; transition: 0.2s; }
     .lesson-link:hover, .lesson-link.active { color: var(--cyan); background: #1e293b; font-weight: 700; }
     
     .main-area { flex: 1; display: flex; flex-direction: column; height: 100dvh; position: relative; }
@@ -79,10 +80,15 @@
     .code-area { display: flex; flex-direction: column; gap: 10px; }
     .CodeMirror { height: 200px !important; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.9rem; direction: ltr; text-align: left; }
     .output-area { height: 100px; background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.85rem; white-space: pre-wrap; }
-    .bottom-action { position: fixed; bottom: calc(var(--safe) + 15px); left: 50%; transform: translateX(-50%); display: none; justify-content: center; z-index: 9999; width: 90%; max-width: 350px; }
+    
+    /* زر المتابعة العائم */
+    .bottom-action { position: fixed; bottom: calc(var(--safe) + 15px); left: 50%; transform: translateX(-50%); display: none; justify-content: center; z-index: 900; width: 90%; max-width: 350px; }
     .bottom-action.show { display: flex; }
     .btn-next { background: var(--cyan); color: #000; border: none; padding: 14px; width: 100%; border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(6, 182, 212, 0.5); }
     .btn-next:hover { transform: scale(1.02); }
+
+    /* إخفاء زر المتابعة لما القائمة تكون مفتوحة */
+    .sidebar.open ~ .main-area .bottom-action { display: none !important; }
     
     @media (max-width: 900px) {
       .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 280px; }
@@ -142,9 +148,23 @@
       { id: 10, title: "القواميس" }, { id: 11, title: "المكتبات" }, { id: 12, title: "المشروع النهائي" }
     ];
     const PROGRESS_KEY = "cody_python_progress", XP_KEY = "cody_xp";
+    
+    // ميزة الاستكمال التلقائي: لو مفيش رابط محدد، ارجع لآخر درس
     const urlParams = new URLSearchParams(window.location.search);
-    let chapterId = parseInt(urlParams.get("ch")) || 1;
-    let lessonId = parseInt(urlParams.get("lesson")) || 1;
+    let chapterId = parseInt(urlParams.get("ch"));
+    let lessonId = parseInt(urlParams.get("lesson"));
+
+    if (isNaN(chapterId) || isNaN(lessonId)) {
+        const lastLesson = JSON.parse(localStorage.getItem("cody_last_lesson") || "null");
+        if (lastLesson) {
+            chapterId = lastLesson.ch;
+            lessonId = lastLesson.lesson;
+            window.history.replaceState(null, '', `?ch=${chapterId}&lesson=${lessonId}`);
+        } else {
+            chapterId = 1; lessonId = 1;
+        }
+    }
+
     let currentLesson = null, currentStepIndex = 0, challengeSolved = false, editorInstance = null;
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
@@ -160,7 +180,6 @@
         const chapEl = document.createElement("div"); chapEl.className = "chapter-item";
         const titleEl = document.createElement("div"); titleEl.className = "chapter-title";
         
-        // إضافة علامة صح خضراء لو الفصل خلص
         titleEl.innerHTML = `<span>${chap.id}. ${chap.title} ${isCompleted ? '<i class="ri-checkbox-circle-fill" style="color:var(--green); margin-right:5px;"></i>' : ''}</span> <i class="ri-arrow-down-s-line"></i>`;
         
         const lessonsEl = document.createElement("div"); lessonsEl.className = "lessons-list";
@@ -193,6 +212,9 @@
     }
 
     function loadLesson() {
+      // حفظ مكان الدرس الحالي عشان لو قفل ورجع يكمله
+      localStorage.setItem("cody_last_lesson", JSON.stringify({ch: chapterId, lesson: lessonId}));
+      
       const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
       if (!chapter || !chapter.lessons[lessonId - 1]) {
         document.getElementById("chatContainer").innerHTML = `<div style="text-align:center; padding: 50px;"><h2>هذا الدرس قيد التطوير 🚧</h2></div>`;
@@ -273,7 +295,7 @@
       outputArea.textContent = "> Running..."; let outputText = "";
       Sk.configure({ output: (t) => { outputText += t; }, read: builtinRead, __future__: Sk.python3 });
       try {
-        await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true));
+        await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", fa        lse, code, true));
         const actual = outputText.trim();
         const passed = challenge.check(code) && (challenge.expected === "" || actual === challenge.expected.trim());
         if (passed) {
@@ -286,18 +308,11 @@
         } else {
           outputArea.textContent = actual + `\n\n⚠️ الناتج غير مطابق.\n💡 تلميح: ${challenge.hint}`; outputArea.style.color = "var(--gold)";
         }
-      } catch (err) {
-        outputArea.textContent = "❌ خطأ:\n" + err.toString();
-        outputArea.style.color = "var(--red)";
-      }
+      } catch (err) { outputArea.textContent = "❌ خطأ:\n" + err.toString(); outputArea.style.color = "var(--red)"; }
       scrollToBottom();
     }
 
-    function addXp(amount) {
-      let xp = parseInt(localStorage.getItem(XP_KEY)) || 0;
-      localStorage.setItem(XP_KEY, xp + amount);
-      updateProgressBar();
-    }
+    function addXp(amount) { let xp = parseInt(localStorage.getItem(XP_KEY)) || 0; localStorage.setItem(XP_KEY, xp + amount); updateProgressBar(); }
 
     function endLesson() {
       addBubble("cody", "🎉 مبروك! أتممت الدرس.");
