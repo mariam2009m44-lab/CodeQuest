@@ -3,96 +3,308 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مسارات التعلم | Cody</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <title>رحلة بايثون التفاعلية | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
-    body{background:#050914;color:#fff;min-height:100vh;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%);display:flex;flex-direction:column;align-items:center;padding-top:40px}
-    
-    .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
-    .particle{position:absolute;color:rgba(0,229,255,0.2);font-weight:bold;font-size:20px;animation:floatUp 10s linear infinite}
-    @keyframes floatUp{0%{transform:translateY(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh);opacity:0}}
-    
-    .lang-header{text-align:center;margin-bottom:40px;position:relative;z-index:2;animation:fadeDown 0.8s ease}
-    @keyframes fadeDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
-    .lang-header h1{color:#00e5ff;font-size:28px;text-shadow:0 0 20px rgba(0,229,255,0.6);margin-bottom:10px;font-weight:900}
-    .lang-header p{color:#a0aec0;font-size:15px}
-    
-    .lang-cards-container{display:flex;flex-direction:column;gap:25px;max-width:400px;margin:0 auto;position:relative;z-index:2;padding-bottom:40px;width:90%}
-    
-    .lang-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:2px solid rgba(255,255,255,0.08);border-radius:28px;padding:30px 20px;text-align:center;cursor:pointer;transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);animation:fadeUp 0.8s ease backwards;text-decoration:none;display:block}
-    .lang-card:hover{transform:translateY(-10px) scale(1.02)}
-    
-    .java-card:hover{border-color:#f89820;box-shadow:0 20px 50px rgba(248,152,32,0.3)}
-    .py-card:hover{border-color:#00e5ff;box-shadow:0 20px 50px rgba(0,229,255,0.3)}
-    .cpp-card:hover{border-color:#0072ff;box-shadow:0 20px 50px rgba(0,114,255,0.3)}
-    
-    @keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
-    
-    .card-icon{width:110px;height:110px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;transition:transform 0.4s;filter:drop-shadow(0 15px 25px rgba(0,0,0,0.6))}
-    .card-icon img{width:100%;height:100%;object-fit:contain;animation:breathe 3s ease-in-out infinite}
-    @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-    
-    .lang-card h2{font-size:26px;margin-bottom:8px;font-weight:900}
-    .java-card h2{color:#f89820;text-shadow:0 0 15px rgba(248,152,32,0.5)}
-    .py-card h2{color:#00e5ff;text-shadow:0 0 15px rgba(0,229,255,0.5)}
-    .cpp-card h2{color:#0072ff;text-shadow:0 0 15px rgba(0,114,255,0.5)}
-    .lang-card > p{color:#a0aec0;font-size:14px;line-height:1.6}
+    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --purple: #a99aff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; background-image: radial-gradient(circle at 50% 0%, rgba(107,232,255,0.08), transparent 60%); overflow: hidden; }
+    .sidebar { width: 320px; background: rgba(5, 8, 16, 0.95); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); text-align: center; }
+    .sidebar-header h2 { color: var(--cyan); font-size: 1.2rem; font-weight: 900; }
+    .chapters-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .chapter-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .chapter-title { padding: 15px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.02); }
+    .lessons-list { display: none; flex-direction: column; background: rgba(0,0,0,0.2); }
+    .lessons-list.open { display: flex; }
+    .lesson-link { padding: 12px 20px; color: var(--muted); text-decoration: none; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; align-items: center; gap: 10px; }
+    .lesson-link.active { color: var(--cyan); background: rgba(107,232,255,0.05); }
+    .main-area { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; }
+    .top-bar { padding: 20px; background: rgba(5, 8, 16, 0.9); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 20px; z-index: 10; }
+    .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 10px; }
+    .progress-container { flex: 1; }
+    .progress-text { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; color: var(--gold); }
+    .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--green)); width: 0%; transition: 0.5s; }
+    .xp-badge { background: rgba(255, 212, 138, 0.1); color: var(--gold); padding: 8px 15px; border-radius: 20px; font-weight: 900; border: 1px solid rgba(255, 212, 138, 0.3); }
+    .chat-container { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+    .message-row { display: flex; gap: 15px; align-items: flex-end; opacity: 0; transform: translateY(20px); transition: all 0.4s ease; }
+    .message-row.show { opacity: 1; transform: translateY(0); }
+    .message-row.cody { flex-direction: row; }
+    .message-row.cody .avatar { background: linear-gradient(135deg, #00d2ff, #3a7bd5); }
+    .message-row.cody .bubble { background: var(--glass); border: 1px solid var(--border); border-radius: 20px 20px 0 20px; }
+    .message-row.student { flex-direction: row-reverse; }
+    .message-row.student .avatar { background: linear-gradient(135deg, #a99aff, #6b4eff); }
+    .message-row.student .bubble { background: rgba(169,154,255,0.1); border: 1px solid rgba(169,154,255,0.3); border-radius: 20px 20px 20px 0; }
+    .avatar { width: 45px; height: 45px; border-radius: 50%; display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0; }
+    .bubble { padding: 15px 20px; font-size: 1.1rem; line-height: 1.7; max-width: 80%; }
+    .bubble code { background: rgba(0,0,0,0.5); color: var(--gold); padding: 2px 6px; border-radius: 6px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; }
+    .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin-right: 60px; }
+    .choice-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); padding: 15px 20px; border-radius: 12px; font-family: 'Cairo'; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s; text-align: right; }
+    .choice-btn:hover { background: rgba(107,232,255,0.1); border-color: var(--cyan); }
+    .editor-wrapper { display: none; width: calc(100% - 60px); margin-right: 60px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
+    .editor-wrapper.show { display: block; }
+    .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .btn-run { background: var(--green); color: #000; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 6px; }
+    .code-area { display: flex; gap: 15px; height: 250px; }
+    .CodeMirror { flex: 1; height: 100% !important; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 1rem; direction: ltr; text-align: left; }
+    .output-area { flex: 1; background: #000; border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; white-space: pre-wrap; }
+    .bottom-action { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, var(--bg) 60%, transparent); padding: 20px; display: none; justify-content: center; }
+    .bottom-action.show { display: flex; }
+    .btn-next { background: var(--cyan); color: #000; border: none; padding: 15px 50px; border-radius: 50px; font-weight: 900; font-size: 1.2rem; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; gap: 10px; }
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; max-height: 250px; border-left: none; border-bottom: 1px solid var(--border); }
+      .main-area { height: calc(100vh - 250px); }
+      .code-area { flex-direction: column; height: 400px; }
+      .editor-wrapper, .choices-container { width: 100%; margin-right: 0; }
+    }
   </style>
 </head>
 <body>
-
-  <div class="particles" id="particles"></div>
-
-  <div class="lang-header">
-    <h1>مساراتك البرمجية</h1>
-    <p>اختر اللغة التي تريد استكشافها، وابدأ التعلم خطوة بخطوة.</p>
+  <div class="sidebar">
+    <div class="sidebar-header"><h2>🐍 رحلة بايثون</h2></div>
+    <div class="chapters-list" id="chaptersList"></div>
+  </div>
+  <div class="main-area">
+    <div class="top-bar">
+      <a href="python-chapters.html" class="back-btn"><i class="ri-arrow-right-line"></i> الخريطة</a>
+      <div class="progress-container">
+        <div class="progress-text"><span>تقدمك في الرحلة</span><span id="progressPercent">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div class="xp-badge" id="xpDisplay">XP: 0</div>
+    </div>
+    <div class="chat-container" id="chatContainer"></div>
+    <div class="bottom-action" id="bottomAction">
+      <button class="btn-next" id="nextBtn" onclick="advanceChat()">متابعة <i class="ri-arrow-left-line"></i></button>
+    </div>
   </div>
 
-  <div class="lang-cards-container">
-    
-    <a href="python-welcome.html" class="lang-card py-card" style="animation-delay: 0.1s">
-      <div class="card-icon">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python">
-      </div>
-      <h2>Python</h2>
-      <p>لغة سهلة وقوية، مثالية للمبتدئين وعلوم البيانات.</p>
-    </a>
+  <script src="js/chapters/ch1.js"></script>
+  <script src="js/chapters/ch2.js"></script>
+  <script src="js/chapters/ch3.js"></script>
+  <!-- سيتم إضافة باقي الفصول هنا -->
 
-    <div class="lang-card java-card" style="animation-delay: 0.2s" onclick="alert('مسار Java قيد التطوير — قريباً جداً!')">
-      <div class="card-icon">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java">
-      </div>
-      <h2>Java</h2>
-      <p>لغة قوية لبناء التطبيقات والأنظمة الضخمة.</p>
-    </div>
-
-    <div class="lang-card cpp-card" style="animation-delay: 0.3s" onclick="alert('مسار C++ قيد التطوير — قريباً جداً!')">
-      <div class="card-icon">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++">
-      </div>
-      <h2>C++</h2>
-      <p>لغة الأداء العالي والخوارزميات. تحدَّ نفسك في حل المشكلات.</p>
-    </div>
-
-  </div>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script>
-    const particlesContainer = document.getElementById('particles');
-    const particleCount = 15;
-    const symbols = ['{ }', '</>', '( )', '0', '1', ';', '=>', '++', '=='];
-
-    for (let i = 0; i < particleCount; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      particle.style.left = Math.random() * 100 + '%';
-      particle.style.animationDelay = Math.random() * 10 + 's';
-      particle.style.animationDuration = (Math.random() * 5 + 8) + 's';
-      particle.style.fontSize = (Math.random() * 15 + 15) + 'px';
-      particlesContainer.appendChild(particle);
+    "use strict";
+    const chapterList = [{ id: 1, title: "الطباعة" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" }, { id: 4, title: "الشروط" }, { id: 5, title: "التكرار" }, { id: 6, title: "القوائم" }, { id: 7, title: "الدوال" }, { id: 8, title: "النصوص" }, { id: 9, title: "الأخطاء" }, { id: 10, title: "القواميس" }, { id: 11, title: "المكتبات" }, { id: 12, title: "المشروع النهائي" }];
+    const PROGRESS_KEY = "cody_python_progress";
+    const XP_KEY = "cody_xp";
+    const urlParams = new URLSearchParams(window.location.search);
+    let chapterId = parseInt(urlParams.get("ch")) || 1;
+    let lessonId = parseInt(urlParams.get("lesson")) || 1;
+    let currentLesson = null, currentStepIndex = 0, challengeSolved = false, editorInstance = null;
+    
+    function renderSidebar() {
+      const list = document.getElementById("chaptersList");
+      list.innerHTML = "";
+      const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
+      chapterList.forEach((chap, index) => {
+        const chapData = window.CHAPTERS[chap.id];
+        const isUnlocked = index === 0 || progress.completed.includes(chapterList[index - 1].id);
+        const chapEl = document.createElement("div");
+        chapEl.className = "chapter-item";
+        const titleEl = document.createElement("div");
+        titleEl.className = "chapter-title";
+        titleEl.innerHTML = `<span>${chap.id}. ${chap.title}</span> <i class="ri-${isUnlocked ? 'arrow-down-s-line' : 'lock-fill'}"></i>`;
+        const lessonsEl = document.createElement("div");
+        lessonsEl.className = "lessons-list";
+        if (String(chapterId) === String(chap.id)) lessonsEl.classList.add("open");
+        
+        if (chapData && isUnlocked) {
+          chapData.lessons.forEach((lesson, lIndex) => {
+            const lessonEl = document.createElement("a");
+            lessonEl.className = `lesson-link ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
+            lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> ${lesson.title}`;
+            lessonEl.href = `python-lessons.html?ch=${chap.id}&lesson=${lIndex + 1}`;
+            lessonsEl.appendChild(lessonEl);
+          });
+          titleEl.onclick = () => lessonsEl.classList.toggle("open");
+        } else {
+          const lockedEl = document.createElement("div");
+          lockedEl.className = "lesson-link";
+          lockedEl.style.opacity = "0.5";
+          lockedEl.innerHTML = `<i class="ri-lock-line"></i> قيد التطوير`;
+          lessonsEl.appendChild(lockedEl);
+        }
+        chapEl.appendChild(titleEl);
+        chapEl.appendChild(lessonsEl);
+        list.appendChild(chapEl);
+      });
     }
+    
+    function updateProgressBar() {
+      const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
+      const percent = Math.round((progress.completed.length / 12) * 100);
+      document.getElementById("progressFill").style.width = percent + "%";
+      document.getElementById("progressPercent").textContent = percent + "%";
+      document.getElementById("xpDisplay").textContent = `XP: ${localStorage.getItem(XP_KEY) || 0}`;
+    }
+    
+    function loadLesson() {
+      const chapter = window.CHAPTERS[chapterId];
+      if (!chapter || !chapter.lessons[lessonId - 1]) {
+        document.getElementById("chatContainer").innerHTML = `<div style="text-align:center; padding: 50px; color:var(--muted);"><h2>هذا الدرس قيد التطوير 🚧</h2><p>عُد للخريطة واختر فصلاً آخر.</p></div>`;
+        renderSidebar(); updateProgressBar(); return;
+      }
+      currentLesson = chapter.lessons[lessonId - 1];
+      document.getElementById("chatContainer").innerHTML = "";
+      currentStepIndex = 0; challengeSolved = false;
+      processStep(); renderSidebar(); updateProgressBar();
+    }
+    
+    function processStep() {
+      if (currentStepIndex >= currentLesson.steps.length) { endLesson(); return; }
+      const step = currentLesson.steps[currentStepIndex];
+      document.getElementById("bottomAction").classList.remove("show");
+      const oldEditor = document.querySelector(".editor-wrapper");
+      if (oldEditor) oldEditor.remove();
+      
+      if (step.type === "cody") {
+        addBubble("cody", step.text); showNextButton(); currentStepIndex++;
+      } else if (step.type === "choice") {
+        addBubble("cody", step.question); renderChoices(step.options, step.replies); currentStepIndex++;
+      } else if (step.type === "challenge") {
+        addBubble("cody", "تحدي برمجي! اكتب الكود في المحرر بالأسفل 👇"); showEditor(step);
+      } else if (step.type === "quiz") {
+        addBubble("cody", step.question); renderQuiz(step.options, step.correct, step.explanation); currentStepIndex++;
+      }
+    }
+    
+    function addBubble(type, text) {
+      const row = document.createElement("div");
+      row.className = `message-row ${type} show`;
+      row.innerHTML = `<div class="avatar">${type === "cody" ? "🤖" : "👦"}</div><div class="bubble">${text}</div>`;
+      document.getElementById("chatContainer").appendChild(row);
+      scrollToBottom();
+    }
+    
+    function renderChoices(options, replies) {
+      const container = document.createElement("div");
+      container.className = "choices-container";
+      options.forEach((opt, index) => {
+        const btn = document.createElement("button");
+        btn.className = "choice-btn"; btn.textContent = opt;
+        btn.onclick = () => {
+          container.remove(); addBubble("student", opt);
+          if (replies && replies[index]) addBubble("cody", replies[index]);
+          document.getElementById("bottomAction").classList.add("show");
+        };
+        container.appendChild(btn);
+      });
+      document.getElementById("chatContainer").appendChild(container); scrollToBottom();
+    }
+    
+    function renderQuiz(options, correctIndex, explanation) {
+      const container = document.createElement("div");
+      container.className = "choices-container";
+      options.forEach((opt, index) => {
+        const btn = document.createElement("button");
+        btn.className = "choice-btn"; btn.textContent = opt;
+        btn.onclick = () => {
+          container.remove(); addBubble("student", opt);
+          if (index === correctIndex) { addBubble("cody", "✅ إجابة صحيحة! " + (explanation || "")); addXp(5); }
+          else { addBubble("cody", `❌ ليست صحيحة. الإجابة الصح: <code>${options[correctIndex]}</code>. ` + (explanation || "")); }
+          document.getElementById("bottomAction").classList.add("show");
+        };
+        container.appendChild(btn);
+      });
+      document.getElementById("chatContainer").appendChild(container); scrollToBottom();
+    }
+    
+    function showNextButton() { document.getElementById("bottomAction").classList.add("show"); }
+    function advanceChat() { document.getElementById("bottomAction").classList.remove("show"); processStep(); }
+    
+    function showEditor(step) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "editor-wrapper show";
+      wrapper.innerHTML = `
+        <div class="editor-header">
+          <span style="font-family: 'Fira Code', monospace; color: var(--muted);">main.py</span>
+          <button class="btn-run" onclick="runCode()"><i class="ri-play-circle-fill"></i> تشغيل الكود</button>
+        </div>
+        <div class="code-area">
+          <textarea id="dynamicCodeEditor"></textarea>
+          <div class="output-area" id="outputArea">&gt; Output...</div>
+        </div>
+      `;
+      document.getElementById("chatContainer").appendChild(wrapper);
+      setTimeout(() => {
+        if (editorInstance) editorInstance.toTextArea();
+        editorInstance = CodeMirror.fromTextArea(document.getElementById("dynamicCodeEditor"), { lineNumbers: true, mode: "python", theme: "dracula", indentUnit: 4, lineWrapping: true });
+        editorInstance.setValue(step.defaultCode);
+      }, 50);
+      window.currentChallenge = step; challengeSolved = false; scrollToBottom();
+    }
+    
+    function builtinRead(x) {
+      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'";
+      return Sk.builtinFiles["files"][x];
+    }
+    
+    async function runCode() {
+      const outputArea = document.getElementById("outputArea");
+      const code = editorInstance ? editorInstance.getValue() : document.getElementById("dynamicCodeEditor").value;
+      const challenge = window.currentChallenge;
+      if (!code.trim()) { outputArea.textContent = "⚠️ اكتب بعض الكود أولاً."; return; }
+      outputArea.textContent = "> Running..."; outputArea.style.color = "#ccc";
+      let outputText = "";
+      Sk.configure({ output: (t) => { outputText += t; }, read: builtinRead, __future__: Sk.python3 });
+      try {
+        await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true));
+        const actual = outputText.trim();
+        const passed = challenge.check(code) && actual === challenge.expected.trim();
+        if (passed) {
+          outputArea.textContent = actual + "\n\n✅ إجابة صحيحة!"; outputArea.style.color = "var(--green)";
+          if (!challengeSolved) {
+            challengeSolved = true; addBubble("cody", challenge.successMsg); addXp(10);
+            if (typeof window.confetti === "function") window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            currentStepIndex++; showNextButton();
+          }
+        } else {
+          outputArea.textContent = actual + `\n\n⚠️ الناتج غير مطابق.\n💡 تلميح: ${challenge.hint}`; outputArea.style.color = "var(--gold)";
+        }
+      } catch (err) {
+        outputArea.textContent = "❌ خطأ:\n" + err.toString(); outputArea.style.color = "var(--red)";
+      }
+      scrollToBottom();
+    }
+    
+    function addXp(amount) {
+      let xp = parseInt(localStorage.getItem(XP_KEY)) || 0;
+      localStorage.setItem(XP_KEY, xp + amount); updateProgressBar();
+    }
+    
+    function endLesson() {
+      addBubble("cody", "🎉 مبروك! أتممت هذا الدرس بنجاح.");
+      let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
+      if (lessonId === window.CHAPTERS[chapterId].lessons.length && !progress.completed.includes(chapterId)) {
+        progress.completed.push(chapterId);
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+        updateProgressBar(); renderSidebar();
+      }
+      const btn = document.getElementById("nextBtn");
+      btn.innerHTML = 'العودة للخريطة <i class="ri-map-pin-line"></i>';
+      btn.onclick = () => { window.location.href = "python-chapters.html"; };
+      showNextButton(); scrollToBottom();
+    }
+    
+    function scrollToBottom() {
+      const chat = document.getElementById("chatContainer");
+      setTimeout(() => chat.scrollTop = chat.scrollHeight, 100);
+    }
+    
+    window.CHAPTERS = window.CHAPTERS || {};
+    loadLesson();
   </script>
-
 </body>
 </html>
