@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فصول Python | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+  <style>
+    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --gold: #ffd48a; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; background-image: radial-gradient(circle at 50% 0%, rgba(107,232,255,0.08), transparent 60%); }
+    .top-nav { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-btn { display: flex; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; }
+    .stats { display: flex; gap: 15px; }
+    .stat-badge { background: var(--glass); border: 1px solid var(--border); padding: 8px 16px; border-radius: 12px; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 6px; }
+    .stat-badge.level { color: var(--cyan); }
+    
+    .header-section { width: 100%; max-width: 900px; text-align: center; margin-bottom: 30px; }
+    .header-section h1 { font-size: 2.2rem; font-weight: 900; color: var(--cyan); margin-bottom: 10px; }
+    .header-section p { color: var(--muted); font-size: 1.1rem; }
+    
+    .progress-container { width: 100%; max-width: 900px; background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 30px; }
+    .progress-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 800; }
+    .progress-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), #3a7bd5); width: 0%; box-shadow: 0 0 10px var(--cyan); transition: width 0.5s ease; }
+    
+    .chapters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; width: 100%; max-width: 900px; }
+    .chapter-card { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 20px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 10px; transition: 0.3s; position: relative; }
+    .chapter-card:hover:not(.locked) { transform: translateY(-5px); border-color: var(--cyan); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .chapter-card.locked { opacity: 0.6; cursor: not-allowed; }
+    .chapter-card .num { font-size: 1.5rem; font-weight: 900; color: var(--cyan); }
+    .chapter-card h3 { font-size: 1.1rem; font-weight: 800; }
+    .chapter-card p { font-size: 0.85rem; color: var(--muted); }
+    .lock-icon { position: absolute; top: 20px; left: 20px; color: var(--muted); font-size: 1.5rem; }
+    .done-icon { color: var(--green); }
+    
+    @media (max-width: 600px) { .chapters-grid { grid-template-columns: 1fr; } .top-nav { flex-direction: column; gap: 15px; } }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <a href="languages.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للمسارات</a>
+    <div class="stats">
+      <div class="stat-badge"><i class="ri-flashlight-fill"></i> XP: <span id="xpDisplay">0</span></div>
+      <div class="stat-badge level"><i class="ri-trophy-fill"></i> المستوى: <span id="levelDisplay">1</span></div>
+    </div>
+  </div>
+
+  <div class="header-section">
+    <h1>رحلتك في بايثون 🐍</h1>
+    <p>12 فصلًا ستأخذك من الصفر إلى الاحتراف!</p>
+  </div>
+
+  <div class="progress-container">
+    <div class="progress-info"><span>تقدمك في المسار</span><span id="progressText">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="chapters-grid" id="chaptersGrid"></div>
+
+  <script>
+    const chaptersData = [
+      { id: 1, title: "أول خطوة (الطباعة)", desc: "يعني إيه برمجة؟ وأول كود باستخدام print()." },
+      { id: 2, title: "صندوق الأسرار (المتغيرات)", desc: "تخزين البيانات داخل المتغيرات." },
+      { id: 3, title: "مختبر العمليات (الرياضيات)", desc: "الجمع والطرح والضرب والقسمة." },
+      { id: 4, title: "مدينة القرارات (if)", desc: "جعل البرنامج يختار بناءً على الشروط." },
+      { id: 5, title: "قوة التكرار (Loops)", desc: "تكرار الأوامر بطريقة ذكية لتوفير الوقت." },
+      { id: 6, title: "مكتبة البيانات (Lists)", desc: "تجميع عدة قيم وتنظيمها في مصفوفة." },
+      { id: 7, title: "مصنع الأدوات (Functions)", desc: "كتابة دوال لتقليل تكرار الكود." },
+      { id: 8, title: "مختبر النصوص (Input)", desc: "التعامل مع نصوص المستخدم ودمجها." },
+      { id: 9, title: "محقق الأخطاء (Try/Except)", desc: "كيف نمنع البرنامج من التوقف عند حدوث خطأ." },
+      { id: 10, title: "القواميس (Dictionaries)", desc: "تخزين البيانات على شكل مفتاح وقيمة." },
+      { id: 11, title: "صندوق الأدوات (المكتبات)", desc: "استخدام مكتبات بايثون الجاهزة." },
+      { id: 12, title: "مشروع المبرمج", desc: "تجميع كل ما تعلمته في مشروع واحد." }
+    ];
+
+    let xp = parseInt(localStorage.getItem('cody_xp')) || 0;
+    let completed = JSON.parse(localStorage.getItem('cody_completed_python')) || [];
+    
+    function updateStats() {
+      document.getElementById('xpDisplay').textContent = xp;
+      let level = Math.floor(xp / 100) + 1;
+      document.getElementById('levelDisplay').textContent = level;
+      
+      let progress = Math.round((completed.length / chaptersData.length) * 100);
+      if(progress > 100) progress = 100;
+      document.getElementById('progressText').textContent = `${progress}%`;
+      document.getElementById('progressFill').style.width = `${progress}%`;
+    }
+
+    function renderChapters() {
+      const grid = document.getElementById('chaptersGrid');
+      grid.innerHTML = '';
+      
+      chaptersData.forEach((ch, index) => {
+        const isDone = completed.includes(ch.id);
+        const isUnlocked = index === 0 || completed.includes(chaptersData[index - 1].id);
+        
+        const a = document.createElement('a');
+        a.className = `chapter-card ${isUnlocked ? '' : 'locked'}`;
+        a.href = isUnlocked ? `python-lesson.html?ch=${ch.id}` : '#';
+        
+        let iconHtml = '';
+        if (isDone) iconHtml = '<i class="ri-checkbox-circle-fill done-icon lock-icon"></i>';
+        else if (!isUnlocked) iconHtml = '<i class="ri-lock-fill lock-icon"></i>';
+
+        a.innerHTML = `
+          <div class="num">${String(ch.id).padStart(2, '0')}</div>
+          <h3>${ch.title}</h3>
+          <p>${ch.desc}</p>
+          ${iconHtml}
+        `;
+        
+        if (!isUnlocked) a.onclick = (e) => e.preventDefault();
+        grid.appendChild(a);
+      });
+    }
+
+    updateStats();
+    renderChapters();
+  </script>
+</body>
+</html>
