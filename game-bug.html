@@ -4,60 +4,122 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>صائد الأخطاء | Cody</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
-    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
-    .game-box { width: 100%; max-width: 600px; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-    .back-btn { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    :root {
+      --bg: #050810; --surface: #0a0f1e; --glass: rgba(13, 20, 40, 0.8);
+      --border: rgba(255, 145, 169, 0.2); --cyan: #6be8ff; --green: #76e9c0; 
+      --red: #ff91a9; --gold: #ffd48a; --text: #ffffff; --muted: #8892b0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(255, 145, 169, 0.1), transparent 50%); }
+    
+    .screen { display: none; width: 100%; max-width: 650px; }
+    .screen.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .level-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
+    .level-box h2 { font-size: 2rem; margin-bottom: 30px; color: var(--red); }
+    .levels-grid { display: flex; flex-direction: column; gap: 15px; }
+    .lvl-btn { padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: 900; border: 2px solid; background: transparent; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
+    .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118, 233, 192, 0.1); transform: scale(1.02); }
+    .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255, 212, 138, 0.1); transform: scale(1.02); }
+    .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255, 145, 169, 0.1); transform: scale(1.02); }
+
+    .game-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 25px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-btn { color: var(--muted); text-decoration: none; font-weight: 800; cursor: pointer; background: none; border: none; font-family: 'Cairo'; font-size: 1rem; }
     .back-btn:hover { color: var(--red); }
-    .task-box { background: rgba(255,145,169,0.1); border: 1px solid var(--red); padding: 15px; border-radius: var(--radius-md); text-align: center; margin-bottom: 20px; }
-    .task-box h2 { font-size: 1.1rem; color: var(--red); font-weight: 800; }
-    .code-container { background: #0d1117; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; direction: ltr; text-align: left; margin-bottom: 20px; }
-    .code-line { padding: 10px 20px; font-family: monospace; font-size: 1.1rem; color: #c9d1d9; cursor: pointer; transition: 0.2s; display: flex; gap: 15px; }
-    .code-line:hover { background: rgba(255,255,255,0.05); }
-    .line-num { color: #484f58; user-select: none; width: 20px; text-align: right; }
-    .code-line.correct-guess { background: rgba(118,233,192,0.15); border-left: 3px solid var(--green); }
-    .code-line.wrong-guess { background: rgba(255,145,169,0.15); border-left: 3px solid var(--red); }
-    .result-msg { text-align: center; font-weight: 800; font-size: 1.2rem; min-height: 30px; }
+    .score-board { font-weight: 900; font-size: 1.2rem; color: var(--gold); }
+    
+    .code-box { background: #000; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; direction: ltr; text-align: left; font-family: monospace; }
+    .line { padding: 12px 18px; font-size: 1rem; color: #c9d1d9; cursor: pointer; display: flex; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+    .line:hover { background: rgba(255,255,255,0.05); }
+    .num { color: #484f58; user-select: none; }
+    .line.correct { background: rgba(118,233,192,0.15); border-left: 4px solid var(--green); }
+    .line.wrong { background: rgba(255,145,169,0.15); border-left: 4px solid var(--red); }
+    .msg { text-align: center; font-weight: 900; font-size: 1.2rem; height: 30px; }
   </style>
 </head>
 <body>
-  <div class="game-box">
-    <div class="header">
-      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
-      <span style="font-weight: 800; color: var(--red);"><i class="ri-bug-fill"></i> صائد الأخطاء</span>
+
+  <div class="screen active" id="levelScreen">
+    <div class="level-box">
+      <h2>اختر مستوى التحدي</h2>
+      <div class="levels-grid">
+        <button class="lvl-btn lvl-easy" onclick="startGame('easy')"><span>مبتدئ</span> <span>خطأ بسيط</span></button>
+        <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>خطأ منطقي</span></button>
+        <button class="lvl-btn lvl-hard" onclick="startGame('hard')"><span>متقدم</span> <span>خطأ معقد</span></button>
+      </div>
+      <a href="games.html" class="back-btn" style="display:block; margin-top:20px;"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
     </div>
-    <div class="task-box"><h2>اضغط على السطر الذي يحتوي على الخطأ البرمجي!</h2></div>
-    <div class="code-container">
-      <div class="code-line" onclick="checkLine(1, false)"><span class="line-num">1</span> def calculate_sum(a, b):</div>
-      <div class="code-line" onclick="checkLine(2, false)"><span class="line-num">2</span>   result = a + b</div>
-      <div class="code-line" onclick="checkLine(3, true)"><span class="line-num">3</span>   return reslt</div>
-      <div class="code-line" onclick="checkLine(4, false)"><span class="line-num">4</span> </div>
-      <div class="code-line" onclick="checkLine(5, false)"><span class="line-num">5</span> print(calculate_sum(5, 3))</div>
+  </div>
+
+  <div class="screen" id="gameScreen">
+    <div class="game-box">
+      <div class="header">
+        <button class="back-btn" onclick="location.reload()"><i class="ri-arrow-right-line"></i> خروج</button>
+        <div class="score-board">النقاط: <span id="scoreDisplay">0</span></div>
+      </div>
+      <p style="font-weight: 800; text-align: center; color: var(--red); margin-bottom: 15px;">اضغط على السطر الذي يحتوي على الخطأ!</p>
+      <div class="code-box" id="codeContainer"></div>
+      <div class="msg" id="msg"></div>
     </div>
-    <div class="result-msg" id="resultMsg"></div>
   </div>
 
   <script>
-    let gameEnded = false;
-    function checkLine(lineNumber, isBug) {
-      if (gameEnded) return;
-      const lines = document.querySelectorAll('.code-line');
-      const selectedLine = lines[lineNumber - 1];
-      const msg = document.getElementById('resultMsg');
-      if (isBug) {
-        selectedLine.classList.add('correct-guess');
-        msg.textContent = 'إجابة صحيحة! الخطأ هو "reslt" بدلاً من "result" 🎯';
-        msg.style.color = 'var(--green)';
-        gameEnded = true;
+    const levels = {
+      easy: {
+        lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'],
+        bugIndex: 2,
+        msg: 'إجابة صحيحة! الخطأ هو reslt 🎯'
+      },
+      medium: {
+        lines: ['let x = 10;', 'let y = "5";', 'let sum = x + y;', 'console.log(sum);'],
+        bugIndex: 1,
+        msg: 'إجابة صحيحة! الخطأ هو خلط النوع (Number + String) 🎯'
+      },
+      hard: {
+        lines: ['function findMax(arr) {', '  let max = 0;', '  for (let i = 0; i <= arr.length; i++) {', '    if (arr[i] > max) max = arr[i];', '  }', '  return max;', '}'],
+        bugIndex: 2,
+        msg: 'إجابة صحيحة! الخطأ هو i <= arr.length (يجب أن تكون <) 🎯'
+      }
+    };
+    let ended = false, score = 0, currentLevel;
+    const scoreDisplay = document.getElementById('scoreDisplay'), codeContainer = document.getElementById('codeContainer'), msg = document.getElementById('msg');
+
+    function updateGlobalScore(points) {
+      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
+      total += points;
+      localStorage.setItem('codyTotalScore', total);
+    }
+
+    function startGame(level) {
+      document.getElementById('levelScreen').classList.remove('active');
+      document.getElementById('gameScreen').classList.add('active');
+      currentLevel = levels[level];
+      codeContainer.innerHTML = '';
+      
+      currentLevel.lines.forEach((line, index) => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'line';
+        lineEl.innerHTML = `<span class="num">${index + 1}</span> ${line}`;
+        lineEl.onclick = () => check(index, lineEl);
+        codeContainer.appendChild(lineEl);
+      });
+    }
+
+    function check(index, lineEl) {
+      if (ended) return;
+      if (index === currentLevel.bugIndex) {
+        lineEl.classList.add('correct');
+        msg.textContent = currentLevel.msg; msg.style.color = 'var(--green)'; ended = true;
+        score += 30; scoreDisplay.textContent = score; updateGlobalScore(30);
       } else {
-        selectedLine.classList.add('wrong-guess');
-        msg.textContent = 'خطأ! حاول البحث في سطر آخر.';
-        msg.style.color = 'var(--red)';
-        setTimeout(() => { selectedLine.classList.remove('wrong-guess'); }, 1000);
+        lineEl.classList.add('wrong');
+        msg.textContent = 'خطأ! حاول في سطر آخر.'; msg.style.color = 'var(--red)';
+        setTimeout(() => lineEl.classList.remove('wrong'), 800);
       }
     }
   </script>
