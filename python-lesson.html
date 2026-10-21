@@ -12,14 +12,27 @@
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
   <style>
-    :root { --bg: #090d16; --sidebar: #0f172a; --chat: #1e293b; --cody: #334155; --stu: #4f46e5; --border: #334155; --text: #f8fafc; --muted: #94a3b8; --cyan: #06b6d4; --green: #10b981; --red: #f43f5e; --gold: #fbbf24; --safe: env(safe-area-inset-bottom, 20px); }
+    :root { 
+      --bg: #090d16; 
+      --sidebar: #0f172a; 
+      --chat: #1e293b; 
+      --cody: #334155; 
+      --stu: #4f46e5; 
+      --border: #334155; 
+      --text: #f8fafc; 
+      --muted: #94a3b8; 
+      --cyan: #06b6d4; 
+      --green: #10b981; 
+      --red: #f43f5e; 
+      --gold: #fbbf24; 
+      --safe: env(safe-area-inset-bottom, 20px); 
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
     body { background: var(--bg); color: var(--text); display: flex; height: 100dvh; overflow: hidden; }
     
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 999; }
     .overlay.open { display: block; }
     
-    /* القائمة الجانبية */
     .sidebar { width: 320px; background: var(--sidebar); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100dvh; z-index: 1000; transition: 0.3s; }
     .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; }
@@ -27,13 +40,13 @@
     .sidebar-brand h2 { color: var(--cyan); font-size: 1.1rem; font-weight: 900; }
     .close-btn { display: none; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
     
-    /* تظبيط المساحة عشان السحب */
+    /* تظبيط المساحة عشان السحب والمرونة */
     .chapters-list { 
       flex: 1; 
       overflow-y: auto; 
       -webkit-overflow-scrolling: touch; 
       padding: 10px; 
-      padding-bottom: 150px; /* مساحة ضخمة تحت عشان اخر فصل يطلع فوق */
+      padding-bottom: 150px; 
       display: flex; 
       flex-direction: column; 
       gap: 10px; 
@@ -132,6 +145,7 @@
     </div>
   </div>
   
+  <!-- استدعاء ملفات الفصول -->
   <script src="js/chapters/ch1.js"></script>
   <script src="js/chapters/ch2.js"></script>
   <script src="js/chapters/ch3.js"></script>
@@ -141,15 +155,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script>
     "use strict";
+    
+    // قائمة الفصول الأساسية
     const chapterList = [
       { id: 1, title: "الطباعة" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" },
       { id: 4, title: "الشروط" }, { id: 5, title: "التكرار" }, { id: 6, title: "القوائم" },
       { id: 7, title: "الدوال" }, { id: 8, title: "النصوص" }, { id: 9, title: "الأخطاء" },
       { id: 10, title: "القواميس" }, { id: 11, title: "المكتبات" }, { id: 12, title: "المشروع النهائي" }
     ];
+    
     const PROGRESS_KEY = "cody_python_progress", XP_KEY = "cody_xp";
     
-    // ميزة الاستكمال التلقائي: لو مفيش رابط محدد، ارجع لآخر درس
+    // ميزة حفظ مكان الوقوف (الاستكمال التلقائي)
     const urlParams = new URLSearchParams(window.location.search);
     let chapterId = parseInt(urlParams.get("ch"));
     let lessonId = parseInt(urlParams.get("lesson"));
@@ -167,22 +184,30 @@
 
     let currentLesson = null, currentStepIndex = 0, challengeSolved = false, editorInstance = null;
 
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
+    function toggleSidebar() { 
+      document.getElementById('sidebar').classList.toggle('open'); 
+      document.getElementById('overlay').classList.toggle('open'); 
+    }
     
+    // بناء القائمة الجانبية مع علامة الصح (✅)
     function renderSidebar() {
-      const list = document.getElementById("chaptersList"); list.innerHTML = "";
+      const list = document.getElementById("chaptersList"); 
+      list.innerHTML = "";
       const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
       
       chapterList.forEach((chap) => {
         const chapData = window.CHAPTERS && window.CHAPTERS[chap.id];
         const isCompleted = progress.completed.includes(chap.id);
         
-        const chapEl = document.createElement("div"); chapEl.className = "chapter-item";
-        const titleEl = document.createElement("div"); titleEl.className = "chapter-title";
+        const chapEl = document.createElement("div"); 
+        chapEl.className = "chapter-item";
+        const titleEl = document.createElement("div"); 
+        titleEl.className = "chapter-title";
         
         titleEl.innerHTML = `<span>${chap.id}. ${chap.title} ${isCompleted ? '<i class="ri-checkbox-circle-fill" style="color:var(--green); margin-right:5px;"></i>' : ''}</span> <i class="ri-arrow-down-s-line"></i>`;
         
-        const lessonsEl = document.createElement("div"); lessonsEl.className = "lessons-list";
+        const lessonsEl = document.createElement("div"); 
+        lessonsEl.className = "lessons-list";
         if (String(chapterId) === String(chap.id)) lessonsEl.classList.add("open");
         
         if (chapData) {
@@ -196,10 +221,15 @@
           });
           titleEl.onclick = () => lessonsEl.classList.toggle("open");
         } else {
-          const lockedEl = document.createElement("div"); lockedEl.className = "lesson-link"; lockedEl.style.opacity = "0.5";
-          lockedEl.innerHTML = `<i class="ri-lock-line"></i> قريباً`; lessonsEl.appendChild(lockedEl);
+          const lockedEl = document.createElement("div"); 
+          lockedEl.className = "lesson-link"; 
+          lockedEl.style.opacity = "0.5";
+          lockedEl.innerHTML = `<i class="ri-lock-line"></i> قريباً`; 
+          lessonsEl.appendChild(lockedEl);
         }
-        chapEl.appendChild(titleEl); chapEl.appendChild(lessonsEl); list.appendChild(chapEl);
+        chapEl.appendChild(titleEl); 
+        chapEl.appendChild(lessonsEl); 
+        list.appendChild(chapEl);
       });
     }
 
@@ -212,7 +242,7 @@
     }
 
     function loadLesson() {
-      // حفظ مكان الدرس الحالي عشان لو قفل ورجع يكمله
+      // حفظ مكان الدرس الحالي
       localStorage.setItem("cody_last_lesson", JSON.stringify({ch: chapterId, lesson: lessonId}));
       
       const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
@@ -220,7 +250,8 @@
         document.getElementById("chatContainer").innerHTML = `<div style="text-align:center; padding: 50px;"><h2>هذا الدرس قيد التطوير 🚧</h2></div>`;
         renderSidebar(); updateProgressBar(); return;
       }
-      currentLesson = chapter.lessons[lessonId - 1]; document.getElementById("chatContainer").innerHTML = "";
+      currentLesson = chapter.lessons[lessonId - 1]; 
+      document.getElementById("chatContainer").innerHTML = "";
       currentStepIndex = 0; challengeSolved = false;
       processStep(); renderSidebar(); updateProgressBar();
     }
@@ -229,49 +260,84 @@
       if (currentStepIndex >= currentLesson.steps.length) { endLesson(); return; }
       const step = currentLesson.steps[currentStepIndex];
       document.getElementById("bottomAction").classList.remove("show");
-      const oldEditor = document.querySelector(".editor-wrapper"); if (oldEditor) oldEditor.remove();
-      if (step.type === "cody") { addBubble("cody", step.text); showNextButton(); currentStepIndex++; }
-      else if (step.type === "choice") { addBubble("cody", step.question); renderChoices(step.options, step.replies); currentStepIndex++; }
-      else if (step.type === "challenge") { addBubble("cody", "تحدي برمجي! اكتب الكود في المحرر 👇"); showEditor(step); }
-      else if (step.type === "quiz") { addBubble("cody", step.question); renderQuiz(step.options, step.correct, step.explanation); currentStepIndex++; }
+      const oldEditor = document.querySelector(".editor-wrapper"); 
+      if (oldEditor) oldEditor.remove();
+      
+      if (step.type === "cody") { 
+        addBubble("cody", step.text); 
+        showNextButton(); 
+        currentStepIndex++; 
+      } else if (step.type === "choice") { 
+        addBubble("cody", step.question); 
+        renderChoices(step.options, step.replies); 
+        currentStepIndex++; 
+      } else if (step.type === "challenge") { 
+        addBubble("cody", "تحدي برمجي! اكتب الكود في المحرر 👇"); 
+        showEditor(step); 
+      } else if (step.type === "quiz") { 
+        addBubble("cody", step.question); 
+        renderQuiz(step.options, step.correct, step.explanation); 
+        currentStepIndex++; 
+      }
     }
 
     function addBubble(type, text) {
-      const row = document.createElement("div"); row.className = `message-row ${type}`;
+      const row = document.createElement("div"); 
+      row.className = `message-row ${type}`;
       row.innerHTML = `<div class="avatar">${type === "cody" ? "🤖" : "👦"}</div><div class="bubble">${text}</div>`;
-      document.getElementById("chatContainer").appendChild(row); scrollToBottom();
+      document.getElementById("chatContainer").appendChild(row); 
+      scrollToBottom();
     }
 
     function renderChoices(options, replies) {
-      const container = document.createElement("div"); container.className = "choices-container";
+      const container = document.createElement("div"); 
+      container.className = "choices-container";
       options.forEach((opt, index) => {
-        const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = opt;
-        btn.onclick = () => { container.remove(); addBubble("student", opt); if (replies && replies[index]) addBubble("cody", replies[index]); document.getElementById("bottomAction").classList.add("show"); };
+        const btn = document.createElement("button"); 
+        btn.className = "choice-btn"; 
+        btn.textContent = opt;
+        btn.onclick = () => { 
+          container.remove(); 
+          addBubble("student", opt); 
+          if (replies && replies[index]) addBubble("cody", replies[index]); 
+          document.getElementById("bottomAction").classList.add("show"); 
+        };
         container.appendChild(btn);
       });
-      document.getElementById("chatContainer").appendChild(container); scrollToBottom();
+      document.getElementById("chatContainer").appendChild(container); 
+      scrollToBottom();
     }
 
     function renderQuiz(options, correctIndex, explanation) {
-      const container = document.createElement("div"); container.className = "choices-container";
+      const container = document.createElement("div"); 
+      container.className = "choices-container";
       options.forEach((opt, index) => {
-        const btn = document.createElement("button"); btn.className = "choice-btn"; btn.textContent = opt;
+        const btn = document.createElement("button"); 
+        btn.className = "choice-btn"; 
+        btn.textContent = opt;
         btn.onclick = () => {
-          container.remove(); addBubble("student", opt);
-          if (index === correctIndex) { addBubble("cody", "✅ إجابة صحيحة! " + (explanation || "")); addXp(5); }
-          else { addBubble("cody", `❌ ليست صحيحة. الإجابة الصح: <code>${options[correctIndex]}</code>.`); }
+          container.remove(); 
+          addBubble("student", opt);
+          if (index === correctIndex) { 
+            addBubble("cody", "✅ إجابة صحيحة! " + (explanation || "")); 
+            addXp(5); 
+          } else { 
+            addBubble("cody", `❌ ليست صحيحة. الإجابة الصح: <code>${options[correctIndex]}</code>.`); 
+          }
           document.getElementById("bottomAction").classList.add("show");
         };
         container.appendChild(btn);
       });
-      document.getElementById("chatContainer").appendChild(container); scrollToBottom();
+      document.getElementById("chatContainer").appendChild(container); 
+      scrollToBottom();
     }
 
     function showNextButton() { document.getElementById("bottomAction").classList.add("show"); }
     function advanceChat() { document.getElementById("bottomAction").classList.remove("show"); processStep(); }
 
     function showEditor(step) {
-      const wrapper = document.createElement("div"); wrapper.className = "editor-wrapper show";
+      const wrapper = document.createElement("div"); 
+      wrapper.className = "editor-wrapper show";
       wrapper.innerHTML = `
         <div class="editor-header"><span style="font-family: 'Fira Code', monospace; color: var(--muted); font-size:0.85rem;">main.py</span>
         <button class="btn-run" onclick="runCode()"><i class="ri-play-circle-fill"></i> تشغيل</button></div>
@@ -285,37 +351,61 @@
       window.currentChallenge = step; challengeSolved = false; scrollToBottom();
     }
 
-    function builtinRead(x) { if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'"; return Sk.builtinFiles["files"][x]; }
+    function builtinRead(x) { 
+      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'"; 
+      return Sk.builtinFiles["files"][x]; 
+    }
 
     async function runCode() {
-      const outputArea = document.getElementById("outputArea");
+            const outputArea = document.getElementById("outputArea");
       const code = editorInstance ? editorInstance.getValue() : document.getElementById("dynamicCodeEditor").value;
       const challenge = window.currentChallenge;
-      if (!code.trim()) { outputArea.textContent = "⚠️ اكتب الكود أولاً."; return; }
-      outputArea.textContent = "> Running..."; let outputText = "";
+      
+      if (!code.trim()) { 
+        outputArea.textContent = "⚠️ اكتب الكود أولاً."; 
+        return; 
+      }
+      
+      outputArea.textContent = "> Running..."; 
+      let outputText = "";
+      
       Sk.configure({ output: (t) => { outputText += t; }, read: builtinRead, __future__: Sk.python3 });
+      
       try {
-        await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", fa        lse, code, true));
+        await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true));
         const actual = outputText.trim();
         const passed = challenge.check(code) && (challenge.expected === "" || actual === challenge.expected.trim());
+        
         if (passed) {
-          outputArea.textContent = actual + "\n\n✅ إجابة صحيحة!"; outputArea.style.color = "var(--green)";
+          outputArea.textContent = actual + "\n\n✅ إجابة صحيحة!"; 
+          outputArea.style.color = "var(--green)";
           if (!challengeSolved) {
-            challengeSolved = true; addBubble("cody", challenge.successMsg); addXp(10);
+            challengeSolved = true; 
+            addBubble("cody", challenge.successMsg); 
+            addXp(10);
             if (typeof window.confetti === "function") window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            currentStepIndex++; showNextButton();
+            currentStepIndex++; 
+            showNextButton();
           }
         } else {
-          outputArea.textContent = actual + `\n\n⚠️ الناتج غير مطابق.\n💡 تلميح: ${challenge.hint}`; outputArea.style.color = "var(--gold)";
+          outputArea.textContent = actual + `\n\n⚠️ الناتج غير مطابق.\n💡 تلميح: ${challenge.hint}`; 
+          outputArea.style.color = "var(--gold)";
         }
-      } catch (err) { outputArea.textContent = "❌ خطأ:\n" + err.toString(); outputArea.style.color = "var(--red)"; }
+      } catch (err) { 
+        outputArea.textContent = "❌ خطأ:\n" + err.toString(); 
+        outputArea.style.color = "var(--red)"; 
+      }
       scrollToBottom();
     }
 
-    function addXp(amount) { let xp = parseInt(localStorage.getItem(XP_KEY)) || 0; localStorage.setItem(XP_KEY, xp + amount); updateProgressBar(); }
+    function addXp(amount) { 
+      let xp = parseInt(localStorage.getItem(XP_KEY)) || 0; 
+      localStorage.setItem(XP_KEY, xp + amount); 
+      updateProgressBar(); 
+    }
 
     function endLesson() {
-      addBubble("cody", "🎉 مبروك! أتممت الدرس.");
+      addBubble("cody", "🎉 مبروك! أتممت هذا الدرس بنجاح.");
       addBubble("cody", "📝 <b>مراجعة سريعة:</b> تأكد دائماً من قراءة الكود جيداً قبل تشغيله!");
       
       const btn = document.getElementById("nextBtn");
