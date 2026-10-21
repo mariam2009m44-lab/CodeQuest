@@ -3,142 +3,193 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#070B14">
-  <title>مركز الألعاب | Cody Academy</title>
+  <meta name="theme-color" content="#080b18">
+  <title>مركز الألعاب | Cody</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=5000">
+  
+  <link rel="stylesheet" href="css/dashboard.css">
 
   <style>
-    .page-header { margin-bottom: 24px; }
-    .page-header h1 { color: var(--dark-text); font-size: 1.8rem; font-weight: 900; margin-bottom: 8px; }
-    .page-header p { color: var(--dark-muted); font-size: 1rem; }
+    .page-header { margin-bottom: 30px; }
+    .page-header h1 { font-size: 1.8rem; font-weight: 900; color: var(--text); margin-bottom: 8px; }
+    .page-header p { color: var(--muted); font-size: 1rem; }
 
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 20px;
-    }
-
-    .game-card {
-      display: flex;
-      flex-direction: column;
-      padding: 24px;
-      background: var(--dark-glass);
-      border: 1px solid var(--dark-border);
-      border-radius: var(--radius-card);
-      text-decoration: none;
-      color: var(--dark-text);
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .game-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(34, 211, 238, 0.3);
-      box-shadow: var(--shadow-glass);
-    }
-
-    .game-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      font-size: 28px;
-      margin-bottom: 16px;
-    }
-
-    .game-card h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; }
-    .game-card p { color: var(--dark-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; }
+    .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; }
     
-    .game-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--dark-cyan);
-      font-weight: 700;
-      font-size: 0.9rem;
+    .game-card {
+      display: flex; flex-direction: column; padding: 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); text-decoration: none;
+      color: var(--text); transition: all var(--transition);
+      position: relative; overflow: hidden;
+    }
+    
+    .game-card:hover { transform: translateY(-8px); border-color: var(--cyan); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    
+    .game-icon-wrap {
+      width: 70px; height: 70px; border-radius: var(--radius-md);
+      display: grid; place-items: center; margin-bottom: 20px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.3s ease;
     }
 
-    @media (max-width: 900px) {
-      .sidebar { display: none; }
-      .main-content { margin-inline-end: 0; width: 100%; padding-bottom: 100px; }
-      .mobile-nav { display: flex; }
+    .game-card:hover .game-icon-wrap { transform: scale(1.1) rotate(-3deg); }
+
+    .game-icon-wrap svg {
+      width: 40px; height: 40px;
+      transition: filter 0.3s ease;
     }
-    @media (min-width: 901px) { .mobile-nav { display: none; } }
+
+    .game-card:hover .game-icon-wrap svg {
+      filter: drop-shadow(0 0 15px var(--glow-color));
+    }
+
+    .game-card h3 { font-size: 1.2rem; font-weight: 900; margin-bottom: 8px; }
+    .game-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 24px; flex: 1; }
+    
+    .game-action { display: inline-flex; align-items: center; gap: 8px; color: var(--cyan); font-weight: 800; font-size: 0.9rem; }
+    .game-card:hover .game-action i { transform: translateX(-4px); }
+    .game-action i { transition: transform var(--transition); }
+
+    .mobile-nav { display: none; }
+    @media (max-width: 768px) {
+      .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(9, 13, 29, 0.95); border-top: 1px solid var(--border); backdrop-filter: blur(15px); padding: 10px 5px calc(10px + env(safe-area-inset-bottom)); justify-content: space-around; z-index: 1000; }
+      .mobile-nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: var(--radius-sm); text-decoration: none; }
+      .mobile-nav a.active { color: var(--cyan); background: rgba(107,232,255,0.05); }
+      .mobile-nav a i { font-size: 1.3rem; }
+      body { padding-bottom: 70px; }
+    }
   </style>
 </head>
-<body class="dark-theme">
-  <div class="app-layout">
-    <aside class="sidebar">
-      <div class="sidebar-logo"><i class="ri-robot-2-fill"></i> Cody Academy</div>
-      <nav class="nav-menu">
-        <a href="dashboard.html" class="nav-item"><i class="ri-home-5-line"></i> الرئيسية</a>
-        <a href="languages.html" class="nav-item"><i class="ri-map-2-line"></i> مسار التعلم</a>
-        <a href="playground.html" class="nav-item"><i class="ri-terminal-box-line"></i> محرر الأكواد</a>
-        <a href="games.html" class="nav-item active"><i class="ri-gamepad-line"></i> الألعاب</a>
-        <a href="profile.html" class="nav-item"><i class="ri-user-smile-line"></i> حسابي</a>
-        <a href="#" id="logoutButton" class="nav-item logout"><i class="ri-logout-box-r-line"></i> خروج</a>
+<body>
+  <div class="space-app">
+    <aside class="space-sidebar" id="sidebar">
+      <a class="space-brand" href="dashboard.html" aria-label="Cody الرئيسية">
+        <span class="brand-mark">C</span>
+        <span class="brand-name">Cody</span>
+      </a>
+      <div class="sidebar-caption">مساحة التعلم</div>
+      <nav class="space-nav" aria-label="التنقل الرئيسي">
+        <a class="nav-link" href="dashboard.html"><i class="ri-layout-grid-fill"></i><span>لوحة التحكم</span></a>
+        <a class="nav-link" href="languages.html"><i class="ri-route-line"></i><span>مسارات التعلم</span></a>
+        <a class="nav-link" href="playground.html"><i class="ri-code-s-slash-line"></i><span>مختبر الأكواد</span></a>
+        <a class="nav-link active" href="games.html"><i class="ri-gamepad-line"></i><span>الألعاب والتحديات</span></a>
+        <a class="nav-link" href="projects.html"><i class="ri-folder-code-line"></i><span>مشروعاتي</span></a>
+        <a class="nav-link" href="achievements.html"><i class="ri-medal-2-line"></i><span>إنجازاتي</span></a>
+        <a class="nav-link" href="profile.html"><i class="ri-user-settings-line"></i><span>ملفي الشخصي</span></a>
       </nav>
+      <a href="#" id="logoutButton" class="logout-link logout"><i class="ri-logout-box-r-line"></i><span>تسجيل الخروج</span></a>
+      <div class="sidebar-version"><span class="version-dot"></span>CODY <span>·</span> SPACE EDITION</div>
     </aside>
 
-    <main class="main-content">
-      <header class="topbar">
-        <div class="user-info">
-          <h1 style="color: var(--dark-text); font-size: 1.5rem; font-weight: 900;">مركز الألعاب</h1>
+    <main class="space-main">
+      <header class="space-topbar">
+        <div class="topbar-title">
+          <div class="page-kicker"><span class="online-dot"></span> مركز الألعاب</div>
+          <h1>جاهز للتحدي يا <span class="js-user-name">بطل البرمجة</span>؟</h1>
+          <p>اختار لعبتك المفضلة، وطوّر مهاراتك في البرمجة.</p>
         </div>
-        <div class="stats">
-          <div class="stat-pill xp"><i class="ri-flashlight-fill"></i> <span class="js-user-xp">0</span> XP</div>
-          <div class="stat-pill coins"><i class="ri-coin-fill"></i> <span class="js-user-coins">0</span></div>
+        <div class="topbar-actions">
+          <a href="profile.html" class="topbar-avatar"><span class="avatar-emoji">🧑‍🚀</span><span class="avatar-status"></span></a>
         </div>
       </header>
 
-      <div class="page-header">
-        <p>اختاري تحديك، حلّي الألغاز، وطوّري مهاراتك البرمجية.</p>
-      </div>
-
       <section class="games-grid">
-        <a class="game-card" href="game-build.html">
-          <div class="game-icon" style="background: rgba(52, 211, 153, 0.12); color: #34D399;">
-            <i class="ri-puzzle-line"></i>
+        
+        <!-- لعبة بازل الأكواد -->
+        <a href="game-build.html" class="game-card" style="--glow-color: var(--green);">
+          <div class="game-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 9L12 12L9 15" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 15H9" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 3V5" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M16 3V5" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M8 19V21" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M16 19V21" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
           </div>
           <h3>بازل الأكواد</h3>
-          <p>رتّبي قطع الكود بالترتيب الصحيح لبناء برنامج بسيط.</p>
-          <span class="game-action">ابدئي اللعب <i class="ri-arrow-left-line"></i></span>
+          <p>رتّب قطع الكود بالترتيب الصحيح لبناء برنامج بسيط.</p>
+          <span class="game-action">ابدأ اللعب <i class="ri-arrow-left-line"></i></span>
         </a>
 
-        <a class="game-card" href="game-quiz.html">
-          <div class="game-icon" style="background: rgba(34, 211, 238, 0.12); color: #22D3EE;">
-            <i class="ri-question-answer-line"></i>
+        <!-- لعبة سيد الأسئلة -->
+        <a href="game-quiz.html" class="game-card" style="--glow-color: var(--cyan);">
+          <div class="game-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40913C11.0108 7.05016 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 17H12.01" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
           <h3>سيد الأسئلة</h3>
-          <p>أجيبي عن أسئلة البرمجة واختبري معلوماتك.</p>
-          <span class="game-action">ابدئي اللعب <i class="ri-arrow-left-line"></i></span>
+          <p>أجب عن أسئلة البرمجة واختبر معلوماتك.</p>
+          <span class="game-action">ابدأ اللعب <i class="ri-arrow-left-line"></i></span>
         </a>
 
-        <a class="game-card" href="game-memory.html">
-          <div class="game-icon" style="background: rgba(167, 139, 250, 0.12); color: #A78BFA;">
-            <i class="ri-brain-line"></i>
+        <!-- لعبة الذاكرة -->
+        <a href="game-memory.html" class="game-card" style="--glow-color: var(--purple);">
+          <div class="game-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 11.5C13.3807 11.5 14.5 10.3807 14.5 9C14.5 7.61929 13.3807 6.5 12 6.5C10.6193 6.5 9.5 7.61929 9.5 9C9.5 10.3807 10.6193 11.5 12 11.5Z" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
           <h3>لعبة الذاكرة</h3>
-          <p>طابقي المصطلحات البرمجية مع معانيها واختبري ذاكرتك.</p>
-          <span class="game-action">ابدئي اللعب <i class="ri-arrow-left-line"></i></span>
+          <p>طابق المصطلحات البرمجية مع معانيها واختبر ذاكرتك.</p>
+          <span class="game-action">ابدأ اللعب <i class="ri-arrow-left-line"></i></span>
         </a>
+
+        <!-- صائد الأخطاء -->
+        <a href="game-bug.html" class="game-card" style="--glow-color: var(--red);">
+          <div class="game-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 2L9.88 4.88" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M16 2L14.12 4.88" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12H4" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M20 12H22" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 4V2" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M12 22V20" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>صائد الأخطاء</h3>
+          <p>اكتشف الخطأ البرمجي في الكود وأصلحه بسرعة.</p>
+          <span class="game-action">ابدأ اللعب <i class="ri-arrow-left-line"></i></span>
+        </a>
+
+        <!-- تحدي السرعة -->
+        <a href="game-speed.html" class="game-card" style="--glow-color: var(--gold);">
+          <div class="game-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>تحدي السرعة</h3>
+          <p>أجب عن أكبر عدد من الأسئلة قبل انتهاء الوقت.</p>
+          <span class="game-action">ابدأ اللعب <i class="ri-arrow-left-line"></i></span>
+        </a>
+
       </section>
+
+      <footer class="space-footer">
+        <a href="dashboard.html" class="footer-brand"><span class="footer-brand-icon"><i class="ri-planet-fill"></i></span>Cody</a>
+        <p>مساحة صغيرة للتعلّم، وعالم كبير من الإمكانيات.</p>
+      </footer>
     </main>
   </div>
 
   <nav class="mobile-nav">
-    <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-fill"></i><span>الرئيسية</span></a>
-    <a href="languages.html" class="mobile-nav-item"><i class="ri-map-2-line"></i><span>المسارات</span></a>
-    <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>المختبر</span></a>
-    <a href="games.html" class="mobile-nav-item active"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-    <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>شخصيتي</span></a>
+    <a href="dashboard.html"><i class="ri-layout-grid-fill"></i><span>الرئيسية</span></a>
+    <a href="languages.html"><i class="ri-route-line"></i><span>التعلم</span></a>
+    <a href="playground.html"><i class="ri-code-box-line"></i><span>الأكواد</span></a>
+    <a href="games.html" class="active"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
+    <a href="profile.html"><i class="ri-user-settings-line"></i><span>حسابي</span></a>
   </nav>
-
-  <script type="module" src="js/app.js"></script>
 </body>
 </html>
