@@ -1,91 +1,65 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صائد الأخطاء | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: var(--danger); font-size: 1.3rem; }
-        .game-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
-        .code-block { background: #1e1e1e; border: 1px solid #444; border-radius: 15px; padding: 20px; width: 100%; direction: ltr; text-align: left; font-family: monospace; font-size: 1.1rem; line-height: 1.8; }
-        .code-line { cursor: pointer; padding: 5px 10px; border-radius: 5px; transition: 0.2s; }
-        .code-line:hover { background: rgba(255,255,255,0.1); }
-        .code-line.selected { background: rgba(239, 68, 68, 0.3); border: 1px solid var(--danger); }
-        .line-num { color: #555; display: inline-block; width: 25px; }
-    </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>صائد الأخطاء | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
+    .game-box { width: 100%; max-width: 600px; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .back-btn { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .back-btn:hover { color: var(--red); }
+    .task-box { background: rgba(255,145,169,0.1); border: 1px solid var(--red); padding: 15px; border-radius: var(--radius-md); text-align: center; margin-bottom: 20px; }
+    .task-box h2 { font-size: 1.1rem; color: var(--red); font-weight: 800; }
+    .code-container { background: #0d1117; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; direction: ltr; text-align: left; margin-bottom: 20px; }
+    .code-line { padding: 10px 20px; font-family: monospace; font-size: 1.1rem; color: #c9d1d9; cursor: pointer; transition: 0.2s; display: flex; gap: 15px; }
+    .code-line:hover { background: rgba(255,255,255,0.05); }
+    .line-num { color: #484f58; user-select: none; width: 20px; text-align: right; }
+    .code-line.correct-guess { background: rgba(118,233,192,0.15); border-left: 3px solid var(--green); }
+    .code-line.wrong-guess { background: rgba(255,145,169,0.15); border-left: 3px solid var(--red); }
+    .result-msg { text-align: center; font-weight: 800; font-size: 1.2rem; min-height: 30px; }
+  </style>
 </head>
 <body>
-    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>🐛 صائد الأخطاء</h1><div style="width:50px;"></div></div>
-    <div class="game-area">
-        <p style="color:var(--text-muted); text-align:center;">اختر السطر الذي يحتوي على الخطأ البرمجي:</p>
-        <div class="code-block" id="codeBlock"></div>
-        <button class="btn btn-primary" style="background:var(--danger); color:#fff;" onclick="checkBug()">✓ تأكيد السطر</button>
+  <div class="game-box">
+    <div class="header">
+      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
+      <span style="font-weight: 800; color: var(--red);"><i class="ri-bug-fill"></i> صائد الأخطاء</span>
     </div>
-    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
-    <script>
-        const codeLines = ["let x = 5;", "let y = 10;", "if (x = 5) {", "  console.log('x is 5');", "}"];
-        let selected = -1;
-        function render() {
-            const block = document.getElementById('codeBlock'); block.innerHTML = '';
-            codeLines.forEach((line, i) => {
-                const d = document.createElement('div'); d.className = 'code-line';
-                d.innerHTML = `<span class="line-num">${i+1}</span>${line}`;
-                d.onclick = () => { document.querySelectorAll('.code-line').forEach(c => c.classList.remove('selected')); d.classList.add('selected'); selected = i; };
-                block.appendChild(d);
-            });
-        }
-        function checkBug() {
-            if(selected === -1) return alert("اختر سطراً أولاً!");
-            if(selected === 2) { confetti({ particleCount: 150 }); setTimeout(claimReward, 1000); }
-            else alert("❌ هذا السطر سليم. حاول مرة أخرى!");
-        }
-        async function claimReward() {
-            const uid = Auth.getUserId();
-            if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(30) }); }
-            alert("🎉 مبروك! +30 نقطة"); window.location.href = 'games.html';
-        }
-        Auth.init((l) => { if(!l) window.location.href = 'login.html'; else render(); });
-    </script>
+    <div class="task-box"><h2>اضغط على السطر الذي يحتوي على الخطأ البرمجي!</h2></div>
+    <div class="code-container">
+      <div class="code-line" onclick="checkLine(1, false)"><span class="line-num">1</span> def calculate_sum(a, b):</div>
+      <div class="code-line" onclick="checkLine(2, false)"><span class="line-num">2</span>   result = a + b</div>
+      <div class="code-line" onclick="checkLine(3, true)"><span class="line-num">3</span>   return reslt</div>
+      <div class="code-line" onclick="checkLine(4, false)"><span class="line-num">4</span> </div>
+      <div class="code-line" onclick="checkLine(5, false)"><span class="line-num">5</span> print(calculate_sum(5, 3))</div>
+    </div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
 
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
-    </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-</body></html>
+  <script>
+    let gameEnded = false;
+    function checkLine(lineNumber, isBug) {
+      if (gameEnded) return;
+      const lines = document.querySelectorAll('.code-line');
+      const selectedLine = lines[lineNumber - 1];
+      const msg = document.getElementById('resultMsg');
+      if (isBug) {
+        selectedLine.classList.add('correct-guess');
+        msg.textContent = 'إجابة صحيحة! الخطأ هو "reslt" بدلاً من "result" 🎯';
+        msg.style.color = 'var(--green)';
+        gameEnded = true;
+      } else {
+        selectedLine.classList.add('wrong-guess');
+        msg.textContent = 'خطأ! حاول البحث في سطر آخر.';
+        msg.style.color = 'var(--red)';
+        setTimeout(() => { selectedLine.classList.remove('wrong-guess'); }, 1000);
+      }
+    }
+  </script>
+</body>
+</html>
