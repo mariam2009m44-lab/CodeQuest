@@ -19,7 +19,6 @@ window.CHAPTERS[1] = {
         { type: "challenge", expected: "Hello", defaultCode: '# اكتب الكود هنا\n', hint: 'print("Hello")', check: (code) => /print\s*\(\s*(['"])Hello\1\s*\)/m.test(code.trim()), successMsg: "أحسنت! 🎉 كتبت أول أمر برمجي لك. الأرقام والحروف أصبحت بين يديك الآن." },
         { type: "cody", text: "الآن، تحدي إضافي صغير. اطبع الجملة <code>I am learning Python</code>." },
         { type: "challenge", expected: "I am learning Python", defaultCode: '# اكتب الكود هنا\n', hint: 'print("I am learning Python")', check: (code) => /print\s*\(\s*(['"])I am learning Python\1\s*\)/m.test(code.trim()), successMsg: "مذهل! 🌟 أنت تتحسن بسرعة. الجُمل الطويلة والمسافات لا تعيقك." },
-        { type: "quiz", question: "ما وظيفة الأمر print()؟", options: ["يقوم بحساب الأرقام.", "يعرض نصاً أو قيمة على الشاشة.", "يحذف الكود."], correct: 1, explanation: "الأمر print() هو أمر الطباعة، وظيفته إظهار ما بين القوسين على الشاشة." },
         { type: "cody", text: "أنت الآن جاهز لبدء الدرس الثاني. تقدمك محفوظ." }
       ]
     },
@@ -53,27 +52,35 @@ window.CHAPTERS[1] = {
         { type: "cody", text: "هناك طريقة أخرى لكتابة النصوص الطويلة: استخدم <code>\\n</code> داخل النص ليقوم الكمبيوتر بكسر السطر تلقائياً." },
         { type: "cody", text: "تحدي متقدم: اطبع في أمر واحد، الجملة <code>أهلاً\nكودي</code> باستخدام الرمز <code>\\n</code>." },
         { type: "challenge", expected: "أهلاً\nكودي", defaultCode: '# اكتب الكود هنا\n', hint: 'print("أهلاً\\nكودي")', check: (code) => /print\s*\(\s*(['"])أهلاً\\nكودي\1\s*\)/m.test(code.trim()), successMsg: "عبقري! استخدمت \\n لكسر السطر داخل أمر طباعة واحد." },
-        { type: "quiz", question: "ما وظيفة الرمز \\n داخل النص؟", options: ["يطبع حرف n", "ينزل سطر جديد", "يزيد مسافة"], correct: 1, explanation: "الرمز \\n هو اختصار لكلمة newline ويعني: انتقل إلى سطر جديد." },
-        { type: "cody", text: "أصبحت الآن تعرف طرقاً متعددة لكتابة وتنسيق المخرجات. استعد للدرس الأخير في هذا الفصل!" }
+        { type: "cody", text: "أصبحت الآن تعرف طرقاً متعددة لكتابة وتنسيق المخرجات. استعد للدرس الأخير!" }
       ]
     },
     {
       title: "الدرس 4: اكتشاف الأخطاء",
       steps: [
-        { type: "cody", text: "أهلاً بك في الدرس الأخير من الفصل الأول! المبرمج المحترف لا يخاف من الأخطاء، بل يتعلم منها." },
-        { type: "cody", text: "الأخطاء في البرمجة أمر طبيعي جداً. أهم مهارة هي أن تتعلم كيف تكتشفها وتصلحها." },
-        { type: "cody", text: "أشهر خطأ يقع فيه المبتدئون هو نسيان علامات التنصيص. لو كتبت <code>print(Hello)</code> بدون تنصيص، سيعتقد الكمبيوتر أن Hello هو متغير (وهو غير موجود هنا)." },
+        { type: "cody", text: "أهلاً بك في الدرس الرابع! المبرمج المحترف لا يخاف من الأخطاء، بل يتعلم منها." },
+        { type: "cody", text: "أشهر خطأ يقع فيه المبتدئون هو نسيان علامات التنصيص. لو كتبت <code>print(Hello)</code> بدون تنصيص، سيعتقد الكمبيوتر أن Hello هو متغير." },
         { type: "cody", text: "دعنا نجرب. الكود التالي فيه خطأ: <code>print(Hello)</code>. أصلحه ليطبع كلمة Hello بشكل صحيح." },
         { type: "challenge", expected: "Hello", defaultCode: 'print(Hello)\n', hint: 'print("Hello")', check: (code) => /print\s*\(\s*(['"])Hello\1\s*\)/m.test(code.trim()), successMsg: "رائع! أصلحت أول خطأ برمجي في حياتك. هذه مهارة ثمينة جدًا." },
-        { type: "cody", text: "الخطأ الثاني الشائع: نسيان قوس الإغلاق. لو كتبت <code>print(\"Hi\"</code> بدون قوس الإغلاق، سيتوقف الكمبيوتر عن العمل ويظهر لك خطأ." },
+        { type: "cody", text: "الخطأ الثاني الشائع: نسيان قوس الإغلاق. لو كتبت <code>print(\"Hi\"</code> بدون قوس الإغلاق، سيتوقف الكمبيوتر ويظهر خطأ." },
         { type: "cody", text: "أصلح هذا الكود: <code>print(\"Welcome\"</code>. لا تنسَ إغلاق القوس!" },
         { type: "challenge", expected: "Welcome", defaultCode: 'print("Welcome"\n', hint: 'print("Welcome")', check: (code) => /print\s*\(\s*(['"])Welcome\1\s*\)/m.test(code.trim()), successMsg: "عمل ممتاز! الأقواس المتوازنة أساسية في كل لغات البرمجة." },
         { type: "cody", text: "الخطأ الثالث: استخدام حرف كبير في بداية الأمر. <code>Print()</code> بحرف P كبير خطأ. يجب أن يكون <code>print()</code> بحرف p صغير." },
         { type: "quiz", question: "أي مما يلي يمثل كتابة صحيحة لأمر الطباعة؟", options: ["Print(\"Hi\")", "PRINT(\"Hi\")", "print(\"Hi\")"], correct: 2, explanation: "بايثون حساسة لحالة الأحرف (Case Sensitive). يجب كتابة print بحروف صغيرة." },
-        { type: "cody", text: "أنت الآن تعرف كيف تكتشف الأخطاء الشائعة وتصلحها. هذه مهارة ستوفر عليك ساعات من الوقت في المستقبل." },
-        { type: "quiz", question: "ما هو الخطأ في هذا الكود: print('test\" )", options: ["لا يوجد خطأ", "علامات التنصيص غير متطابقة (واحدة فردية والأخرى مزدوجة)", "نقص القوس"], correct: 1, explanation: "يجب استخدام علامات تنصيص متطابقة: إما 'test' أو \"test\"، ولا يجوز خلطها." },
-        { type: "cody", text: "🎉 مبروك! أكملت الفصل الأول بالكامل. أنت الآن تعرف الطباعة، الأرقام، الأسطر المتعددة، واكتشاف الأخطاء. حصلت على 3 نجوم لهذا الفصل!" },
-        { type: "cody", text: "في الفصل القادم، سنتعلم كيف نخزن المعلومات ونستخدمها - إنها المتغيرات! استعد." }
+        { type: "cody", text: "أنت الآن تعرف كيف تكتشف الأخطاء الشائعة وتصلحها. استعد للامتحان الشامل للفصل!" }
+      ]
+    },
+    {
+      title: "امتحان الفصل الأول",
+      steps: [
+        { type: "cody", text: "أهلاً بك في امتحان الفصل الأول! 🎓 سأطرح عليك 3 أسئلة، وتحدي برمجي أخير. هل أنت مستعد؟" },
+        { type: "choice", question: "لنبدأ بسؤال سريع قبل الامتحان:", options: ["أنا جاهز!", "متحمس جداً!"], replies: ["رائع! لنبدأ.", "حماسك هو سر نجاحك! هيا بنا."] },
+        { type: "quiz", question: "1. ما هي وظيفة الأمر print()؟", options: ["يجمع الأرقام", "يعرض النصوص والأرقام على الشاشة", "يمسح الكود"], correct: 1, explanation: "نعم، وظيفته الأساسية هي عرض المخرجات." },
+        { type: "quiz", question: "2. كيف نطبع جملة نصية في بايثون؟", options: ["print(\"Hello\")", "print(Hello)", "Print(Hello)"], correct: 0, explanation: "يجب وضع النص بين علامات تنصيص واستخدام print بحروف صغيرة." },
+        { type: "quiz", question: "3. ماذا يحدث لو نسينا إغلاق القوس في دالة الطباعة؟", options: ["يعمل الكود بشكل طبيعي", "يحدث خطأ (Syntax Error)", "يطبع القوس تلقائياً"], correct: 1, explanation: "بايثون صارمة جداً في الأقواس، ونسيانها يسبب خطأ." },
+        { type: "cody", text: "أحسنت! الآن التحدي البرمجي الأخير لاجتياز الفصل. اطبع عبارة الترحيب التالية بالضبط: <br><code>Welcome to Cody</code><br>ثم في السطر التالي اطبع: <br><code>Level 1</code>" },
+        { type: "challenge", expected: "Welcome to Cody\nLevel 1", defaultCode: '# اكتب الكود هنا\n', hint: 'print("Welcome to Cody")\nprint("Level 1")', check: (code) => code.includes('print("Welcome to Cody")') && code.includes('print("Level 1")'), successMsg: "مذهل! 🌟 لقد أثبت جدارتك واجتزت امتحان الفصل الأول بنجاح." },
+        { type: "cody", text: "🎉 مبروك! لقد أكملت الفصل الأول بالكامل وحصلت على 3 نجوم. لقد أصبحت الآن مستعداً للفصل القادم: المتغيرات!" }
       ]
     }
   ]
