@@ -4,114 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>سيد الأسئلة | Cody</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-  
   <link rel="stylesheet" href="css/dashboard.css">
-
   <style>
-    body { 
-      display: flex; flex-direction: column; align-items: center; justify-content: center; 
-      min-height: 100vh; padding: 20px; background: var(--bg); overflow: hidden;
-    }
-
-    .quiz-container { 
-      max-width: 650px; width: 100%; background: var(--surface-glass); 
-      border: 1px solid var(--border); border-radius: var(--radius-xl); 
-      padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); position: relative;
-      backdrop-filter: blur(20px);
-    }
-
-    .quiz-header { 
-      display: flex; justify-content: space-between; align-items: center; 
-      margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;
-    }
-    
-    .btn-back { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; transition: 0.3s; }
+    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
+    .quiz-container { max-width: 600px; width: 100%; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(20px); }
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+    .btn-back { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     .btn-back:hover { color: var(--cyan); }
-
-    .quiz-stats { display: flex; gap: 20px; align-items: center; }
-    .stat-item { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 1.1rem; }
-    .stat-score { color: var(--gold); }
-    .stat-timer { color: var(--red); }
-    
+    .quiz-stats { display: flex; gap: 20px; font-weight: 800; font-size: 1.1rem; }
+    .stat-score { color: var(--gold); } .stat-timer { color: var(--red); }
     .progress-container { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
     .progress-bar { height: 100%; background: var(--cyan); width: 0%; transition: width 0.4s ease; box-shadow: 0 0 10px var(--cyan); }
-
-    .question-box { margin-bottom: 30px; text-align: center; }
-    .question-box h2 { font-size: 1.5rem; color: var(--text); font-weight: 900; line-height: 1.5; margin-bottom: 10px; }
-    
+    .question-box { text-align: center; margin-bottom: 30px; }
+    .question-box h2 { font-size: 1.5rem; color: var(--text); font-weight: 800; line-height: 1.5; }
     .options { display: flex; flex-direction: column; gap: 14px; }
-    .option-btn { 
-      padding: 16px 20px; border-radius: var(--radius-md); background: rgba(255,255,255,0.03); 
-      border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; font-weight: 700; 
-      cursor: pointer; transition: all 0.3s ease; text-align: right; display: flex; justify-content: space-between; align-items: center;
-    }
-    
+    .option-btn { padding: 16px; border-radius: var(--radius-md); background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; text-align: right; font-family: 'Playpen Sans Arabic'; }
     .option-btn:hover:not(:disabled) { background: rgba(107, 232, 255, 0.1); border-color: var(--cyan); transform: translateX(-5px); }
-    
-    .option-btn:disabled { cursor: not-allowed; }
-    
-    .option-btn.correct { background: rgba(118, 233, 192, 0.15); border-color: var(--green); color: var(--green); box-shadow: 0 0 20px rgba(118, 233, 192, 0.2); }
+    .option-btn.correct { background: rgba(118, 233, 192, 0.15); border-color: var(--green); color: var(--green); }
     .option-btn.wrong { background: rgba(255, 145, 169, 0.15); border-color: var(--red); color: var(--red); animation: shake 0.4s ease; }
-
-    .result-screen { display: none; text-align: center; animation: scaleIn 0.5s ease; }
+    .result-screen { display: none; text-align: center; }
     .result-icon { font-size: 5rem; margin-bottom: 20px; }
-    .result-screen h2 { font-size: 2rem; color: var(--cyan); font-weight: 900; margin-bottom: 10px; }
-    .result-screen p { color: var(--muted); font-size: 1.1rem; margin-bottom: 20px; }
-    .final-score { font-size: 3rem; font-weight: 900; color: var(--gold); margin-bottom: 30px; text-shadow: 0 0 20px rgba(255, 212, 138, 0.4); }
-    
-    .btn-restart { 
-      background: var(--cyan); color: var(--bg-deep); padding: 16px 32px; border-radius: var(--radius-md); 
-      font-weight: 900; font-size: 1.1rem; border: none; cursor: pointer; width: 100%; transition: 0.3s;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-    }
-    .btn-restart:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(107, 232, 255, 0.3); }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      50% { transform: translateX(8px); }
-      75% { transform: translateX(-8px); }
-    }
-    @keyframes scaleIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-    @media (max-width: 600px) {
-      .quiz-container { padding: 20px; }
-      .question-box h2 { font-size: 1.2rem; }
-      .option-btn { padding: 14px; font-size: 1rem; }
-      .quiz-header { flex-direction: column; gap: 15px; }
-      .quiz-stats { width: 100%; justify-content: space-between; }
-    }
+    .result-screen h2 { font-size: 2rem; color: var(--cyan); margin-bottom: 10px; }
+    .final-score { font-size: 3rem; font-weight: 900; color: var(--gold); margin-bottom: 30px; }
+    .btn-restart { background: var(--cyan); color: var(--bg-deep); padding: 16px 32px; border-radius: var(--radius-md); font-weight: 900; font-size: 1.1rem; border: none; cursor: pointer; width: 100%; font-family: 'Playpen Sans Arabic'; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
   </style>
 </head>
 <body>
-
   <div class="quiz-container" id="quiz-wrapper">
     <div class="quiz-header">
       <a href="games.html" class="btn-back"><i class="ri-arrow-right-line"></i> رجوع</a>
       <div class="quiz-stats">
-        <div class="stat-item stat-score"><i class="ri-trophy-fill"></i> <span id="score">0</span></div>
-        <div class="stat-item stat-timer"><i class="ri-timer-line"></i> <span id="timer">15</span>s</div>
+        <div class="stat-score"><i class="ri-trophy-fill"></i> <span id="score">0</span></div>
+        <div class="stat-timer"><i class="ri-timer-line"></i> <span id="timer">15</span>s</div>
       </div>
     </div>
-
-    <div class="progress-container">
-      <div class="progress-bar" id="progress"></div>
-    </div>
-
-    <div class="question-box">
-      <h2 id="question-text">جاري تحميل السؤال...</h2>
-    </div>
-
+    <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
+    <div class="question-box"><h2 id="question-text"></h2></div>
     <div class="options" id="options-container"></div>
   </div>
 
   <div class="quiz-container result-screen" id="result-wrapper">
     <div class="result-icon" id="result-emoji">🏆</div>
     <h2>انتهى التحدي!</h2>
-    <p id="result-msg">أحسنت! لقد أكملت جميع الأسئلة.</p>
+    <p id="result-msg" style="color: var(--muted); margin-bottom:10px;"></p>
     <div class="final-score"><span id="final-score">0</span> <span style="font-size:1.5rem; color:var(--muted);">نقطة</span></div>
     <button class="btn-restart" onclick="location.reload()"><i class="ri-refresh-line"></i> العب مرة أخرى</button>
   </div>
@@ -120,130 +58,61 @@
     const questions = [
       { q: "ما هي اللغة المستخدمة لتصميم هيكل صفحات الويب؟", options: ["Python", "HTML", "C++", "Java"], answer: 1 },
       { q: "ما هي الدالة المستخدمة للطباعة في لغة بايثون؟", options: ["console.log()", "echo()", "print()", "write()"], answer: 2 },
-      { q: "ماذا تعني كلمة JavaScript؟", options: ["لغة برمجة", "لعبة فيديو", "نوع من أنواع الأجهزة", "شركة"], answer: 0 },
+      { q: "ماذا تعني كلمة JavaScript؟", options: ["لغة برمجة", "لعبة فيديو", "نوع من الأجهزة", "شركة"], answer: 0 },
       { q: "أي من هذه اللغات تستخدم في تطوير تطبيقات الأندرويد؟", options: ["Kotlin", "Swift", "HTML", "CSS"], answer: 0 },
       { q: "ما هو الرمز المستخدم للتعليق في لغة C++؟", options: ["#", "//", "<!--", "**"], answer: 1 }
     ];
-
-    let currentQuestion = 0;
-    let score = 0;
-    let timeLeft = 15;
-    let timerInterval;
-
-    const questionText = document.getElementById('question-text');
-    const optionsContainer = document.getElementById('options-container');
-    const progressBar = document.getElementById('progress');
-    const scoreDisplay = document.getElementById('score');
-    const timerDisplay = document.getElementById('timer');
-    const quizWrapper = document.getElementById('quiz-wrapper');
-    const resultWrapper = document.getElementById('result-wrapper');
+    let currentQuestion = 0, score = 0, timeLeft = 15, timerInterval;
+    const qText = document.getElementById('question-text'), optsContainer = document.getElementById('options-container'), progressBar = document.getElementById('progress'), scoreDisplay = document.getElementById('score'), timerDisplay = document.getElementById('timer'), quizWrapper = document.getElementById('quiz-wrapper'), resultWrapper = document.getElementById('result-wrapper');
 
     function startTimer() {
-      clearInterval(timerInterval);
-      timeLeft = 15;
-      timerDisplay.textContent = timeLeft;
-      
+      clearInterval(timerInterval); timeLeft = 15; timerDisplay.textContent = timeLeft;
       timerInterval = setInterval(() => {
-        timeLeft--;
-        timerDisplay.textContent = timeLeft;
-        
-        if (timeLeft <= 5) {
-          timerDisplay.style.color = "#ff5f56"; 
-        } else {
-          timerDisplay.style.color = "var(--red)";
-        }
-
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          handleTimeout();
-        }
+        timeLeft--; timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) { clearInterval(timerInterval); handleTimeout(); }
       }, 1000);
     }
 
     function loadQuestion() {
-      if (currentQuestion >= questions.length) {
-        endQuiz();
-        return;
-      }
-
+      if (currentQuestion >= questions.length) { endQuiz(); return; }
       const q = questions[currentQuestion];
-      questionText.textContent = q.q;
-      optionsContainer.innerHTML = '';
-      
+      qText.textContent = q.q; optsContainer.innerHTML = '';
       progressBar.style.width = `${((currentQuestion) / questions.length) * 100}%`;
-
       q.options.forEach((opt, index) => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerHTML = `<span>${opt}</span> <i class="ri-checkbox-blank-circle-line"></i>`;
+        btn.className = 'option-btn'; btn.textContent = opt;
         btn.onclick = () => checkAnswer(index, btn);
-        optionsContainer.appendChild(btn);
+        optsContainer.appendChild(btn);
       });
-
       startTimer();
     }
 
     function checkAnswer(selectedIndex, btn) {
       clearInterval(timerInterval);
       const correctIndex = questions[currentQuestion].answer;
-      
       document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-
       if (selectedIndex === correctIndex) {
-        btn.classList.remove('option-btn');
-        btn.classList.add('option-btn', 'correct');
-        btn.innerHTML = `<span>${questions[currentQuestion].options[selectedIndex]}</span> <i class="ri-checkbox-circle-fill"></i>`;
-        score += 10;
-        scoreDisplay.textContent = score;
+        btn.classList.add('correct'); score += 10; scoreDisplay.textContent = score;
       } else {
-        btn.classList.remove('option-btn');
-        btn.classList.add('option-btn', 'wrong');
-        btn.innerHTML = `<span>${questions[currentQuestion].options[selectedIndex]}</span> <i class="ri-close-circle-fill"></i>`;
-        
-        const correctBtn = document.querySelectorAll('.option-btn')[correctIndex];
-        correctBtn.classList.add('correct');
-        correctBtn.innerHTML = `<span>${questions[currentQuestion].options[correctIndex]}</span> <i class="ri-checkbox-circle-fill"></i>`;
+        btn.classList.add('wrong');
+        document.querySelectorAll('.option-btn')[correctIndex].classList.add('correct');
       }
-
-      setTimeout(() => {
-        currentQuestion++;
-        loadQuestion();
-      }, 1500);
+      setTimeout(() => { currentQuestion++; loadQuestion(); }, 1500);
     }
 
     function handleTimeout() {
       document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-      
-      const correctIndex = questions[currentQuestion].answer;
-      const correctBtn = document.querySelectorAll('.option-btn')[correctIndex];
-      correctBtn.classList.add('correct');
-      correctBtn.innerHTML = `<span>${questions[currentQuestion].options[correctIndex]}</span> <i class="ri-checkbox-circle-fill"></i>`;
-
-      setTimeout(() => {
-        currentQuestion++;
-        loadQuestion();
-      }, 1500);
+      document.querySelectorAll('.option-btn')[questions[currentQuestion].answer].classList.add('correct');
+      setTimeout(() => { currentQuestion++; loadQuestion(); }, 1500);
     }
 
     function endQuiz() {
-      progressBar.style.width = '100%';
-      quizWrapper.style.display = 'none';
-      resultWrapper.style.display = 'block';
-      
+      progressBar.style.width = '100%'; quizWrapper.style.display = 'none'; resultWrapper.style.display = 'block';
       document.getElementById('final-score').textContent = score;
-      
-      if (score >= 40) {
-        document.getElementById('result-emoji').textContent = '🏆';
-        document.getElementById('result-msg').textContent = 'أسطورة! أداء مبهر جداً.';
-      } else if (score >= 20) {
-        document.getElementById('result-emoji').textContent = '🌟';
-        document.getElementById('result-msg').textContent = 'عمل رائع! يمكنك تحقيق الأفضل.';
-      } else {
-        document.getElementById('result-emoji').textContent = '🚀';
-        document.getElementById('result-msg').textContent = 'بداية جيدة! استمر في التعلم.';
-      }
+      if (score >= 40) { document.getElementById('result-emoji').textContent = '🏆'; document.getElementById('result-msg').textContent = 'أسطورة! أداء مبهر.'; } 
+      else if (score >= 20) { document.getElementById('result-emoji').textContent = '🌟'; document.getElementById('result-msg').textContent = 'عمل رائع!'; } 
+      else { document.getElementById('result-emoji').textContent = '🚀'; document.getElementById('result-msg').textContent = 'بداية جيدة!'; }
     }
-
     loadQuestion();
   </script>
 </body>
