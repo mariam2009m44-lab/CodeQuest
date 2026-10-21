@@ -10,15 +10,12 @@
     :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --red: #ff91a9; --gold: #ffd48a; --purple: #a99aff; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(169,154,255,0.1), transparent 60%); }
-    
     .exam-container { width: 100%; max-width: 800px; background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 35px; backdrop-filter: blur(20px); }
     .header { text-align: center; margin-bottom: 30px; }
     .header h1 { font-size: 2rem; color: var(--purple); font-weight: 900; margin-bottom: 10px; }
     .header p { color: var(--muted); }
-    
     .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--cyan)); width: 0%; transition: 0.3s; }
-
     .question-box { display: none; flex-direction: column; gap: 20px; }
     .question-box.active { display: flex; animation: fadeIn 0.4s ease; }
     .q-text { font-size: 1.3rem; font-weight: 800; line-height: 1.6; }
@@ -27,12 +24,10 @@
     .opt-btn:hover { background: rgba(169,154,255,0.1); border-color: var(--purple); }
     .opt-btn.correct { background: rgba(118,233,192,0.2); border-color: var(--green); color: var(--green); }
     .opt-btn.wrong { background: rgba(255,145,169,0.2); border-color: var(--red); color: var(--red); }
-
     .result-box { display: none; text-align: center; }
     .result-box.active { display: block; }
     .result-box h2 { font-size: 2.5rem; color: var(--gold); margin-bottom: 15px; }
     .btn-finish { background: var(--purple); color: #000; padding: 15px 40px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; text-decoration: none; display: inline-block; margin-top: 20px; }
-
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
@@ -43,21 +38,18 @@
       <p>أجب على 5 أسئلة عشوائية لفتح المشروع النهائي.</p>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-
     <div id="quizArea">
       <div class="question-box active" id="qBox">
         <div class="q-text" id="qText">جاري التحميل...</div>
         <div class="options" id="qOptions"></div>
       </div>
     </div>
-
     <div class="result-box" id="resultBox">
       <h2>مبروك! لقد اجتزت الامتحان 🎉</h2>
       <p style="color: var(--muted); margin-bottom: 20px;">أنت الآن جاهز لبناء المشروع النهائي.</p>
       <a href="python-projects.html" class="btn-finish">الذهاب إلى المشاريع <i class="ri-arrow-left-line"></i></a>
     </div>
   </div>
-
   <script>
     const allQuestions = [
       { q: "أي أمر يستخدم لطباعة النص؟", opts: ["echo", "print", "write"], a: 1 },
@@ -71,16 +63,13 @@
       { q: "ماذا نفعل إذا حدث خطأ في try؟", opts: ["ينتقل إلى except", "يتوقف", "يطبع الخطأ"], a: 0 },
       { q: "بماذا نكتب القاموس؟", opts: ["[ ]", "{ }", "( )"], a: 1 }
     ];
-
     let currentQuiz = [], currIdx = 0, score = 0;
     const qEl = document.getElementById('qText'), optsEl = document.getElementById('qOptions'), progressEl = document.getElementById('progressFill');
-
     function startExam() {
       currentQuiz = allQuestions.sort(() => Math.random() - 0.5).slice(0, 5);
       currIdx = 0; score = 0;
       loadQ();
     }
-
     function loadQ() {
       if (currIdx >= currentQuiz.length) return endExam();
       const q = currentQuiz[currIdx];
@@ -95,7 +84,6 @@
         optsEl.appendChild(btn);
       });
     }
-
     function checkAns(i, btn) {
       optsEl.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
       if (i === currentQuiz[currIdx].a) {
@@ -106,15 +94,12 @@
       }
       setTimeout(() => { currIdx++; loadQ(); }, 1000);
     }
-
     function endExam() {
       progressEl.style.width = '100%';
       document.getElementById('quizArea').style.display = 'none';
       document.getElementById('resultBox').classList.add('active');
-      // نفتح المشاريع
       localStorage.setItem('cody_python_exam_passed', 'true');
     }
-
     startExam();
   </script>
 </body>
