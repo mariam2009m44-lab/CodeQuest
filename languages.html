@@ -10,46 +10,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-  
   <link rel="stylesheet" href="css/dashboard.css">
 
   <style>
     .page-header { margin-bottom: 30px; }
     .page-header h1 { font-size: 1.8rem; font-weight: 900; color: var(--text); margin-bottom: 8px; }
     .page-header p { color: var(--muted); font-size: 1rem; }
-
     .paths-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
-    
-    .path-card {
-      display: flex; flex-direction: column; padding: 30px;
-      background: var(--surface-glass); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); text-decoration: none;
-      color: var(--text); transition: all var(--transition);
-      position: relative; overflow: hidden;
-    }
-    
+    .path-card { display: flex; flex-direction: column; padding: 30px; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-lg); text-decoration: none; color: var(--text); transition: all var(--transition); position: relative; overflow: hidden; }
     .path-card:hover { transform: translateY(-8px); border-color: var(--cyan); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-    
-    .path-icon {
-      width: 70px; height: 70px; border-radius: var(--radius-md);
-      display: grid; place-items: center; margin-bottom: 24px;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-      transition: transform 0.3s ease;
-    }
+    .path-icon { width: 70px; height: 70px; border-radius: var(--radius-md); display: grid; place-items: center; margin-bottom: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: transform 0.3s ease; }
     .path-card:hover .path-icon { transform: scale(1.1) rotate(-3deg); }
     .path-icon svg { width: 42px; height: 42px; }
-
     .path-card h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; }
     .path-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 24px; flex: 1; }
-    
-    .path-btn {
-      display: inline-flex; align-items: center; justify-content: space-between;
-      background: rgba(255,255,255,0.03); color: var(--cyan); padding: 12px 20px;
-      border-radius: var(--radius-sm); font-weight: 800; font-size: 0.95rem;
-      border: 1px solid var(--border); transition: 0.3s;
-    }
+    .path-btn { display: inline-flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); color: var(--cyan); padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 800; font-size: 0.95rem; border: 1px solid var(--border); transition: 0.3s; }
     .path-card:hover .path-btn { background: var(--cyan); color: var(--bg-deep); border-color: var(--cyan); }
-
     .mobile-nav { display: none; }
     @media (max-width: 768px) {
       .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(9, 13, 29, 0.95); border-top: 1px solid var(--border); backdrop-filter: blur(15px); padding: 10px 5px calc(10px + env(safe-area-inset-bottom)); justify-content: space-around; z-index: 1000; }
@@ -91,8 +67,7 @@
       </header>
 
       <section class="paths-grid">
-        <!-- Python -->
-        <a href="python-welcome.html" class="path-card">
+        <a href="python-chapters.html" class="path-card">
           <div class="path-icon">
             <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M23.488 9.14v2.966a4.284 4.284 0 01-4.173 4.236h-6.672a3.408 3.408 0 00-3.34 3.394v6.36c0 1.81 1.574 2.876 3.34 3.395a11.176 11.176 0 006.672 0c1.682-.487 3.34-1.467 3.34-3.394V23.55h-6.672v-.849h10.012c1.941 0 2.665-1.354 3.34-3.386a11.464 11.464 0 000-6.79c-.48-1.932-1.396-3.386-3.34-3.386Zm-3.752 16.108a1.273 1.273 0 11-1.254 1.269 1.26 1.26 0 011.254-1.27Z" fill="#387EB8"/>
@@ -104,8 +79,7 @@
           <span class="path-btn">استكشف المسار <i class="ri-arrow-left-line"></i></span>
         </a>
 
-        <!-- JavaScript -->
-        <a href="#" class="path-card" onclick="alert('قريباً جداً!')">
+        <a href="#" class="path-card" data-coming-soon="JavaScript">
           <div class="path-icon">
             <svg viewBox="0 0 1052 1052" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fill="#f0db4f" d="M0 0h1052v1052H0z"/>
@@ -117,8 +91,7 @@
           <span class="path-btn">استكشف المسار <i class="ri-arrow-left-line"></i></span>
         </a>
 
-        <!-- C++ -->
-        <a href="#" class="path-card" onclick="alert('قريباً جداً!')">
+        <a href="#" class="path-card" data-coming-soon="C++">
           <div class="path-icon">
             <svg viewBox="0 0 256 288" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fill="#649AD2" d="M255.987 84.59c-.002-4.837-1.037-9.112-3.13-12.781-2.054-3.608-5.133-6.632-9.261-9.023-34.08-19.651-68.195-39.242-102.264-58.913-9.185-5.303-18.09-5.11-27.208.27-13.565 8-81.48 46.91-101.719 58.632C4.071 67.6.015 74.984.013 84.58 0 124.101.013 163.62 0 203.141c0 4.73.993 8.923 2.993 12.537 2.056 3.717 5.177 6.824 9.401 9.269 20.24 11.722 88.164 50.63 101.726 58.631 9.121 5.382 18.027 5.575 27.215.27 34.07-19.672 68.186-39.262 102.272-58.913 4.224-2.444 7.345-5.553 9.401-9.267 1.997-3.614 2.992-7.806 2.992-12.539 0 0 0-79.018-.013-118.539"/>
@@ -143,5 +116,15 @@
     <a href="games.html"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
     <a href="profile.html"><i class="ri-user-settings-line"></i><span>حسابي</span></a>
   </nav>
+
+  <script>
+    document.querySelectorAll("[data-coming-soon]").forEach(card => {
+      card.addEventListener("click", event => {
+        event.preventDefault();
+        const language = card.getAttribute("data-coming-soon");
+        window.alert(`مسار ${language} قيد التطوير — قريباً جداً!`);
+      });
+    });
+  </script>
 </body>
 </html>
