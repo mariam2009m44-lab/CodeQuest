@@ -13,68 +13,51 @@
     @keyframes floatUp{0%{transform:translateY(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh);opacity:0}}
     .lang-header{text-align:center;margin-bottom:40px;position:relative;z-index:2;animation:fadeDown 0.8s ease}
     @keyframes fadeDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
-    .lang-header h1{color:#00e5ff;font-size:26px;text-shadow:0 0 20px rgba(0,229,255,0.6);margin-bottom:8px;font-weight:900}
-    .lang-header p{color:#a0aec0;font-size:14px}
-    .lang-cards-container{display:flex;flex-direction:column;gap:20px;max-width:380px;margin:0 auto;position:relative;z-index:2;padding-bottom:40px;width:90%}
-    .lang-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:2px solid rgba(255,255,255,0.08);border-radius:28px;padding:25px 20px;text-align:center;cursor:pointer;transition:all 0.4s;animation:fadeUp 0.8s ease backwards;text-decoration:none;display:block}
-    .lang-card:hover{transform:translateY(-8px)}
-    .js-card:hover{border-color:#ffd700;box-shadow:0 20px 50px rgba(255,215,0,0.3)}
+    .lang-header h1{color:#00e5ff;font-size:28px;text-shadow:0 0 20px rgba(0,229,255,0.6);margin-bottom:10px;font-weight:900}
+    .lang-header p{color:#a0aec0;font-size:15px}
+    .lang-cards-container{display:flex;flex-direction:column;gap:25px;max-width:400px;margin:0 auto;position:relative;z-index:2;padding-bottom:40px;width:90%}
+    .lang-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(15px);border:2px solid rgba(255,255,255,0.08);border-radius:28px;padding:30px 20px;text-align:center;cursor:pointer;transition:all 0.4s;text-decoration:none;display:block}
+    .lang-card:hover{transform:translateY(-10px) scale(1.02)}
+    .java-card:hover{border-color:#f89820;box-shadow:0 20px 50px rgba(248,152,32,0.3)}
     .py-card:hover{border-color:#00e5ff;box-shadow:0 20px 50px rgba(0,229,255,0.3)}
     .cpp-card:hover{border-color:#0072ff;box-shadow:0 20px 50px rgba(0,114,255,0.3)}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
-    .card-icon{width:90px;height:90px;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;transition:transform 0.4s;filter:drop-shadow(0 10px 25px rgba(0,0,0,0.6))}
+    .card-icon{width:110px;height:110px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 15px 25px rgba(0,0,0,0.6))}
     .card-icon img{width:100%;height:100%;object-fit:contain;animation:breathe 3s ease-in-out infinite}
-    @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-    .lang-card h2{font-size:24px;margin-bottom:6px;font-weight:900}
-    .js-card h2{color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,0.5)}
+    @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+    .lang-card h2{font-size:26px;margin-bottom:8px;font-weight:900}
+    .java-card h2{color:#f89820;text-shadow:0 0 15px rgba(248,152,32,0.5)}
     .py-card h2{color:#00e5ff;text-shadow:0 0 15px rgba(0,229,255,0.5)}
     .cpp-card h2{color:#0072ff;text-shadow:0 0 15px rgba(0,114,255,0.5)}
-    .lang-card > p{color:#a0aec0;font-size:13px}
+    .lang-card > p{color:#a0aec0;font-size:14px;line-height:1.6}
   </style>
 </head>
 <body>
-
   <div class="particles" id="particles"></div>
-
   <div class="lang-header">
     <h1>مساراتك البرمجية</h1>
     <p>اختر اللغة التي تريد استكشافها، وابدأ التعلم خطوة بخطوة.</p>
   </div>
-
   <div class="lang-cards-container">
-    
-    <a href="python-chapters.html" class="lang-card py-card" style="animation-delay: 0.1s">
-      <div class="card-icon">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python">
-      </div>
+    <a href="python-welcome.html" class="lang-card py-card">
+      <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python"></div>
       <h2>Python</h2>
       <p>لغة سهلة وقوية، مثالية للمبتدئين وعلوم البيانات.</p>
     </a>
-
-    <div class="lang-card js-card" style="animation-delay: 0.2s" onclick="alert('مسار JavaScript قيد التطوير — قريباً جداً!')">
-      <div class="card-icon">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript">
-      </div>
-      <h2>JavaScript</h2>
-      <p>لغة الويب التفاعلية. اصنع صفحات ويب حية وألعاباً ممتعة.</p>
+    <div class="lang-card java-card" onclick="alert('مسار Java قيد التطوير!')">
+      <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java"></div>
+      <h2>Java</h2>
+      <p>لغة قوية لبناء التطبيقات والأنظمة الضخمة.</p>
     </div>
-
-    <div class="lang-card cpp-card" style="animation-delay: 0.3s" onclick="alert('مسار C++ قيد التطوير — قريباً جداً!')">
-      <div class="card-icon">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++">
-      </div>
+    <div class="lang-card cpp-card" onclick="alert('مسار C++ قيد التطوير!')">
+      <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++"></div>
       <h2>C++</h2>
       <p>لغة الأداء العالي والخوارزميات. تحدَّ نفسك في حل المشكلات.</p>
     </div>
-
   </div>
-
   <script>
     const particlesContainer = document.getElementById('particles');
-    const particleCount = 15;
     const symbols = ['{ }', '</>', '( )', '0', '1', ';', '=>', '++', '=='];
-
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < 15; i++) {
       const particle = document.createElement('div');
       particle.className = 'particle';
       particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
@@ -85,6 +68,5 @@
       particlesContainer.appendChild(particle);
     }
   </script>
-
 </body>
 </html>
