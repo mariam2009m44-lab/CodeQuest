@@ -3,222 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مهمة: بناء الكود | Cody Academy</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-  
-  <link rel="stylesheet" href="css/style.css?v=6000">
-
+  <title>بازل الأكواد | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
   <style>
-    body { 
-      display: flex; flex-direction: column; align-items: center; 
-      min-height: 100vh; background-color: var(--dark-bg); color: var(--dark-text); 
-      margin: 0; padding: 0; overflow-x: hidden;
-    }
-
-    .game-header {
-      width: 100%; padding: 16px 24px; background: var(--dark-glass-heavy);
-      border-bottom: 1px solid var(--dark-border); display: flex; justify-content: space-between; align-items: center;
-      backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100;
-    }
-    .game-header h1 { font-size: 1.2rem; font-weight: 900; color: var(--dark-cyan); display: flex; align-items: center; gap: 8px; }
-    .btn-back { color: var(--dark-muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; transition: 0.2s; padding: 8px 16px; border-radius: var(--radius-btn); background: rgba(255,255,255,0.05); }
-    .btn-back:hover { color: var(--dark-text); background: rgba(255,255,255,0.1); }
-
-    .game-workspace {
-      width: 100%; max-width: 1200px; padding: 24px;
-      display: flex; flex-direction: column; gap: 20px; flex: 1;
-    }
-
-    .mission-briefing {
-      background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(139, 92, 246, 0.1));
-      border: 1px solid rgba(34, 211, 238, 0.3); border-radius: var(--radius-card);
-      padding: 24px; display: flex; align-items: flex-start; gap: 16px;
-    }
-    .mission-icon { font-size: 2rem; color: var(--dark-cyan); }
-    .mission-text h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; color: #fff; }
-    .mission-text p { color: var(--dark-muted); font-size: 1rem; line-height: 1.6; }
-    .highlight-code { color: var(--dark-gold); font-family: 'Fira Code', monospace; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 6px; }
-
-    .ide-container {
-      flex: 1; display: flex; flex-direction: column; 
-      background: #1E1E1E; border: 1px solid var(--dark-border); border-radius: var(--radius-card);
-      overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-
-    .ide-header { background: #2D2D2D; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #444; }
-    .window-controls { display: flex; gap: 8px; }
-    .window-controls span { width: 12px; height: 12px; border-radius: 50%; }
-    .wc-red { background: #FF5F56; }
-    .wc-yellow { background: #FFBD2E; }
-    .wc-green { background: #27C93F; }
-    .file-name { color: #A6B0C2; font-family: 'Fira Code', monospace; font-size: 0.9rem; }
-
-    .ide-body { display: flex; flex-direction: column; flex: 1; }
-    @media(min-width: 768px) { .ide-body { flex-direction: row; } }
-
-    .editor-wrapper { flex: 2; position: relative; }
-    .CodeMirror { height: 350px; font-family: 'Fira Code', monospace; font-size: 1rem; }
-
-    .console-wrapper {
-      flex: 1; background: #000; border-top: 1px solid #444; padding: 16px;
-      font-family: 'Fira Code', monospace; font-size: 0.9rem; color: #A6B0C2;
-      overflow-y: auto; display: flex; flex-direction: column;
-    }
-    @media(min-width: 768px) { .console-wrapper { border-top: none; border-right: 1px solid #444; } }
-    .console-header { color: #7180a5; text-transform: uppercase; font-size: 0.75rem; margin-bottom: 12px; letter-spacing: 1px; }
-
-    .ide-footer {
-      background: #2D2D2D; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
-      border-top: 1px solid #444;
-    }
-    .btn-run {
-      background: linear-gradient(135deg, #34D399, #10B981); color: #000;
-      padding: 10px 24px; border-radius: var(--radius-btn); border: none;
-      font-weight: 900; font-size: 1rem; cursor: pointer; transition: 0.2s;
-      display: flex; align-items: center; gap: 8px; font-family: 'Cairo';
-    }
-    .btn-run:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52, 211, 153, 0.3); }
-    
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-      display: none; place-items: center; z-index: 9999;
-    }
-    .modal-box {
-      background: var(--dark-surface); border: 1px solid var(--dark-cyan);
-      padding: 40px; border-radius: 24px; text-align: center;
-      box-shadow: 0 0 50px rgba(34, 211, 238, 0.2); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      max-width: 400px; width: 90%;
-    }
-    @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-    .modal-icon { font-size: 4rem; color: var(--dark-green); margin-bottom: 16px; }
-    .modal-box h2 { font-size: 1.8rem; color: #fff; margin-bottom: 12px; font-weight: 900; }
-    .modal-box p { color: var(--dark-muted); margin-bottom: 24px; font-size: 1.1rem; }
-    .btn-next {
-      background: var(--dark-cyan); color: #000; padding: 12px 32px; border-radius: var(--radius-btn);
-      text-decoration: none; font-weight: 900; font-size: 1.1rem; display: inline-block;
-      transition: 0.2s; font-family: 'Cairo'; border: none; cursor: pointer;
-    }
-    .btn-next:hover { filter: brightness(1.2); transform: scale(1.05); }
-
-    .mobile-nav { display: none; }
-    @media (max-width: 900px) {
-      .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 16, 29, 0.97); border-top: 1px solid var(--dark-border); padding: 10px; justify-content: space-around; z-index: 1000; }
-      .mobile-nav a { display: flex; flex-direction: column; align-items: center; color: var(--dark-muted); text-decoration: none; font-size: 0.75rem; font-weight: 700; gap: 4px; }
-      .mobile-nav a.active { color: var(--dark-cyan); }
-      .mobile-nav a i { font-size: 1.3rem; }
-      body { padding-bottom: 70px; }
-      .game-workspace { padding: 16px; }
-    }
+    body { font-family: 'Playpen Sans Arabic', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
+    .game-box { width: 100%; max-width: 600px; background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 30px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .back-btn { color: var(--muted); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .back-btn:hover { color: var(--green); }
+    .task-box { background: rgba(118,233,192,0.1); border: 1px solid var(--green); padding: 15px; border-radius: var(--radius-md); text-align: center; margin-bottom: 20px; }
+    .task-box h2 { font-size: 1.1rem; color: var(--green); font-weight: 800; }
+    .drop-zone { display: flex; flex-direction: column; gap: 10px; min-height: 150px; padding: 15px; border: 2px dashed var(--border); border-radius: var(--radius-md); margin-bottom: 20px; background: rgba(0,0,0,0.2); }
+    .code-block { padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: #fff; font-family: monospace; font-size: 1.1rem; cursor: pointer; transition: 0.2s; direction: ltr; text-align: left; }
+    .code-block:hover { background: rgba(255,255,255,0.1); transform: scale(1.02); }
+    .code-block.selected { opacity: 0.5; pointer-events: none; }
+    .btn-check { width: 100%; padding: 14px; background: var(--green); color: var(--bg-deep); font-weight: 900; font-size: 1.1rem; border: none; border-radius: var(--radius-md); cursor: pointer; transition: 0.3s; font-family: 'Playpen Sans Arabic'; }
+    .btn-check:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(118,233,192,0.3); }
+    .btn-check:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   </style>
 </head>
 <body>
-
-  <header class="game-header">
-    <a href="games.html" class="btn-back"><i class="ri-arrow-right-line"></i> خروج من المهمة</a>
-    <h1><i class="ri-terminal-box-line"></i> محرر المهام</h1>
-    <div style="width: 100px;"></div>
-  </header>
-
-  <main class="game-workspace">
-    
-    <div class="mission-briefing">
-      <div class="mission-icon"><i class="ri-focus-3-line"></i></div>
-      <div class="mission-text">
-        <h2>مهمة رقم 01: أول أمر برمجي</h2>
-        <p>مرحباً أيها المبرمج. مهمتك اليوم هي طباعة الجملة <span class="highlight-code">"I am a coder"</span> على الشاشة. استخدم أمر الطباعة المناسب للغة البرمجة.</p>
-      </div>
+  <div class="game-box">
+    <div class="header">
+      <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع</a>
+      <span style="font-weight: 800; color: var(--green);"><i class="ri-puzzle-2-fill"></i> بازل الأكواد</span>
     </div>
-
-    <div class="ide-container">
-      <div class="ide-header">
-        <div class="window-controls">
-          <span class="wc-red"></span><span class="wc-yellow"></span><span class="wc-green"></span>
-        </div>
-        <span class="file-name">challenge_01.py</span>
-        <i class="ri-code-s-slash-line" style="color: #7180a5;"></i>
-      </div>
-      
-      <div class="ide-body">
-        <div class="editor-wrapper">
-          <textarea id="codeEditor"></textarea>
-        </div>
-        <div class="console-wrapper" id="consoleOutput">
-          <div class="console-header">Terminal Output</div>
-          <div>> Ready to execute...</div>
-        </div>
-      </div>
-
-      <div class="ide-footer">
-        <span style="color: var(--dark-muted); font-size: 0.85rem;"><i class="ri-information-line"></i> تأكد من كتابة الكود بشكل صحيح</span>
-        <button class="btn-run" onclick="executeCode()"><i class="ri-play-circle-fill"></i> تشغيل الكود</button>
-      </div>
+    <div class="task-box"><h2>رتّب الأكواد بالترتيب الصحيح لطباعة "Hello World"</h2></div>
+    <div class="drop-zone" id="dropZone"></div>
+    <div class="drop-zone" id="sourceZone">
+      <div class="code-block" onclick="selectBlock(this, 'print(\"Hello World\")')">print("Hello World")</div>
+      <div class="code-block" onclick="selectBlock(this, 'console.log(\"Hello World\")')">console.log("Hello World")</div>
+      <div class="code-block" onclick="selectBlock(this, 'cout << \"Hello World\"')">cout << "Hello World"</div>
     </div>
-
-  </main>
-
-  <div class="modal-overlay" id="successModal">
-    <div class="modal-box">
-      <div class="modal-icon"><i class="ri-checkbox-circle-fill"></i></div>
-      <h2>مهمة ناجحة!</h2>
-      <p>رائع جداً! لقد نفذت أول أمر برمجي لك بنجاح. حصلت على <strong>+10 XP</strong>.</p>
-      <a href="games.html" class="btn-next">المتابعة إلى الألعاب</a>
-    </div>
+    <button class="btn-check" onclick="checkOrder()" id="checkBtn" disabled>تحقق من الترتيب</button>
   </div>
 
-  <nav class="mobile-nav">
-    <a href="dashboard.html"><i class="ri-home-5-fill"></i><span>الرئيسية</span></a>
-    <a href="languages.html"><i class="ri-map-2-line"></i><span>المسارات</span></a>
-    <a href="playground.html"><i class="ri-code-box-line"></i><span>المختبر</span></a>
-    <a href="games.html" class="active"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-    <a href="profile.html"><i class="ri-user-smile-line"></i><span>شخصيتي</span></a>
-  </nav>
+  <script>
+    let selectedSequence = [];
+    const correctSequence = ['print("Hello World")', 'console.log("Hello World")', 'cout << "Hello World"'];
+    const dropZone = document.getElementById('dropZone');
+    const checkBtn = document.getElementById('checkBtn');
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    function selectBlock(element, code) {
+      element.classList.add('selected');
+      selectedSequence.push(code);
+      const newBlock = document.createElement('div');
+      newBlock.className = 'code-block';
+      newBlock.textContent = code;
+      newBlock.onclick = () => removeBlock(newBlock, code);
+      dropZone.appendChild(newBlock);
+      checkBtn.disabled = selectedSequence.length !== correctSequence.length;
+    }
 
-  <script type="module">
-    import { App } from './js/app.js';
+    function removeBlock(element, code) {
+      const index = selectedSequence.indexOf(code);
+      if (index > -1) {
+        selectedSequence.splice(index, 1);
+        element.remove();
+        const sourceBlocks = document.querySelectorAll('#sourceZone .code-block');
+        sourceBlocks.forEach(block => {
+          if (block.textContent.includes(code) && block.classList.contains('selected')) {
+            block.classList.remove('selected');
+          }
+        });
+        checkBtn.disabled = selectedSequence.length !== correctSequence.length;
+      }
+    }
 
-    const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
-      lineNumbers: true,
-      mode: 'python',
-      theme: 'dracula',
-      indentUnit: 4,
-      matchBrackets: true,
-      placeholder: "# اكتب الكود الخاص بك هنا..."
-    });
-
-    window.executeCode = function() {
-      const code = editor.getValue().trim();
-      const output = document.getElementById('consoleOutput');
-      output.innerHTML = '<div class="console-header">Terminal Output</div>> Executing code...<br>';
-      
-      const targetString = "I am a coder";
-      const isCorrect = (code.includes(`print("${targetString}")`) || 
-                         code.includes(`print('${targetString}')`) || 
-                         code.includes(`console.log("${targetString}")`) ||
-                         code.includes(`cout << "${targetString}"`));
-
-      setTimeout(() => {
-        if (isCorrect) {
-          output.innerHTML += `<br><span style="color: #34D399;">> ${targetString}</span><br><br><span style="color: #FBBF24;">✓ Process finished with exit code 0</span>`;
-          confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-          
-          setTimeout(() => {
-            document.getElementById('successModal').style.display = 'grid';
-          }, 800);
-        } else {
-          output.innerHTML += `<br><span style="color: #FB7185;">> SyntaxError: Output did not match target string.</span>`;
-        }
-      }, 600);
-    };
+    function checkOrder() {
+      const isCorrect = selectedSequence.every((val, index) => val === correctSequence[index]);
+      if (isCorrect) {
+        dropZone.style.borderColor = 'var(--green)';
+        dropZone.style.background = 'rgba(118,233,192,0.1)';
+        checkBtn.textContent = 'أحسنت! الترتيب صحيح 🎉';
+        checkBtn.style.background = 'var(--green)';
+        checkBtn.disabled = true;
+      } else {
+        dropZone.style.borderColor = 'var(--red)';
+        dropZone.style.background = 'rgba(255,145,169,0.1)';
+        checkBtn.textContent = 'ترتيب خاطئ، حاول مرة أخرى!';
+        checkBtn.style.background = 'var(--red)';
+        setTimeout(() => {
+          dropZone.style.borderColor = 'var(--border)';
+          dropZone.style.background = 'rgba(0,0,0,0.2)';
+          checkBtn.textContent = 'تحقق من الترتيب';
+          checkBtn.style.background = 'var(--green)';
+        }, 2000);
+      }
+    }
   </script>
 </body>
 </html>
