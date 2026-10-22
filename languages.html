@@ -1,70 +1,410 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مسارات التعلم | Cody</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#050914">
+  <title>مسارات التعلم | Cody Academy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
-    body{background:#050914;color:#fff;min-height:100vh;overflow-x:hidden;background-image:radial-gradient(circle at 50% 0%, rgba(0,229,255,0.15) 0%, transparent 60%);display:flex;flex-direction:column;align-items:center;padding-top:40px}
-    .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
-    .particle{position:absolute;color:rgba(0,229,255,0.2);font-weight:bold;font-size:20px;animation:floatUp 10s linear infinite}
-    @keyframes floatUp{0%{transform:translateY(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh);opacity:0}}
-    .lang-header{text-align:center;margin-bottom:40px;position:relative;z-index:2;animation:fadeDown 0.8s ease}
-    @keyframes fadeDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
-    .lang-header h1{color:#00e5ff;font-size:28px;text-shadow:0 0 20px rgba(0,229,255,0.6);margin-bottom:10px;font-weight:900}
-    .lang-header p{color:#a0aec0;font-size:15px}
-    .lang-cards-container{display:flex;flex-direction:column;gap:25px;max-width:400px;margin:0 auto;position:relative;z-index:2;padding-bottom:40px;width:90%}
-    .lang-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(15px);border:2px solid rgba(255,255,255,0.08);border-radius:28px;padding:30px 20px;text-align:center;cursor:pointer;transition:all 0.4s;text-decoration:none;display:block}
-    .lang-card:hover{transform:translateY(-10px) scale(1.02)}
-    .java-card:hover{border-color:#f89820;box-shadow:0 20px 50px rgba(248,152,32,0.3)}
-    .py-card:hover{border-color:#00e5ff;box-shadow:0 20px 50px rgba(0,229,255,0.3)}
-    .cpp-card:hover{border-color:#0072ff;box-shadow:0 20px 50px rgba(0,114,255,0.3)}
-    .card-icon{width:110px;height:110px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 15px 25px rgba(0,0,0,0.6))}
-    .card-icon img{width:100%;height:100%;object-fit:contain;animation:breathe 3s ease-in-out infinite}
-    @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-    .lang-card h2{font-size:26px;margin-bottom:8px;font-weight:900}
-    .java-card h2{color:#f89820;text-shadow:0 0 15px rgba(248,152,32,0.5)}
-    .py-card h2{color:#00e5ff;text-shadow:0 0 15px rgba(0,229,255,0.5)}
-    .cpp-card h2{color:#0072ff;text-shadow:0 0 15px rgba(0,114,255,0.5)}
-    .lang-card > p{color:#a0aec0;font-size:14px;line-height:1.6}
+    :root {
+      --bg: #050914;
+      --cyan: #00e5ff;
+      --muted: #a0aec0;
+      --border: rgba(255,255,255,.09);
+      --panel: rgba(255,255,255,.035);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 24px 18px 40px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(0,229,255,.15), transparent 60%),
+        var(--bg);
+      color: #fff;
+    }
+
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .particles {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      color: rgba(0,229,255,.2);
+      font-weight: bold;
+      animation: floatUp 12s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(110vh); opacity: 0; }
+      10%, 85% { opacity: 1; }
+      100% { transform: translateY(-15vh); opacity: 0; }
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 1050px);
+      margin: 0 auto 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 17px;
+      border: 1px solid rgba(0,229,255,.25);
+      border-radius: 13px;
+      background: rgba(0,229,255,.07);
+      color: #e8fbff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      transition: .25s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--cyan);
+      background: rgba(0,229,255,.13);
+      box-shadow: 0 7px 24px rgba(0,229,255,.1);
+    }
+
+    .back-btn:focus-visible,
+    .lang-card:focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--cyan);
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .brand i {
+      font-size: 26px;
+    }
+
+    .lang-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin: 0 auto 38px;
+      animation: fadeDown .7s ease;
+    }
+
+    .lang-header h1 {
+      color: var(--cyan);
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 900;
+      text-shadow: 0 0 20px rgba(0,229,255,.3);
+      margin-bottom: 10px;
+    }
+
+    .lang-header p {
+      max-width: 560px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .lang-cards-container {
+      width: min(100%, 1050px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .lang-card {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 30px 22px;
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      background: var(--panel);
+      backdrop-filter: blur(15px);
+      text-decoration: none;
+      color: #fff;
+      transition:
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease;
+      animation: fadeUp .65s ease both;
+    }
+
+    .lang-card:nth-child(2) {
+      animation-delay: .1s;
+    }
+
+    .lang-card:nth-child(3) {
+      animation-delay: .2s;
+    }
+
+    .lang-card:hover {
+      transform: translateY(-7px);
+    }
+
+    .py-card:hover {
+      border-color: #00e5ff;
+      box-shadow: 0 18px 45px rgba(0,229,255,.12);
+    }
+
+    .js-card:hover {
+      border-color: #f7df1e;
+      box-shadow: 0 18px 45px rgba(247,223,30,.1);
+    }
+
+    .cpp-card:hover {
+      border-color: #4c9aff;
+      box-shadow: 0 18px 45px rgba(0,114,255,.14);
+    }
+
+    .card-icon {
+      width: 88px;
+      height: 88px;
+      margin-bottom: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      animation: breathe 3s ease-in-out infinite;
+    }
+
+    .lang-card h2 {
+      font-size: 25px;
+      font-weight: 900;
+      margin-bottom: 9px;
+    }
+
+    .py-card h2 { color: #00e5ff; }
+    .js-card h2 { color: #f7df1e; }
+    .cpp-card h2 { color: #4c9aff; }
+
+    .lang-card p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.9;
+      min-height: 50px;
+    }
+
+    .card-action {
+      margin-top: 22px;
+      padding: 9px 17px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(255,255,255,.04);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .lang-card:hover .card-action {
+      background: rgba(255,255,255,.09);
+    }
+
+    .footer-note {
+      position: relative;
+      z-index: 1;
+      margin: 32px auto 0;
+      text-align: center;
+      color: #718096;
+      font-size: 12px;
+      line-height: 1.9;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 18px 14px 30px;
+      }
+
+      .topbar {
+        margin-bottom: 30px;
+      }
+
+      .lang-cards-container {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+        gap: 16px;
+      }
+
+      .lang-card {
+        padding: 23px 18px;
+      }
+
+      .card-icon {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 12px;
+      }
+
+      .lang-card p {
+        min-height: 0;
+      }
+
+      .lang-header {
+        margin-bottom: 28px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <div class="particles" id="particles"></div>
-  <div class="lang-header">
-    <h1>مساراتك البرمجية</h1>
-    <p>اختر اللغة التي تريد استكشافها، وابدأ التعلم خطوة بخطوة.</p>
-  </div>
-  <div class="lang-cards-container">
-    <a href="python-welcome.html" class="lang-card py-card">
-      <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python"></div>
-      <h2>Python</h2>
-      <p>لغة سهلة وقوية، مثالية للمبتدئين وعلوم البيانات.</p>
+  <div class="particles" id="particles" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a href="dashboard.html" class="back-btn">
+      <i class="ri-home-4-line" aria-hidden="true"></i>
+      <span>الرجوع للصفحة الرئيسية</span>
     </a>
-    <div class="lang-card java-card" onclick="alert('مسار Java قيد التطوير!')">
-      <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java"></div>
-      <h2>Java</h2>
-      <p>لغة قوية لبناء التطبيقات والأنظمة الضخمة.</p>
+
+    <div class="brand">
+      <i class="ri-robot-2-line" aria-hidden="true"></i>
+      <span>Cody Academy</span>
     </div>
-    <div class="lang-card cpp-card" onclick="alert('مسار C++ قيد التطوير!')">
-      <div class="card-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++"></div>
-      <h2>C++</h2>
-      <p>لغة الأداء العالي والخوارزميات. تحدَّ نفسك في حل المشكلات.</p>
-    </div>
-  </div>
+  </header>
+
+  <main>
+    <section class="lang-header">
+      <h1>مساراتك البرمجية</h1>
+      <p>
+        اختاري اللغة اللي حابة تتعلميها، وابدئي من الصفر.
+        كل مسار فيه دروس وأمثلة وتدريبات تساعدك تتقدمي خطوة بخطوة.
+      </p>
+    </section>
+
+    <section class="lang-cards-container" aria-label="لغات البرمجة">
+
+      <!-- Python: الاحتفاظ بصفحة الترحيب الموجودة بالفعل -->
+      <a href="python-welcome.html" class="lang-card py-card">
+        <div class="card-icon">
+          <img
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"
+            alt="Python"
+            loading="lazy"
+          >
+        </div>
+        <h2>Python</h2>
+        <p>ابدئي بأساسيات البرمجة وتعلمي كتابة أول برنامج لك.</p>
+        <span class="card-action">ابدئي التعلم ←</span>
+      </a>
+
+      <!-- JavaScript: تحميل المنهج من ملف JSON الموجود -->
+      <a href="levels.html?lang=javascript" class="lang-card js-card">
+        <div class="card-icon">
+          <img
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
+            alt="JavaScript"
+            loading="lazy"
+          >
+        </div>
+        <h2>JavaScript</h2>
+        <p>تعلمي المتغيرات والشروط وأساسيات كتابة الكود بنفسك.</p>
+        <span class="card-action">افتحي المنهج ←</span>
+      </a>
+
+      <!-- C++: تحميل المنهج من ملف JSON الموجود -->
+      <a href="levels.html?lang=cpp" class="lang-card cpp-card">
+        <div class="card-icon">
+          <img
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg"
+            alt="C++"
+            loading="lazy"
+          >
+        </div>
+        <h2>C++</h2>
+        <p>تعلمي أساسيات اللغة وابدئي بكتابة برامجك الأولى.</p>
+        <span class="card-action">افتحي المنهج ←</span>
+      </a>
+
+    </section>
+
+    <p class="footer-note">
+      اختاري مسارك وابدئي رحلة البرمجة مع كودي 🤖
+    </p>
+  </main>
+
   <script>
-    const particlesContainer = document.getElementById('particles');
-    const symbols = ['{ }', '</>', '( )', '0', '1', ';', '=>', '++', '=='];
+    const particlesContainer = document.getElementById("particles");
+    const symbols = ["{ }", "</>", "( )", "0", "1", ";", "=>", "++", "=="];
+
     for (let i = 0; i < 15; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      particle.style.left = Math.random() * 100 + '%';
-      particle.style.animationDelay = Math.random() * 10 + 's';
-      particle.style.animationDuration = (Math.random() * 5 + 8) + 's';
-      particle.style.fontSize = (Math.random() * 15 + 15) + 'px';
+      const particle = document.createElement("div");
+
+      particle.className = "particle";
+      particle.textContent =
+        symbols[Math.floor(Math.random() * symbols.length)];
+
+      particle.style.left = Math.random() * 100 + "%";
+      particle.style.animationDelay = Math.random() * 12 + "s";
+      particle.style.animationDuration = (9 + Math.random() * 6) + "s";
+      particle.style.fontSize = (15 + Math.random() * 15) + "px";
+
       particlesContainer.appendChild(particle);
     }
   </script>
