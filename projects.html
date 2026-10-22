@@ -4,167 +4,985 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#050B1F">
-  <title>مشاريعي | CodeQuest</title>
+  <meta name="theme-color" content="#080b18">
+  <title>مشروعاتي | Cody Academy</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/global.css">
 
   <style>
+    :root {
+      --projects-bg: #080b18;
+      --projects-panel: #10162a;
+      --projects-panel-2: #151d35;
+      --projects-border: rgba(167, 139, 250, .17);
+      --projects-purple: #a78bfa;
+      --projects-cyan: #22d3ee;
+      --projects-text: #f4f5ff;
+      --projects-muted: #9ba6c5;
+      --projects-danger: #fb7185;
+      --projects-radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      background: var(--bg-deep);
-      padding: var(--space-l);
-      font-family: 'Cairo', sans-serif;
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: var(--space-xl);
-    }
-
-    .header h1 {
-      font-size: 2rem;
-      color: var(--text-primary);
       margin: 0;
+      min-height: 100vh;
+      color: var(--projects-text);
+      font-family: "Cairo", sans-serif;
+      background:
+        radial-gradient(ellipse at 5% 0%, rgba(124, 58, 237, .15), transparent 36%),
+        radial-gradient(ellipse at 95% 15%, rgba(34, 211, 238, .08), transparent 30%),
+        var(--projects-bg);
     }
 
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
-      gap: var(--space-m);
+    button, input, select { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--projects-cyan);
+      outline-offset: 3px;
     }
 
-    .project-card {
-      min-width: 0;
-      background: var(--bg-panel);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius-card);
-      padding: var(--space-l);
+    .projects-page {
+      width: min(1250px, 100%);
+      margin: 0 auto;
+      padding: 34px 26px 70px;
+    }
+
+    .topbar {
       display: flex;
-      flex-direction: column;
-      transition: border-color .2s ease, transform .2s ease;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 34px;
     }
 
-    .project-card:hover {
-      border-color: var(--primary);
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-icon {
+      width: 49px;
+      height: 49px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border-radius: 16px;
+      font-size: 25px;
+      color: white;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      box-shadow: 0 8px 28px rgba(139, 92, 246, .22);
+    }
+
+    .brand-name {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 900;
+      line-height: 1.5;
+    }
+
+    .brand-caption {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--projects-muted);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 15px;
+      color: #d9d5ff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid var(--projects-border);
+      background: rgba(255,255,255,.025);
+      border-radius: 13px;
+      transition: .2s ease;
+      white-space: nowrap;
+    }
+
+    .back-link:hover {
+      background: rgba(167,139,250,.1);
+      border-color: rgba(167,139,250,.4);
       transform: translateY(-2px);
     }
 
-    .project-icon {
-      font-size: 3rem;
-      color: var(--primary);
-      margin-bottom: var(--space-s);
+    .hero {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      padding: 34px;
+      border: 1px solid var(--projects-border);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 10% 100%, rgba(34,211,238,.11), transparent 34%),
+        linear-gradient(125deg, rgba(124,58,237,.18), rgba(17,24,48,.92) 58%, rgba(34,211,238,.05));
+      margin-bottom: 25px;
     }
 
-    .project-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--text-primary);
+    .hero::after {
+      content: "</>";
+      position: absolute;
+      left: 28px;
+      bottom: -28px;
+      font-family: monospace;
+      font-size: 125px;
+      font-weight: 900;
+      color: rgba(167,139,250,.055);
+      pointer-events: none;
+    }
+
+    .hero-content { position: relative; z-index: 1; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--projects-cyan);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(25px, 4vw, 37px);
+      line-height: 1.45;
+      font-weight: 900;
+      letter-spacing: -.5px;
+    }
+
+    .hero h1 span {
+      color: var(--projects-purple);
+    }
+
+    .hero-description {
+      max-width: 550px;
+      margin: 12px 0 0;
+      color: #aab4d1;
+      line-height: 2;
+      font-size: 14px;
+    }
+
+    .hero-art {
+      position: relative;
+      z-index: 1;
+      width: 118px;
+      height: 118px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border-radius: 34px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(145deg, rgba(167,139,250,.2), rgba(34,211,238,.08));
+      box-shadow: inset 0 0 30px rgba(167,139,250,.08);
+      transform: rotate(-5deg);
+    }
+
+    .hero-art i {
+      font-size: 57px;
+      color: #c4b5fd;
+      filter: drop-shadow(0 0 18px rgba(167,139,250,.3));
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 34px;
+    }
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      min-width: 0;
+      padding: 19px;
+      border: 1px solid var(--projects-border);
+      background: rgba(16,22,42,.8);
+      border-radius: 19px;
+      transition: .2s ease;
+    }
+
+    .stat-card:hover {
+      border-color: rgba(167,139,250,.36);
+      transform: translateY(-3px);
+    }
+
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      font-size: 23px;
+    }
+
+    .stat-icon.purple { color: #c4b5fd; background: rgba(167,139,250,.13); }
+    .stat-icon.cyan { color: #67e8f9; background: rgba(34,211,238,.11); }
+    .stat-icon.pink { color: #f9a8d4; background: rgba(244,114,182,.11); }
+
+    .stat-label {
+      color: var(--projects-muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      display: block;
+      margin-top: 2px;
+      font-size: 25px;
+      line-height: 1.4;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 17px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    .section-title i {
+      color: var(--projects-purple);
+      font-size: 24px;
+    }
+
+    .section-subtitle {
+      margin: 5px 0 0;
+      color: var(--projects-muted);
+      font-size: 12px;
+    }
+
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 45px;
+      padding: 11px 18px;
+      color: #fff;
+      background: linear-gradient(110deg, #8b5cf6, #6d5be7);
+      border: 1px solid rgba(196,181,253,.2);
+      border-radius: 13px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 7px 22px rgba(124,58,237,.2);
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 27px rgba(124,58,237,.3);
+    }
+
+    .primary-button:disabled {
+      opacity: .55;
+      cursor: wait;
+      transform: none;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) minmax(150px, 215px);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .search-box { position: relative; }
+
+    .search-box > i {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      color: #8995b7;
+      font-size: 19px;
+      pointer-events: none;
+    }
+
+    .toolbar input, .toolbar select {
+      width: 100%;
+      min-height: 49px;
+      color: var(--projects-text);
+      background: rgba(16,22,42,.88);
+      border: 1px solid var(--projects-border);
+      border-radius: 14px;
+      padding: 11px 15px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .toolbar input { padding-right: 44px; }
+    .toolbar input::placeholder { color: #7885a7; }
+
+    .toolbar input:focus, .toolbar select:focus {
+      border-color: rgba(167,139,250,.7);
+    }
+
+    .toolbar select { cursor: pointer; }
+    .toolbar select option { background: #10162a; color: white; }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .project-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 265px;
+      padding: 20px;
+      overflow: hidden;
+      border: 1px solid var(--projects-border);
+      border-radius: var(--projects-radius);
+      background: linear-gradient(155deg, rgba(21,29,53,.94), rgba(13,18,35,.96));
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+      animation: card-in .35s ease both;
+    }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(9px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .project-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(167,139,250,.43);
+      box-shadow: 0 14px 35px rgba(0,0,0,.17);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 19px;
+    }
+
+    .language-icon {
+      width: 53px;
+      height: 53px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border-radius: 17px;
+      font-size: 28px;
+    }
+
+    .language-icon.javascript { color: #fcd34d; background: rgba(250,204,21,.1); }
+    .language-icon.python { color: #93c5fd; background: rgba(59,130,246,.13); }
+    .language-icon.cpp { color: #67e8f9; background: rgba(34,211,238,.11); }
+    .language-icon.other { color: #c4b5fd; background: rgba(167,139,250,.12); }
+
+    .card-menu {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-button {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      color: #9ba6c5;
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .icon-button:hover {
+      color: #fff;
+      background: rgba(167,139,250,.14);
+      border-color: rgba(167,139,250,.28);
+    }
+
+    .icon-button.delete:hover {
+      color: #fda4af;
+      background: rgba(251,113,133,.1);
+      border-color: rgba(251,113,133,.3);
+    }
+
+    .project-name {
+      margin: 0 0 9px;
+      font-size: 17px;
+      line-height: 1.7;
+      font-weight: 900;
       overflow-wrap: anywhere;
-      margin: 0 0 8px;
     }
 
-    .project-date {
-      font-size: .85rem;
-      color: var(--text-muted);
-      margin-bottom: var(--space-m);
+    .project-description {
+      margin: 0;
+      color: var(--projects-muted);
+      font-size: 12px;
+      line-height: 1.9;
+      overflow-wrap: anywhere;
     }
 
-    .project-actions {
+    .project-meta {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 17px;
+    }
+
+    .language-badge, .date-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 9px;
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .language-badge {
+      color: #d5c7ff;
+      background: rgba(167,139,250,.1);
+      border: 1px solid rgba(167,139,250,.12);
+    }
+
+    .date-badge {
+      color: #9ba6c5;
+      background: rgba(255,255,255,.035);
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px;
       margin-top: auto;
+      padding-top: 18px;
     }
 
-    .project-actions button {
+    .open-project {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 39px;
+      padding: 8px 13px;
+      color: #e4dcff;
+      background: rgba(167,139,250,.1);
+      border: 1px solid rgba(167,139,250,.18);
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 800;
       cursor: pointer;
-      font-family: inherit;
+      transition: .2s;
     }
 
-    .project-actions .open-button {
-      flex: 1;
-      padding: 10px;
+    .open-project:hover {
+      color: white;
+      background: rgba(139,92,246,.25);
+      border-color: rgba(167,139,250,.42);
     }
 
-    .project-actions .delete-button {
-      padding: 10px;
-      color: var(--accent-coral);
-      border-color: var(--accent-coral);
-    }
+    .card-arrow { color: #7f8bab; font-size: 18px; }
 
-    .btn-new {
-      background: var(--bg-panel);
-      border: 2px dashed var(--border-soft);
-      border-radius: var(--radius-card);
-      padding: var(--space-l);
+    .state-panel {
+      grid-column: 1 / -1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      color: var(--text-muted);
-      transition: .3s;
-      min-height: 200px;
-      font-family: inherit;
+      min-height: 285px;
+      padding: 30px 20px;
+      text-align: center;
+      background: rgba(16,22,42,.55);
+      border: 1px dashed rgba(167,139,250,.25);
+      border-radius: 22px;
     }
 
-    .btn-new:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: rgba(0, 217, 255, .05);
+    .state-icon {
+      width: 70px;
+      height: 70px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 15px;
+      border-radius: 24px;
+      color: #c4b5fd;
+      background: rgba(167,139,250,.1);
+      font-size: 33px;
     }
 
-    .btn-new i {
-      font-size: 3rem;
-      margin-bottom: 10px;
+    .state-panel h3 { margin: 0 0 8px; font-size: 18px; font-weight: 900; }
+    .state-panel p { max-width: 390px; margin: 0 0 18px; color: var(--projects-muted); font-size: 13px; line-height: 2; }
+
+    .spinner {
+      width: 37px;
+      height: 37px;
+      border: 3px solid rgba(167,139,250,.18);
+      border-top-color: var(--projects-purple);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin-bottom: 16px;
     }
 
-    .status-message {
-      grid-column: 1 / -1;
-      color: var(--text-muted);
-      padding: 20px;
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-note {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: #7380a3;
+      font-size: 11px;
       text-align: center;
     }
 
-    .btn-new:disabled,
-    button:disabled {
-      opacity: .6;
-      cursor: not-allowed;
+    .footer-note i { color: var(--projects-cyan); font-size: 15px; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(3,5,14,.76);
+      backdrop-filter: blur(9px);
     }
 
-    @media (max-width: 480px) {
-      body {
-        padding: 16px;
-      }
+    .modal-overlay.open { display: flex; }
 
-      .header h1 {
-        font-size: 1.5rem;
+    .modal {
+      width: min(465px, 100%);
+      max-height: min(90vh, 700px);
+      overflow-y: auto;
+      padding: 25px;
+      background: #10162a;
+      border: 1px solid rgba(167,139,250,.25);
+      border-radius: 24px;
+      box-shadow: 0 25px 90px rgba(0,0,0,.4);
+      animation: modal-in .2s ease;
+    }
+
+    @keyframes modal-in {
+      from { opacity: 0; transform: translateY(9px) scale(.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .modal-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-heading-icon {
+      width: 45px;
+      height: 45px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: #d8ccff;
+      background: rgba(167,139,250,.12);
+      border-radius: 14px;
+      font-size: 23px;
+    }
+
+    .modal h2 { margin: 0; font-size: 19px; font-weight: 900; }
+    .modal-subtitle { margin: 4px 0 0; color: var(--projects-muted); font-size: 12px; line-height: 1.8; }
+
+    .modal-close {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: #aab4d1;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .form-field { margin-bottom: 17px; }
+    .form-field label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 800; color: #dbe0f4; }
+
+    .form-field input, .form-field select {
+      width: 100%;
+      min-height: 47px;
+      padding: 11px 13px;
+      color: #f4f5ff;
+      background: #0b1020;
+      border: 1px solid rgba(167,139,250,.2);
+      border-radius: 12px;
+      outline: none;
+      font-size: 13px;
+    }
+
+    .form-field input::placeholder { color: #7481a3; }
+    .form-field input:focus, .form-field select:focus { border-color: var(--projects-purple); }
+    .form-field select option { background: #10162a; }
+
+    .field-help { margin: 7px 0 0; color: #8793b3; font-size: 11px; line-height: 1.8; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .modal-actions > button { flex: 1; }
+
+    .secondary-button, .danger-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .secondary-button {
+      color: #c5cde3;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+    }
+
+    .secondary-button:hover { background: rgba(255,255,255,.08); }
+
+    .danger-button {
+      color: #fff;
+      background: #be4561;
+      border: 1px solid rgba(251,113,133,.3);
+    }
+
+    .danger-button:hover { background: #d24d6b; }
+    .danger-button:disabled { opacity: .6; cursor: wait; }
+
+    .delete-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px;
+      color: #fda4af;
+      background: rgba(251,113,133,.075);
+      border: 1px solid rgba(251,113,133,.15);
+      border-radius: 13px;
+      font-size: 12px;
+      line-height: 1.9;
+    }
+
+    .delete-warning i { margin-top: 3px; font-size: 18px; flex-shrink: 0; }
+
+    .toast-region {
+      position: fixed;
+      z-index: 10001;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      width: min(360px, calc(100vw - 40px));
+      pointer-events: none;
+    }
+
+    .toast {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 13px 15px;
+      color: #f4f5ff;
+      background: #151d35;
+      border: 1px solid rgba(167,139,250,.25);
+      border-radius: 14px;
+      box-shadow: 0 12px 35px rgba(0,0,0,.3);
+      font-size: 12px;
+      line-height: 1.8;
+      animation: toast-in .2s ease;
+    }
+
+    .toast i { font-size: 19px; color: #67e8f9; flex-shrink: 0; }
+    .toast.error i { color: #fda4af; }
+    .toast.success i { color: #86efac; }
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 950px) {
+      .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { padding: 27px; }
+    }
+
+    @media (max-width: 600px) {
+      .projects-page { padding: 21px 14px 45px; }
+      .topbar { margin-bottom: 23px; }
+      .brand-icon { width: 42px; height: 42px; border-radius: 13px; }
+      .brand-name { font-size: 16px; }
+      .brand-caption { font-size: 10px; }
+      .back-link { padding: 9px 11px; font-size: 11px; }
+      .back-link .back-text { display: none; }
+      .hero { padding: 23px 19px; border-radius: 22px; gap: 10px; }
+      .hero h1 { font-size: 25px; }
+      .hero-description { font-size: 12px; line-height: 2; }
+      .hero-art { width: 67px; height: 67px; border-radius: 22px; }
+      .hero-art i { font-size: 35px; }
+      .hero::after { font-size: 90px; }
+      .stats-grid { gap: 8px; margin-bottom: 29px; }
+      .stat-card { padding: 12px 9px; flex-direction: column; align-items: flex-start; gap: 7px; border-radius: 15px; }
+      .stat-icon { width: 34px; height: 34px; border-radius: 11px; font-size: 18px; }
+      .stat-label { font-size: 10px; }
+      .stat-value { font-size: 21px; }
+      .section-heading { align-items: flex-start; }
+      .section-title { font-size: 18px; }
+      .section-subtitle { font-size: 11px; }
+      .primary-button { min-height: 41px; padding: 9px 12px; font-size: 11px; whit
+e-space: nowrap; }
+      .toolbar { grid-template-columns: 1fr; gap: 9px; }
+      .toolbar input, .toolbar select { min-height: 46px; }
+      .project-grid { grid-template-columns: 1fr; gap: 13px; }
+      .project-card { min-height: 245px; }
+      .modal { padding: 20px 17px; border-radius: 20px; }
+      .footer-note { line-height: 1.9; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <header class="header">
-    <h1>مشاريعي</h1>
-    <a href="dashboard.html" class="btn-secondary">
-      <i class="ri-home-5-line" aria-hidden="true"></i>
-      الرئيسية
-    </a>
-  </header>
+  <main class="projects-page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon"><i class="ri-code-s-slash-line"></i></div>
+        <div>
+          <p class="brand-name">Cody Academy</p>
+          <p class="brand-caption">رحلتك في عالم البرمجة تبدأ بمشروع</p>
+        </div>
+      </div>
 
-  <main>
-    <div id="projectsGrid" class="projects-grid" aria-live="polite">
-      <p class="status-message">جارٍ تحميل المشروعات...</p>
+      <a class="back-link" href="dashboard.html">
+        <i class="ri-arrow-right-line"></i>
+        <span class="back-text">العودة للوحة التحكم</span>
+      </a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">
+          <i class="ri-sparkling-2-line"></i>
+          مساحة إبداعك
+        </div>
+        <h1>أفكارك تتحول إلى <span>مشروعات!</span></h1>
+        <p class="hero-description">
+          كل مشروع بتعمله هو خطوة جديدة في رحلتك كمبرمج.
+          أنشئ مشروعًا، جرّب أفكارك، وارجع كمّل من حيث توقفت.
+        </p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <i class="ri-rocket-2-line"></i>
+      </div>
+    </section>
+
+    <section class="stats-grid" aria-label="إحصائيات المشروعات">
+      <article class="stat-card">
+        <div class="stat-icon purple"><i class="ri-folder-code-line"></i></div>
+        <div>
+          <div class="stat-label">إجمالي مشروعاتي</div>
+          <strong class="stat-value" id="totalProjects">—</strong>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-icon cyan"><i class="ri-javascript-line"></i></div>
+        <div>
+          <div class="stat-label">مشروعات JavaScript</div>
+          <strong class="stat-value" id="jsProjects">—</strong>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-icon pink"><i class="ri-code-box-line"></i></div>
+        <div>
+          <div class="stat-label">مشروعات Python و C++</div>
+          <strong class="stat-value" id="otherProjects">—</strong>
+        </div>
+      </article>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <h2 class="section-title">
+            <i class="ri-folder-open-line"></i>
+            مشروعاتي
+          </h2>
+          <p class="section-subtitle">كل أفكارك البرمجية محفوظة هنا.</p>
+        </div>
+
+        <button class="primary-button" id="createButton" type="button">
+          <i class="ri-add-line"></i>
+          مشروع جديد
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <label class="search-box">
+          <i class="ri-search-line"></i>
+          <input id="searchInput" type="search" placeholder="ابحث عن مشروع بالاسم..." autocomplete="off" aria-label="البحث عن مشروع">
+        </label>
+
+        <select id="languageFilter" aria-label="فلترة المشروعات حسب اللغة">
+          <option value="all">كل لغات البرمجة</option>
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="cpp">C++</option>
+        </select>
+      </div>
+
+      <div class="project-grid" id="projectsGrid" aria-live="polite">
+        <div class="state-panel">
+          <div class="spinner"></div>
+          <h3>بنجهز مشروعاتك...</h3>
+          <p>لحظات ونكون جمعنا كل مشروعاتك في مكان واحد.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      <i class="ri-shield-check-line"></i>
+      مشروعاتك مرتبطة بحسابك، وتقدر ترجع لها في أي وقت.
     </div>
   </main>
+
+  <div class="modal-overlay" id="createModal" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <div class="modal-heading-icon"><i class="ri-folder-add-line"></i></div>
+          <div>
+            <h2 id="createModalTitle">مشروع جديد</h2>
+            <p class="modal-subtitle">ابدأ فكرة جديدة واختار اللغة المناسبة.</p>
+          </div>
+        </div>
+        <button class="modal-close" type="button" data-close="createModal" aria-label="إغلاق">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <form id="createForm">
+        <div class="form-field">
+          <label for="projectName">اسم المشروع</label>
+          <input id="projectName" name="projectName" type="text" maxlength="60" placeholder="مثال: أول لعبة ليا" required autocomplete="off">
+          <p class="field-help">اختار اسمًا يعبّر عن فكرتك، وتقدر تستخدم العربي أو الإنجليزي.</p>
+        </div>
+
+        <div class="form-field">
+          <label for="projectLanguage">لغة البرمجة</label>
+          <select id="projectLanguage" name="projectLanguage" required>
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button class="secondary-button" type="button" data-close="createModal">إلغاء</button>
+          <button class="primary-button" id="saveProjectButton" type="submit">
+            <i class="ri-check-line"></i>
+            إنشاء المشروع
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <div class="modal-heading-icon" style="color:#fda4af;background:rgba(251,113,133,.1)">
+            <i class="ri-delete-bin-6-line"></i>
+          </div>
+          <div>
+            <h2 id="deleteModalTitle">حذف المشروع؟</h2>
+            <p class="modal-subtitle">راجع اسم المشروع قبل تأكيد الحذف.</p>
+          </div>
+        </div>
+        <button class="modal-close" type="button" data-close="deleteModal" aria-label="إغلاق">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="delete-warning">
+        <i class="ri-alert-line"></i>
+        <span>أنت على وشك حذف <strong id="deleteProjectName"></strong>. تأكد إنك مش محتاج المشروع قبل ما تكمل.</span>
+      </div>
+
+      <div class="modal-actions">
+        <button class="secondary-button" type="button" data-close="deleteModal">إلغاء</button>
+        <button class="danger-button" id="confirmDeleteButton" type="button">
+          <i class="ri-delete-bin-line"></i>
+          تأكيد الحذف
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
 
   <script type="module">
     import { requireUser } from "./js/auth.js";
@@ -182,122 +1000,308 @@
     import { showToast } from "./js/ui.js";
 
     const grid = document.getElementById("projectsGrid");
+    const createButton = document.getElementById("createButton");
+    const createForm = document.getElementById("createForm");
+    const saveProjectButton = document.getElementById("saveProjectButton");
+    const searchInput = document.getElementById("searchInput");
+    const languageFilter = document.getElementById("languageFilter");
+    const createModal = document.getElementById("createModal");
+    const deleteModal = document.getElementById("deleteModal");
+    const confirmDeleteButton = document.getElementById("confirmDeleteButton");
+    const projectNameInput = document.getElementById("projectName");
+    const projectLanguageInput = document.getElementById("projectLanguage");
+    const deleteProjectName = document.getElementById("deleteProjectName");
 
     let currentUser = null;
     let projects = [];
-    let creatingProject = false;
+    let projectPendingDelete = null;
+    let isCreating = false;
+    let isDeleting = false;
 
-    function showStatus(message) {
-      grid.replaceChildren();
+    const LANGUAGE_INFO = {
+      javascript: {
+        name: "JavaScript",
+        icon: "ri-javascript-line",
+        className: "javascript",
+        description: "مشروع JavaScript جاهز للتجربة والتطوير."
+      },
+      python: {
+        name: "Python",
+        icon: "ri-terminal-box-line",
+        className: "python",
+        description: "مشروع Python جاهز للتجربة والتطوير."
+      },
+      cpp: {
+        name: "C++",
+        icon: "ri-code-s-slash-line",
+        className: "cpp",
+        description: "مشروع C++ جاهز للتجربة والتطوير."
+      }
+    };
 
-      const paragraph = document.createElement("p");
-      paragraph.className = "status-message";
-      paragraph.textContent = message;
-
-      grid.appendChild(paragraph);
+    function getLanguage(language) {
+      return LANGUAGE_INFO[language] || {
+        name: language || "غير محددة",
+        icon: "ri-file-code-line",
+        className: "other",
+        description: "مشروع برمجي على Cody Academy."
+      };
     }
 
-    function createButton(label, className, onClick, iconName) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = className;
-
-      if (iconName) {
-        const icon = document.createElement("i");
-        icon.className = iconName;
-        icon.setAttribute("aria-hidden", "true");
-        button.appendChild(icon);
-        button.appendChild(document.createTextNode(" "));
+    function getStarterCode(language) {
+      if (language === "python") {
+        return 'print("Hello CodeQuest!")';
       }
 
-      button.appendChild(document.createTextNode(label));
-      button.addEventListener("click", onClick);
+      if (language === "cpp") {
+        return [
+          "#include <iostream>",
+          "using namespace std;",
+          "",
+          "int main() {",
+          '    cout << "Hello CodeQuest!" << endl;',
+          "    return 0;",
+          "}"
+        ].join("\n");
+      }
 
-      return button;
+      return 'console.log("Hello CodeQuest");';
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function showMessage(message, type = "info") {
+      try {
+        showToast(message, type);
+      } catch {
+        const region = document.getElementById("toastRegion");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        const icon = document.createElement("i");
+        icon.className = type === "error"
+          ? "ri-error-warning-line"
+          : type === "success"
+            ? "ri-checkbox-circle-line"
+            : "ri-information-line";
+        const text = document.createElement("span");
+        text.textContent = message;
+        toast.append(icon, text);
+        region.appendChild(toast);
+        window.setTimeout(() => toast.remove(), 3800);
+      }
+    }
+
+    function openModal(modal) {
+      modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+
+      const focusable = modal.querySelector("input, select, button");
+      if (focusable) window.setTimeout(() => focusable.focus(), 50);
+    }
+
+    function closeModal(modal) {
+      modal.classList.remove("open");
+
+      if (!document.querySelector(".modal-overlay.open")) {
+        document.body.style.overflow = "";
+      }
+    }
+
+    document.querySelectorAll("[data-close]").forEach(button => {
+      button.addEventListener("click", () => {
+        const modal = document.getElementById(button.dataset.close);
+        if (modal) closeModal(modal);
+      });
+    });
+
+    [createModal, deleteModal].forEach(modal => {
+      modal.addEventListener("click", event => {
+        if (event.target === modal) closeModal(modal);
+      });
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        document.querySelectorAll(".modal-overlay.open").forEach(closeModal);
+      }
+    });
+
+    function renderState(icon, title, message, buttonText = "", buttonAction = null) {
+      grid.replaceChildren();
+
+      const panel = document.createElement("div");
+      panel.className = "state-panel";
+
+      const iconBox = document.createElement("div");
+      iconBox.className = "state-icon";
+      const iconElement = document.createElement("i");
+      iconElement.className = icon;
+      iconBox.appendChild(iconElement);
+
+      const heading = document.createElement("h3");
+      heading.textContent = title;
+
+      const description = document.createElement("p");
+      description.textContent = message;
+
+      panel.append(iconBox, heading, description);
+
+      if (buttonText && buttonAction) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "primary-button";
+        button.textContent = buttonText;
+        button.addEventListener("click", buttonAction);
+        panel.appendChild(button);
+      }
+
+      grid.appendChild(panel);
+    }
+
+    function updateStats() {
+      const javascriptCount = projects.filter(p => p.language === "javascript").length;
+      const otherCount = projects.filter(p => p.language === "python" || p.language === "cpp").length;
+
+      document.getElementById("totalProjects").textContent = projects.length.toLocaleString("ar-EG");
+      document.getElementById("jsProjects").textContent = javascriptCount.toLocaleString("ar-EG");
+      document.getElementById("otherProjects").textContent = otherCount.toLocaleString("ar-EG");
+    }
+
+    function getProjectDate(project) {
+      if (project.date) return project.date;
+
+      const timestamp = project.createdAt?.toDate?.();
+      if (timestamp) return timestamp.toLocaleDateString("ar-EG");
+
+      return "تاريخ غير محدد";
+    }
+
+    function createProjectCard(project) {
+      const language = getLanguage(project.language);
+      const card = document.createElement("article");
+      card.className = "project-card";
+
+      const top = document.createElement("div");
+      top.className = "card-top";
+
+      const languageIcon = document.createElement("div");
+      languageIcon.className = `language-icon ${language.className}`;
+      const icon = document.createElement("i");
+      icon.className = language.icon;
+      languageIcon.appendChild(icon);
+
+      const menu = document.createElement("div");
+      menu.className = "card-menu";
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "icon-button delete";
+      deleteButton.title = "حذف المشروع";
+      deleteButton.setAttribute("aria-label", `حذف ${project.name || "المشروع"}`);
+      deleteButton.innerHTML = '<i class="ri-delete-bin-line"></i>';
+      deleteButton.addEventListener("click", () => requestDelete(project));
+
+      menu.appendChild(deleteButton);
+      top.append(languageIcon, menu);
+
+      const title = document.createElement("h3");
+      title.className = "project-name";
+      title.textContent = project.name || "مشروع بدون اسم";
+
+      const description = document.createElement("p");
+      description.className = "project-description";
+      description.textContent = language.description;
+
+      const meta = document.createElement("div");
+      meta.className = "project-meta";
+
+      const languageBadge = document.createElement("span");
+      languageBadge.className = "language-badge";
+      languageBadge.textContent = language.name;
+
+      const dateBadge = document.createElement("span");
+      dateBadge.className = "date-badge";
+      dateBadge.innerHTML = '<i class="ri-calendar-line"></i>';
+      const dateText = document.createElement("span");
+      dateText.textContent = getProjectDate(project);
+      dateBadge.appendChild(dateText);
+
+      meta.append(languageBadge, dateBadge);
+
+      const footer = document.createElement("div");
+      footer.className = "card-footer";
+
+      const openButton = document.createElement("button");
+      openButton.type = "button";
+      openButton.className = "open-project";
+      openButton.innerHTML = 'فتح المشروع <i class="ri-arrow-left-line"></i>';
+      openButton.addEventListener("click", () => openProject(project));
+
+      const arrow = document.createElement("i");
+      arrow.className = "ri-code-box-line card-arrow";
+
+      footer.append(openButton, arrow);
+      card.append(top, title, description, meta, footer);
+
+      return card;
     }
 
     function renderProjects() {
+      updateStats();
+
+      const searchTerm = searchInput.value.trim().toLocaleLowerCase();
+      const selectedLanguage = languageFilter.value;
+
+      const filteredProjects = projects.filter(project => {
+        const name = String(project.name || "").toLocaleLowerCase();
+        const matchesSearch = name.includes(searchTerm);
+        const matchesLanguage = selectedLanguage === "all" || project.language === selectedLanguage;
+        return matchesSearch && matchesLanguage;
+      });
+
       grid.replaceChildren();
 
-      const newButton = document.createElement("button");
-      newButton.type = "button";
-      newButton.className = "btn-new";
-      newButton.disabled = creatingProject;
-
-      const addIcon = document.createElement("i");
-      addIcon.className = "ri-add-circle-line";
-      addIcon.setAttribute("aria-hidden", "true");
-
-      const addTitle = document.createElement("h3");
-      addTitle.textContent = creatingProject
-        ? "جارٍ إنشاء المشروع..."
-        : "مشروع جديد";
-
-      newButton.append(addIcon, addTitle);
-      newButton.addEventListener("click", createProject);
-      grid.appendChild(newButton);
-
       if (projects.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "status-message";
-        empty.textContent = "لا توجد مشروعات حتى الآن. أنشئ مشروعك الأول!";
-        grid.appendChild(empty);
+        renderState(
+          "ri-folder-add-line",
+          "لسه مفيش مشروعات!",
+          "ابدأ أول مشروع ليك، واختار لغة البرمجة اللي حابب تتعلمها.",
+          "إنشاء أول مشروع",
+          openCreateModal
+        );
         return;
       }
 
-      for (const project of projects) {
-        const card = document.createElement("article");
-        card.className = "project-card";
-
-        const icon = document.createElement("div");
-        icon.className = "project-icon";
-
-        const iconElement = document.createElement("i");
-        iconElement.className = "ri-folder-code-line";
-        iconElement.setAttribute("aria-hidden", "true");
-        icon.appendChild(iconElement);
-
-        const title = document.createElement("h2");
-        title.className = "project-title";
-        title.textContent = project.name || "مشروع بدون اسم";
-
-        const date = document.createElement("p");
-        date.className = "project-date";
-        date.textContent = project.date
-          ? "آخر تعديل: " + project.date
-          : "تاريخ الإنشاء غير متاح";
-
-        const actions = document.createElement("div");
-        actions.className = "project-actions";
-
-        const openButton = createButton(
-          "فتح",
-          "btn-primary open-button",
-          () => openProject(project.id)
+      if (filteredProjects.length === 0) {
+        renderState(
+          "ri-search-eye-line",
+          "مش لاقيين المشروع ده",
+          "جرّب اسمًا مختلفًا أو غيّر فلتر لغة البرمجة عشان تظهر لك مشروعات تانية."
         );
-
-        const deleteButton = createButton(
-          "حذف",
-          "btn-secondary delete-button",
-          () => deleteProject(project.id),
-          "ri-delete-bin-line"
-        );
-
-        deleteButton.setAttribute(
-          "aria-label",
-          "حذف المشروع " + (project.name || "")
-        );
-
-        actions.append(openButton, deleteButton);
-        card.append(icon, title, date, actions);
-        grid.appendChild(card);
+        return;
       }
+
+      const fragment = document.createDocumentFragment();
+
+      filteredProjects.forEach((project, index) => {
+        const card = createProjectCard(project);
+        card.style.animationDelay = `${Math.min(index * 45, 270)}ms`;
+        fragment.appendChild(card);
+      });
+
+      grid.appendChild(fragment);
     }
 
     async function loadProjects() {
-      if (!currentUser) return;
-
-      showStatus("جارٍ تحميل المشروعات...");
+      renderState("ri-loader-4-line", "بنجهز مشروعاتك...", "لحظات ونكون جمعنا كل مشروعاتك في مكان واحد.");
 
       try {
         const projectsQuery = query(
@@ -307,119 +1311,180 @@
 
         const snapshot = await getDocs(projectsQuery);
 
-        projects = snapshot.docs.map((item) => ({
-          id: item.id,
-          ...item.data()
+        projects = snapshot.docs.map(documentSnapshot => ({
+          id: documentSnapshot.id,
+          ...documentSnapshot.data()
         }));
 
         projects.sort((a, b) => {
-          const first = a.createdAt?.seconds || 0;
-          const second = b.createdAt?.seconds || 0;
-          return second - first;
+          const aTime = a.createdAt?.toMillis?.() || 0;
+          const bTime = b.createdAt?.toMillis?.() || 0;
+          return bTime - aTime;
         });
 
         renderProjects();
       } catch (error) {
-        console.error("Project loading error:", error);
-        showStatus("تعذر تحميل المشروعات. تحقق من الاتصال وصلاحيات الحساب.");
+        console.error("Failed to load projects:", error);
+
+        renderState(
+          "ri-wifi-off-line",
+          "مش قادرين نحمّل المشروعات",
+          "حصلت مشكلة أثناء الاتصال بقاعدة البيانات. اتأكد من اتصال الإنترنت وحاول تاني.",
+          "إعادة المحاولة",
+          loadProjects
+        );
       }
     }
 
-    async function createProject() {
-      if (!currentUser || creatingProject) return;
+    function openCreateModal() {
+      createForm.reset();
+      projectLanguageInput.value = "javascript";
+      openModal(createModal);
+    }
 
-      const rawName = window.prompt("أدخل اسم المشروع الجديد:");
-      if (rawName === null) return;
+    async function createProject(event) {
+      event.preventDefault();
 
-      const name = rawName.trim();
+      if (!currentUser || isCreating) return;
 
-      if (name.length < 1 || name.length > 80) {
-        showToast("اسم المشروع يجب أن يكون من حرف إلى 80 حرفًا.", "error");
+      const name = projectNameInput.value.trim();
+      const language = projectLanguageInput.value;
+
+      if (!name) {
+        projectNameInput.focus();
+        showMessage("اكتب اسم المشروع الأول.", "error");
         return;
       }
 
-      creatingProject = true;
-      renderProjects();
+      if (name.length > 60) {
+        showMessage("اسم المشروع لازم يكون 60 حرفًا أو أقل.", "error");
+        return;
+      }
+
+      if (!LANGUAGE_INFO[language]) {
+        showMessage("اختار لغة برمجة صحيحة.", "error");
+        return;
+      }
+
+      isCreating = true;
+      saveProjectButton.disabled = true;
+      saveProjectButton.innerHTML = '<i class="ri-loader-4-line"></i> جاري الإنشاء...';
 
       try {
-        await addDoc(collection(db, "projects"), {
+        const newProject = {
           userId: currentUser.uid,
           name,
           date: new Date().toLocaleDateString("ar-EG"),
           createdAt: serverTimestamp(),
-          code: 'console.log("Hello CodeQuest");',
-          language: "javascript"
+          code: getStarterCode(language),
+          language
+        };
+
+        const projectReference = await addDoc(collection(db, "projects"), newProject);
+
+        projects.unshift({
+          ...newProject,
+          id: projectReference.          id: projectReference.id
         });
 
-        showToast("تم إنشاء المشروع بنجاح!", "success");
-        await loadProjects();
-      } catch (error) {
-        console.error("Project creation error:", error);
-        showToast("تعذر إنشاء المشروع. تحقق من الاتصال والصلاحيات.", "error");
-      } finally {
-        creatingProject = false;
         renderProjects();
+        closeModal(createModal);
+        createForm.reset();
+        showMessage("تم إنشاء المشروع بنجاح! 🎉", "success");
+      } catch (error) {
+        console.error("Failed to create project:", error);
+        showMessage("حصلت مشكلة أثناء إنشاء المشروع. حاول تاني.", "error");
+      } finally {
+        isCreating = false;
+        saveProjectButton.disabled = false;
+        saveProjectButton.innerHTML = '<i class="ri-check-line"></i> إنشاء المشروع';
       }
     }
 
-    async function deleteProject(projectId) {
-      const project = projects.find((item) => item.id === projectId);
+    function requestDelete(project) {
+      projectPendingDelete = project;
+      deleteProjectName.textContent = project.name || "مشروع بدون اسم";
+      openModal(deleteModal);
+    }
 
-      if (!project || !currentUser) return;
+    async function deleteProject() {
+      if (!currentUser || !projectPendingDelete || isDeleting) return;
 
-      const confirmed = window.confirm(
-        `هل تريد حذف المشروع "${project.name || "بدون اسم"}"؟`
-      );
+      isDeleting = true;
+      confirmDeleteButton.disabled = true;
+      confirmDeleteButton.innerHTML = '<i class="ri-loader-4-line"></i> جاري الحذف...';
 
-      if (!confirmed) return;
+      const projectToDelete = projectPendingDelete;
 
       try {
-        await deleteDoc(doc(db, "projects", projectId));
-        showToast("تم حذف المشروع.", "success");
-        await loadProjects();
+        await deleteDoc(doc(db, "projects", projectToDelete.id));
+
+        projects = projects.filter(project => project.id !== projectToDelete.id);
+        projectPendingDelete = null;
+
+        closeModal(deleteModal);
+        renderProjects();
+        showMessage("تم حذف المشروع بنجاح.", "success");
       } catch (error) {
-        console.error("Project deletion error:", error);
-        showToast("تعذر حذف المشروع. تحقق من الصلاحيات.", "error");
+        console.error("Failed to delete project:", error);
+        showMessage("تعذّر حذف المشروع. حاول تاني.", "error");
+      } finally {
+        isDeleting = false;
+        confirmDeleteButton.disabled = false;
+        confirmDeleteButton.innerHTML = '<i class="ri-delete-bin-line"></i> تأكيد الحذف';
       }
     }
 
-    function openProject(projectId) {
-      const project = projects.find((item) => item.id === projectId);
-      if (!project) return;
+    function openProject(project) {
+      if (!project || !project.id) {
+        showMessage("مش قادرين نفتح المشروع ده.", "error");
+        return;
+      }
 
       try {
         sessionStorage.setItem(
           "playgroundCode",
-          typeof project.code === "string" ? project.code : ""
+          project.code || getStarterCode(project.language)
         );
-
         sessionStorage.setItem(
           "playgroundLang",
-          ["javascript", "python", "cpp"].includes(project.language)
-            ? project.language
-            : "javascript"
+          project.language || "javascript"
         );
+        sessionStorage.setItem("currentProjectId", project.id);
+        sessionStorage.setItem("currentProjectName", project.name || "مشروع جديد");
 
-        location.href = "playground.html";
+        window.location.href = "playground.html";
       } catch (error) {
-        console.error("Project opening error:", error);
-        showToast("تعذر فتح المشروع.", "error");
+        console.error("Failed to open project:", error);
+        showMessage("مش قادرين نفتح المشروع. حاول تاني.", "error");
       }
     }
 
-    async function initProjectsPage() {
+    createButton.addEventListener("click", openCreateModal);
+    createForm.addEventListener("submit", createProject);
+    confirmDeleteButton.addEventListener("click", deleteProject);
+    searchInput.addEventListener("input", renderProjects);
+    languageFilter.addEventListener("change", renderProjects);
+
+    async function initializePage() {
       try {
         currentUser = await requireUser();
+
+        if (!currentUser) return;
+
         await loadProjects();
       } catch (error) {
-        if (error?.message !== "يجب تسجيل الدخول.") {
-          console.error("Projects page initialization error:", error);
-          showStatus("تعذر تهيئة صفحة المشروعات.");
-        }
+        console.error("Failed to initialize projects page:", error);
+
+        renderState(
+          "ri-error-warning-line",
+          "حصلت مشكلة في فتح الصفحة",
+          "حاول تحديث الصفحة أو تسجيل الدخول من جديد."
+        );
       }
     }
 
-    await initProjectsPage();
+    initializePage();
   </script>
 </body>
 </html>
