@@ -1,153 +1,513 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الإعدادات | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { background: var(--bg-deep); padding: var(--space-l); }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
-        .header h1 { font-size: 2rem; color: var(--text-primary); }
-        
-        .settings-group { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); margin-bottom: var(--space-m); overflow: hidden; }
-        .settings-group-title { padding: 15px 20px; background: rgba(0, 217, 255, 0.05); color: var(--primary); font-weight: 700; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; gap: 10px; }
-        
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-soft); }
-        .setting-row:last-child { border-bottom: none; }
-        .setting-info h3 { color: var(--text-primary); font-size: 1.1rem; margin-bottom: 5px; }
-        .setting-info p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
-        
-        .toggle-switch { position: relative; width: 50px; height: 28px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-deep); border: 1px solid var(--border-soft); transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 3px; background-color: var(--text-muted); transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(22px); background-color: var(--bg-deep); }
-        
-        .btn-logout { width: 100%; padding: 15px; background: rgba(255, 107, 107, 0.1); border: 1px solid var(--accent-coral); color: var(--accent-coral); border-radius: var(--radius-card); font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.3s; font-family: var(--font-arabic); margin-top: var(--space-l); display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-logout:hover { background: var(--accent-coral); color: var(--bg-deep); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050B1F">
+  <title>الإعدادات | CodeQuest</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+
+  <style>
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      padding: var(--space-l);
+      font-family: 'Cairo', sans-serif;
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: var(--space-xl);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: var(--text-primary);
+    }
+
+    .settings-group {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-card);
+      margin-bottom: var(--space-m);
+      overflow: hidden;
+    }
+
+    .settings-group-title {
+      padding: 15px 20px;
+      background: rgba(0, 217, 255, .05);
+      color: var(--primary);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+    }
+
+    .setting-info {
+      min-width: 0;
+    }
+
+    .setting-info h3 {
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      margin: 0 0 5px;
+    }
+
+    .setting-info p {
+      color: var(--text-muted);
+      font-size: .9rem;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      flex: 0 0 50px;
+      width: 50px;
+      height: 28px;
+    }
+
+    .toggle-switch input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-soft);
+      transition: .25s;
+      border-radius: 34px;
+    }
+
+    .slider::before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--text-muted);
+      transition: .25s;
+      border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .slider {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .toggle-switch input:checked + .slider::before {
+      transform: translateX(22px);
+      background: var(--bg-deep);
+    }
+
+    .toggle-switch input:focus-visible + .slider {
+      outline: 3px solid var(--primary);
+      outline-offset: 3px;
+    }
+
+    .toggle-switch input:disabled + .slider {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .setting-action {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: right;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .setting-action:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -3px;
+    }
+
+    .setting-action-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .setting-action-inner > i {
+      color: var(--text-muted);
+      font-size: 1.5rem;
+    }
+
+    .btn-logout {
+      width: 100%;
+      padding: 15px;
+      background: rgba(255, 107, 107, .1);
+      border: 1px solid var(--accent-coral);
+      color: var(--accent-coral);
+      border-radius: var(--radius-card);
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: .2s;
+      font-family: 'Cairo', sans-serif;
+      margin-top: var(--space-l);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-logout:hover {
+      background: var(--accent-coral);
+      color: var(--bg-deep);
+    }
+
+    .btn-logout:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .page-status {
+      min-height: 24px;
+      margin: 12px 0 0;
+      color: var(--text-muted);
+      font-size: .9rem;
+      text-align: center;
+    }
+
+    /* Light theme */
+    html[data-theme="light"] {
+      color-scheme: light;
+      --bg-deep: #F7F9FF;
+      --bg-panel: #FFFFFF;
+      --text-primary: #1E293B;
+      --text-muted: #64748B;
+      --border-soft: #DCE3EF;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+    }
+
+    /* Disable animations when motion effects are off */
+    html[data-motion="off"] *,
+    html[data-motion="off"] *::before,
+    html[data-motion="off"] *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 16px;
+      }
+
+      .header h1 {
+        font-size: 1.6rem;
+      }
+
+      .setting-row {
+        padding: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html:not([data-motion="on"]) *,
+      html:not([data-motion="on"]) *::before,
+      html:not([data-motion="on"]) *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>الإعدادات</h1>
-            <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
+  <main class="container">
+    <header class="header">
+      <h1>الإعدادات</h1>
+      <a href="dashboard.html" class="btn-secondary">
+        <i class="ri-home-5-line" aria-hidden="true"></i>
+        الرئيسية
+      </a>
+    </header>
+
+    <section class="settings-group" aria-labelledby="appearanceTitle">
+      <div class="settings-group-title" id="appearanceTitle">
+        <i class="ri-palette-line" aria-hidden="true"></i>
+        المظهر والعرض
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>الوضع الداكن</h3>
+          <p>تفعيل الخلفية الفضائية الداكنة</p>
         </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="darkModeToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
 
-        <div class="settings-group">
-            <div class="settings-group-title"><i class="ri-palette-line"></i> المظهر والعرض</div>
-            <div class="setting-row">
-                <div class="setting-info">
-                    <h3>الوضع الداكن</h3>
-                    <p>تفعيل الخلفية الفضائية الداكنة</p>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="darkModeToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-row">
-                <div class="setting-info">
-                    <h3>تأثيرات الحركة</h3>
-                    <p>تشغيل الأنيميشن وتأثيرات الروبوت</p>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="motionToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>تأثيرات الحركة</h3>
+          <p>التحكم في الأنيميشن وتأثيرات الواجهة</p>
         </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="motionToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
 
-        <div class="settings-group">
-            <div class="settings-group-title"><i class="ri-notification-3-line"></i> الإشعارات والأصوات</div>
-            <div class="setting-row">
-                <div class="setting-info">
-                    <h3>المؤثرات الصوتية</h3>
-                    <p>أصوات عند إكمال الدروس والنجاح</p>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="soundToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-row">
-                <div class="setting-info">
-                    <h3>تذكير المهام اليومية</h3>
-                    <p>إشعارات لتذكيرك بإكمال دروسك</p>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="notifToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
+    <section class="settings-group" aria-labelledby="notificationsTitle">
+      <div class="settings-group-title" id="notificationsTitle">
+        <i class="ri-notification-3-line" aria-hidden="true"></i>
+        الإشعارات والأصوات
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>المؤثرات الصوتية</h3>
+          <p>السماح بأصوات النجاح والتنبيهات داخل المنصة</p>
         </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="soundToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
 
-        <div class="settings-group">
-            <div class="settings-group-title"><i class="ri-shield-user-line"></i> الحساب والخصوصية</div>
-            <div class="setting-row" style="cursor: pointer;" onclick="window.location.href='parent.html'">
-                <div class="setting-info">
-                    <h3>لوحة ولي الأمر</h3>
-                    <p>مراجعة تقدم الطفل وإعدادات الخصوصية</p>
-                </div>
-                <i class="ri-arrow-left-s-line" style="color: var(--text-muted); font-size: 1.5rem;"></i>
-            </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>تذكير المهام اليومية</h3>
+          <p>حفظ تفضيل التذكيرات؛ إرسال تذكيرات فعلية يحتاج إلى نظام إشعارات منفصل</p>
         </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="notifToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
 
-        <button class="btn-logout" id="logoutBtn">
-            <i class="ri-logout-box-r-line"></i> تسجيل الخروج من الحساب
-        </button>
-    </div>
+    <section class="settings-group" aria-labelledby="privacyTitle">
+      <div class="settings-group-title" id="privacyTitle">
+        <i class="ri-shield-user-line" aria-hidden="true"></i>
+        الحساب والخصوصية
+      </div>
 
-    <script type="module">
-        import { auth, logoutUser } from './js/app.js';
-        import { showToast } from './js/ui.js';
+      <button class="setting-row setting-action" id="parentDashboardBtn" type="button">
+        <span class="setting-action-inner">
+          <span class="setting-info">
+            <h3>لوحة ولي الأمر</h3>
+            <p>هذه الميزة غير مفعّلة بعد</p>
+          </span>
+          <i class="ri-arrow-left-s-line" aria-hidden="true"></i>
+        </span>
+      </button>
+    </section>
 
-        const darkToggle = document.getElementById('darkModeToggle');
-        const soundToggle = document.getElementById('soundToggle');
-        const notifToggle = document.getElementById('notifToggle');
-        const motionToggle = document.getElementById('motionToggle');
+    <button class="btn-logout" id="logoutBtn" type="button">
+      <i class="ri-logout-box-r-line" aria-hidden="true"></i>
+      تسجيل الخروج من الحساب
+    </button>
 
-        darkToggle.checked = localStorage.getItem('cq_theme') !== 'light';
-        soundToggle.checked = localStorage.getItem('cq_sound') !== 'off';
-        notifToggle.checked = localStorage.getItem('cq_notif') === 'on';
-        motionToggle.checked = localStorage.getItem('cq_motion') !== 'off';
+    <p class="page-status" id="pageStatus" role="status" aria-live="polite"></p>
+  </main>
 
-        darkToggle.addEventListener('change', (e) => {
-            localStorage.setItem('cq_theme', e.target.checked ? 'dark' : 'light');
-            if(e.target.checked) {
-                document.documentElement.style.setProperty('--bg-deep', '#050B1F');
-                document.documentElement.style.setProperty('--text-primary', '#F4F7FF');
-            } else {
-                document.documentElement.style.setProperty('--bg-deep', '#F7F9FF');
-                document.documentElement.style.setProperty('--text-primary', '#1E293B');
-            }
-            showToast('تم حفظ إعدادات المظهر', 'success');
-        });
+  <script type="module">
+    import { requireUser, logoutUser } from "./js/auth.js";
+    import { showToast } from "./js/ui.js";
 
-        soundToggle.addEventListener('change', (e) => {
-            localStorage.setItem('cq_sound', e.target.checked ? 'on' : 'off');
-            showToast('تم تحديث إعدادات الصوت', 'info');
-        });
+    const elements = {
+      dark: document.getElementById("darkModeToggle"),
+      sound: document.getElementById("soundToggle"),
+      notifications: document.getElementById("notifToggle"),
+      motion: document.getElementById("motionToggle"),
+      logout: document.getElementById("logoutBtn"),
+      parent: document.getElementById("parentDashboardBtn"),
+      status: document.getElementById("pageStatus")
+    };
 
-        notifToggle.addEventListener('change', (e) => {
-            localStorage.setItem('cq_notif', e.target.checked ? 'on' : 'off');
-            showToast('تم تحديث الإشعارات', 'info');
-        });
+    const STORAGE_KEYS = {
+      theme: "cq_theme",
+      sound: "cq_sound",
+      notifications: "cq_notif",
+      motion: "cq_motion"
+    };
 
-        motionToggle.addEventListener('change', (e) => {
-            localStorage.setItem('cq_motion', e.target.checked ? 'on' : 'off');
-            showToast('تم تحديث تأثيرات الحركة', 'info');
-        });
+    function readSetting(key, fallback) {
+      try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : value;
+      } catch (error) {
+        console.warn("Could not read setting:", key, error);
+        return fallback;
+      }
+    }
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            logoutUser();
-        });
-    </script>
+    function saveSetting(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (error) {
+        console.error("Could not save setting:", key, error);
+        elements.status.textContent =
+          "تعذر حفظ الإعدادات على هذا الجهاز.";
+        showToast("تعذر حفظ الإعدادات على هذا الجهاز.", "error");
+        return false;
+      }
+    }
+
+    function applyTheme(isDark) {
+      document.documentElement.dataset.theme = isDark ? "dark" : "light";
+      document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+    }
+
+    function applyMotion(isEnabled) {
+      document.documentElement.dataset.motion = isEnabled ? "on" : "off";
+    }
+
+    function initializeSettings() {
+      const theme = readSetting(STORAGE_KEYS.theme, "dark");
+      const sound = readSetting(STORAGE_KEYS.sound, "on");
+      const notifications = readSetting(STORAGE_KEYS.notifications, "off");
+      const motion = readSetting(STORAGE_KEYS.motion, "on");
+
+      elements.dark.checked = theme !== "light";
+      elements.sound.checked = sound !== "off";
+      elements.notifications.checked = notifications === "on";
+      elements.motion.checked = motion !== "off";
+
+      applyTheme(elements.dark.checked);
+      applyMotion(elements.motion.checked);
+    }
+
+    function bindToggle(element, storageKey, enabledValue, disabledValue, onApply, message) {
+      element.addEventListener("change", () => {
+        const enabled = element.checked;
+        const value = enabled ? enabledValue : disabledValue;
+
+        if (!saveSetting(storageKey, value)) {
+          element.checked = !enabled;
+          return;
+        }
+
+        if (typeof onApply === "function") {
+          onApply(enabled);
+        }
+
+        elements.status.textContent = message;
+        showToast(message, "success");
+      });
+    }
+
+    bindToggle(
+      elements.dark,
+      STORAGE_KEYS.theme,
+      "dark",
+      "light",
+      applyTheme,
+      "تم حفظ إعدادات المظهر."
+    );
+
+    bindToggle(
+      elements.sound,
+      STORAGE_KEYS.sound,
+      "on",
+      "off",
+      null,
+      "تم حفظ إعدادات الصوت."
+    );
+
+    bindToggle(
+      elements.notifications,
+      STORAGE_KEYS.notifications,
+      "on",
+      "off",
+      null,
+      "تم حفظ تفضيل التذكيرات."
+    );
+
+    bindToggle(
+      elements.motion,
+      STORAGE_KEYS.motion,
+      "on",
+      "off",
+      applyMotion,
+      "تم حفظ إعدادات الحركة."
+    );
+
+    elements.parent.addEventListener("click", () => {
+      showToast("لوحة ولي الأمر لم يتم تفعيلها بعد.", "info");
+    });
+
+    elements.logout.addEventListener("click", async () => {
+      elements.logout.disabled = true;
+      elements.logout.setAttribute("aria-busy", "true");
+      elements.status.textContent = "جارٍ تسجيل الخروج...";
+
+      try {
+        await logoutUser();
+      } catch (error) {
+        console.error("Logout error:", error);
+        elements.logout.disabled = false;
+        elements.logout.removeAttribute("aria-busy");
+        elements.status.textContent = "تعذر تسجيل الخروج. حاول مرة أخرى.";
+        showToast("تعذر تسجيل الخروج. تحقق من الاتصال وحاول مرة أخرى.", "error");
+      }
+    });
+
+    initializeSettings();
+
+    try {
+      await requireUser();
+    } catch (error) {
+      if (error?.message !== "يجب تسجيل الدخول.") {
+        console.error("Settings authentication error:", error);
+        elements.status.textContent = "تعذر التحقق من الحساب.";
+        showToast("تعذر التحقق من الحساب.", "error");
+      }
+    }
+  </script>
 </body>
 </html>
