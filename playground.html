@@ -1,334 +1,968 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cody Academy | Code Playground</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b16">
+  <title>مساحة البرمجة | Cody Academy</title>
 
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
 
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      color-scheme: dark;
+      --bg: #080b16;
+      --panel: #111629;
+      --panel-2: #0d1222;
+      --border: rgba(148, 163, 184, .16);
+      --text: #f1f5f9;
+      --muted: #9ca9bd;
+      --cyan: #22d3ee;
+      --purple: #a78bfa;
+      --green: #4ade80;
+      --red: #fb7185;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      padding: 20px;
-      background: #0b1020;
-      color: #e5e7eb;
-      font-family: system-ui, Arial, sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(124, 58, 237, .13), transparent 38%),
+        radial-gradient(ellipse at 90% 10%, rgba(34, 211, 238, .09), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      font-family: "Cairo", sans-serif;
     }
 
-    .app {
-      width: 100%;
-      max-width: 1000px;
-      margin: 20px auto;
-      border: 1px solid #273449;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #111827;
+    button, input, select {
+      font: inherit;
+    }
+
+    button, a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
     }
 
     .top {
-      padding: 20px;
-      background: #151e30;
-      border-bottom: 1px solid #273449;
+      margin-bottom: 25px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      margin-bottom: 22px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: rgba(17, 22, 41, .8);
+      color: #e2e8f0;
+      text-decoration: none;
+      transition: .2s ease;
+    }
+
+    .back-link:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      transform: translateY(-2px);
+    }
+
+    .back-arrow {
+      font-size: 22px;
+      line-height: 1;
     }
 
     h1 {
-      margin: 0 0 6px;
-      font-size: 23px;
+      margin: 0;
+      font-size: clamp(25px, 4vw, 36px);
+      font-weight: 900;
+      letter-spacing: -.5px;
     }
 
-    .subtitle { color: #9ca3af; font-size: 14px; }
+    .gradient-text {
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      margin: 8px 0 15px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .project-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      padding: 8px 13px;
+      border: 1px solid rgba(167, 139, 250, .25);
+      border-radius: 11px;
+      background: rgba(167, 139, 250, .08);
+      color: #ddd6fe;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .panel {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(17, 22, 41, .88);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .18);
+    }
+
+    .panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, .015);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .panel-title span {
+      margin-left: 7px;
+    }
 
     .toolbar {
       display: flex;
-      align-items: center;
-      gap: 10px;
       flex-wrap: wrap;
-      padding: 14px;
+      align-items: center;
+      gap: 9px;
     }
 
-    select, button {
-      border: 1px solid #374151;
-      border-radius: 9px;
-      padding: 10px 14px;
-      font: inherit;
-      color: #f9fafb;
-      background: #1f2937;
+    .language-select,
+    .project-input {
+      min-width: 140px;
+      max-width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      background: #0b1020;
+      color: var(--text);
     }
 
-    select { flex: 1; min-width: 130px; }
-
-    button { cursor: pointer; }
-
-    button:disabled {
-      opacity: .6;
-      cursor: wait;
+    .language-select:focus,
+    .project-input:focus {
+      border-color: var(--cyan);
     }
 
-    .run {
-      background: #2563eb;
-      border-color: #2563eb;
+    .project-input {
+      width: min(250px, 100%);
     }
 
-    .editor-wrap {
-      direction: ltr;
-      padding: 0 14px 14px;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #171e32;
+      color: var(--text);
+      cursor: pointer;
+      transition: .2s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(34, 211, 238, .5);
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      border-color: transparent;
+      background: linear-gradient(120deg, #0891b2, #6366f1);
+      color: white;
+      font-weight: 800;
+    }
+
+    .btn-save {
+      border-color: rgba(74, 222, 128, .25);
+      background: rgba(74, 222, 128, .09);
+      color: #86efac;
+    }
+
+    .btn-reset {
+      color: #cbd5e1;
+    }
+
+    .editor-area {
+      padding: 0;
+      background: #0b1020;
+    }
+
+    #editor {
+      min-height: 360px;
     }
 
     .CodeMirror {
       height: 360px;
-      font-size: 15px;
-      line-height: 1.6;
-      border-radius: 10px;
-      border: 1px solid #374151;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.75;
       direction: ltr;
       text-align: left;
+      padding-top: 12px;
     }
 
-    .output-wrap { padding: 0 14px 16px; }
-
-    .output-title {
-      font-size: 14px;
-      color: #cbd5e1;
-      margin-bottom: 8px;
+    .CodeMirror-gutters {
+      border-right: 1px solid rgba(148, 163, 184, .12);
     }
 
-    #output {
-      min-height: 90px;
-      max-height: 300px;
+    .editor-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .save-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .output-panel {
+      margin-top: 18px;
+    }
+
+    .output-heading {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .output-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .output-body {
+      min-height: 110px;
+      max-height: 360px;
       overflow: auto;
+      padding: 18px;
+      background: #090d19;
+      color: #d1fae5;
+      direction: ltr;
+      text-align: left;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      direction: ltr;
-      text-align: left;
-      background: #080d18;
-      color: #d1fae5;
-      border: 1px solid #273449;
-      border-radius: 10px;
-      padding: 14px;
-      font: 14px/1.6 monospace;
+      font: 13px/1.8 Consolas, Monaco, monospace;
     }
 
-    #status {
-      color: #9ca3af;
-      font-size: 13px;
-      margin-top: 8px;
+    .output-placeholder {
+      color: #7c8aa5;
     }
 
-    @media (max-width: 550px) {
-      body { padding: 8px; }
-      .app { margin: 8px auto; }
-      .CodeMirror { height: 300px; }
-      .toolbar button { flex: 1; }
+    .output-error {
+      color: #fda4af;
+    }
+
+    .helper {
+      margin: 14px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.9;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 1000;
+      bottom: 22px;
+      right: 50%;
+      transform: translate(50%, 18px);
+      width: max-content;
+      max-width: calc(100% - 32px);
+      padding: 12px 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #171e32;
+      color: white;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, .3);
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(50%, 0);
+    }
+
+    .toast.success {
+      border-color: rgba(74, 222, 128, .4);
+    }
+
+    .toast.error {
+      border-color: rgba(251, 113, 133, .45);
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        width: min(100% - 22px, 1200px);
+        padding-top: 18px;
+      }
+
+      .panel {
+        border-radius: 15px;
+      }
+
+      .panel-header {
+        padding: 13px;
+      }
+
+      .toolbar {
+        width: 100%;
+      }
+
+      .toolbar > * {
+        flex: 1 1 auto;
+      }
+
+      .language-select {
+        flex: 1 1 100%;
+      }
+
+      .project-input {
+        width: 100%;
+        flex: 1 1 100%;
+      }
+
+      .btn {
+        padding: 9px 11px;
+        font-size: 13px;
+      }
+
+      .CodeMirror {
+        height: 300px;
+        font-size: 13px;
+      }
+
+      .editor-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 
 <body>
-  <main class="app">
+  <main class="page">
     <header class="top">
-      <h1>💻 Cody Academy Playground</h1>
-      <div class="subtitle">
-        اكتبي الكود، اختاري اللغة، وشغّلي برنامجك.
+      <a class="back-link" href="projects.html">
+        <span class="back-arrow" aria-hidden="true">←</span>
+        <span>العودة إلى مشروعاتي</span>
+      </a>
+
+      <h1>مساحة البرمجة <span class="gradient-text">Cody Academy</span></h1>
+
+      <p class="subtitle">
+        اكتبي الكود، جرّبيه، واحفظي مشروعك علشان ترجعي تكمّلي من مكان ما وقفتي.
+      </p>
+
+      <div class="project-name" id="projectName">
+        📁 جاري تحميل المشروع...
       </div>
     </header>
 
-    <div class="toolbar">
-      <select id="language" aria-label="اختاري لغة البرمجة">
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-        <option value="cpp">C++</option>
-      </select>
+    <section class="workspace">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>⌨️</span> محرر الأكواد</h2>
 
-      <button id="reset" type="button">إعادة المثال</button>
-      <button id="run" class="run" type="button">▶ تشغيل الكود</button>
-    </div>
+          <div class="toolbar">
+            <select id="language" class="language-select" aria-label="لغة البرمجة">
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="cpp">C++</option>
+            </select>
 
-    <section class="editor-wrap">
-      <textarea id="code" aria-label="محرر الكود"></textarea>
+            <button class="btn btn-reset" id="resetBtn" type="button">
+              ↻ إعادة المثال
+            </button>
+
+            <button class="btn btn-save" id="saveBtn" type="button">
+              ✓ حفظ المشروع
+            </button>
+
+            <button class="btn btn-primary" id="runBtn" type="button">
+              ▶ تشغيل الكود
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-area">
+          <textarea id="editor" aria-label="محرر الكود"></textarea>
+        </div>
+
+        <div class="editor-footer">
+          <span>💡 اكتبي الكود في المحرر، وبعدها اضغطي «تشغيل الكود».</span>
+          <span class="save-status" id="saveStatus">
+            <span class="status-dot"></span>
+            جاهز
+          </span>
+        </div>
+      </div>
     </section>
 
-    <section class="output-wrap">
-      <div class="output-title">نتيجة التنفيذ</div>
-      <pre id="output">أهلًا بكِ في Cody Academy!</pre>
-      <div id="status" role="status">جاهز للكتابة.</div>
+    <section class="panel output-panel">
+      <div class="panel-header">
+        <div class="output-heading">
+          <span class="output-indicator"></span>
+          <h2 class="panel-title">نتيجة التشغيل</h2>
+        </div>
+
+        <button class="btn" id="clearOutputBtn" type="button">
+          مسح النتيجة
+        </button>
+      </div>
+
+      <pre class="output-body" id="output"><span class="output-placeholder">نتيجة الكود هتظهر هنا بعد التشغيل...</span></pre>
     </section>
+
+    <p class="helper">
+      ملاحظة: تشغيل Python وC++ وJavaScript يتم من خلال خدمة Judge0 العامة.
+      الخدمة تحتاج إلى اتصال بالإنترنت وقد تتأخر أحيانًا أو ترفض الطلبات عند الضغط عليها.
+    </p>
   </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
 
-  <script>
-    (() => {
-      const $ = id => document.getElementById(id);
-      const language = $('language');
-      const runButton = $('run');
-      const resetButton = $('reset');
-      const output = $('output');
-      const status = $('status');
+  <script type="module">
+    import { requireUser } from "./js/auth.js";
+    import { db } from "./js/firebase-config.js";
+    import {
+      doc,
+      getDoc,
+      addDoc,
+      updateDoc,
+      collection,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-      const examples = {
-        javascript: {
-          mode: 'javascript',
-          id: 63,
-          code: 'console.log("Hello Cody Academy!");\nconsole.log(10 + 20);'
-        },
-        python: {
-          mode: 'python',
-          id: 71,
-          code: 'print("Hello Cody Academy!")\nprint(10 + 20)'
-        },
-        cpp: {
-          mode: 'text/x-c++src',
-          id: 54,
-          code: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello Cody Academy!" << endl;\n    cout << 10 + 20 << endl;\n    return 0;\n}'
-        }
+    const $ = (id) => document.getElementById(id);
+
+    const languageSelect = $("language");
+    const runBtn = $("runBtn");
+    const saveBtn = $("saveBtn");
+    const resetBtn = $("resetBtn");
+    const output = $("output");
+    const projectNameLabel = $("projectName");
+    const saveStatus = $("saveStatus");
+    const toastElement = $("toast");
+
+    let currentUser = null;
+    let currentProjectId = sessionStorage.getItem("currentProjectId") || "";
+    let currentProjectName = sessionStorage.getItem("currentProjectName") || "";
+    let isSaving = false;
+    let autoSaveTimer = null;
+    let toastTimer = null;
+
+    const examples = {
+      javascript: `// أهلاً بيك في Cody Academy!
+console.log("Hello, Cody!");
+
+// جرّبي تغيير الاسم
+const name = "مريم";
+console.log("أهلاً يا " + name);
+
+// جرّبي العمليات الحسابية
+const result = 10 + 5;
+console.log("الناتج:", result);`,
+
+      python: `# أهلاً بيك في Cody Academy!
+print("Hello, Cody!")
+
+# جرّبي تغيير الاسم
+name = "مريم"
+print("أهلاً يا", name)
+
+# جرّبي العمليات الحسابية
+result = 10 + 5
+print("الناتج:", result)`,
+
+      cpp: `#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    cout << "Hello, Cody!" << endl;
+
+    string name = "Mariam";
+    cout << "Hello, " << name << endl;
+
+    int result = 10 + 5;
+    cout << "Result: " << result << endl;
+
+    return 0;
+}`
+    };
+
+    const languageModes = {
+      javascript: "javascript",
+      python: "python",
+      cpp: "text/x-c++src"
+    };
+
+    const languageIds = {
+      javascript: 63,
+      python: 71,
+      cpp: 54
+    };
+
+    const editor = CodeMirror.fromTextArea($("editor"), {
+      mode: languageModes.javascript,
+      theme: "material-darker",
+      lineNumbers: true,
+      lineWrapping: true,
+      indentUnit: 4,
+      tabSize: 4,
+      indentWithTabs: false,
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      viewportMargin: Infinity
+    });
+
+    function showToast(message, type = "success") {
+      toastElement.textContent = message;
+      toastElement.className = `toast show ${type}`;
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastElement.className = "toast";
+      }, 3000);
+    }
+
+    function setSaveStatus(message, busy = false) {
+      saveStatus.innerHTML = "";
+
+      const dot = document.createElement("span");
+      dot.className = "status-dot";
+      dot.style.background = busy ? "#fbbf24" : "#4ade80";
+
+      const text = document.createElement("span");
+      text.textContent = message;
+
+      saveStatus.append(dot, text);
+    }
+
+    function setOutput(message, type = "normal") {
+      output.textContent = message;
+      output.classList.toggle("output-error", type === "error");
+      output.classList.toggle("output-placeholder", type === "placeholder");
+    }
+
+    function updateProjectLabel() {
+      projectNameLabel.textContent =
+        `📁 ${currentProjectName || "مشروع جديد"}`;
+    }
+
+    function getLanguage() {
+      return languageSelect.value;
+    }
+
+    function getProjectData() {
+      const name = currentProjectName.trim() || "مشروعي الجديد";
+      const language = getLanguage();
+      const code = editor.getValue();
+
+      return {
+        userId: currentUser.uid,
+        name,
+        language,
+        code,
+        date: new Date().toISOString()
       };
+    }
 
-      if (!window.CodeMirror) {
-        output.textContent =
-          'تعذر تحميل المحرر. تحققي من الإنترنت ثم أعيدي تحميل الصفحة.';
-        status.textContent = 'فشل تحميل CodeMirror.';
-        runButton.disabled = true;
+    function validateProjectData(data) {
+      if (!data.name.trim()) {
+        showToast("اكتبي اسم المشروع الأول.", "error");
+        return false;
+      }
+
+      if (data.name.length > 80) {
+        showToast("اسم المشروع طويل جدًا؛ اختاري اسمًا أقصر.", "error");
+        return false;
+      }
+
+      if (!["javascript", "python", "cpp"].includes(data.language)) {
+        showToast("اختاري لغة برمجة صحيحة.", "error");
+        return false;
+      }
+
+      if (data.code.length > 50000) {
+        showToast("حجم الكود كبير جدًا للحفظ.", "error");
+        return false;
+      }
+
+      return true;
+    }
+
+    async function loadCurrentProject() {
+      currentUser = await requireUser();
+
+      if (!currentUser) {
+        setSaveStatus("سجّلي الدخول لحفظ المشروعات");
         return;
       }
 
-      const editor = CodeMirror.fromTextArea($('code'), {
-        mode: 'javascript',
-        lineNumbers: true,
-        indentUnit: 4,
-        tabSize: 4,
-        lineWrapping: true,
-        autofocus: true,
-        viewportMargin: Infinity
-      });
+      if (currentProjectId) {
+        try {
+          const projectRef = doc(db, "projects", currentProjectId);
+          const snapshot = await getDoc(projectRef);
 
-      function setLanguage() {
-        const config = examples[language.value];
-        editor.setOption('mode', config.mode);
-        editor.setValue(config.code);
-        output.textContent = 'الكود جاهز للتشغيل.';
-        status.textContent = 'جاهز للكتابة.';
-        editor.refresh();
-        editor.focus();
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+
+            if (data.userId !== currentUser.uid) {
+              showToast("المشروع ده مش تابع لحسابك.", "error");
+              currentProjectId = "";
+              sessionStorage.removeItem("currentProjectId");
+            } else {
+              currentProjectName = data.name || "مشروعي";
+              languageSelect.value =
+                ["javascript", "python", "cpp"].includes(data.language)
+                  ? data.language
+                  : "javascript";
+
+              editor.setOption("mode", languageModes[getLanguage()]);
+              editor.setValue(
+                typeof data.code === "string"
+                  ? data.code
+                  : examples[getLanguage()]
+              );
+
+              sessionStorage.setItem("currentProjectName", currentProjectName);
+              updateProjectLabel();
+              setSaveStatus("تم تحميل المشروع");
+              editor.refresh();
+              return;
+            }
+          } else {
+            currentProjectId = "";
+            sessionStorage.removeItem("currentProjectId");
+          }
+        } catch (error) {
+          console.error("Project loading error:", error);
+          showToast("تعذّر تحميل المشروع من Firebase.", "error");
+        }
       }
 
-      language.addEventListener('change', setLanguage);
-      resetButton.addEventListener('click', setLanguage);
+      currentProjectName =
+        currentProjectName || "مشروعي الجديد";
 
-      runButton.addEventListener('click', async () => {
-        if (runButton.disabled) return;
+      languageSelect.value =
+        ["javascript", "python", "cpp"].includes(
+          sessionStorage.getItem("playgroundLang")
+        )
+          ? sessionStorage.getItem("playgroundLang")
+          : "javascript";
 
-        const config = examples[language.value];
-        const source = editor.getValue();
+      editor.setOption("mode", languageModes[getLanguage()]);
 
-        if (!source.trim()) {
-          output.textContent = 'اكتبي الكود أولًا.';
-          status.textContent = 'لا يوجد كود للتنفيذ.';
-          editor.focus();
-          return;
+      const savedDraft = sessionStorage.getItem("playgroundCode");
+
+      editor.setValue(
+        savedDraft !== null
+          ? savedDraft
+          : examples[getLanguage()]
+      );
+
+      updateProjectLabel();
+      setSaveStatus("جاهز");
+      editor.refresh();
+    }
+
+    async function saveProject(showMessage = true) {
+      if (!currentUser) {
+        showToast("سجّلي الدخول الأول علشان تحفظي المشروع.", "error");
+        return false;
+      }
+
+      if (isSaving) return false;
+
+      const data = getProjectData();
+
+      if (!validateProjectData(data)) return false;
+
+      isSaving = true;
+      saveBtn.disabled = true;
+      setSaveStatus("جاري الحفظ...", true);
+
+      try {
+        if (currentProjectId) {
+          const projectRef = doc(db, "projects", currentProjectId);
+          const snapshot = await getDoc(projectRef);
+
+          if (!snapshot.exists()) {
+            currentProjectId = "";
+            sessionStorage.removeItem("currentProjectId");
+          } else if (snapshot.data().userId !== currentUser.uid) {
+            throw new Error("لا يمكنك تعديل مشروع لا يخص حسابك.");
+          }
         }
 
-        runButton.disabled = true;
-        resetButton.disabled = true;
-        language.disabled = true;
-        output.textContent = 'جارٍ إرسال الكود للتنفيذ...';
-        status.textContent = 'جارٍ الاتصال بخدمة التنفيذ.';
+        if (currentProjectId) {
+          await updateDoc(doc(db, "projects", currentProjectId), {
+            name: data.name,
+            language: data.language,
+            code: data.code,
+            date: data.date,
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          const projectRef = await addDoc(collection(db, "projects"), {
+            ...data,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
 
-        try {
-          const response = await fetch(
-            'https://ce.judge0.com/submissions?base64_encoded=false&wait=false',
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                source_code: source,
-                language_id: config.id
-              })
-            }
+          currentProjectId = projectRef.id;
+          sessionStorage.setItem("currentProjectId", currentProjectId);
+        }
+
+        currentProjectName = data.name;
+        sessionStorage.setItem("currentProjectName", currentProjectName);
+        sessionStorage.setItem("playgroundCode", data.code);
+        sessionStorage.setItem("playgroundLang", data.language);
+
+        updateProjectLabel();
+        setSaveStatus("تم الحفظ");
+        if (showMessage) showToast("اتحفظ المشروع بنجاح ✓");
+
+        return true;
+      } catch (error) {
+        console.error("Project save error:", error);
+        setSaveStatus("لم يتم الحفظ");
+        showToast(
+          error.message || "حصلت مشكلة أثناء حفظ المشروع.",
+          "error"
+        );
+       
+        return false;
+      } finally {
+        isSaving = false;
+        saveBtn.disabled = false;
+      }
+    }
+
+    function scheduleAutoSave() {
+      sessionStorage.setItem("playgroundCode", editor.getValue());
+      sessionStorage.setItem("playgroundLang", getLanguage());
+
+      if (!currentProjectId || !currentUser) {
+        setSaveStatus("التعديلات غير محفوظة");
+        return;
+      }
+
+      clearTimeout(autoSaveTimer);
+      setSaveStatus("تعديلات جديدة...", true);
+
+      autoSaveTimer = setTimeout(() => {
+        saveProject(false);
+      }, 1500);
+    }
+
+    async function runCode() {
+      const language = getLanguage();
+      const code = editor.getValue();
+
+      if (!code.trim()) {
+        setOutput("اكتبي كود الأول وبعدها شغّليه.", "error");
+        return;
+      }
+
+      runBtn.disabled = true;
+      runBtn.textContent = "⏳ جاري التشغيل...";
+      setOutput("جاري إرسال الكود للتشغيل، استني شوية...");
+
+      try {
+        const response = await fetch(
+          "https://ce.judge0.com/submissions?base64_encoded=false&wait=true",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              source_code: code,
+              language_id: languageIds[language],
+              stdin: ""
+            })
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `خدمة التشغيل رجّعت خطأ (${response.status}). جرّبي تاني بعد شوية.`
           );
-
-          if (!response.ok) {
-            throw new Error('خدمة التنفيذ أعادت HTTP ' + response.status);
-          }
-
-          const submission = await response.json();
-
-          if (!submission.token) {
-            throw new Error(
-              submission.error || 'لم يتم استلام رمز التنفيذ.'
-            );
-          }
-
-          let result = null;
-
-          for (let i = 0; i < 30; i++) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const check = await fetch(
-              'https://ce.judge0.com/submissions/' +
-              encodeURIComponent(submission.token) +
-              '?base64_encoded=false&fields=stdout,stderr,compile_output,message,status,time'
-            );
-
-            if (!check.ok) {
-              throw new Error('تعذر جلب النتيجة: HTTP ' + check.status);
-            }
-
-            result = await check.json();
-            const id = result.status && result.status.id;
-
-            if (id !== 1 && id !== 2) break;
-
-            output.textContent = 'جارٍ التنفيذ... (' + (i + 1) + '/30)';
-          }
-
-          if (!result || !result.status ||
-              result.status.id === 1 || result.status.id === 2) {
-            throw new Error('التنفيذ استغرق وقتًا طويلًا.');
-          }
-
-          const lines = [];
-          if (result.stdout) lines.push(result.stdout.trimEnd());
-          if (result.stderr) lines.push('خطأ أثناء التشغيل:\n' + result.stderr);
-          if (result.compile_output) {
-            lines.push('خطأ في الترجمة:\n' + result.compile_output);
-          }
-          if (result.message) lines.push('رسالة:\n' + result.message);
-
-          if (!lines.length) {
-            lines.push(
-              result.status.id === 3
-                ? 'تم التنفيذ، لكن لا توجد مخرجات.'
-                : 'لا توجد مخرجات.'
-            );
-          }
-
-          lines.push('\nحالة التنفيذ: ' + result.status.description);
-          output.textContent = lines.join('\n\n');
-          status.textContent =
-            result.status.id === 3 ? 'اكتمل التنفيذ.' : 'انتهى التنفيذ مع ملاحظة.';
-        } catch (error) {
-          console.error(error);
-          output.textContent =
-            'تعذر تشغيل الكود.\n\n' +
-            error.message +
-            '\n\nقد تكون خدمة التنفيذ غير متاحة، أو قد يمنع المتصفح الاتصال بها (CORS).';
-          status.textContent = 'تعذر الاتصال بخدمة التنفيذ.';
-        } finally {
-          runButton.disabled = false;
-          resetButton.disabled = false;
-          language.disabled = false;
         }
-      });
 
-      setLanguage();
-    })();
+        const result = await response.json();
+
+        if (result.stdout) {
+          setOutput(result.stdout);
+        } else if (result.compile_output) {
+          setOutput(result.compile_output, "error");
+        } else if (result.stderr) {
+          setOutput(result.stderr, "error");
+        } else if (result.message) {
+          setOutput(result.message, "error");
+        } else if (result.status?.description) {
+          setOutput(`حالة التشغيل: ${result.status.description}`);
+        } else {
+          setOutput("انتهى التشغيل، لكن مفيش نتيجة ظاهرة.");
+        }
+      } catch (error) {
+        console.error("Code execution error:", error);
+        setOutput(
+          `${error.message || "تعذّر تشغيل الكود."}\n\nاتأكدي من اتصال الإنترنت، ولو المشكلة مستمرة جرّبي مرة تانية.`,
+          "error"
+        );
+      } finally {
+        runBtn.disabled = false;
+        runBtn.textContent = "▶ تشغيل الكود";
+      }
+    }
+
+    languageSelect.addEventListener("change", () => {
+      const language = getLanguage();
+
+      editor.setOption("mode", languageModes[language]);
+
+      if (!editor.getValue().trim()) {
+        editor.setValue(examples[language]);
+      }
+
+      sessionStorage.setItem("playgroundLang", language);
+      sessionStorage.setItem("playgroundCode", editor.getValue());
+      setSaveStatus("تغيير اللغة يحتاج إلى حفظ");
+      editor.refresh();
+    });
+
+    editor.on("change", () => {
+      scheduleAutoSave();
+    });
+
+    saveBtn.addEventListener("click", async () => {
+      const typedName = prompt(
+        "اكتبي اسم المشروع:",
+        currentProjectName || "مشروعي الجديد"
+      );
+
+      if (typedName === null) return;
+
+      const trimmedName = typedName.trim();
+
+      if (!trimmedName) {
+        showToast("اسم المشروع ما ينفعش يكون فاضي.", "error");
+        return;
+      }
+
+      currentProjectName = trimmedName;
+      await saveProject(true);
+    });
+
+    runBtn.addEventListener("click", runCode);
+
+    resetBtn.addEventListener("click", () => {
+      const confirmed = confirm(
+        "هترجعي لمثال اللغة الحالية. لو عندك كود مش محفوظ، انسخيه الأول. نكمّل؟"
+      );
+
+      if (!confirmed) return;
+
+      editor.setValue(examples[getLanguage()]);
+      setOutput(
+        "تمت إعادة المثال. اضغطي «تشغيل الكود» لتجربته.",
+        "placeholder"
+      );
+    });
+
+    $("clearOutputBtn").addEventListener("click", () => {
+      setOutput(
+        "نتيجة الكود هتظهر هنا بعد التشغيل...",
+        "placeholder"
+      );
+    });
+
+    window.addEventListener("beforeunload", () => {
+      sessionStorage.setItem("playgroundCode", editor.getValue());
+      sessionStorage.setItem("playgroundLang", getLanguage());
+    });
+
+    loadCurrentProject().catch((error) => {
+      console.error("Playground initialization error:", error);
+      showToast(
+        "حصلت مشكلة في تحميل الصفحة أو تسجيل الدخول.",
+        "error"
+      );
+      setSaveStatus("تعذّر تحميل المشروع");
+    });
   </script>
 </body>
 </html>
