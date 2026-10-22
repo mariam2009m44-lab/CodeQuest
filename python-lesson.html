@@ -31,7 +31,7 @@
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 999; }
     .overlay.open { display: block; }
     
-    /* تحسين القائمة الجانبية لتكون أوسع وأريح */
+    /* تحسين القائمة الجانبية */
     .sidebar { width: 320px; background: var(--sidebar); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100dvh; z-index: 1000; transition: 0.3s; }
     .sidebar-header { padding: 20px 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; }
@@ -43,37 +43,37 @@
       flex: 1; 
       overflow-y: auto; 
       -webkit-overflow-scrolling: touch; 
-      padding: 20px; 
-      padding-bottom: 250px; 
+      padding: 15px; 
+      padding-bottom: 150px; 
       display: flex; 
       flex-direction: column; 
-      gap: 15px; 
+      gap: 12px; 
     }
     
     .chapter-item { background: #1e293b; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .chapter-title { padding: 20px; font-weight: 700; font-size: 1.1rem; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+    .chapter-title { padding: 16px; font-weight: 700; font-size: 1rem; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
     .chapter-title:hover { background: #334155; }
     
-    /* تصميم القفل */
-    .chapter-item.locked { opacity: 0.6; }
+    /* ميزة إظهار الدروس المقفولة */
+    .chapter-item.locked { opacity: 0.7; }
     .chapter-item.locked .chapter-title { cursor: not-allowed; color: var(--muted); }
-    .chapter-item.locked .lessons-list { display: none !important; }
     
     .lessons-list { display: none; flex-direction: column; background: #0b1120; }
     .lessons-list.open { display: flex; }
     .lesson-link { 
-      padding: 18px 20px; 
+      padding: 14px 16px; 
       color: var(--muted); 
       text-decoration: none; 
-      font-size: 1rem; 
+      font-size: 0.95rem; 
       border-top: 1px solid var(--border); 
       display: flex; 
       align-items: center; 
-      gap: 12px; 
+      gap: 10px; 
       transition: 0.2s; 
     }
-    .lesson-link:hover, .lesson-link.active { color: var(--cyan); background: #1e293b; font-weight: 700; }
-    
+    .lesson-link:hover:not(.locked-lesson), .lesson-link.active { color: var(--cyan); background: #1e293b; font-weight: 700; }
+    .lesson-link.locked-lesson { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
     .main-area { flex: 1; display: flex; flex-direction: column; height: 100dvh; position: relative; }
     .top-bar { padding: 15px; background: var(--sidebar); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .menu-btn { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
@@ -85,6 +85,7 @@
     .progress-fill { height: 100%; background: var(--green); width: 0%; transition: 0.5s; }
     .stats-badge { background: rgba(251, 191, 36, 0.1); color: var(--gold); padding: 6px 12px; border-radius: 15px; font-weight: 900; font-size: 0.9rem; border: 1px solid rgba(251, 191, 36, 0.3); display: flex; align-items: center; gap: 5px; }
     
+    /* الشات */
     .chat-container { flex: 1; padding: 20px; padding-bottom: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
     .message-row { display: flex; gap: 12px; align-items: flex-end; animation: pop 0.3s ease; }
     @keyframes pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -97,9 +98,29 @@
     .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0; }
     .bubble { padding: 15px 20px; font-size: 1rem; line-height: 1.8; max-width: 85%; color: #fff; }
     .bubble code { background: #0f172a; color: var(--cyan); padding: 3px 8px; border-radius: 6px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; margin: 5px 0; }
+    
     .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin-right: 52px; }
     .choice-btn { background: #1e293b; border: 1px solid var(--border); color: var(--text); padding: 15px; border-radius: 12px; font-family: 'Cairo'; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-align: right; }
     .choice-btn:hover { background: #334155; border-color: var(--cyan); }
+
+    /* واجهة الامتحان المخصصة */
+    .exam-view { display: none; flex-direction: column; flex: 1; padding: 20px; background: var(--bg); overflow-y: auto; }
+    .exam-view.show { display: flex; }
+    .exam-header { text-align: center; margin-bottom: 30px; }
+    .exam-header h2 { color: var(--gold); font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; }
+    .exam-question-box { background: var(--sidebar); border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+    .exam-q-text { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; color: #fff; }
+    .exam-options { display: flex; flex-direction: column; gap: 12px; }
+    .exam-opt-btn { background: #1e293b; border: 1px solid var(--border); color: var(--text); padding: 15px; border-radius: 10px; font-family: 'Cairo'; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: right; transition: 0.2s; }
+    .exam-opt-btn:hover { background: #334155; border-color: var(--cyan); }
+    
+    .exam-result { text-align: center; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+    .exam-result.show { display: flex; }
+    .exam-result h2 { font-size: 2.5rem; color: var(--green); margin-bottom: 15px; }
+    .exam-result p { font-size: 1.2rem; color: var(--text); margin-bottom: 30px; }
+    .exam-score { font-size: 4rem; font-weight: 900; color: var(--gold); margin-bottom: 20px; }
+
+    /* محرر الأكواد */
     .editor-wrapper { display: none; width: calc(100% - 52px); margin-right: 52px; background: var(--sidebar); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-top: 10px; }
     .editor-wrapper.show { display: block; }
     .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -115,8 +136,9 @@
 
     .sidebar.open ~ .main-area .bottom-action { display: none !important; }
     
+    /* التصميم للموبايل (عرض كامل ومساحات مريحة) */
     @media (max-width: 900px) {
-      .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 85%; max-width: 320px; }
+      .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 100%; z-index: 1000; }
       .sidebar.open { right: 0; }
       .close-btn { display: block; }
       .menu-btn { display: block; order: 1; }
@@ -126,6 +148,7 @@
       .chat-container { padding: 15px; padding-bottom: 120px; }
       .bubble { max-width: 90%; font-size: 0.95rem; padding: 14px 18px; }
       .choices-container, .editor-wrapper { margin-right: 0; width: 100%; }
+      .exam-view { padding: 15px; }
     }
   </style>
 </head>
@@ -141,6 +164,7 @@
     </div>
     <div class="chapters-list" id="chaptersList"></div>
   </div>
+  
   <div class="main-area">
     <div class="top-bar">
       <button class="menu-btn" onclick="toggleSidebar()"><i class="ri-menu-line"></i></button>
@@ -151,13 +175,32 @@
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
     </div>
+    
+    <!-- الشات -->
     <div class="chat-container" id="chatContainer"></div>
+    
+    <!-- واجهة الامتحان الجديدة -->
+    <div class="exam-view" id="examView">
+      <div class="exam-header">
+        <h2 id="examTitle">امتحان الفصل</h2>
+        <p id="examProgress">سؤال 1 من 5</p>
+      </div>
+      <div class="exam-question-box" id="examQuestionBox">
+        <div class="exam-q-text" id="examQuestionText">جاري التحميل...</div>
+        <div class="exam-options" id="examOptionsContainer"></div>
+      </div>
+      <div class="exam-result" id="examResultBox">
+        <h2>نتيجتك النهائية</h2>
+        <div class="exam-score" id="finalScore">0/0</div>
+        <p>لقد أتممت الامتحان!</p>
+      </div>
+    </div>
+
     <div class="bottom-action" id="bottomAction">
       <button class="btn-next" id="nextBtn" onclick="advanceChat()">متابعة <i class="ri-arrow-left-line"></i></button>
     </div>
   </div>
   
-  <!-- استدعاء ملفات الفصول الـ 12 -->
   <script src="js/chapters/ch1.js"></script>
   <script src="js/chapters/ch2.js"></script>
   <script src="js/chapters/ch3.js"></script>
@@ -200,6 +243,12 @@
     }
 
     let currentLesson = null, currentStepIndex = 0, challengeSolved = false, editorInstance = null;
+    
+    // متغيرات الامتحان
+    let isExamMode = false;
+    let examQuestions = [];
+    let currentExamIndex = 0;
+    let examScore = 0;
 
     function toggleSidebar() { 
       document.getElementById('sidebar').classList.toggle('open'); 
@@ -214,8 +263,6 @@
       chapterList.forEach((chap, index) => {
         const chapData = window.CHAPTERS && window.CHAPTERS[chap.id];
         const isCompleted = progress.completed.includes(chap.id);
-        
-        // ميزة القفل: الفصل الأول مفتوح دايماً، والباقي بيفتح لو اللي قبله خلص
         const isUnlocked = index === 0 || progress.completed.includes(chapterList[index - 1].id);
         
         const chapEl = document.createElement("div"); 
@@ -229,28 +276,28 @@
         lessonsEl.className = "lessons-list";
         if (String(chapterId) === String(chap.id) && isUnlocked) lessonsEl.classList.add("open");
         
-        if (chapData && isUnlocked) {
+        if (chapData) {
           chapData.lessons.forEach((lesson, lIndex) => {
+            // هنا بقى بنعرض الدروس كلها، بس لو الفصل مقفول بنحطلها كلاس مقفول
             const lessonEl = document.createElement("a");
-            lessonEl.className = `lesson-link ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
-            lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> ${lesson.title}`;
-            lessonEl.href = `python-lesson.html?ch=${chap.id}&lesson=${lIndex + 1}`;
-            lessonEl.onclick = () => { if(window.innerWidth <= 900) toggleSidebar(); };
+            const isLessonUnlocked = isUnlocked; // لو الفصل مقفول، الدروس كلها مقفولة
+            
+            lessonEl.className = `lesson-link ${!isLessonUnlocked ? "locked-lesson" : ""} ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
+            
+            if (isLessonUnlocked) {
+                lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> ${lesson.title}`;
+                lessonEl.href = `python-lesson.html?ch=${chap.id}&lesson=${lIndex + 1}`;
+                lessonEl.onclick = () => { if(window.innerWidth <= 900) toggleSidebar(); };
+            } else {
+                lessonEl.innerHTML = `<i class="ri-lock-fill"></i> ${lesson.title}`;
+                lessonEl.href = "javascript:void(0)";
+            }
             lessonsEl.appendChild(lessonEl);
           });
-          titleEl.onclick = () => lessonsEl.classList.toggle("open");
-        } else if (!isUnlocked) {
-          const lockedEl = document.createElement("div"); 
-          lockedEl.className = "lesson-link"; 
-          lockedEl.style.opacity = "0.5";
-          lockedEl.innerHTML = `<i class="ri-lock-line"></i> أكمل الفصل السابق أولاً`; 
-          lessonsEl.appendChild(lockedEl);
-        } else {
-          const lockedEl = document.createElement("div"); 
-          lockedEl.className = "lesson-link"; 
-          lockedEl.style.opacity = "0.5";
-          lockedEl.innerHTML = `<i class="ri-lock-line"></i> قريباً`; 
-          lessonsEl.appendChild(lockedEl);
+          
+          titleEl.onclick = () => {
+              if(isUnlocked) lessonsEl.classList.toggle("open");
+          };
         }
         chapEl.appendChild(titleEl); 
         chapEl.appendChild(lessonsEl); 
@@ -275,9 +322,20 @@
         renderSidebar(); updateProgressBar(); return;
       }
       currentLesson = chapter.lessons[lessonId - 1]; 
-      document.getElementById("chatContainer").innerHTML = "";
-      currentStepIndex = 0; challengeSolved = false;
-      processStep(); renderSidebar(); updateProgressBar();
+      
+      // التحقق لو الدرس ده امتحان
+      isExamMode = currentLesson.title.includes('امتحان') || currentLesson.title.includes('الامتحان');
+      
+      if (isExamMode) {
+          startExam();
+      } else {
+          document.getElementById("examView").classList.remove("show");
+          document.getElementById("chatContainer").style.display = "flex";
+          document.getElementById("chatContainer").innerHTML = "";
+          currentStepIndex = 0; challengeSolved = false;
+          processStep(); 
+      }
+      renderSidebar(); updateProgressBar();
     }
 
     function processStep() {
@@ -299,11 +357,103 @@
         addBubble("cody", "تحدي برمجي! اكتب الكود في المحرر 👇"); 
         showEditor(step); 
       } else if (step.type === "quiz") { 
-        addBubble("cody", step.question); 
+                addBubble("cody", step.question); 
         renderQuiz(step.options, step.correct, step.explanation); 
         currentStepIndex++; 
       }
     }
+
+    // ================== دوال الامتحان ==================
+    function startExam() {
+        document.getElementById("chatContainer").style.display = "none";
+        document.getElementById("bottomAction").classList.remove("show");
+        document.getElementById("examView").classList.add("show");
+        document.getElementById("examResultBox").classList.remove("show");
+        document.getElementById("examQuestionBox").style.display = "block";
+        
+        document.getElementById("examTitle").textContent = currentLesson.title;
+        
+        // تصفية الأسئلة فقط
+        examQuestions = currentLesson.steps.filter(s => s.type === 'quiz');
+        currentExamIndex = 0;
+        examScore = 0;
+        
+        if (examQuestions.length === 0) {
+            document.getElementById("examQuestionText").textContent = "لا توجد أسئلة في هذا الامتحان.";
+            return;
+        }
+        showExamQuestion();
+    }
+
+    function showExamQuestion() {
+        if (currentExamIndex >= examQuestions.length) {
+            endExam();
+            return;
+        }
+        
+        const q = examQuestions[currentExamIndex];
+        document.getElementById("examProgress").textContent = `سؤال ${currentExamIndex + 1} من ${examQuestions.length}`;
+        document.getElementById("examQuestionText").textContent = q.question;
+        
+        const optsContainer = document.getElementById("examOptionsContainer");
+        optsContainer.innerHTML = "";
+        
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.className = "exam-opt-btn";
+            btn.textContent = opt;
+            btn.onclick = () => {
+                // تعطيل الأزرار
+                Array.from(optsContainer.children).forEach(b => b.style.pointerEvents = 'none');
+                
+                if (index === q.correct) {
+                    btn.style.background = "var(--green)";
+                    btn.style.color = "#000";
+                    examScore++;
+                } else {
+                    btn.style.background = "var(--red)";
+                    btn.style.color = "#fff";
+                    optsContainer.children[q.correct].style.background = "var(--green)";
+                    optsContainer.children[q.correct].style.color = "#000";
+                }
+                
+                setTimeout(() => {
+                    currentExamIndex++;
+                    showExamQuestion();
+                }, 1000);
+            };
+            optsContainer.appendChild(btn);
+        });
+    }
+
+    function endExam() {
+        document.getElementById("examQuestionBox").style.display = "none";
+        document.getElementById("examResultBox").classList.add("show");
+        
+        document.getElementById("finalScore").textContent = `${examScore} / ${examQuestions.length}`;
+        
+        // حفظ التقدم لو نجح
+        if (examScore >= examQuestions.length / 2) {
+            if (typeof window.confetti === "function") window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+            
+            let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
+            if (!progress.completed.includes(chapterId)) {
+              progress.completed.push(chapterId);
+              localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+            }
+        }
+        
+        const btn = document.getElementById("nextBtn");
+        btn.innerHTML = 'الفصل التالي <i class="ri-arrow-left-line"></i>';
+        btn.onclick = () => { window.location.href = chapterId < 12 ? `python-lesson.html?ch=${chapterId + 1}&lesson=1` : "python-chapters.html"; };
+        
+        // نظهر زر الانتقال تحت
+        document.getElementById("bottomAction").classList.add("show");
+        
+        renderSidebar();
+        updateProgressBar();
+    }
+    // =====================================================
 
     function addBubble(type, text) {
       const row = document.createElement("div"); 
@@ -434,13 +584,9 @@
         btn.innerHTML = 'الدرس التالي <i class="ri-arrow-left-line"></i>';
         btn.onclick = () => { window.location.href = `python-lesson.html?ch=${chapterId}&lesson=${lessonId + 1}`; };
       } else {
-        let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
-        if (!progress.completed.includes(chapterId)) {
-          progress.completed.push(chapterId);
-          localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-        }
-        btn.innerHTML = 'الفصل التالي <i class="ri-arrow-left-line"></i>';
-        btn.onclick = () => { window.location.href = chapterId < 12 ? `python-lesson.html?ch=${chapterId + 1}&lesson=1` : "python-chapters.html"; };
+        // لو الدرس الأخير مش امتحان، نعتبره كأنه خلص (للتأمين)
+        btn.innerHTML = 'العودة للخريطة <i class="ri-map-pin-line"></i>';
+        btn.onclick = () => { window.location.href = "python-chapters.html"; };
       }
       showNextButton(); 
       scrollToBottom();
