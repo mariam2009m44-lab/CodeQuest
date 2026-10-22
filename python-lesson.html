@@ -31,6 +31,7 @@
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 999; }
     .overlay.open { display: block; }
     
+    /* تحسين القائمة الجانبية لتكون أوسع وأريح */
     .sidebar { width: 320px; background: var(--sidebar); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100dvh; z-index: 1000; transition: 0.3s; }
     .sidebar-header { padding: 20px 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; }
@@ -38,7 +39,6 @@
     .sidebar-brand h2 { color: var(--cyan); font-size: 1.2rem; font-weight: 900; }
     .close-btn { display: none; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
     
-    /* المساحات الكبيرة والواسعة */
     .chapters-list { 
       flex: 1; 
       overflow-y: auto; 
@@ -53,6 +53,11 @@
     .chapter-item { background: #1e293b; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
     .chapter-title { padding: 20px; font-weight: 700; font-size: 1.1rem; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
     .chapter-title:hover { background: #334155; }
+    
+    /* تصميم القفل */
+    .chapter-item.locked { opacity: 0.6; }
+    .chapter-item.locked .chapter-title { cursor: not-allowed; color: var(--muted); }
+    .chapter-item.locked .lessons-list { display: none !important; }
     
     .lessons-list { display: none; flex-direction: column; background: #0b1120; }
     .lessons-list.open { display: flex; }
@@ -206,22 +211,25 @@
       list.innerHTML = "";
       const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
       
-      chapterList.forEach((chap) => {
+      chapterList.forEach((chap, index) => {
         const chapData = window.CHAPTERS && window.CHAPTERS[chap.id];
         const isCompleted = progress.completed.includes(chap.id);
         
+        // ميزة القفل: الفصل الأول مفتوح دايماً، والباقي بيفتح لو اللي قبله خلص
+        const isUnlocked = index === 0 || progress.completed.includes(chapterList[index - 1].id);
+        
         const chapEl = document.createElement("div"); 
-        chapEl.className = "chapter-item";
+        chapEl.className = `chapter-item ${isUnlocked ? "" : "locked"}`;
         const titleEl = document.createElement("div"); 
         titleEl.className = "chapter-title";
         
-        titleEl.innerHTML = `<span>${chap.id}. ${chap.title} ${isCompleted ? '<i class="ri-checkbox-circle-fill" style="color:var(--green); margin-right:5px;"></i>' : ''}</span> <i class="ri-arrow-down-s-line"></i>`;
+        titleEl.innerHTML = `<span>${chap.id}. ${chap.title} ${isCompleted ? '<i class="ri-checkbox-circle-fill" style="color:var(--green); margin-right:5px;"></i>' : ''} ${!isUnlocked ? '<i class="ri-lock-fill" style="color:var(--muted); margin-right:5px;"></i>' : ''}</span> <i class="ri-arrow-down-s-line"></i>`;
         
         const lessonsEl = document.createElement("div"); 
         lessonsEl.className = "lessons-list";
-        if (String(chapterId) === String(chap.id)) lessonsEl.classList.add("open");
+        if (String(chapterId) === String(chap.id) && isUnlocked) lessonsEl.classList.add("open");
         
-        if (chapData) {
+        if (chapData && isUnlocked) {
           chapData.lessons.forEach((lesson, lIndex) => {
             const lessonEl = document.createElement("a");
             lessonEl.className = `lesson-link ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
@@ -231,6 +239,12 @@
             lessonsEl.appendChild(lessonEl);
           });
           titleEl.onclick = () => lessonsEl.classList.toggle("open");
+        } else if (!isUnlocked) {
+          const lockedEl = document.createElement("div"); 
+          lockedEl.className = "lesson-link"; 
+          lockedEl.style.opacity = "0.5";
+          lockedEl.innerHTML = `<i class="ri-lock-line"></i> أكمل الفصل السابق أولاً`; 
+          lessonsEl.appendChild(lockedEl);
         } else {
           const lockedEl = document.createElement("div"); 
           lockedEl.className = "lesson-link"; 
@@ -362,7 +376,7 @@
     }
 
     function builtinRead(x) { 
-          if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'"; 
+      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'"; 
       return Sk.builtinFiles["files"][x]; 
     }
 
