@@ -1,109 +1,425 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاريعي | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { background: var(--bg-deep); padding: var(--space-l); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
-        .header h1 { font-size: 2rem; color: var(--text-primary); }
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-m); }
-        .project-card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); display: flex; flex-direction: column; transition: 0.3s; }
-        .project-card:hover { border-color: var(--primary); }
-        .project-icon { font-size: 3rem; color: var(--primary); margin-bottom: var(--space-s); }
-        .project-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-xs); }
-        .project-date { font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-m); }
-        .project-actions { display: flex; gap: 10px; margin-top: auto; }
-        .btn-new { background: var(--bg-panel); border: 2px dashed var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: 0.3s; min-height: 200px; }
-        .btn-new:hover { border-color: var(--primary); color: var(--primary); background: rgba(0, 217, 255, 0.05); }
-        .btn-new i { font-size: 3rem; margin-bottom: 10px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050B1F">
+  <title>مشاريعي | CodeQuest</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+
+  <style>
+    body {
+      background: var(--bg-deep);
+      padding: var(--space-l);
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-xl);
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+      gap: var(--space-m);
+    }
+
+    .project-card {
+      min-width: 0;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-card);
+      padding: var(--space-l);
+      display: flex;
+      flex-direction: column;
+      transition: border-color .2s ease, transform .2s ease;
+    }
+
+    .project-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .project-icon {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: var(--space-s);
+    }
+
+    .project-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      overflow-wrap: anywhere;
+      margin: 0 0 8px;
+    }
+
+    .project-date {
+      font-size: .85rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-m);
+    }
+
+    .project-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .project-actions button {
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .project-actions .open-button {
+      flex: 1;
+      padding: 10px;
+    }
+
+    .project-actions .delete-button {
+      padding: 10px;
+      color: var(--accent-coral);
+      border-color: var(--accent-coral);
+    }
+
+    .btn-new {
+      background: var(--bg-panel);
+      border: 2px dashed var(--border-soft);
+      border-radius: var(--radius-card);
+      padding: var(--space-l);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: .3s;
+      min-height: 200px;
+      font-family: inherit;
+    }
+
+    .btn-new:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(0, 217, 255, .05);
+    }
+
+    .btn-new i {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .status-message {
+      grid-column: 1 / -1;
+      color: var(--text-muted);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .btn-new:disabled,
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 16px;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="header">
-        <h1>مشاريعي</h1>
-        <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
-    </div>
-    <div class="projects-grid" id="projectsGrid">
-        <div class="btn-new" onclick="createProject()">
-            <i class="ri-add-circle-line"></i>
-            <h3>مشروع جديد</h3>
-        </div>
-    </div>
-    <script type="module">
-        import { auth, db } from './js/app.js';
-        import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { showToast } from './js/ui.js';
+  <header class="header">
+    <h1>مشاريعي</h1>
+    <a href="dashboard.html" class="btn-secondary">
+      <i class="ri-home-5-line" aria-hidden="true"></i>
+      الرئيسية
+    </a>
+  </header>
 
-        let currentUser = null;
-        let projects = [];
+  <main>
+    <div id="projectsGrid" class="projects-grid" aria-live="polite">
+      <p class="status-message">جارٍ تحميل المشروعات...</p>
+    </div>
+  </main>
 
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadProjects();
-            }
+  <script type="module">
+    import { requireUser } from "./js/auth.js";
+    import { db } from "./js/firebase-config.js";
+    import {
+      collection,
+      query,
+      where,
+      getDocs,
+      addDoc,
+      deleteDoc,
+      doc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { showToast } from "./js/ui.js";
+
+    const grid = document.getElementById("projectsGrid");
+
+    let currentUser = null;
+    let projects = [];
+    let creatingProject = false;
+
+    function showStatus(message) {
+      grid.replaceChildren();
+
+      const paragraph = document.createElement("p");
+      paragraph.className = "status-message";
+      paragraph.textContent = message;
+
+      grid.appendChild(paragraph);
+    }
+
+    function createButton(label, className, onClick, iconName) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+
+      if (iconName) {
+        const icon = document.createElement("i");
+        icon.className = iconName;
+        icon.setAttribute("aria-hidden", "true");
+        button.appendChild(icon);
+        button.appendChild(document.createTextNode(" "));
+      }
+
+      button.appendChild(document.createTextNode(label));
+      button.addEventListener("click", onClick);
+
+      return button;
+    }
+
+    function renderProjects() {
+      grid.replaceChildren();
+
+      const newButton = document.createElement("button");
+      newButton.type = "button";
+      newButton.className = "btn-new";
+      newButton.disabled = creatingProject;
+
+      const addIcon = document.createElement("i");
+      addIcon.className = "ri-add-circle-line";
+      addIcon.setAttribute("aria-hidden", "true");
+
+      const addTitle = document.createElement("h3");
+      addTitle.textContent = creatingProject
+        ? "جارٍ إنشاء المشروع..."
+        : "مشروع جديد";
+
+      newButton.append(addIcon, addTitle);
+      newButton.addEventListener("click", createProject);
+      grid.appendChild(newButton);
+
+      if (projects.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "status-message";
+        empty.textContent = "لا توجد مشروعات حتى الآن. أنشئ مشروعك الأول!";
+        grid.appendChild(empty);
+        return;
+      }
+
+      for (const project of projects) {
+        const card = document.createElement("article");
+        card.className = "project-card";
+
+        const icon = document.createElement("div");
+        icon.className = "project-icon";
+
+        const iconElement = document.createElement("i");
+        iconElement.className = "ri-folder-code-line";
+        iconElement.setAttribute("aria-hidden", "true");
+        icon.appendChild(iconElement);
+
+        const title = document.createElement("h2");
+        title.className = "project-title";
+        title.textContent = project.name || "مشروع بدون اسم";
+
+        const date = document.createElement("p");
+        date.className = "project-date";
+        date.textContent = project.date
+          ? "آخر تعديل: " + project.date
+          : "تاريخ الإنشاء غير متاح";
+
+        const actions = document.createElement("div");
+        actions.className = "project-actions";
+
+        const openButton = createButton(
+          "فتح",
+          "btn-primary open-button",
+          () => openProject(project.id)
+        );
+
+        const deleteButton = createButton(
+          "حذف",
+          "btn-secondary delete-button",
+          () => deleteProject(project.id),
+          "ri-delete-bin-line"
+        );
+
+        deleteButton.setAttribute(
+          "aria-label",
+          "حذف المشروع " + (project.name || "")
+        );
+
+        actions.append(openButton, deleteButton);
+        card.append(icon, title, date, actions);
+        grid.appendChild(card);
+      }
+    }
+
+    async function loadProjects() {
+      if (!currentUser) return;
+
+      showStatus("جارٍ تحميل المشروعات...");
+
+      try {
+        const projectsQuery = query(
+          collection(db, "projects"),
+          where("userId", "==", currentUser.uid)
+        );
+
+        const snapshot = await getDocs(projectsQuery);
+
+        projects = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data()
+        }));
+
+        projects.sort((a, b) => {
+          const first = a.createdAt?.seconds || 0;
+          const second = b.createdAt?.seconds || 0;
+          return second - first;
         });
 
-        async function loadProjects() {
-            const q = query(collection(db, "projects"), where("userId", "==", currentUser.uid));
-            const querySnapshot = await getDocs(q);
-            projects = [];
-            querySnapshot.forEach((doc) => { projects.push({ id: doc.id, ...doc.data() }); });
-            renderProjects();
+        renderProjects();
+      } catch (error) {
+        console.error("Project loading error:", error);
+        showStatus("تعذر تحميل المشروعات. تحقق من الاتصال وصلاحيات الحساب.");
+      }
+    }
+
+    async function createProject() {
+      if (!currentUser || creatingProject) return;
+
+      const rawName = window.prompt("أدخل اسم المشروع الجديد:");
+      if (rawName === null) return;
+
+      const name = rawName.trim();
+
+      if (name.length < 1 || name.length > 80) {
+        showToast("اسم المشروع يجب أن يكون من حرف إلى 80 حرفًا.", "error");
+        return;
+      }
+
+      creatingProject = true;
+      renderProjects();
+
+      try {
+        await addDoc(collection(db, "projects"), {
+          userId: currentUser.uid,
+          name,
+          date: new Date().toLocaleDateString("ar-EG"),
+          createdAt: serverTimestamp(),
+          code: 'console.log("Hello CodeQuest");',
+          language: "javascript"
+        });
+
+        showToast("تم إنشاء المشروع بنجاح!", "success");
+        await loadProjects();
+      } catch (error) {
+        console.error("Project creation error:", error);
+        showToast("تعذر إنشاء المشروع. تحقق من الاتصال والصلاحيات.", "error");
+      } finally {
+        creatingProject = false;
+        renderProjects();
+      }
+    }
+
+    async function deleteProject(projectId) {
+      const project = projects.find((item) => item.id === projectId);
+
+      if (!project || !currentUser) return;
+
+      const confirmed = window.confirm(
+        `هل تريد حذف المشروع "${project.name || "بدون اسم"}"؟`
+      );
+
+      if (!confirmed) return;
+
+      try {
+        await deleteDoc(doc(db, "projects", projectId));
+        showToast("تم حذف المشروع.", "success");
+        await loadProjects();
+      } catch (error) {
+        console.error("Project deletion error:", error);
+        showToast("تعذر حذف المشروع. تحقق من الصلاحيات.", "error");
+      }
+    }
+
+    function openProject(projectId) {
+      const project = projects.find((item) => item.id === projectId);
+      if (!project) return;
+
+      try {
+        sessionStorage.setItem(
+          "playgroundCode",
+          typeof project.code === "string" ? project.code : ""
+        );
+
+        sessionStorage.setItem(
+          "playgroundLang",
+          ["javascript", "python", "cpp"].includes(project.language)
+            ? project.language
+            : "javascript"
+        );
+
+        location.href = "playground.html";
+      } catch (error) {
+        console.error("Project opening error:", error);
+        showToast("تعذر فتح المشروع.", "error");
+      }
+    }
+
+    async function initProjectsPage() {
+      try {
+        currentUser = await requireUser();
+        await loadProjects();
+      } catch (error) {
+        if (error?.message !== "يجب تسجيل الدخول.") {
+          console.error("Projects page initialization error:", error);
+          showStatus("تعذر تهيئة صفحة المشروعات.");
         }
+      }
+    }
 
-        function renderProjects() {
-            const grid = document.getElementById('projectsGrid');
-            grid.innerHTML = `<div class="btn-new" onclick="createProject()"><i class="ri-add-circle-line"></i><h3>مشروع جديد</h3></div>`;
-            projects.forEach((proj) => {
-                const card = document.createElement('div');
-                card.className = 'project-card';
-                card.innerHTML = `
-                    <div class="project-icon"><i class="ri-folder-code-line"></i></div>
-                    <h3 class="project-title">${proj.name}</h3>
-                    <p class="project-date">آخر تعديل: ${proj.date}</p>
-                    <div class="project-actions">
-                        <button class="btn-primary" style="flex: 1; padding: 10px;" onclick="openProject('${proj.id}')">فتح</button>
-                        <button class="btn-secondary" style="padding: 10px; color: var(--accent-coral); border-color: var(--accent-coral);" onclick="deleteProject('${proj.id}')"><i class="ri-delete-bin-line"></i></button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        window.createProject = async () => {
-            const name = prompt('أدخل اسم المشروع الجديد:');
-            if (name && currentUser) {
-                await addDoc(collection(db, "projects"), {
-                    userId: currentUser.uid, name: name, date: new Date().toLocaleDateString('ar-EG'), code: 'console.log("Hello CodeQuest");', language: 'javascript'
-                });
-                showToast('تم إنشاء المشروع بنجاح!', 'success');
-                await loadProjects();
-            }
-        };
-
-        window.deleteProject = async (id) => {
-            if (confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
-                await deleteDoc(doc(db, "projects", id));
-                showToast('تم حذف المشروع.', 'info');
-                await loadProjects();
-            }
-        };
-
-        window.openProject = (id) => {
-            const proj = projects.find(p => p.id === id);
-            if (proj) {
-                sessionStorage.setItem('playgroundCode', proj.code);
-                sessionStorage.setItem('playgroundLang', proj.language || 'javascript');
-                window.location.href = 'playground.html';
-            }
-        };
-    </script>
+    await initProjectsPage();
+  </script>
 </body>
 </html>
