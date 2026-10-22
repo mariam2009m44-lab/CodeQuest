@@ -15,7 +15,7 @@ window.CHAPTERS[9] = {
     },
     {
       title: "الدرس 2: الدرع المخصص", steps: [
-        { type: "cody", text: "مرحباً بعودتك يا كابتن! الدرع اللي عملناه في الدرس الأول ده درع عام (بيحميك من أي خطأ)." },
+        { type: "cody", text: "مرحباً بعودتك يا كابتن! الدرع اللي عملناه في الدرس الأول ده درع عام." },
         { type: "cody", text: "بس أحياناً الكابتن المحترف عايز يعرف بالظبط إيه نوع المشكلة عشان يصلحها." },
         { type: "choice", question: "لو فيه خطأ قسمة على صفر، إيه اسم الدرع المخصص ليه؟", options: ["except AllErrors", "except ZeroDivisionError"], replies: ["بايثون مش بتعرف الدرع ده، لازم نكتب اسم الخطأ الحقيقي.", "بالظبط! كده إحنا بنقول للكمبيوتر استنى خطأ القسمة على صفر بس."] },
         { type: "cody", text: "تحديك: اكتب كود بيحاول يقسم 5 على 0. لو حصل خطأ قسمة على صفر، اطبع كلمة Cannot divide by zero." },
@@ -36,7 +36,7 @@ window.CHAPTERS[9] = {
         { type: "cody", text: "آخر درس! إحنا عايزين نعمل برنامج محترف بياخد رقم من المستخدم ويقسمه." },
         { type: "cody", text: "تخيل إن الكمبيوتر مش عارف إيه اللي هيجي من المستخدم، ممكن يكتب حروف، أو يكتب صفر." },
         { type: "cody", text: "تحديك: اكتب كود بيحاول يقسم 10 / int(\"0\")، ولو حصل أي خطأ، اطبع Error handled." },
-        { type: "challenge", expected: "Error handled", defaultCode: '# اكتب الكود هنا\n', hint: 'try:\n    print(10 / int("0"))\nexcept:\n    print("Error handled")', check: (code) => code.includes('try:') && code.includes('except:') && code.includes('print("Error handled")'), successMsg: "رائع! درعك العائم شغال في أي موقف." }
+        { type: "challenge", expected: "Error handled", defaultCode: '# اكتب الكود هنا\n', hint: 'try:\n    print(10 / int("0"))\nexcept:\n    print("Error handled")', check: (code) => code.includes('try:') && code.includes('except:') && code.includes('print("Error handled")'), successMsg: "رائع! درعك شغال في أي موقف." }
       ]
     },
     {
