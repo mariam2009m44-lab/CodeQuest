@@ -1,8 +1,17 @@
 
+import { requireUser } from "./auth.js";
+
 const params = new URLSearchParams(location.search);
 const lang = params.get("lang") || "javascript";
-const chapterIdx = Number.parseInt(params.get("chapter") || "0", 10);
-const lessonIdx = Number.parseInt(params.get("lesson") || "0", 10);
+
+const parseIndex = (value) => {
+  if (!/^\d+$/.test(value || "")) return 0;
+  const number = Number(value);
+  return Number.isSafeInteger(number) && number >= 0 ? number : 0;
+};
+
+const chapterIdx = parseIndex(params.get("chapter"));
+const lessonIdx = parseIndex(params.get("lesson"));
 
 const languages = {
   javascript: {
@@ -94,7 +103,7 @@ function makePythonWorker() {
           self.postMessage({
             id,
             type: "status",
-            text: "تحميل بيئة Python..."
+            text: "جارٍ تحميل بيئة Python..."
           });
 
           importScripts(
@@ -180,7 +189,7 @@ function runPython(code, id) {
   worker.onerror = () => {
     if (id !== executionId || worker !== pythonWorker) return;
 
-    showError("تعذر تشغيل Python. تأكدي من اتصال الإنترنت.");
+    showError("تعذر تشغيل Python. تحقق من اتصال الإنترنت.");
     stopPythonWorker();
     setRunning(false);
   };
@@ -188,7 +197,7 @@ function runPython(code, id) {
   pythonTimeout = setTimeout(() => {
     if (id !== executionId || worker !== pythonWorker) return;
 
-    showError("انتهى الوقت المسموح للتنفيذ. جرّبي كودًا أبسط.");
+    showError("انتهى الوقت المسموح للتنفيذ. جرّب كودًا أبسط.");
     resetExecution();
   }, 10000);
 
@@ -204,6 +213,7 @@ function runJavaScript(code, id) {
 
   const outputs = [];
   let finished = false;
+  let timeout;
 
   const finish = (message = null) => {
     if (finished) return;
@@ -292,7 +302,7 @@ function runJavaScript(code, id) {
     }
   };
 
-  const timeout = setTimeout(() => {
+  timeout = setTimeout(() => {
     finish("انتهى الوقت المسموح للتنفيذ.");
   }, 3000);
 
@@ -304,7 +314,7 @@ function runJavaScript(code, id) {
 async function runCpp() {
   showOutput(
     "تشغيل C++ غير مفعّل حاليًا.\n" +
-    "سنحتاج خدمة تنفيذ مناسبة تدعم CORS وحدود الاستخدام قبل تفعيله."
+    "يلزم ربط خدمة تنفيذ تدعم CORS وحدود الاستخدام قبل تفعيل هذه الميزة."
   );
 
   setRunning(false);
@@ -316,7 +326,7 @@ async function runUserCode() {
   const code = editor.getValue();
 
   if (!code.trim()) {
-    showOutput("اكتبي الكود أولًا ثم اضغطي تشغيل.");
+    showOutput("أدخل الكود أولًا، ثم اضغط على تشغيل.");
     return;
   }
 
@@ -331,7 +341,7 @@ async function runUserCode() {
   } else if (lang === "python") {
     runPython(code, id);
   } else if (lang === "cpp") {
-    await runCpp(code);
+    await runCpp();
   }
 }
 
@@ -342,7 +352,7 @@ window.resetCode = () => {
 
   resetExecution();
   editor.setValue(getLessonCode(currentLesson));
-  showOutput("Console Ready...");
+  showOutput("المحرر جاهز للتشغيل.");
 };
 
 window.showQuiz = () => {
@@ -393,7 +403,7 @@ async function initLesson() {
     }
 
     if (!window.CodeMirror || !editorElement) {
-      throw new Error("تعذر تحميل محرر الأكواد. أعيدي تحميل الصفحة.");
+      throw new Error("تعذر تحميل محرر الأكواد. أعد تحميل الصفحة.");
     }
 
     editor = CodeMirror.fromTextArea(editorElement, {
@@ -407,7 +417,6 @@ async function initLesson() {
     });
 
     editor.setValue(getLessonCode(currentLesson));
-
     displayLessonText("fileNameDisplay", "main" + config.ext);
 
     const chapters = Array.isArray(currentData.chapters)
@@ -431,6 +440,7 @@ async function initLesson() {
     displayLessonText("progressText", percentage + "%");
 
     const quiz = currentLesson.quiz;
+
     displayLessonText(
       "quizQuestion",
       quiz?.question || "لا يوجد سؤال لهذا الدرس."
@@ -469,13 +479,13 @@ async function initLesson() {
     const submitButton = $("submitQuizBtn");
     if (submitButton) submitButton.style.display = "none";
 
-    showOutput("Console Ready...");
+    showOutput("المحرر جاهز للتشغيل.");
   } catch (error) {
     console.error("Lesson loading error:", error);
 
     displayLessonText(
       "codyIntro",
-      "تعذر تحميل الدرس. تأكدي من وجود ملف المنهج واتصال الإنترنت."
+      "تعذر تحميل الدرس. تحقق من وجود ملف المنهج واتصال الإنترنت."
     );
 
     showError(error.message);
@@ -491,12 +501,13 @@ window.submitQuiz = async () => {
   if (!feedback) return;
 
   if (selectedOptionIdx === quiz.correct_index) {
-    feedback.textContent = quiz.success_msg || "إجابة صحيحة! أحسنتِ.";
+    feedback.textContent = quiz.success_msg || "إجابة صحيحة! أحسنت.";
 
     const submitButton = $("submitQuizBtn");
     if (submitButton) submitButton.style.display = "none";
   } else {
-    feedback.textContent = quiz.fail_msg || "الإجابة غير صحيحة. حاولي مرة أخرى.";
+    feedback.textContent =
+      quiz.fail_msg || "الإجابة غير صحيحة. حاول مرة أخرى.";
 
     setTimeout(() => {
       feedback.textContent = "";
@@ -518,4 +529,11 @@ window.addEventListener("beforeunload", () => {
   resetExecution();
 });
 
-initLesson();
+requireUser()
+  .then(() => initLesson())
+  .catch((error) => {
+    if (error?.message === "يجب تسجيل الدخول.") return;
+
+    console.error("Authentication or lesson initialization error:", error);
+    showError("تعذر التحقق من الحساب أو تحميل الدرس. حاول تحديث الصفحة.");
+  });
