@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050810">
+  <title>خريطة جافا | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+  <style>
+    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --green: #76e9c0; --gold: #ffd48a; --purple: #a99aff; --surface: rgba(15, 23, 42, 0.8); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; background-image: radial-gradient(circle at 50% 0%, rgba(248,152,32,0.08), transparent 60%); }
+    .top-nav { width: 100%; max-width: 1000px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .back-btn { display: flex; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; }
+    .header-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; text-align: center; }
+    .java-logo { width: 100px; height: 100px; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(248,152,32,0.5)); }
+    .header-section h1 { font-size: 2.2rem; font-weight: 900; color: var(--text); margin-bottom: 10px; }
+    .map-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+    .chapter-node { background: var(--glass); border: 2px solid var(--border); border-radius: 20px; padding: 20px; text-align: center; position: relative; cursor: pointer; transition: 0.3s; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; }
+    .chapter-node:hover:not(.locked) { transform: translateY(-5px); border-color: var(--cyan); box-shadow: 0 10px 30px rgba(107,232,255,0.15); }
+    .chapter-node.locked { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
+    .chapter-number { width: 50px; height: 50px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-size: 1.5rem; font-weight: 900; color: var(--cyan); border: 2px solid var(--border); margin-bottom: 15px; }
+    .chapter-node.completed .chapter-number { background: var(--green); color: #000; border-color: var(--green); }
+    .chapter-node h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; }
+    .exam-node { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(169, 154, 255, 0.1), rgba(255, 212, 138, 0.1)); border: 2px solid var(--purple); border-radius: 20px; padding: 30px; text-align: center; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+    .exam-node.locked { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+    .exam-node h2 { font-size: 1.5rem; color: #fff; }
+    .btn-exam { background: var(--purple); color: #000; padding: 12px 30px; border-radius: 12px; font-weight: 900; text-decoration: none; transition: 0.3s; }
+    @media (max-width: 600px) { .exam-node { flex-direction: column; gap: 20px; } .header-section h1 { font-size: 1.7rem; } }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <a href="languages.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للمسارات</a>
+    <div style="font-weight: 900; color: var(--gold);">XP: <span id="xpDisplay">0</span></div>
+  </div>
+  <div class="header-section">
+    <svg class="java-logo" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M52.3 15.6s-3.3 1.7-1.5 5.3c3.6 7.3 11.7 11.5 11.7 11.5s-1.7-2.5-.9-5.2c.8-2.7 3.4-4.4 3.4-4.4s-5.3-1.7-8.1-4.2c-2.8-2.5-4.6-3-4.6-3z" fill="#f89820"/>
+      <path d="M59.8 5.8s-8.1 5.8-4.1 13.6c4 7.8 14.3 10.8 14.3 10.8s-4.1-4.3-2.5-8.8c1.6-4.5 6.5-6.7 6.5-6.7s-8.6-1.7-11.7-5.3c-3.1-3.6-2.5-3.6-2.5-3.6z" fill="#f89820"/>
+      <path d="M39.7 40.5s-5.3 4.6-1.7 9.8c3.6 5.2 12.4 7.8 12.4 7.8s-3.2-3.6-1.4-7.3c1.8-3.7 5.9-5.3 5.9-5.3s-6.8-1.6-9.8-4.5c-3-2.9-5.4-0.5-5.4-0.5z" fill="#f89820"/>
+      <path d="M74.3 36.2s-6.9 4.3-3.2 10.3c3.7 6 13.5 9.3 13.5 9.3s-4.7-4.4-3.2-9.1c1.5-4.7 6.3-6.3 6.3-6.3s-8.6-1.4-11.4-4.8c-2.8-3.4-2-3.4-2-3.4z" fill="#f89820"/>
+      <path d="M45.3 78.8s-3.3 2.7-.7 5.9c2.6 3.2 8.4 4.3 8.4 4.3s-2.4-2.4-1.3-4.8c1.1-2.4 3.9-3.2 3.9-3.2s-4.7-.8-6.6-2.4c-1.9-1.6-3.7.2-3.7.2z" fill="#f89820"/>
+      <path d="M62.9 72.4s-5.1 3.9-2.4 8.2c2.7 4.3 9.9 6.4 9.9 6.4s-3.4-3.3-2.2-6.8c1.2-3.5 4.8-4.5 4.8-4.5s-6.3-1-8.4-3.1c-2.1-2.1-1.7-0.2-1.7-0.2z" fill="#f89820"/>
+      <path d="M81.4 76.5s-4.3 3.3-2 6.9c2.3 3.6 8.3 5.4 8.3 5.4s-2.9-2.8-1.8-5.7c1.1-2.9 4.1-3.8 4.1-3.8s-5.3-.8-7.1-2.6c-1.8-1.8-1.5-0.2-1.5-0.2z" fill="#f89820"/>
+      <path d="M32.6 67.9s-6.1 4.6-2.8 9.9c3.3 5.3 11.3 7.3 11.3 7.3s-3.7-3.6-2.4-7.4c1.3-3.8 5.3-5 5.3-5s-7-1-9.8-3.7c-2.8-2.7-1.6-1.1-1.6-1.1z" fill="#f89820"/>
+      <path d="M32 88.5c-9.5 3.8-21.6 5.3-21.6 5.3s9.8 3.8 22.6 3.8c12.8 0 23.2-3.8 23.2-3.8s-14.7-5.3-24.2-5.3z" fill="#5382a1"/>
+      <path d="M28.8 96c-6.5 2.6-15.3 3.8-15.3 3.8s6.7 2.6 15.3 2.6c8.6 0 15.3-2.6 15.3-2.6s-8.8-1.2-15.3-3.8z" fill="#5382a1"/>
+      <path d="M84.8 88.5c9.5 3.8 21.6 5.3 21.6 5.3s-9.8 3.8-22.6 3.8c-12.8 0-23.2-3.8-23.2-3.8s14.7-5.3 24.2-5.3z" fill="#5382a1"/>
+      <path d="M88 96c6.5 2.6 15.3 3.8 15.3 3.8s-6.7 2.6-15.3 2.6c-8.6 0-15.3-2.6-15.3-2.6s8.8-1.2 15.3-3.8z" fill="#5382a1"/>
+    </svg>
+    <h1>خريطة مغامرة جافا</h1>
+    <p style="color: var(--muted);">أكمل الفصول لجمع النجوم وفتح المشروع النهائي!</p>
+  </div>
+  <div class="map-container" id="mapContainer"></div>
+  <script>
+    "use strict";
+    const chapters = [
+      { id: 1, title: "الطباعة" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" },
+      { id: 4, title: "الشروط" }, { id: 5, title: "الحلقات" }, { id: 6, title: "المصفوفات" },
+      { id: 7, title: "الدوال" }, { id: 8, title: "النصوص" }, { id: 9, title: "الكائنات" },
+      { id: 10, title: "الوراثة" }, { id: 11, title: "معالجة الأخطاء" }, { id: 12, title: "المشروع النهائي" }
+    ];
+    const PROGRESS_KEY = "cody_java_progress";
+    const XP_KEY = "cody_java_xp";
+    function readProgress() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
+        return { completed: Array.isArray(saved.completed) ? saved.completed : [], stars: saved.stars || {} };
+      } catch { return { completed: [], stars: {} }; }
+    }
+    function renderXp() { document.getElementById("xpDisplay").textContent = localStorage.getItem(XP_KEY) || "0"; }
+    function buildChapterUrl(chapterId) { return `java-lessons.html?ch=${chapterId}&lesson=1`; }
+    function renderMap() {
+      const progress = readProgress(); const container = document.getElementById("mapContainer"); const fragment = document.createDocumentFragment();
+      chapters.forEach((chapter, index) => {
+        const isDone = progress.completed.includes(chapter.id);
+        const isUnlocked = index === 0 || progress.completed.includes(chapters[index - 1].id);
+        const node = document.createElement("a");
+        node.className = `chapter-node ${isDone ? "completed" : ""} ${isUnlocked ? "" : "locked"}`;
+        node.href = isUnlocked ? buildChapterUrl(chapter.id) : "#";
+        if (!isUnlocked) node.addEventListener("click", e => e.preventDefault());
+        node.innerHTML = `<div class="chapter-number">${isDone ? '<i class="ri-check-line"></i>' : chapter.id}</div><h3>${chapter.title}</h3>`;
+        fragment.appendChild(node);
+      });
+      const allDone = chapters.every(c => progress.completed.includes(c.id));
+      const examNode = document.createElement("div"); examNode.className = `exam-node ${allDone ? "" : "locked"}`;
+      examNode.innerHTML = `<div><h2>الامتحان النهائي والمشروع</h2><p style="color:var(--muted);">أكمل الـ 12 فصل!</p></div>`;
+      if (allDone) { const link = document.createElement("a"); link.href = "java-exam.html"; link.className = "btn-exam"; link.textContent = "ابدأ الامتحان"; examNode.appendChild(link); }
+      fragment.appendChild(examNode); container.replaceChildren(fragment);
+    }
+    renderXp(); renderMap();
+  </script>
+</body>
+</html>
