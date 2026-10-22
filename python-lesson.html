@@ -15,7 +15,6 @@
     :root { 
       --bg: #090d16; 
       --sidebar: #0f172a; 
-      --chat: #1e293b; 
       --cody: #334155; 
       --stu: #4f46e5; 
       --border: #334155; 
@@ -23,7 +22,6 @@
       --muted: #94a3b8; 
       --cyan: #06b6d4; 
       --green: #10b981; 
-      --red: #f43f5e; 
       --gold: #fbbf24; 
       --safe: env(safe-area-inset-bottom, 20px); 
     }
@@ -34,42 +32,53 @@
     .overlay.open { display: block; }
     
     .sidebar { width: 320px; background: var(--sidebar); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100dvh; z-index: 1000; transition: 0.3s; }
-    .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .sidebar-header { padding: 20px 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; }
-    .sidebar-brand img { width: 28px; }
-    .sidebar-brand h2 { color: var(--cyan); font-size: 1.1rem; font-weight: 900; }
+    .sidebar-brand img { width: 32px; }
+    .sidebar-brand h2 { color: var(--cyan); font-size: 1.2rem; font-weight: 900; }
     .close-btn { display: none; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
     
-    /* تظبيط المساحة عشان السحب والمرونة */
+    /* تظبيط المساحة والمسافات في القائمة الجانبية */
     .chapters-list { 
       flex: 1; 
       overflow-y: auto; 
       -webkit-overflow-scrolling: touch; 
-      padding: 10px; 
-      padding-bottom: 150px; 
+      padding: 15px; 
+      padding-bottom: 200px; 
       display: flex; 
       flex-direction: column; 
-      gap: 10px; 
+      gap: 15px; 
     }
     
-    .chapter-item { background: #1e293b; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-    .chapter-title { padding: 14px 15px; font-weight: 700; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+    .chapter-item { background: #1e293b; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .chapter-title { padding: 18px 20px; font-weight: 700; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
     .chapter-title:hover { background: #334155; }
-    .lessons-list { display: none; flex-direction: column; background: #0f172a; }
+    
+    .lessons-list { display: none; flex-direction: column; background: #0b1120; }
     .lessons-list.open { display: flex; }
-    .lesson-link { padding: 12px 15px; color: var(--muted); text-decoration: none; font-size: 0.9rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .lesson-link { 
+      padding: 16px 20px; 
+      color: var(--muted); 
+      text-decoration: none; 
+      font-size: 0.95rem; 
+      border-top: 1px solid var(--border); 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+      transition: 0.2s; 
+    }
     .lesson-link:hover, .lesson-link.active { color: var(--cyan); background: #1e293b; font-weight: 700; }
     
     .main-area { flex: 1; display: flex; flex-direction: column; height: 100dvh; position: relative; }
-    .top-bar { padding: 10px 15px; background: var(--sidebar); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .top-bar { padding: 12px 15px; background: var(--sidebar); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .menu-btn { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
-    .back-btn { color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.85rem; background: #1e293b; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); }
+    .back-btn { color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.85rem; background: #1e293b; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); }
     .back-btn:hover { background: var(--cyan); color: #000; }
     .progress-container { flex: 1; min-width: 100px; }
-    .progress-text { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; margin-bottom: 4px; color: var(--gold); }
-    .progress-bar { width: 100%; height: 6px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+    .progress-text { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-bottom: 5px; color: var(--gold); }
+    .progress-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 10px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--green); width: 0%; transition: 0.5s; }
-    .stats-badge { background: rgba(251, 191, 36, 0.1); color: var(--gold); padding: 4px 10px; border-radius: 15px; font-weight: 900; font-size: 0.8rem; border: 1px solid rgba(251, 191, 36, 0.3); display: flex; align-items: center; gap: 5px; }
+    .stats-badge { background: rgba(251, 191, 36, 0.1); color: var(--gold); padding: 6px 12px; border-radius: 15px; font-weight: 900; font-size: 0.85rem; border: 1px solid rgba(251, 191, 36, 0.3); display: flex; align-items: center; gap: 5px; }
     
     .chat-container { flex: 1; padding: 15px; padding-bottom: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
     .message-row { display: flex; gap: 10px; align-items: flex-end; animation: pop 0.3s ease; }
@@ -80,39 +89,37 @@
     .message-row.student { flex-direction: row-reverse; }
     .message-row.student .avatar { background: var(--stu); }
     .message-row.student .bubble { background: var(--stu); border: 1px solid var(--stu); border-radius: 16px 16px 16px 0; }
-    .avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
-    .bubble { padding: 12px 16px; font-size: 0.95rem; line-height: 1.7; max-width: 85%; color: #fff; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0; }
+    .bubble { padding: 14px 18px; font-size: 1rem; line-height: 1.7; max-width: 85%; color: #fff; }
     .bubble code { background: #0f172a; color: var(--cyan); padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; margin: 5px 0; }
-    .choices-container { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 500px; margin-right: 48px; }
-    .choice-btn { background: #1e293b; border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 10px; font-family: 'Cairo'; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-align: right; }
+    .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin-right: 50px; }
+    .choice-btn { background: #1e293b; border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 10px; font-family: 'Cairo'; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-align: right; }
     .choice-btn:hover { background: #334155; border-color: var(--cyan); }
-    .editor-wrapper { display: none; width: calc(100% - 48px); margin-right: 48px; background: var(--sidebar); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-top: 10px; }
+    .editor-wrapper { display: none; width: calc(100% - 50px); margin-right: 50px; background: var(--sidebar); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-top: 10px; }
     .editor-wrapper.show { display: block; }
-    .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .btn-run { background: var(--green); color: #000; border: none; padding: 6px 16px; border-radius: 8px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; font-size: 0.85rem; }
+    .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .btn-run { background: var(--green); color: #000; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 900; cursor: pointer; font-family: 'Cairo'; font-size: 0.9rem; }
     .code-area { display: flex; flex-direction: column; gap: 10px; }
-    .CodeMirror { height: 200px !important; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.9rem; direction: ltr; text-align: left; }
-    .output-area { height: 100px; background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.85rem; white-space: pre-wrap; }
+    .CodeMirror { height: 220px !important; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.95rem; direction: ltr; text-align: left; }
+    .output-area { height: 110px; background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.9rem; white-space: pre-wrap; }
     
-    /* زر المتابعة العائم */
     .bottom-action { position: fixed; bottom: calc(var(--safe) + 15px); left: 50%; transform: translateX(-50%); display: none; justify-content: center; z-index: 900; width: 90%; max-width: 350px; }
     .bottom-action.show { display: flex; }
-    .btn-next { background: var(--cyan); color: #000; border: none; padding: 14px; width: 100%; border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(6, 182, 212, 0.5); }
+    .btn-next { background: var(--cyan); color: #000; border: none; padding: 15px; width: 100%; border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(6, 182, 212, 0.5); }
     .btn-next:hover { transform: scale(1.02); }
 
-    /* إخفاء زر المتابعة لما القائمة تكون مفتوحة */
     .sidebar.open ~ .main-area .bottom-action { display: none !important; }
     
     @media (max-width: 900px) {
-      .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 280px; }
+      .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 85%; max-width: 320px; }
       .sidebar.open { right: 0; }
       .close-btn { display: block; }
       .menu-btn { display: block; order: 1; }
       .back-btn { order: 2; }
       .stats-badge { order: 3; }
       .progress-container { order: 4; width: 100%; margin-top: 5px; }
-      .chat-container { padding: 10px; padding-bottom: 120px; }
-      .bubble { max-width: 90%; font-size: 0.9rem; padding: 10px 14px; }
+      .chat-container { padding: 12px; padding-bottom: 120px; }
+      .bubble { max-width: 90%; font-size: 0.95rem; padding: 12px 16px; }
       .choices-container, .editor-wrapper { margin-right: 0; width: 100%; }
     }
   </style>
@@ -145,18 +152,25 @@
     </div>
   </div>
   
-  <!-- استدعاء ملفات الفصول -->
+  <!-- استدعاء ملفات الفصول الـ 12 -->
   <script src="js/chapters/ch1.js"></script>
   <script src="js/chapters/ch2.js"></script>
   <script src="js/chapters/ch3.js"></script>
   <script src="js/chapters/ch4.js"></script>
+  <script src="js/chapters/ch5.js"></script>
+  <script src="js/chapters/ch6.js"></script>
+  <script src="js/chapters/ch7.js"></script>
+  <script src="js/chapters/ch8.js"></script>
+  <script src="js/chapters/ch9.js"></script>
+  <script src="js/chapters/ch10.js"></script>
+  <script src="js/chapters/ch11.js"></script>
+  <script src="js/chapters/ch12.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script>
     "use strict";
     
-    // قائمة الفصول الأساسية
     const chapterList = [
       { id: 1, title: "الطباعة" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" },
       { id: 4, title: "الشروط" }, { id: 5, title: "التكرار" }, { id: 6, title: "القوائم" },
@@ -165,8 +179,6 @@
     ];
     
     const PROGRESS_KEY = "cody_python_progress", XP_KEY = "cody_xp";
-    
-    // ميزة حفظ مكان الوقوف (الاستكمال التلقائي)
     const urlParams = new URLSearchParams(window.location.search);
     let chapterId = parseInt(urlParams.get("ch"));
     let lessonId = parseInt(urlParams.get("lesson"));
@@ -189,7 +201,6 @@
       document.getElementById('overlay').classList.toggle('open'); 
     }
     
-    // بناء القائمة الجانبية مع علامة الصح (✅)
     function renderSidebar() {
       const list = document.getElementById("chaptersList"); 
       list.innerHTML = "";
@@ -242,7 +253,6 @@
     }
 
     function loadLesson() {
-      // حفظ مكان الدرس الحالي
       localStorage.setItem("cody_last_lesson", JSON.stringify({ch: chapterId, lesson: lessonId}));
       
       const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
@@ -357,15 +367,11 @@
     }
 
     async function runCode() {
-            const outputArea = document.getElementById("outputArea");
+      const outputArea = document.getElementById("outputArea");
       const code = editorInstance ? editorInstance.getValue() : document.getElementById("dynamicCodeEditor").value;
       const challenge = window.currentChallenge;
       
-      if (!code.trim()) { 
-        outputArea.textContent = "⚠️ اكتب الكود أولاً."; 
-        return; 
-      }
-      
+      if (!code.trim()) { outputArea.textContent = "⚠️ اكتب الكود أولاً."; return; }
       outputArea.textContent = "> Running..."; 
       let outputText = "";
       
