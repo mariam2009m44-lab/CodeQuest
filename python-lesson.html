@@ -12,293 +12,163 @@
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Fira+Code:wght@400;600&display=swap');
-
     :root { 
       --bg: #05080f; 
-      --surface: rgba(15, 23, 42, 0.7);
-      --surface-hover: rgba(30, 41, 59, 0.9);
-      --sidebar-bg: rgba(9, 13, 23, 0.98);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(6, 182, 212, 0.5);
-      --text: #f8fafc; 
+      --surface: #0f172a;
+      --sidebar-bg: #090d17;
+      --border: #1e293b;
+      --text: #ffffff; 
       --text-muted: #94a3b8; 
       --cyan: #06b6d4; 
       --green: #10b981; 
       --gold: #fbbf24; 
       --red: #f43f5e;
       --safe: env(safe-area-inset-bottom, 20px); 
-      --font-main: 'Cairo', sans-serif;
-      --font-code: 'Fira Code', monospace;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { 
-      font-family: var(--font-main); 
-      background: var(--bg); 
-      color: var(--text); 
-      display: flex; 
-      height: 100dvh; 
-      overflow: hidden;
-      background-image: 
-        radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.08), transparent 40%),
-        radial-gradient(circle at 85% 30%, rgba(79, 70, 229, 0.08), transparent 40%);
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+    body { background: var(--bg); color: var(--text); display: flex; height: 100dvh; overflow: hidden; }
 
-    button { font-family: var(--font-main); cursor: pointer; border: none; outline: none; transition: 0.3s; }
-    
     /* ============ القائمة الجانبية ============ */
-    .overlay { 
-      display: none; position: fixed; inset: 0; 
-      background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 999; 
-    }
-    .overlay.open { display: block; animation: fadeIn 0.3s ease; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999; backdrop-filter: blur(3px); }
+    .overlay.open { display: block; }
 
     .sidebar { 
-      width: 340px; background: var(--sidebar-bg); border-left: 1px solid var(--border); 
+      width: 320px; background: var(--sidebar-bg); border-left: 1px solid var(--border); 
       display: flex; flex-direction: column; height: 100dvh; z-index: 1000; 
-      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(20px);
+      transition: 0.3s; 
     }
-    .sidebar-header { 
-      padding: 20px 15px; border-bottom: 1px solid var(--border); 
-      display: flex; align-items: center; justify-content: space-between; 
-    }
-    .sidebar-brand { display: flex; align-items: center; gap: 12px; }
-    .sidebar-brand img { width: 34px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
-    .sidebar-brand h2 { color: var(--text); font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px; }
-    .close-btn { display: none; background: rgba(255,255,255,0.05); border-radius: 50%; width: 36px; height: 36px; color: var(--text-muted); font-size: 1.2rem; }
-    .close-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; }
+    .sidebar-brand img { width: 30px; }
+    .sidebar-brand h2 { color: var(--text); font-size: 1.1rem; font-weight: 900; }
+    .close-btn { display: none; background: var(--border); border: none; border-radius: 8px; width: 32px; height: 32px; color: var(--text); cursor: pointer; }
 
-    .chapters-list { 
-      flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; 
-      display: flex; flex-direction: column; gap: 12px; 
-      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-    }
+    .chapters-list { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 150px; display: flex; flex-direction: column; gap: 10px; }
     
-    .chapter-item { 
-      background: var(--surface); border: 1px solid var(--border); 
-      border-radius: 12px; overflow: hidden; transition: 0.3s;
-    }
-    .chapter-item:hover { border-color: rgba(255,255,255,0.15); }
-    .chapter-title { 
-      padding: 16px; font-weight: 700; font-size: 1rem; color: var(--text); 
-      display: flex; justify-content: space-between; align-items: center; 
-      cursor: pointer; background: linear-gradient(to right, transparent, rgba(255,255,255,0.02));
-    }
-    .chapter-title:hover { background: linear-gradient(to right, transparent, rgba(255,255,255,0.05)); }
-    .chap-info { display: flex; flex-direction: column; gap: 4px; }
-    .chap-mini-prog { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden;}
-    .chap-mini-fill { height: 100%; background: var(--cyan); width: 0%; border-radius: 2px; transition: 0.3s;}
+    .chapter-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .chapter-title { padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .chapter-title:hover { background: #1a2332; }
+    
+    .chap-info { display: flex; flex-direction: column; gap: 5px; width: 85%; }
+    .chap-name { color: var(--text); font-size: 1rem; font-weight: 700; display: block; }
+    .chap-mini-prog { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    .chap-mini-fill { height: 100%; background: var(--cyan); width: 0%; }
 
+    .chapter-item.locked .chap-name { color: var(--text-muted); }
     .chapter-item.locked { opacity: 0.7; }
-    .chapter-item.locked .chapter-title { cursor: not-allowed; color: var(--text-muted); }
-    .chapter-item.locked .chap-mini-fill { background: var(--text-muted); }
 
-    .lessons-list { display: none; flex-direction: column; background: rgba(0,0,0,0.2); border-top: 1px solid var(--border); }
-    .lessons-list.open { display: flex; animation: slideDown 0.3s ease; }
-    
-    .lesson-link { 
-      padding: 14px 16px; color: var(--text-muted); text-decoration: none; 
-      font-size: 0.95rem; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.03);
-      display: flex; align-items: center; gap: 10px; transition: 0.2s; 
-    }
-    .lesson-link:last-child { border-bottom: none; }
-    .lesson-link:hover:not(.locked-lesson), .lesson-link.active { 
-      color: var(--cyan); background: rgba(6, 182, 212, 0.05); padding-right: 20px; 
-    }
+    .lessons-list { display: none; flex-direction: column; background: #0a0f1a; border-top: 1px solid var(--border); }
+    .lessons-list.open { display: flex; }
+    .lesson-link { padding: 14px 15px; color: var(--text-muted); text-decoration: none; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; align-items: center; gap: 10px; }
+    .lesson-link:hover:not(.locked-lesson), .lesson-link.active { color: var(--cyan); background: #1a2332; font-weight: 700; }
     .lesson-link.active { border-right: 3px solid var(--cyan); }
     .lesson-link.locked-lesson { opacity: 0.5; cursor: not-allowed; }
 
     /* ============ المنطقة الرئيسية ============ */
     .main-area { flex: 1; display: flex; flex-direction: column; height: 100dvh; position: relative; }
     
-    /* الشريط العلوي - متجاوب للموبايل */
+    /* الشريط العلوي */
     .top-bar { 
-      padding: 12px 16px; background: var(--surface); backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border); display: flex; align-items: center; 
-      justify-content: space-between; gap: 10px; z-index: 10; flex-wrap: wrap;
+      padding: 10px 15px; background: var(--surface); border-bottom: 1px solid var(--border); 
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; z-index: 10;
     }
-    .menu-btn { display: none; background: rgba(255,255,255,0.05); border-radius: 8px; width: 40px; height: 40px; color: var(--text); font-size: 1.3rem; justify-content: center; align-items: center; }
+    .top-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .menu-btn { display: none; background: var(--border); border: none; border-radius: 8px; width: 38px; height: 38px; color: var(--text); font-size: 1.3rem; cursor: pointer; align-items: center; justify-content: center; }
+    .back-btn { color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.85rem; background: var(--border); padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 5px; }
+    .stats-badge { background: rgba(251, 191, 36, 0.1); color: var(--gold); padding: 6px 12px; border-radius: 15px; font-weight: 900; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; }
     
-    .back-btn { 
-      color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.9rem; 
-      background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 10px; 
-      border: 1px solid var(--border); display: flex; align-items: center; gap: 6px;
-    }
-    .back-btn:hover { background: rgba(255,255,255,0.1); }
-    
-    .progress-container { flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 4px; }
+    .progress-container { width: 100%; display: flex; flex-direction: column; gap: 5px; margin-top: 5px; }
     .progress-text { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
     .progress-text span:last-child { color: var(--cyan); }
-    .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), #3b82f6); width: 0%; transition: 0.5s ease; border-radius: 10px; }
-    
-    .stats-badge { 
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.02)); 
-      color: var(--gold); padding: 6px 12px; border-radius: 16px; font-weight: 900; font-size: 0.9rem; 
-      border: 1px solid rgba(251, 191, 36, 0.2); display: flex; align-items: center; gap: 4px;
-    }
-    
+    .progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--cyan); width: 0%; transition: 0.3s; }
+
     /* ============ الشات ============ */
-    .chat-container { 
-      flex: 1; padding: 20px; padding-bottom: 120px; overflow-y: auto; 
-      display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; 
-    }
-    .message-row { display: flex; gap: 12px; align-items: flex-end; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    
+    .chat-container { flex: 1; padding: 15px; padding-bottom: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+    .message-row { display: flex; gap: 10px; align-items: flex-end; }
     .message-row.cody { flex-direction: row; }
-    .message-row.cody .avatar { background: linear-gradient(135deg, #0ea5e9, #2563eb); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
-    .message-row.cody .bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 4px 20px; }
-    
+    .message-row.cody .avatar { background: #0ea5e9; }
+    .message-row.cody .bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 16px 16px 0 16px; }
     .message-row.student { flex-direction: row-reverse; }
-    .message-row.student .avatar { background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); }
-    .message-row.student .bubble { background: linear-gradient(135deg, #4f46e5, #4338ca); border: none; border-radius: 20px 20px 20px 4px; color: #fff; }
+    .message-row.student .avatar { background: #4f46e5; }
+    .message-row.student .bubble { background: #4f46e5; border-radius: 16px 16px 16px 0; }
     
-    .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0; }
-    .bubble { padding: 14px 18px; font-size: 1rem; line-height: 1.8; max-width: 85%; position: relative; }
-    .bubble code { background: rgba(0,0,0,0.4); color: var(--cyan); padding: 3px 8px; border-radius: 6px; font-family: var(--font-code); direction: ltr; display: inline-block; margin: 3px 0; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.05); }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
+    .bubble { padding: 12px 16px; font-size: 0.95rem; line-height: 1.7; max-width: 85%; color: #fff; }
+    .bubble code { background: #000; color: var(--cyan); padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; }
     
-    /* مؤشر الكتابة */
-    .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; background: var(--surface); border-radius: 20px; width: fit-content; border: 1px solid var(--border); }
+    .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; background: var(--surface); border-radius: 20px; border: 1px solid var(--border); }
     .typing-indicator span { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
     .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
     .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
     /* ============ الخيارات ============ */
-    .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin-right: 52px; margin-top: 5px; }
-    .choice-btn { 
-      background: var(--surface); border: 1px solid var(--border); color: var(--text); 
-      padding: 14px 18px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; 
-      text-align: right; position: relative; overflow: hidden;
-    }
-    .choice-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--cyan), transparent); opacity: 0; transition: 0.3s; z-index: 0; }
+    .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin-right: 46px; margin-top: 5px; }
+    .choice-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; text-align: right; cursor: pointer; transition: 0.2s; }
     .choice-btn:hover { border-color: var(--cyan); transform: translateX(-4px); }
-    .choice-btn:hover::before { opacity: 0.1; }
-    .choice-btn span { position: relative; z-index: 1; }
 
-    /* ============ المحرر - تم إصلاحه بالكامل ============ */
-    .editor-wrapper { 
-      display: none; 
-      width: 100%; 
-      margin: 15px 0; 
-      background: #0d1117; 
-      border: 1px solid var(--border); 
-      border-radius: 12px; 
-      overflow: hidden; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-    }
-    .editor-wrapper.show { display: block; animation: slideUp 0.4s ease; }
-    .editor-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
-    .editor-dots { display: flex; gap: 6px; }
-    .editor-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .editor-dot.r { background: #ff5f56; } .editor-dot.y { background: #ffbd2e; } .editor-dot.g { background: #27c93f; }
-    .editor-title { color: var(--text-muted); font-family: var(--font-code); font-size: 0.8rem; }
-    .btn-run { background: var(--green); color: #000; padding: 6px 16px; border-radius: 6px; font-weight: 900; display: flex; align-items: center; gap: 4px; font-size: 0.85rem; }
-    .btn-run:hover { background: #34d399; }
+    /* ============ المحرر ============ */
+    .editor-wrapper { display: none; width: 100%; margin: 15px 0; background: #0d1117; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .editor-wrapper.show { display: block; }
+    .editor-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #161b22; border-bottom: 1px solid var(--border); }
+    .editor-title { color: var(--text-muted); font-family: 'Fira Code', monospace; font-size: 0.85rem; }
+    .btn-run { background: var(--green); color: #000; padding: 6px 14px; border-radius: 6px; font-weight: 900; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; cursor: pointer; border: none; }
     
     .code-area { display: flex; flex-direction: column; width: 100%; }
     .CodeMirror { 
-      width: 100% !important;
-      height: 250px !important; 
-      min-height: 250px;
-      font-family: var(--font-code); 
-      font-size: 1rem; 
+      width: 100% !important; 
+      height: 280px !important; 
+      min-height: 280px;
+      font-family: 'Fira Code', monospace; 
+      font-size: 0.95rem; 
       direction: ltr; 
       text-align: left; 
-      border-radius: 0; 
+      background: #0d1117 !important; 
     }
-    .output-area { height: 120px; background: #000; padding: 12px; font-family: var(--font-code); color: #d1d5db; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.9rem; white-space: pre-wrap; border-top: 1px solid var(--border); }
+    .output-area { height: 100px; background: #000; padding: 10px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 0.85rem; white-space: pre-wrap; border-top: 1px solid var(--border); }
 
     /* ============ واجهة الامتحان ============ */
-    .exam-view { display: none; flex-direction: column; flex: 1; padding: 20px; background: var(--bg); overflow-y: auto; }
-    .exam-view.show { display: flex; animation: fadeIn 0.5s ease; }
-    
-    .exam-header { text-align: center; margin-bottom: 30px; }
-    .exam-header h2 { color: var(--cyan); font-size: 1.6rem; font-weight: 900; margin-bottom: 10px; }
-    .exam-progress-bar { width: 100%; max-width: 400px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 0 auto 10px; overflow: hidden; }
+    .exam-view { display: none; flex-direction: column; flex: 1; padding: 20px; overflow-y: auto; }
+    .exam-view.show { display: flex; }
+    .exam-header { text-align: center; margin-bottom: 20px; }
+    .exam-header h2 { color: var(--cyan); font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; }
+    .exam-progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
     .exam-progress-fill { height: 100%; background: var(--gold); width: 0%; transition: 0.3s; }
     .exam-progress-text { color: var(--text-muted); font-size: 0.85rem; font-weight: 700; }
 
-    .exam-question-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; max-width: 700px; margin: 0 auto; width: 100%; }
-    .exam-q-text { font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; color: #fff; line-height: 1.6; }
+    .exam-question-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .exam-q-text { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; color: #fff; }
     .exam-options { display: flex; flex-direction: column; gap: 10px; }
-    
-    .exam-opt-btn { 
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); 
-      padding: 16px 20px; border-radius: 12px; font-size: 1rem; font-weight: 600; 
-      text-align: right; transition: 0.2s; 
-    }
-    .exam-opt-btn:hover { background: rgba(255,255,255,0.08); }
-    .exam-opt-btn.correct { background: rgba(16, 185, 129, 0.1); border-color: var(--green); color: var(--green); }
-    .exam-opt-btn.wrong { background: rgba(244, 63, 94, 0.1); border-color: var(--red); color: var(--red); }
+    .exam-opt-btn { background: var(--sidebar-bg); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 600; text-align: right; cursor: pointer; }
+    .exam-opt-btn.correct { background: rgba(16, 185, 129, 0.2); border-color: var(--green); color: var(--green); }
+    .exam-opt-btn.wrong { background: rgba(244, 63, 94, 0.2); border-color: var(--red); color: var(--red); }
 
     .exam-result { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; }
-    .exam-result.show { display: flex; animation: zoomIn 0.5s ease; }
-    
-    .score-ring { width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(var(--green) 0%, rgba(255,255,255,0.05) 0%); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; position: relative; }
-    .score-ring::before { content: ''; position: absolute; inset: 8px; background: var(--bg); border-radius: 50%; }
-    .score-ring span { position: relative; z-index: 1; font-size: 2.5rem; font-weight: 900; color: var(--gold); }
-    .exam-result h2 { font-size: 1.6rem; font-weight: 900; color: #fff; margin-bottom: 10px; }
-    .exam-result p { color: var(--text-muted); font-size: 1rem; margin-bottom: 20px; }
+    .exam-result.show { display: flex; }
+    .score-ring { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--green) 0%, var(--border) 0%); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; position: relative; }
+    .score-ring::before { content: ''; position: absolute; inset: 8px; background: var(--surface); border-radius: 50%; }
+    .score-ring span { position: relative; z-index: 1; font-size: 2.2rem; font-weight: 900; color: var(--gold); }
+    .exam-result h2 { font-size: 1.5rem; color: #fff; margin-bottom: 10px; }
+    .exam-result p { color: var(--text-muted); margin-bottom: 20px; }
 
     /* ============ أزرار التحكم السفلية ============ */
-    .bottom-action { 
-      position: fixed; bottom: calc(var(--safe) + 15px); left: 50%; transform: translateX(-50%); 
-      display: none; justify-content: center; z-index: 900; width: 90%; max-width: 400px; 
-    }
-    .bottom-action.show { display: flex; animation: slideUp 0.4s ease; }
-    .btn-next { 
-      background: linear-gradient(135deg, var(--cyan), #3b82f6); color: #fff; 
-      padding: 14px; width: 100%; border-radius: 14px; font-weight: 900; font-size: 1.1rem; 
-      display: flex; justify-content: center; align-items: center; gap: 8px; 
-      box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4); 
-    }
-    .btn-next:hover { transform: translateY(-2px); }
+    .bottom-action { position: fixed; bottom: calc(var(--safe) + 10px); left: 50%; transform: translateX(-50%); display: none; z-index: 900; width: 90%; max-width: 400px; }
+    .bottom-action.show { display: block; }
+    .btn-next { background: var(--cyan); color: #000; padding: 14px; width: 100%; border-radius: 12px; font-weight: 900; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; border: none; }
 
-    /* ============ Animations ============ */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-    /* ============ Responsive - الموبايل ============ */
+    /* ============ الموبايل ============ */
     @media (max-width: 900px) {
-      .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 100%; border-left: none; }
-      .sidebar.open { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
-      .close-btn { display: block; }
-      
-      /* تظبيط الشريط العلوي */
-      .top-bar { padding: 10px 12px; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 8px; }
-      .menu-btn { display: flex; grid-column: 1; width: 36px; height: 36px; }
-      .back-btn { grid-column: 2; padding: 8px; justify-content: center; border-radius: 50%; width: 36px; height: 36px; }
-      .back-btn span { display: none; } /* إخفاء كلمة الخريطة */
-      .stats-badge { grid-column: 4; justify-self: end; padding: 4px 10px; font-size: 0.8rem; }
-      .progress-container { grid-column: 1 / -1; width: 100%; margin-top: 5px; }
-      .progress-text { font-size: 0.7rem; }
-      
-      .chat-container { padding: 15px 12px; padding-bottom: 120px; }
-      .bubble { max-width: 95%; font-size: 0.95rem; padding: 12px 16px; border-radius: 18px; }
-      .message-row.cody .bubble { border-radius: 18px 18px 4px 18px; }
-      .message-row.student .bubble { border-radius: 18px 18px 18px 4px; }
-      
-      .choices-container { margin-right: 0; width: 100%; max-width: 100%; }
-      .choice-btn { padding: 12px 16px; font-size: 0.9rem; }
-      
-      /* المحرر في الموبايل */
-      .editor-wrapper { width: 100%; margin: 10px 0; border-radius: 12px; }
-      .CodeMirror { height: 220px !important; font-size: 0.95rem; }
-      .output-area { height: 100px; font-size: 0.85rem; }
-      
-      .exam-view { padding: 15px 12px; }
-      .exam-header h2 { font-size: 1.4rem; }
-      .exam-question-box { padding: 15px; }
-      .exam-q-text { font-size: 1.05rem; }
-      .exam-opt-btn { padding: 14px 16px; font-size: 0.95rem; }
-      
-      .bottom-action { width: calc(100% - 24px); bottom: calc(var(--safe) + 10px); }
-      .btn-next { padding: 14px; font-size: 1rem; }
+      .sidebar { position: fixed; top: 0; right: -100%; height: 100dvh; width: 100%; border: none; }
+      .sidebar.open { right: 0; }
+      .close-btn { display: flex; }
+      .menu-btn { display: flex; }
+      .back-btn span { display: none; }
+      .back-btn { width: 38px; height: 38px; padding: 0; justify-content: center; }
+      .chat-container { padding: 12px; padding-bottom: 120px; }
+      .choices-container { margin-right: 0; width: 100%; }
+      .bubble { max-width: 90%; }
     }
   </style>
 </head>
@@ -306,7 +176,6 @@
 
   <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
   
-  <!-- القائمة الجانبية -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -318,40 +187,33 @@
     <div class="chapters-list" id="chaptersList"></div>
   </div>
   
-  <!-- المنطقة الرئيسية -->
   <div class="main-area">
     <div class="top-bar">
-      <button class="menu-btn" onclick="toggleSidebar()"><i class="ri-menu-line"></i></button>
-      <a href="python-chapters.html" class="back-btn" title="العودة للخريطة"><i class="ri-map-2-line"></i> <span>الخريطة</span></a>
-      
+      <div class="top-row">
+        <button class="menu-btn" onclick="toggleSidebar()"><i class="ri-menu-line"></i></button>
+        <a href="python-chapters.html" class="back-btn"><i class="ri-map-2-line"></i> <span>الخريطة</span></a>
+        <div class="stats-badge"><i class="ri-star-fill"></i> <span id="xpDisplay">0</span></div>
+      </div>
       <div class="progress-container">
         <div class="progress-text"><span>تقدمك</span><span id="progressPercent">0%</span></div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
-      
-      <div class="stats-badge"><i class="ri-star-fill"></i> <span id="xpDisplay">0</span></div>
     </div>
     
-    <!-- الشات -->
     <div class="chat-container" id="chatContainer"></div>
     
-    <!-- واجهة الامتحان -->
     <div class="exam-view" id="examView">
       <div class="exam-header">
         <h2 id="examTitle">امتحان الفصل</h2>
         <div class="exam-progress-bar"><div class="exam-progress-fill" id="examProgFill"></div></div>
         <p class="exam-progress-text" id="examProgress">سؤال 1 من 5</p>
       </div>
-      
       <div class="exam-question-box" id="examQuestionBox">
         <div class="exam-q-text" id="examQuestionText">جاري التحميل...</div>
         <div class="exam-options" id="examOptionsContainer"></div>
       </div>
-      
       <div class="exam-result" id="examResultBox">
-        <div class="score-ring" id="scoreRing">
-          <span id="finalScore">0/5</span>
-        </div>
+        <div class="score-ring" id="scoreRing"><span id="finalScore">0/5</span></div>
         <h2 id="resultTitle">نتيجتك النهائية</h2>
         <p id="resultMsg">لقد أتممت الامتحان!</p>
       </div>
@@ -446,19 +308,19 @@
         const titleEl = document.createElement("div"); 
         titleEl.className = "chapter-title";
         
-        let lockIcon = !isUnlocked ? '<i class="ri-lock-fill"></i>' : (isCompleted ? '<i class="ri-checkbox-circle-fill" style="color:var(--green);"></i>' : '');
+        let icon = !isUnlocked ? '<i class="ri-lock-fill"></i>' : (isCompleted ? '<i class="ri-checkbox-circle-fill" style="color:var(--green);"></i>' : '<i class="ri-arrow-down-s-line"></i>');
         
         titleEl.innerHTML = `
           <div class="chap-info">
-            <span>${chap.id}. ${chap.title}</span>
+            <span class="chap-name">${chap.id}. ${chap.title}</span>
             <div class="chap-mini-prog"><div class="chap-mini-fill" style="width: ${chapProgressPercent}%"></div></div>
           </div>
-          ${lockIcon}
+          ${icon}
         `;
         
         const lessonsEl = document.createElement("div"); 
         lessonsEl.className = "lessons-list";
-        if (String(chapterId) === String(chap.id)) lessonsEl.classList.add("open");
+        if (String(chapterId) === String(chap.id) && isUnlocked) lessonsEl.classList.add("open");
         
         if (chapData && chapData.lessons) {
           chapData.lessons.forEach((lesson, lIndex) => {
@@ -468,13 +330,11 @@
             lessonEl.className = `lesson-link ${!isLessonUnlocked ? "locked-lesson" : ""} ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
             
             if (isLessonUnlocked) {
-                let icon = lesson.title.includes('امتحان') ? '<i class="ri-file-list-3-line"></i>' : '<i class="ri-play-circle-line"></i>';
-                lessonEl.innerHTML = `${icon} ${lesson.title}`;
+                lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> <span>${lesson.title}</span>`;
                 lessonEl.href = `python-lesson.html?ch=${chap.id}&lesson=${lIndex + 1}`;
                 lessonEl.onclick = () => { if(window.innerWidth <= 900) toggleSidebar(); };
             } else {
-                lessonEl.innerHTML = `<i class="ri-lock-line"></i> ${lesson.title}`;
-                lessonEl.href = "javascript:void(0)";
+                lessonEl.innerHTML = `<i class="ri-lock-line"></i> <span>${lesson.title}</span>`;
             }
             lessonsEl.appendChild(lessonEl);
           });
@@ -614,7 +474,7 @@
         document.getElementById("finalScore").textContent = `${examScore}/${examQuestions.length}`;
         
         const scoreRing = document.getElementById("scoreRing");
-        scoreRing.style.background = `conic-gradient(var(--green) ${scorePercent}%, rgba(255,255,255,0.05) ${scorePercent}%)`;
+        scoreRing.style.background = `conic-gradient(var(--green) ${scorePercent}%, var(--border) ${scorePercent}%)`;
         
         if (scorePercent >= 50) {
             if (typeof window.confetti === "function") window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
@@ -717,7 +577,6 @@
       wrapper.className = "editor-wrapper show";
       wrapper.innerHTML = `
         <div class="editor-header">
-          <div class="editor-dots"><div class="editor-dot r"></div><div class="editor-dot y"></div><div class="editor-dot g"></div></div>
           <span class="editor-title">main.py</span>
           <button class="btn-run" onclick="runCode()"><i class="ri-play-circle-fill"></i> تشغيل</button>
         </div>
@@ -734,9 +593,8 @@
         });
         editorInstance.setValue(step.defaultCode);
         
-        setTimeout(() => {
-            editorInstance.refresh();
-        }, 100);
+        setTimeout(() => { editorInstance.refresh(); }, 100);
+        setTimeout(() => { editorInstance.refresh(); }, 500);
       }, 50);
       
       window.currentChallenge = step; challengeSolved = false; scrollToBottom();
