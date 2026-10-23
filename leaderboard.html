@@ -1,69 +1,242 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الشرف | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d19">
+  <title>لوحة الشرف | CodeQuest</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css">
+
+  <style>
+    body {
+      background: var(--bg-base);
+      font-family: Cairo, sans-serif;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .leaderboard {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .leaderboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .leaderboard-header h1 {
+      color: var(--text-main);
+      margin: 0;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+    }
+
+    .intro {
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-top: 8px;
+    }
+
+    .leaderboard-list {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .leader-row {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-main);
+    }
+
+    .leader-row:last-child {
+      border-bottom: 0;
+    }
+
+    .leader-rank {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(127, 127, 127, .12);
+      font-weight: 900;
+    }
+
+    .leader-row.top-1 .leader-rank {
+      background: rgba(255, 212, 138, .16);
+      color: #ffd48a;
+    }
+
+    .leader-row.top-2 .leader-rank {
+      background: rgba(190, 205, 225, .16);
+    }
+
+    .leader-row.top-3 .leader-rank {
+      background: rgba(238, 157, 108, .16);
+    }
+
+    .leader-name {
+      min-width: 0;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .leader-points {
+      color: var(--text-muted);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .state-message {
+      padding: 24px 18px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.9;
+    }
+
+    @media (max-width: 480px) {
+      .leader-row {
+        gap: 9px;
+        padding: 14px 10px;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+      }
+
+      .leader-rank {
+        width: 32px;
+        height: 32px;
+      }
+
+      .leader-points {
+        font-size: .85rem;
+      }
+    }
+  </style>
 </head>
-<body style="background: var(--bg-base);">
-    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 style="color: var(--text-main);">لوحة الشرف</h1>
-            <a href="dashboard.html" class="btn btn-secondary"><i class="ri-arrow-right-line"></i> الرئيسية</a>
-        </div>
 
-        <div class="card" id="leaderboardList" style="padding: 0; overflow: hidden;">
-            <p style="padding: 20px; text-align: center; color: var(--text-muted);">جاري تحميل الأبطال...</p>
-        </div>
-    </div>
+<body>
+  <main class="leaderboard">
+    <header class="leaderboard-header">
+      <div>
+        <h1><i class="ri-trophy-fill" aria-hidden="true"></i> لوحة الشرف</h1>
+        <p class="intro">أفضل النتائج المسجلة في Cody Academy.</p>
+      </div>
 
-    <script type="module">
-        import { db } from './js/app.js';
-        import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+      <a href="dashboard.html" class="btn btn-secondary">
+        <i class="ri-arrow-right-line" aria-hidden="true"></i>
+        الرئيسية
+      </a>
+    </header>
 
-        async function loadLeaderboard() {
-            const list = document.getElementById('leaderboardList');
-            try {
-                const q = query(collection(db, "users"), orderBy("xp", "desc"), limit(10));
-                const querySnapshot = await getDocs(q);
-                
-                if (querySnapshot.empty) {
-                    list.innerHTML = '<p style="padding: 20px; text-align: center; color: var(--text-muted);">لا يوجد أبطال بعد. كن أول بطل!</p>';
-                    return;
-                }
+    <section class="card leaderboard-list" id="leaderboardList">
+      <p class="state-message">جارٍ تحميل لوحة الشرف...</p>
+    </section>
 
-                list.innerHTML = '';
-                let rank = 1;
-                const medals = ['🥇', '🥈', '🥉'];
-                const bgColors = ['#FEF3C7', '#F1F5F9', '#FFEDD5'];
+    <p id="leaderboardStatus" class="state-message" role="status" aria-live="polite"></p>
+  </main>
 
-                querySnapshot.forEach((doc) => {
-                    const user = doc.data();
-                    const div = document.createElement('div');
-                    div.style.cssText = `display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-light); background: ${rank <= 3 ? bgColors[rank-1] : 'transparent'};`;
-                    
-                    const medal = rank <= 3 ? medals[rank-1] : `<span style="width: 40px; text-align: center; font-weight: bold; color: var(--text-muted);">${rank}</span>`;
-                    const name = user.displayName || "مستخدم مجهول";
-                    const xp = user.xp || 0;
+  <script type="module">
+    import { requireUser } from "./js/auth.js";
+    import { db } from "./js/firebase-config.js";
 
-                    div.innerHTML = `
-                        <span style="font-size: 1.5rem; width: 40px;">${medal}</span>
-                        <div style="flex: 1; margin-right: 15px;">
-                            <h4 style="color: var(--text-main); margin: 0;">${name}</h4>
-                        </div>
-                        <strong style="color: ${rank === 1 ? 'var(--reward)' : 'var(--text-muted)'};">${xp} XP</strong>
-                    `;
-                    list.appendChild(div);
-                    rank++;
-                });
-            } catch (e) {
-                list.innerHTML = '<p style="padding: 20px; color: red; text-align: center;">حدث خطأ في تحميل البيانات.</p>';
-            }
-        }
-        loadLeaderboard();
-    </script>
+    import {
+      collection,
+      getDocs,
+      limit,
+      orderBy,
+      query
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const list = document.getElementById("leaderboardList");
+    const status = document.getElementById("leaderboardStatus");
+
+    function makeRow(user, rank) {
+      const row = document.createElement("div");
+      row.className = "leader-row";
+
+      if (rank <= 3) {
+        row.classList.add(`top-${rank}`);
+      }
+
+      const rankElement = document.createElement("div");
+      rankElement.className = "leader-rank";
+      rankElement.textContent = String(rank);
+      rankElement.setAttribute("aria-label", `المركز ${rank}`);
+
+      const nameElement = document.createElement("div");
+      nameElement.className = "leader-name";
+      nameElement.textContent =
+        typeof user.displayName === "string" && user.displayName.trim()
+          ? user.displayName.slice(0, 50)
+          : "متعلم";
+
+      const xpElement = document.createElement("div");
+      xpElement.className = "leader-points";
+
+      const xp = Number(user.xp);
+      xpElement.textContent =
+        `${Number.isFinite(xp) && xp >= 0 ? Math.floor(xp) : 0} XP`;
+
+      row.append(rankElement, nameElement, xpElement);
+      return row;
+    }
+
+    async function loadLeaderboard() {
+      await requireUser();
+
+      const leaderboardQuery = query(
+        collection(db, "leaderboardPublic"),
+        orderBy("xp", "desc"),
+        limit(10)
+      );
+
+      const snapshot = await getDocs(leaderboardQuery);
+      list.replaceChildren();
+
+      if (snapshot.empty) {
+        const empty = document.createElement("p");
+        empty.className = "state-message";
+        empty.textContent =
+          "لا توجد نتائج منشورة بعد. قد تحتاج الحسابات الحالية إلى مزامنة أولية.";
+        list.appendChild(empty);
+        return;
+      }
+
+      let rank = 1;
+
+      snapshot.forEach(documentSnapshot => {
+        list.appendChild(makeRow(documentSnapshot.data(), rank));
+        rank += 1;
+      });
+
+      status.textContent = "تم تحميل النتائج.";
+    }
+
+    loadLeaderboard().catch(error => {
+      console.error("Leaderboard error:", error);
+
+      list.replaceChildren();
+
+      const message = document.createElement("p");
+      message.className = "state-message";
+      message.textContent =
+        error?.code === "permission-denied"
+          ? "لا توجد صلاحية لقراءة لوحة الشرف."
+          : "تعذر تحميل لوحة الشرف. حاولي مرة أخرى لاحقًا.";
+
+      list.appendChild(message);
+    });
+  </script>
 </body>
 </html>
