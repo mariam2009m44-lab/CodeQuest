@@ -1,1213 +1,1594 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#050810">
-  <title>رحلة Java | Cody Academy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070b14">
+  <title>تعلم Java | Cody Academy</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" rel="stylesheet">
 
   <style>
     :root {
-      --bg:#050810;
-      --panel:#0b1120;
-      --surface:#101a2d;
-      --border:#243149;
-      --text:#f8fafc;
-      --muted:#94a3b8;
-      --cyan:#67e8f9;
-      --purple:#a78bfa;
-      --green:#34d399;
-      --gold:#fbbf24;
-      --red:#fb7185;
+      --bg: #070b14;
+      --panel: #0d1423;
+      --panel2: #111b2e;
+      --border: #223047;
+      --text: #f0f5ff;
+      --muted: #9aa9c0;
+      --cyan: #22d3ee;
+      --purple: #a78bfa;
+      --green: #4ade80;
+      --red: #fb7185;
+      --radius: 18px;
     }
 
-    * { box-sizing:border-box; }
+    * { box-sizing: border-box; }
 
     body {
-      margin:0;
-      height:100vh;
-      height:100dvh;
-      overflow:hidden;
-      background:var(--bg);
-      color:var(--text);
-      font-family:'Cairo',sans-serif;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at top right, #14223a 0, transparent 42%),
+        var(--bg);
+      color: var(--text);
+      font-family: "Cairo", sans-serif;
+      min-height: 100vh;
     }
 
-    button,a { font:inherit; }
-    button { cursor:pointer; }
-    a { color:inherit;text-decoration:none; }
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
 
-    .app {
-      height:100%;
-      display:grid;
-      grid-template-columns:300px minmax(0,1fr);
-    }
-
-    .sidebar {
-      background:var(--panel);
-      border-left:1px solid var(--border);
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-      z-index:20;
-    }
-
-    .brand {
-      padding:20px;
-      border-bottom:1px solid var(--border);
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-
-    .brand-icon {
-      width:44px;
-      height:44px;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      background:#17263c;
-      color:var(--cyan);
-      font-size:25px;
-    }
-
-    .brand h1 { font-size:18px;margin:0; }
-    .brand p { font-size:12px;color:var(--muted);margin:3px 0 0; }
-
-    .sidebar-label {
-      color:var(--muted);
-      font-size:12px;
-      padding:18px 18px 8px;
-    }
-
-    .chapters {
-      overflow:auto;
-      padding:8px 12px 24px;
-    }
-
-    .chapter {
-      margin-bottom:10px;
-      border:1px solid var(--border);
-      border-radius:13px;
-      overflow:hidden;
-      background:#0d1627;
-    }
-
-    .chapter-head {
-      width:100%;
-      border:0;
-      padding:13px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:var(--text);
-      background:transparent;
-      text-align:right;
-    }
-
-    .chapter-num {
-      flex:0 0 34px;
-      height:34px;
-      display:grid;
-      place-items:center;
-      border-radius:10px;
-      background:#17263c;
-      color:var(--cyan);
-      font-weight:800;
-    }
-
-    .chapter-title { flex:1;font-size:13px;font-weight:800; }
-    .chapter-head i { color:var(--muted); }
-
-    .lesson-list { display:none;padding:0 10px 10px; }
-    .chapter.open .lesson-list { display:block; }
-
-    .lesson-link {
-      display:block;
-      padding:10px;
-      margin-top:4px;
-      border-radius:9px;
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    .lesson-link:hover,
-    .lesson-link.active {
-      background:#17263c;
-      color:var(--cyan);
-    }
-
-    .lesson-link.active { border-right:3px solid var(--cyan); }
-
-    .workspace {
-      min-width:0;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
+    button:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
     }
 
     .topbar {
-      min-height:72px;
-      padding:12px 20px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      background:var(--panel);
-      border-bottom:1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 24px;
+      background: rgba(7, 11, 20, .92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
     }
 
-    .top-left,.top-right {
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 20px;
     }
 
-    .small-btn,.back-btn {
-      border:1px solid var(--border);
-      background:var(--surface);
-      color:var(--text);
-      padding:9px 12px;
-      border-radius:10px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
-      font-size:12px;
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: #06101c;
+      font-weight: 900;
     }
 
-    .stats {
-      color:var(--gold);
-      font-weight:800;
-      font-size:13px;
-      white-space:nowrap;
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .progress-area {
-      padding:10px 20px;
-      background:var(--panel);
-      border-bottom:1px solid var(--border);
+    .stat {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 8px 13px;
+      color: var(--muted);
+      font-size: 13px;
     }
 
-    .progress-info {
-      display:flex;
-      justify-content:space-between;
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:7px;
+    .stat strong { color: var(--text); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr);
+      gap: 22px;
+      max-width: 1500px;
+      padding: 24px;
+      margin: auto;
     }
+
+    .sidebar, .card {
+      background: rgba(13, 20, 35, .94);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .sidebar {
+      align-self: start;
+      padding: 18px;
+      position: sticky;
+      top: 86px;
+      max-height: calc(100vh - 105px);
+      overflow-y: auto;
+    }
+
+    .sidebar h2 {
+      margin: 0 0 5px;
+      font-size: 18px;
+    }
+
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
 
     .progress-track {
-      height:6px;
-      background:#263247;
-      border-radius:10px;
-      overflow:hidden;
+      height: 8px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #202b3e;
+      margin: 14px 0 8px;
     }
 
     .progress-fill {
-      height:100%;
-      width:0;
-      background:linear-gradient(90deg,var(--cyan),var(--purple));
-      transition:width .25s;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      transition: width .25s ease;
     }
 
-    .content {
-      flex:1;
-      min-height:0;
-      overflow:auto;
-      padding:clamp(16px,3vw,30px);
+    .chapter {
+      margin-top: 20px;
     }
 
-    .lesson-heading { margin-bottom:22px; }
-    .eyebrow { color:var(--cyan);font-size:12px;font-weight:800; }
-    .lesson-heading h2 { margin:5px 0;font-size:clamp(22px,3vw,30px); }
-    .lesson-heading p { color:var(--muted);margin:0;font-size:13px; }
-
-    .chat {
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      max-width:950px;
-      margin:auto;
+    .chapter-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
     }
 
-    .message {
-      display:flex;
-      gap:11px;
-      align-items:flex-start;
+    .lesson-nav {
+      width: 100%;
+      text-align: right;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 11px;
+      padding: 10px;
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      margin: 4px 0;
+      font-size: 13px;
     }
 
-    .avatar {
-      flex:0 0 42px;
-      height:42px;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      background:#12324a;
-      font-size:21px;
+    .lesson-nav:hover {
+      background: var(--panel2);
+      color: var(--text);
     }
 
-    .bubble {
-      min-width:0;
-      max-width:850px;
-      padding:15px 17px;
-      border:1px solid var(--border);
-      border-radius:15px 15px 4px 15px;
-      background:var(--surface);
-      line-height:1.95;
-      font-size:14px;
-      overflow-wrap:anywhere;
+    .lesson-nav.active {
+      background: rgba(34, 211, 238, .1);
+      border-color: rgba(34, 211, 238, .4);
+      color: var(--cyan);
     }
 
-    .bubble code {
-      direction:ltr;
-      unicode-bidi:isolate;
-      font-family:'Fira Code',monospace;
-      color:var(--cyan);
-      background:#050810;
-      padding:3px 6px;
-      border-radius:5px;
+    .lesson-nav.done .lesson-icon { color: var(--green); }
+
+    .lesson-icon {
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    main { min-width: 0; }
+
+    .welcome {
+      padding: 25px;
+      margin-bottom: 20px;
+      background: linear-gradient(120deg, rgba(34,211,238,.1), rgba(167,139,250,.1));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 8px 0;
+      font-size: clamp(24px, 4vw, 36px);
+      line-height: 1.5;
+    }
+
+    h2, h3 { line-height: 1.6; }
+
+    .welcome p {
+      margin: 6px 0 0;
+      max-width: 800px;
+      color: var(--muted);
+      line-height: 1.9;
+    }
+
+    .lesson-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .lesson-heading h2 {
+      margin: 4px 0;
+      font-size: 25px;
+    }
+
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 30px;
+      padding: 5px 11px;
+      font-size: 12px;
     }
 
     .card {
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:18px;
-      background:var(--panel);
-      margin-top:12px;
+      padding: 22px;
+      margin-bottom: 18px;
     }
 
-    .card h3 { margin:0 0 12px;font-size:16px; }
-
-    .choices { display:grid;gap:9px; }
-
-    .choice {
-      border:1px solid var(--border);
-      border-radius:10px;
-      background:var(--surface);
-      color:var(--text);
-      padding:12px;
-      text-align:right;
-      font-size:13px;
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
     }
 
-    .choice:hover { border-color:var(--cyan); }
-    .choice:disabled { cursor:default;opacity:.8; }
-    .choice.correct { border-color:var(--green);color:var(--green); }
-    .choice.wrong { border-color:var(--red);color:var(--red); }
-
-    .editor-card { padding:0;overflow:hidden; }
-
-    .editor-head {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:13px 15px;
-      background:#111b2c;
-      border-bottom:1px solid var(--border);
+    .explanation {
+      line-height: 2;
+      color: #d4deee;
     }
 
-    .editor-head strong { font-size:13px; }
-    .editor-head span { font-size:11px;color:var(--muted); }
-    .editor-actions { display:flex;gap:7px; }
-
-    .action-btn {
-      border:0;
-      border-radius:9px;
-      padding:9px 12px;
-      font-weight:800;
-      font-size:12px;
+    .tip {
+      border-right: 3px solid var(--purple);
+      background: rgba(167,139,250,.08);
+      border-radius: 9px;
+      padding: 12px 15px;
+      margin-top: 14px;
+      line-height: 1.9;
     }
 
-    .run-btn { background:var(--green);color:#052016; }
-    .hint-btn { background:#263247;color:var(--text); }
+    .code-example {
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      background: #060a12;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      color: #c4f1ff;
+      font: 13px/1.8 Consolas, Monaco, monospace;
+    }
 
-    .editor-mount { direction:ltr; }
+    .editor-card { padding: 0; overflow: hidden; }
+
+    .editor-header {
+      padding: 13px 17px;
+      background: #111a2a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .editor-header strong { font-size: 14px; }
+
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .btn:hover { filter: brightness(1.15); }
+
+    .btn-primary {
+      color: #06101c;
+      background: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    .btn-success {
+      color: #06140a;
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .editor-wrap { direction: ltr; }
+
     .CodeMirror {
-      height:250px;
-      font:13px 'Fira Code',monospace;
-      direction:ltr;
-      text-align:left;
+      height: 280px;
+      font-size: 14px;
+      font-family: Consolas, Monaco, monospace;
+      direction: ltr;
+      text-align: left;
     }
 
     .output {
-      min-height:65px;
-      max-height:160px;
-      overflow:auto;
-      padding:13px;
-      white-space:pre-wrap;
-      overflow-wrap:anywhere;
-      background:#03060c;
-      color:#d1d5db;
-      font:12px/1.7 'Fira Code',monospace;
-      direction:ltr;
-      text-align:left;
-      border-top:1px solid var(--border);
+      padding: 15px 18px;
+      background: #080e18;
+      border-top: 1px solid var(--border);
+      min-height: 70px;
     }
 
-    .feedback {
-      margin-top:12px;
-      border-radius:10px;
-      padding:11px;
-      background:#111b2c;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.8;
+    .output-title {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
     }
 
-    .feedback.success { color:var(--green); }
-    .feedback.error { color:var(--gold); }
-
-    .footer {
-      padding:13px 20px;
-      background:var(--panel);
-      border-top:1px solid var(--border);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
+    .output-message {
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
     }
 
-    .footer-note { color:var(--muted);font-size:11px; }
+    .output-message.success { color: var(--green); }
+    .output-message.error { color: var(--red); }
 
-    .next-btn {
-      border:0;
-      border-radius:11px;
-      padding:12px 18px;
-      background:var(--cyan);
-      color:#06202a;
-      font-weight:900;
-      font-size:13px;
+    .quiz-question {
+      line-height: 1.9;
+      margin-bottom: 12px;
     }
 
-    .next-btn:disabled { opacity:.45;cursor:not-allowed; }
+    .quiz-option {
+      display: block;
+      width: 100%;
+      text-align: right;
+      margin: 8px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #0a1120;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .quiz-option:hover { border-color: var(--purple); }
+    .quiz-option.correct { border-color: var(--green); color: var(--green); }
+    .quiz-option.wrong { border-color: var(--red); color: var(--red); }
+
+    .quiz-feedback {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .lesson-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 20px 0 40px;
+    }
 
     .notice {
-      max-width:700px;
-      margin:35px auto;
-      text-align:center;
-      padding:28px;
-      border:1px solid var(--border);
-      border-radius:18px;
-      background:var(--panel);
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 20;
+      max-width: calc(100vw - 40px);
+      background: #16243a;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      box-shadow: 0 12px 40px #0005;
+      display: none;
     }
 
-    .notice-icon { font-size:36px;color:var(--gold); }
-    .notice h2 { margin:10px 0; }
-    .notice p { color:var(--muted);line-height:1.9;font-size:13px; }
+    .notice.show { display: block; }
 
-    .mobile-menu { display:none; }
+    .empty-state {
+      text-align: center;
+      padding: 45px 20px;
+    }
 
-    @media(max-width:850px) {
-      .app { grid-template-columns:1fr; }
+    .empty-state h2 { font-size: 25px; }
 
-      .sidebar {
-        position:fixed;
-        top:0;
-        bottom:0;
-        right:0;
-        width:min(320px,88vw);
-        transform:translateX(105%);
-        transition:transform .25s;
-        box-shadow:-20px 0 60px #0008;
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+        padding: 14px;
       }
 
-      .sidebar.show { transform:translateX(0); }
-      .mobile-menu { display:inline-flex; }
-      .topbar { padding:10px 12px;min-height:60px; }
-      .progress-area { padding:9px 14px; }
-      .content { padding:16px 12px; }
-      .footer { padding:10px 12px; }
-      .footer-note { display:none; }
-      .bubble { font-size:13px; }
-      .CodeMirror { height:220px; }
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+
+      .sidebar-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+      }
+
+      .chapter { margin-top: 12px; }
+      .topbar { padding: 12px 14px; }
+      .brand { font-size: 17px; }
+    }
+
+    @media (max-width: 500px) {
+      .stat { padding: 7px 9px; font-size: 11px; }
+      .brand-icon { width: 36px; height: 36px; }
+      .card { padding: 16px; }
+      .welcome { padding: 18px; }
+      .lesson-heading h2 { font-size: 21px; }
+      .CodeMirror { height: 240px; }
     }
   </style>
 </head>
 
 <body>
-<div class="app">
-  <aside class="sidebar" id="sidebar">
+  <header class="topbar">
     <div class="brand">
-      <div class="brand-icon"><i class="ri-code-s-slash-line"></i></div>
-      <div>
-        <h1>Cody Academy</h1>
-        <p>رحلتك في تعلم Java</p>
-      </div>
+      <div class="brand-icon">C</div>
+      <span>Cody Academy</span>
     </div>
 
-    <div class="sidebar-label">خريطة التعلم</div>
-    <nav class="chapters" id="chaptersList" aria-label="فصول Java"></nav>
-  </aside>
+    <div class="top-actions">
+      <div class="stat">⭐ XP: <strong id="xpDisplay">0</strong></div>
+      <div class="stat">📚 الإنجاز: <strong id="progressPercent">0%</strong></div>
+    </div>
+  </header>
 
-  <main class="workspace">
-    <header class="topbar">
-      <div class="top-left">
-        <button class="small-btn mobile-menu" id="menuBtn" type="button" aria-label="فتح قائمة الفصول">
-          <i class="ri-menu-line"></i>
-        </button>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>مسار Java</h2>
+      <div class="muted small">ابدأ من الأساسيات وتقدم خطوة بخطوة.</div>
 
-        <a class="back-btn" href="java-chapters.html">
-          <i class="ri-map-2-line"></i><span>الخريطة</span>
-        </a>
-      </div>
-
-      <div class="top-right">
-        <span class="stats"><i class="ri-star-fill"></i> <span id="xpDisplay">0</span> XP</span>
-      </div>
-    </header>
-
-    <div class="progress-area">
-      <div class="progress-info">
-        <span id="progressLabel">تقدمك في رحلة Java</span>
-        <span id="progressPercent">0%</span>
-      </div>
       <div class="progress-track">
         <div class="progress-fill" id="progressFill"></div>
       </div>
-    </div>
 
-    <section class="content" id="content">
-      <div class="lesson-heading">
-        <span class="eyebrow" id="lessonEyebrow">CODY LEARNING PATH</span>
-        <h2 id="lessonTitle">جاري تجهيز الدرس...</h2>
-        <p id="lessonSubtitle">لحظات ونبدأ رحلة البرمجة.</p>
-      </div>
-      <div class="chat" id="chatContainer" aria-live="polite"></div>
-    </section>
+      <div class="muted small" id="progressText">0 من 16 درسًا مكتملًا</div>
+      <div class="sidebar-list" id="sidebarList"></div>
+    </aside>
 
-    <footer class="footer">
-      <span class="footer-note">كل خطوة جديدة بتقرّبك من هدفك 🚀</span>
-      <button class="next-btn" id="nextBtn" type="button" disabled>
-        متابعة <i class="ri-arrow-left-line"></i>
-      </button>
-    </footer>
-  </main>
-</div>
+    <main>
+      <section class="welcome">
+        <div class="eyebrow">مسار تعليمي تفاعلي</div>
+        <h1>رحلتك في تعلم Java تبدأ هنا 🚀</h1>
+        <p>
+          تعلّم أساسيات Java من الصفر، وشاهد أمثلة عملية، واكتب الكود بنفسك،
+          ثم اختبر فهمك وأكمل التحديات لتحصل على نقاط XP.
+        </p>
+      </section>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+      <div id="lessonContent"></div>
+    </main>
+  </div>
 
-<script>
-"use strict";
+  <div class="notice" id="notice" role="status" aria-live="polite"></div>
 
-/*
-  هذا الملف يحتوي على بيانات تجريبية للفصلين الأول والثاني.
-  يمكن إضافة بقية المنهج داخل JAVA_CURRICULUM بنفس بنية الدروس الموجودة.
-*/
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
 
-const JAVA_CURRICULUM = {
-  1: {
-    title: "البداية مع Java",
-    lessons: [
+  <script>
+    "use strict";
+
+    const PROGRESS_KEY = "cody_java_progress";
+    const XP_KEY = "cody_java_xp";
+
+    /*
+      ملاحظة:
+      هذا الملف يعرض أمثلة Java ويفحص وجود أجزاء مطلوبة في إجابات التحديات.
+      لا ينفذ Java فعليًا داخل المتصفح.
+    */
+
+    const CURRICULUM = [
       {
-        title: "ما هي Java؟",
-        steps: [
+        id: 1,
+        title: "البداية مع Java",
+        description: "تعرّف على Java واكتب أول برنامج.",
+        lessons: [
           {
-            type: "cody",
-            text: `
-              <h3>أهلًا بك في عالم Java! 🚀</h3>
-              <p>Java لغة برمجة نستخدمها لبناء أنواع مختلفة من البرامج والتطبيقات.</p>
-              <p>في هذه الرحلة ستتعلم البرمجة من البداية، خطوة بخطوة، مع أمثلة وتطبيقات عملية.</p>
-              <p><strong>ما الذي ستتعلمه؟</strong></p>
-              <ul>
-                <li>كتابة أول برنامج.</li>
-                <li>فهم الأوامر الأساسية.</li>
-                <li>التعامل مع المتغيرات والشروط والحلقات.</li>
-              </ul>
-            `
-          },
-          {
-            type: "cody",
-            text: `
-              <h3>شكل برنامج Java الأساسي</h3>
-              <p>يبدأ برنامج Java البسيط عادةً بكلاس يحتوي على الدالة <code>main</code>.</p>
-              <p>هذه الدالة هي نقطة البداية التي ينفذ منها البرنامج.</p>
-              <pre dir="ltr"><code>public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, Java!");
-    }
-}</code></pre>
-              <p>الأمر <code>System.out.println()</code> يطبع نصًا ثم ينتقل إلى سطر جديد.</p>
-            `
-          },
-          {
-            type: "quiz",
-            question: "ما وظيفة System.out.println()؟",
-            options: [
-              "طباعة نص أو قيمة على الشاشة",
-              "إنشاء كلاس جديد",
-              "إيقاف الكمبيوتر"
-            ],
-            correct: 0,
-            explanation: "هذا الأمر يطبع النص أو القيمة على الشاشة ثم ينتقل إلى سطر جديد."
-          },
-          {
-            type: "challenge",
-            title: "أول برنامج لك",
-            hint: "استخدم System.out.println(\"Hello, Java!\"); داخل الدالة main.",
-            defaultCode: `public class Main {
+            title: "ما هي Java؟",
+            duration: "10 دقائق",
+            explanation: `
+              Java لغة برمجة تُستخدم في تطبيقات كثيرة، مثل أنظمة الشركات
+              وبعض تطبيقات Android والأدوات الخلفية للمواقع.
+
+              الكود الذي تكتبه يكون عادة داخل class، وتبدأ البرامج التقليدية
+              من الدالة main. يجب الانتباه إلى الأحرف الكبيرة والصغيرة؛
+              فـ Java تميّز بينهما.
+            `,
+            example: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, Java!");
     }
 }`,
-            check: code =>
-              /class\s+Main\b/.test(code) &&
-              /static\s+void\s+main\s*\(/.test(code) &&
-              /System\s*\.\s*out\s*\.\s*println\s*\(/.test(code),
-            successMsg: "ممتاز! الكود يحتوي على العناصر الأساسية المطلوبة."
+            tip: "احفظ شكل البرنامج الأساسي أولًا، ثم تعلّم معنى كل سطر بالتدريج.",
+            task: "اكتب برنامجًا يحتوي على class باسم Main ودالة main، واطبع Hello, Java! باستخدام System.out.println.",
+            starter: `public class Main {
+    public static void main(String[] args) {
+        // اكتب أمر الطباعة هنا
+    }
+}`,
+            checks: [
+              { pattern: /class\s+Main\b/, message: "أضف class باسم Main." },
+              { pattern: /public\s+static\s+void\s+main\s*\(/, message: "أضف دالة main بالشكل الصحيح." },
+              { pattern: /System\.out\.println\s*\(/, message: "استخدم System.out.println للطباعة." },
+              { pattern: /Hello,\s*Java!/, message: "اطبع النص Hello, Java!." }
+            ],
+            quiz: {
+              question: "ما الأمر المستخدم لطباعة نص في هذا المثال؟",
+              options: [
+                "System.out.println()",
+                "Console.write()",
+                "print.java()"
+              ],
+              answer: 0,
+              explanation: "System.out.println() يطبع النص ثم ينتقل إلى سطر جديد."
+            }
+          },
+          {
+            title: "التعليقات والطباعة",
+            duration: "10 دقائق",
+            explanation: `
+              التعليقات هي نصوص يكتبها المبرمج لتوضيح الكود، ولا تُنفّذ كأوامر.
+              التعليق الذي يبدأ بـ // يستمر حتى نهاية السطر.
+              أما التعليق بين /* و */ فيمكن أن يمتد إلى عدة أسطر.
+            `,
+            example: `public class Main {
+    public static void main(String[] args) {
+        // This is a comment
+        System.out.println("Welcome");
+        System.out.println("Learning Java");
+    }
+}`,
+            tip: "النص داخل علامات الاقتباس يُطبع كما هو. لا تضع علامات الاقتباس حول أمر الطباعة كله.",
+            task: "أضف تعليقًا يبدأ بـ // ثم اطبع Welcome باستخدام System.out.println.",
+            starter: `public class Main {
+    public static void main(String[] args) {
+        // اكتب تعليقًا هنا
+
+    }
+}`,
+            checks: [
+              { pattern: /\/\//, message: "أضف تعليقًا باستخدام //." },
+              { pattern: /System\.out\.println\s*\(\s*"Welcome"\s*\)/, message: 'اطبع "Welcome" باستخدام System.out.println.' }
+            ],
+            quiz: {
+              question: "أي اختيار يمثل تعليقًا من سطر واحد؟",
+              options: ["// تعليق", "<!-- تعليق -->", "** تعليق **"],
+              answer: 0,
+              explanation: "في Java يبدأ التعليق من سطر واحد بالرمز //."
+            }
           }
         ]
       },
       {
-        title: "التعليقات والأوامر",
-        steps: [
+        id: 2,
+        title: "المتغيرات وأنواع البيانات",
+        description: "خزّن البيانات واستخدمها.",
+        lessons: [
           {
-            type: "cody",
-            text: `
-              <h3>كتابة التعليقات</h3>
-              <p>التعليق هو نص يكتبه المبرمج لتوضيح الكود. لا ينفذه Java كأمر برمجي.</p>
-              <pre dir="ltr"><code>// هذا تعليق من سطر واحد
-
-/*
-  هذا تعليق
-  من عدة أسطر
-*/</code></pre>
-              <p>استخدم التعليقات عندما تحتاج إلى توضيح سبب كتابة جزء من الكود.</p>
-            `
-          },
-          {
-            type: "quiz",
-            question: "أي رمز يُستخدم لكتابة تعليق من سطر واحد في Java؟",
-            options: ["//", "##", "<!-- -->"],
-            correct: 0,
-            explanation: "في Java نبدأ التعليق ذي السطر الواحد باستخدام //."
-          },
-          {
-            type: "challenge",
-            title: "اكتب تعليقًا",
-            hint: "ضع // في بداية السطر، ثم اكتب تعليقًا يشرح البرنامج.",
-            defaultCode: `public class Main {
+            title: "المتغيرات",
+            duration: "12 دقيقة",
+            explanation: `
+              المتغير اسم يشير إلى مكان تُخزّن فيه قيمة.
+              عند تعريف متغير في Java نكتب نوع البيانات ثم اسم المتغير ثم القيمة
+              عند الحاجة. مثال: int age = 16;
+              يجب إنهاء معظم أوامر Java بالفاصلة المنقوطة ;.
+            `,
+            example: `public class Main {
     public static void main(String[] args) {
-        // My first Java program
-        System.out.println("Hello!");
+        int age = 16;
+        System.out.println(age);
     }
 }`,
-            check: code =>
-              /\/\//.test(code) &&
-              /System\s*\.\s*out\s*\.\s*println\s*\(/.test(code),
-            successMsg: "أحسنت! أضفت تعليقًا وأمر طباعة."
-          }
-        ]
-      }
-    ]
-  },
+            tip: "اختر اسمًا واضحًا للمتغير، مثل age للعمر و score للنتيجة.",
+            task: "أنشئ متغيرًا من النوع int باسم score وقيمته 100، ثم اطبع المتغير.",
+            starter: `public class Main {
+    public static void main(String[] args) {
+        // أنشئ المتغير هنا
 
-  2: {
-    title: "المتغيرات",
-    lessons: [
-      {
-        title: "ما هو المتغير؟",
-        steps: [
-          {
-            type: "cody",
-            text: `
-              <h3>التعرف على المتغيرات</h3>
-              <p>المتغير مكان مسمّى نستخدمه لتخزين قيمة يمكن الرجوع إليها أثناء تنفيذ البرنامج.</p>
-              <p>مثال على متغير يخزن عددًا صحيحًا:</p>
-              <pre dir="ltr"><code>int age = 16;</code></pre>
-              <p><code>int</code> نوع البيانات، و<code>age</code> اسم المتغير، و<code>16</code> القيمة المخزنة.</p>
-            `
+        // اطبع المتغير هنا
+    }
+}`,
+            checks: [
+              { pattern: /\bint\s+score\s*=\s*100\s*;/, message: "عرّف int score = 100;." },
+              { pattern: /System\.out\.println\s*\(\s*score\s*\)/, message: "اطبع المتغير score." }
+            ],
+            quiz: {
+              question: "أي نوع يُستخدم عادة لتخزين عدد صحيح؟",
+              options: ["int", "String", "boolean"],
+              answer: 0,
+              explanation: "يُستخدم int لتخزين الأعداد الصحيحة ضمن مداه."
+            }
           },
           {
-            type: "cody",
-            text: `
-              <h3>أنواع بيانات أساسية</h3>
-              <ul>
-                <li><code>int</code>: للأعداد الصحيحة.</li>
-                <li><code>double</code>: للأعداد العشرية.</li>
-                <li><code>char</code>: لحرف واحد بين علامتي اقتباس مفردتين.</li>
-                <li><code>boolean</code>: لقيمة true أو false.</li>
-                <li><code>String</code>: للنصوص.</li>
-              </ul>
-              <pre dir="ltr"><code>int score = 100;
-double price = 12.5;
+            title: "أنواع البيانات",
+            duration: "12 دقيقة",
+            explanation: `
+              من أنواع البيانات الأساسية:
+              int للأعداد الصحيحة، double للأعداد العشرية، boolean للقيم true أو false،
+              و char لحرف واحد. أما String فتُستخدم لتخزين النصوص.
+              String ليست نوعًا بدائيًا، لكنها نوع شائع جدًا في Java.
+            `,
+            example: `int age = 16;
+double price = 25.5;
+boolean isReady = true;
 char grade = 'A';
-boolean passed = true;
-String name = "Ali";</code></pre>
-            `
-          },
-          {
-            type: "quiz",
-            question: "أي نوع بيانات يناسب تخزين عدد صحيح مثل 25؟",
-            options: ["String", "int", "boolean"],
-            correct: 1,
-            explanation: "يُستخدم int لتخزين الأعداد الصحيحة."
-          },
-          {
-            type: "challenge",
-            title: "أنشئ متغيرًا",
-            hint: "اكتب تعريفًا لمتغير من نوع int اسمه score، واجعل قيمته 100.",
-            defaultCode: `public class Main {
+String name = "Cody";`,
+            tip: "استخدم 'A' مع char و \"Cody\" مع String؛ نوع علامات الاقتباس مهم.",
+            task: "أنشئ متغير String باسم name وقيمته Cody، ومتغير double باسم price وقيمته 25.5.",
+            starter: `public class Main {
     public static void main(String[] args) {
-        int score = 100;
-        System.out.println(score);
+        // أضف المتغيرات هنا
     }
 }`,
-            check: code =>
-              /\bint\s+score\s*=\s*100\s*;/.test(code),
-            successMsg: "ممتاز! عرّفت المتغير المطلوب."
+            checks: [
+              { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ String name = "Cody";.' },
+              { pattern: /double\s+price\s*=\s*25\.5\s*;/, message: "أنشئ double price = 25.5;." }
+            ],
+            quiz: {
+              question: "أي نوع يناسب القيمة true أو false؟",
+              options: ["double", "boolean", "char"],
+              answer: 1,
+              explanation: "النوع boolean يحمل إحدى القيمتين true أو false."
+            }
           }
         ]
-      }
-    ]
-  },
+      },
+      {
+        id: 3,
+        title: "العمليات الحسابية",
+        description: "نفّذ الحسابات على المتغيرات.",
+        lessons: [
+          {
+            title: "العمليات الأساسية",
+            duration: "12 دقيقة",
+            explanation: `
+              تستخدم Java الرموز + للجمع، - للطرح، * للضرب، / للقسمة،
+              و % للحصول على باقي القسمة.
+              عند قسمة عددين صحيحين قد تكون النتيجة عددًا صحيحًا فقط.
+            `,
+            example: `int a = 10;
+int b = 3;
 
-  3: { title:"العمليات الحسابية", lessons:[] },
-  4: { title:"الشروط", lessons:[] },
-  5: { title:"الحلقات", lessons:[] },
-  6: { title:"المصفوفات", lessons:[] },
-  7: { title:"الدوال", lessons:[] },
-  8: { title:"النصوص", lessons:[] },
-  9: { title:"الكائنات", lessons:[] },
-  10: { title:"الوراثة", lessons:[] },
-  11: { title:"معالجة الأخطاء", lessons:[] },
-  12: { title:"المشروع النهائي", lessons:[] }
-};
+System.out.println(a + b); // 13
+System.out.println(a - b); // 7
+System.out.println(a * b); // 30
+System.out.println(a % b); // 1`,
+            tip: "استخدم الأقواس عندما تريد توضيح ترتيب العمليات الحسابية.",
+            task: "أنشئ المتغيرين a و b، ثم اطبع ناتج جمعهما باستخدام +.",
+            starter: `public class Main {
+    public static void main(String[] args) {
+        int a = 10;
+        int b = 3;
 
-const CHAPTERS = [
-  { id:1, title:"البداية مع Java" },
-  { id:2, title:"المتغيرات" },
-  { id:3, title:"العمليات الحسابية" },
-  { id:4, title:"الشروط" },
-  { id:5, title:"الحلقات" },
-  { id:6, title:"المصفوفات" },
-  { id:7, title:"الدوال" },
-  { id:8, title:"النصوص" },
-  { id:9, title:"الكائنات" },
-  { id:10, title:"الوراثة" },
-  { id:11, title:"معالجة الأخطاء" },
-  { id:12, title:"المشروع النهائي" }
+        // اطبع ناتج الجمع
+    }
+}`,
+            checks: [
+              { pattern: /int\s+a\s*=\s*10\s*;/, message: "تأكد من تعريف a بالقيمة 10." },
+              { pattern: /int\s+b\s*=\s*3\s*;/, message: "تأكد من تعريف b بالقيمة 3." },
+              { pattern: /System\.out\.println\s*\(\s*a\s*\+\s*b\s*\)/, message: "اطبع a + b." }
+            ],
+            quiz: {
+              question: "ما نتيجة 10 % 3؟",
+              options: ["3", "1", "0"],
+              answer: 1,
+              explanation: "باقي قسمة 10 على 3 يساوي 1."
+            }
+          },
+          {
+            title: "تحديث قيم المتغيرات",
+            duration: "10 دقائق",
+            explanation: `
+              يمكنك تحديث قيمة متغير باستخدام عمليات مثل score = score + 1.
+              ويمكن كتابة ذلك بصورة مختصرة: score += 1.
+              أما score++ فتزيد القيمة بمقدار واحد.
+            `,
+            example: `int score = 5;
+score++;
+System.out.println(score); // 6
+
+score += 4;
+System.out.println(score); // 10`,
+            tip: "التحديث يؤثر في قيمة المتغير، وليس في الاسم نفسه.",
+            task: "أنشئ score بقيمة 5، ثم زد قيمته بمقدار واحد باستخدام ++، واطبع النتيجة.",
+            starter: `public class Main {
+    public static void main(String[] args) {
+        int score = 5;
+
+        // حدّث القيمة واطبعها
+    }
+}`,
+            checks: [
+              { pattern: /int\s+score\s*=\s*5\s*;/, message: "عرّف score بقيمة 5." },
+              { pattern: /\bscore\+\+| \bscore\s*\+=\s*1\s*;|\bscore\s*=\s*score\s*\+\s*1\s*;/, message: "زد قيمة score بمقدار واحد." },
+              { pattern: /System\.System\.out\.println\s*\(\s*score\s*\)/,
+message: "اطبع قيمة score."
+}
+]
+}
+}
 ];
 
-const PROGRESS_KEY = "cody_java_progress";
-const XP_KEY = "cody_java_xp";
+// تحويل كل الدروس لقائمة واحدة
+const allLessons = CURRICULUM.flatMap(chapter =>
+  chapter.lessons.map(lesson => ({
+    ...lesson,
+    chapterId: chapter.id,
+    chapterTitle: chapter.title
+  }))
+);
 
-const params = new URLSearchParams(location.search);
-let chapterId = Number(params.get("ch")) || 1;
-let lessonId = Number(params.get("lesson")) || 1;
-let currentLesson = null;
-let stepIndex = 0;
+let currentLessonId = null;
 let editor = null;
-let challengePassed = false;
-let waitingForAnswer = false;
-let lessonFinished = false;
+let completedLessons = readProgress();
 
-const $ = id => document.getElementById(id);
-
-function safeReadProgress() {
+function readProgress() {
   try {
-    const data = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
-
-    return {
-      completed: Array.isArray(data.completed) ? data.completed : [],
-      lessons: Array.isArray(data.lessons) ? data.lessons : []
-    };
+    const saved = localStorage.getItem(PROGRESS_KEY);
+    return saved ? JSON.parse(saved) : [];
   } catch {
-    return { completed: [], lessons: [] };
+    return [];
   }
-}
-
-function saveProgress(progress) {
-  try {
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-  } catch (error) {
-    console.error("Could not save Java progress:", error);
-  }
-}
-
-function getChapterData(id) {
-  return JAVA_CURRICULUM[id] || null;
 }
 
 function getXP() {
-  return Math.max(0, Number(localStorage.getItem(XP_KEY)) || 0);
-}
-
-function updateStats() {
-  $("xpDisplay").textContent = String(getXP());
-
-  const progress = safeReadProgress();
-  const percent = Math.round(
-    (progress.completed.length / CHAPTERS.length) * 100
-  );
-
-  $("progressFill").style.width = percent + "%";
-  $("progressPercent").textContent = percent + "%";
+  return Number(localStorage.getItem(XP_KEY) || 0);
 }
 
 function addXP(amount) {
-  const current = getXP();
-
-  try {
-    localStorage.setItem(XP_KEY, String
-(current + amount));
-  } catch (error) {
-    console.error("Could not save XP:", error);
-  }
-
+  const newXP = getXP() + amount;
+  localStorage.setItem(XP_KEY, String(newXP));
   updateStats();
 }
 
-function getCompletedLessonKey(ch, lesson) {
-  return `${ch}-${lesson}`;
+function saveProgress() {
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(completedLessons));
+  updateStats();
+  renderSidebar();
 }
 
-function isLessonCompleted(ch, lesson) {
-  return safeReadProgress().lessons.includes(
-    getCompletedLessonKey(ch, lesson)
-  );
-}
+function updateStats() {
+  const xpElement = document.getElementById("xpCount");
+  const progressElement = document.getElementById("progressCount");
+  const progressBar = document.getElementById("progressBar");
 
-function markLessonCompleted() {
-  const progress = safeReadProgress();
-  const key = getCompletedLessonKey(chapterId, lessonId);
+  if (xpElement) {
+    xpElement.textContent = getXP();
+  }
 
-  if (!progress.lessons.includes(key)) {
-    progress.lessons.push(key);
-    saveProgress(progress);
-    addXP(20);
+  const total = allLessons.length;
+  const completed = completedLessons.length;
+  const percentage = total ? Math.round((completed / total) * 100) : 0;
+
+  if (progressElement) {
+    progressElement.textContent = `${completed}/${total}`;
+  }
+
+  if (progressBar) {
+    progressBar.style.width = `${percentage}%`;
   }
 }
 
-function renderSidebar() {
-  const container = $("chaptersList");
-  container.replaceChildren();
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, character => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    };
 
-  CHAPTERS.forEach(chapter => {
-    const data = getChapterData(chapter.id);
-    const isCurrent = chapter.id === chapterId;
-    const chapterLessons = data?.lessons || [];
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "chapter" + (isCurrent ? " open" : "");
-
-    const head = document.createElement("button");
-    head.type = "button";
-    head.className = "chapter-head";
-    head.innerHTML = `
-      <span class="chapter-num">${chapter.id}</span>
-      <span class="chapter-title"></span>
-      <i class="ri-arrow-down-s-line"></i>
-    `;
-    head.querySelector(".chapter-title").textContent = chapter.title;
-
-    head.addEventListener("click", () => {
-      if (!chapterLessons.length) {
-        showNotice(
-          "هذا الفصل غير جاهز بعد",
-          "محتوى هذا الفصل لم يُضف إلى المنهج بعد."
-        );
-        return;
-      }
-
-      chapterId = chapter.id;
-      lessonId = 1;
-      stepIndex = 0;
-      updateURL();
-      renderApp();
-    });
-
-    const list = document.createElement("div");
-    list.className = "lesson-list";
-
-    chapterLessons.forEach((lesson, index) => {
-      const link = document.createElement("button");
-      link.type = "button";
-      link.className = "lesson-link";
-      link.style.width = "100%";
-      link.style.border = "0";
-      link.style.textAlign = "right";
-
-      if (isCurrent && lessonId === index + 1) {
-        link.classList.add("active");
-      }
-
-      link.textContent =
-        `${isLessonCompleted(chapter.id, index + 1) ? "✓ " : ""}${index + 1}. ${lesson.title}`;
-
-      link.addEventListener("click", () => {
-        chapterId = chapter.id;
-        lessonId = index + 1;
-        stepIndex = 0;
-        updateURL();
-        renderApp();
-      });
-
-      list.appendChild(link);
-    });
-
-    wrapper.append(head, list);
-    container.appendChild(wrapper);
+    return entities[character];
   });
 }
 
-function updateURL() {
-  const url = new URL(location.href);
-  url.searchParams.set("ch", String(chapterId));
-  url.searchParams.set("lesson", String(lessonId));
-  history.replaceState({}, "", url);
-}
+function showNotice(message, type = "info") {
+  const notice = document.getElementById("notice");
 
-function showNotice(title, message) {
-  $("lessonEyebrow").textContent = "CODY LEARNING PATH";
-  $("lessonTitle").textContent = title;
-  $("lessonSubtitle").textContent = "";
-  $("chatContainer").replaceChildren();
-
-  const notice = document.createElement("div");
-  notice.className = "notice";
-
-  const icon = document.createElement("div");
-  icon.className = "notice-icon";
-  icon.innerHTML = '<i class="ri-book-open-line"></i>';
-
-  const heading = document.createElement("h2");
-  heading.textContent = title;
-
-  const paragraph = document.createElement("p");
-  paragraph.textContent = message;
-
-  notice.append(icon, heading, paragraph);
-  $("chatContainer").appendChild(notice);
-  $("nextBtn").disabled = true;
-}
-
-function addMessage(content, isCody = true) {
-  const message = document.createElement("div");
-  message.className = "message";
-
-  if (isCody) {
-    const avatar = document.createElement("div");
-    avatar.className = "avatar";
-    avatar.textContent = "🤖";
-    message.appendChild(avatar);
+  if (!notice) {
+    alert(message);
+    return;
   }
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
+  notice.textContent = message;
+  notice.className = `notice notice-${type}`;
+  notice.hidden = false;
 
-  if (isCody) {
-    bubble.innerHTML = content;
-  } else {
-    bubble.textContent = content;
-  }
+  clearTimeout(showNotice.timer);
 
-  message.appendChild(bubble);
-  $("chatContainer").appendChild(message);
+  showNotice.timer = setTimeout(() => {
+    notice.hidden = true;
+  }, 3500);
+}
 
-  return bubble;
+function findLesson(lessonId) {
+  return allLessons.find(lesson => lesson.id === lessonId);
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById("lessonList");
+
+  if (!sidebar) return;
+
+  sidebar.innerHTML = CURRICULUM.map(chapter => {
+    const lessonsHTML = chapter.lessons.map(lesson => {
+      const isCompleted = completedLessons.includes(lesson.id);
+      const isActive = lesson.id === currentLessonId;
+
+      return `
+        <button
+          type="button"
+          class="lesson-item ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""}"
+          data-lesson-id="${escapeHTML(lesson.id)}"
+        >
+          <span class="lesson-status">
+            ${isCompleted ? "✓" : "○"}
+          </span>
+          <span class="lesson-name">${escapeHTML(lesson.title)}</span>
+        </button>
+      `;
+    }).join("");
+
+    return `
+      <section class="chapter-group">
+        <h3 class="chapter-heading">
+          <span>${escapeHTML(chapter.title)}</span>
+          <span class="chapter-count">${chapter.lessons.length}</span>
+        </h3>
+        <div class="chapter-lessons">
+          ${lessonsHTML}
+        </div>
+      </section>
+    `;
+  }).join("");
+
+  sidebar.querySelectorAll("[data-lesson-id]").forEach(button => {
+    button.addEventListener("click", () => {
+      renderLesson(button.dataset.lessonId);
+    });
+  });
 }
 
 function disposeEditor() {
   if (editor) {
-    editor.toTextArea?.();
+    editor.toTextArea();
     editor = null;
   }
 }
 
-function renderStep() {
-  disposeEditor();
-  $("chatContainer").replaceChildren();
+function renderLesson(lessonId) {
+  const lesson = findLesson(lessonId);
 
-  const step = currentLesson?.steps?.[stepIndex];
-
-  if (!step) {
-    finishLesson();
+  if (!lesson) {
+    showNotice("الدرس غير موجود.", "error");
     return;
   }
 
-  challengePassed = false;
-  waitingForAnswer = false;
-  lessonFinished = false;
-  $("nextBtn").disabled = true;
+  currentLessonId = lessonId;
 
-  if (step.type === "cody") {
-    addMessage(step.text);
-    $("nextBtn").disabled = false;
-    return;
+  const title = document.getElementById("lessonTitle");
+  const chapter = document.getElementById("lessonChapter");
+  const intro = document.getElementById("lessonIntro");
+  const explanation = document.getElementById("lessonExplanation");
+  const example = document.getElementById("lessonExample");
+  const task = document.getElementById("lessonTask");
+  const hint = document.getElementById("lessonHint");
+  const quiz = document.getElementById("lessonQuiz");
+  const completeButton = document.getElementById("completeLesson");
+
+  if (title) title.textContent = lesson.title;
+  if (chapter) chapter.textContent = lesson.chapterTitle;
+  if (intro) intro.textContent = lesson.intro || "";
+  if (explanation) explanation.textContent = lesson.explanation || "";
+
+  if (example) {
+    example.textContent = lesson.code || "";
   }
 
-  if (step.type === "quiz") {
-    renderQuiz(step);
-    return;
+  if (task) {
+    task.textContent = lesson.task || "";
   }
 
-  if (step.type === "challenge") {
-    renderChallenge(step);
-    return;
+  if (hint) {
+    hint.textContent = lesson.hint || "";
+    hint.hidden = true;
   }
 
-  addMessage("<p>نوع الخطوة غير معروف.</p>");
-}
-
-function renderQuiz(step) {
-  addMessage(`<h3>${step.question}</h3>`);
-
-  const card = document.createElement("div");
-  card.className = "card";
-
-  const choices = document.createElement("div");
-  choices.className = "choices";
-
-  const feedback = document.createElement("div");
-  feedback.className = "feedback";
-  feedback.hidden = true;
-
-  step.options.forEach((option, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "choice";
-    button.textContent = option;
-
-    button.addEventListener("click", () => {
-      if (waitingForAnswer) return;
-
-      if (index === step.correct) {
-        waitingForAnswer = true;
-        button.classList.add("correct");
-
-        [...choices.children].forEach(choice => {
-          choice.disabled = true;
-        });
-
-        feedback.hidden = false;
-        feedback.className = "feedback success";
-        feedback.textContent = "إجابة صحيحة! " + step.explanation;
-        $("nextBtn").disabled = false;
-      } else {
-        button.classList.add("wrong");
-        feedback.hidden = false;
-        feedback.className = "feedback error";
-        feedback.textContent = "ليست الإجابة الصحيحة. حاول مرة أخرى.";
-      }
-    });
-
-    choices.appendChild(button);
-  });
-
-  card.append(choices, feedback);
-  $("chatContainer").appendChild(card);
-}
-
-function renderChallenge(step) {
-  addMessage(`
-    <h3>${step.title}</h3>
-    <p>اكتب الكود المطلوب في المحرر، ثم اضغط على «تحقق من الحل».</p>
-  `);
-
-  const card = document.createElement("div");
-  card.className = "card editor-card";
-
-  const head = document.createElement("div");
-  head.className = "editor-head";
-  head.innerHTML = `
-    <div>
-      <strong>Java Editor</strong>
-      <br>
-      <span>تحقق مبدئي من بنية الكود</span>
-    </div>
-    <div class="editor-actions">
-      <button class="action-btn hint-btn" id="hintBtn" type="button">تلميح</button>
-      <button class="action-btn run-btn" id="checkBtn" type="button">تحقق من الحل</button>
-    </div>
-  `;
-
-  const mount = document.createElement("div");
-  mount.className = "editor-mount";
-
-  const textarea = document.createElement("textarea");
-  textarea.id = "codeEditor";
-  textarea.value = step.defaultCode || "";
-
-  mount.appendChild(textarea);
-
-  const output = document.createElement("div");
-  output.className = "output";
-  output.textContent = "لم يتم التحقق من الكود بعد.";
-
-  const feedback = document.createElement("div");
-  feedback.className = "feedback";
-  feedback.id = "challengeFeedback";
-
-  card.append(head, mount, output, feedback);
-  $("chatContainer").appendChild(card);
-
-  if (window.CodeMirror) {
-    editor = CodeMirror.fromTextArea(textarea, {
-      mode: "text/x-java",
-      theme: "dracula",
-      lineNumbers: true,
-      indentUnit: 4,
-      tabSize: 4,
-      lineWrapping: true
-    });
+  if (quiz) {
+    quiz.innerHTML = `
+      <p class="quiz-question">
+        ${escapeHTML(lesson.quiz?.question || "جرّب كتابة الكود المطلوب.")}
+      </p>
+      <p class="quiz-instruction">
+        اكتب الحل في المحرر ثم اضغط على «تحقق من الحل».
+      </p>
+    `;
   }
 
-  $("hintBtn").addEventListener("click", () => {
-    feedback.className = "feedback";
-    feedback.textContent = step.hint || "راجع المثال الموجود في الدرس.";
-  });
+  if (completeButton) {
+    const isCompleted = completedLessons.includes(lesson.id);
 
-  $("checkBtn").addEventListener("click", () => {
-    const code = editor ? editor.getValue() : textarea.value;
+    completeButton.textContent = isCompleted
+      ? "تم إكمال الدرس ✓"
+      : "إكمال الدرس";
 
-    if (typeof step.check === "function" && step.check(code)) {
-      if (!challengePassed) {
-        challengePassed = true;
-        addXP(10);
-      }
+    completeButton.disabled = isCompleted;
+  }
 
-      output.textContent = "تم اجتياز الفحص المبدئي.";
-      feedback.className = "feedback success";
-      feedback.textContent =
-        step.successMsg || "ممتاز! اجتزت التحدي.";
-      $("nextBtn").disabled = false;
-    } else {
-      output.textContent = "لم تتحقق الشروط المطلوبة بعد.";
-      feedback.className = "feedback error";
-      feedback.textContent =
-        "راجع التلميح وتأكد من كتابة العناصر المطلوبة في الكود.";
-      $("nextBtn").disabled = true;
+  const codeInput = document.getElementById("codeEditor");
+
+  if (codeInput) {
+    disposeEditor();
+    codeInput.value = lesson.starterCode || lesson.code || "";
+
+    if (window.CodeMirror) {
+      editor = CodeMirror.fromTextArea(codeInput, {
+        mode: "text/x-java",
+        theme: "dracula",
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        lineWrapping: true,
+        autofocus: false
+      });
     }
-  });
-}
+  }
 
-function finishLesson() {
-  disposeEditor();
-
-  if (lessonFinished) return;
-  lessonFinished = true;
-
-  markLessonCompleted();
+  setOutput("اكتب الكود ثم اضغط «تحقق من الحل».");
   renderSidebar();
   updateStats();
 
-  $("chatContainer").replaceChildren();
+  const content = document.getElementById("lessonContent");
 
-  const notice = document.createElement("div");
-  notice.className = "notice";
-
-  const icon = document.createElement("div");
-  icon.className = "notice-icon";
-  icon.innerHTML = '<i class="ri-checkbox-circle-line"></i>';
-
-  const heading = document.createElement("h2");
-  heading.textContent = "أحسنت! أنهيت الدرس 🎉";
-
-  const paragraph = document.createElement("p");
-  paragraph.textContent =
-    "تم حفظ تقدمك على هذا الجهاز. يمكنك الانتقال إلى الدرس التالي أو العودة إلى خريطة الفصول.";
-
-  const nextLesson = document.createElement("button");
-  nextLesson.type = "button";
-  nextLesson.className = "next-btn";
-  nextLesson.textContent = "الدرس التالي";
-
-  nextLesson.addEventListener("click", () => {
-    const chapter = getChapterData(chapterId);
-
-    if (chapter && lessonId < chapter.lessons.length) {
-      lessonId++;
-    } else {
-      showNotice(
-        "انتهى محتوى الفصل الحالي",
-        "يمكنك الرجوع إلى خريطة Java لاختيار فصل آخر. بقية الفصول تحتاج إلى إضافة دروسها."
-      );
-      return;
-    }
-
-    stepIndex = 0;
-    updateURL();
-    renderApp();
-  });
-
-  notice.append(icon, heading, paragraph, nextLesson);
-  $("chatContainer").appendChild(notice);
-
-  $("lessonTitle").textContent = currentLesson.title;
-  $("lessonSubtitle").textContent = "اكتمل الدرس بنجاح.";
-  $("nextBtn").disabled = true;
+  if (content) {
+    content.scrollTop = 0;
+  }
 }
 
-function renderApp() {
-  const chapter = getChapterData(chapterId);
+function initializeEditor() {
+  const codeInput = document.getElementById("codeEditor");
 
-  if (!chapter || !chapter.lessons.length) {
-    renderSidebar();
-    updateStats();
-    showNotice(
-      chapter?.title || "الفصل غير موجود",
-      "لا توجد دروس جاهزة لهذا الفصل حتى الآن. أضف محتوى الفصل داخل JAVA_CURRICULUM."
+  if (!codeInput || !window.CodeMirror || editor) {
+    return;
+  }
+
+  editor = CodeMirror.fromTextArea(codeInput, {
+    mode: "text/x-java",
+    theme: "dracula",
+    lineNumbers: true,
+    indentUnit: 4,
+    tabSize: 4,
+    lineWrapping: true
+  });
+}
+
+function getEditorCode() {
+  if (editor) {
+    return editor.getValue();
+  }
+
+  const codeInput = document.getElementById("codeEditor");
+  return codeInput ? codeInput.value : "";
+}
+
+function setOutput(message, type = "info") {
+  const output = document.getElementById("codeOutput");
+
+  if (!output) return;
+
+  output.textContent = message;
+  output.className = `code-output output-${type}`;
+}
+
+function checkChallenge() {
+  const lesson = findLesson(currentLessonId);
+
+  if (!lesson) {
+    showNotice("اختار درس الأول.", "error");
+    return;
+  }
+
+  const code = getEditorCode().trim();
+
+  if (!code) {
+    setOutput("اكتب الكود الأول، وبعدها جرّب التحقق.", "error");
+    return;
+  }
+
+  if (!Array.isArray(lesson.checks) || lesson.checks.length === 0) {
+    setOutput(
+      "تم استلام الكود. التحقق هنا مبدئي، وليس تشغيلًا حقيقيًا للغة Java.",
+      "info"
     );
     return;
   }
 
-  if (lessonId < 1 || lessonId > chapter.lessons.length) {
-    lessonId = 1;
+  const failedCheck = lesson.checks.find(check => {
+    check.pattern.lastIndex = 0;
+    return !check.pattern.test(code);
+  });
+
+  if (failedCheck) {
+    setOutput(
+      `لسه فيه حاجة محتاجة تعديل. تلميح: ${failedCheck.message}`,
+      "error"
+    );
+    return;
   }
 
-  currentLesson = chapter.lessons[lessonId - 1];
-  stepIndex = 0;
+  setOutput("ممتاز! الكود اجتاز التحقق المبدئي. 🎉", "success");
 
-  $("lessonEyebrow").textContent =
-    `الفصل ${chapterId} · الدرس ${lessonId}`;
-  $("lessonTitle").textContent = currentLesson.title;
-  $("lessonSubtitle").textContent = chapter.title;
+  if (!completedLessons.includes(lesson.id)) {
+    completedLessons.push(lesson.id);
+    saveProgress();
+    addXP(10);
 
-  renderSidebar();
-  updateStats();
-  renderStep();
+    const completeButton = document.getElementById("completeLesson");
+
+    if (completeButton) {
+      completeButton.textContent = "تم إكمال الدرس ✓";
+      completeButton.disabled = true;
+    }
+
+    showNotice("أحسنت! حصلت على 10 نقاط خبرة.", "success");
+  }
 }
 
-$("nextBtn").addEventListener("click", () => {
-  if ($("nextBtn").disabled || lessonFinished) return;
+function attachLessonEvents() {
+  const checkButton = document.getElementById("checkCode");
+  const hintButton = document.getElementById("showHint");
+  const completeButton = document.getElementById("completeLesson");
+  const resetButton = document.getElementById("resetCode");
+  const nextButton = document.getElementById("nextLesson");
+  const previousButton = document.getElementById("previousLesson");
 
-  const step = currentLesson?.steps?.[stepIndex];
-  if (!step) return;
-
-  if (step.type === "quiz" && !waitingForAnswer) return;
-  if (step.type === "challenge" && !challengePassed) return;
-
-  stepIndex++;
-
-  if (stepIndex >= currentLesson.steps.length) {
-    finishLesson();
-  } else {
-    renderStep();
+  if (checkButton) {
+    checkButton.addEventListener("click", checkChallenge);
   }
-});
 
-$("menuBtn").addEventListener("click", () => {
-  $("sidebar").classList.toggle("show");
-});
+  if (hintButton) {
+    hintButton.addEventListener("click", () => {
+      const lesson = findLesson(currentLessonId);
+      const hint = document.getElementById("lessonHint");
 
-document.addEventListener("click", event => {
-  if (
-    window.innerWidth <= 850 &&
-    !$("sidebar").contains(event.target) &&
-    !$("menuBtn").contains(event.target)
-  ) {
-    $("sidebar").classList.remove("show");
+      if (!lesson || !hint) return;
+
+      hint.textContent = lesson.hint || "راجع المثال الموجود في الدرس.";
+      hint.hidden = false;
+    });
   }
-});
 
-renderApp();
+  if (completeButton) {
+    completeButton.addEventListener("click", () => {
+      const lesson = findLesson(currentLessonId);
+
+      if (!lesson) return;
+
+      if (completedLessons.includes(lesson.id)) {
+        showNotice("الدرس ده مكتمل بالفعل.", "info");
+        return;
+      }
+
+      completedLessons.push(lesson.id);
+      saveProgress();
+      addXP(10);
+
+      completeButton.textContent = "تم إكمال الدرس ✓";
+      completeButton.disabled = true;
+
+      showNotice("تم إكمال الدرس وحصلت على 10 نقاط خبرة.", "success");
+    });
+  }
+
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      const lesson = findLesson(currentLessonId);
+
+      if (!lesson) return;
+
+      const starterCode = lesson.starterCode || lesson.code || "";
+
+      if (editor) {
+        editor.setValue(starterCode);
+      } else {
+        const codeInput = document.getElementById("codeEditor");
+        if (codeInput) codeInput.value = starterCode;
+      }
+
+      setOutput("تمت إعادة الكود إلى بدايته.");
+    });
+  }
+
+  if (nextButton) {
+    nextButton.addEventListener("click", () => {
+      const index = allLessons.findIndex(
+        lesson => lesson.id === currentLessonId
+      );
+
+      if (index >= 0 && index < allLessons.length - 1) {
+        renderLesson(allLessons[index + 1].id);
+      } else {
+        showNotice("وصلت لآخر درس في المنهج. أحسنت!", "success");
+      }
+    });
+  }
+
+  if (previousButton) {
+    previousButton.addEventListener("click", () => {
+      const index = allLessons.findIndex(
+        lesson => lesson.id === currentLessonId
+      );
+
+      if (index > 0) {
+        renderLesson(allLessons[index - 1].id);
+      } else {
+        showNotice("ده أول درس في المنهج.", "info");
+      }
+    });
+  }
+}
+
+function getInitialLesson() {
+  const firstIncomplete = allLessons.find(
+    lesson => !completedLessons.includes(lesson.id)
+  );
+
+  return firstIncomplete || allLessons[0] || null;
+}
+
+function startApp() {
+  if (!Array.isArray(CURRICULUM) || allLessons.length === 0) {
+    showNotice("المنهج مش موجود أو مفيهوش دروس.", "error");
+    return;
+  }
+
+  attachLessonEvents();
+  updateStats();
+  renderSidebar();
+
+  const initialLesson = getInitialLesson();
+
+  if (initialLesson) {
+    renderLesson(initialLesson.id);
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startApp);
+} else {
+  startApp();
+}
+System\.out\.println\s*\(\s*score\s*\)/,
+message: "اطبع قيمة score."
+}
+]
+}
+}
+];
+
+// تحويل كل الدروس لقائمة واحدة
+const allLessons = CURRICULUM.flatMap(chapter =>
+  chapter.lessons.map(lesson => ({
+    ...lesson,
+    chapterId: chapter.id,
+    chapterTitle: chapter.title
+  }))
+);
+
+let currentLessonId = null;
+let editor = null;
+let completedLessons = readProgress();
+
+function readProgress() {
+  try {
+    const saved = localStorage.getItem(PROGRESS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
+
+function getXP() {
+  return Number(localStorage.getItem(XP_KEY) || 0);
+}
+
+function addXP(amount) {
+  localStorage.setItem(XP_KEY, String(getXP() + amount));
+  updateStats();
+}
+
+function saveProgress() {
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(completedLessons));
+  updateStats();
+  renderSidebar();
+}
+
+function updateStats() {
+  const xpElement = document.getElementById("xpCount");
+  const progressElement = document.getElementById("progressCount");
+  const progressBar = document.getElementById("progressBar");
+
+  if (xpElement) xpElement.textContent = getXP();
+
+  const total = allLessons.length;
+  const completed = completedLessons.length;
+  const percentage = total ? Math.round(completed / total * 100) : 0;
+
+  if (progressElement) {
+    progressElement.textContent = `${completed}/${total}`;
+  }
+
+  if (progressBar) {
+    progressBar.style.width = `${percentage}%`;
+  }
+}
+
+function escapeHTML(value) {
+  const entities = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  };
+
+  return String(value).replace(/[&<>"']/g, character => entities[character]);
+}
+
+function showNotice(message, type = "info") {
+  const notice = document.getElementById("notice");
+
+  if (!notice) {
+    alert(message);
+    return;
+  }
+
+  notice.textContent = message;
+  notice.className = `notice notice-${type}`;
+  notice.hidden = false;
+
+  clearTimeout(showNotice.timer);
+  showNotice.timer = setTimeout(() => {
+    notice.hidden = true;
+  }, 3500);
+}
+
+function findLesson(lessonId) {
+  return allLessons.find(lesson => lesson.id === lessonId);
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById("lessonList");
+  if (!sidebar) return;
+
+  sidebar.innerHTML = CURRICULUM.map(chapter => `
+    <section class="chapter-group">
+      <h3 class="chapter-heading">
+        <span>${escapeHTML(chapter.title)}</span>
+        <span class="chapter-count">${chapter.lessons.length}</span>
+      </h3>
+      <div class="chapter-lessons">
+        ${chapter.lessons.map(lesson => {
+          const done = completedLessons.includes(lesson.id);
+          const active = lesson.id === currentLessonId;
+
+          return `
+            <button
+              type="button"
+              class="lesson-item ${active ? "active" : ""} ${done ? "completed" : ""}"
+              data-lesson-id="${escapeHTML(lesson.id)}"
+            >
+              <span class="lesson-status">${done ? "✓" : "○"}</span>
+              <span class="lesson-name">${escapeHTML(lesson.title)}</span>
+            </button>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `).join("");
+
+  sidebar.querySelectorAll("[data-lesson-id]").forEach(button => {
+    button.addEventListener("click", () => {
+      renderLesson(button.dataset.lessonId);
+    });
+  });
+}
+
+function disposeEditor() {
+  if (editor) {
+    editor.toTextArea();
+    editor = null;
+  }
+}
+
+function renderLesson(lessonId) {
+  const lesson = findLesson(lessonId);
+
+  if (!lesson) {
+    showNotice("الدرس غير موجود.", "error");
+    return;
+  }
+
+  currentLessonId = lessonId;
+
+  const setText = (id, value) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value || "";
+  };
+
+  setText("lessonTitle", lesson.title);
+  setText("lessonChapter", lesson.chapterTitle);
+  setText("lessonIntro", lesson.intro);
+  setText("lessonExplanation", lesson.explanation);
+  setText("lessonExample", lesson.code);
+  setText("lessonTask", lesson.task);
+
+  const hint = document.getElementById("lessonHint");
+
+  if (hint) {
+    hint.textContent = lesson.hint || "راجع المثال الموجود في الدرس.";
+    hint.hidden = true;
+  }
+
+  const quiz = document.getElementById("lessonQuiz");
+
+  if (quiz) {
+    quiz.innerHTML = `
+      <p class="quiz-question">
+        ${escapeHTML(lesson.quiz?.question || "جرّب كتابة الكود المطلوب.")}
+      </p>
+      <p class="quiz-instruction">
+        اكتب الحل في المحرر ثم اضغط على «تحقق من الحل».
+      </p>
+    `;
+  }
+
+  const completeButton = document.getElementById("completeLesson");
+  const isCompleted = completedLessons.includes(lesson.id);
+
+  if (completeButton) {
+    completeButton.textContent = isCompleted
+      ? "تم إكمال الدرس ✓"
+      : "إكمال الدرس";
+    completeButton.disabled = isCompleted;
+  }
+
+  const codeInput = document.getElementById("codeEditor");
+
+  if (codeInput) {
+    disposeEditor();
+    codeInput.value = lesson.starterCode || lesson.code || "";
+
+    if (window.CodeMirror) {
+      editor = CodeMirror.fromTextArea(codeInput, {
+        mode: "text/x-java",
+        theme: "dracula",
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        lineWrapping: true
+      });
+    }
+  }
+
+  setOutput("اكتب الكود ثم اضغط «تحقق من الحل».");
+  renderSidebar();
+  updateStats();
+
+  const content = document.getElementById("lessonContent");
+  if (content) content.scrollTop = 0;
+}
+
+function getEditorCode() {
+  if (editor) return editor.getValue();
+
+  const codeInput = document.getElementById("codeEditor");
+  return codeInput ? codeInput.value : "";
+}
+
+function setOutput(message, type = "info") {
+  const output = document.getElementById("codeOutput");
+  if (!output) return;
+
+  output.textContent = message;
+  output.className = `code-output output-${type}`;
+}
+
+function checkChallenge() {
+  const lesson = findLesson(currentLessonId);
+
+  if (!lesson) {
+    showNotice("اختار درس الأول.", "error");
+    return;
+  }
+
+  const code = getEditorCode().trim();
+
+  if (!code) {
+    setOutput("اكتب الكود الأول، وبعدها جرّب التحقق.", "error");
+    return;
+  }
+
+  if (!Array.isArray(lesson.checks) || lesson.checks.length === 0) {
+    setOutput(
+      "تم استلام الكود. التحقق هنا مبدئي، وليس تشغيلًا حقيقيًا للغة Java.",
+      "info"
+    );
+    return;
+  }
+
+  const failedCheck = lesson.checks.find(check => {
+    check.pattern.lastIndex = 0;
+    return !check.pattern.test(code);
+  });
+
+  if (failedCheck) {
+    setOutput(`لسه فيه حاجة محتاجة تعديل. تلميح: ${failedCheck.message}`, "error");
+    return;
+  }
+
+  setOutput("ممتاز! الكود اجتاز التحقق المبدئي. 🎉", "success");
+
+  if (!completedLessons.includes(lesson.id)) {
+    completedLessons.push(lesson.id);
+    saveProgress();
+    addXP(10);
+
+    const completeButton = document.getElementById("completeLesson");
+
+    if (completeButton) {
+      completeButton.textContent = "تم إكمال الدرس ✓";
+      completeButton.disabled = true;
+    }
+
+    showNotice("أحسنت! حصلت على 10 نقاط خبرة.", "success");
+  }
+}
+
+function attachLessonEvents() {
+  const checkButton = document.getElementById("checkCode");
+  const hintButton = document.getElementById("showHint");
+  const completeButton = document.getElementById("completeLesson");
+  const resetButton = document.getElementById("resetCode");
+  const nextButton = document.getElementById("nextLesson");
+  const previousButton = document.getElementById("previousLesson");
+
+  if (checkButton) {
+    checkButton.addEventListener("click", checkChallenge);
+  }
+
+  if (hintButton) {
+    hintButton.addEventListener("click", () => {
+      const lesson = findLesson(currentLessonId);
+      const hint = document.getElementById("lessonHint");
+
+      if (!lesson || !hint) return;
+
+      hint.textContent = lesson.hint || "راجع المثال الموجود في الدرس.";
+      hint.hidden = false;
+    });
+  }
+
+  if (completeButton) {
+    completeButton.addEventListener("click", () => {
+      const lesson = findLesson(currentLessonId);
+      if (!lesson) return;
+
+      if (completedLessons.includes(lesson.id)) {
+        showNotice("الدرس ده مكتمل بالفعل.", "info");
+        return;
+      }
+
+      completedLessons.push(lesson.id);
+      saveProgress();
+      addXP(10);
+
+      completeButton.textContent = "تم إكمال الدرس ✓";
+      completeButton.disabled = true;
+
+      showNotice("تم إكمال الدرس وحصلت على 10 نقاط خبرة.", "success");
+    });
+  }
+
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      const lesson = findLesson(currentLessonId);
+      if (!lesson) return;
+
+      const starterCode = lesson.starterCode || lesson.code || "";
+
+      if (editor) {
+        editor.setValue(starterCode);
+      } else {
+        const codeInput = document.getElementById("codeEditor");
+        if (codeInput) codeInput.value = starterCode;
+      }
+
+      setOutput("تمت إعادة الكود إلى بدايته.");
+    });
+  }
+
+  if (nextButton) {
+    nextButton.addEventListener("click", () => {
+      const index = allLessons.findIndex(lesson => lesson.id === currentLessonId);
+
+      if (index >= 0 && index < allLessons.length - 1) {
+        renderLesson(allLessons[index + 1].id);
+      } else {
+        showNotice("وصلت لآخر درس في المنهج. أحسنت!", "success");
+      }
+    });
+  }
+
+  if (previousButton) {
+    previousButton.addEventListener("click", () => {
+      const index = allLessons.findIndex(lesson => lesson.id === currentLessonId);
+
+      if (index > 0) {
+        renderLesson(allLessons[index - 1].id);
+      } else {
+        showNotice("ده أول درس في المنهج.", "info");
+      }
+    });
+  }
+}
+
+function getInitialLesson() {
+  return allLessons.find(lesson => !completedLessons.includes(lesson.id))
+    || allLessons[0]
+    || null;
+}
+
+function startApp() {
+  if (!Array.isArray(CURRICULUM) || allLessons.length === 0) {
+    showNotice("المنهج مش موجود أو مفيهوش دروس.", "error");
+    return;
+  }
+
+  attachLessonEvents();
+  updateStats();
+  renderSidebar();
+
+  const initialLesson = getInitialLesson();
+
+  if (initialLesson) {
+    renderLesson(initialLesson.id);
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startApp);
+} else {
+  startApp();
+}
