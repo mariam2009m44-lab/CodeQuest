@@ -3,80 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#070b14">
+  <meta name="theme-color" content="#070B14">
   <title>تعلم Java | Cody Academy</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
 
   <style>
     :root {
-      --bg: #070b14;
-      --panel: #0d1423;
-      --panel2: #111b2e;
-      --border: #223047;
-      --text: #f0f5ff;
-      --muted: #9aa9c0;
-      --cyan: #22d3ee;
-      --purple: #a78bfa;
-      --green: #4ade80;
-      --red: #fb7185;
+      --bg: #070B14;
+      --panel: #0D1424;
+      --panel-light: #111B2E;
+      --border: rgba(148, 163, 184, .15);
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+      --cyan: #22D3EE;
+      --purple: #A78BFA;
+      --green: #34D399;
+      --red: #FB7185;
       --radius: 18px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      background:
-        radial-gradient(ellipse at top right, #14223a 0, transparent 42%),
-        var(--bg);
-      color: var(--text);
       font-family: "Cairo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
     }
 
-    button, textarea, input { font: inherit; }
-    button { cursor: pointer; }
+    button, textarea {
+      font: inherit;
+    }
 
-    button:focus-visible, textarea:focus-visible {
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    textarea:focus-visible {
       outline: 2px solid var(--cyan);
       outline-offset: 3px;
     }
 
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      height: 72px;
+      padding: 0 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 14px 24px;
-      background: rgba(7, 11, 20, .92);
-      backdrop-filter: blur(16px);
+      background: rgba(13, 20, 36, .94);
       border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(16px);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      color: var(--text);
+      text-decoration: none;
       font-weight: 900;
       font-size: 20px;
     }
 
     .brand-icon {
-      display: grid;
-      place-items: center;
       width: 42px;
       height: 42px;
-      border-radius: 13px;
+      display: grid;
+      place-items: center;
       background: linear-gradient(135deg, var(--cyan), var(--purple));
-      color: #06101c;
-      font-weight: 900;
+      color: #070B14;
+      border-radius: 14px;
+      font-size: 23px;
     }
 
     .top-actions {
@@ -85,415 +97,654 @@
       gap: 10px;
     }
 
-    .stat {
+    .xp-pill, .back-link {
       border: 1px solid var(--border);
-      background: var(--panel);
+      background: var(--panel-light);
+      padding: 8px 14px;
       border-radius: 12px;
-      padding: 8px 13px;
-      color: var(--muted);
+      color: var(--text);
+      text-decoration: none;
       font-size: 13px;
+      font-weight: 700;
     }
 
-    .stat strong { color: var(--text); }
+    .xp-pill {
+      color: #FCD34D;
+    }
 
     .layout {
       display: grid;
-      grid-template-columns: 290px minmax(0, 1fr);
-      gap: 22px;
-      max-width: 1500px;
-      padding: 24px;
-      margin: auto;
-    }
-
-    .sidebar, .card {
-      background: rgba(13, 20, 35, .94);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: calc(100vh - 72px);
     }
 
     .sidebar {
-      align-self: start;
-      padding: 18px;
-      position: sticky;
-      top: 86px;
-      max-height: calc(100vh - 105px);
-      overflow-y: auto;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      padding: 22px 16px;
+      min-width: 0;
     }
 
-    .sidebar h2 {
-      margin: 0 0 5px;
+    .sidebar-title {
       font-size: 18px;
+      font-weight: 900;
+      margin: 0 0 5px;
     }
 
-    .muted { color: var(--muted); }
-    .small { font-size: 12px; }
+    .sidebar-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0 0 20px;
+    }
+
+    .progress-card {
+      background: linear-gradient(135deg, rgba(34, 211, 238, .09), rgba(167, 139, 250, .09));
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
 
     .progress-track {
       height: 8px;
       border-radius: 20px;
+      background: #202B40;
       overflow: hidden;
-      background: #202b3e;
-      margin: 14px 0 8px;
     }
 
-    .progress-fill {
+    .progress-bar {
       height: 100%;
       width: 0;
+      border-radius: inherit;
       background: linear-gradient(90deg, var(--cyan), var(--purple));
       transition: width .25s ease;
     }
 
-    .chapter {
-      margin-top: 20px;
+    #lessonList {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
 
-    .chapter-title {
+    .chapter-heading {
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 8px;
+      color: #C4B5FD;
       font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 8px;
+      margin: 0 0 8px;
     }
 
-    .lesson-nav {
+    .chapter-count {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .chapter-lessons {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .lesson-item {
       width: 100%;
-      text-align: right;
       border: 1px solid transparent;
       background: transparent;
       color: var(--muted);
-      border-radius: 11px;
       padding: 10px;
+      border-radius: 11px;
+      text-align: right;
       display: flex;
-      gap: 9px;
       align-items: center;
-      margin: 4px 0;
-      font-size: 13px;
+      gap: 9px;
+      font-size: 12px;
+      transition: .2s;
     }
 
-    .lesson-nav:hover {
-      background: var(--panel2);
+    .lesson-item:hover {
+      background: var(--panel-light);
       color: var(--text);
     }
 
-    .lesson-nav.active {
-      background: rgba(34, 211, 238, .1);
-      border-color: rgba(34, 211, 238, .4);
+    .lesson-item.active {
+      background: rgba(34, 211, 238, .09);
+      border-color: rgba(34, 211, 238, .28);
       color: var(--cyan);
     }
 
-    .lesson-nav.done .lesson-icon { color: var(--green); }
+    .lesson-item.completed .lesson-status {
+      color: var(--green);
+    }
 
-    .lesson-icon {
-      width: 24px;
-      text-align: center;
+    .lesson-status {
       flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+      font-weight: 900;
     }
 
-    main { min-width: 0; }
-
-    .welcome {
-      padding: 25px;
-      margin-bottom: 20px;
-      background: linear-gradient(120deg, rgba(34,211,238,.1), rgba(167,139,250,.1));
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+    .lesson-name {
+      flex: 1;
     }
 
-    .eyebrow {
-      color: var(--cyan);
+    .main {
+      padding: 28px;
+      min-width: 0;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .breadcrumb {
       font-size: 12px;
-      font-weight: 800;
-    }
-
-    h1 {
-      margin: 8px 0;
-      font-size: clamp(24px, 4vw, 36px);
-      line-height: 1.5;
-    }
-
-    h2, h3 { line-height: 1.6; }
-
-    .welcome p {
-      margin: 6px 0 0;
-      max-width: 800px;
       color: var(--muted);
-      line-height: 1.9;
+      margin-bottom: 12px;
     }
 
     .lesson-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 15px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
+      margin-bottom: 22px;
     }
 
-    .lesson-heading h2 {
-      margin: 4px 0;
-      font-size: 25px;
+    .lesson-heading h1 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.5;
     }
 
-    .pill {
-      display: inline-block;
-      border: 1px solid var(--border);
+    .lesson-heading p {
       color: var(--muted);
-      border-radius: 30px;
-      padding: 5px 11px;
-      font-size: 12px;
+      font-size: 14px;
+      line-height: 1.9;
+      margin: 0;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, .95fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-width: 0;
     }
 
     .card {
-      padding: 22px;
-      margin-bottom: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      min-width: 0;
     }
 
-    .card h3 {
+    .card-title {
       margin: 0 0 12px;
-      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 16px;
+      font-weight: 800;
     }
 
-    .explanation {
+    .card p {
+      color: #CBD5E1;
       line-height: 2;
-      color: #d4deee;
+      font-size: 13px;
+      margin: 0;
+      white-space: pre-line;
     }
 
-    .tip {
-      border-right: 3px solid var(--purple);
-      background: rgba(167,139,250,.08);
-      border-radius: 9px;
-      padding: 12px 15px;
-      margin-top: 14px;
-      line-height: 1.9;
+    .intro-card {
+      border-top: 2px solid var(--cyan);
     }
 
-    .code-example {
+    .example-code {
+      display: block;
       direction: ltr;
       text-align: left;
       white-space: pre-wrap;
-      overflow-x: auto;
-      background: #060a12;
-      border: 1px solid var(--border);
+      overflow-wrap: anywhere;
+      padding: 15px;
       border-radius: 12px;
-      padding: 16px;
-      color: #c4f1ff;
-      font: 13px/1.8 Consolas, Monaco, monospace;
+      background: #080D18;
+      border: 1px solid var(--border);
+      color: #A5F3FC;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
     }
 
-    .editor-card { padding: 0; overflow: hidden; }
+    .task-card {
+      border-right: 3px solid var(--purple);
+    }
+
+    .hint-box {
+      background: rgba(167, 139, 250, .09);
+      border: 1px solid rgba(167, 139, 250, .2);
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      color: #DDD6FE;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .editor-card {
+      padding: 0;
+      overflow: hidden;
+    }
 
     .editor-header {
-      padding: 13px 17px;
-      background: #111a2a;
+      padding: 14px 16px;
+      background: #111827;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      flex-wrap: wrap;
     }
 
-    .editor-header strong { font-size: 14px; }
+    .editor-header strong {
+      font-size: 13px;
+    }
+
+    .editor-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .editor-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #64748B;
+    }
+
+    .editor-body {
+      padding: 12px;
+      background: #0B1020;
+    }
+
+    .CodeMirror {
+      height: 300px;
+      border-radius: 10px;
+      font-size: 13px;
+      direction: ltr;
+      text-align: left;
+      font-family: Consolas, monospace;
+    }
 
     .editor-actions {
       display: flex;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--border);
     }
 
     .btn {
       border: 1px solid var(--border);
-      background: var(--panel2);
-      color: var(--text);
       border-radius: 10px;
-      padding: 9px 14px;
-      font-size: 13px;
-      font-weight: 700;
+      padding: 9px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      background: var(--panel-light);
+      transition: .2s;
     }
 
-    .btn:hover { filter: brightness(1.15); }
+    .btn:hover {
+      filter: brightness(1.15);
+    }
 
     .btn-primary {
-      color: #06101c;
       background: var(--cyan);
+      color: #07111A;
       border-color: var(--cyan);
     }
 
+    .btn-purple {
+      background: var(--purple);
+      color: #100A20;
+      border-color: var(--purple);
+    }
+
     .btn-success {
-      color: #06140a;
       background: var(--green);
+      color: #052E24;
       border-color: var(--green);
     }
 
-    .editor-wrap { direction: ltr; }
-
-    .CodeMirror {
-      height: 280px;
-      font-size: 14px;
-      font-family: Consolas, Monaco, monospace;
-      direction: ltr;
-      text-align: left;
+    .btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
     }
 
     .output {
-      padding: 15px 18px;
-      background: #080e18;
+      padding: 14px;
       border-top: 1px solid var(--border);
-      min-height: 70px;
-    }
-
-    .output-title {
-      color: var(--muted);
+      min-height: 55px;
+      font-family: Consolas, monospace;
       font-size: 12px;
-      margin-bottom: 7px;
-    }
-
-    .output-message {
-      font-size: 13px;
       line-height: 1.8;
+      direction: rtl;
       white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--muted);
     }
 
-    .output-message.success { color: var(--green); }
-    .output-message.error { color: var(--red); }
+    .output-success {
+      color: var(--green);
+    }
 
-    .quiz-question {
-      line-height: 1.9;
-      margin-bottom: 12px;
+    .output-error {
+      color: var(--red);
+    }
+
+    .output-info {
+      color: var(--cyan);
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
     }
 
     .quiz-option {
-      display: block;
-      width: 100%;
-      text-align: right;
-      margin: 8px 0;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: #0a1120;
       border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px;
       color: var(--text);
+      background: #0A1020;
+      text-align: right;
+      font-size: 13px;
     }
 
-    .quiz-option:hover { border-color: var(--purple); }
-    .quiz-option.correct { border-color: var(--green); color: var(--green); }
-    .quiz-option.wrong { border-color: var(--red); color: var(--red); }
+    .quiz-option.selected {
+      border-color: var(--cyan);
+      background: rgba(34, 211, 238, .1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .quiz-option.wrong {
+      border-color: var(--red);
+      color: var(--red);
+    }
 
     .quiz-feedback {
+      font-size: 12px;
+      line-height: 1.9;
       margin-top: 12px;
-      font-size: 13px;
-      line-height: 1.8;
+      color: var(--muted);
     }
 
-    .lesson-footer {
+    .bottom-navigation {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 12px;
       flex-wrap: wrap;
-      margin: 20px 0 40px;
+      gap: 10px;
+      margin-top: 22px;
     }
 
     .notice {
       position: fixed;
       bottom: 20px;
       left: 20px;
-      z-index: 20;
-      max-width: calc(100vw - 40px);
-      background: #16243a;
+      z-index: 100;
+      max-width: min(420px, calc(100vw - 40px));
+      padding: 14px 18px;
+      background: #172338;
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 12px 18px;
-      box-shadow: 0 12px 40px #0005;
-      display: none;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, .3);
+      font-size: 13px;
+      line-height: 1.8;
     }
 
-    .notice.show { display: block; }
+    .notice-success {
+      border-color: var(--green);
+    }
+
+    .notice-error {
+      border-color: var(--red);
+    }
+
+    .notice-info {
+      border-color: var(--cyan);
+    }
 
     .empty-state {
+      color: var(--muted);
       text-align: center;
-      padding: 45px 20px;
+      padding: 25px;
     }
 
-    .empty-state h2 { font-size: 25px; }
-
-    @media (max-width: 900px) {
-      .layout {
+    @media (max-width: 1050px) {
+      .content-grid {
         grid-template-columns: 1fr;
-        padding: 14px;
+      }
+
+      .layout {
+        grid-template-columns: 260px minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        padding: 0 14px;
+        height: 64px;
+      }
+
+      .brand {
+        font-size: 16px;
+      }
+
+      .brand-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .back-link {
+        display: none;
+      }
+
+      .layout {
+        display: flex;
+        flex-direction: column;
       }
 
       .sidebar {
-        position: static;
-        max-height: none;
+        border-left: 0;
+        border-bottom: 1px solid var(--border);
+        padding: 16px;
       }
 
-      .sidebar-list {
+      #lessonList {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
       }
 
-      .chapter { margin-top: 12px; }
-      .topbar { padding: 12px 14px; }
-      .brand { font-size: 17px; }
+      .main {
+        padding: 18px 13px 30px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .editor-card {
+        padding: 0;
+      }
+
+      .CodeMirror {
+        height: 260px;
+      }
     }
 
-    @media (max-width: 500px) {
-      .stat { padding: 7px 9px; font-size: 11px; }
-      .brand-icon { width: 36px; height: 36px; }
-      .card { padding: 16px; }
-      .welcome { padding: 18px; }
-      .lesson-heading h2 { font-size: 21px; }
-      .CodeMirror { height: 240px; }
+    @media (max-width: 420px) {
+      #lessonList {
+        grid-template-columns: 1fr;
+      }
+
+      .xp-pill {
+        padding: 7px 9px;
+        font-size: 11px;
+      }
+
+      .editor-actions .btn {
+        flex: 1;
+      }
     }
   </style>
 </head>
 
 <body>
   <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">C</div>
+    <a class="brand" href="index.html">
+      <span class="brand-icon">C</span>
       <span>Cody Academy</span>
-    </div>
+    </a>
 
     <div class="top-actions">
-      <div class="stat">⭐ XP: <strong id="xpDisplay">0</strong></div>
-      <div class="stat">📚 الإنجاز: <strong id="progressPercent">0%</strong></div>
+      <span class="xp-pill">⭐ XP: <span id="xpCount">0</span></span>
+      <a class="back-link" href="java-chapters.html">← فصول Java</a>
     </div>
   </header>
 
   <div class="layout">
     <aside class="sidebar">
-      <h2>مسار Java</h2>
-      <div class="muted small">ابدأ من الأساسيات وتقدم خطوة بخطوة.</div>
+      <h2 class="sidebar-title">مسار Java</h2>
+      <p class="sidebar-subtitle">ابدأ من الأساسيات وتقدّم خطوة بخطوة.</p>
 
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill"></div>
+      <div class="progress-card">
+        <div class="progress-top">
+          <span>تقدمك في المسار</span>
+          <strong id="progressCount">0/0</strong>
+        </div>
+        <div
+          class="progress-track"
+          id="progressTrack"
+          role="progressbar"
+          aria-label="تقدم الدروس"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
       </div>
 
-      <div class="muted small" id="progressText">0 من 16 درسًا مكتملًا</div>
-      <div class="sidebar-list" id="sidebarList"></div>
+      <nav id="lessonList" aria-label="قائمة دروس Java"></nav>
     </aside>
 
-    <main>
-      <section class="welcome">
-        <div class="eyebrow">مسار تعليمي تفاعلي</div>
-        <h1>رحلتك في تعلم Java تبدأ هنا 🚀</h1>
-        <p>
-          تعلّم أساسيات Java من الصفر، وشاهد أمثلة عملية، واكتب الكود بنفسك،
-          ثم اختبر فهمك وأكمل التحديات لتحصل على نقاط XP.
-        </p>
-      </section>
+    <main class="main" id="lessonContent">
+      <div class="breadcrumb">المسارات / Java / <span id="lessonChapter">الفصل الأول</span></div>
 
-      <div id="lessonContent"></div>
+      <header class="lesson-heading">
+        <h1 id="lessonTitle">مرحبًا بك في Java</h1>
+        <p id="lessonIntro">ابدأ رحلتك في البرمجة من الصفر.</p>
+      </header>
+
+      <div class="content-grid">
+        <div class="column">
+          <section class="card intro-card">
+            <h2 class="card-title">📘 شرح الدرس</h2>
+            <p id="lessonExplanation"></p>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">💡 مثال توضيحي</h2>
+            <pre class="example-code" id="lessonExample"></pre>
+          </section>
+
+          <section class="card task-card">
+            <h2 class="card-title">🎯 مهمتك</h2>
+            <p id="lessonTask"></p>
+
+            <button class="btn btn-purple" id="showHint" type="button" style="margin-top:14px">
+              إظهار التلميح
+            </button>
+
+            <div class="hint-box" id="lessonHint" hidden></div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">🧠 اختبر فهمك</h2>
+            <div id="lessonQuiz">
+              <p>اختر درسًا للبدء.</p>
+            </div>
+            <div class="quiz-feedback" id="quizFeedback" aria-live="polite"></div>
+          </section>
+        </div>
+
+        <div class="column">
+          <section class="card editor-card">
+            <div class="editor-header">
+              <strong>⌨️ محرر Java</strong>
+              <div class="editor-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+
+            <div class="editor-body">
+              <textarea id="codeEditor" spellcheck="false"></textarea>
+            </div>
+
+            <div class="editor-actions">
+              <button class="btn btn-primary" id="checkCode" type="button">
+                تحقق من الحل
+              </button>
+              <button class="btn" id="resetCode" type="button">
+                إعادة الكود
+              </button>
+              <button class="btn btn-success" id="completeLesson" type="button">
+                إكمال الدرس
+              </button>
+            </div>
+
+            <div class="output output-info" id="codeOutput" role="status" aria-live="polite">
+              اكتب الكود ثم اضغط «تحقق من الحل».
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">🧭 نصيحة Cody</h2>
+            <p>اقرأ المثال، وافهم كل سطر، ثم جرّب كتابة الحل بنفسك. الخطأ جزء طبيعي من تعلم البرمجة.</p>
+          </section>
+        </div>
+      </div>
+
+      <div class="bottom-navigation">
+        <button class="btn" id="previousLesson" type="button">→ الدرس السابق</button>
+        <button class="btn btn-primary" id="nextLesson" type="button">الدرس التالي ←</button>
+      </div>
     </main>
   </div>
 
-  <div class="notice" id="notice" role="status" aria-live="polite"></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
 
   <script>
     "use strict";
@@ -502,244 +753,399 @@
     const XP_KEY = "cody_java_xp";
 
     /*
-      ملاحظة:
-      هذا الملف يعرض أمثلة Java ويفحص وجود أجزاء مطلوبة في إجابات التحديات.
-      لا ينفذ Java فعليًا داخل المتصفح.
+      منهج Java من الصفر.
+      كل فصل يحتوي درسين. التحقق من الكود هنا مبدئي
+      باستخدام أنماط regex، وليس تشغيلًا فعليًا للغة Java.
     */
-
     const CURRICULUM = [
       {
         id: 1,
-        title: "البداية مع Java",
-        description: "تعرّف على Java واكتب أول برنامج.",
+        title: "الفصل الأول: البداية",
         lessons: [
           {
+            id: "java-1-1",
             title: "ما هي Java؟",
-            duration: "10 دقائق",
-            explanation: `
-              Java لغة برمجة تُستخدم في تطبيقات كثيرة، مثل أنظمة الشركات
-              وبعض تطبيقات Android والأدوات الخلفية للمواقع.
-
-              الكود الذي تكتبه يكون عادة داخل class، وتبدأ البرامج التقليدية
-              من الدالة main. يجب الانتباه إلى الأحرف الكبيرة والصغيرة؛
-              فـ Java تميّز بينهما.
-            `,
-            example: `public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, Java!");
-    }
-}`,
-            tip: "احفظ شكل البرنامج الأساسي أولًا، ثم تعلّم معنى كل سطر بالتدريج.",
-            task: "اكتب برنامجًا يحتوي على class باسم Main ودالة main، واطبع Hello, Java! باستخدام System.out.println.",
-            starter: `public class Main {
-    public static void main(String[] args) {
-        // اكتب أمر الطباعة هنا
-    }
-}`,
+            intro: "تعرّف على Java وعلى شكل البرنامج البسيط.",
+            explanation: "Java لغة برمجة تُستخدم في تطبيقات كثيرة. يبدأ البرنامج البسيط بفئة class، ثم نقطة بداية اسمها main. الأقواس تحدد بداية ونهاية أجزاء الكود.",
+            example: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello!");\n    }\n}',
+            task: 'اكتب برنامجًا يحتوي على Main، واطبع كلمة "Hello!" باستخدام System.out.println.',
+            hint: 'استخدم System.out.println("Hello!"); داخل main.',
+            starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب أمر الطباعة هنا\n    }\n}',
             checks: [
-              { pattern: /class\s+Main\b/, message: "أضف class باسم Main." },
-              { pattern: /public\s+static\s+void\s+main\s*\(/, message: "أضف دالة main بالشكل الصحيح." },
-              { pattern: /System\.out\.println\s*\(/, message: "استخدم System.out.println للطباعة." },
-              { pattern: /Hello,\s*Java!/, message: "اطبع النص Hello, Java!." }
+              { pattern: /public\s+class\s+Main/, message: "اكتب public class Main." },
+              { pattern: /public\s+static\s+void\s+main\s*\(\s*String\s*\[\s*\]\s+\w+\s*\)/, message: "أضف الدالة main بالتوقيع الصحيح." },
+              { pattern: /System\.out\.println\s*\(\s*"Hello!"\s*\)\s*;/, message: 'اطبع "Hello!" باستخدام println.' }
             ],
             quiz: {
-              question: "ما الأمر المستخدم لطباعة نص في هذا المثال؟",
-              options: [
-                "System.out.println()",
-                "Console.write()",
-                "print.java()"
-              ],
-              answer: 0,
-              explanation: "System.out.println() يطبع النص ثم ينتقل إلى سطر جديد."
+              question: "ما الأمر المستخدم لطباعة سطر في Java؟",
+              options: ["printLine()", "System.out.println()", "console.log()"],
+              answer: 1,
+              explanation: "نستخدم System.out.println() لطباعة قيمة ثم الانتقال إلى سطر جديد."
             }
           },
           {
+            id: "java-1-2",
             title: "التعليقات والطباعة",
-            duration: "10 دقائق",
-            explanation: `
-              التعليقات هي نصوص يكتبها المبرمج لتوضيح الكود، ولا تُنفّذ كأوامر.
-              التعليق الذي يبدأ بـ // يستمر حتى نهاية السطر.
-              أما التعليق بين /* و */ فيمكن أن يمتد إلى عدة أسطر.
-            `,
-            example: `public class Main {
-    public static void main(String[] args) {
-        // This is a comment
-        System.out.println("Welcome");
-        System.out.println("Learning Java");
-    }
-}`,
-            tip: "النص داخل علامات الاقتباس يُطبع كما هو. لا تضع علامات الاقتباس حول أمر الطباعة كله.",
-            task: "أضف تعليقًا يبدأ بـ // ثم اطبع Welcome باستخدام System.out.println.",
-            starter: `public class Main {
-    public static void main(String[] args) {
-        // اكتب تعليقًا هنا
-
-    }
-}`,
+            intro: "تعلّم طباعة النصوص وكتابة تعليقات توضح الكود.",
+            explanation: "تستخدم System.out.println() لطباعة قيمة مع الانتقال إلى سطر جديد. أما System.out.print() فتطبع دون الانتقال تلقائيًا إلى سطر جديد. يبدأ التعليق أحادي السطر بالرمز // ولا يُنفّذ كتعليمة.",
+            example: 'System.out.print("Hello ");\nSystem.out.println("Cody");\n// هذا تعليق',
+            task: 'اطبع كلمة Java باستخدام System.out.println، وأضف تعليقًا يشرح السطر.',
+            hint: "ابدأ سطر التعليق بعلامة //.",
+            starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب التعليق وأمر الطباعة\n    }\n}',
             checks: [
-              { pattern: /\/\//, message: "أضف تعليقًا باستخدام //." },
-              { pattern: /System\.out\.println\s*\(\s*"Welcome"\s*\)/, message: 'اطبع "Welcome" باستخدام System.out.println.' }
+              { pattern: /System\.out\.println\s*\(\s*"Java"\s*\)\s*;/, message: 'اطبع "Java" باستخدام println.' },
+              { pattern: /\/\//, message: "أضف تعليقًا يبدأ بـ //." }
             ],
             quiz: {
-              question: "أي اختيار يمثل تعليقًا من سطر واحد؟",
-              options: ["// تعليق", "<!-- تعليق -->", "** تعليق **"],
-              answer: 0,
-              explanation: "في Java يبدأ التعليق من سطر واحد بالرمز //."
+              question: "ما الرمز المستخدم لبدء تعليق من سطر واحد؟",
+              options: ["##", "//", "<!--"],
+              answer: 1,
+              explanation: "في Java يبدأ التعليق أحادي السطر بالرمز //."
             }
           }
         ]
       },
       {
         id: 2,
-        title: "المتغيرات وأنواع البيانات",
-        description: "خزّن البيانات واستخدمها.",
+        title: "الفصل الثاني: المتغيرات",
         lessons: [
           {
-            title: "المتغيرات",
-            duration: "12 دقيقة",
-            explanation: `
-              المتغير اسم يشير إلى مكان تُخزّن فيه قيمة.
-              عند تعريف متغير في Java نكتب نوع البيانات ثم اسم المتغير ثم القيمة
-              عند الحاجة. مثال: int age = 16;
-              يجب إنهاء معظم أوامر Java بالفاصلة المنقوطة ;.
-            `,
-            example: `public class Main {
-    public static void main(String[] args) {
-        int age = 16;
-        System.out.println(age);
-    }
-}`,
-            tip: "اختر اسمًا واضحًا للمتغير، مثل age للعمر و score للنتيجة.",
-            task: "أنشئ متغيرًا من النوع int باسم score وقيمته 100، ثم اطبع المتغير.",
-            starter: `public class Main {
-    public static void main(String[] args) {
-        // أنشئ المتغير هنا
+            id: "java-2-1",
+            title: "المتغيرات وأنواع البيانات",
+            intro: "المتغير مكان نحتفظ فيه بقيمة يمكن استخدامها لاحقًا.",
+            explanation: "يحتاج كل متغير إلى نوع واسم وقيمة اختيارية عند تعريفه. يستخدم int للأعداد الصحيحة، وdouble للأعداد العشرية، وString للنصوص، وboolean للقيم true وfalse.",
+            example: 'int age = 16;\ndouble price = 25.5;\nString name = "Cody";\nboolean active = true;',
+            task: 'أنشئ المتغير name بقيمة "Cody"، والمتغير price ق
+يمة 25.5.';
 
-        // اطبع المتغير هنا
-    }
-}`,
-            checks: [
-              { pattern: /\bint\s+score\s*=\s*100\s*;/, message: "عرّف int score = 100;." },
-              { pattern: /System\.out\.println\s*\(\s*score\s*\)/, message: "اطبع المتغير score." }
-            ],
-            quiz: {
-              question: "أي نوع يُستخدم عادة لتخزين عدد صحيح؟",
-              options: ["int", "String", "boolean"],
-              answer: 0,
-              explanation: "يُستخدم int لتخزين الأعداد الصحيحة ضمن مداه."
-            }
-          },
-          {
-            title: "أنواع البيانات",
-            duration: "12 دقيقة",
-            explanation: `
-              من أنواع البيانات الأساسية:
-              int للأعداد الصحيحة، double للأعداد العشرية، boolean للقيم true أو false،
-              و char لحرف واحد. أما String فتُستخدم لتخزين النصوص.
-              String ليست نوعًا بدائيًا، لكنها نوع شائع جدًا في Java.
-            `,
-            example: `int age = 16;
-double price = 25.5;
-boolean isReady = true;
-char grade = 'A';
-String name = "Cody";`,
-            tip: "استخدم 'A' مع char و \"Cody\" مع String؛ نوع علامات الاقتباس مهم.",
-            task: "أنشئ متغير String باسم name وقيمته Cody، ومتغير double باسم price وقيمته 25.5.",
-            starter: `public class Main {
-    public static void main(String[] args) {
-        // أضف المتغيرات هنا
-    }
-}`,
-            checks: [
-              { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ String name = "Cody";.' },
-              { pattern: /double\s+price\s*=\s*25\.5\s*;/, message: "أنشئ double price = 25.5;." }
-            ],
-            quiz: {
-              question: "أي نوع يناسب القيمة true أو false؟",
-              options: ["double", "boolean", "char"],
-              answer: 1,
-              explanation: "النوع boolean يحمل إحدى القيمتين true أو false."
-            }
-          }
-        ]
+        hint: 'استخدم String name = "Cody"; و double price = 25.5; مع وضع الفاصلة المنقوطة في نهاية كل سطر.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب المتغيرات هنا\n    }\n}',
+        checks: [
+          { pattern: /\bString\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ String باسم name وقيمته "Cody".' },
+          { pattern: /\bdouble\s+price\s*=\s*25\.5\s*;/, message: 'أنشئ double باسم price وقيمته 25.5.' }
+        ],
+        quiz: {
+          question: 'أي نوع بيانات يناسب الرقم العشري 25.5؟',
+          options: ['int', 'double', 'boolean'],
+          answer: 1,
+          explanation: 'يستخدم double لتخزين الأرقام العشرية.'
+        }
       },
       {
-        id: 3,
-        title: "العمليات الحسابية",
-        description: "نفّذ الحسابات على المتغيرات.",
-        lessons: [
-          {
-            title: "العمليات الأساسية",
-            duration: "12 دقيقة",
-            explanation: `
-              تستخدم Java الرموز + للجمع، - للطرح، * للضرب، / للقسمة،
-              و % للحصول على باقي القسمة.
-              عند قسمة عددين صحيحين قد تكون النتيجة عددًا صحيحًا فقط.
-            `,
-            example: `int a = 10;
-int b = 3;
-
-System.out.println(a + b); // 13
-System.out.println(a - b); // 7
-System.out.println(a * b); // 30
-System.out.println(a % b); // 1`,
-            tip: "استخدم الأقواس عندما تريد توضيح ترتيب العمليات الحسابية.",
-            task: "أنشئ المتغيرين a و b، ثم اطبع ناتج جمعهما باستخدام +.",
-            starter: `public class Main {
-    public static void main(String[] args) {
-        int a = 10;
-        int b = 3;
-
-        // اطبع ناتج الجمع
-    }
-}`,
-            checks: [
-              { pattern: /int\s+a\s*=\s*10\s*;/, message: "تأكد من تعريف a بالقيمة 10." },
-              { pattern: /int\s+b\s*=\s*3\s*;/, message: "تأكد من تعريف b بالقيمة 3." },
-              { pattern: /System\.out\.println\s*\(\s*a\s*\+\s*b\s*\)/, message: "اطبع a + b." }
-            ],
-            quiz: {
-              question: "ما نتيجة 10 % 3؟",
-              options: ["3", "1", "0"],
-              answer: 1,
-              explanation: "باقي قسمة 10 على 3 يساوي 1."
-            }
-          },
-          {
-            title: "تحديث قيم المتغيرات",
-            duration: "10 دقائق",
-            explanation: `
-              يمكنك تحديث قيمة متغير باستخدام عمليات مثل score = score + 1.
-              ويمكن كتابة ذلك بصورة مختصرة: score += 1.
-              أما score++ فتزيد القيمة بمقدار واحد.
-            `,
-            example: `int score = 5;
-score++;
-System.out.println(score); // 6
-
-score += 4;
-System.out.println(score); // 10`,
-            tip: "التحديث يؤثر في قيمة المتغير، وليس في الاسم نفسه.",
-            task: "أنشئ score بقيمة 5، ثم زد قيمته بمقدار واحد باستخدام ++، واطبع النتيجة.",
-            starter: `public class Main {
-    public static void main(String[] args) {
-        int score = 5;
-
-        // حدّث القيمة واطبعها
-    }
-}`,
-            checks: [
-              { pattern: /int\s+score\s*=\s*5\s*;/, message: "عرّف score بقيمة 5." },
-              { pattern: /\bscore\+\+| \bscore\s*\+=\s*1\s*;|\bscore\s*=\s*score\s*\+\s*1\s*;/, message: "زد قيمة score بمقدار واحد." },
-              { pattern: /System\.System\.out\.println\s*\(\s*score\s*\)/,
-message: "اطبع قيمة score."
-}
-]
-}
-}
+        id: 'java-2-2',
+        title: 'العمليات الحسابية',
+        intro: 'تستطيع Java إجراء العمليات الحسابية باستخدام رموز بسيطة.',
+        explanation: 'الرمز + للجمع، والرمز - للطرح، والرمز * للضرب، والرمز / للقسمة، والرمز % لباقي القسمة.',
+        example: 'int a = 10;\nint b = 3;\nSystem.out.println(a + b);\nSystem.out.println(a * b);\nSystem.out.println(a % b);',
+        task: 'أنشئ متغيرين a و b بقيمتي 12 و 4، ثم اطبع مجموعهما.',
+        hint: 'استخدم int a = 12; و int b = 4; ثم System.out.println(a + b);',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        // أنشئ المتغيرات واطبع المجموع\n    }\n}',
+        checks: [
+          { pattern: /\bint\s+a\s*=\s*12\s*;/, message: 'أنشئ المتغير a بقيمة 12.' },
+          { pattern: /\bint\s+b\s*=\s*4\s*;/, message: 'أنشئ المتغير b بقيمة 4.' },
+          { pattern: /System\.out\.println\s*\(\s*a\s*\+\s*b\s*\)\s*;/, message: 'اطبع مجموع a و b.' }
+        ],
+        quiz: {
+          question: 'ما نتيجة 10 % 3؟',
+          options: ['3', '1', '0'],
+          answer: 1,
+          explanation: 'باقي قسمة 10 على 3 هو 1.'
+        }
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: 'الفصل الثالث: الشروط',
+    lessons: [
+      {
+        id: 'java-3-1',
+        title: 'جملة if',
+        intro: 'تسمح الشروط للبرنامج باتخاذ قرار بناءً على قيمة معينة.',
+        explanation: 'تستخدم if لتنفيذ كود عندما يكون الشرط صحيحًا. يمكن استخدام > و < و == للمقارنة بين القيم.',
+        example: 'int age = 16;\nif (age >= 13) {\n    System.out.println("Welcome");\n}',
+        task: 'أنشئ متغير score بقيمة 90، واطبع كلمة "Excellent" إذا كانت الدرجة أكبر من أو تساوي 80.',
+        hint: 'استخدم if (score >= 80) ثم اطبع النص باستخدام println.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        int score = 90;\n        // اكتب الشرط هنا\n    }\n}',
+        checks: [
+          { pattern: /\bint\s+score\s*=\s*90\s*;/, message: 'أنشئ score بقيمة 90.' },
+          { pattern: /if\s*\(\s*score\s*>=\s*80\s*\)/, message: 'اكتب شرط score >= 80.' },
+          { pattern: /System\.out\.println\s*\(\s*"Excellent"\s*\)\s*;/, message: 'اطبع كلمة Excellent.' }
+        ],
+        quiz: {
+          question: 'متى ينفذ الكود الموجود داخل if؟',
+          options: ['عندما يكون الشرط صحيحًا', 'دائمًا', 'عندما يكون الشرط خاطئًا فقط'],
+          answer: 0,
+          explanation: 'ينفذ الكود داخل if عندما تكون نتيجة الشرط true.'
+        }
+      },
+      {
+        id: 'java-3-2',
+        title: 'if و else',
+        intro: 'يمكن للبرنامج اختيار مسار بديل باستخدام else.',
+        explanation: 'تعمل if عند تحقق الشرط، أما else فتعمل عندما لا يتحقق الشرط.',
+        example: 'int score = 50;\nif (score >= 50) {\n    System.out.println("Pass");\n} else {\n    System.out.println("Try again");\n}',
+        task: 'أنشئ متغير temperature بقيمة 20. إذا كانت الحرارة أكبر من 25 اطبع "Hot"، وإلا اطبع "Cool".',
+        hint: 'اكتب if (temperature > 25) ثم أضف else للطباعة البديلة.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        int temperature = 20;\n        // اكتب if و else\n    }\n}',
+        checks: [
+          { pattern: /if\s*\(\s*temperature\s*>\s*25\s*\)/, message: 'اكتب شرط temperature > 25.' },
+          { pattern: /System\.out\.println\s*\(\s*"Hot"\s*\)\s*;/, message: 'اطبع Hot داخل if.' },
+          { pattern: /else\s*\{[\s\S]*?System\.out\.println\s*\(\s*"Cool"\s*\)\s*;/, message: 'أضف else واطبع Cool داخلها.' }
+        ],
+        quiz: {
+          question: 'ما وظيفة else؟',
+          options: ['تعريف متغير', 'تنفيذ بديل عند عدم تحقق الشرط', 'تكرار الكود'],
+          answer: 1,
+          explanation: 'تُستخدم else للمسار البديل عندما يكون شرط if غير صحيح.'
+        }
+      }
+    ]
+  },
+  {
+    id: 4,
+    title: 'الفصل الرابع: التكرار',
+    lessons: [
+      {
+        id: 'java-4-1',
+        title: 'حلقة for',
+        intro: 'تساعد الحلقات على تكرار الأوامر بدلًا من كتابتها عدة مرات.',
+        explanation: 'تتكون for عادةً من قيمة بداية وشرط واستمرار وتغيير يحدث بعد كل دورة.',
+        example: 'for (int i = 1; i <= 5; i++) {\n    System.out.println(i);\n}',
+        task: 'اكتب حلقة for تطبع الأرقام من 1 إلى 5.',
+        hint: 'ابدأ بـ int i = 1، واستمر ما دام i <= 5، ثم استخدم i++.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب حلقة for هنا\n    }\n}',
+        checks: [
+          { pattern: /for\s*\(\s*int\s+i\s*=\s*1\s*;\s*i\s*<=\s*5\s*;\s*i\+\+\s*\)/, message: 'اكتب حلقة for من 1 إلى 5.' },
+          { pattern: /System\.out\.println\s*\(\s*i\s*\)\s*;/, message: 'اطبع i داخل الحلقة.' }
+        ],
+        quiz: {
+          question: 'ما وظيفة i++؟',
+          options: ['إنقاص i بمقدار 1', 'زيادة i بمقدار 1', 'إنهاء البرنامج'],
+          answer: 1,
+          explanation: 'تزيد i++ قيمة المتغير بمقدار واحد.'
+        }
+      },
+      {
+        id: 'java-4-2',
+        title: 'حلقة while',
+        intro: 'تكرر while الأوامر طالما أن الشرط صحيح.',
+        explanation: 'يجب تحديث المتغير المستخدم في الشرط حتى يمكن أن تنتهي الحلقة عند تحقق شرط الإيقاف.',
+        example: 'int i = 1;\nwhile (i <= 3) {\n    System.out.println(i);\n    i++;\n}',
+        task: 'استخدم while لطباعة الأرقام من 1 إلى 3.',
+        hint: 'عرّف i بقيمة 1، ثم استخدم while (i <= 3) وزد i داخل الحلقة.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        int i = 1;\n        // اكتب حلقة while هنا\n    }\n}',
+        checks: [
+          { pattern: /while\s*\(\s*i\s*<=\s*3\s*\)/, message: 'اكتب شرط while وهو i <= 3.' },
+          { pattern: /System\.out\.println\s*\(\s*i\s*\)\s*;/, message: 'اطبع i داخل الحلقة.' },
+          { pattern: /i\+\+|i\s*\+=\s*1|i\s*=\s*i\s*\+\s*1/, message: 'زد i داخل الحلقة لتجنب التكرار المستمر.' }
+        ],
+        quiz: {
+          question: 'متى تتوقف حلقة while؟',
+          options: ['عندما يصبح الشرط غير صحيح', 'بعد دورة واحدة دائمًا', 'لا تتوقف أبدًا'],
+          answer: 0,
+          explanation: 'تستمر الحلقة ما دام الشرط صحيحًا، وتتوقف عندما يصبح غير صحيح.'
+        }
+      }
+    ]
+  },
+  {
+    id: 5,
+    title: 'الفصل الخامس: المصفوفات والنصوص',
+    lessons: [
+      {
+        id: 'java-5-1',
+        title: 'المصفوفات Arrays',
+        intro: 'المصفوفة تخزن مجموعة قيم من النوع نفسه تحت اسم واحد.',
+        explanation: 'يبدأ فهرس المصفوفة من الصفر؛ لذلك يكون أول عنصر عند الفهرس 0.',
+        example: 'int[] numbers = {10, 20, 30};\nSystem.out.println(numbers[0]);',
+        task: 'أنشئ مصفوفة numbers تحتوي على 10 و20 و30، ثم اطبع أول عنصر.',
+        hint: 'استخدم int[] numbers = {10, 20, 30}; ثم numbers[0].',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        // أنشئ المصفوفة واطبع أول عنصر\n    }\n}',
+        checks: [
+          { pattern: /int\s*\[\s*\]\s*numbers\s*=\s*\{\s*10\s*,\s*20\s*,\s*30\s*\}\s*;/, message: 'أنشئ المصفوفة بالأرقام المطلوبة.' },
+          { pattern: /System\.out\.println\s*\(\s*numbers\s*\[\s*0\s*\]\s*\)\s*;/, message: 'اطبع numbers[0].' }
+        ],
+        quiz: {
+          question: 'ما فهرس أول عنصر في المصفوفة؟',
+          options: ['1', '-1', '0'],
+          answer: 2,
+          explanation: 'تبدأ فهارس المصفوفات في Java من الصفر.'
+        }
+      },
+      {
+        id: 'java-5-2',
+        title: 'التعامل مع String',
+        intro: 'يستخدم String لتخزين النصوص، وتوفر Java طرقًا للتعامل معها.',
+        explanation: 'يمكن استخدام length لمعرفة عدد الأحرف، وtoUpperCase لتحويل الحروف الإنجليزية إلى أحرف كبيرة.',
+        example: 'String name = "Cody";\nSystem.out.println(name.length());\nSystem.out.println(name.toUpperCase());',
+        task: 'أنشئ String باسم name وقيمته "Cody"، ثم اطبع عدد أحرفه باستخدام length().',
+        hint: 'استخدم name.length() داخل System.out.println.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب الكود هنا\n    }\n}',
+        checks: [
+          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ المتغير name بقيمة Cody.' },
+          { pattern: /System\.out\.println\s*\(\s*name\.length\s*\(\s*\)\s*\)\s*;/, message: 'اطبع عدد الأحرف باستخدام name.length().' }
+        ],
+        quiz: {
+          question: 'ما وظيفة name.length()؟',
+          options: ['تحذف النص', 'تعطي عدد الأحرف', 'تحول النص إلى رقم'],
+          answer: 1,
+          explanation: 'تعيد length() عدد الأحرف في النص.'
+        }
+      }
+    ]
+  },
+  {
+    id: 6,
+    title: 'الفصل السادس: الدوال والكائنات',
+    lessons: [
+      {
+        id: 'java-6-1',
+        title: 'إنشاء الدوال Methods',
+        intro: 'الدالة تجمع أوامر يمكن استدعاؤها عند الحاجة.',
+        explanation: 'تساعد الدوال على تنظيم البرنامج وتقليل تكرار الكود. يمكن تعريف دالة static واستدعاؤها من main في الأمثلة البسيطة.',
+        example: 'public class Main {\n    static void greet() {\n        System.out.println("Hello");\n    }\n    public static void main(String[] args) {\n        greet();\n    }\n}',
+        task: 'أنشئ دالة static باسم greet تطبع "Hello"، ثم استدعها داخل main.',
+        hint: 'اكتب static void greet() ثم استدعِ greet(); داخل main.',
+        starter: 'public class Main {\n    // عرّف الدالة هنا\n\n    public static void main(String[] args) {\n        // استدع الدالة هنا\n    }\n}',
+        checks: [
+          { pattern: /static\s+void\s+greet\s*\(\s*\)/, message: 'عرّف الدالة static void greet().' },
+          { pattern: /System\.out\.println\s*\(\s*"Hello"\s*\)\s*;/, message: 'اطبع Hello داخل الدالة.' },
+          { pattern: /\bgreet\s*\(\s*\)\s*;/, message: 'استدع الدالة greet داخل main.' }
+        ],
+        quiz: {
+          question: 'لماذا نستخدم الدوال؟',
+          options: ['لتنظيم الكود وإعادة استخدامه', 'لإغلاق الكمبيوتر', 'لإلغاء المتغيرات'],
+          answer: 0,
+          explanation: 'تساعد الدوال على تنظيم الأوامر وإعادة استخدامها.'
+        }
+      },
+      {
+        id: 'java-6-2',
+        title: 'الكلاسات والكائنات',
+        intro: 'تسمح البرمجة الكائنية بتمثيل الأشياء باستخدام الكلاسات والكائنات.',
+        explanation: 'الكلاس يصف خصائص وسلوكًا، أما الكائن فهو نسخة يتم إنشاؤها من ذلك الكلاس.',
+        example: 'class Robot {\n    String name = "Cody";\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Robot bot = new Robot();\n        System.out.println(bot.name);\n    }\n}',
+        task: 'أنشئ كلاس Robot يحتوي على المتغير name بقيمة "Cody"، ثم أنشئ كائنًا منه.',
+        hint: 'اكتب class Robot، ثم Robot bot = new Robot();',
+        starter: 'class Robot {\n    String name = "Cody";\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // أنشئ كائن Robot هنا\n    }\n}',
+        checks: [
+          { pattern: /class\s+Robot\s*\{/, message: 'أنشئ الكلاس Robot.' },
+          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أضف name إلى الكلاس.' },
+          { pattern: /Robot\s+bot\s*=\s*new\s+Robot\s*\(\s*\)\s*;/, message: 'أنشئ الكائن bot من Robot.' }
+        ],
+        quiz: {
+          question: 'ما الكائن في Java؟',
+          options: ['نسخة من كلاس', 'نوع من التعليقات', 'علامة حسابية'],
+          answer: 0,
+          explanation: 'الكائن نسخة يتم إنشاؤها من الكلاس.'
+        }
+      }
+    ]
+  },
+  {
+    id: 7,
+    title: 'الفصل السابع: مفاهيم مهمة',
+    lessons: [
+      {
+        id: 'java-7-1',
+        title: 'المنشئ Constructor',
+        intro: 'المنشئ يساعد على إعداد الكائن عند إنشائه.',
+        explanation: 'يحمل المنشئ اسم الكلاس نفسه ولا يحدد نوع إرجاع. يمكنه استقبال قيم وتخزينها في خصائص الكائن.',
+        example: 'class Robot {\n    String name;\n    Robot(String n) {\n        name = n;\n    }\n}',
+        task: 'أنشئ كلاس Robot يحتوي على name ومنشئ يستقبل نصًا ويخزنه في name.',
+        hint: 'اكتب Robot(String n) ثم name = n; داخل المنشئ.',
+        starter: 'class Robot {\n    String name;\n    // اكتب المنشئ هنا\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Robot bot = new Robot("Cody");\n    }\n}',
+        checks: [
+          { pattern: /Robot\s*\(\s*String\s+n\s*\)/, message: 'أنشئ المنشئ Robot(String n).' },
+          { pattern: /name\s*=\s*n\s*;/, message: 'خزّن n في name.' },
+          { pattern: /new\s+Robot\s*\(\s*"Cody"\s*\)/, message: 'أنشئ كائنًا باستخدام الاسم Cody.' }
+        ],
+        quiz: {
+          question: 'متى يعمل المنشئ عادةً؟',
+          options: ['عند إنشاء كائن جديد', 'عند كتابة تعليق', 'عند حذف ملف'],
+          answer: 0,
+          explanation: 'يتم استدعاء المنشئ عند إنشاء كائن من الكلاس.'
+        }
+      },
+      {
+        id: 'java-7-2',
+        title: 'التعامل مع الأخطاء',
+        intro: 'قد تحدث أخطاء أثناء تشغيل البرنامج، وتساعد try وcatch على التعامل مع بعض الاستثناءات.',
+        explanation: 'يوضع الكود الذي قد ينتج عنه استثناء داخل try، بينما يحتوي catch على ما يجب فعله عند حدوث الاستثناء المحدد.',
+        example: 'try {\n    int number = Integer.parseInt("12");\n    System.out.println(number);\n} catch (NumberFormatException e) {\n    System.out.println("Invalid number");\n}',
+        task: 'اكتب try وcatch للتعامل مع NumberFormatException، واطبع "Invalid number" داخل catch.',
+        hint: 'استخدم catch (NumberFormatException e) ثم println للنص المطلوب.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        try {\n            int number = Integer.parseInt("12");\n        } catch (NumberFormatException e) {\n            // اطبع رسالة الخطأ هنا\n        }\n    }\n}',
+        checks: [
+          { pattern: /\btry\s*\{/, message: 'أضف كتلة try.' },
+          { pattern: /catch\s*\(\s*NumberFormatException\s+\w+\s*\)/, message: 'أضف catch لنوع NumberFormatException.' },
+          { pattern: /System\.out\.println\s*\(\s*"Invalid number"\s*\)\s*;/, message: 'اطبع Invalid number داخل catch.' }
+        ],
+        quiz: {
+          question: 'ما دور catch؟',
+          options: ['التعامل مع استثناء محدد', 'تعريف كلاس جديد دائمًا', 'تكرار الحلقة'],
+          answer: 0,
+          explanation: 'تستقبل catch الاستثناء المطابق لنوعه وتسمح بالتعامل معه.'
+        }
+      }
+    ]
+  },
+  {
+    id: 8,
+    title: 'الفصل الثامن: المشروع النهائي',
+    lessons: [
+      {
+        id: 'java-8-1',
+        title: 'بناء برنامج بسيط',
+        intro: 'حان وقت جمع المتغيرات والشروط والطباعة في برنامج واحد.',
+        explanation: 'يمكن للبرنامج تخزين اسم المتعلم ودرجته ثم استخدام شرط لعرض رسالة مناسبة.',
+        example: 'String name = "Cody";\nint score = 95;\nSystem.out.println("Student: " + name);\nif (score >= 50) {\n    System.out.println("Passed");\n}',
+        task: 'أنشئ name بقيمة "Cody" وscore بقيمة 95، ثم اطبع الاسم واستخدم شرطًا لطباعة "Passed" إذا كانت الدرجة 50 أو أكثر.',
+        hint: 'استخدم System.out.println("Student: " + name); ثم if (score >= 50).',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        String name = "Cody";\n        int score = 95;\n        // اطبع الاسم وأضف الشرط\n    }\n}',
+        checks: [
+          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ name بقيمة Cody.' },
+          { pattern: /int\s+score\s*=\s*95\s*;/, message: 'أنشئ score بقيمة 95.' },
+          { pattern: /System\.out\.println\s*\(\s*"Student:\s*"\s*\+\s*name\s*\)\s*;/, message: 'اطبع اسم المتعلم.' },
+          { pattern: /if\s*\(\s*score\s*>=\s*50\s*\)/, message: 'أضف شرط النجاح.' },
+          { pattern: /System\.out\.println\s*\(\s*"Passed"\s*\)\s*;/, message: 'اطبع Passed.' }
+        ],
+        quiz: {
+          question: 'ما المفاهيم التي يجمعها هذا المشروع؟',
+          options: ['المتغيرات والطباعة والشروط', 'التعليقات فقط', 'المصفوفات فقط'],
+          answer: 0,
+          explanation: 'يجمع المشروع المتغيرات والطباعة والشروط في برنامج واحد.'
+        }
+      },
+      {
+        id: 'java-8-2',
+        title: 'تحدي التخرج',
+        intro: 'طبّق ما تعلمته لبناء برنامج يعرض رسالة حسب الدرجة.',
+        explanation: 'راجع أنواع البيانات والطباعة والشروط، ثم جرّب تعديل القيم بنفسك. هذا التحدي يستخدم فحصًا نصيًا للكود وليس مترجم Java فعليًا.',
+        example: 'String name = "Cody";\nint score = 100;\nSystem.out.println("Hello, " + name);\nif (score >= 90) {\n    System.out.println("Excellent");\n} else {\n    System.out.println("Keep learning");\n}',
+        task: 'أنشئ name بقيمة "Cody" وscore بقيمة 100، واطبع رسالة ترحيب. إذا كانت الدرجة 90 أو أكثر اطبع "Excellent"، وإلا اطبع "Keep learning".',
+        hint: 'استخدم if (score >= 90) وelse، مع رسالة مختلفة في كل حالة.',
+        starter: 'public class Main {\n    public static void main(String[] args) {\n        String name = "Cody";\n        int score = 100;\n        // اكتب رسالة الترحيب والشرط\n    }\n}',
+        checks: [
+          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ name بقيمة Cody.' },
+          { pattern: /int\s+score\s*=\s*100\s*;/, message: 'أنشئ score بقيمة 100.' },
+          { pattern: /System\.out\.println\s*\(\s*"Hello,\s*"\s*\+\s*name\s*\)\s*;/, message: 'اطبع رسالة الترحيب مع الاسم.' },
+          { pattern: /if\s*\(\s*score\s*>=\s*90\s*\)/, message: 'أضف شرط الدرجة 90 أو أكثر.' },
+          { pattern: /System\.out\.println\s*\(\s*"Excellent"\s*\)\s*;/, message: 'اطبع Excellent عند تحقق الشرط.' },
+          { pattern: /else\s*\{[\s\S]*?System\.out\.println\s*\(\s*"Keep learning"\s*\)\s*;/, message: 'أضف else واطبع Keep learning.' }
+        ],
+        quiz: {
+          question: 'ما أفضل طريقة لتطوير مهارات البرمجة؟',
+          options: ['حفظ الكود دون فهمه', 'التطبيق والتجربة وتصحيح الأخطاء', 'تجنب كتابة الكود'],
+          answer: 1,
+          explanation: 'التطبيق المستمر وفهم الأخطاء يساعدان على تطوير مهارات البرمجة.'
+        }
+      }
+    ]
+  }
 ];
 
-// تحويل كل الدروس لقائمة واحدة
 const allLessons = CURRICULUM.flatMap(chapter =>
   chapter.lessons.map(lesson => ({
     ...lesson,
@@ -748,847 +1154,457 @@ const allLessons = CURRICULUM.flatMap(chapter =>
   }))
 );
 
-let currentLessonId = null;
-let editor = null;
-let completedLessons = readProgress();
+const PROGRESS_KEY = 'cody_java_progress';
+const XP_KEY = 'cody_java_xp';
 
 function readProgress() {
   try {
-    const saved = localStorage.getItem(PROGRESS_KEY);
-    return saved ? JSON.parse(saved) : [];
+    const data = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+    return new Set(Array.isArray(data) ? data : []);
   } catch {
-    return [];
+    return new Set();
   }
 }
 
+let completedLessons = readProgress();
+let currentLesson = null;
+let editor = null;
+let currentQuizAnswered = false;
+
 function getXP() {
-  return Number(localStorage.getItem(XP_KEY) || 0);
+  const value = Number(localStorage.getItem(XP_KEY) || 0);
+  return Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
 function addXP(amount) {
-  const newXP = getXP() + amount;
-  localStorage.setItem(XP_KEY, String(newXP));
-  updateStats();
+  const next = getXP() + amount;
+  localStorage.setItem(XP_KEY, String(next));
+  return next;
 }
 
 function saveProgress() {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(completedLessons));
-  updateStats();
-  renderSidebar();
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify([...completedLessons]));
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
 }
 
 function updateStats() {
-  const xpElement = document.getElementById("xpCount");
-  const progressElement = document.getElementById("progressCount");
-  const progressBar = document.getElementById("progressBar");
+  const xpCount = document.getElementById('xpCount');
+  const progressCount = document.getElementById('progressCount');
+  const progressBar = document.getElementById('progressBar');
+  const progressTrack = document.getElementById('progressTrack');
 
-  if (xpElement) {
-    xpElement.textContent = getXP();
-  }
+  const completed = allLessons.filter(lesson =>
+    completedLessons.has(lesson.id)
+  ).length;
 
-  const total = allLessons.length;
-  const completed = completedLessons.length;
-  const percentage = total ? Math.round((completed / total) * 100) : 0;
+  const percentage = allLessons.length
+    ? Math.round((completed / allLessons.length) * 100)
+    : 0;
 
-  if (progressElement) {
-    progressElement.textContent = `${completed}/${total}`;
+  if (xpCount) xpCount.textContent = getXP();
+  if (progressCoun 
+t) {
+    progressCount.textContent = `${completed} / ${allLessons.length}`;
   }
 
   if (progressBar) {
     progressBar.style.width = `${percentage}%`;
   }
-}
 
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, character => {
-    const entities = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    };
-
-    return entities[character];
-  });
-}
-
-function showNotice(message, type = "info") {
-  const notice = document.getElementById("notice");
-
-  if (!notice) {
-    alert(message);
-    return;
+  if (progressTrack) {
+    progressTrack.setAttribute('aria-valuenow', String(percentage));
   }
+}
+
+function showNotice(message, type = 'info') {
+  const notice = document.getElementById('notice');
+  if (!notice) return;
 
   notice.textContent = message;
-  notice.className = `notice notice-${type}`;
+  notice.dataset.type = type;
   notice.hidden = false;
 
   clearTimeout(showNotice.timer);
-
   showNotice.timer = setTimeout(() => {
     notice.hidden = true;
-  }, 3500);
+  }, 3000);
 }
 
-function findLesson(lessonId) {
-  return allLessons.find(lesson => lesson.id === lessonId);
+function findLesson(id) {
+  return allLessons.find(lesson => lesson.id === id);
 }
 
 function renderSidebar() {
-  const sidebar = document.getElementById("lessonList");
+  const list = document.getElementById('lessonList');
+  if (!list) return;
 
-  if (!sidebar) return;
+  list.innerHTML = CURRICULUM.map(chapter => `
+    <section class="lesson-chapter">
+      <h3>${escapeHTML(chapter.title)}</h3>
+      ${chapter.lessons.map(lesson => {
+        const completed = completedLessons.has(lesson.id);
+        const active = currentLesson?.id === lesson.id;
 
-  sidebar.innerHTML = CURRICULUM.map(chapter => {
-    const lessonsHTML = chapter.lessons.map(lesson => {
-      const isCompleted = completedLessons.includes(lesson.id);
-      const isActive = lesson.id === currentLessonId;
+        return `
+          <button
+            type="button"
+            class="lesson-item ${active ? 'active' : ''} ${completed ? 'completed' : ''}"
+            data-lesson-id="${escapeHTML(lesson.id)}"
+            aria-current="${active ? 'page' : 'false'}">
+            <span>${escapeHTML(lesson.title)}</span>
+            <span aria-hidden="true">${completed ? '✓' : '›'}</span>
+          </button>
+        `;
+      }).join('')}
+    </section>
+  `).join('');
 
-      return `
+  list.querySelectorAll('[data-lesson-id]').forEach(button => {
+    button.addEventListener('click', () => {
+      renderLesson(button.dataset.lessonId);
+    });
+  });
+}
+
+function setOutput(message, type = 'info') {
+  const output = document.getElementById('codeOutput');
+  if (!output) return;
+
+  output.textContent = message;
+  output.dataset.type = type;
+}
+
+function disposeEditor() {
+  if (editor && typeof editor.toTextArea === 'function') {
+    editor.toTextArea();
+  }
+
+  editor = null;
+}
+
+function getEditorCode() {
+  const textarea = document.getElementById('codeEditor');
+
+  if (editor) return editor.getValue();
+  return textarea ? textarea.value : '';
+}
+
+function setEditorCode(code) {
+  const textarea = document.getElementById('codeEditor');
+
+  if (editor) {
+    editor.setValue(code);
+    editor.refresh();
+  } else if (textarea) {
+    textarea.value = code;
+  }
+}
+
+function setupEditor() {
+  const textarea = document.getElementById('codeEditor');
+  if (!textarea) return;
+
+  disposeEditor();
+
+  if (window.CodeMirror) {
+    editor = window.CodeMirror.fromTextArea(textarea, {
+      mode: 'text/x-java',
+      theme: 'dracula',
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      lineWrapping: true,
+      matchBrackets: true,
+      autoCloseBrackets: true
+    });
+
+    editor.setSize('100%', 'auto');
+    editor.refresh();
+  } else {
+    textarea.value = currentLesson?.starter || '';
+  }
+}
+
+function renderQuiz(quiz) {
+  const container = document.getElementById('lessonQuiz');
+  const feedback = document.getElementById('quizFeedback');
+
+  if (!container) return;
+
+  if (feedback) {
+    feedback.textContent = '';
+    feedback.dataset.type = '';
+  }
+
+  if (!quiz) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <h3>${escapeHTML(quiz.question)}</h3>
+    <div class="quiz-options">
+      ${quiz.options.map((option, index) => `
         <button
           type="button"
-          class="lesson-item ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""}"
-          data-lesson-id="${escapeHTML(lesson.id)}"
-        >
-          <span class="lesson-status">
-            ${isCompleted ? "✓" : "○"}
-          </span>
-          <span class="lesson-name">${escapeHTML(lesson.title)}</span>
+          class="quiz-option"
+          data-answer="${index}">
+          ${escapeHTML(option)}
         </button>
-      `;
-    }).join("");
+      `).join('')}
+    </div>
+  `;
 
-    return `
-      <section class="chapter-group">
-        <h3 class="chapter-heading">
-          <span>${escapeHTML(chapter.title)}</span>
-          <span class="chapter-count">${chapter.lessons.length}</span>
-        </h3>
-        <div class="chapter-lessons">
-          ${lessonsHTML}
-        </div>
-      </section>
-    `;
-  }).join("");
+  container.querySelectorAll('[data-answer]').forEach(button => {
+    button.addEventListener('click', () => {
+      if (currentQuizAnswered) return;
 
-  sidebar.querySelectorAll("[data-lesson-id]").forEach(button => {
-    button.addEventListener("click", () => {
-      renderLesson(button.dataset.lessonId);
+      currentQuizAnswered = true;
+
+      const selected = Number(button.dataset.answer);
+      const correct = selected === quiz.answer;
+
+      container.querySelectorAll('[data-answer]').forEach(option => {
+        option.disabled = true;
+
+        if (Number(option.dataset.answer) === quiz.answer) {
+          option.classList.add('correct');
+        }
+      });
+
+      if (!correct) {
+        button.classList.add('incorrect');
+      }
+
+      if (feedback) {
+        feedback.textContent = correct
+          ? `إجابة صحيحة! ${quiz.explanation}`
+          : `الإجابة غير صحيحة. ${quiz.explanation}`;
+
+        feedback.dataset.type = correct ? 'success' : 'error';
+      }
     });
   });
 }
 
-function disposeEditor() {
-  if (editor) {
-    editor.toTextArea();
-    editor = null;
-  }
-}
-
-function renderLesson(lessonId) {
-  const lesson = findLesson(lessonId);
+function renderLesson(id) {
+  const lesson = findLesson(id);
 
   if (!lesson) {
-    showNotice("الدرس غير موجود.", "error");
+    showNotice('لم يتم العثور على الدرس.', 'error');
     return;
   }
 
-  currentLessonId = lessonId;
+  currentLesson = lesson;
+  currentQuizAnswered = false;
 
-  const title = document.getElementById("lessonTitle");
-  const chapter = document.getElementById("lessonChapter");
-  const intro = document.getElementById("lessonIntro");
-  const explanation = document.getElementById("lessonExplanation");
-  const example = document.getElementById("lessonExample");
-  const task = document.getElementById("lessonTask");
-  const hint = document.getElementById("lessonHint");
-  const quiz = document.getElementById("lessonQuiz");
-  const completeButton = document.getElementById("completeLesson");
+  const setText = (elementId, value) => {
+    const element = document.getElementById(elementId);
+    if (element) element.textContent = value;
+  };
 
-  if (title) title.textContent = lesson.title;
-  if (chapter) chapter.textContent = lesson.chapterTitle;
-  if (intro) intro.textContent = lesson.intro || "";
-  if (explanation) explanation.textContent = lesson.explanation || "";
+  setText('lessonChapter', lesson.chapterTitle);
+  setText('lessonTitle', lesson.title);
+  setText('lessonIntro', lesson.intro);
+  setText('lessonExplanation', lesson.explanation);
+  setText('lessonExample', lesson.example);
+  setText('lessonTask', lesson.task);
 
-  if (example) {
-    example.textContent = lesson.code || "";
-  }
-
-  if (task) {
-    task.textContent = lesson.task || "";
-  }
+  const hint = document.getElementById('lessonHint');
+  const hintButton = document.getElementById('showHint');
+  const completeButton = document.getElementById('completeLesson');
+  const previousButton = document.getElementById('previousLesson');
+  const nextButton = document.getElementById('nextLesson');
 
   if (hint) {
-    hint.textContent = lesson.hint || "";
+    hint.textContent = lesson.hint;
     hint.hidden = true;
   }
 
-  if (quiz) {
-    quiz.innerHTML = `
-      <p class="quiz-question">
-        ${escapeHTML(lesson.quiz?.question || "جرّب كتابة الكود المطلوب.")}
-      </p>
-      <p class="quiz-instruction">
-        اكتب الحل في المحرر ثم اضغط على «تحقق من الحل».
-      </p>
-    `;
-  }
+  if (hintButton) hintButton.textContent = 'عرض التلميح';
+
+  const index = allLessons.findIndex(item => item.id === lesson.id);
+
+  if (previousButton) previousButton.disabled = index <= 0;
+  if (nextButton) nextButton.disabled = index >= allLessons.length - 1;
 
   if (completeButton) {
-    const isCompleted = completedLessons.includes(lesson.id);
-
-    completeButton.textContent = isCompleted
-      ? "تم إكمال الدرس ✓"
-      : "إكمال الدرس";
-
-    completeButton.disabled = isCompleted;
+    completeButton.textContent = completedLessons.has(lesson.id)
+      ? 'تم إكمال الدرس ✓'
+      : 'إكمال الدرس';
   }
 
-  const codeInput = document.getElementById("codeEditor");
+  const textarea = document.getElementById('codeEditor');
+  if (textarea) textarea.value = lesson.starter;
 
-  if (codeInput) {
-    disposeEditor();
-    codeInput.value = lesson.starterCode || lesson.code || "";
-
-    if (window.CodeMirror) {
-      editor = CodeMirror.fromTextArea(codeInput, {
-        mode: "text/x-java",
-        theme: "dracula",
-        lineNumbers: true,
-        indentUnit: 4,
-        tabSize: 4,
-        lineWrapping: true,
-        autofocus: false
-      });
-    }
-  }
-
-  setOutput("اكتب الكود ثم اضغط «تحقق من الحل».");
+  renderQuiz(lesson.quiz);
+  setupEditor();
   renderSidebar();
   updateStats();
 
-  const content = document.getElementById("lessonContent");
-
-  if (content) {
-    content.scrollTop = 0;
-  }
-}
-
-function initializeEditor() {
-  const codeInput = document.getElementById("codeEditor");
-
-  if (!codeInput || !window.CodeMirror || editor) {
-    return;
-  }
-
-  editor = CodeMirror.fromTextArea(codeInput, {
-    mode: "text/x-java",
-    theme: "dracula",
-    lineNumbers: true,
-    indentUnit: 4,
-    tabSize: 4,
-    lineWrapping: true
-  });
-}
-
-function getEditorCode() {
-  if (editor) {
-    return editor.getValue();
-  }
-
-  const codeInput = document.getElementById("codeEditor");
-  return codeInput ? codeInput.value : "";
-}
-
-function setOutput(message, type = "info") {
-  const output = document.getElementById("codeOutput");
-
-  if (!output) return;
-
-  output.textContent = message;
-  output.className = `code-output output-${type}`;
+  setOutput(
+    'اكتب الكود ثم اضغط «فحص الكود». الفحص يتحقق من الأوامر المطلوبة ولا يشغّل Java فعليًا.'
+  );
 }
 
 function checkChallenge() {
-  const lesson = findLesson(currentLessonId);
+  if (!currentLesson) return;
 
-  if (!lesson) {
-    showNotice("اختار درس الأول.", "error");
+  const code = getEditorCode();
+
+  if (!code.trim()) {
+    setOutput('اكتب الكود أولًا ثم حاول مرة أخرى.', 'error');
     return;
   }
 
-  const code = getEditorCode().trim();
-
-  if (!code) {
-    setOutput("اكتب الكود الأول، وبعدها جرّب التحقق.", "error");
-    return;
-  }
-
-  if (!Array.isArray(lesson.checks) || lesson.checks.length === 0) {
-    setOutput(
-      "تم استلام الكود. التحقق هنا مبدئي، وليس تشغيلًا حقيقيًا للغة Java.",
-      "info"
-    );
-    return;
-  }
-
-  const failedCheck = lesson.checks.find(check => {
-    check.pattern.lastIndex = 0;
-    return !check.pattern.test(code);
-  });
-
-  if (failedCheck) {
-    setOutput(
-      `لسه فيه حاجة محتاجة تعديل. تلميح: ${failedCheck.message}`,
-      "error"
-    );
-    return;
-  }
-
-  setOutput("ممتاز! الكود اجتاز التحقق المبدئي. 🎉", "success");
-
-  if (!completedLessons.includes(lesson.id)) {
-    completedLessons.push(lesson.id);
-    saveProgress();
-    addXP(10);
-
-    const completeButton = document.getElementById("completeLesson");
-
-    if (completeButton) {
-      completeButton.textContent = "تم إكمال الدرس ✓";
-      completeButton.disabled = true;
+  for (const check of currentLesson.checks || []) {
+    if (!check.pattern.test(code)) {
+      setOutput(`لم يكتمل المطلوب بعد: ${check.message}`, 'error');
+      return;
     }
-
-    showNotice("أحسنت! حصلت على 10 نقاط خبرة.", "success");
   }
+
+  setOutput(
+    'ممتاز! الكود يحتوي على الأنماط المطلوبة. هذا فحص نصي فقط، وليس تشغيلًا فعليًا لبرنامج Java.',
+    'success'
+  );
 }
 
-function attachLessonEvents() {
-  const checkButton = document.getElementById("checkCode");
-  const hintButton = document.getElementById("showHint");
-  const completeButton = document.getElementById("completeLesson");
-  const resetButton = document.getElementById("resetCode");
-  const nextButton = document.getElementById("nextLesson");
-  const previousButton = document.getElementById("previousLesson");
+function completeCurrentLesson() {
+  if (!currentLesson) return;
 
-  if (checkButton) {
-    checkButton.addEventListener("click", checkChallenge);
+  if (completedLessons.has(currentLesson.id)) {
+    showNotice('هذا الدرس مكتمل بالفعل.', 'info');
+    return;
   }
 
-  if (hintButton) {
-    hintButton.addEventListener("click", () => {
-      const lesson = findLesson(currentLessonId);
-      const hint = document.getElementById("lessonHint");
+  completedLessons.add(currentLesson.id);
 
-      if (!lesson || !hint) return;
-
-      hint.textContent = lesson.hint || "راجع المثال الموجود في الدرس.";
-      hint.hidden = false;
-    });
+  try {
+    saveProgress();
+    addXP(20);
+  } catch (error) {
+    completedLessons.delete(currentLesson.id);
+    showNotice('تعذر حفظ التقدم. تحقق من إعدادات التخزين في المتصفح.', 'error');
+    return;
   }
+
+  updateStats();
+  renderSidebar();
+
+  const completeButton = document.getElementById('completeLesson');
 
   if (completeButton) {
-    completeButton.addEventListener("click", () => {
-      const lesson = findLesson(currentLessonId);
-
-      if (!lesson) return;
-
-      if (completedLessons.includes(lesson.id)) {
-        showNotice("الدرس ده مكتمل بالفعل.", "info");
-        return;
-      }
-
-      completedLessons.push(lesson.id);
-      saveProgress();
-      addXP(10);
-
-      completeButton.textContent = "تم إكمال الدرس ✓";
-      completeButton.disabled = true;
-
-      showNotice("تم إكمال الدرس وحصلت على 10 نقاط خبرة.", "success");
-    });
+    completeButton.textContent = 'تم إكمال الدرس ✓';
   }
 
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      const lesson = findLesson(currentLessonId);
-
-      if (!lesson) return;
-
-      const starterCode = lesson.starterCode || lesson.code || "";
-
-      if (editor) {
-        editor.setValue(starterCode);
-      } else {
-        const codeInput = document.getElementById("codeEditor");
-        if (codeInput) codeInput.value = starterCode;
-      }
-
-      setOutput("تمت إعادة الكود إلى بدايته.");
-    });
-  }
-
-  if (nextButton) {
-    nextButton.addEventListener("click", () => {
-      const index = allLessons.findIndex(
-        lesson => lesson.id === currentLessonId
-      );
-
-      if (index >= 0 && index < allLessons.length - 1) {
-        renderLesson(allLessons[index + 1].id);
-      } else {
-        showNotice("وصلت لآخر درس في المنهج. أحسنت!", "success");
-      }
-    });
-  }
-
-  if (previousButton) {
-    previousButton.addEventListener("click", () => {
-      const index = allLessons.findIndex(
-        lesson => lesson.id === currentLessonId
-      );
-
-      if (index > 0) {
-        renderLesson(allLessons[index - 1].id);
-      } else {
-        showNotice("ده أول درس في المنهج.", "info");
-      }
-    });
+  if (completedLessons.size === allLessons.length) {
+    showNotice('مبروك! تم إكمال جميع دروس منهج Java.', 'success');
+  } else {
+    showNotice('تم إكمال الدرس! حصلت على 20 XP.', 'success');
   }
 }
 
-function getInitialLesson() {
-  const firstIncomplete = allLessons.find(
-    lesson => !completedLessons.includes(lesson.id)
+function navigateLesson(direction) {
+  if (!currentLesson) return;
+
+  const index = allLessons.findIndex(
+    lesson => lesson.id === currentLesson.id
   );
 
-  return firstIncomplete || allLessons[0] || null;
-}
+  const nextIndex = index + direction;
 
-function startApp() {
-  if (!Array.isArray(CURRICULUM) || allLessons.length === 0) {
-    showNotice("المنهج مش موجود أو مفيهوش دروس.", "error");
-    return;
-  }
+  if (nextIndex < 0 || nextIndex >= allLessons.length) return;
 
-  attachLessonEvents();
-  updateStats();
-  renderSidebar();
-
-  const initialLesson = getInitialLesson();
-
-  if (initialLesson) {
-    renderLesson(initialLesson.id);
-  }
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", startApp);
-} else {
-  startApp();
-}
-System\.out\.println\s*\(\s*score\s*\)/,
-message: "اطبع قيمة score."
-}
-]
-}
-}
-];
-
-// تحويل كل الدروس لقائمة واحدة
-const allLessons = CURRICULUM.flatMap(chapter =>
-  chapter.lessons.map(lesson => ({
-    ...lesson,
-    chapterId: chapter.id,
-    chapterTitle: chapter.title
-  }))
-);
-
-let currentLessonId = null;
-let editor = null;
-let completedLessons = readProgress();
-
-function readProgress() {
-  try {
-    const saved = localStorage.getItem(PROGRESS_KEY);
-    return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
-  }
-}
-
-function getXP() {
-  return Number(localStorage.getItem(XP_KEY) || 0);
-}
-
-function addXP(amount) {
-  localStorage.setItem(XP_KEY, String(getXP() + amount));
-  updateStats();
-}
-
-function saveProgress() {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(completedLessons));
-  updateStats();
-  renderSidebar();
-}
-
-function updateStats() {
-  const xpElement = document.getElementById("xpCount");
-  const progressElement = document.getElementById("progressCount");
-  const progressBar = document.getElementById("progressBar");
-
-  if (xpElement) xpElement.textContent = getXP();
-
-  const total = allLessons.length;
-  const completed = completedLessons.length;
-  const percentage = total ? Math.round(completed / total * 100) : 0;
-
-  if (progressElement) {
-    progressElement.textContent = `${completed}/${total}`;
-  }
-
-  if (progressBar) {
-    progressBar.style.width = `${percentage}%`;
-  }
-}
-
-function escapeHTML(value) {
-  const entities = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  };
-
-  return String(value).replace(/[&<>"']/g, character => entities[character]);
-}
-
-function showNotice(message, type = "info") {
-  const notice = document.getElementById("notice");
-
-  if (!notice) {
-    alert(message);
-    return;
-  }
-
-  notice.textContent = message;
-  notice.className = `notice notice-${type}`;
-  notice.hidden = false;
-
-  clearTimeout(showNotice.timer);
-  showNotice.timer = setTimeout(() => {
-    notice.hidden = true;
-  }, 3500);
-}
-
-function findLesson(lessonId) {
-  return allLessons.find(lesson => lesson.id === lessonId);
-}
-
-function renderSidebar() {
-  const sidebar = document.getElementById("lessonList");
-  if (!sidebar) return;
-
-  sidebar.innerHTML = CURRICULUM.map(chapter => `
-    <section class="chapter-group">
-      <h3 class="chapter-heading">
-        <span>${escapeHTML(chapter.title)}</span>
-        <span class="chapter-count">${chapter.lessons.length}</span>
-      </h3>
-      <div class="chapter-lessons">
-        ${chapter.lessons.map(lesson => {
-          const done = completedLessons.includes(lesson.id);
-          const active = lesson.id === currentLessonId;
-
-          return `
-            <button
-              type="button"
-              class="lesson-item ${active ? "active" : ""} ${done ? "completed" : ""}"
-              data-lesson-id="${escapeHTML(lesson.id)}"
-            >
-              <span class="lesson-status">${done ? "✓" : "○"}</span>
-              <span class="lesson-name">${escapeHTML(lesson.title)}</span>
-            </button>
-          `;
-        }).join("")}
-      </div>
-    </section>
-  `).join("");
-
-  sidebar.querySelectorAll("[data-lesson-id]").forEach(button => {
-    button.addEventListener("click", () => {
-      renderLesson(button.dataset.lessonId);
-    });
-  });
-}
-
-function disposeEditor() {
-  if (editor) {
-    editor.toTextArea();
-    editor = null;
-  }
-}
-
-function renderLesson(lessonId) {
-  const lesson = findLesson(lessonId);
-
-  if (!lesson) {
-    showNotice("الدرس غير موجود.", "error");
-    return;
-  }
-
-  currentLessonId = lessonId;
-
-  const setText = (id, value) => {
-    const element = document.getElementById(id);
-    if (element) element.textContent = value || "";
-  };
-
-  setText("lessonTitle", lesson.title);
-  setText("lessonChapter", lesson.chapterTitle);
-  setText("lessonIntro", lesson.intro);
-  setText("lessonExplanation", lesson.explanation);
-  setText("lessonExample", lesson.code);
-  setText("lessonTask", lesson.task);
-
-  const hint = document.getElementById("lessonHint");
-
-  if (hint) {
-    hint.textContent = lesson.hint || "راجع المثال الموجود في الدرس.";
-    hint.hidden = true;
-  }
-
-  const quiz = document.getElementById("lessonQuiz");
-
-  if (quiz) {
-    quiz.innerHTML = `
-      <p class="quiz-question">
-        ${escapeHTML(lesson.quiz?.question || "جرّب كتابة الكود المطلوب.")}
-      </p>
-      <p class="quiz-instruction">
-        اكتب الحل في المحرر ثم اضغط على «تحقق من الحل».
-      </p>
-    `;
-  }
-
-  const completeButton = document.getElementById("completeLesson");
-  const isCompleted = completedLessons.includes(lesson.id);
-
-  if (completeButton) {
-    completeButton.textContent = isCompleted
-      ? "تم إكمال الدرس ✓"
-      : "إكمال الدرس";
-    completeButton.disabled = isCompleted;
-  }
-
-  const codeInput = document.getElementById("codeEditor");
-
-  if (codeInput) {
-    disposeEditor();
-    codeInput.value = lesson.starterCode || lesson.code || "";
-
-    if (window.CodeMirror) {
-      editor = CodeMirror.fromTextArea(codeInput, {
-        mode: "text/x-java",
-        theme: "dracula",
-        lineNumbers: true,
-        indentUnit: 4,
-        tabSize: 4,
-        lineWrapping: true
-      });
-    }
-  }
-
-  setOutput("اكتب الكود ثم اضغط «تحقق من الحل».");
-  renderSidebar();
-  updateStats();
-
-  const content = document.getElementById("lessonContent");
-  if (content) content.scrollTop = 0;
-}
-
-function getEditorCode() {
-  if (editor) return editor.getValue();
-
-  const codeInput = document.getElementById("codeEditor");
-  return codeInput ? codeInput.value : "";
-}
-
-function setOutput(message, type = "info") {
-  const output = document.getElementById("codeOutput");
-  if (!output) return;
-
-  output.textContent = message;
-  output.className = `code-output output-${type}`;
-}
-
-function checkChallenge() {
-  const lesson = findLesson(currentLessonId);
-
-  if (!lesson) {
-    showNotice("اختار درس الأول.", "error");
-    return;
-  }
-
-  const code = getEditorCode().trim();
-
-  if (!code) {
-    setOutput("اكتب الكود الأول، وبعدها جرّب التحقق.", "error");
-    return;
-  }
-
-  if (!Array.isArray(lesson.checks) || lesson.checks.length === 0) {
-    setOutput(
-      "تم استلام الكود. التحقق هنا مبدئي، وليس تشغيلًا حقيقيًا للغة Java.",
-      "info"
-    );
-    return;
-  }
-
-  const failedCheck = lesson.checks.find(check => {
-    check.pattern.lastIndex = 0;
-    return !check.pattern.test(code);
-  });
-
-  if (failedCheck) {
-    setOutput(`لسه فيه حاجة محتاجة تعديل. تلميح: ${failedCheck.message}`, "error");
-    return;
-  }
-
-  setOutput("ممتاز! الكود اجتاز التحقق المبدئي. 🎉", "success");
-
-  if (!completedLessons.includes(lesson.id)) {
-    completedLessons.push(lesson.id);
-    saveProgress();
-    addXP(10);
-
-    const completeButton = document.getElementById("completeLesson");
-
-    if (completeButton) {
-      completeButton.textContent = "تم إكمال الدرس ✓";
-      completeButton.disabled = true;
-    }
-
-    showNotice("أحسنت! حصلت على 10 نقاط خبرة.", "success");
-  }
+  renderLesson(allLessons[nextIndex].id);
 }
 
 function attachLessonEvents() {
-  const checkButton = document.getElementById("checkCode");
-  const hintButton = document.getElementById("showHint");
-  const completeButton = document.getElementById("completeLesson");
-  const resetButton = document.getElementById("resetCode");
-  const nextButton = document.getElementById("nextLesson");
-  const previousButton = document.getElementById("previousLesson");
-
-  if (checkButton) {
-    checkButton.addEventListener("click", checkChallenge);
-  }
+  const hintButton = document.getElementById('showHint');
+  const checkButton = document.getElementById('checkCode');
+  const resetButton = document.getElementById('resetCode');
+  const completeButton = document.getElementById('completeLesson');
+  const previousButton = document.getElementById('previousLesson');
+  const nextButton = document.getElementById('nextLesson');
 
   if (hintButton) {
-    hintButton.addEventListener("click", () => {
-      const lesson = findLesson(currentLessonId);
-      const hint = document.getElementById("lessonHint");
+    hintButton.addEventListener('click', () => {
+      const hint = document.getElementById('lessonHint');
+      if (!hint) return;
 
-      if (!lesson || !hint) return;
+      hint.hidden = !hint.hidden;
+      hintButton.textContent = hint.hidden
+        ? 'عرض التلميح'
+        : 'إخفاء التلميح';
+    });
+  }
 
-      hint.textContent = lesson.hint || "راجع المثال الموجود في الدرس.";
-      hint.hidden = false;
+  if (checkButton) {
+    checkButton.addEventListener('click', checkChallenge);
+  }
+
+  if (resetButton) {
+    resetButton.addEventListener('click', () => {
+      if (!currentLesson) return;
+
+      setEditorCode(currentLesson.starter);
+      setOutput('تمت إعادة الكود إلى نقطة البداية.');
     });
   }
 
   if (completeButton) {
-    completeButton.addEventListener("click", () => {
-      const lesson = findLesson(currentLessonId);
-      if (!lesson) return;
-
-      if (completedLessons.includes(lesson.id)) {
-        showNotice("الدرس ده مكتمل بالفعل.", "info");
-        return;
-      }
-
-      completedLessons.push(lesson.id);
-      saveProgress();
-      addXP(10);
-
-      completeButton.textContent = "تم إكمال الدرس ✓";
-      completeButton.disabled = true;
-
-      showNotice("تم إكمال الدرس وحصلت على 10 نقاط خبرة.", "success");
-    });
-  }
-
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      const lesson = findLesson(currentLessonId);
-      if (!lesson) return;
-
-      const starterCode = lesson.starterCode || lesson.code || "";
-
-      if (editor) {
-        editor.setValue(starterCode);
-      } else {
-        const codeInput = document.getElementById("codeEditor");
-        if (codeInput) codeInput.value = starterCode;
-      }
-
-      setOutput("تمت إعادة الكود إلى بدايته.");
-    });
-  }
-
-  if (nextButton) {
-    nextButton.addEventListener("click", () => {
-      const index = allLessons.findIndex(lesson => lesson.id === currentLessonId);
-
-      if (index >= 0 && index < allLessons.length - 1) {
-        renderLesson(allLessons[index + 1].id);
-      } else {
-        showNotice("وصلت لآخر درس في المنهج. أحسنت!", "success");
-      }
-    });
+    completeButton.addEventListener('click', completeCurrentLesson);
   }
 
   if (previousButton) {
-    previousButton.addEventListener("click", () => {
-      const index = allLessons.findIndex(lesson => lesson.id === currentLessonId);
+    previousButton.addEventListener('click', () => navigateLesson(-1));
+  }
 
-      if (index > 0) {
-        renderLesson(allLessons[index - 1].id);
-      } else {
-        showNotice("ده أول درس في المنهج.", "info");
-      }
-    });
+  if (nextButton) {
+    nextButton.addEventListener('click', () => navigateLesson(1));
   }
 }
 
 function getInitialLesson() {
-  return allLessons.find(lesson => !completedLessons.includes(lesson.id))
-    || allLessons[0]
-    || null;
+  const params = new URLSearchParams(window.location.search);
+  const requestedId = params.get('lesson');
+
+  if (requestedId && findLesson(requestedId)) {
+    return requestedId;
+  }
+
+  const firstIncomplete = allLessons.find(
+    lesson => !completedLessons.has(lesson.id)
+  );
+
+  return firstIncomplete?.id || allLessons[0]?.id;
 }
 
 function startApp() {
-  if (!Array.isArray(CURRICULUM) || allLessons.length === 0) {
-    showNotice("المنهج مش موجود أو مفيهوش دروس.", "error");
+  if (!allLessons.length) {
+    showNotice('لا توجد دروس متاحة حاليًا.', 'error');
     return;
   }
 
   attachLessonEvents();
   updateStats();
-  renderSidebar();
-
-  const initialLesson = getInitialLesson();
-
-  if (initialLesson) {
-    renderLesson(initialLesson.id);
-  }
+  renderLesson(getInitialLesson());
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", startApp);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp, { once: true });
 } else {
   startApp();
 }
+</script>
+</body>
+</html>
