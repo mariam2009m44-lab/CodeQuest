@@ -468,6 +468,7 @@ int main() {
     function showToast(message, type = "success") {
       toastElement.textContent = message;
       toastElement.className = `toast show ${type}`;
+
       clearTimeout(toastTimer);
 
       toastTimer = setTimeout(() => {
@@ -536,11 +537,27 @@ int main() {
       return true;
     }
 
-    async function loadCurrentProject() {
-      currentUser = await requireUser();
+    function redirectToLogin() {
+      sessionStorage.setItem("playgroundCode", editor.getValue());
+      sessionStorage.setItem("playgroundLang", getLanguage());
 
-      if (!currentUser) {
-        setSaveStatus("سجّلي الدخول لحفظ المشروعات");
+      const loginUrl = new URL("login.html", window.location.href);
+      loginUrl.searchParams.set("next", "playground.html");
+
+      window.location.replace(loginUrl.href);
+    }
+
+    async function loadCurrentProject() {
+      try {
+        currentUser = await requireUser();
+      } catch (error) {
+        console.warn("Authentication required:", error);
+        redirectToLogin();
+        return;
+      }
+
+      if (!currentUser?.uid) {
+        redirectToLogin();
         return;
       }
 
@@ -554,6 +571,7 @@ int main() {
 
             if (data.userId !== currentUser.uid) {
               showToast("المشروع ده مش تابع لحسابك.", "error");
+
               currentProjectId = "";
               sessionStorage.removeItem("currentProjectId");
               sessionStorage.removeItem("currentProjectName");
@@ -566,8 +584,11 @@ int main() {
 
               languageSelect.value = lang;
               editor.setOption("mode", languageModes[lang]);
+
               editor.setValue(
-                typeof data.code === "string" ? data.code : examples[lang]
+                typeof data.code === "string"
+                  ? data.code
+                  : examples[lang]
               );
 
               sessionStorage.setItem("currentProjectName", currentProjectName);
@@ -608,7 +629,7 @@ int main() {
     }
 
     async function saveProject(showMessage = true) {
-      if (!currentUser) {
+      if (!currentUser?.uid) {
         showToast("سجّلي الدخول الأول علشان تحفظي المشروع.", "error");
         return false;
       }
@@ -616,6 +637,7 @@ int main() {
       if (isSaving) return false;
 
       const data = getProjectData();
+
       if (!validateProjectData(data)) return false;
 
       isSaving = true;
@@ -662,13 +684,20 @@ int main() {
         updateProjectLabel();
         setSaveStatus("تم الحفظ");
 
-        if (showMessage) showToast("اتحفظ المشروع بنجاح ✓");
+        if (showMessage) {
+          showToast("اتحفظ المشروع بنجاح ✓");
+        }
 
         return true;
       } catch (error) {
         console.error("Project save error:", error);
         setSaveStatus("لم يتم الحفظ");
-        showToast(error.message || "حصلت مشكلة أثناء حفظ المشروع.", "error");
+
+        showToast(
+          error.message || "حصلت مشكلة أثناء حفظ المشروع.",
+          "error"
+        );
+
         return false;
       } finally {
         isSaving = false;
@@ -680,7 +709,7 @@ int main() {
       sessionStorage.setItem("playgroundCode", editor.getValue());
       sessionStorage.setItem("playgroundLang", getLanguage());
 
-      if (!currentProjectId || !currentUser) {
+      if (!currentProjectId || !currentUser?.uid) {
         setSaveStatus("التعديلات محفوظة في المتصفح فقط");
         return;
       }
@@ -708,6 +737,7 @@ int main() {
       if (typeof value !== "string" || !value) return "";
 
       const binary = atob(value.trim());
+
       const bytes = Uint8Array.from(
         binary,
         character => character.charCodeAt(0)
@@ -723,234 +753,259 @@ int main() {
     async function runCode() {
       if (isRunning) return;
 
-      const language = getLanguage();
       const code = editor.getValue();
+      const language = getLanguage();
 
       if (!code.trim()) {
-        setOutput("اكتبي الكود الأول وبعدها شغليه.", "error");
-        return;
-      }
-
-      if (code.length > 50000) {
-        setOutput("حجم الكود أكبر من الحد المسموح به.", "error");
-        return;
-      }
-
-      if (!currentUser) {
-        setOutput("سجّلي الدخول الأول علشان تشغّلي الكود.", "error");
+        showToast("اكتبي الكود الأول علشان نشغّله.", "error");
         return;
       }
 
       isRunning = true;
       runBtn.disabled = true;
-saveBtn.disabled = true;
-runBtn.textContent = "جاري التشغيل...";
-setOutput("جاري إرسال الكود إلى خدمة التشغيل...");
-
-  const controller = new AbortController();
-  const timeoutMs = 30000;
-  const startedAt = Date.now();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(
-      "https://ce.judge0.com/submissions?base64_encoded=true&wait=false",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source_code: encodeBase64Utf8(code),
-          language_id: judge0LanguageIds[language],
-          stdin: encodeBase64Utf8("")
-        }),
-        signal: controller.signal
-      }
-    );
-
-    const submitted = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      throw new Error(
-        submitted?.message ||
-        submitted?.error ||
-        `خدمة التشغيل رفضت الطلب: HTTP ${response.status}`
-      );
-    }
-
-    if (!submitted?.token) {
-      throw new Error("خدمة التشغيل لم تُرجع رقم متابعة للطلب.");
-    }
-
-    let result = null;
-
-    while (Date.now() - startedAt < timeoutMs) {
-      if (controller.signal.aborted) {
-        throw new DOMException("انتهت مهلة التشغيل.", "AbortError");
-      }
-
-      await sleep(800);
-
-      const pollResponse = await fetch(
-        `https://ce.judge0.com/submissions/${encodeURIComponent(submitted.token)}?base64_encoded=true`,
-        { signal: controller.signal }
-      );
-
-      const pollData = await pollResponse.json().catch(() => null);
-
-      if (!pollResponse.ok) {
-        throw new Error(
-          pollData?.message ||
-          pollData?.error ||
-          `تعذّر جلب النتيجة: HTTP ${pollResponse.status}`
-        );
-      }
-
-      result = pollData;
-
-      if (result?.status?.id !== 1 && result?.status?.id !== 2) {
-        break;
-      }
-
-      setOutput("الكود في قائمة الانتظار أو قيد التشغيل... برجاء الانتظار.");
-    }
-
-    if (!result || result.status?.id === 1 || result.status?.id === 2) {
-      throw new DOMException("انتهت مهلة التشغيل.", "AbortError");
-    }
-
-    const decodeField = value => {
-      if (typeof value !== "string" || !value) return "";
+      runBtn.textContent = "جاري التشغيل...";
+      setOutput("جاري تجهيز الكود للتشغيل...");
 
       try {
-        return decodeBase64Utf8(value);
-      } catch {
-        return value;
+        // JavaScript runs locally in a restricted Worker.
+        if (language === "javascript") {
+          await runJavaScript(code);
+          return;
+        }
+
+        // Python and C++ use the public Judge0 API.
+        const response = await fetch(
+          "https://ce.judge0.com/submissions?base64_encoded=true&wait=false",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              source_code: encodeBase64Utf8(code),
+              language_id: judge0LanguageIds[language],
+              stdin: encodeBase64Utf8("")
+            })
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("خدمة تشغيل الكود غير متاحة حاليًا.");
+        }
+
+        const submission = await response.json();
+
+        if (!submission.token) {
+          throw new Error("لم يتم استلام رقم تشغيل من الخدمة.");
+        }
+
+        let result = null;
+
+        for (let attempt = 0; attempt < 20; attempt++) {
+          await sleep(1000);
+
+          const resultResponse = await fetch(
+            `https://ce.judge0.com/submissions/${encodeURIComponent(submission.token)}?base64_encoded=true&fields=stdout,stderr,compile_output,message,status`,
+            { method: "GET" }
+          );
+
+          if (!resultResponse.ok) {
+            throw new Error("تعذّر الحصول على نتيجة التشغيل.");
+          }
+
+          result = await resultResponse.json();
+
+          if (
+            result.status &&
+            ![1, 2].includes(result.status.id)
+          ) {
+            break;
+          }
+        }
+
+        if (!result || !result.status || [1, 2].includes(result.status.id)) {
+          setOutput(
+            "التشغيل أخذ وقتًا أطول من المتوقع. جرّبي مرة أخرى.",
+            "error"
+          );
+          return;
+        }
+
+        const outputText = [
+          result.stdout ? decodeBase64Utf8(result.stdout) : "",
+          result.stderr ? decodeBase64Utf8(result.stderr) : "",
+          result.compile_output
+            ? decodeBase64Utf8(result.compile_output)
+            : "",
+          result.message || ""
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const successful = result.status.id === 3;
+
+        setOutput(
+          outputText ||
+            (successful
+              ? "تم التشغيل بنجاح، لكن الكود لم يُنتج أي مخرجات."
+              : `انتهى التشغيل: ${result.status.description || "حدث خطأ"}`),
+          successful ? "normal" : "error"
+        );
+
+      } catch (error) {
+        console.error("Code execution error:", error);
+        setOutput(
+          error.message || "حصل خطأ أثناء تشغيل الكود.",
+          "error"
+        );
+      } finally {
+        isRunning = false;
+        runBtn.disabled = false;
+        runBtn.textContent = "تشغيل الكود";
       }
-    };
-
-    const stdout = decodeField(result.stdout);
-    const compileOutput = decodeField(result.compile_output);
-    const stderr = decodeField(result.stderr);
-    const message = decodeField(result.message);
-    const statusId = result.status?.id;
-    const statusDescription = result.status?.description || "";
-
-    const parts = [stdout, compileOutput, stderr, message]
-      .filter(value => value && value.trim());
-
-    if (statusId === 5) {
-      setOutput(
-        [...parts, "انتهى الوقت المسموح لتشغيل الكود."]
-          .filter(Boolean).join("\n"),
-        "error"
-      );
-      return;
     }
 
-    if (statusId >= 6) {
-      setOutput(
-        [...parts, statusDescription].filter(Boolean).join("\n") ||
-          "حدث خطأ أثناء ترجمة الكود أو تشغيله.",
-        "error"
-      );
-      return;
+    function runJavaScript(code) {
+      return new Promise(resolve => {
+        const workerCode = `
+          self.onmessage = function(event) {
+            const code = event.data;
+            const logs = [];
+
+            const safeString = value => {
+              if (typeof value === "string") return value;
+              try {
+                return JSON.stringify(value);
+              } catch {
+                return String(value);
+              }
+            };
+
+            const console = {
+              log: (...args) => logs.push(args.map(safeString).join(" ")),
+              info: (...args) => logs.push(args.map(safeString).join(" ")),
+              warn: (...args) => logs.push("[تحذير] " + args.map(safeString).join(" ")),
+              error: (...args) => logs.push("[خطأ] " + args.map(safeString).join(" "))
+            };
+
+            try {
+              const execute = new Function("console", '"use strict";\\n' + code);
+              execute(console);
+              self.postMessage({ ok: true, output: logs.join("\\\\n") });
+            } catch (error) {
+              self.postMessage({
+                ok: false,
+                output: error && error.stack ? error.stack : String(error)
+              });
+            }
+          };
+        `;
+
+        const blob = new Blob([workerCode], {
+          type: "application/javascript"
+        });
+
+        const workerUrl = URL.createObjectURL(blob);
+        const worker = new Worker(workerUrl);
+
+        const timeout = setTimeout(() => {
+          worker.terminate();
+          URL.revokeObjectURL(workerUrl);
+          setOutput("انتهى وقت التشغيل. راجعي الكود وحاولي مرة أخرى.", "error");
+          resolve();
+        }, 5000);
+
+        worker.onmessage = event => {
+          clearTimeout(timeout);
+          worker.terminate();
+          URL.revokeObjectURL(workerUrl);
+
+          const result = event.data;
+
+          setOutput(
+            result.output ||
+              (result.ok
+                ? "تم التشغيل بنجاح، لكن الكود لم يُنتج أي مخرجات."
+                : "حدث خطأ أثناء تشغيل الكود."),
+            result.ok ? "normal" : "error"
+          );
+
+          resolve();
+        };
+
+        worker.onerror = () => {
+          clearTimeout(timeout);
+          worker.terminate();
+          URL.revokeObjectURL(workerUrl);
+          setOutput("حدث خطأ أثناء تشغيل JavaScript.", "error");
+          resolve();
+        };
+
+        worker.postMessage(code);
+      });
     }
 
-    if (parts.length) {
-      setOutput(
-        [...parts, statusDescription ? `الحالة: ${statusDescription}` : ""]
-          .filter(Boolean).join("\n")
-      );
-    } else {
-      setOutput(
-        `انتهى التشغيل.\nالحالة: ${statusDescription || "تم التنفيذ دون مخرجات."}`
-      );
+    function changeLanguage() {
+      const language = getLanguage();
+
+      editor.setOption("mode", languageModes[language]);
+
+      const currentCode = editor.getValue().trim();
+
+      if (!currentCode) {
+        editor.setValue(examples[language]);
+      }
+
+      sessionStorage.setItem("playgroundLang", language);
+      setOutput("اختاري «تشغيل الكود» لعرض النتيجة.", "placeholder");
+      scheduleAutoSave();
+      editor.refresh();
     }
-  } catch (error) {
-    console.error("Code execution error:", error);
 
-    if (error.name === "AbortError") {
-      setOutput(
-        "استغرق التشغيل أكثر من 30 ثانية أو انتهت مهلة الاتصال. جرّبي مرة أخرى بعد قليل.",
-        "error"
+    function resetExample() {
+      const confirmed = window.confirm(
+        "هل تريدين استبدال الكود الحالي بالمثال الافتراضي؟"
       );
-    } else if (error instanceof TypeError) {
-      setOutput(
-        "تعذّر الاتصال بخدمة Judge0. تحققي من الإنترنت؛ وقد تكون الخدمة غير متاحة أو تمنع الاتصال من المتصفح.",
-        "error"
-      );
-    } else {
-      setOutput(
-        error.message || "حدث خطأ غير متوقع أثناء تشغيل الكود.",
-        "error"
-      );
+
+      if (!confirmed) return;
+
+      editor.setValue(examples[getLanguage()]);
+      setOutput("تمت استعادة المثال. شغّلي الكود لمشاهدة النتيجة.", "placeholder");
+      scheduleAutoSave();
+      showToast("تمت استعادة المثال.");
     }
-  } finally {
-    clearTimeout(timeoutId);
-    isRunning = false;
-    runBtn.disabled = false;
-    saveBtn.disabled = false;
-    runBtn.textContent = "تشغيل الكود";
-  }
-}
 
-languageSelect.addEventListener("change", () => {
-  const language = getLanguage();
+    function clearOutput() {
+      setOutput("تم مسح النتيجة.", "placeholder");
+    }
 
-  editor.setOption("mode", languageModes[language]);
-  sessionStorage.setItem("playgroundLang", language);
-  setOutput("تم تغيير لغة البرمجة. شغّلي الكود لعرض النتيجة.");
-});
+    runBtn.addEventListener("click", runCode);
 
-editor.on("change", scheduleAutoSave);
+    saveBtn.addEventListener("click", async () => {
+      await saveProject(true);
+    });
 
-saveBtn.addEventListener("click", async () => {
-  const name = prompt(
-    "اكتبي اسم المشروع:",
-    currentProjectName || "مشروعي الجديد"
-  );
+    resetBtn.addEventListener("click", resetExample);
+    $("clearOutputBtn").addEventListener("click", clearOutput);
+    languageSelect.addEventListener("change", changeLanguage);
 
-  if (name === null) return;
+    editor.on("change", () => {
+      if (!currentUser) {
+        sessionStorage.setItem("playgroundCode", editor.getValue());
+        return;
+      }
 
-  const trimmedName = name.trim();
+      scheduleAutoSave();
+    });
 
-  if (!trimmedName) {
-    showToast("اكتبي اسمًا للمشروع.", "error");
-    return;
-  }
+    window.addEventListener("beforeunload", event => {
+      if (isSaving) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    });
 
-  currentProjectName = trimmedName;
-  await saveProject(true);
-});
-
-runBtn.addEventListener("click", runCode);
-
-resetBtn.addEventListener("click", () => {
-  const savedCode = sessionStorage.getItem("playgroundCode");
-
-  if (savedCode !== null) {
-    editor.setValue(savedCode);
-    setOutput("تمت استعادة آخر نسخة محفوظة في المتصفح.");
-  } else {
-    editor.setValue(examples[getLanguage()]);
-    setOutput("تمت استعادة مثال اللغة المختارة.");
-  }
-});
-
-$("clearOutputBtn").addEventListener("click", () => {
-  setOutput("تم مسح نافذة النتائج.");
-});
-
-window.addEventListener("beforeunload", () => {
-  sessionStorage.setItem("playgroundCode", editor.getValue());
-  sessionStorage.setItem("playgroundLang", getLanguage());
-});
-
-loadCurrentProject().catch(error => {
-  console.error("Project loading error:", error);
-  setSaveStatus("تعذّر تحميل المشروع");
-});
-
+    loadCurrentProject();
   </script>
 </body>
 </html>
