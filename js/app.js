@@ -1,5 +1,5 @@
 
-import { db } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import {
   logoutUser,
   requireUser,
@@ -19,23 +19,15 @@ function showToast(message, type = "info") {
     container.id = "toast-container";
     container.setAttribute("role", "status");
     container.setAttribute("aria-live", "polite");
-    container.style.cssText = [
-      "position:fixed",
-      "bottom:20px",
-      "left:20px",
-      "z-index:9999",
-      "display:flex",
-      "flex-direction:column",
-      "gap:10px",
-      "max-width:calc(100vw - 40px)"
-    ].join(";");
-
+    container.style.cssText =
+      "position:fixed;bottom:20px;left:20px;z-index:9999;" +
+      "display:flex;flex-direction:column;gap:10px;" +
+      "max-width:calc(100vw - 40px)";
     document.body.appendChild(container);
   }
 
   const toast = document.createElement("div");
-
-  const backgrounds = {
+  const colors = {
     error: "#e74c3c",
     warning: "#f39c12",
     success: "#2ecc71",
@@ -43,114 +35,86 @@ function showToast(message, type = "info") {
   };
 
   toast.setAttribute("role", type === "error" ? "alert" : "status");
-
-  toast.style.cssText = [
-    "padding:12px 20px",
-    "border-radius:12px",
-    "color:#fff",
-    "font-size:14px",
-    "font-weight:600",
-    "box-shadow:0 8px 20px rgba(0,0,0,0.15)",
-    "overflow-wrap:anywhere",
-    `background:${backgrounds[type] || backgrounds.info}`
-  ].join(";");
+  toast.style.cssText =
+    "padding:12px 20px;border-radius:12px;color:white;" +
+    "font-size:14px;font-weight:600;overflow-wrap:anywhere;" +
+    `background:${colors[type] || colors.info}`;
 
   toast.textContent = String(message);
   container.appendChild(toast);
 
   window.setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transition = "opacity 0.3s ease";
+    toast.remove();
 
-    window.setTimeout(() => {
-      toast.remove();
-
-      if (container.childElementCount === 0) {
-        container.remove();
-      }
-    }, 300);
+    if (!container.childElementCount) {
+      container.remove();
+    }
   }, 3500);
 }
 
 function setText(selector, value) {
-  const element = document.querySelector(selector);
-
-  if (element) {
-    element.textContent = String(value);
-  }
+  document.querySelectorAll(selector).forEach(element => {
+    element.textContent = String(value ?? 0);
+  });
 }
 
-function toSafeNumber(value) {
+function safeNumber(value) {
   const number = Number(value);
-
-  if (!Number.isFinite(number) || number < 0) {
-    return 0;
-  }
-
-  return number;
-}
-
-function setProgress(selector, value) {
-  const progress = Math.max(
-    0,
-    Math.min(100, toSafeNumber(value))
-  );
-
-  const bar = document.querySelector(selector);
-
-  if (!bar) return;
-
-  const fill = bar.querySelector(".course-progress-fill");
-
-  if (fill) {
-    fill.style.width = `${progress}%`;
-  }
-
-  bar.setAttribute("role", "progressbar");
-  bar.setAttribute("aria-valuemin", "0");
-  bar.setAttribute("aria-valuemax", "100");
-  bar.setAttribute("aria-valuenow", String(progress));
-
-  const card = bar.closest(".course-card");
-  const label = card?.querySelector(".course-progress-info strong");
-
-  if (label) {
-    label.textContent = `${progress}%`;
-  }
+  return Number.isFinite(number) && number >= 0 ? number : 0;
 }
 
 function getLoginRedirectUrl() {
   const currentPage =
     window.location.pathname.split("/").pop() || "dashboard.html";
 
-  const isValidPage = /^[a-zA-Z0-9_-]+\.html$/.test(currentPage);
-
-  const nextPage = isValidPage
-    ? currentPage + window.location.search
+  const safePage = /^[a-zA-Z0-9_-]+\.html$/.test(currentPage)
+    ? currentPage
     : "dashboard.html";
 
-  return `login.html?next=${encodeURIComponent(nextPage)}`;
+  const next = safePage + window.location.search;
+  return `login.html?next=${encodeURIComponent(next)}`;
+}
+
+function setProgress(selector, value) {
+  const percentage = Math.max(0, Math.min(100, safeNumber(value)));
+
+  document.querySelectorAll(selector).forEach(bar => {
+    const fill = bar.querySelector(".course-progress-fill");
+
+    if (fill) {
+      fill.style.width = `${percentage}%`;
+    }
+
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", "100");
+    bar.setAttribute("aria-valuenow", String(percentage));
+
+    const label = bar
+      .closest(".course-card")
+      ?.querySelector(".course-progress-info strong");
+
+    if (label) {
+      label.textContent = `${percentage}%`;
+    }
+  });
 }
 
 export const App = {
   user: "متعلم",
   xp: 0,
   coins: 0,
+  currentUid: null,
   unsubscribeProfile: null,
   initPromise: null,
-  currentUid: null,
 
   init() {
-    if (this.initPromise) {
-      return this.initPromise;
+    if (!this.initPromise) {
+      this.initPromise = this.initialize().catch(error => {
+        console.error("App initialization error:", error);
+        this.initPromise = null;
+      });
     }
-
-    this.initPromise = this.initialize();
-
-    this.initPromise.catch(error => {
-      console.error("App initialization error:", error);
-      this.initPromise = null;
-    });
 
     return this.initPromise;
   },
@@ -166,15 +130,15 @@ export const App = {
     } catch (error) {
       console.error("Authentication verification failed:", error);
 
-      if (!window.location.pathname.endsWith("/login.html")) {
-        window.location.replace(getLoginRedirectUrl());
+      if (!location.pathname.endsWith("/login.html")) {
+        location.replace(getLoginRedirectUrl());
       }
 
       return;
     }
 
     if (!user?.uid) {
-      window.location.replace(getLoginRedirectUrl());
+      location.replace(getLoginRedirectUrl());
       return;
     }
 
@@ -182,190 +146,145 @@ export const App = {
       await ensureUserProfile(user);
 
       this.unsubscribeProfile?.();
-      this.unsubscribeProfile = null;
       this.currentUid = user.uid;
 
-      const profileReference = doc(db, "users", user.uid);
-
       this.unsubscribeProfile = onSnapshot(
-        profileReference,
+        doc(db, "users", user.uid),
         snapshot => {
           if (!snapshot.exists()) {
-            showToast(
-              "لم يتم العثور على بيانات حسابك. أعيدي تحميل الصفحة.",
-              "warning"
-            );
+            showToast("ملف الحساب غير موجود.", "error");
             return;
           }
 
           const data = snapshot.data();
 
           this.user =
-            data.displayName ||
-            user.displayName ||
-            "متعلم";
-
-          this.xp = toSafeNumber(data.xp);
-          this.coins = toSafeNumber(data.coins);
+            data.displayName || user.displayName || "متعلم";
+          this.xp = safeNumber(data.xp);
+          this.coins = safeNumber(data.coins);
 
           this.updateUI(data);
         },
         error => {
           console.error("Profile subscription error:", error);
-
-          showToast(
-            "تعذر تحديث بيانات حسابك. تحققي من الاتصال والصلاحيات.",
-            "error"
-          );
+          showToast("تعذر تحديث بيانات الحساب.", "error");
         }
       );
     } catch (error) {
       console.error("Profile initialization error:", error);
-
-      showToast(
-        "تعذر تحميل ملفك الشخصي. حاولي تحديث الصفحة.",
-        "error"
-      );
+      showToast("تعذر تحميل ملفك الشخصي.", "error");
     }
-  },
-
-  toSafeNumber(value) {
-    return toSafeNumber(value);
-  },
-
-  bindLogout() {
-    document
-      .querySelectorAll(".logout, #logoutButton")
-      .forEach(element => {
-        if (element.dataset.logoutBound === "true") {
-          return;
-        }
-
-        element.dataset.logoutBound = "true";
-
-        element.addEventListener("click", async event => {
-          event.preventDefault();
-
-          if (element.dataset.logoutPending === "true") {
-            return;
-          }
-
-          element.dataset.logoutPending = "true";
-          element.setAttribute("aria-busy", "true");
-
-          try {
-            await logoutUser();
-          } catch (error) {
-            console.error("Logout error:", error);
-
-            delete element.dataset.logoutPending;
-            element.removeAttribute("aria-busy");
-
-            showToast(
-              "تعذر تسجيل الخروج. حاولي مرة أخرى.",
-              "error"
-            );
-          }
-        });
-      });
   },
 
   updateUI(data = {}) {
     const level = Math.floor(this.xp / 100) + 1;
+    const xpInLevel = this.xp % 100;
 
     setText(".js-user-name", this.user);
     setText(".js-user-xp", this.xp);
     setText(".js-user-coins", this.coins);
     setText(".js-user-level", level);
+    setText("#userLevel", level);
+    setText("#currentXP", xpInLevel);
+
+    const progressBar = document.getElementById("xpProgressBar");
+
+    if (progressBar) {
+      progressBar.style.width = `${xpInLevel}%`;
+    }
 
     setText(
       ".js-completed-lessons",
-      toSafeNumber(data.completedLessons)
+      safeNumber(data.completedLessons)
     );
-
     setText(
       ".js-completed-projects",
-      toSafeNumber(data.completedProjects)
+      safeNumber(data.completedProjects)
     );
-
     setText(
       ".js-learning-streak",
-      toSafeNumber(data.streak)
+      safeNumber(data.streak)
     );
 
-    const progress =
-      data.languageProgress &&
-      typeof data.languageProgress === "object"
-        ? data.languageProgress
-        : {};
+    const progress = data.languageProgress || {};
 
-    if (Object.prototype.hasOwnProperty.call(progress, "python")) {
-      setProgress(
-        ".course-python .course-progress",
-        progress.python
-      );
+    if (progress.python !== undefined) {
+      setProgress(".course-python .course-progress", progress.python);
     }
 
-    if (
-      Object.prototype.hasOwnProperty.call(
-        progress,
-        "javascript"
-      )
-    ) {
+    if (progress.javascript !== undefined) {
       setProgress(
         ".course-javascript .course-progress",
         progress.javascript
       );
     }
 
-    if (Object.prototype.hasOwnProperty.call(progress, "cpp")) {
-      setProgress(
-        ".course-cpp .course-progress",
-        progress.cpp
-      );
+    if (progress.cpp !== undefined) {
+      setProgress(".course-cpp .course-progress", progress.cpp);
     }
+  },
+
+  bindLogout() {
+    document.querySelectorAll(".logout, #logoutButton").forEach(element => {
+      if (element.dataset.logoutBound === "true") return;
+
+      element.dataset.logoutBound = "true";
+
+      element.addEventListener("click", async event => {
+        event.preventDefault();
+
+        if (element.dataset.logoutPending === "true") return;
+
+        element.dataset.logoutPending = "true";
+        element.setAttribute("aria-busy", "true");
+
+        try {
+          await logoutUser();
+          location.replace("login.html");
+        } catch (error) {
+          console.error("Logout error:", error);
+          delete element.dataset.logoutPending;
+          element.removeAttribute("aria-busy");
+          showToast("تعذر تسجيل الخروج. حاولي مرة أخرى.", "error");
+        }
+      });
+    });
   },
 
   highlightNav() {
     const current =
-      window.location.pathname.split("/").pop() || "index.html";
+      location.pathname.split("/").pop() || "index.html";
 
-    document
-      .querySelectorAll(".nav-link, .mobile-nav a, .nav-item")
-      .forEach(link => {
-        const href = link.getAttribute("href");
+    document.querySelectorAll(
+      ".nav-link, .mobile-nav a, .nav-item, .mobile-nav-item"
+    ).forEach(link => {
+      const href = link.getAttribute("href");
+      if (!href || href === "#") return;
 
-        if (!href || href === "#") {
-          return;
+      try {
+        const destination = new URL(href, location.href)
+          .pathname.split("/").pop();
+
+        const active = destination === current;
+        link.classList.toggle("active", active);
+
+        if (active) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
         }
-
-        try {
-          const destination = new URL(
-            href,
-            window.location.href
-          ).pathname.split("/").pop();
-
-          const isActive = destination === current;
-
-          link.classList.toggle("active", isActive);
-
-          if (isActive) {
-            link.setAttribute("aria-current", "page");
-          } else {
-            link.removeAttribute("aria-current");
-          }
-        } catch (error) {
-          console.warn("Invalid navigation link:", href, error);
-        }
-      });
+      } catch {
+        // تجاهل روابط التنقل غير الصالحة.
+      }
+    });
   },
 
   addXP() {
-    throw new Error("النقاط تُمنح من الخادم فقط.");
+    throw new Error("لا يمكن منح نقاط الخبرة من المتصفح.");
   },
 
   addCoins() {
-    throw new Error("العملات لا تُعدل من المتصفح.");
+    throw new Error("لا يمكن تعديل العملات من المتصفح.");
   },
 
   destroy() {
@@ -379,15 +298,9 @@ export const App = {
 if (document.readyState === "loading") {
   document.addEventListener(
     "DOMContentLoaded",
-    () => {
-      App.init().catch(error => {
-        console.error("App initialization error:", error);
-      });
-    },
+    () => App.init(),
     { once: true }
   );
 } else {
-  App.init().catch(error => {
-    console.error("App initialization error:", error);
-  });
+  App.init();
 }
