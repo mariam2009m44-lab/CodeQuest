@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#7955E8">
+  <meta name="description" content="Cody Academy — تعلّم البرمجة والعب واكتشف عالم الإبداع خطوة بخطوة.">
   <title>Cody | أكاديمية البرمجة للأطفال</title>
+
   <link rel="stylesheet" href="css/landing.css">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
@@ -15,9 +18,9 @@
 
       <div class="nav-links">
         <a class="active" href="index.html">الرئيسية</a>
-        <a href="languages.html">المسارات</a>
-        <a href="games.html">الألعاب</a>
-        <a href="projects.html">المشاريع</a>
+        <a href="languages.html" data-protected>المسارات</a>
+        <a href="games.html" data-protected>الألعاب</a>
+        <a href="projects.html" data-protected>المشاريع</a>
         <a href="#about">حول كودي</a>
       </div>
 
@@ -40,7 +43,7 @@
           من خلال الألعاب التفاعلية والتحديات والمشاريع الحقيقية.
         </p>
 
-        <a href="signup.html" class="primary-button">
+        <a href="login.html?next=dashboard.html" class="primary-button">
           ابدأ رحلتك <span>←</span>
         </a>
 
@@ -77,6 +80,7 @@
           <div class="antenna"></div>
           <div class="ear left"></div>
           <div class="ear right"></div>
+
           <div class="head">
             <div class="eye left"></div>
             <div class="eye right"></div>
@@ -84,12 +88,15 @@
             <div class="cheek right"></div>
             <div class="smile"></div>
           </div>
+
           <div class="arm left"></div>
           <div class="arm right"></div>
+
           <div class="body-bot">
             <div class="chest-code">&lt;/&gt;</div>
           </div>
         </div>
+
         <div class="floating-game">🎮</div>
       </div>
     </section>
@@ -106,28 +113,36 @@
             <div class="card-icon">🗺️</div>
             <h3>المسارات</h3>
             <p>اختار مسارك المناسب وتعلّم خطوة بخطوة مع كودي.</p>
-            <a class="card-link" href="languages.html">استكشف المسارات ←</a>
+            <a class="card-link" href="languages.html" data-protected>
+              استكشف المسارات ←
+            </a>
           </article>
 
           <article class="card">
             <div class="card-icon">💻</div>
             <h3>محرر الأكواد</h3>
             <p>اكتب أكوادك وجرّبها بنفسك في بيئة تعلّم بسيطة.</p>
-            <a class="card-link" href="playground.html">ابدأ البرمجة ←</a>
+            <a class="card-link" href="playground.html" data-protected>
+              ابدأ البرمجة ←
+            </a>
           </article>
 
           <article class="card" id="games">
             <div class="card-icon">🎮</div>
             <h3>الألعاب</h3>
             <p>تعلّم من خلال ألعاب وتحديات ممتعة تنمّي مهاراتك.</p>
-            <a class="card-link" href="games.html">جرّب الألعاب ←</a>
+            <a class="card-link" href="games.html" data-protected>
+              جرّب الألعاب ←
+            </a>
           </article>
 
           <article class="card" id="projects">
             <div class="card-icon">🚀</div>
             <h3>المشاريع</h3>
             <p>حوّل أفكارك إلى مشاريع صغيرة وشارك إبداعك.</p>
-            <a class="card-link" href="projects.html">اكتشف المشاريع ←</a>
+            <a class="card-link" href="projects.html" data-protected>
+              اكتشف المشاريع ←
+            </a>
           </article>
         </div>
       </div>
@@ -137,11 +152,15 @@
       <div class="section-heading">
         <h2>أهلًا بك في عالم كودي 💙</h2>
       </div>
+
       <p>
         هنا كل فكرة ممكن تتحول إلى مشروع، وكل تحدٍ فرصة تتعلّم منها.
         ابدأ من مستواك، وتقدّم خطوة بخطوة، واكتشف متعة صناعة التكنولوجيا.
       </p>
-      <a href="signup.html" class="primary-button">هيا نبدأ! ←</a>
+
+      <a href="login.html?next=dashboard.html" class="primary-button">
+        هيا نبدأ! ←
+      </a>
     </section>
   </main>
 
@@ -150,5 +169,70 @@
       Cody Coding Academy · نتعلّم اليوم لنصنع أفكار الغد ✨
     </div>
   </footer>
+
+  <script type="module">
+    import { auth } from "./js/firebase-config.js";
+    import { onAuthStateChanged } from
+      "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    const protectedLinks = document.querySelectorAll("a[data-protected]");
+    const protectedPages = new Set([
+      "languages.html",
+      "games.html",
+      "projects.html",
+      "playground.html"
+    ]);
+
+    let currentUser = null;
+    let authInitialized = false;
+    let resolveAuthReady;
+
+    const authReady = new Promise(resolve => {
+      resolveAuthReady = resolve;
+    });
+
+    onAuthStateChanged(auth, user => {
+      currentUser = user;
+
+      if (!authInitialized) {
+        authInitialized = true;
+        resolveAuthReady();
+      }
+    });
+
+    function getDestination(link) {
+      const url = new URL(link.href, window.location.href);
+      const page = url.pathname.split("/").pop();
+
+      if (!protectedPages.has(page)) {
+        return null;
+      }
+
+      return `${page}${url.search}${url.hash}`;
+    }
+
+    protectedLinks.forEach(link => {
+      link.addEventListener("click", async event => {
+        const destination = getDestination(link);
+
+        if (!destination) {
+          return;
+        }
+
+        event.preventDefault();
+        await authReady;
+
+        if (currentUser) {
+          window.location.assign(link.href);
+          return;
+        }
+
+        const loginUrl = new URL("login.html", window.location.href);
+        loginUrl.searchParams.set("next", destination);
+
+        window.location.assign(loginUrl.href);
+      });
+    });
+  </script>
 </body>
 </html>
