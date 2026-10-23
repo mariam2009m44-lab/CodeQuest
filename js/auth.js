@@ -1,4 +1,3 @@
-
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -73,7 +72,8 @@ export function authError(error) {
     "unavailable": "الخدمة غير متاحة حاليًا."
   };
 
-  return messages[error?.code] || "حدث خطأ غير متوقع. حاولي مرة أخرى.";
+  return messages[error?.code] ||
+    "حدث خطأ غير متوقع. حاولي مرة أخرى.";
 }
 
 function normalizeError(error) {
@@ -203,6 +203,7 @@ export function requireUser() {
 
     const finish = callback => value => {
       if (settled) return;
+
       settled = true;
       unsubscribe();
       callback(value);
@@ -217,7 +218,9 @@ export function requireUser() {
         if (user) {
           resolveOnce(user);
         } else {
-          rejectOnce(new Error("يجب تسجيل الدخول أولًا."));
+          rejectOnce(
+            new Error("يجب تسجيل الدخول أولًا.")
+          );
         }
       },
       error => rejectOnce(normalizeError(error))
