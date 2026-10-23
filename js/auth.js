@@ -1,148 +1,247 @@
 
-import { auth, db } from "./firebase-config.js";
 import {
-  setPersistence,
-  browserLocalPersistence,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  updateProfile,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import {
-  doc,
-  runTransaction,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  loginUser,
+  registerUser,
+  resetPassword,
+  authError
+} from "./auth.js";
 
-await setPersistence(auth, browserLocalPersistence);
+const form =
+  document.getElementById("loginForm") ||
+  document.getElementById("signupForm");
 
-export const authReady = new Promise((resolve, reject) => {
-  let unsubscribe;
-  unsubscribe = onAuthStateChanged(
-    auth,
-    user => {
-      unsubscribe?.();
-      resolve(user);
-    },
-    reject
-  );
-});
-
-export function authError(error) {
-  const messages = {
-    "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
-    "auth/email-already-in-use": "البريد الإلكتروني مستخدم بالفعل.",
-    "auth/weak-password": "كلمة المرور ضعيفة.",
-    "auth/invalid-credential": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
-    "auth/too-many-requests": "محاولات كثيرة. انتظري قليلًا ثم أعيدي المحاولة.",
-    "permission-denied": "صلاحيات قاعدة البيانات لا تسمح بهذه العملية."
-  };
-
-  return messages[error?.code] || "تعذر تنفيذ العملية. حاولي مرة أخرى.";
+if (!form) {
+  console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
+} else {
+  initializeAuthPage(form);
 }
 
-function validateEmail(email) {
-  const value = String(email || "").trim();
+function initializeAuthPage(form) {
+  const isSignup = form.id === "signupForm";
 
-  if (value.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-    throw new Error("اكتبي بريدًا إلكترونيًا صحيحًا.");
+  const submitButton = form.querySelector('[type="submit"]');
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const nameInput = document.getElementById("name");
+  const resetButton = document.getElementById("resetPassword");
+
+  const params = new URLSearchParams(window.location.search);
+
+  const allowedPages = new Set([
+    "dashboard.html",
+    "languages.html",
+    "levels.html",
+    "lecture.html",
+    "playground.html",
+    "profile.html",
+    "games.html",
+    "projects.html",
+    "achievements.html"
+  ]);
+
+  function getNextPage() {
+    const requestedPage = params.get("next") || "dashboard.html";
+
+    try {
+      const url = new URL(
+        requestedPage,
+        window.location.origin
+      );
+
+      const page = url.pathname.split("/").pop();
+
+      const isSameOrigin =
+        url.origin === window.location.origin;
+
+      const isAllowedPage = allowedPages.has(page);
+
+      const hasValidPath =
+        !url.pathname.includes("\\") &&
+        !url.pathname.includes("/../") &&
+        !url.pathname.startsWith("//");
+
+      if (
+        isSameOrigin &&
+        isAllowedPage &&
+        hasValidPath
+      ) {
+        return page + url.search + url.hash;
+      }
+    } catch (error) {
+      console.warn("عنوان الصفحة التالية غير صالح.");
+    }
+
+    return "dashboard.html";
   }
 
-  return value;
-}
+  if (!emailInput || !passwordInput || !submitButton) {
+    console.error(
+      "نموذج الحساب يحتاج إلى حقول البريد وكلمة المرور وزر الإرسال."
+    );
+    return;
+  }
 
-export async function ensureUserProfile(user, displayName = "") {
-  const reference = doc(db, "users", user.uid);
+  emailInput.autocomplete = "email";
+  emailInput.required = true;
 
-  await runTransaction(db, async transaction => {
-    const snapshot = await transaction.get(reference);
+  passwordInput.autocomplete = isSignup
+    ? "new-password"
+    : "current-password";
 
-    if (snapshot.exists()) return;
+  passwordInput.required = true;
 
-    const name = String(displayName || user.displayName || "متعلم")
-      .trim()
-      .slice(0, 50);
+  if (isSignup && nameInput) {
+    nameInput.autocomplete = "nickname";
+    nameInput.maxLength = 50;
+    nameInput.required = true;
+  }
 
-    transaction.set(reference, {
-      displayName: name || "متعلم",
-      currentLang: "python",
-      knowledge: "beginner",
-      onboardingComplete: false,
-      weeklyGoal: 3,
-      theme: "dark",
-      notifications: false,
-      xp: 0,
-      coins: 0,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
+  let message = document.getElementById("authMessage");
+
+  if (!message) {
+    message = document.createElement("p");
+    message.id = "authMessage";
+    message.setAttribute("role", "status");
+    message.setAttribute("aria-live", "polite");
+
+    message.style.cssText = [
+      "margin-top:16px",
+      "font-size:14px",
+      "line-height:1.8",
+      "overflow-wrap:anywhere"
+    ].join(";");
+
+    form.insertAdjacentElement("afterend", message);
+  }
+
+  function displayMessage(text, isError = false) {
+    message.textContent = text;
+
+    message.style.color = isError
+      ? "#b91c1c"
+      : "#166534";
+
+    message.setAttribute(
+      "role",
+      isError ? "alert" : "status"
+    );
+  }
+
+  function getErrorMessage(error) {
+    if (error?.code) {
+      return authError(error);
+    }
+
+    return error?.message || "حدث خطأ غير متوقع. حاولي مرة أخرى.";
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    if (
+      !form.reportValidity() ||
+      submitButton.disabled
+    ) {
+      return;
+    }
+
+    const originalButtonText = submitButton.textContent;
+
+    submitButton.disabled = true;
+    submitButton.setAttribute("aria-busy", "true");
+    submitButton.textContent = "جارٍ التحقق...";
+
+    displayMessage("");
+
+    try {
+      if (isSignup) {
+        if (!nameInput) {
+          throw new Error("حقل الاسم غير موجود في نموذج التسجيل.");
+        }
+
+        await registerUser(
+          nameInput.value,
+          emailInput.value,
+          passwordInput.value
+        );
+      } else {
+        await loginUser(
+          emailInput.value,
+          passwordInput.value
+        );
+      }
+
+      displayMessage("تم التحقق بنجاح. جارٍ فتح حسابك.");
+
+      window.location.replace(getNextPage());
+    } catch (error) {
+      console.error("Authentication form error:", error);
+
+      displayMessage(
+        getErrorMessage(error),
+        true
+      );
+    } finally {
+      submitButton.disabled = false;
+      submitButton.removeAttribute("aria-busy");
+      submitButton.textContent = originalButtonText;
+    }
   });
 
-  return reference;
-}
+  if (resetButton && !isSignup) {
+    resetButton.addEventListener("click", async event => {
+      event.preventDefault();
 
-export async function registerUser(name, email, password) {
-  const displayName = String(name || "").trim();
+      if (resetButton.dataset.pending === "true") {
+        return;
+      }
 
-  if (displayName.length < 2 || displayName.length > 50) {
-    throw new Error("الاسم المستعار من حرفين إلى 50 حرفًا.");
+      const originalText = resetButton.textContent;
+
+      resetButton.dataset.pending = "true";
+      resetButton.setAttribute("aria-busy", "true");
+
+      if ("disabled" in resetButton) {
+        resetButton.disabled = true;
+      }
+
+      resetButton.textContent = "جارٍ إرسال الطلب...";
+
+      try {
+        const email = emailInput.value.trim();
+
+        if (!email) {
+          displayMessage(
+            "اكتبي بريدك الإلكتروني أولًا.",
+            true
+          );
+
+          emailInput.focus();
+          return;
+        }
+
+        await resetPassword(email);
+
+        displayMessage(
+          "لو البريد الإلكتروني مسجل، هتوصلك رسالة لإعادة تعيين كلمة المرور."
+        );
+      } catch (error) {
+        console.error("Password reset error:", error);
+
+        displayMessage(
+          getErrorMessage(error),
+          true
+        );
+      } finally {
+        delete resetButton.dataset.pending;
+        resetButton.removeAttribute("aria-busy");
+
+        if ("disabled" in resetButton) {
+          resetButton.disabled = false;
+        }
+
+        resetButton.textContent = originalText;
+      }
+    });
   }
-
-  if (typeof password !== "string" || password.length < 6) {
-    throw new Error("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");
-  }
-
-  const cleanEmail = validateEmail(email);
-
-  const credential = await createUserWithEmailAndPassword(
-    auth,
-    cleanEmail,
-    password
-  );
-
-  await updateProfile(credential.user, { displayName });
-  await ensureUserProfile(credential.user, displayName);
-
-  return credential.user;
-}
-
-export async function loginUser(email, password) {
-  const cleanEmail = validateEmail(email);
-
-  const credential = await signInWithEmailAndPassword(
-    auth,
-    cleanEmail,
-    password
-  );
-
-  await ensureUserProfile(credential.user);
-
-  return credential.user;
-}
-
-export async function resetPassword(email) {
-  await sendPasswordResetEmail(auth, validateEmail(email));
-}
-
-export async function requireUser() {
-  const user = await authReady;
-
-  if (!user) {
-    const currentPage = location.pathname.split("/").pop();
-    const next = currentPage && /^[a-zA-Z0-9_-]+\.html$/.test(currentPage)
-      ? currentPage + location.search
-      : "dashboard.html";
-
-    location.replace(`login.html?next=${encodeURIComponent(next)}`);
-    throw new Error("يجب تسجيل الدخول.");
-  }
-
-  return user;
-}
-
-export async function logoutUser() {
-  await signOut(auth);
-  location.replace("index.html");
 }
