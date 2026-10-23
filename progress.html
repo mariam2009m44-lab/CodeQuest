@@ -1,101 +1,334 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقدمي | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { background: var(--bg-deep); padding: var(--space-l); }
-        .container { max-width: 900px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
-        .header h1 { font-size: 2rem; color: var(--text-primary); }
-        
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-m); }
-        .card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-l); }
-        
-        .gauge-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .gauge { width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--primary) 65%, var(--border-soft) 0); display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: var(--space-m); }
-        .gauge::before { content: ''; position: absolute; width: 120px; height: 120px; background: var(--bg-panel); border-radius: 50%; }
-        .gauge-value { position: relative; font-size: 2rem; font-weight: 900; color: var(--text-primary); }
-        
-        .chart-container { height: 200px; display: flex; align-items: flex-end; justify-content: space-between; padding-top: var(--space-m); }
-        .bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 12%; }
-        .bar { width: 100%; background: var(--primary); border-radius: var(--radius-button) var(--radius-button) 0 0; transition: height 1s ease; }
-        .bar-label { font-size: 0.8rem; color: var(--text-muted); }
-        
-        .stats-list { display: flex; flex-direction: column; gap: var(--space-s); margin-top: var(--space-m); }
-        .stat-row { display: flex; justify-content: space-between; padding: 15px; background: var(--bg-deep); border-radius: var(--radius-button); border: 1px solid var(--border-soft); color: var(--text-primary); font-weight: 600; }
-        
-        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090d19">
+  <title>تقدمي | CodeQuest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body {
+      background: var(--bg-deep);
+      padding: var(--space-l);
+      font-family: Cairo, sans-serif;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-xl);
+    }
+
+    .header h1 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-m);
+    }
+
+    .card {
+      min-width: 0;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-card);
+      padding: var(--space-l);
+    }
+
+    .card h3 {
+      color: var(--text-secondary);
+      margin-bottom: 18px;
+    }
+
+    .gauge-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .gauge {
+      width: 156px;
+      height: 156px;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) 0%, var(--border-soft) 0);
+      display: grid;
+      place-items: center;
+      position: relative;
+      margin: 10px 0 18px;
+    }
+
+    .gauge::before {
+      content: "";
+      position: absolute;
+      width: 124px;
+      height: 124px;
+      background: var(--bg-panel);
+      border-radius: 50%;
+    }
+
+    .gauge-value {
+      position: relative;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--text-primary);
+    }
+
+    .muted {
+      color: var(--text-muted);
+      font-size: .9rem;
+      line-height: 1.8;
+    }
+
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-s);
+      margin-top: var(--space-m);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      background: var(--bg-deep);
+      border-radius: var(--radius-button);
+      border: 1px solid var(--border-soft);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .stat-row span:last-child {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-message {
+      margin-top: 18px;
+      min-height: 24px;
+      color: var(--text-muted);
+      font-size: .9rem;
+    }
+
+    .weekly-empty {
+      display: grid;
+      min-height: 180px;
+      place-items: center;
+      text-align: center;
+      color: var(--text-muted);
+      line-height: 1.9;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 16px;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 18px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>تقدمك في التعلم</h1>
-            <a href="dashboard.html" class="btn-secondary"><i class="ri-home-5-line"></i> الرئيسية</a>
+  <main class="container">
+    <header class="header">
+      <div>
+        <p class="muted">مساحة التعلم · Cody Academy</p>
+        <h1>تقدمك في التعلم</h1>
+      </div>
+      <a href="dashboard.html" class="btn-secondary">
+        <i class="ri-home-5-line" aria-hidden="true"></i>
+        الرئيسية
+      </a>
+    </header>
+
+    <section class="dashboard-grid">
+      <article class="card gauge-container">
+        <h3>تقدم مسارات التعلم</h3>
+        <div
+          class="gauge"
+          id="progressGauge"
+          role="img"
+          aria-label="نسبة تقدم مسارات التعلم"
+        >
+          <div class="gauge-value" id="overallProgress">0%</div>
         </div>
+        <p class="muted">
+          النسبة محسوبة من متوسط تقدم اللغات المحفوظ في حسابك.
+        </p>
+      </article>
 
-        <div class="dashboard-grid">
-            <div class="card gauge-container">
-                <h3 style="color: var(--text-secondary); margin-bottom: 20px;">نسبة الإنجاز</h3>
-                <div class="gauge">
-                    <div class="gauge-value" id="overallProgress">0%</div>
-                </div>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">استمر في التعلم للوصول إلى 100%</p>
-            </div>
-
-            <div class="card">
-                <h3 style="color: var(--text-secondary); margin-bottom: 10px;">تطور الأداء الأسبوعي</h3>
-                <div class="chart-container">
-                    <div class="bar-wrapper"><div class="bar" style="height: 20%;"></div><span class="bar-label">السبت</span></div>
-                    <div class="bar-wrapper"><div class="bar" style="height: 40%;"></div><span class="bar-label">الأحد</span></div>
-                    <div class="bar-wrapper"><div class="bar" style="height: 60%;"></div><span class="bar-label">الإثنين</span></div>
-                    <div class="bar-wrapper"><div class="bar" style="height: 35%;"></div><span class="bar-label">الثلاثاء</span></div>
-                    <div class="bar-wrapper"><div class="bar" style="height: 80%;"></div><span class="bar-label">الأربعاء</span></div>
-                    <div class="bar-wrapper"><div class="bar" style="height: 50%;"></div><span class="bar-label">الخميس</span></div>
-                    <div class="bar-wrapper"><div class="bar" style="height: 90%;"></div><span class="bar-label">الجمعة</span></div>
-                </div>
-            </div>
-
-            <div class="card" style="grid-column: 1 / -1;">
-                <h3 style="color: var(--text-secondary); margin-bottom: 10px;">إحصائياتك التفصيلية</h3>
-                <div class="stats-list">
-                    <div class="stat-row"><span><i class="ri-book-open-line" style="color: var(--primary);"></i> الدروس المكتملة</span> <span id="lessonsStat">0</span></div>
-                    <div class="stat-row"><span><i class="ri-code-s-slash-line" style="color: var(--accent-purple);"></i> التمارين الناجحة</span> <span id="exercisesStat">0</span></div>
-                    <div class="stat-row"><span><i class="ri-folder-code-line" style="color: var(--accent-orange);"></i> المشاريع المبنية</span> <span id="projectsStat">0</span></div>
-                    <div class="stat-row"><span><i class="ri-gamepad-line" style="color: var(--accent-green);"></i> الألعاب المكتملة</span> <span id="gamesStat">0</span></div>
-                </div>
-            </div>
+      <article class="card">
+        <h3>النشاط الأسبوعي</h3>
+        <div id="weeklyActivity" class="weekly-empty">
+          لا توجد بيانات أسبوعية محفوظة حتى الآن.
+          <br>
+          سيظهر النشاط هنا عندما تسجّل المنصة بياناته.
         </div>
-    </div>
+      </article>
 
-    <script type="module">
-        import { auth, db, doc, getDoc } from './js/app.js';
+      <article class="card" style="grid-column: 1 / -1;">
+        <h3>إحصائياتك التفصيلية</h3>
+        <div class="stats-list">
+          <div class="stat-row">
+            <span><i class="ri-book-open-line" aria-hidden="true"></i> الدروس المكتملة</span>
+            <span id="lessonsStat">—</span>
+          </div>
+          <div class="stat-row">
+            <span><i class="ri-code-s-slash-line" aria-hidden="true"></i> التمارين الناجحة</span>
+            <span id="exercisesStat">—</span>
+          </div>
+          <div class="stat-row">
+            <span><i class="ri-folder-code-line" aria-hidden="true"></i> المشروعات المحفوظة</span>
+            <span id="projectsStat">—</span>
+          </div>
+          <div class="stat-row">
+            <span><i class="ri-gamepad-line" aria-hidden="true"></i> مكافآت الألعاب المسجلة</span>
+            <span id="gamesStat">—</span>
+          </div>
+          <div class="stat-row">
+            <span><i class="ri-flashlight-line" aria-hidden="true"></i> نقاط الخبرة</span>
+            <span id="xpStat">—</span>
+          </div>
+        </div>
+        <p id="statusMessage" class="status-message" role="status" aria-live="polite">
+          جارٍ تحميل بياناتك...
+        </p>
+      </article>
+    </section>
+  </main>
 
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    const xp = data.xp || 0;
-                    const progressPercent = Math.min(Math.round((xp / 500) * 100), 100);
-                    
-                    document.getElementById('overallProgress').innerText = progressPercent + '%';
-                    document.querySelector('.gauge').style.background = `conic-gradient(var(--primary) ${progressPercent}%, var(--border-soft) 0)`;
-                    
-                    document.getElementById('lessonsStat').innerText = Math.floor(xp / 50);
-                    document.getElementById('exercisesStat').innerText = Math.floor(xp / 70);
-                    document.getElementById('projectsStat').innerText = (data.inventory || []).length > 0 ? 1 : 0;
-                    document.getElementById('gamesStat').innerText = Math.floor(xp / 100);
-                }
-            }
-        });
-    </script>
+  <script type="module">
+    import { requireUser } from "./js/auth.js";
+    import { db } from "./js/firebase-config.js";
+
+    import {
+      collection,
+      doc,
+      getDoc,
+      getDocs,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const $ = id => document.getElementById(id);
+
+    function showError(message) {
+      $("statusMessage").textContent = message;
+    }
+
+    function safeCount(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number >= 0
+        ? Math.floor(number)
+        : 0;
+    }
+
+    function setProgress(value) {
+      const percent = Math.max(0, Math.min(100, value));
+      $("overallProgress").textContent = `${percent}%`;
+      $("progressGauge").style.background =
+        `conic-gradient(var(--primary) ${percent}%, var(--border-soft) ${percent}%)`;
+    }
+
+    async function loadProgress() {
+      const user = await requireUser();
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnapshot = await getDoc(userRef);
+
+      if (!userSnapshot.exists()) {
+        throw new Error("ملف الحساب غير موجود.");
+      }
+
+      const data = userSnapshot.data();
+      const languageProgress = data.languageProgress || {};
+
+      const values = [
+        languageProgress.python,
+        languageProgress.javascript,
+        languageProgress.cpp
+      ].filter(value =>
+        typeof value === "number" &&
+        Number.isFinite(value) &&
+        value >= 0
+      );
+
+      const average = values.length
+        ? Math.round(
+            values.reduce((sum, value) => sum + Math.min(100, value), 0) /
+            values.length
+          )
+        : 0;
+
+      setProgress(average);
+
+      $("lessonsStat").textContent =
+        safeCount(data.completedLessons);
+
+      $("exercisesStat").textContent =
+        data.completedExercises === undefined
+          ? "غير مسجل"
+          : safeCount(data.completedExercises);
+
+      $("xpStat").textContent = safeCount(data.xp);
+
+      const projectsQuery = query(
+        collection(db, "projects"),
+        where("userId", "==", user.uid)
+      );
+
+      const rewardsCollection = collection(
+        db,
+        "users",
+        user.uid,
+        "gameRewards"
+      );
+
+      const [projectsSnapshot, rewardsSnapshot] = await Promise.all([
+        getDocs(projectsQuery),
+        getDocs(rewardsCollection)
+      ]);
+
+      $("projectsStat").textContent = projectsSnapshot.size;
+      $("gamesStat").textContent = rewardsSnapshot.size;
+
+      $("statusMessage").textContent =
+        "تم تحميل البيانات المحفوظة من حسابك.";
+    }
+
+    loadProgress().catch(error => {
+      console.error("Progress loading error:", error);
+
+      showError(
+        error?.code === "permission-denied"
+          ? "لا توجد صلاحية لقراءة بعض البيانات. راجعي قواعد Firestore."
+          : error?.message || "تعذر تحميل التقدم."
+      );
+    });
+  </script>
 </body>
 </html>
