@@ -815,796 +815,714 @@
             intro: "المتغير مكان نحتفظ فيه بقيمة يمكن استخدامها لاحقًا.",
             explanation: "يحتاج كل متغير إلى نوع واسم وقيمة اختيارية عند تعريفه. يستخدم int للأعداد الصحيحة، وdouble للأعداد العشرية، وString للنصوص، وboolean للقيم true وfalse.",
             example: 'int age = 16;\ndouble price = 25.5;\nString name = "Cody";\nboolean active = true;',
-            task: 'أنشئ المتغير name بقيمة "Cody"، والمتغير price ق
-يمة 25.5.';
-
-        hint: 'استخدم String name = "Cody"; و double price = 25.5; مع وضع الفاصلة المنقوطة في نهاية كل سطر.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب المتغيرات هنا\n    }\n}',
-        checks: [
-          { pattern: /\bString\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ String باسم name وقيمته "Cody".' },
-          { pattern: /\bdouble\s+price\s*=\s*25\.5\s*;/, message: 'أنشئ double باسم price وقيمته 25.5.' }
-        ],
-        quiz: {
-          question: 'أي نوع بيانات يناسب الرقم العشري 25.5؟',
-          options: ['int', 'double', 'boolean'],
-          answer: 1,
-          explanation: 'يستخدم double لتخزين الأرقام العشرية.'
-        }
+            task: 
+"value": "Cody",
+            hint: 'استخدم String name = "Cody"; و double price = 25.5;',
+            starter: 'public class Main {\n    public static void main(String[] args) {\n        String name = "Cody";\n        double price = 25.5;\n        // أكمل هنا\n    }\n}',
+            checks: [
+              { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ String باسم name وقيمته "Cody".' },
+              { pattern: /double\s+price\s*=\s*25\.5\s*;/, message: "أنشئ double باسم price وقيمته 25.5." }
+            ],
+            quiz: {
+              question: "أي نوع بيانات مناسب لتخزين نص؟",
+              options: ["int", "String", "boolean"],
+              answer: 1,
+              explanation: "يُستخدم String لتخزين النصوص."
+            }
+          },
+          {
+            id: "java-2-2",
+            title: "تغيير قيم المتغيرات",
+            intro: "تعلّم إسناد قيمة جديدة إلى متغير موجود.",
+            explanation: "بعد تعريف المتغير، يمكنك تغيير قيمته باستخدام علامة =. لا تحتاج إلى كتابة نوع المتغير مرة أخرى عند تغيير قيمته.",
+            example: "int score = 10;\nscore = 20;\nscore = score + 5;",
+            task: "أنشئ متغيرًا اسمه score بقيمة 10، ثم غيّر قيمته إلى 20.",
+            hint: "اكتب int score = 10; ثم score = 20;.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        // اكتب الكود هنا\n    }\n}",
+            checks: [
+              { pattern: /int\s+score\s*=\s*10\s*;/, message: "أنشئ score بقيمة 10." },
+              { pattern: /score\s*=\s*20\s*;/, message: "غيّر score إلى 20." }
+            ],
+            quiz: {
+              question: "كيف تغيّر قيمة متغير موجود اسمه score؟",
+              options: ["int = score 20;", "score = 20;", "change score 20;"],
+              answer: 1,
+              explanation: "نستخدم اسم المتغير ثم علامة الإسناد والقيمة الجديدة."
+            }
+          }
+        ]
       },
       {
-        id: 'java-2-2',
-        title: 'العمليات الحسابية',
-        intro: 'تستطيع Java إجراء العمليات الحسابية باستخدام رموز بسيطة.',
-        explanation: 'الرمز + للجمع، والرمز - للطرح، والرمز * للضرب، والرمز / للقسمة، والرمز % لباقي القسمة.',
-        example: 'int a = 10;\nint b = 3;\nSystem.out.println(a + b);\nSystem.out.println(a * b);\nSystem.out.println(a % b);',
-        task: 'أنشئ متغيرين a و b بقيمتي 12 و 4، ثم اطبع مجموعهما.',
-        hint: 'استخدم int a = 12; و int b = 4; ثم System.out.println(a + b);',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        // أنشئ المتغيرات واطبع المجموع\n    }\n}',
-        checks: [
-          { pattern: /\bint\s+a\s*=\s*12\s*;/, message: 'أنشئ المتغير a بقيمة 12.' },
-          { pattern: /\bint\s+b\s*=\s*4\s*;/, message: 'أنشئ المتغير b بقيمة 4.' },
-          { pattern: /System\.out\.println\s*\(\s*a\s*\+\s*b\s*\)\s*;/, message: 'اطبع مجموع a و b.' }
-        ],
-        quiz: {
-          question: 'ما نتيجة 10 % 3؟',
-          options: ['3', '1', '0'],
-          answer: 1,
-          explanation: 'باقي قسمة 10 على 3 هو 1.'
-        }
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: 'الفصل الثالث: الشروط',
-    lessons: [
-      {
-        id: 'java-3-1',
-        title: 'جملة if',
-        intro: 'تسمح الشروط للبرنامج باتخاذ قرار بناءً على قيمة معينة.',
-        explanation: 'تستخدم if لتنفيذ كود عندما يكون الشرط صحيحًا. يمكن استخدام > و < و == للمقارنة بين القيم.',
-        example: 'int age = 16;\nif (age >= 13) {\n    System.out.println("Welcome");\n}',
-        task: 'أنشئ متغير score بقيمة 90، واطبع كلمة "Excellent" إذا كانت الدرجة أكبر من أو تساوي 80.',
-        hint: 'استخدم if (score >= 80) ثم اطبع النص باستخدام println.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        int score = 90;\n        // اكتب الشرط هنا\n    }\n}',
-        checks: [
-          { pattern: /\bint\s+score\s*=\s*90\s*;/, message: 'أنشئ score بقيمة 90.' },
-          { pattern: /if\s*\(\s*score\s*>=\s*80\s*\)/, message: 'اكتب شرط score >= 80.' },
-          { pattern: /System\.out\.println\s*\(\s*"Excellent"\s*\)\s*;/, message: 'اطبع كلمة Excellent.' }
-        ],
-        quiz: {
-          question: 'متى ينفذ الكود الموجود داخل if؟',
-          options: ['عندما يكون الشرط صحيحًا', 'دائمًا', 'عندما يكون الشرط خاطئًا فقط'],
-          answer: 0,
-          explanation: 'ينفذ الكود داخل if عندما تكون نتيجة الشرط true.'
-        }
+        id: 3,
+        title: "الفصل الثالث: العمليات الحسابية",
+        lessons: [
+          {
+            id: "java-3-1",
+            title: "العمليات الأساسية",
+            intro: "استخدم Java لإجراء العمليات الحسابية.",
+            explanation: "تستخدم + للجمع، و- للطرح، و* للضرب، و/ للقسمة، و% لمعرفة باقي القسمة.",
+            example: "int sum = 5 + 3;\nint difference = 9 - 4;\nint product = 3 * 4;\nint remainder = 10 % 3;",
+            task: "أنشئ متغيرًا اسمه result واجعل قيمته ناتج 7 + 3.",
+            hint: "اكتب int result = 7 + 3;.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        // اكتب العملية الحسابية\n    }\n}",
+            checks: [
+              { pattern: /int\s+result\s*=\s*7\s*\+\s*3\s*;/, message: "أنشئ result باستخدام 7 + 3." }
+            ],
+            quiz: {
+              question: "ما رمز عملية الضرب في Java؟",
+              options: ["x", "*", "%"],
+              answer: 1,
+              explanation: "نستخدم النجمة * لعملية الضرب."
+            }
+          },
+          {
+            id: "java-3-2",
+            title: "ترتيب العمليات",
+            intro: "افهم كيف تحسب Java التعبيرات التي تحتوي على أكثر من عملية.",
+            explanation: "تلتزم Java بترتيب العمليات الحسابية المعتاد؛ الضرب والقسمة قبل الجمع والطرح. يمكنك استخدام الأقواس لتحديد العملية التي تريد حسابها أولًا.",
+            example: "int a = 2 + 3 * 4;      // 14\nint b = (2 + 3) * 4;    // 20",
+            task: "أنشئ متغيرًا اسمه result واجعل قيمته (2 + 3) * 4.",
+            hint: "ضع 2 + 3 داخل أقواس قبل الضرب.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        // اكتب الكود هنا\n    }\n}",
+            checks: [
+              { pattern: /int\s+result\s*=\s*\(\s*2\s*\+\s*3\s*\)\s*\*\s*4\s*;/, message: "استخدم الأقواس حول 2 + 3." }
+            ],
+            quiz: {
+              question: "ما قيمة 2 + 3 * 4؟",
+              options: ["20", "14", "24"],
+              answer: 1,
+              explanation: "يحدث الضرب أولًا، لذلك 2 + 12 تساوي 14."
+            }
+          }
+        ]
       },
       {
-        id: 'java-3-2',
-        title: 'if و else',
-        intro: 'يمكن للبرنامج اختيار مسار بديل باستخدام else.',
-        explanation: 'تعمل if عند تحقق الشرط، أما else فتعمل عندما لا يتحقق الشرط.',
-        example: 'int score = 50;\nif (score >= 50) {\n    System.out.println("Pass");\n} else {\n    System.out.println("Try again");\n}',
-        task: 'أنشئ متغير temperature بقيمة 20. إذا كانت الحرارة أكبر من 25 اطبع "Hot"، وإلا اطبع "Cool".',
-        hint: 'اكتب if (temperature > 25) ثم أضف else للطباعة البديلة.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        int temperature = 20;\n        // اكتب if و else\n    }\n}',
-        checks: [
-          { pattern: /if\s*\(\s*temperature\s*>\s*25\s*\)/, message: 'اكتب شرط temperature > 25.' },
-          { pattern: /System\.out\.println\s*\(\s*"Hot"\s*\)\s*;/, message: 'اطبع Hot داخل if.' },
-          { pattern: /else\s*\{[\s\S]*?System\.out\.println\s*\(\s*"Cool"\s*\)\s*;/, message: 'أضف else واطبع Cool داخلها.' }
-        ],
-        quiz: {
-          question: 'ما وظيفة else؟',
-          options: ['تعريف متغير', 'تنفيذ بديل عند عدم تحقق الشرط', 'تكرار الكود'],
-          answer: 1,
-          explanation: 'تُستخدم else للمسار البديل عندما يكون شرط if غير صحيح.'
-        }
-      }
-    ]
-  },
-  {
-    id: 4,
-    title: 'الفصل الرابع: التكرار',
-    lessons: [
-      {
-        id: 'java-4-1',
-        title: 'حلقة for',
-        intro: 'تساعد الحلقات على تكرار الأوامر بدلًا من كتابتها عدة مرات.',
-        explanation: 'تتكون for عادةً من قيمة بداية وشرط واستمرار وتغيير يحدث بعد كل دورة.',
-        example: 'for (int i = 1; i <= 5; i++) {\n    System.out.println(i);\n}',
-        task: 'اكتب حلقة for تطبع الأرقام من 1 إلى 5.',
-        hint: 'ابدأ بـ int i = 1، واستمر ما دام i <= 5، ثم استخدم i++.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب حلقة for هنا\n    }\n}',
-        checks: [
-          { pattern: /for\s*\(\s*int\s+i\s*=\s*1\s*;\s*i\s*<=\s*5\s*;\s*i\+\+\s*\)/, message: 'اكتب حلقة for من 1 إلى 5.' },
-          { pattern: /System\.out\.println\s*\(\s*i\s*\)\s*;/, message: 'اطبع i داخل الحلقة.' }
-        ],
-        quiz: {
-          question: 'ما وظيفة i++؟',
-          options: ['إنقاص i بمقدار 1', 'زيادة i بمقدار 1', 'إنهاء البرنامج'],
-          answer: 1,
-          explanation: 'تزيد i++ قيمة المتغير بمقدار واحد.'
-        }
+        id: 4,
+        title: "الفصل الرابع: الشروط",
+        lessons: [
+          {
+            id: "java-4-1",
+            title: "جملة if",
+            intro: "اجعل البرنامج يتخذ قرارًا بناءً على شرط.",
+            explanation: "تُستخدم if لتنفيذ كود عندما يكون الشرط صحيحًا. يوضع الشرط بين قوسين، والكود الذي يعتمد عليه بين أقواس معقوفة.",
+            example: "int age = 18;\nif (age >= 18) {\n    System.out.println(\"Adult\");\n}",
+            task: "اكتب شرط if يتحقق مما إذا كانت قيمة score أكبر من أو تساوي 50.",
+            hint: "استخدم if (score >= 50) ثم افتح الأقواس المعقوفة.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        int score = 60;\n        // اكتب شرط if هنا\n    }\n}",
+            checks: [
+              { pattern: /if\s*\(\s*score\s*>=\s*50\s*\)/, message: "اكتب الشرط score >= 50 داخل if." }
+            ],
+            quiz: {
+              question: "متى ينفذ الكود داخل if؟",
+              options: ["عندما يكون الشرط صحيحًا", "في كل الحالات", "عندما يكون الشرط نصًا"],
+              answer: 0,
+              explanation: "تنفذ if الكود عندما تكون نتيجة الشرط true."
+            }
+          },
+          {
+            id: "java-4-2",
+            title: "if و else",
+            intro: "تعامل مع حالتين مختلفتين في البرنامج.",
+            explanation: "تُستخدم else لتحديد ما يحدث عندما لا يتحقق شرط if. ينفذ البرنامج أحد الفرعين وفقًا لنتيجة الشرط.",
+            example: "int score = 45;\nif (score >= 50) {\n    System.out.println(\"Pass\");\n} else {\n    System.out.println(\"Try again\");\n}",
+            task: 'اكتب if تتحقق من score >= 50، ثم أضف else.',
+            hint: "ضع else بعد إغلاق أقواس if.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        int score = 45;\n        if (score >= 50) {\n            System.out.println(\"Pass\");\n        } else {\n            System.out.println(\"Try again\");\n        }\n    }\n}",
+            checks: [
+              { pattern: /if\s*\(\s*score\s*>=\s*50\s*\)/, message: "تأكد من شرط if." },
+              { pattern: /\belse\b/, message: "أضف else للحالة الأخرى." }
+            ],
+            quiz: {
+              question: "ماذا تفعل else؟",
+              options: ["تعرّف متغيرًا", "تتعامل مع عدم تحقق شرط if", "تكرر الكود دائمًا"],
+              answer: 1,
+              explanation: "يعمل فرع else عندما تكون نتيجة شرط if هي false."
+            }
+          }
+        ]
       },
       {
-        id: 'java-4-2',
-        title: 'حلقة while',
-        intro: 'تكرر while الأوامر طالما أن الشرط صحيح.',
-        explanation: 'يجب تحديث المتغير المستخدم في الشرط حتى يمكن أن تنتهي الحلقة عند تحقق شرط الإيقاف.',
-        example: 'int i = 1;\nwhile (i <= 3) {\n    System.out.println(i);\n    i++;\n}',
-        task: 'استخدم while لطباعة الأرقام من 1 إلى 3.',
-        hint: 'عرّف i بقيمة 1، ثم استخدم while (i <= 3) وزد i داخل الحلقة.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        int i = 1;\n        // اكتب حلقة while هنا\n    }\n}',
-        checks: [
-          { pattern: /while\s*\(\s*i\s*<=\s*3\s*\)/, message: 'اكتب شرط while وهو i <= 3.' },
-          { pattern: /System\.out\.println\s*\(\s*i\s*\)\s*;/, message: 'اطبع i داخل الحلقة.' },
-          { pattern: /i\+\+|i\s*\+=\s*1|i\s*=\s*i\s*\+\s*1/, message: 'زد i داخل الحلقة لتجنب التكرار المستمر.' }
-        ],
-        quiz: {
-          question: 'متى تتوقف حلقة while؟',
-          options: ['عندما يصبح الشرط غير صحيح', 'بعد دورة واحدة دائمًا', 'لا تتوقف أبدًا'],
-          answer: 0,
-          explanation: 'تستمر الحلقة ما دام الشرط صحيحًا، وتتوقف عندما يصبح غير صحيح.'
-        }
-      }
-    ]
-  },
-  {
-    id: 5,
-    title: 'الفصل الخامس: المصفوفات والنصوص',
-    lessons: [
-      {
-        id: 'java-5-1',
-        title: 'المصفوفات Arrays',
-        intro: 'المصفوفة تخزن مجموعة قيم من النوع نفسه تحت اسم واحد.',
-        explanation: 'يبدأ فهرس المصفوفة من الصفر؛ لذلك يكون أول عنصر عند الفهرس 0.',
-        example: 'int[] numbers = {10, 20, 30};\nSystem.out.println(numbers[0]);',
-        task: 'أنشئ مصفوفة numbers تحتوي على 10 و20 و30، ثم اطبع أول عنصر.',
-        hint: 'استخدم int[] numbers = {10, 20, 30}; ثم numbers[0].',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        // أنشئ المصفوفة واطبع أول عنصر\n    }\n}',
-        checks: [
-          { pattern: /int\s*\[\s*\]\s*numbers\s*=\s*\{\s*10\s*,\s*20\s*,\s*30\s*\}\s*;/, message: 'أنشئ المصفوفة بالأرقام المطلوبة.' },
-          { pattern: /System\.out\.println\s*\(\s*numbers\s*\[\s*0\s*\]\s*\)\s*;/, message: 'اطبع numbers[0].' }
-        ],
-        quiz: {
-          question: 'ما فهرس أول عنصر في المصفوفة؟',
-          options: ['1', '-1', '0'],
-          answer: 2,
-          explanation: 'تبدأ فهارس المصفوفات في Java من الصفر.'
-        }
+        id: 5,
+        title: "الفصل الخامس: الحلقات التكرارية",
+        lessons: [
+          {
+            id: "java-5-1",
+            title: "حلقة for",
+            intro: "كرّر تنفيذ أمر عدة مرات باستخدام for.",
+            explanation: "تحتوي حلقة for عادةً على بداية، وشرط للاستمرار، وتغيير يحدث بعد كل دورة. وهي مناسبة عندما تعرف عدد مرات التكرار.",
+            example: "for (int i = 0; i < 5; i++) {\n    System.out.println(i);\n}",
+            task: "اكتب حلقة for تبدأ من 0 وتستمر ما دام i أصغر من 5، مع زيادة i في كل دورة.",
+            hint: "استخدم for (int i = 0; i < 5; i++).",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        // اكتب حلقة for\n    }\n}",
+            checks: [
+              { pattern: /for\s*\(\s*int\s+i\s*=\s*0\s*;\s*i\s*<\s*5\s*;\s*i\+\+\s*\)/, message: "اكتب حلقة for بالشروط المطلوبة." }
+            ],
+            quiz: {
+              question: "ما وظيفة i++ في الحلقة؟",
+              options: ["تقليل i", "زيادة i بمقدار واحد", "إيقاف البرنامج"],
+              answer: 1,
+              explanation: "تزيد i بمقدار واحد بعد كل دورة."
+            }
+          },
+          {
+            id: "java-5-2",
+            title: "حلقة while",
+            intro: "كرّر الكود ما دام الشرط صحيحًا.",
+            explanation: "تختبر while الشرط قبل تنفيذ جسم الحلقة. يجب تحديث المتغير المستخدم في الشرط عند الحاجة حتى لا تستمر الحلقة بلا نهاية.",
+            example: "int count = 0;\nwhile (count < 3) {\n    System.out.println(count);\n    count++;\n}",
+            task: "اكتب حلقة while تستمر ما دام count أصغر من 3.",
+            hint: "استخدم while (count < 3) وحدّث count داخل الحلقة.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        int count = 0;\n        // اكتب حلقة while\n    }\n}",
+            checks: [
+              { pattern: /while\s*\(\s*count\s*<\s*3\s*\)/, message: "أضف شرط while المطلوب." },
+              { pattern: /count\s*\+\+|count\s*\+=\s*1\s*;|count\s*=\s*count\s*\+\s*1\s*;/, message: "حدّث count حتى تنتهي الحلقة." }
+            ],
+            quiz: {
+              question: "متى تختبر while شرطها؟",
+              options: ["قبل تنفيذ جسم الحلقة", "بعد انتهاء البرنامج", "مرة واحدة فقط دون شرط"],
+              answer: 0,
+              explanation: "تختبر while الشرط قبل كل دورة."
+            }
+          }
+        ]
       },
       {
-        id: 'java-5-2',
-        title: 'التعامل مع String',
-        intro: 'يستخدم String لتخزين النصوص، وتوفر Java طرقًا للتعامل معها.',
-        explanation: 'يمكن استخدام length لمعرفة عدد الأحرف، وtoUpperCase لتحويل الحروف الإنجليزية إلى أحرف كبيرة.',
-        example: 'String name = "Cody";\nSystem.out.println(name.length());\nSystem.out.println(name.toUpperCase());',
-        task: 'أنشئ String باسم name وقيمته "Cody"، ثم اطبع عدد أحرفه باستخدام length().',
-        hint: 'استخدم name.length() داخل System.out.println.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        // اكتب الكود هنا\n    }\n}',
-        checks: [
-          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ المتغير name بقيمة Cody.' },
-          { pattern: /System\.out\.println\s*\(\s*name\.length\s*\(\s*\)\s*\)\s*;/, message: 'اطبع عدد الأحرف باستخدام name.length().' }
-        ],
-        quiz: {
-          question: 'ما وظيفة name.length()؟',
-          options: ['تحذف النص', 'تعطي عدد الأحرف', 'تحول النص إلى رقم'],
-          answer: 1,
-          explanation: 'تعيد length() عدد الأحرف في النص.'
-        }
-      }
-    ]
-  },
-  {
-    id: 6,
-    title: 'الفصل السادس: الدوال والكائنات',
-    lessons: [
-      {
-        id: 'java-6-1',
-        title: 'إنشاء الدوال Methods',
-        intro: 'الدالة تجمع أوامر يمكن استدعاؤها عند الحاجة.',
-        explanation: 'تساعد الدوال على تنظيم البرنامج وتقليل تكرار الكود. يمكن تعريف دالة static واستدعاؤها من main في الأمثلة البسيطة.',
-        example: 'public class Main {\n    static void greet() {\n        System.out.println("Hello");\n    }\n    public static void main(String[] args) {\n        greet();\n    }\n}',
-        task: 'أنشئ دالة static باسم greet تطبع "Hello"، ثم استدعها داخل main.',
-        hint: 'اكتب static void greet() ثم استدعِ greet(); داخل main.',
-        starter: 'public class Main {\n    // عرّف الدالة هنا\n\n    public static void main(String[] args) {\n        // استدع الدالة هنا\n    }\n}',
-        checks: [
-          { pattern: /static\s+void\s+greet\s*\(\s*\)/, message: 'عرّف الدالة static void greet().' },
-          { pattern: /System\.out\.println\s*\(\s*"Hello"\s*\)\s*;/, message: 'اطبع Hello داخل الدالة.' },
-          { pattern: /\bgreet\s*\(\s*\)\s*;/, message: 'استدع الدالة greet داخل main.' }
-        ],
-        quiz: {
-          question: 'لماذا نستخدم الدوال؟',
-          options: ['لتنظيم الكود وإعادة استخدامه', 'لإغلاق الكمبيوتر', 'لإلغاء المتغيرات'],
-          answer: 0,
-          explanation: 'تساعد الدوال على تنظيم الأوامر وإعادة استخدامها.'
-        }
+        id: 6,
+        title: "الفصل السادس: المصفوفات",
+        lessons: [
+          {
+            id: "java-6-1",
+            title: "إنشاء مصفوفة",
+            intro: "اجمع عدة قيم من النوع نفسه في متغير واحد.",
+            explanation: "تخزّن المصفوفة مجموعة قيم من النوع نفسه. يبدأ فهرس أول عنصر بالرقم 0، وليس 1.",
+            example: "int[] numbers = {10, 20, 30};\nSystem.out.println(numbers[0]);",
+            task: "أنشئ مصفوفة int اسمها numbers تحتوي على 10 و20 و30.",
+            hint: "استخدم int[] numbers = {10, 20, 30};.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        // أنشئ المصفوفة\n    }\n}",
+            checks: [
+              { pattern: /int\s*\[\s*\]\s*numbers\s*=\s*\{\s*10\s*,\s*20\s*,\s*30\s*\}\s*;/, message: "أنشئ المصفوفة بالأرقام المطلوبة." }
+            ],
+            quiz: {
+              question: "ما فهرس أول عنصر في المصفوفة؟",
+              options: ["0", "1", "-1"],
+              answer: 0,
+              explanation: "تبدأ فهارس المصفوفات في Java من الصفر."
+            }
+          },
+          {
+            id: "java-6-2",
+            title: "الوصول إلى عناصر المصفوفة",
+            intro: "اقرأ قيمة عنصر باستخدام فهرسه.",
+            explanation: "نصل إلى العنصر بكتابة اسم المصفوفة ثم الفهرس داخل أقواس مربعة. يمكن استخدام length لمعرفة عدد العناصر.",
+            example: "int[] numbers = {10, 20, 30};\nint first = numbers[0];\nint size = numbers.length;",
+            task: "أنشئ متغيرًا اسمه first يأخذ أول عنصر من numbers.",
+            hint: "استخدم int first = numbers[0];.",
+            starter: "public class Main {\n    public static void main(String[] args) {\n        int[] numbers = {10, 20, 30};\n        // احصل على أول عنصر\n    }\n}",
+            checks: [
+              { pattern: /int\s+first\s*=\s*numbers\s*\[\s*0\s*\]\s*;/, message: "احصل على العنصر الأول باستخدام numbers[0]." }
+            ],
+            quiz: {
+              question: "كيف تعرف عدد عناصر مصفوفة اسمها numbers؟",
+              options: ["numbers.size()", "numbers.length", "length(numbers)"],
+              answer: 1,
+              explanation: "تُستخدم الخاصية length لمعرفة عدد عناصر المصفوفة."
+            }
+          }
+        ]
       },
       {
-        id: 'java-6-2',
-        title: 'الكلاسات والكائنات',
-        intro: 'تسمح البرمجة الكائنية بتمثيل الأشياء باستخدام الكلاسات والكائنات.',
-        explanation: 'الكلاس يصف خصائص وسلوكًا، أما الكائن فهو نسخة يتم إنشاؤها من ذلك الكلاس.',
-        example: 'class Robot {\n    String name = "Cody";\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Robot bot = new Robot();\n        System.out.println(bot.name);\n    }\n}',
-        task: 'أنشئ كلاس Robot يحتوي على المتغير name بقيمة "Cody"، ثم أنشئ كائنًا منه.',
-        hint: 'اكتب class Robot، ثم Robot bot = new Robot();',
-        starter: 'class Robot {\n    String name = "Cody";\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // أنشئ كائن Robot هنا\n    }\n}',
-        checks: [
-          { pattern: /class\s+Robot\s*\{/, message: 'أنشئ الكلاس Robot.' },
-          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أضف name إلى الكلاس.' },
-          { pattern: /Robot\s+bot\s*=\s*new\s+Robot\s*\(\s*\)\s*;/, message: 'أنشئ الكائن bot من Robot.' }
-        ],
-        quiz: {
-          question: 'ما الكائن في Java؟',
-          options: ['نسخة من كلاس', 'نوع من التعليقات', 'علامة حسابية'],
-          answer: 0,
-          explanation: 'الكائن نسخة يتم إنشاؤها من الكلاس.'
-        }
-      }
-    ]
-  },
-  {
-    id: 7,
-    title: 'الفصل السابع: مفاهيم مهمة',
-    lessons: [
-      {
-        id: 'java-7-1',
-        title: 'المنشئ Constructor',
-        intro: 'المنشئ يساعد على إعداد الكائن عند إنشائه.',
-        explanation: 'يحمل المنشئ اسم الكلاس نفسه ولا يحدد نوع إرجاع. يمكنه استقبال قيم وتخزينها في خصائص الكائن.',
-        example: 'class Robot {\n    String name;\n    Robot(String n) {\n        name = n;\n    }\n}',
-        task: 'أنشئ كلاس Robot يحتوي على name ومنشئ يستقبل نصًا ويخزنه في name.',
-        hint: 'اكتب Robot(String n) ثم name = n; داخل المنشئ.',
-        starter: 'class Robot {\n    String name;\n    // اكتب المنشئ هنا\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Robot bot = new Robot("Cody");\n    }\n}',
-        checks: [
-          { pattern: /Robot\s*\(\s*String\s+n\s*\)/, message: 'أنشئ المنشئ Robot(String n).' },
-          { pattern: /name\s*=\s*n\s*;/, message: 'خزّن n في name.' },
-          { pattern: /new\s+Robot\s*\(\s*"Cody"\s*\)/, message: 'أنشئ كائنًا باستخدام الاسم Cody.' }
-        ],
-        quiz: {
-          question: 'متى يعمل المنشئ عادةً؟',
-          options: ['عند إنشاء كائن جديد', 'عند كتابة تعليق', 'عند حذف ملف'],
-          answer: 0,
-          explanation: 'يتم استدعاء المنشئ عند إنشاء كائن من الكلاس.'
-        }
+        id: 7,
+        title: "الفصل السابع: الدوال",
+        lessons: [
+          {
+            id: "java-7-1",
+            title: "إنشاء دالة",
+            intro: "قسّم البرنامج إلى أجزاء يمكن استدعاؤها عند الحاجة.",
+            explanation: "الدالة مجموعة تعليمات لها اسم. يمكن استدعاؤها لتنفيذ هذه التعليمات. الدالة void لا تُرجع قيمة.",
+            example: "static void greet() {\n    System.out.println(\"Hello\");\n}",
+            task: "أنشئ دالة اسمها greet لا تُرجع قيمة.",
+            hint: "ابدأ بـ static void greet() ثم اكتب جسم الدالة.",
+            starter: "public class Main {\n    static void greet() {\n        // اكتب أمر الطباعة\n    }\n\n    public static void main(String[] args) {\n        greet();\n    }\n}",
+            checks: [
+              { pattern: /static\s+void\s+greet\s*\(\s*\)/, message: "أنشئ الدالة static void greet()." },
+              { pattern: /greet\s*\(\s*\)\s*;/, message: "استدعِ الدالة greet داخل main." }
+            ],
+            quiz: {
+              question: "ماذا تعني void في تعريف الدالة؟",
+              options: ["أن الدالة تُرجع نصًا", "أن الدالة لا تُرجع قيمة", "أن الدالة تتكرر"],
+              answer: 1,
+              explanation: "تعني void أن الدالة لا تُرجع قيمة."
+            }
+          },
+          {
+            id: "java-7-2",
+            title: "المعاملات والقيم المُعادة",
+            intro: "مرّر قيمة إلى الدالة واستقبل نتيجة منها.",
+            explanation: "المعاملات تسمح بإرسال بيانات إلى الدالة. وتستخدم return لإرجاع نتيجة من دالة لها نوع إرجاع مناسب.",
+            example: "static int add(int a, int b) {\n    return a + b;\n}",
+            task: "أنشئ دالة add تستقبل عددين صحيحين وتُرجع مجموعهما.",
+            hint: "استخدم static int add(int a, int b) ثم return a + b;.",
+            starter: "public class Main {\n    static int add(int a, int b) {\n        // أرجع المجموع\n    }\n\n    public static void main(String[] args) {\n        int result = add(2, 3);\n    }\n}",
+            checks: [
+              { pattern: /static\s+int\s+add\s*\(\s*int\s+a\s*,\s*int\s+b\s*\)/, message: "عرّف الدالة add بمعاملين من النوع int." },
+              { pattern: /return\s+a\s*\+\s*b\s*;/, message: "أرجع a + b." }
+            ],
+            quiz: {
+              question: "ما وظيفة return؟",
+              options: ["إرجاع قيمة من الدالة", "إنشاء حلقة", "طباعة تعليق"],
+              answer: 0,
+              explanation: "تُستخدم return لإرجاع نتيجة من الدالة."
+            }
+          }
+        ]
       },
       {
-        id: 'java-7-2',
-        title: 'التعامل مع الأخطاء',
-        intro: 'قد تحدث أخطاء أثناء تشغيل البرنامج، وتساعد try وcatch على التعامل مع بعض الاستثناءات.',
-        explanation: 'يوضع الكود الذي قد ينتج عنه استثناء داخل try، بينما يحتوي catch على ما يجب فعله عند حدوث الاستثناء المحدد.',
-        example: 'try {\n    int number = Integer.parseInt("12");\n    System.out.println(number);\n} catch (NumberFormatException e) {\n    System.out.println("Invalid number");\n}',
-        task: 'اكتب try وcatch للتعامل مع NumberFormatException، واطبع "Invalid number" داخل catch.',
-        hint: 'استخدم catch (NumberFormatException e) ثم println للنص المطلوب.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        try {\n            int number = Integer.parseInt("12");\n        } catch (NumberFormatException e) {\n            // اطبع رسالة الخطأ هنا\n        }\n    }\n}',
-        checks: [
-          { pattern: /\btry\s*\{/, message: 'أضف كتلة try.' },
-          { pattern: /catch\s*\(\s*NumberFormatException\s+\w+\s*\)/, message: 'أضف catch لنوع NumberFormatException.' },
-          { pattern: /System\.out\.println\s*\(\s*"Invalid number"\s*\)\s*;/, message: 'اطبع Invalid number داخل catch.' }
-        ],
-        quiz: {
-          question: 'ما دور catch؟',
-          options: ['التعامل مع استثناء محدد', 'تعريف كلاس جديد دائمًا', 'تكرار الحلقة'],
-          answer: 0,
-          explanation: 'تستقبل catch الاستثناء المطابق لنوعه وتسمح بالتعامل معه.'
-        }
+        id: 8,
+        title: "الفصل الثامن: البرمجة الكائنية",
+        lessons: [
+          {
+            id: "java-8-1",
+            title: "الفئة والكائن",
+            intro: "تعرّف على مفهوم class و object في Java.",
+            explanation: "الفئة class قالب يحدد خصائص وسلوكًا. أما الكائن object فهو نسخة من هذه الفئة. يمكن إنشاء كائن باستخدام new.",
+            example: "class Dog {\n    String name;\n}\n\nDog pet = new Dog();\npet.name = \"Buddy\";",
+            task: "أنشئ فئة اسمها Dog، ثم أنشئ كائنًا منها اسمه pet.",
+            hint: "استخدم class Dog {} ثم Dog pet = new Dog(); داخل main.",
+            starter: "class Dog {\n    String name;\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // أنشئ كائن Dog\n    }\n}",
+            checks: [
+              { pattern: /class\s+Dog\b/, message: "أنشئ الفئة Dog." },
+              { pattern: /Dog\s+pet\s*=\s*new\s+Dog\s*\(\s*\)\s*;/, message: "أنشئ الكائن pet من الفئة Dog." }
+            ],
+            quiz: {
+              question: "ما العلاقة بين class و object؟",
+              options: ["الفئة قالب والكائن نسخة منها", "الكائن هو تعليق", "لا توجد علاقة"],
+              answer: 0,
+              explanation: "الفئة تصف شكل الكائن، والكائن نسخة تم إنشاؤها منها."
+            }
+          },
+          {
+            id: "java-8-2",
+            title: "الخصائص والطرق",
+            intro: "اجمع بيانات الكائن والوظائف التي ينفذها.",
+            explanation: "الخصائص fields تخزّن بيانات الكائن، والطرق methods تحدد سلوكًا يمكن تنفيذه. يمكن استدعاء الطريقة من خلال الكائن باستخدام النقطة.",
+            example: "class Dog {\n    void bark() {\n        System.out.println(\"Woof!\");\n    }\n}\n\nDog pet = new Dog();\npet.bark();",
+            task: "أنشئ طريقة اسمها bark داخل Dog، ثم استدعها باستخدام pet.bark().",
+            hint: "عرّف void bark() داخل الفئة، ثم استخدم pet.bark();.",
+            starter: "class Dog {\n    void bark() {\n        System.out.println(\"Woof!\");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Dog pet = new Dog();\n        // استدع الطريقة\n    }\n}",
+            checks: [
+              { pattern: /void\s+bark\s*\(\s*\)/, message: "أنشئ الطريقة bark داخل Dog." },
+              { pattern: /pet\s*\.\s*bark\s*\(\s*\)\s*;/, message: "استدع الطريقة باستخدام pet.bark()." }
+            ],
+            quiz: {
+              question: "كيف تستدعي الطريقة bark من الكائن pet؟",
+              options: ["pet->bark()", "pet.bark()", "bark.pet()"],
+              answer: 1,
+              explanation: "يُستخدم اسم الكائن ثم النقطة ثم اسم الطريقة."
+            }
+          }
+        ]
       }
-    ]
-  },
-  {
-    id: 8,
-    title: 'الفصل الثامن: المشروع النهائي',
-    lessons: [
-      {
-        id: 'java-8-1',
-        title: 'بناء برنامج بسيط',
-        intro: 'حان وقت جمع المتغيرات والشروط والطباعة في برنامج واحد.',
-        explanation: 'يمكن للبرنامج تخزين اسم المتعلم ودرجته ثم استخدام شرط لعرض رسالة مناسبة.',
-        example: 'String name = "Cody";\nint score = 95;\nSystem.out.println("Student: " + name);\nif (score >= 50) {\n    System.out.println("Passed");\n}',
-        task: 'أنشئ name بقيمة "Cody" وscore بقيمة 95، ثم اطبع الاسم واستخدم شرطًا لطباعة "Passed" إذا كانت الدرجة 50 أو أكثر.',
-        hint: 'استخدم System.out.println("Student: " + name); ثم if (score >= 50).',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        String name = "Cody";\n        int score = 95;\n        // اطبع الاسم وأضف الشرط\n    }\n}',
-        checks: [
-          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ name بقيمة Cody.' },
-          { pattern: /int\s+score\s*=\s*95\s*;/, message: 'أنشئ score بقيمة 95.' },
-          { pattern: /System\.out\.println\s*\(\s*"Student:\s*"\s*\+\s*name\s*\)\s*;/, message: 'اطبع اسم المتعلم.' },
-          { pattern: /if\s*\(\s*score\s*>=\s*50\s*\)/, message: 'أضف شرط النجاح.' },
-          { pattern: /System\.out\.println\s*\(\s*"Passed"\s*\)\s*;/, message: 'اطبع Passed.' }
-        ],
-        quiz: {
-          question: 'ما المفاهيم التي يجمعها هذا المشروع؟',
-          options: ['المتغيرات والطباعة والشروط', 'التعليقات فقط', 'المصفوفات فقط'],
-          answer: 0,
-          explanation: 'يجمع المشروع المتغيرات والطباعة والشروط في برنامج واحد.'
-        }
-      },
-      {
-        id: 'java-8-2',
-        title: 'تحدي التخرج',
-        intro: 'طبّق ما تعلمته لبناء برنامج يعرض رسالة حسب الدرجة.',
-        explanation: 'راجع أنواع البيانات والطباعة والشروط، ثم جرّب تعديل القيم بنفسك. هذا التحدي يستخدم فحصًا نصيًا للكود وليس مترجم Java فعليًا.',
-        example: 'String name = "Cody";\nint score = 100;\nSystem.out.println("Hello, " + name);\nif (score >= 90) {\n    System.out.println("Excellent");\n} else {\n    System.out.println("Keep learning");\n}',
-        task: 'أنشئ name بقيمة "Cody" وscore بقيمة 100، واطبع رسالة ترحيب. إذا كانت الدرجة 90 أو أكثر اطبع "Excellent"، وإلا اطبع "Keep learning".',
-        hint: 'استخدم if (score >= 90) وelse، مع رسالة مختلفة في كل حالة.',
-        starter: 'public class Main {\n    public static void main(String[] args) {\n        String name = "Cody";\n        int score = 100;\n        // اكتب رسالة الترحيب والشرط\n    }\n}',
-        checks: [
-          { pattern: /String\s+name\s*=\s*"Cody"\s*;/, message: 'أنشئ name بقيمة Cody.' },
-          { pattern: /int\s+score\s*=\s*100\s*;/, message: 'أنشئ score بقيمة 100.' },
-          { pattern: /System\.out\.println\s*\(\s*"Hello,\s*"\s*\+\s*name\s*\)\s*;/, message: 'اطبع رسالة الترحيب مع الاسم.' },
-          { pattern: /if\s*\(\s*score\s*>=\s*90\s*\)/, message: 'أضف شرط الدرجة 90 أو أكثر.' },
-          { pattern: /System\.out\.println\s*\(\s*"Excellent"\s*\)\s*;/, message: 'اطبع Excellent عند تحقق الشرط.' },
-          { pattern: /else\s*\{[\s\S]*?System\.out\.println\s*\(\s*"Keep learning"\s*\)\s*;/, message: 'أضف else واطبع Keep learning.' }
-        ],
-        quiz: {
-          question: 'ما أفضل طريقة لتطوير مهارات البرمجة؟',
-          options: ['حفظ الكود دون فهمه', 'التطبيق والتجربة وتصحيح الأخطاء', 'تجنب كتابة الكود'],
-          answer: 1,
-          explanation: 'التطبيق المستمر وفهم الأخطاء يساعدان على تطوير مهارات البرمجة.'
-        }
+    ];
+
+    const allLessons = CURRICULUM.flatMap(chapter =>
+      chapter.lessons.map(lesson => ({
+        ...lesson,
+        chapterId: chapter.id,
+        chapterTitle: chapter.title
+      }))
+    );
+
+    let currentLessonId = null;
+    let editor = null;
+    let selectedQuizAnswer = null;
+    let quizAnswered = false;
+
+    function readProgress() {
+      try {
+        const value = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch {
+        return [];
       }
-    ]
-  }
-];
+    }
 
-const allLessons = CURRICULUM.flatMap(chapter =>
-  chapter.lessons.map(lesson => ({
-    ...lesson,
-    chapterId: chapter.id,
-    chapterTitle: chapter.title
-  }))
-);
+    function getXP() {
+      const value = Number.parseInt(localStorage.getItem(XP_KEY) || "0", 10);
+      return Number.isFinite(value) && value >= 0 ? value : 0;
+    }
 
-const PROGRESS_KEY = 'cody_java_progress';
-const XP_KEY = 'cody_java_xp';
+    function addXP(amount) {
+      const nextXP = getXP() + amount;
+      localStorage.setItem(XP_KEY, String(nextXP));
+      updateStats();
+    }
 
-function readProgress() {
-  try {
-    const data = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
-    return new Set(Array.isArray(data) ? data : []);
-  } catch {
-    return new Set();
-  }
-}
+    function saveProgress(progress) {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify([...new Set(progress)]));
+      updateStats();
+      renderSidebar();
+    }
 
-let completedLessons = readProgress();
-let currentLesson = null;
-let editor = null;
-let currentQuizAnswered = false;
+    function updateStats() {
+      const progress = readProgress();
+      const total = allLessons.length;
+      const completed = allLessons.filter(lesson => progress.includes(lesson.id)).length;
+      const percent = total ? Math.round((completed / total) * 100) : 0;
 
-function getXP() {
-  const value = Number(localStorage.getItem(XP_KEY) || 0);
-  return Number.isFinite(value) && value >= 0 ? value : 0;
-}
+      document.getElementById("xpCount").textContent = getXP();
+      document.getElementById("progressCount").textContent = `${completed}/${total}`;
+      document.getElementById("progressBar").style.width = `${percent}%`;
+      document.getElementById("progressTrack").setAttribute("aria-valuenow", String(percent));
+    }
 
-function addXP(amount) {
-  const next = getXP() + amount;
-  localStorage.setItem(XP_KEY, String(next));
-  return next;
-}
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
 
-function saveProgress() {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify([...completedLessons]));
-}
+    function showNotice(message, type = "info") {
+      const notice = document.getElementById("notice");
+      notice.textContent = message;
+      notice.className = `notice notice-${type}`;
+      notice.hidden = false;
 
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  })[char]);
-}
+      if (showNotice.timeout) {
+        clearTimeout(showNotice.timeout);
+      }
 
-function updateStats() {
-  const xpCount = document.getElementById('xpCount');
-  const progressCount = document.getElementById('progressCount');
-  const progressBar = document.getElementById('progressBar');
-  const progressTrack = document.getElementById('progressTrack');
+      showNotice.timeout = setTimeout(() => {
+        notice.hidden = true;
+      }, 3200);
+    }
 
-  const completed = allLessons.filter(lesson =>
-    completedLessons.has(lesson.id)
-  ).length;
+    function findLesson(id) {
+      return allLessons.find(lesson => lesson.id === id) || null;
+    }
 
-  const percentage = allLessons.length
-    ? Math.round((completed / allLessons.length) * 100)
-    : 0;
+    function renderSidebar() {
+      const list = document.getElementById("lessonList");
+      const progress = readProgress();
 
-  if (xpCount) xpCount.textContent = getXP();
-  if (progressCoun 
-t) {
-    progressCount.textContent = `${completed} / ${allLessons.length}`;
-  }
-
-  if (progressBar) {
-    progressBar.style.width = `${percentage}%`;
-  }
-
-  if (progressTrack) {
-    progressTrack.setAttribute('aria-valuenow', String(percentage));
-  }
-}
-
-function showNotice(message, type = 'info') {
-  const notice = document.getElementById('notice');
-  if (!notice) return;
-
-  notice.textContent = message;
-  notice.dataset.type = type;
-  notice.hidden = false;
-
-  clearTimeout(showNotice.timer);
-  showNotice.timer = setTimeout(() => {
-    notice.hidden = true;
-  }, 3000);
-}
-
-function findLesson(id) {
-  return allLessons.find(lesson => lesson.id === id);
-}
-
-function renderSidebar() {
-  const list = document.getElementById('lessonList');
-  if (!list) return;
-
-  list.innerHTML = CURRICULUM.map(chapter => `
-    <section class="lesson-chapter">
-      <h3>${escapeHTML(chapter.title)}</h3>
-      ${chapter.lessons.map(lesson => {
-        const completed = completedLessons.has(lesson.id);
-        const active = currentLesson?.id === lesson.id;
+      list.innerHTML = CURRICULUM.map(chapter => {
+        const completedCount = chapter.lessons.filter(lesson => progress.includes(lesson.id)).length;
 
         return `
-          <button
-            type="button"
-            class="lesson-item ${active ? 'active' : ''} ${completed ? 'completed' : ''}"
-            data-lesson-id="${escapeHTML(lesson.id)}"
-            aria-current="${active ? 'page' : 'false'}">
-            <span>${escapeHTML(lesson.title)}</span>
-            <span aria-hidden="true">${completed ? '✓' : '›'}</span>
-          </button>
+          <section class="chapter-group">
+            <h3 class="chapter-heading">
+              <span>${escapeHTML(chapter.title)}</span>
+              <span class="chapter-count">${completedCount}/${chapter.lessons.length}</span>
+            </h3>
+            <div class="chapter-lessons">
+              ${chapter.lessons.map(lesson => {
+                const completed = progress.includes(lesson.id);
+                const active = lesson.id === currentLessonId;
+
+                return `
+                  <button
+                    type="button"
+                    class="lesson-item${active ? " active" : ""}${completed ? " completed" : ""}"
+                    data-lesson-id="${escapeHTML(lesson.id)}"
+                    aria-current="${active ? "page" : "false"}"
+                  >
+                    <span class="lesson-status">${completed ? "✓" : "○"}</span>
+                    <span class="lesson-name">${escapeHTML(lesson.title)}</span>
+                                   </button>
+                `;
+              }).join('')}
+            </div>
+          </section>
         `;
-      }).join('')}
-    </section>
-  `).join('');
+      }).join('');
 
-  list.querySelectorAll('[data-lesson-id]').forEach(button => {
-    button.addEventListener('click', () => {
-      renderLesson(button.dataset.lessonId);
-    });
-  });
-}
+      list.querySelectorAll('[data-lesson-id]').forEach(button => {
+        button.addEventListener('click', () => {
+          renderLesson(button.dataset.lessonId);
+        });
+      });
+    }
 
-function setOutput(message, type = 'info') {
-  const output = document.getElementById('codeOutput');
-  if (!output) return;
+    function setOutput(message, type = 'info') {
+      const output = document.getElementById('codeOutput');
+      if (!output) return;
 
-  output.textContent = message;
-  output.dataset.type = type;
-}
+      output.textContent = message;
+      output.className = `output output-${type}`;
+    }
 
-function disposeEditor() {
-  if (editor && typeof editor.toTextArea === 'function') {
-    editor.toTextArea();
-  }
+    function disposeEditor() {
+      if (editor && typeof editor.toTextArea === 'function') {
+        editor.toTextArea();
+      }
+      editor = null;
+    }
 
-  editor = null;
-}
+    function setupEditor() {
+      const textarea = document.getElementById('codeEditor');
+      if (!textarea) return;
 
-function getEditorCode() {
-  const textarea = document.getElementById('codeEditor');
+      disposeEditor();
 
-  if (editor) return editor.getValue();
-  return textarea ? textarea.value : '';
-}
+      if (window.CodeMirror) {
+        editor = window.CodeMirror.fromTextArea(textarea, {
+          mode: 'text/x-java',
+          theme: 'dracula',
+          lineNumbers: true,
+          indentUnit: 4,
+          tabSize: 4,
+          lineWrapping: true,
+          matchBrackets: true,
+          autoCloseBrackets: true
+        });
 
-function setEditorCode(code) {
-  const textarea = document.getElementById('codeEditor');
+        editor.setSize('100%', 300);
+        editor.refresh();
+      }
+    }
 
-  if (editor) {
-    editor.setValue(code);
-    editor.refresh();
-  } else if (textarea) {
-    textarea.value = code;
-  }
-}
+    function getEditorCode() {
+      const textarea = document.getElementById('codeEditor');
+      return editor ? editor.getValue() : textarea?.value || '';
+    }
 
-function setupEditor() {
-  const textarea = document.getElementById('codeEditor');
-  if (!textarea) return;
+    function setEditorCode(code) {
+      const textarea = document.getElementById('codeEditor');
 
-  disposeEditor();
+      if (editor) {
+        editor.setValue(code);
+        editor.refresh();
+      } else if (textarea) {
+        textarea.value = code;
+      }
+    }
 
-  if (window.CodeMirror) {
-    editor = window.CodeMirror.fromTextArea(textarea, {
-      mode: 'text/x-java',
-      theme: 'dracula',
-      lineNumbers: true,
-      indentUnit: 4,
-      tabSize: 4,
-      lineWrapping: true,
-      matchBrackets: true,
-      autoCloseBrackets: true
-    });
+    function renderQuiz(quiz) {
+      const container = document.getElementById('lessonQuiz');
+      const feedback = document.getElementById('quizFeedback');
 
-    editor.setSize('100%', 'auto');
-    editor.refresh();
-  } else {
-    textarea.value = currentLesson?.starter || '';
-  }
-}
+      if (!container || !quiz) return;
 
-function renderQuiz(quiz) {
-  const container = document.getElementById('lessonQuiz');
-  const feedback = document.getElementById('quizFeedback');
+      selectedQuizAnswer = null;
+      quizAnswered = false;
 
-  if (!container) return;
+      if (feedback) feedback.textContent = '';
 
-  if (feedback) {
-    feedback.textContent = '';
-    feedback.dataset.type = '';
-  }
+      container.innerHTML = `
+        <p>${escapeHTML(quiz.question)}</p>
+        <div class="quiz-options">
+          ${quiz.options.map((option, index) => `
+            <button type="button" class="quiz-option" data-answer="${index}">
+              ${escapeHTML(option)}
+            </button>
+          `).join('')}
+        </div>
+      `;
 
-  if (!quiz) {
-    container.innerHTML = '';
-    return;
-  }
+      container.querySelectorAll('[data-answer]').forEach(button => {
+        button.addEventListener('click', () => {
+          if (quizAnswered) return;
 
-  container.innerHTML = `
-    <h3>${escapeHTML(quiz.question)}</h3>
-    <div class="quiz-options">
-      ${quiz.options.map((option, index) => `
-        <button
-          type="button"
-          class="quiz-option"
-          data-answer="${index}">
-          ${escapeHTML(option)}
-        </button>
-      `).join('')}
-    </div>
-  `;
+          selectedQuizAnswer = Number(button.dataset.answer);
+          quizAnswered = true;
 
-  container.querySelectorAll('[data-answer]').forEach(button => {
-    button.addEventListener('click', () => {
-      if (currentQuizAnswered) return;
+          const correct = selectedQuizAnswer === quiz.answer;
 
-      currentQuizAnswered = true;
+          container.querySelectorAll('[data-answer]').forEach(option => {
+            option.disabled = true;
 
-      const selected = Number(button.dataset.answer);
-      const correct = selected === quiz.answer;
+            if (Number(option.dataset.answer) === quiz.answer) {
+              option.classList.add('correct');
+            }
+          });
 
-      container.querySelectorAll('[data-answer]').forEach(option => {
-        option.disabled = true;
+          if (!correct) button.classList.add('wrong');
 
-        if (Number(option.dataset.answer) === quiz.answer) {
-          option.classList.add('correct');
+          if (feedback) {
+            feedback.textContent = correct
+              ? `إجابة صحيحة! ${quiz.explanation}`
+              : `الإجابة غير صحيحة. ${quiz.explanation}`;
+          }
+        });
+      });
+    }
+
+    function renderLesson(id) {
+      const lesson = findLesson(id);
+
+      if (!lesson) {
+        showNotice('لم يتم العثور على الدرس.', 'error');
+        return;
+      }
+
+      currentLessonId = lesson.id;
+      selectedQuizAnswer = null;
+      quizAnswered = false;
+
+      document.getElementById('lessonChapter').textContent =
+        lesson.chapterTitle;
+
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      document.getElementById('lessonIntro').textContent = lesson.intro;
+      document.getElementById('lessonExplanation').textContent =
+        lesson.explanation;
+      document.getElementById('lessonExample').textContent = lesson.example;
+      document.getElementById('lessonTask').textContent = lesson.task;
+
+      const hint = document.getElementById('lessonHint');
+      hint.textContent = lesson.hint;
+      hint.hidden = true;
+
+      document.getElementById('showHint').textContent = 'إظهار التلميح';
+
+      setEditorCode(lesson.starter);
+      renderQuiz(lesson.quiz);
+      renderSidebar();
+      updateStats();
+
+      const index = allLessons.findIndex(item => item.id === lesson.id);
+
+      document.getElementById('previousLesson').disabled = index <= 0;
+      document.getElementById('nextLesson').disabled =
+        index >= allLessons.length - 1;
+
+      document.getElementById('completeLesson').textContent =
+        readProgress().includes(lesson.id)
+          ? 'تم إكمال الدرس ✓'
+          : 'إكمال الدرس';
+
+      setOutput('اكتب الكود ثم اضغط «تحقق من الحل».');
+    }
+
+    function checkChallenge() {
+      if (!currentLessonId) return;
+
+      const lesson = findLesson(currentLessonId);
+      const code = getEditorCode();
+
+      if (!code.trim()) {
+        setOutput('اكتب الكود أولًا ثم حاول مرة أخرى.', 'error');
+        return;
+      }
+
+      for (const check of lesson.checks || []) {
+        if (!check.pattern.test(code)) {
+          setOutput(`لم يكتمل المطلوب بعد: ${check.message}`, 'error');
+          return;
         }
+      }
+
+      setOutput(
+        'ممتاز! الكود يحتوي على الأنماط المطلوبة. هذا فحص نصي وليس تشغيلًا فعليًا لـ Java.',
+        'success'
+      );
+    }
+
+    function completeCurrentLesson() {
+      if (!currentLessonId) return;
+
+      const progress = readProgress();
+
+      if (progress.includes(currentLessonId)) {
+        showNotice('هذا الدرس مكتمل بالفعل.', 'info');
+        return;
+      }
+
+      progress.push(currentLessonId);
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+
+      addXP(20);
+      updateStats();
+      renderSidebar();
+
+      document.getElementById('completeLesson').textContent =
+        'تم إكمال الدرس ✓';
+
+      showNotice('تم إكمال الدرس! حصلت على 20 XP.', 'success');
+    }
+
+    function navigateLesson(direction) {
+      const index = allLessons.findIndex(
+        lesson => lesson.id === currentLessonId
+      );
+
+      const nextIndex = index + direction;
+
+      if (nextIndex < 0 || nextIndex >= allLessons.length) return;
+
+      renderLesson(allLessons[nextIndex].id);
+    }
+
+    function attachLessonEvents() {
+      document.getElementById('showHint').addEventListener('click', () => {
+        const hint = document.getElementById('lessonHint');
+        hint.hidden = !hint.hidden;
+
+        document.getElementById('showHint').textContent =
+          hint.hidden ? 'إظهار التلميح' : 'إخفاء التلميح';
       });
 
-      if (!correct) {
-        button.classList.add('incorrect');
-      }
+      document.getElementById('checkCode').addEventListener(
+        'click',
+        checkChallenge
+      );
 
-      if (feedback) {
-        feedback.textContent = correct
-          ? `إجابة صحيحة! ${quiz.explanation}`
-          : `الإجابة غير صحيحة. ${quiz.explanation}`;
+      document.getElementById('resetCode').addEventListener('click', () => {
+        const lesson = findLesson(currentLessonId);
+        if (!lesson) return;
 
-        feedback.dataset.type = correct ? 'success' : 'error';
-      }
-    });
-  });
-}
+        setEditorCode(lesson.starter);
+        setOutput('تمت إعادة الكود إلى نقطة البداية.');
+      });
 
-function renderLesson(id) {
-  const lesson = findLesson(id);
+      document.getElementById('completeLesson').addEventListener(
+        'click',
+        completeCurrentLesson
+      );
 
-  if (!lesson) {
-    showNotice('لم يتم العثور على الدرس.', 'error');
-    return;
-  }
+      document.getElementById('previousLesson').addEventListener(
+        'click',
+        () => navigateLesson(-1)
+      );
 
-  currentLesson = lesson;
-  currentQuizAnswered = false;
-
-  const setText = (elementId, value) => {
-    const element = document.getElementById(elementId);
-    if (element) element.textContent = value;
-  };
-
-  setText('lessonChapter', lesson.chapterTitle);
-  setText('lessonTitle', lesson.title);
-  setText('lessonIntro', lesson.intro);
-  setText('lessonExplanation', lesson.explanation);
-  setText('lessonExample', lesson.example);
-  setText('lessonTask', lesson.task);
-
-  const hint = document.getElementById('lessonHint');
-  const hintButton = document.getElementById('showHint');
-  const completeButton = document.getElementById('completeLesson');
-  const previousButton = document.getElementById('previousLesson');
-  const nextButton = document.getElementById('nextLesson');
-
-  if (hint) {
-    hint.textContent = lesson.hint;
-    hint.hidden = true;
-  }
-
-  if (hintButton) hintButton.textContent = 'عرض التلميح';
-
-  const index = allLessons.findIndex(item => item.id === lesson.id);
-
-  if (previousButton) previousButton.disabled = index <= 0;
-  if (nextButton) nextButton.disabled = index >= allLessons.length - 1;
-
-  if (completeButton) {
-    completeButton.textContent = completedLessons.has(lesson.id)
-      ? 'تم إكمال الدرس ✓'
-      : 'إكمال الدرس';
-  }
-
-  const textarea = document.getElementById('codeEditor');
-  if (textarea) textarea.value = lesson.starter;
-
-  renderQuiz(lesson.quiz);
-  setupEditor();
-  renderSidebar();
-  updateStats();
-
-  setOutput(
-    'اكتب الكود ثم اضغط «فحص الكود». الفحص يتحقق من الأوامر المطلوبة ولا يشغّل Java فعليًا.'
-  );
-}
-
-function checkChallenge() {
-  if (!currentLesson) return;
-
-  const code = getEditorCode();
-
-  if (!code.trim()) {
-    setOutput('اكتب الكود أولًا ثم حاول مرة أخرى.', 'error');
-    return;
-  }
-
-  for (const check of currentLesson.checks || []) {
-    if (!check.pattern.test(code)) {
-      setOutput(`لم يكتمل المطلوب بعد: ${check.message}`, 'error');
-      return;
+      document.getElementById('nextLesson').addEventListener(
+        'click',
+        () => navigateLesson(1)
+      );
     }
-  }
 
-  setOutput(
-    'ممتاز! الكود يحتوي على الأنماط المطلوبة. هذا فحص نصي فقط، وليس تشغيلًا فعليًا لبرنامج Java.',
-    'success'
-  );
-}
+    function getInitialLesson() {
+      const params = new URLSearchParams(window.location.search);
+      const requestedId = params.get('lesson');
 
-function completeCurrentLesson() {
-  if (!currentLesson) return;
+      if (requestedId && findLesson(requestedId)) {
+        return requestedId;
+      }
 
-  if (completedLessons.has(currentLesson.id)) {
-    showNotice('هذا الدرس مكتمل بالفعل.', 'info');
-    return;
-  }
+      const progress = readProgress();
 
-  completedLessons.add(currentLesson.id);
+      const firstIncomplete = allLessons.find(
+        lesson => !progress.includes(lesson.id)
+      );
 
-  try {
-    saveProgress();
-    addXP(20);
-  } catch (error) {
-    completedLessons.delete(currentLesson.id);
-    showNotice('تعذر حفظ التقدم. تحقق من إعدادات التخزين في المتصفح.', 'error');
-    return;
-  }
+      return firstIncomplete?.id || allLessons[0]?.id;
+    }
 
-  updateStats();
-  renderSidebar();
+    function startApp() {
+      attachLessonEvents();
+      setupEditor();
+      renderLesson(getInitialLesson());
+      updateStats();
+    }
 
-  const completeButton = document.getElementById('completeLesson');
-
-  if (completeButton) {
-    completeButton.textContent = 'تم إكمال الدرس ✓';
-  }
-
-  if (completedLessons.size === allLessons.length) {
-    showNotice('مبروك! تم إكمال جميع دروس منهج Java.', 'success');
-  } else {
-    showNotice('تم إكمال الدرس! حصلت على 20 XP.', 'success');
-  }
-}
-
-function navigateLesson(direction) {
-  if (!currentLesson) return;
-
-  const index = allLessons.findIndex(
-    lesson => lesson.id === currentLesson.id
-  );
-
-  const nextIndex = index + direction;
-
-  if (nextIndex < 0 || nextIndex >= allLessons.length) return;
-
-  renderLesson(allLessons[nextIndex].id);
-}
-
-function attachLessonEvents() {
-  const hintButton = document.getElementById('showHint');
-  const checkButton = document.getElementById('checkCode');
-  const resetButton = document.getElementById('resetCode');
-  const completeButton = document.getElementById('completeLesson');
-  const previousButton = document.getElementById('previousLesson');
-  const nextButton = document.getElementById('nextLesson');
-
-  if (hintButton) {
-    hintButton.addEventListener('click', () => {
-      const hint = document.getElementById('lessonHint');
-      if (!hint) return;
-
-      hint.hidden = !hint.hidden;
-      hintButton.textContent = hint.hidden
-        ? 'عرض التلميح'
-        : 'إخفاء التلميح';
-    });
-  }
-
-  if (checkButton) {
-    checkButton.addEventListener('click', checkChallenge);
-  }
-
-  if (resetButton) {
-    resetButton.addEventListener('click', () => {
-      if (!currentLesson) return;
-
-      setEditorCode(currentLesson.starter);
-      setOutput('تمت إعادة الكود إلى نقطة البداية.');
-    });
-  }
-
-  if (completeButton) {
-    completeButton.addEventListener('click', completeCurrentLesson);
-  }
-
-  if (previousButton) {
-    previousButton.addEventListener('click', () => navigateLesson(-1));
-  }
-
-  if (nextButton) {
-    nextButton.addEventListener('click', () => navigateLesson(1));
-  }
-}
-
-function getInitialLesson() {
-  const params = new URLSearchParams(window.location.search);
-  const requestedId = params.get('lesson');
-
-  if (requestedId && findLesson(requestedId)) {
-    return requestedId;
-  }
-
-  const firstIncomplete = allLessons.find(
-    lesson => !completedLessons.has(lesson.id)
-  );
-
-  return firstIncomplete?.id || allLessons[0]?.id;
-}
-
-function startApp() {
-  if (!allLessons.length) {
-    showNotice('لا توجد دروس متاحة حاليًا.', 'error');
-    return;
-  }
-
-  attachLessonEvents();
-  updateStats();
-  renderLesson(getInitialLesson());
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', startApp, { once: true });
-} else {
-  startApp();
-}
-</script>
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startApp, { once: true });
+    } else {
+      startApp();
+    }
+  </script>
 </body>
 </html>
