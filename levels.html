@@ -3,22 +3,42 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#070B14">
-  <title>الفصول والدروس | CodeQuest</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d19">
+  <title>الفصول التعليمية | CodeQuest</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #070b14;
-      --panel: #101827;
-      --border: rgba(148, 163, 184, .16);
+      color-scheme: dark;
+      --bg: #080d19;
+      --surface: #101a2b;
+      --surface2: #142137;
+      --border: rgba(148,163,184,.17);
       --text: #f1f5f9;
       --muted: #94a3b8;
-      --cyan: #22d3ee;
-      --purple: #a78bfa;
+      --accent: #22d3ee;
+      --accent-soft: rgba(34,211,238,.12);
+      --glow: rgba(34,211,238,.09);
+    }
+
+    body[data-language="cpp"] {
+      --accent: #60a5fa;
+      --accent-soft: rgba(96,165,250,.13);
+      --glow: rgba(59,130,246,.12);
+    }
+
+    body[data-language="python"] {
+      --accent: #fbbf24;
+      --accent-soft: rgba(251,191,36,.12);
+      --glow: rgba(251,191,36,.09);
+    }
+
+    body[data-language="javascript"] {
+      --accent: #facc15;
+      --accent-soft: rgba(250,204,21,.11);
+      --glow: rgba(250,204,21,.08);
     }
 
     * { box-sizing: border-box; }
@@ -26,84 +46,86 @@
     body {
       margin: 0;
       min-height: 100vh;
-      color: var(--text);
       background:
-        radial-gradient(ellipse at 10% 0%, rgba(34,211,238,.09), transparent 35%),
-        radial-gradient(ellipse at 90% 10%, rgba(167,139,250,.10), transparent 30%),
+        radial-gradient(ellipse at 8% 0%, var(--glow), transparent 34%),
+        radial-gradient(ellipse at 92% 8%, rgba(139,92,246,.08), transparent 30%),
         var(--bg);
+      color: var(--text);
       font-family: "Cairo", sans-serif;
     }
 
-    button, a { font: inherit; }
     a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
 
     .container {
       width: min(1120px, calc(100% - 32px));
       margin: auto;
-      padding: 26px 0 60px;
+      padding: 24px 0 55px;
     }
 
     .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 36px;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 11px;
       font-size: 20px;
       font-weight: 900;
     }
 
     .brand-icon {
-      display: grid;
-      place-items: center;
       width: 44px;
       height: 44px;
+      display: grid;
+      place-items: center;
       border-radius: 14px;
-      background: linear-gradient(135deg, var(--cyan), var(--purple));
-      color: #07111d;
+      color: #08111f;
+      background: var(--accent);
       font-size: 22px;
+      font-weight: 900;
     }
 
     .back-link {
-      padding: 9px 16px;
+      padding: 9px 14px;
       border: 1px solid var(--border);
       border-radius: 12px;
       color: var(--muted);
     }
 
     .back-link:hover {
-      border-color: var(--cyan);
-      color: var(--cyan);
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     .hero {
-      padding: 32px;
-      margin-bottom: 28px;
+      padding: clamp(22px, 4vw, 38px);
       border: 1px solid var(--border);
-      border-radius: 24px;
-      background: linear-gradient(125deg, rgba(34,211,238,.09), rgba(167,139,250,.08));
+      border-radius: 25px;
+      background: linear-gradient(125deg, var(--accent-soft), rgba(139,92,246,.07));
+      margin-bottom: 20px;
     }
 
     .eyebrow {
-      display: inline-block;
+      display: inline-flex;
       padding: 6px 12px;
-      border: 1px solid rgba(34,211,238,.2);
+      border: 1px solid var(--border);
       border-radius: 999px;
-      color: var(--cyan);
+      color: var(--accent);
+      background: var(--accent-soft);
       font-size: 12px;
       font-weight: 800;
     }
 
     h1 {
-      margin: 16px 0 8px;
-      font-size: clamp(26px, 4vw, 38px);
-      line-height: 1.5;
+      margin: 15px 0 7px;
+      font-size: clamp(27px, 4vw, 39px);
+      line-height: 1.45;
     }
 
     .hero p {
@@ -116,30 +138,67 @@
     .stats {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 30px;
+      gap: 13px;
+      margin-bottom: 28px;
     }
 
     .stat {
-      padding: 18px;
+      min-width: 0;
+      padding: 17px;
       border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(16,24,39,.8);
+      border-radius: 17px;
+      background: rgba(16,26,43,.85);
     }
 
-    .stat-label { color: var(--muted); font-size: 13px; }
-    .stat-value { margin-top: 5px; font-size: 25px; font-weight: 900; }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { margin-top: 4px; font-size: 25px; font-weight: 900; }
+    .language-name { color: var(--accent); font-size: 17px; }
 
-    .section-heading {
+    .overall-progress {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(16,26,43,.75);
+    }
+
+    .progress-heading {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .progress-number { color: var(--accent); }
+
+    .progress-track {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(148,163,184,.13);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      transition: width .35s ease;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       gap: 12px;
       margin: 28px 0 16px;
     }
 
     .section-heading h2 { margin: 0; font-size: 22px; }
-    .section-heading span { color: var(--muted); font-size: 13px; }
+    .section-heading span { color: var(--muted); font-size: 12px; }
 
     .chapters {
       display: grid;
@@ -148,103 +207,136 @@
     }
 
     .chapter {
-      padding: 22px;
+      min-width: 0;
+      padding: 21px;
       border: 1px solid var(--border);
       border-radius: 20px;
-      background: linear-gradient(145deg, rgba(21,31,49,.94), rgba(12,19,32,.94));
+      background: linear-gradient(145deg, var(--surface2), var(--surface));
       transition: transform .2s, border-color .2s;
     }
 
     .chapter:hover {
       transform: translateY(-3px);
-      border-color: rgba(34,211,238,.4);
+      border-color: var(--accent);
     }
 
-    .chapter-top { display: flex; align-items: flex-start; gap: 14px; }
+    .chapter-top { display: flex; align-items: flex-start; gap: 13px; }
 
     .chapter-number {
+      flex: 0 0 47px;
+      height: 47px;
       display: grid;
       place-items: center;
-      flex: 0 0 48px;
-      height: 48px;
-      border-radius: 15px;
-      background: rgba(34,211,238,.1);
-      color: var(--cyan);
+      border-radius: 14px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 17px;
       font-weight: 900;
-      font-size: 18px;
     }
 
-    .chapter h3 { margin: 0 0 5px; font-size: 18px; }
+    .chapter h3 { margin: 0 0 5px; font-size: 17px; }
 
     .chapter-description {
       margin: 0;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.8;
+      font-size: 12px;
+      line-height: 1.85;
     }
 
-    .lesson-count { margin: 18px 0 14px; color: var(--muted); font-size: 13px; }
-    .lesson-list { display: grid; gap: 8px; margin-bottom: 18px; }
+    .chapter-progress { margin-top: 17px; }
+
+    .chapter-progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .chapter-progress .progress-track { height: 5px; }
+
+    .lesson-count {
+      margin: 15px 0 11px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .lesson-list {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
 
     .lesson-link {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 10px 12px;
+      gap: 10px;
+      padding: 10px 11px;
       border: 1px solid rgba(148,163,184,.1);
-      border-radius: 12px;
-      background: rgba(7,11,20,.4);
-      font-size: 13px;
+      border-radius: 11px;
+      background: rgba(5,10,20,.32);
+      font-size: 12px;
     }
 
-    .lesson-link:hover { border-color: rgba(34,211,238,.35); color: var(--cyan); }
-    .lesson-link span:last-child { color: var(--muted); }
+    .lesson-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .lesson-link .arrow { color: var(--accent); }
 
     .start-button, .retry-button {
-      display: inline-flex;
+      width: 100%;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      width: 100%;
-      padding: 11px 16px;
-      border: 0;
+      padding: 11px 14px;
+      border: 1px solid transparent;
       border-radius: 12px;
-      background: linear-gradient(100deg, var(--cyan), #67e8f9);
-      color: #07111d;
+      background: var(--accent);
+      color: #08111f;
       font-weight: 900;
       cursor: pointer;
     }
 
+    .start-button.disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
     .state-box {
-      padding: 32px 20px;
+      padding: 30px 18px;
       border: 1px solid var(--border);
       border-radius: 18px;
-      background: var(--panel);
-      text-align: center;
+      background: var(--surface);
       color: var(--muted);
+      text-align: center;
       line-height: 1.9;
     }
 
-    .state-box h2 { margin: 0 0 10px; color: var(--text); }
+    .state-box h2 { margin: 0 0 8px; color: var(--text); }
     .error-details { margin-top: 12px; font-size: 12px; overflow-wrap: anywhere; }
     .hidden { display: none !important; }
 
     footer {
-      margin-top: 42px;
+      margin-top: 38px;
       color: #64748b;
       text-align: center;
       font-size: 12px;
     }
 
-    @media (max-width: 700px) {
-      .container { width: min(100% - 22px, 560px); padding-top: 16px; }
-      .hero { padding: 23px 19px; }
+    @media (max-width: 720px) {
+      .container { width: calc(100% - 22px); padding-top: 15px; }
       .chapters { grid-template-columns: 1fr; }
+      .hero { padding: 23px 18px; }
       .stats { gap: 8px; }
       .stat { padding: 12px 9px; }
       .stat-value { font-size: 21px; }
-      .stat-label { font-size: 11px; }
+      .language-name { font-size: 14px; }
+      .stat-label { font-size: 10px; }
       .brand { font-size: 16px; }
       .back-link { padding: 8px 10px; font-size: 12px; }
     }
@@ -255,31 +347,44 @@
   <main class="container">
     <header class="topbar">
       <a class="brand" href="dashboard.html">
-        <span class="brand-icon">⌘</span>
+        <span class="brand-icon">&lt;/&gt;</span>
         <span>CodeQuest</span>
       </a>
       <a class="back-link" href="languages.html">← اختيار اللغة</a>
     </header>
 
     <section class="hero">
-      <span class="eyebrow">🚀 رحلة تعلم البرمجة</span>
+      <span class="eyebrow" id="languageBadge">🚀 مسار التعلم</span>
       <h1 id="pageTitle">فصول تعلم البرمجة</h1>
-      <p id="pageDescription">اختر الفصل المناسب وابدأ التعلم خطوة بخطوة، من الأساسيات إلى التطبيق العملي.</p>
+      <p id="pageDescription">ابدأ من الأساسيات، وتعلّم بالتدريج، وطبّق ما تتعلمه في محرر الأكواد.</p>
     </section>
 
-    <section class="stats" aria-label="إحصائيات المنهج">
+    <section class="stats">
       <div class="stat">
-        <div class="stat-label">الفصول</div>
+        <div class="stat-label">إجمالي الفصول</div>
         <div class="stat-value" id="chapterCount">—</div>
       </div>
       <div class="stat">
-        <div class="stat-label">الدروس</div>
+        <div class="stat-label">إجمالي الدروس</div>
         <div class="stat-value" id="lessonCount">—</div>
       </div>
       <div class="stat">
         <div class="stat-label">لغة البرمجة</div>
-        <div class="stat-value" id="languageLabel" style="font-size:17px">—</div>
+        <div class="stat-value language-name" id="languageLabel">—</div>
       </div>
+    </section>
+
+    <section class="overall-progress">
+      <div class="progress-heading">
+        <span>تقدمك في هذا المسار</span>
+        <span class="progress-number" id="overallProgressText">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="overallProgressBar"></div>
+      </div>
+      <p class="chapter-description" id="progressCaption" style="margin-top:10px">
+        ابدأ أول درس لتتابع تقدمك.
+      </p>
     </section>
 
     <section>
@@ -288,31 +393,46 @@
         <span id="curriculumStatus">جارٍ تحميل المنهج...</span>
       </div>
 
-      <div id="loadingState" class="state-box" role="status">جارٍ تحميل الفصول والدروس...</div>
+      <div id="loadingState" class="state-box">جارٍ تحميل الفصول والدروس...</div>
 
       <div id="errorState" class="state-box hidden" role="alert">
         <h2>تعذر تحميل المنهج</h2>
-        <p id="errorMessage">تأكد من وجود ملف المنهج في المسار الصحيح.</p>
+        <p id="errorMessage">تأكد من وجود ملف المنهج.</p>
         <button id="retryButton" class="retry-button" type="button">إعادة المحاولة</button>
-        <div class="error-details" id="errorDetails"></div>
+        <div id="errorDetails" class="error-details"></div>
       </div>
 
       <div id="emptyState" class="state-box hidden">
-        <h2>لا توجد فصول لعرضها بعد</h2>
-        <p>لم يتم العثور على فصول في ملف المنهج.</p>
+        <h2>لا توجد فصول حاليًا</h2>
+        <p>تأكد من أن ملف المنهج يحتوي على الفصول والدروس.</p>
       </div>
 
-      <div id="chaptersContainer" class="chapters"></div>
+      <div id="chaptersContainer" class="chapters hidden"></div>
     </section>
 
-    <footer>CodeQuest · تعلم البرمجة بالتجربة والممارسة</footer>
+    <footer>CodeQuest · تعلّم، جرّب، وطوّر مهاراتك</footer>
   </main>
 
   <script type="module">
     const LANGUAGES = {
-      javascript: { label: "JavaScript", file: "./json/js_curriculum.json" },
-      python: { label: "Python", file: "./json/python_curriculum.json" },
-      cpp: { label: "C++", file: "./json/cpp_curriculum.json" }
+      javascript: {
+        label: "JavaScript",
+        icon: "🟨",
+        file: "./json/js_curriculum.json",
+        description: "تعلّم JavaScript من الصفر، وطبّق المفاهيم في تمارين عملية."
+      },
+      python: {
+        label: "Python",
+        icon: "🐍",
+        file: "./json/python_curriculum.json",
+        description: "تعلّم Python خطوة بخطوة، من أول أمر إلى بناء برامجك الخاصة."
+      },
+      cpp: {
+        label: "C++",
+        icon: "⚙️",
+        file: "./json/cpp_curriculum.json",
+        description: "تعلّم C++ من الأساسيات، وافهم المنطق البرمجي وطبّقه بنفسك."
+      }
     };
 
     const $ = id => document.getElementById(id);
@@ -320,6 +440,7 @@
     const ui = {
       title: $("pageTitle"),
       description: $("pageDescription"),
+      badge: $("languageBadge"),
       chapterCount: $("chapterCount"),
       lessonCount: $("lessonCount"),
       languageLabel: $("languageLabel"),
@@ -330,7 +451,10 @@
       errorDetails: $("errorDetails"),
       retry: $("retryButton"),
       empty: $("emptyState"),
-      chapters: $("chaptersContainer")
+      chapters: $("chaptersContainer"),
+      progressText: $("overallProgressText"),
+      progressBar: $("overallProgressBar"),
+      progressCaption: $("progressCaption")
     };
 
     function normalizeLanguage(value) {
@@ -338,11 +462,10 @@
 
       if (["python", "بايثون"].includes(lang)) return "python";
       if (["cpp", "c++", "c plus plus", "سي بلس بلس"].includes(lang)) return "cpp";
-
       return "javascript";
     }
 
-    function getLanguage() {
+    function getSelectedLanguage() {
       const params = new URLSearchParams(location.search);
       let saved = "";
 
@@ -353,10 +476,13 @@
       return normalizeLanguage(params.get("lang") || saved);
     }
 
-    const selectedLanguage = getLanguage();
+    const selectedLanguage = getSelectedLanguage();
     const language = LANGUAGES[selectedLanguage];
 
-    function element(tag, className, text) {
+    document.body.dataset.language = selectedLanguage;
+    document.title = `${language.label} | CodeQuest`;
+
+    function makeElement(tag, className = "", text = "") {
       const node = document.createElement(tag);
       if (className) node.className = className;
       if (text !== undefined && text !== null) node.textContent = String(text);
@@ -392,27 +518,51 @@
       return [];
     }
 
-    function chapterTitle(chapter, index) {
+    function getChapterTitle(chapter, index) {
       if (typeof chapter === "string") return chapter;
-      return chapter?.title || chapter?.name || chapter?.chapter_title || `الفصل ${index + 1}`;
+
+      return chapter?.title ||
+        chapter?.name ||
+        chapter?.chapter_title ||
+        `الفصل ${index + 1}`;
     }
 
-    function chapterDescription(chapter) {
+    function getChapterDescription(chapter) {
       if (!chapter || typeof chapter !== "object") {
         return "ابدأ الدروس وتدرّج في تعلم المفاهيم الأساسية.";
       }
 
-      return chapter.description || chapter.intro || chapter.cody_intro ||
-        "ابدأ الدروس وتدرّج في تعلم المفاهيم الأساسية.";
+      return chapter.description ||
+        chapter.intro ||
+        chapter.cody_intro ||
+        "تعلّم المفاهيم الأساسية، ثم انتقل إلى التطبيق العملي.";
     }
 
-    function lessonTitle(lesson, index) {
+    function getLessonTitle(lesson, index) {
       if (typeof lesson === "string") return lesson;
-      return lesson?.title || lesson?.name || lesson?.lesson_title ||
-        lesson?.topic || `الدرس ${index + 1}`;
+
+      return lesson?.title ||
+        lesson?.name ||
+        lesson?.lesson_title ||
+        lesson?.topic ||
+        `الدرس ${index + 1}`;
     }
 
-    function lessonUrl(chapterIndex, lessonIndex) {
+    function getCompletedLessons() {
+      try {
+        const raw = localStorage.getItem(`cq_completed_lessons_${selectedLanguage}`);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+      } catch {
+        return new Set();
+      }
+    }
+
+    function lessonKey(chapterIndex, lessonIndex) {
+      return `${chapterIndex}:${lessonIndex}`;
+    }
+
+    function getLessonUrl(chapterIndex, lessonIndex) {
       const url = new URL("lecture.html", location.href);
       url.searchParams.set("lang", selectedLanguage);
       url.searchParams.set("chapter", String(chapterIndex));
@@ -420,47 +570,108 @@
       return url.pathname + url.search;
     }
 
-    function createChapter(chapter, chapterIndex) {
-      const card = element("article", "chapter");
-      const top = element("div", "chapter-top");
-      const number = element("div", "chapter-number", String(chapterIndex + 1).padStart(2, "0"));
-      const info = element("div");
-      const title = element("h3", "", chapterTitle(chapter, chapterIndex));
-      const description = element("p", "chapter-description", chapterDescription(chapter));
+    function updateProgress(chapters) {
+      const completed = getCompletedLessons();
+      let total = 0;
+      let done = 0;
 
-      info.append(title, description);
+      chapters.forEach((chapter, chapterIndex) => {
+        getLessons(chapter).forEach((_, lessonIndex) => {
+          total++;
+          if (completed.has(lessonKey(chapterIndex, lessonIndex))) done++;
+        });
+      });
+
+      const percent = total ? Math.round((done / total) * 100) : 0;
+
+      ui.progressText.textContent = `${percent}%`;
+      ui.progressBar.style.width = `${percent}%`;
+      ui.progressCaption.textContent = total
+        ? `أكملت ${done} من ${total} درس. استمر في التعلم!`
+        : "أضف الدروس إلى المنهج لبدء متابعة التقدم.";
+
+      return { total, done };
+    }
+
+    function createChapterCard(chapter, chapterIndex) {
+      const card = makeElement("article", "chapter");
+      const top = makeElement("div", "chapter-top");
+      const number = makeElement(
+        "div",
+        "chapter-number",
+        String(chapterIndex + 1).padStart(2, "0")
+      );
+
+      const info = makeElement("div");
+      info.append(
+        makeElement("h3", "", getChapterTitle(chapter, chapterIndex)),
+        makeElement("p", "chapter-description", getChapterDescription(chapter))
+      );
+
       top.append(number, info);
 
       const lessons = getLessons(chapter);
-      const count = element("div", "lesson-count", `${lessons.length} درس في هذا الفصل`);
-      const list = element("div", "lesson-list");
+      const completed = getCompletedLessons();
 
-      lessons.slice(0, 3).forEach((lesson, index) => {
-        const link = element("a", "lesson-link");
-        link.href = lessonUrl(chapterIndex, index);
+      const completedInChapter = lessons.filter((_, lessonIndex) =>
+        completed.has(lessonKey(chapterIndex, lessonIndex))
+      ).length;
+
+      const percent = lessons.length
+        ? Math.round((completedInChapter / lessons.length) * 100)
+        : 0;
+
+      const progress = makeElement("div", "chapter-progress");
+      const progressLabel = makeElement("div", "chapter-progress-label");
+
+      progressLabel.append(
+        makeElement("span", "", `تقدم الفصل: ${completedInChapter}/${lessons.length}`),
+        makeElement("span", "", `${percent}%`)
+      );
+
+      const track = makeElement("div", "progress-track");
+      const fill = makeElement("div", "progress-fill");
+      fill.style.width = `${percent}%`;
+      track.append(fill);
+      progress.append(progressLabel, track);
+
+      const count = makeElement("div", "lesson-count", `${lessons.length} درس في هذا الفصل`);
+      const lessonList = makeElement("div", "lesson-list");
+
+      lessons.slice(0, 4).forEach((lesson, lessonIndex) => {
+        const key = lessonKey(chapterIndex, lessonIndex);
+        const isDone = completed.has(key);
+        const link = makeElement("a", "lesson-link");
+        link.href = getLessonUrl(chapterIndex, lessonIndex);
+
         link.append(
-          element("span", "", lessonTitle(lesson, index)),
-          element("span", "", "←")
+          makeElement("span", "", `${isDone ? "✓ " : ""}${getLessonTitle(lesson, lessonIndex)}`),
+          makeElement("span", "arrow", isDone ? "مكتمل" : "←")
         );
-        list.append(link);
+
+        lessonList.append(link);
       });
 
-      if (lessons.length > 3) {
-        list.append(element("p", "chapter-description", `بالإضافة إلى ${lessons.length - 3} دروس أخرى`));
+      if (lessons.length > 4) {
+        lessonList.append(
+          makeElement("p", "chapter-description", `و ${lessons.length - 4} دروس أخرى`)
+        );
       }
 
-      const start = element("a", "start-button",
-        lessons.length ? "ابدأ الفصل ←" : "لا توجد دروس في هذا الفصل");
+      const start = makeElement(
+        "a",
+        `start-button${lessons.length ? "" : " disabled"}`,
+        lessons.length ? "ابدأ الفصل ←" : "لا توجد دروس بعد"
+      );
 
       if (lessons.length) {
-        start.href = lessonUrl(chapterIndex, 0);
+        start.href = getLessonUrl(chapterIndex, 0);
       } else {
         start.href = "#";
-        start.style.opacity = ".55";
         start.addEventListener("click", event => event.preventDefault());
       }
 
-      card.append(top, count, list, start);
+      card.append(top, progress, count, lessonList, start);
       return card;
     }
 
@@ -468,15 +679,17 @@
       showState("error");
       ui.status.textContent = "تعذر تحميل المنهج";
       ui.errorMessage.textContent = "تأكد من وجود ملف المنهج وصحة تنسيقه.";
-      ui.errorDetails.textContent = error instanceof Error ? error.message : String(error);
+      ui.errorDetails.textContent =
+        error instanceof Error ? error.message : String(error);
     }
 
     async function loadCurriculum() {
       ui.chapters.replaceChildren();
       showState("loading");
 
-      ui.title.textContent = `تعلم ${language.label}`;
-      ui.description.textContent = `استكشف فصول ${language.label} وتعلّم خطوة بخطوة من الأساسيات إلى التطبيق العملي.`;
+      ui.title.textContent = `تعلّم ${language.label}`;
+      ui.description.textContent = language.description;
+      ui.badge.textContent = `${language.icon} مسار ${language.label}`;
       ui.languageLabel.textContent = language.label;
       ui.status.textContent = "جارٍ تحميل المنهج...";
 
@@ -484,27 +697,33 @@
         const response = await fetch(language.file, { cache: "no-store" });
 
         if (!response.ok) {
-          throw new Error(`لم يتم العثور على ${language.file} (HTTP ${response.status})`);
+          throw new Error(`تعذر تحميل ${language.file} (HTTP ${response.status})`);
         }
 
         const data = await response.json();
         const chapters = getChapters(data);
+        const totalLessons = chapters.reduce(
+          (total, chapter) => total + getLessons(chapter).length,
+          0
+        );
 
         ui.chapterCount.textContent = String(chapters.length);
-        ui.lessonCount.textContent = String(chapters.reduce(
-          (total, chapter) => total + getLessons(chapter).length, 0
-        ));
+        
+        ui.chapterCount.textContent = String(chapters.length);
+        ui.lessonCount.textContent = String(totalLessons);
 
         if (!chapters.length) {
+          updateProgress(chapters);
           showState("empty");
           ui.status.textContent = "لا توجد فصول";
           return;
         }
 
         chapters.forEach((chapter, index) => {
-          ui.chapters.appendChild(createChapter(chapter, index));
+          ui.chapters.appendChild(createChapterCard(chapter, index));
         });
 
+        updateProgress(chapters);
         ui.status.textContent = "تم تحميل المنهج";
         showState("success");
       } catch (error) {
