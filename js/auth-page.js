@@ -1,4 +1,3 @@
-
 import {
   loginUser,
   registerUser,
@@ -10,14 +9,16 @@ const form =
   document.getElementById("loginForm") ||
   document.getElementById("signupForm");
 
-if (form) {
+if (!form) {
+  console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
+} else {
   const isSignup = form.id === "signupForm";
   const submitButton = form.querySelector('[type="submit"]');
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const nameInput = document.getElementById("name");
+  const params = new URLSearchParams(window.location.search);
 
-  const params = new URLSearchParams(location.search);
   const allowedPages = new Set([
     "dashboard.html",
     "languages.html",
@@ -38,17 +39,17 @@ if (form) {
     const raw = params.get("next") || "dashboard.html";
 
     try {
-      const url = new URL(raw, location.origin);
+      const url = new URL(raw, window.location.origin);
       const page = url.pathname.split("/").pop();
 
       if (
-        url.origin === location.origin &&
+        url.origin === window.location.origin &&
         allowedPages.has(page)
       ) {
-        return page + url.search + url.hash;
+        return `${page}${url.search}${url.hash}`;
       }
     } catch {
-      // استخدام الصفحة الافتراضية.
+      // استخدام صفحة لوحة التحكم عند وجود رابط غير صالح.
     }
 
     return "dashboard.html";
@@ -57,48 +58,68 @@ if (form) {
   if (nameInput) {
     nameInput.autocomplete = "name";
     nameInput.maxLength = 50;
+    nameInput.required = true;
   }
 
   if (emailInput) {
     emailInput.autocomplete = "email";
     emailInput.maxLength = 254;
+    emailInput.required = true;
   }
 
   if (passwordInput) {
     passwordInput.autocomplete = isSignup
       ? "new-password"
       : "current-password";
+
+    passwordInput.required = true;
   }
 
   const message = document.createElement("p");
   message.setAttribute("role", "status");
   message.setAttribute("aria-live", "polite");
-  form.after(message);
+  message.className = "auth-message";
+  form.insertAdjacentElement("afterend", message);
 
   function displayMessage(text, isError = false) {
     message.textContent = text;
+    message.setAttribute("role", isError ? "alert" : "status");
     message.style.color = isError ? "#b91c1c" : "#166534";
+  }
+
+  function getErrorMessage(error) {
+    if (error?.code) {
+      return authError(error);
+    }
+
+    return error?.message || "حدث خطأ غير متوقع. حاولي مرة أخرى.";
   }
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
 
-    if (!form.reportValidity() || submitButton.disabled) return;
+    if (!form.reportValidity() || submitButton?.disabled) {
+      return;
+    }
 
-    const originalText = submitButton.textContent;
-    submitButton.disabled = true;
-    submitButton.textContent = "جارٍ التحقق...";
+    const originalText = submitButton?.textContent || "";
+    
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "جارٍ التحقق...";
+    }
+
     displayMessage("");
 
     try {
       if (isSignup) {
         if (!nameInput || !emailInput || !passwordInput) {
-          throw new Error("بعض حقول التسجيل غير موجودة.");
+          throw new Error("بعض حقول إنشاء الحساب غير موجودة.");
         }
 
         await registerUser(
-          nameInput.value,
-          emailInput.value,
+          nameInput.value.trim(),
+          emailInput.value.trim(),
           passwordInput.value
         );
       } else {
@@ -107,20 +128,19 @@ if (form) {
         }
 
         await loginUser(
-          emailInput.value,
+          emailInput.value.trim(),
           passwordInput.value
         );
       }
 
-      location.replace(getNextPage());
+      window.location.replace(getNextPage());
     } catch (error) {
-      displayMessage(
-        error?.code ? authError(error) : error?.message || "حدث خطأ غير متوقع.",
-        true
-      );
+      displayMessage(getErrorMessage(error), true);
     } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = originalText;
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
     }
   });
 
@@ -128,28 +148,32 @@ if (form) {
 
   if (resetButton && !isSignup) {
     resetButton.addEventListener("click", async () => {
-      if (!emailInput || resetButton.disabled) return;
+      if (!emailInput || resetButton.disabled) {
+        return;
+      }
+
+      if (!emailInput.value.trim() || !emailInput.checkValidity()) {
+        emailInput.reportValidity();
+        displayMessage("اكتبي بريدًا إلكترونيًا صحيحًا أولًا.", true);
+        return;
+      }
 
       const originalText = resetButton.textContent;
       resetButton.disabled = true;
       resetButton.textContent = "جارٍ الإرسال...";
 
       try {
-        await resetPassword(emailInput.value);
+        await resetPassword(emailInput.value.trim());
+
         displayMessage(
           "لو البريد مسجل، هتوصلك رسالة لإعادة تعيين كلمة المرور."
         );
       } catch (error) {
-        displayMessage(
-          error?.code ? authError(error) : error?.message || "تعذر إرسال الرسالة.",
-          true
-        );
+        displayMessage(getErrorMessage(error), true);
       } finally {
         resetButton.disabled = false;
         resetButton.textContent = originalText;
       }
     });
   }
-} else {
-  console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
 }
