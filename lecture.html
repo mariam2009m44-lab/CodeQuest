@@ -5,383 +5,1077 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#050914">
-  <title>مسارات التعلم | Cody Academy</title>
+  <title>الدرس البرمجي | Cody Academy</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+
   <style>
     :root {
       --bg: #050914;
+      --panel: rgba(14, 25, 47, .88);
+      --panel2: #0b1426;
       --cyan: #00e5ff;
+      --purple: #9b7bff;
       --muted: #a0aec0;
-      --border: rgba(255,255,255,.09);
-      --panel: rgba(255,255,255,.035);
+      --border: rgba(255,255,255,.1);
+      --green: #47e6a1;
+      --red: #ff7777;
     }
 
     * {
-      margin: 0;
-      padding: 0;
       box-sizing: border-box;
-      font-family: 'Cairo', sans-serif;
+      font-family: "Cairo", sans-serif;
     }
 
     body {
+      margin: 0;
       min-height: 100vh;
-      overflow-x: hidden;
-      padding: 24px 18px 40px;
-      background: radial-gradient(circle at 50% 0%, rgba(0,229,255,.15), transparent 60%), var(--bg);
-      color: #fff;
+      color: #f5f8ff;
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(0,229,255,.12), transparent 40%),
+        radial-gradient(ellipse at 90% 10%, rgba(155,123,255,.12), transparent 40%),
+        var(--bg);
     }
 
-    a {
+    button, textarea {
+      font: inherit;
+    }
+
+    button, a {
       -webkit-tap-highlight-color: transparent;
     }
 
-    .particles {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .particle {
-      position: absolute;
-      color: rgba(0,229,255,.2);
-      font-weight: bold;
-      animation: floatUp 12s linear infinite;
+    button {
+      cursor: pointer;
     }
 
-    @keyframes floatUp {
-      0% { transform: translateY(110vh); opacity: 0; }
-      10%, 85% { opacity: 1; }
-      100% { transform: translateY(-15vh); opacity: 0; }
+    button:focus-visible, a:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
     }
 
     .topbar {
-      position: relative;
-      z-index: 2;
-      width: min(100%, 1050px);
-      margin: 0 auto 36px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      min-height: 68px;
+      padding: 12px 4%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 11px 17px;
-      border: 1px solid rgba(0,229,255,.25);
-      border-radius: 13px;
-      background: rgba(0,229,255,.07);
-      color: #e8fbff;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 800;
-      transition: .25s ease;
-    }
-
-    .back-btn:hover {
-      transform: translateY(-2px);
-      border-color: var(--cyan);
-      background: rgba(0,229,255,.13);
-      box-shadow: 0 7px 24px rgba(0,229,255,.1);
-    }
-
-    .back-btn:focus-visible,
-    .lang-card:focus-visible {
-      outline: 3px solid var(--cyan);
-      outline-offset: 4px;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(5,9,20,.92);
+      backdrop-filter: blur(16px);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
       color: var(--cyan);
-      font-size: 17px;
       font-weight: 900;
+      font-size: 17px;
     }
 
     .brand i {
-      font-size: 26px;
+      font-size: 27px;
     }
 
-    .lang-header {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      margin: 0 auto 38px;
-      animation: fadeDown .7s ease;
+    .back-btn, .secondary-btn, .primary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: #f5f8ff;
+      background: rgba(255,255,255,.04);
+      font-weight: 800;
+      font-size: 13px;
     }
 
-    .lang-header h1 {
+    .primary-btn {
+      color: #001018;
+      background: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    .primary-btn:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .page {
+      width: min(1240px, 94%);
+      margin: 26px auto 50px;
+    }
+
+    .lesson-heading {
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--panel);
+    }
+
+    .eyebrow {
       color: var(--cyan);
-      font-size: clamp(26px, 5vw, 36px);
+      font-size: 12px;
       font-weight: 900;
-      text-shadow: 0 0 20px rgba(0,229,255,.3);
-      margin-bottom: 10px;
     }
 
-    .lang-header p {
-      max-width: 560px;
-      margin: 0 auto;
+    h1 {
+      margin: 8px 0;
+      font-size: clamp(23px, 4vw, 34px);
+      line-height: 1.6;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .muted {
       color: var(--muted);
+      line-height: 1.9;
+      font-size: 13px;
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .progress-track {
+      height: 8px;
+      flex: 1;
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255,255,255,.08);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      transition: width .3s ease;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      min-width: 0;
+      margin-bottom: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.025);
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .cody {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid rgba(0,229,255,.2);
+      border-radius: 14px;
+      background: rgba(0,229,255,.05);
+      line-height: 1.9;
+      font-size: 13px;
+    }
+
+    .cody-icon {
+      display: grid;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 13px;
+      color: var(--cyan);
+      background: rgba(0,229,255,.1);
+      font-size: 24px;
+    }
+
+    .task {
+      margin-top: 16px;
+      padding: 15px;
+      border-right: 3px solid var(--purple);
+      border-radius: 9px;
+      background: rgba(155,123,255,.07);
+      line-height: 2;
+      font-size: 13px;
+    }
+
+    .hint-box {
+      margin-top: 14px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: #e7eaff;
+      background: rgba(255,255,255,.025);
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .hint-box[hidden] {
+      display: none;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .editor {
+      display: block;
+      width: 100%;
+      min-height: 300px;
+      resize: vertical;
+      padding: 18px;
+      direction: ltr;
+      text-align: left;
+      tab-size: 4;
+      border: 0;
+      outline: none;
+      color: #d9edff;
+      background: #070d19;
+      font-family: Consolas, Monaco, monospace;
       font-size: 14px;
+      line-height: 1.8;
+      white-space: pre;
+    }
+
+    .editor:focus {
+      outline: 2px solid rgba(0,229,255,.3);
+      outline-offset: -2px;
+    }
+
+    .terminal {
+      min-height: 100px;
+      max-height: 300px;
+      overflow: auto;
+      padding: 16px;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--green);
+      background: #03070d;
+      font: 13px/1.8 Consolas, Monaco, monospace;
+    }
+
+    .terminal.error {
+      color: var(--red);
+    }
+
+    .quiz-option {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 9px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: #f5f8ff;
+      background: rgba(255,255,255,.025);
+      text-align: right;
+      line-height: 1.8;
+    }
+
+    .quiz-option.selected {
+      border-color: var(--cyan);
+      background: rgba(0,229,255,.09);
+    }
+
+    .feedback {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .feedback:empty {
+      display: none;
+    }
+
+    .feedback.success {
+      color: var(--green);
+    }
+
+    .feedback.error {
+      color: #ff9a9a;
+    }
+
+    .lesson-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .status {
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
       line-height: 2;
     }
 
-    .lang-cards-container {
-      width: min(100%, 1050px);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 22px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .lang-card {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 30px 22px;
-      border: 1px solid var(--border);
-      border-radius: 25px;
-      background: var(--panel);
-      backdrop-filter: blur(15px);
-      text-decoration: none;
-      color: #fff;
-      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
-      animation: fadeUp .65s ease both;
-    }
-
-    .lang-card:nth-child(2) {
-      animation-delay: .1s;
-    }
-
-    .lang-card:nth-child(3) {
-      animation-delay: .2s;
-    }
-
-    .lang-card:hover {
-      transform: translateY(-7px);
-    }
-
-    .py-card:hover {
-      border-color: #00e5ff;
-      box-shadow: 0 18px 45px rgba(0,229,255,.12);
-    }
-
-    .js-card:hover {
-      border-color: #f7df1e;
-      box-shadow: 0 18px 45px rgba(247,223,30,.1);
-    }
-
-    .cpp-card:hover {
-      border-color: #4c9aff;
-      box-shadow: 0 18px 45px rgba(0,114,255,.14);
-    }
-
-    .card-icon {
-      width: 88px;
-      height: 88px;
-      margin-bottom: 19px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .card-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      animation: breathe 3s ease-in-out infinite;
-    }
-
-    .lang-card h2 {
-      font-size: 25px;
-      font-weight: 900;
-      margin-bottom: 9px;
-    }
-
-    .py-card h2 { color: #00e5ff; }
-    .js-card h2 { color: #f7df1e; }
-    .cpp-card h2 { color: #4c9aff; }
-
-    .lang-card p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.9;
-      min-height: 50px;
-    }
-
-    .card-action {
-      margin-top: 22px;
-      padding: 9px 17px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: rgba(255,255,255,.04);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .lang-card:hover .card-action {
-      background: rgba(255,255,255,.09);
-    }
-
-    .footer-note {
-      position: relative;
-      z-index: 1;
-      margin: 32px auto 0;
+    .footer {
+      padding: 12px;
       text-align: center;
       color: #718096;
       font-size: 12px;
-      line-height: 1.9;
     }
 
-    @keyframes breathe {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.06); }
-    }
+    @media (max-width: 800px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
 
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+      .page {
+        width: 94%;
+        margin-top: 16px;
+      }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+      .lesson-heading {
+        padding: 18px;
+      }
 
-    @media (max-width: 760px) {
-      body {
-        padding: 18px 14px 30px;
+      .editor {
+        min-height: 260px;
       }
 
       .topbar {
-        margin-bottom: 30px;
-      }
-
-      .lang-cards-container {
-        grid-template-columns: 1fr;
-        max-width: 440px;
-        gap: 16px;
-      }
-
-      .lang-card {
-        padding: 23px 18px;
-      }
-
-      .card-icon {
-        width: 72px;
-        height: 72px;
-        margin-bottom: 12px;
-      }
-
-      .lang-card p {
-        min-height: 0;
-      }
-
-      .lang-header {
-        margin-bottom: 28px;
+        padding: 10px 3%;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
+        transition: none !important;
       }
     }
   </style>
 </head>
-<body>
-  <div class="particles" id="particles" aria-hidden="true"></div>
 
+<body>
   <header class="topbar">
-    <a href="dashboard.html" class="back-btn">
-      <i class="ri-home-4-line" aria-hidden="true"></i>
-      <span>الرجوع للصفحة الرئيسية</span>
+    <a class="back-btn" id="backBtn" href="levels.html">
+      <i class="ri-arrow-right-line"></i>
+      العودة للمنهج
     </a>
 
-    <div class="brand">
-      <i class="ri-robot-2-line" aria-hidden="true"></i>
+    <a class="brand" href="dashboard.html">
+      <i class="ri-robot-2-line"></i>
       <span>Cody Academy</span>
-    </div>
+    </a>
   </header>
 
-  <main>
-    <section class="lang-header">
-      <h1>مساراتك البرمجية</h1>
-      <p>
-        اختر اللغة التي تريد تعلمها وابدأ من الصفر.
-        كل مسار يحتوي على دروس وأمثلة وتدريبات تساعدك على التقدم خطوة بخطوة.
+  <main class="page">
+    <section class="lesson-heading">
+      <div class="eyebrow" id="languageLabel">مسار التعلم</div>
+      <h1 id="lessonTitle">جارٍ تحميل الدرس...</h1>
+      <p class="muted" id="lessonDescription">
+        لحظات ونجهز لك الدرس.
       </p>
+
+      <div class="progress-row">
+        <span class="muted">تقدم المسار</span>
+        <div class="progress-track" role="progressbar"
+             aria-label="تقدم الدروس" aria-valuemin="0"
+             aria-valuemax="100" aria-valuenow="0" id="progressTrack">
+          <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <strong id="progressText">0%</strong>
+      </div>
     </section>
 
-    <section class="lang-cards-container" aria-label="لغات البرمجة">
-      <a href="levels.html?lang=python" class="lang-card py-card">
-        <div class="card-icon">
-          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" loading="lazy">
-        </div>
-        <h2>Python</h2>
-        <p>ابدأ بأساسيات البرمجة وتعلم كتابة أول برنامج لك.</p>
-        <span class="card-action">ابدأ التعلم ←</span>
-      </a>
+    <div class="status" id="pageStatus" role="status">
+      جارٍ تحميل المنهج...
+    </div>
 
-      <a href="levels.html?lang=javascript" class="lang-card js-card">
-        <div class="card-icon">
-          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" loading="lazy">
-        </div>
-        <h2>JavaScript</h2>
-        <p>تعلم المتغيرات والشروط وأساسيات كتابة الكود بنفسك.</p>
-        <span class="card-action">افتح المنهج ←</span>
-      </a>
+    <div id="lessonContent" hidden>
+      <div class="workspace">
+        <section>
+          <article class="panel">
+            <div class="panel-header">
+              <h2><i class="ri-book-open-line"></i> شرح الدرس</h2>
+              <span id="lessonNumber" class="eyebrow"></span>
+            </div>
 
-      <a href="levels.html?lang=cpp" class="lang-card cpp-card">
-        <div class="card-icon">
-          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" loading="lazy">
-        </div>
-        <h2>C++</h2>
-        <p>تعلم أساسيات اللغة وابدأ بكتابة برامجك الأولى.</p>
-        <span class="card-action">افتح المنهج ←</span>
-      </a>
-    </section>
+            <div class="panel-body">
+              <div class="cody">
+                <div class="cody-icon">
+                  <i class="ri-robot-2-line"></i>
+                </div>
+                <div>
+                  <strong style="color:var(--cyan)">كودي يقول لك:</strong>
+                  <p id="codyIntro" style="margin:5px 0 0"></p>
+                </div>
+              </div>
 
-    <p class="footer-note">
-      اختر مسارك وابدأ رحلة البرمجة مع كودي 🤖
-    </p>
+              <p class="muted" id="lessonExplanation"></p>
+
+              <div class="task">
+                <strong>مهمتك:</strong>
+                <div id="lessonTask"></div>
+              </div>
+
+              <div style="margin-top:18px">
+                <button class="secondary-btn" id="hintBtn" type="button">
+                  <i class="ri-lightbulb-line"></i>
+                  أظهر تلميحًا
+                </button>
+                <div class="hint-box" id="hintBox" hidden></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <h2><i class="ri-question-answer-line"></i> اختبر فهمك</h2>
+            </div>
+
+            <div class="panel-body">
+              <p id="quizQuestion" style="line-height:2"></p>
+              <div id="quizOptions"></div>
+
+              <div class="lesson-actions">
+                <button class="primary-btn" id="checkQuizBtn" type="button">
+                  تحقّق من الإجابة
+                </button>
+              </div>
+
+              <div class="feedback" id="quizFeedback" role="status"></div>
+            </div>
+          </article>
+        </section>
+
+        <section>
+          <article class="panel">
+            <div class="panel-header">
+              <h2><i class="ri-code-s-slash-line"></i> محرر الأكواد</h2>
+              <span class="eyebrow" id="editorLanguage">CODE</span>
+            </div>
+
+            <div class="panel-body" style="padding-bottom:10px">
+              <p class="muted" style="margin-top:0">
+                جرّب تعديل المثال ثم اضغط على تشغيل الكود.
+              </p>
+
+              <div class="editor-toolbar">
+                <button class="primary-btn" id="runCodeBtn" type="button">
+                  <i class="ri-play-fill"></i>
+                  تشغيل الكود
+                </button>
+                <button class="secondary-btn" id="resetCodeBtn" type="button">
+                  <i class="ri-refresh-line"></i>
+                  إعادة المثال
+                </button>
+                <button class="secondary-btn" id="clearOutputBtn" type="button">
+                  مسح النتيجة
+                </button>
+              </div>
+            </div>
+
+            <textarea id="codeEditor" class="editor"
+              spellcheck="false" autocapitalize="off"
+              autocomplete="off" aria-label="محرر الكود"
+              dir="ltr"></textarea>
+
+            <div class="panel-header">
+              <h2><i class="ri-terminal-box-line"></i> نتيجة التشغيل</h2>
+            </div>
+            <pre class="terminal" id="terminalOutput" aria-live="polite">اكتب الكود واضغط على تشغيل.</pre>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <h2><i class="ri-flag-line"></i> إكمال الدرس</h2>
+            </div>
+
+            <div class="panel-body">
+              <p class="muted">
+                أجب عن سؤال الدرس إجابة صحيحة لتسجيل إكماله والانتقال إلى الدرس التالي.
+              </p>
+
+              <div class="lesson-actions">
+                <button class="primary-btn" id="nextLessonBtn" type="button" hidden>
+                  الدرس التالي <i class="ri-arrow-left-line"></i>
+                </button>
+                <a class="secondary-btn" id="backToLevels" href="levels.html">
+                  العودة للفصول
+                </a>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </div>
+
+    <footer class="footer">
+      تعلّم خطوة بخطوة مع كودي 🤖
+    </footer>
   </main>
 
-  <script>
-    "use strict";
+  <script type="module">
+    import { requireUser } from "./js/auth.js";
 
-    const particlesContainer = document.getElementById("particles");
-    const symbols = ["{ }", "</>", "( )", "0", "1", ";", "=>", "++", "=="];
+    const params = new URLSearchParams(location.search);
+    const lang = (params.get("lang") || "javascript").toLowerCase();
 
-    for (let i = 0; i < 15; i++) {
-      const particle = document.createElement("div");
-
-      particle.className = "particle";
-      particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      particle.style.left = Math.random() * 100 + "%";
-      particle.style.animationDelay = Math.random() * 12 + "s";
-      particle.style.animationDuration = (9 + Math.random() * 6) + "s";
-      particle.style.fontSize = (15 + Math.random() * 15) + "px";
-
-      particlesContainer.appendChild(particle);
+    function safeIndex(value) {
+      if (value === null || !/^\d+$/.test(value)) return 0;
+      const parsed = Number(value);
+      return Number.isSafeInteger(parsed) ? parsed : 0;
     }
+
+    const chapterIndex = safeIndex(params.get("chapter"));
+    const lessonIndex = safeIndex(params.get("lesson"));
+
+    const languages = {
+      python: {
+        label: "Python",
+        file: "./json/python_curriculum.json"
+      },
+      javascript: {
+        label: "JavaScript",
+        file: "./json/js_curriculum.json"
+      },
+      cpp: {
+        label: "C++",
+        file: "./json/cpp_curriculum.json"
+      }
+    };
+
+    const config = languages[lang];
+    const $ = id => document.getElementById(id);
+
+    let curriculum = null;
+    let lesson = null;
+    let selectedOption = null;
+    let hintIndex = 0;
+    let quizPassed = false;
+    let pyodideInstance = null;
+    let runCounter = 0;
+
+    const lessonKey = `${chapterIndex}:${lessonIndex}`;
+    const storageKey = `cq_completed_lessons_${lang}`;
+
+    function showStatus(message) {
+      $("pageStatus").hidden = false;
+      $("pageStatus").textContent = message;
+    }
+
+    function showOutput(message, isError = false) {
+      const terminal = $("terminalOutput");
+      terminal.textContent = String(message ?? "");
+      terminal.classList.toggle("error", isError);
+    }
+
+    function getCompleted() {
+      try {
+        const value = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return new Set(Array.isArray(value) ? value.map(String) : []);
+      } catch {
+        return new Set();
+      }
+    }
+
+    function updateProgress() {
+      const chapters = Array.isArray(curriculum?.chapters)
+        ? curriculum.chapters : [];
+
+      const total = chapters.reduce((sum, chapter) =>
+        sum + (Array.isArray(chapter.lessons) ? chapter.lessons.length : 0), 0);
+
+      const completed = getCompleted();
+      const valid = new Set();
+
+      chapters.forEach((chapter, ci) => {
+        (Array.isArray(chapter.lessons) ? chapter.lessons : [])
+          .forEach((_, li) => valid.add(`${ci}:${li}`));
+      });
+
+      const done = [...completed].filter(key => valid.has(key)).length;
+      const percent = total ? Math.round(done / total * 100) : 0;
+
+      $("progressBar").style.width = `${percent}%`;
+      $("progressText").textContent = `${percent}%`;
+      $("progressTrack").setAttribute("aria-valuenow", String(percent));
+    }
+
+    function getNextLesson() {
+      const chapters = curriculum?.chapters || [];
+      const currentChapter = chapters[chapterIndex];
+      const currentLessons = currentChapter?.lessons || [];
+
+      if (lessonIndex + 1 < currentLessons.length) {
+        return { chapter: chapterIndex, lesson: lessonIndex + 1 };
+      }
+
+      for (let ci = chapterIndex + 1; ci < chapters.length; ci++) {
+        if (Array.isArray(chapters[ci].lessons) && chapters[ci].lessons.length) {
+          return { chapter: ci, lesson: 0 };
+        }
+      }
+
+      return null;
+    }
+
+    function updateNavigation() {
+      const next = getNextLesson();
+      const button = $("nextLessonBtn");
+
+      button.hidden = !quizPassed;
+      button.textContent = next
+        ? "الدرس التالي ←"
+        : "أنهيت المسار! العودة ←";
+    }
+
+    function getQuiz() {
+      const quiz = lesson?.quiz;
+
+      if (Array.isArray(quiz)) {
+        return quiz.find(item =>
+          item && Array.isArray(item.options) &&
+          Number.isInteger(item.correct_index)
+        ) || null;
+      }
+
+      return quiz && Array.isArray(quiz.options) &&
+        Number.isInteger(quiz.correct_index) ? quiz : null;
+    }
+
+    function renderQuiz() {
+      const quiz = getQuiz();
+      const options = $("quizOptions");
+      options.replaceChildren();
+      selectedOption = null;
+
+      if (!quiz) {
+        $("quizQuestion").textContent = "لا يوجد سؤال اختياري صالح لهذا الدرس.";
+        $("checkQuizBtn").disabled = true;
+        return;
+      }
+
+      $("checkQuizBtn").disabled = false;
+      $("quizQuestion").textContent = quiz.question;
+
+      quiz.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiz-option";
+        button.textContent = String(option);
+
+        button.addEventListener("click", () => {
+          selectedOption = index;
+          options.querySelectorAll(".quiz-option").forEach(item =>
+            item.classList.toggle("selected", item === button)
+          );
+          $("quizFeedback").textContent = "";
+          $("quizFeedback").className = "feedback";
+        });
+
+        options.appendChild(button);
+      });
+    }
+
+    function markCompleted() {
+      try {
+        const completed = getCompleted();
+        completed.add(lessonKey);
+        localStorage.setItem(storageKey, JSON.stringify([...completed]));
+      } catch (error) {
+        console.error("Could not save progress:", error);
+      }
+
+      quizPassed = true;
+      updateProgress();
+      updateNavigation();
+    }
+
+    function renderLesson() {
+      const chapters = Array.isArray(curriculum.chapters)
+        ? curriculum.chapters : [];
+
+      const chapter = chapters[chapterIndex];
+      const lessons = Array.isArray(chapter?.lessons) ? chapter.lessons : [];
+      lesson = lessons[lessonIndex];
+
+      if (!lesson) {
+        showStatus("لم يتم العثور على هذا الدرس. ارجع إلى المنهج واختر درسًا صحيحًا.");
+        return;
+      }
+
+      $("pageStatus").hidden = true;
+      $("lessonContent").hidden = false;
+
+      $("languageLabel").textContent = `مسار ${config.label}`;
+      $("lessonTitle").textContent = lesson.title || "درس برمجي";
+      $("lessonDescription").textContent =
+        lesson.objective || lesson.description || "تعلّم المفهوم ثم جرّب بنفسك.";
+      $("lessonNumber").textContent =
+        `الفصل ${chapterIndex + 1} · الدرس ${lessonIndex + 1}`;
+
+      $("codyIntro").textContent =
+        lesson.cody_intro || "أهلًا بك! اقرأ الدرس وجرّب كتابة الكود بنفسك.";
+      $("lessonExplanation").textContent =
+        lesson.description || lesson.objective || "ابدأ بقراءة المثال وتجربته.";
+      $("lessonTask").textContent =
+        lesson.task || "جرّب تعديل المثال واكتشف كيف يعمل.";
+
+      $("editorLanguage").textContent = config.label.toUpperCase();
+
+      const starter = lesson.starter_code ?? lesson.code_example ?? lesson.code ?? "";
+      $("codeEditor").value = typeof starter === "string"
+        ? starter : String(starter);
+
+      $("terminalOutput").textContent = "اكتب الكود واضغط على تشغيل.";
+      $("hintBox").hidden = true;
+      hintIndex = 0;
+
+      $("hintBtn").disabled =
+        !Array.isArr
+ay(lesson.hints) || lesson.hints.length === 0;
+
+      $("hintBtn").textContent = "أظهر تلميحًا";
+      $("quizFeedback").textContent = "";
+      $("quizFeedback").className = "feedback";
+
+      quizPassed = getCompleted().has(lessonKey);
+      renderQuiz();
+      updateProgress();
+      updateNavigation();
+
+      const levelsUrl = new URL("levels.html", location.href);
+      levelsUrl.searchParams.set("lang", lang);
+      $("backBtn").href = levelsUrl.href;
+      $("backToLevels").href = levelsUrl.href;
+    }
+
+    $("hintBtn").addEventListener("click", () => {
+      const hints = Array.isArray(lesson?.hints) ? lesson.hints : [];
+
+      if (!hints.length) {
+        $("hintBox").hidden = false;
+        $("hintBox").textContent = "لا توجد تلميحات لهذا الدرس حتى الآن.";
+        return;
+      }
+
+      if (hintIndex >= hints.length) hintIndex = 0;
+
+      $("hintBox").hidden = false;
+      $("hintBox").textContent =
+        `تلميح ${hintIndex + 1} من ${hints.length}: ${hints[hintIndex]}`;
+
+      hintIndex++;
+      $("hintBtn").textContent = hintIndex >= hints.length
+        ? "ابدأ التلميحات من جديد"
+        : "أظهر التلميح التالي";
+    });
+
+    $("checkQuizBtn").addEventListener("click", () => {
+      const quiz = getQuiz();
+      if (!quiz) return;
+
+      if (selectedOption === null) {
+        $("quizFeedback").textContent = "اختَر إجابة أولًا ثم تحقّق منها.";
+        $("quizFeedback").className = "feedback error";
+        return;
+      }
+
+      if (selectedOption === quiz.correct_index) {
+        $("quizFeedback").textContent =
+          `إجابة صحيحة! ${quiz.explanation || "أحسنت!"}`;
+        $("quizFeedback").className = "feedback success";
+        markCompleted();
+      } else {
+        $("quizFeedback").textContent =
+          quiz.fail_msg || "حاول مرة أخرى بعد مراجعة الشرح.";
+        $("quizFeedback").className = "feedback error";
+      }
+    });
+
+    $("nextLessonBtn").addEventListener("click", () => {
+      if (!quizPassed) return;
+
+      const next = getNextLesson();
+
+      if (!next) {
+        const url = new URL("languages.html", location.href);
+        location.href = url.href;
+        return;
+      }
+
+      const url = new URL("lecture.html", location.href);
+      url.searchParams.set("lang", lang);
+      url.searchParams.set("chapter", String(next.chapter));
+      url.searchParams.set("lesson", String(next.lesson));
+      location.href = url.href;
+    });
+
+    $("resetCodeBtn").addEventListener("click", () => {
+      if (!lesson) return;
+
+      const starter =
+        lesson.starter_code ?? lesson.code_example ?? lesson.code ?? "";
+
+      $("codeEditor").value =
+        typeof starter === "string" ? starter : String(starter);
+
+      showOutput("تمت إعادة الكود إلى المثال الأصلي.");
+    });
+
+    $("clearOutputBtn").addEventListener("click", () => {
+      showOutput("");
+    });
+
+    async function runJavaScript(code, runId) {
+      const frame = document.createElement("iframe");
+      frame.setAttribute("sandbox", "allow-scripts");
+      frame.title = "بيئة تشغيل JavaScript";
+      frame.style.cssText =
+        "position:absolute;width:1px;height:1px;opacity:0;pointer-events:none";
+
+      const output = [];
+      let finished = false;
+      let timeoutId;
+
+      function cleanup() {
+        clearTimeout(timeoutId);
+        window.removeEventListener("message", onMessage);
+        frame.remove();
+      }
+
+      function onMessage(event) {
+        if (event.source !== frame.contentWindow) return;
+        if (event.data?.source !== "cody-lesson-runner") return;
+        if (event.data?.runId !== runId || finished) return;
+
+        if (event.data.type === "output") {
+          output.push(String(event.data.text));
+          showOutput(output.join("\n"));
+        } else if (event.data.type === "error") {
+          output.push("Error: " + event.data.text);
+          showOutput(output.join("\n"), true);
+        } else if (event.data.type === "done") {
+          finished = true;
+          cleanup();
+          $("runCodeBtn").disabled = false;
+
+          if (!output.length) {
+            showOutput("تم تنفيذ الكود دون مخرجات.");
+          }
+        }
+      }
+
+      const source = `<!doctype html>
+<html><body><script>
+(() => {
+  const runId = ${JSON.stringify(runId)};
+  const send = (type, text = "") =>
+    parent.postMessage({
+      source: "cody-lesson-runner",
+      runId,
+      type,
+      text: String(text)
+    }, "*");
+
+  const format = value => {
+    if (typeof value === "string") return value;
+    try {
+      const result = JSON.stringify(value);
+      return result === undefined ? String(value) : result;
+    } catch {
+      return String(value);
+    }
+  };
+
+  console.log = (...args) => send("output", args.map(format).join(" "));
+  console.info = console.log;
+  console.warn = (...args) => send("output", args.map(format).join(" "));
+  console.error = (...args) => send("error", args.map(format).join(" "));
+
+  window.onerror = message => send("error", message);
+  window.onunhandledrejection = event =>
+    send("error", event.reason?.message || event.reason || "Promise error");
+
+  (async () => {
+    try {
+      const code = ${JSON.stringify(code)};
+      await new Function('"use strict";\\n' + code)();
+    } catch (error) {
+      send("error", error?.stack || error?.message || String(error));
+    }
+    send("done");
+  })();
+})();
+<\/script></body></html>`;
+
+      window.addEventListener("message", onMessage);
+      document.body.appendChild(frame);
+      frame.srcdoc = source;
+
+      timeoutId = setTimeout(() => {
+        if (finished) return;
+        finished = true;
+        cleanup();
+
+        if (runId === runCounter) {
+          showOutput("انتهت مهلة التشغيل. جرّب كودًا أبسط.", true);
+          $("runCodeBtn").disabled = false;
+        }
+      }, 6000);
+    }
+
+    async function runPython(code, runId) {
+      showOutput("جارٍ تحميل بيئة Python لأول مرة...");
+
+      try {
+        if (!pyodideInstance) {
+          const module = await import(
+            "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs"
+          );
+          pyodideInstance = await module.loadPyodide();
+        }
+
+        if (runId !== runCounter) return;
+
+        const output = [];
+
+        pyodideInstance.setStdout({
+          batched(text) {
+            output.push(text);
+          }
+        });
+
+        pyodideInstance.setStderr({
+          batched(text) {
+            output.push(text);
+          }
+        });
+
+        await pyodideInstance.runPythonAsync(code);
+
+        if (runId === runCounter) {
+          showOutput(output.join("\n") || "تم تنفيذ الكود دون مخرجات.");
+        }
+      } catch (error) {
+        if (runId === runCounter) {
+          showOutput(
+            "تعذر تشغيل Python.\n" +
+            (error?.message || String(error)) +
+            "\nتأكّد من اتصال الإنترنت وتشغيل الصفحة عبر HTTPS أو خادم محلي.",
+            true
+          );
+        }
+      } finally {
+        if (runId === runCounter) {
+          $("runCodeBtn").disabled = false;
+        }
+      }
+    }
+
+    $("runCodeBtn").addEventListener("click", async () => {
+      const code = $("codeEditor").value;
+
+      if (!code.trim()) {
+        showOutput("اكتب الكود أولًا، ثم اضغط على تشغيل.", true);
+        return;
+      }
+
+      const runId = ++runCounter;
+      $("runCodeBtn").disabled = true;
+      showOutput("جارٍ تشغيل الكود...");
+
+      if (lang === "javascript") {
+        runJavaScript(code, runId);
+        return;
+      }
+
+      if (lang === "python") {
+        await runPython(code, runId);
+        return;
+      }
+
+      showOutput(
+        "محرر C++ جاهز لكتابة الكود، لكن تشغيله يحتاج إلى مترجم C++ فعلي.\n" +
+        "لم يتم إرسال الكود إلى أي خدمة خارجية.",
+        true
+      );
+
+      $("runCodeBtn").disabled = false;
+    });
+
+    async function init() {
+      if (!config) {
+        showStatus("لغة البرمجة غير مدعومة. ارجع إلى صفحة اختيار اللغة.");
+        return;
+      }
+
+      try {
+        await requireUser();
+      } catch {
+        showStatus("يجب تسجيل الدخول إلى حسابك أولًا لاستخدام الدروس.");
+        return;
+      }
+
+      try {
+        const response = await fetch(config.file, { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error(`تعذر تحميل المنهج (${response.status}).`);
+        }
+
+        curriculum = await response.json();
+
+        if (!Array.isArray(curriculum.chapters)) {
+          throw new Error("تنسيق ملف المنهج غير صحيح.");
+        }
+
+        renderLesson();
+      } catch (error) {
+        console.error("CodeQuest lesson loading error:", error);
+        showStatus(
+          `تعذر تحميل الدرس: ${error?.message || String(error)}. ` +
+          "تأكّد من وجود ملف المنهج واتصالك بالإنترنت."
+        );
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
