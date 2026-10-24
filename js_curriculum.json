@@ -1,49 +1,276 @@
-// CodeQuest - Curriculum Loader
-// Loads the existing curriculum JSON files.
-
-const CURRICULUM_FILES = {
-  python: "json/python_curriculum.json",
-  javascript: "json/js_curriculum.json",
-  cpp: "json/cpp_curriculum.json",
-};
-
-const curriculumCache = new Map();
-
-/**
- * Load the curriculum for a programming language.
- * @param {"python" | "javascript" | "cpp"} language
- * @returns {Promise<Object|Array>}
- */
-export async function loadCurriculum(language) {
-  const filePath = CURRICULUM_FILES[language];
-
-  if (!filePath) {
-    throw new Error(`Unsupported programming language: ${language}`);
-  }
-
-  if (curriculumCache.has(language)) {
-    return curriculumCache.get(language);
-  }
-
-  const response = await fetch(filePath);
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to load curriculum: ${filePath} (HTTP ${response.status})`
-    );
-  }
-
-  const curriculum = await response.json();
-
-  curriculumCache.set(language, curriculum);
-
-  return curriculum;
-}
-
-/**
- * Clear the cached curriculum.
- * @param {"python" | "javascript" | "cpp"} language
- */
-export function clearCurriculumCache(language) {
-  curriculumCache.delete(language);
+{
+  "language": "javascript",
+  "title": "مسار JavaScript",
+  "chapters": [
+    {
+      "id": "js_ch1",
+      "title": "الفصل الأول: البداية والمتغيرات",
+      "lessons": [
+        {
+          "id": "js_ch1_l1",
+          "title": "أول برنامج JavaScript",
+          "objective": "التعرف على طباعة النصوص",
+          "cody_intro": "أهلًا بك! هنتعلم إزاي نخلي JavaScript تعرض رسائل.",
+          "description": "نستخدم console.log() لعرض نتيجة في وحدة التحكم.",
+          "task": "اطبع الجملة مرحبًا بك في Cody Academy.",
+          "starter_code": "console.log('');",
+          "hints": ["ضع النص بين علامتي اقتباس داخل console.log."],
+          "quiz": [
+            {
+              "question": "ما وظيفة console.log()؟",
+              "options": ["عرض نتيجة في وحدة التحكم", "إنشاء متغير", "إيقاف البرنامج"],
+              "correct_index": 0,
+              "explanation": "تستخدم console.log() لعرض النتائج."
+            }
+          ]
+        },
+        {
+          "id": "js_ch1_l2",
+          "title": "المتغيرات let وconst",
+          "objective": "تخزين البيانات في متغيرات",
+          "cody_intro": "المتغير زي صندوق بنخزن فيه قيمة ونستخدمها بعد كده.",
+          "description": "نستخدم let للقيم التي يمكن تغييرها وconst للقيم التي لا نعيد إسنادها.",
+          "task": "أنشئ متغيرًا اسمه score قيمته 10 ثم اطبعه.",
+          "starter_code": "let score = 0;\nconsole.log(score);",
+          "hints": ["اكتب let score = 10 ثم اطبعه."],
+          "quiz": [
+            {
+              "question": "أي كلمة تناسب قيمة لن نعيد إسناد قيمة جديدة إليها؟",
+              "options": ["let", "const", "print"],
+              "correct_index": 1,
+              "explanation": "تستخدم const لتعريف متغير لا يعاد إسناد قيمة جديدة إليه."
+            }
+          ]
+        },
+        {
+          "id": "js_ch1_l3",
+          "title": "تحديث قيمة المتغير",
+          "objective": "تغيير قيمة let",
+          "cody_intro": "تقدر تغيّر قيمة متغير let بعد إنشائه.",
+          "description": "يمكن إسناد قيمة جديدة إلى متغير أُنشئ باستخدام let.",
+          "task": "غيّر score إلى 15 واطبع القيمة الجديدة.",
+          "starter_code": "let score = 10;\nscore = 0;\nconsole.log(score);",
+          "hints": ["اكتب score = 15 من دون إعادة كتابة let."],
+          "quiz": [
+            {
+              "question": "هل يمكن إسناد قيمة جديدة إلى متغير let؟",
+              "options": ["نعم", "لا", "فقط إذا كان نصًا"],
+              "correct_index": 0,
+              "explanation": "يمكن تحديث قيمة متغير let."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "js_ch2",
+      "title": "الفصل الثاني: أنواع البيانات والعمليات",
+      "lessons": [
+        {
+          "id": "js_ch2_l1",
+          "title": "الأرقام والنصوص",
+          "objective": "تمييز الأرقام عن النصوص",
+          "cody_intro": "خلينا نتعرف على الفرق بين الأرقام والكلمات.",
+          "description": "الأرقام تستخدم في الحساب، أما النصوص فتكتب بين علامات اقتباس.",
+          "task": "اطبع ناتج 7 + 3 ثم اطبع كلمة Coding.",
+          "starter_code": "console.log(7 + 3);\nconsole.log('');",
+          "hints": ["السطر الثاني يحتاج نصًا بين علامتي اقتباس."],
+          "quiz": [
+            {
+              "question": "ما نوع القيمة '7'؟",
+              "options": ["Number", "String", "Boolean"],
+              "correct_index": 1,
+              "explanation": "القيمة المكتوبة بين علامات اقتباس نص من نوع String."
+            }
+          ]
+        },
+        {
+          "id": "js_ch2_l2",
+          "title": "العمليات الحسابية",
+          "objective": "استخدام العمليات الحسابية",
+          "cody_intro": "JavaScript تقدر تعمل عمليات حسابية بسهولة.",
+          "description": "تدعم JavaScript الجمع والطرح والضرب والقسمة.",
+          "task": "اطبع ناتج ضرب 6 في 4.",
+          "starter_code": "console.log(0);",
+          "hints": ["استخدم علامة النجمة للضرب."],
+          "quiz": [
+            {
+              "question": "ما رمز الضرب في JavaScript؟",
+              "options": ["x", "*", "%"],
+              "correct_index": 1,
+              "explanation": "نستخدم * لعملية الضرب."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "js_ch3",
+      "title": "الفصل الثالث: الشروط",
+      "lessons": [
+        {
+          "id": "js_ch3_l1",
+          "title": "شرط if",
+          "objective": "تنفيذ كود عند تحقق شرط",
+          "cody_intro": "باستخدام if نقدر نخلي البرنامج يتخذ قرارًا.",
+          "description": "تنفذ if الأوامر الموجودة بداخلها عندما يكون الشرط صحيحًا.",
+          "task": "إذا كانت points تساوي 10 اطبع ممتاز.",
+          "starter_code": "let points = 10;\nif (points > 0) {\n  console.log('حاول مرة أخرى');\n}",
+          "hints": ["استخدم points === 10 داخل if."],
+          "quiz": [
+            {
+              "question": "متى ينفذ كود if؟",
+              "options": ["عندما يكون الشرط صحيحًا", "دائمًا", "عندما يكون الملف فارغًا"],
+              "correct_index": 0,
+              "explanation": "ينفذ فرع if عندما تكون نتيجة الشرط true."
+            }
+          ]
+        },
+        {
+          "id": "js_ch3_l2",
+          "title": "if وelse",
+          "objective": "اختيار مسار بديل",
+          "cody_intro": "نستخدم else لتحديد ما يحدث عندما لا يتحقق الشرط.",
+          "description": "تتيح if وelse تنفيذ مسارين مختلفين حسب نتيجة الشرط.",
+          "task": "اطبع ناجح إذا كانت الدرجة 50 أو أكثر، وإلا اطبع حاول مجددًا.",
+          "starter_code": "let grade = 45;\nif (grade >= 50) {\n  console.log('ناجح');\n} else {\n  console.log('');\n}",
+          "hints": ["اكتب الرسالة داخل else."],
+          "quiz": [
+            {
+              "question": "ما وظيفة else؟",
+              "options": ["تنفيذ الفرع البديل", "إنشاء مصفوفة", "تعريف دالة"],
+              "correct_index": 0,
+              "explanation": "ينفذ فرع else عندما لا يتحقق شرط if."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "js_ch4",
+      "title": "الفصل الرابع: الحلقات",
+      "lessons": [
+        {
+          "id": "js_ch4_l1",
+          "title": "حلقة for",
+          "objective": "تكرار الأوامر",
+          "cody_intro": "الحلقات بتوفر علينا كتابة نفس الأمر مرات كثيرة.",
+          "description": "تستخدم for لتكرار مجموعة أوامر عددًا محددًا من المرات.",
+          "task": "اطبع الأرقام من 1 إلى 5 باستخدام for.",
+          "starter_code": "for (let i = 1; i <= 3; i++) {\n  console.log(i);\n}",
+          "hints": ["غيّر شرط التوقف ليصبح i <= 5."],
+          "quiz": [
+            {
+              "question": "أي جزء يزيد i كل مرة؟",
+              "options": ["i++", "console.log", "let"],
+              "correct_index": 0,
+              "explanation": "يزيد i++ قيمة العداد بمقدار واحد."
+            }
+          ]
+        },
+        {
+          "id": "js_ch4_l2",
+          "title": "حلقة while",
+          "objective": "التكرار حسب شرط",
+          "cody_intro": "حلقة while تستمر طالما الشرط صحيح.",
+          "description": "تستمر while في التكرار ما دام شرطها true.",
+          "task": "اطبع 1 و2 و3 باستخدام while.",
+          "starter_code": "let i = 1;\nwhile (i <= 2) {\n  console.log(i);\n  i++;\n}",
+          "hints": ["لا تنس زيادة i حتى لا تستمر الحلقة بلا نهاية."],
+          "quiz": [
+            {
+              "question": "متى تتوقف while؟",
+              "options": ["عندما يصبح الشرط خطأ", "بعد أول سطر دائمًا", "لا تتوقف أبدًا"],
+              "correct_index": 0,
+              "explanation": "تتوقف الحلقة عندما تصبح نتيجة شرطها false."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "js_ch5",
+      "title": "الفصل الخامس: الدوال",
+      "lessons": [
+        {
+          "id": "js_ch5_l1",
+          "title": "إنشاء دالة",
+          "objective": "تجميع الأوامر القابلة لإعادة الاستخدام",
+          "cody_intro": "الدالة بتجمع أوامر نقدر نستدعيها وقت ما نحتاج.",
+          "description": "نعرف الدالة باستخدام function ثم نستدعيها باسمها.",
+          "task": "أنشئ دالة sayHi تطبع Hello Cody ثم استدعها.",
+          "starter_code": "function sayHi() {\n  console.log('Hi');\n}\nsayHi();",
+          "hints": ["ضع الرسالة داخل الدالة ثم استدع sayHi()."],
+          "quiz": [
+            {
+              "question": "كيف نستدعي الدالة sayHi؟",
+              "options": ["sayHi();", "call sayHi", "run(sayHi)"],
+              "correct_index": 0,
+              "explanation": "يتم استدعاء الدالة بكتابة اسمها ثم الأقواس."
+            }
+          ]
+        },
+        {
+          "id": "js_ch5_l2",
+          "title": "المعاملات وreturn",
+          "objective": "تمرير قيم وإرجاع نتيجة",
+          "cody_intro": "الدالة ممكن تستقبل قيم وترجع لنا نتيجة.",
+          "description": "تستقبل الدالة معاملات ويمكنها إرجاع نتيجة باستخدام return.",
+          "task": "اكتب دالة add تجمع a وb ثم اطبع add(2,3).",
+          "starter_code": "function add(a, b) {\n  return a - b;\n}\nconsole.log(add(2, 3));",
+          "hints": ["استخدم + داخل return."],
+          "quiz": [
+            {
+              "question": "ما وظيفة return؟",
+              "options": ["إرجاع قيمة", "إنشاء حلقة", "طباعة الصفحة فقط"],
+              "correct_index": 0,
+              "explanation": "ترجع return نتيجة الدالة إلى المكان الذي استدعاها."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "js_ch6",
+      "title": "الفصل السادس: المصفوفات والكائنات",
+      "lessons": [
+        {
+          "id": "js_ch6_l1",
+          "title": "المصفوفات",
+          "objective": "تخزين عدة قيم",
+          "cody_intro": "المصفوفة بتخزن مجموعة قيم في متغير واحد.",
+          "description": "المصفوفة Array تخزن مجموعة قيم مرتبة ويبدأ فهرسها من صفر.",
+          "task": "اطبع أول عنصر من المصفوفة fruits.",
+          "starter_code": "const fruits = ['apple', 'mango'];\nconsole.log(fruits[1]);",
+          "hints": ["أول عنصر فهرسه 0."],
+          "quiz": [
+            {
+              "question": "ما فهرس أول عنصر في المصفوفة؟",
+              "options": ["0", "1", "-1"],
+              "correct_index": 0,
+              "explanation": "يبدأ ترقيم عناصر المصفوفة من صفر."
+            }
+          ]
+        },
+        {
+          "id": "js_ch6_l2",
+          "title": "الكائنات",
+          "objective": "تجميع خصائص مرتبطة",
+          "cody_intro": "الكائن بيجمع بيانات مرتبطة ببعض مثل الاسم والمستوى.",
+          "description": "الكائن Object يجمع خصائص مثل name وlevel.",
+          "task": "أنشئ كائنًا player اسمه Cody واطبع اسمه.",
+          "starter_code": "const player = {name: 'Ali'};\nconsole.log(player.level);",
+          "hints": ["استخدم player.name للوصول للاسم."],
+          "quiz": [
+            {
+              "question": "كيف تصل إلى name في player؟",
+              "options": ["player.name", "player->name", "name.player"],
+              "correct_index": 0,
+              "explanation": "نستخدم النقطة للوصول إلى خاصية في الكائن."
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
