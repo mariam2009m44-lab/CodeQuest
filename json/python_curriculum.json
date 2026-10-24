@@ -1,60 +1,92 @@
 
 {
-  "language": "python",
-  "title": "مسار Python",
+  "language": "javascript",
+  "title": "مسار JavaScript",
   "chapters": [
     {
-      "id": "py_ch1",
-      "title": "الفصل الأول: البداية الساحرة",
+      "id": "js_ch1",
+      "title": "الفصل الأول: أساسيات اللغة",
       "lessons": [
         {
-          "id": "py_l1",
-          "title": "الطباعة والمتغيرات",
-          "objective": "تعلم كيفية إظهار النصوص وتخزين البيانات.",
-          "cody_intro": "أهلاً بك في بايثون! لغة سهلة وقوية. عشان نطبع كلام بنستخدم print()، وعشان نعرف متغير بنكتب اسمه ونحط = والقيمة.",
-          "code_example": "name = 'Cody'\nage = 10\nprint('Hello, my name is', name)\nprint('I am', age, 'years old')",
-          "task": "اكتب اسمك وعمرك في متغيرات واطبعهم باستخدام print.",
+          "id": "js_l1",
+          "title": "المتغيرات (Variables)",
+          "objective": "فهم كيفية تخزين البيانات في الذاكرة.",
+          "cody_intro": "أهلًا بك في JavaScript! المتغير مثل صندوق نخزن فيه البيانات لاستخدامها لاحقًا. نستخدم let لإنشاء متغير وconsole.log لعرض النتيجة.",
+          "code_example": "let playerName = 'Cody';\nlet playerScore = 100;\n\nconsole.log('Player: ' + playerName);\nconsole.log('Score: ' + playerScore);",
+          "task": "غيّر اسم اللاعب إلى اسم تختاره، واجعل النقاط 500، ثم شغّل الكود.",
           "hints": [
-            "مش محتاجين let أو const في بايثون",
-            "بنفصل بين النصوص في print بفاصلة ,"
+            "استخدم علامتي التنصيص حول النصوص.",
+            "استخدم console.log لعرض القيم."
           ],
           "quiz": {
-            "question": "إيه الأمر اللي بنستخدمه للطباعة في بايثون؟",
+            "question": "ما الكلمة التي نستخدمها لإنشاء متغير في JavaScript؟",
             "options": [
-              "console.log",
-              "print",
-              "echo",
-              "cout"
+              "variable",
+              "let",
+              "box",
+              "def"
             ],
             "correct_index": 1,
-            "success_msg": "ممتاز! print هو الأمر الصح.",
-            "fail_msg": "غلط، جرب تاني."
+            "success_msg": "إجابة صحيحة! نستخدم let لإنشاء متغير.",
+            "fail_msg": "راجع المثال وحاول مرة أخرى."
           },
           "xp_reward": 50
         },
         {
-          "id": "py_l2",
-          "title": "المدخلات (Input)",
-          "objective": "جعل البرنامج يتفاعل مع المستخدم.",
-          "cody_intro": "عشان البرنامج يسأل المستخدم وياخد منه إجابة، بنستخدم input(). الإجابة دايماً بتبقى نص (String).",
-          "code_example": "name = input('What is your name? ')\nprint('Welcome to CodeQuest,', name)",
-          "task": "اسأل المستخدم عن عمره، واطبع له رسالة ترحيبية.",
+          "id": "js_l2",
+          "title": "العمليات الحسابية",
+          "objective": "استخدام العمليات الحسابية الأساسية.",
+          "cody_intro": "يمكن للكمبيوتر إجراء العمليات الحسابية بسرعة. نستخدم + للجمع، و- للطرح، و* للضرب، و/ للقسمة.",
+          "code_example": "let apples = 5;\nlet oranges = 3;\nlet total = apples + oranges;\nlet price = 15;\nlet totalPrice = total * price;\n\nconsole.log('Total Fruits: ' + total);\nconsole.log('Total Price: ' + totalPrice);",
+          "task": "احسب عدد التفاحات والبرتقالات معًا، ثم احسب السعر الإجمالي إذا كان سعر الثمرة الواحدة 15.",
           "hints": [
-            "استخدم input() لجلب البيانات",
-            "خزن الناتج في متغير"
+            "استخدم المتغيرات لتنفيذ العمليات الحسابية.",
+            "رمز الضرب في JavaScript هو *."
           ],
           "quiz": {
-            "question": "إيه نوع البيانات اللي بيرجعه input() دايماً؟",
+            "question": "ما الرمز المستخدم لعملية الضرب في JavaScript؟",
             "options": [
-              "رقم (Integer)",
-              "نص (String)",
-              "منطقي (Boolean)"
+              "x",
+              "*",
+              "#",
+              "&"
             ],
             "correct_index": 1,
-            "success_msg": "إجابة صحيحة! دايماً بترجع نص.",
-            "fail_msg": "غلط، فكر في نوع البيانات."
+            "success_msg": "إجابة صحيحة! نستخدم * للضرب.",
+            "fail_msg": "راجع رموز العمليات الحسابية وحاول مرة أخرى."
           },
-          "xp_reward": 60
+          "xp_reward": 50
+        }
+      ]
+    },
+    {
+      "id": "js_ch2",
+      "title": "الفصل الثاني: التحكم في المسار",
+      "lessons": [
+        {
+          "id": "js_l3",
+          "title": "الشروط (If/Else)",
+          "objective": "تعليم الكمبيوتر كيفية اتخاذ القرارات.",
+          "cody_intro": "نستخدم if لتنفيذ أوامر عندما يتحقق شرط، وelse لتنفيذ أوامر بديلة عندما لا يتحقق الشرط.",
+          "code_example": "let score = 150;\n\nif (score >= 100) {\n    console.log('Congratulations, you win!');\n} else {\n    console.log('Try again.');\n}",
+          "task": "غيّر قيمة score إلى 50 وشغّل الكود، ثم أعدها إلى 150 ولاحظ اختلاف النتيجة.",
+          "hints": [
+            "اكتب الشرط بين قوسين ().",
+            "الرمز >= يعني أكبر من أو يساوي."
+          ],
+          "quiz": {
+            "question": "ما الكلمة التي تحدد الأوامر البديلة عندما يكون الشرط غير صحيح؟",
+            "options": [
+              "if",
+              "else",
+              "then",
+              "otherwise"
+            ],
+            "correct_index": 1,
+            "success_msg": "إجابة صحيحة! تُستخدم else للحالة البديلة.",
+            "fail_msg": "راجع المثال وحاول مرة أخرى."
+          },
+          "xp_reward": 70
         }
       ]
     }
