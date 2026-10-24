@@ -1,743 +1,387 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#10111f">
-  <meta name="description" content="Cody Academy — تعلّم البرمجة وجرّب الأكواد وتقدّم في مسارك التعليمي.">
-  <title>المحاضرة | Cody Academy</title>
-
+  <meta name="theme-color" content="#050914">
+  <title>مسارات التعلم | Cody Academy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.min.css">
-  <link rel="stylesheet" href="css/style.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
     :root {
-      --lecture-purple: #7955e8;
-      --lecture-purple-light: #a995ff;
-      --lecture-cyan: #36bfe5;
-      --lecture-green: #43c99a;
-      --lecture-red: #ff8585;
-      --lecture-panel: rgba(121, 85, 232, 0.08);
-      --lecture-border: rgba(54, 191, 229, 0.2);
-      --lecture-surface: rgba(255, 255, 255, 0.035);
+      --bg: #050914;
+      --cyan: #00e5ff;
+      --muted: #a0aec0;
+      --border: rgba(255,255,255,.09);
+      --panel: rgba(255,255,255,.035);
     }
 
-    .lecture-page {
-      max-width: 1450px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 24px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Cairo', sans-serif;
     }
 
-    .lecture-topbar {
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 24px 18px 40px;
+      background: radial-gradient(circle at 50% 0%, rgba(0,229,255,.15), transparent 60%), var(--bg);
+      color: #fff;
+    }
+
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .particles {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      color: rgba(0,229,255,.2);
+      font-weight: bold;
+      animation: floatUp 12s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(110vh); opacity: 0; }
+      10%, 85% { opacity: 1; }
+      100% { transform: translateY(-15vh); opacity: 0; }
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 1050px);
+      margin: 0 auto 36px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 14px;
       flex-wrap: wrap;
-      margin-bottom: 22px;
     }
 
-    .lecture-heading h1 {
-      margin: 0 0 6px;
-      font-size: clamp(1.35rem, 3vw, 2rem);
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 17px;
+      border: 1px solid rgba(0,229,255,.25);
+      border-radius: 13px;
+      background: rgba(0,229,255,.07);
+      color: #e8fbff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      transition: .25s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--cyan);
+      background: rgba(0,229,255,.13);
+      box-shadow: 0 7px 24px rgba(0,229,255,.1);
+    }
+
+    .back-btn:focus-visible,
+    .lang-card:focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--cyan);
+      font-size: 17px;
       font-weight: 900;
     }
 
-    .lecture-heading p {
-      margin: 0;
-      opacity: 0.7;
-      line-height: 1.8;
+    .brand i {
+      font-size: 26px;
     }
 
-    .lecture-back {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 11px 16px;
-      border: 1px solid var(--lecture-border);
-      border-radius: 12px;
-      color: inherit;
-      background: var(--lecture-panel);
-      text-decoration: none;
-      transition: background 0.2s ease, border-color 0.2s ease;
+    .lang-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin: 0 auto 38px;
+      animation: fadeDown .7s ease;
     }
 
-    .lecture-back:hover {
-      background: rgba(54, 191, 229, 0.12);
-      border-color: var(--lecture-cyan);
+    .lang-header h1 {
+      color: var(--cyan);
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 900;
+      text-shadow: 0 0 20px rgba(0,229,255,.3);
+      margin-bottom: 10px;
     }
 
-    .lecture-workspace {
-      display: grid;
-      grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.4fr);
-      gap: 20px;
-      align-items: start;
-    }
-
-    .lecture-card,
-    .editor-card {
-      min-width: 0;
-      overflow: hidden;
-      border: 1px solid var(--lecture-border);
-      border-radius: 20px;
-      background: var(--lecture-surface);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
-    }
-
-    .lecture-card {
-      padding: 22px;
-    }
-
-    .progress-card {
-      margin-bottom: 20px;
-    }
-
-    .progress-information {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-      font-size: 0.92rem;
-    }
-
-    #progressText {
-      color: var(--lecture-cyan);
-      font-weight: 800;
-    }
-
-    .progress-track {
-      height: 8px;
-      overflow: hidden;
-      border-radius: 99px;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    #progressBar {
-      width: 0;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--lecture-purple), var(--lecture-cyan));
-      transition: width 0.35s ease;
-    }
-
-    .cody-bubble {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      margin-bottom: 24px;
-    }
-
-    .cody-avatar {
-      display: grid;
-      place-items: center;
-      flex: 0 0 48px;
-      width: 48px;
-      height: 48px;
-      border: 1px solid rgba(121, 85, 232, 0.3);
-      border-radius: 16px;
-      background: rgba(121, 85, 232, 0.16);
-      color: var(--lecture-purple-light);
-      font-size: 25px;
-    }
-
-    .cody-text {
-      min-width: 0;
-    }
-
-    .cody-text h2 {
-      margin: 0 0 8px;
-      font-size: 1.2rem;
-      font-weight: 800;
-    }
-
-    .cody-text p,
-    .lesson-description,
-    .lesson-task {
-      line-height: 1.9;
-      overflow-wrap: anywhere;
-    }
-
-    .cody-text p {
-      margin: 0;
-      opacity: 0.82;
-    }
-
-    .section-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 22px 0 10px;
-      font-size: 1rem;
-      font-weight: 800;
-    }
-
-    .section-label i {
-      color: var(--lecture-cyan);
-      font-size: 1.2rem;
-    }
-
-    .lesson-description {
-      margin: 0;
-      opacity: 0.9;
-    }
-
-    .task-box,
-    .hint-box {
-      padding: 15px;
-      border-radius: 14px;
-      background: var(--lecture-panel);
-      border: 1px solid var(--lecture-border);
-    }
-
-    .task-box p,
-    .hint-box p {
-      margin: 0;
-      line-height: 1.9;
-    }
-
-    #lessonHints {
-      padding-right: 22px;
+    .lang-header p {
+      max-width: 560px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 14px;
       line-height: 2;
     }
 
-    #lessonHints li {
-      padding-right: 3px;
-      margin-bottom: 5px;
+    .lang-cards-container {
+      width: min(100%, 1050px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      position: relative;
+      z-index: 1;
     }
 
-    .quiz-action,
-    .run-button,
-    .reset-button,
-    .next-lesson-button {
-      display: inline-flex;
+    .lang-card {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 30px 22px;
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      background: var(--panel);
+      backdrop-filter: blur(15px);
+      text-decoration: none;
+      color: #fff;
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+      animation: fadeUp .65s ease both;
+    }
+
+    .lang-card:nth-child(2) {
+      animation-delay: .1s;
+    }
+
+    .lang-card:nth-child(3) {
+      animation-delay: .2s;
+    }
+
+    .lang-card:hover {
+      transform: translateY(-7px);
+    }
+
+    .py-card:hover {
+      border-color: #00e5ff;
+      box-shadow: 0 18px 45px rgba(0,229,255,.12);
+    }
+
+    .js-card:hover {
+      border-color: #f7df1e;
+      box-shadow: 0 18px 45px rgba(247,223,30,.1);
+    }
+
+    .cpp-card:hover {
+      border-color: #4c9aff;
+      box-shadow: 0 18px 45px rgba(0,114,255,.14);
+    }
+
+    .card-icon {
+      width: 88px;
+      height: 88px;
+      margin-bottom: 19px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      font: inherit;
-      border: 0;
-      border-radius: 11px;
-      padding: 10px 15px;
-      transition: filter 0.2s ease, transform 0.2s ease, background 0.2s ease;
     }
 
-    .quiz-action,
-    .run-button,
-    .next-lesson-button {
-      background: linear-gradient(135deg, var(--lecture-purple), var(--lecture-cyan));
+    .card-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      animation: breathe 3s ease-in-out infinite;
+    }
+
+    .lang-card h2 {
+      font-size: 25px;
+      font-weight: 900;
+      margin-bottom: 9px;
+    }
+
+    .py-card h2 { color: #00e5ff; }
+    .js-card h2 { color: #f7df1e; }
+    .cpp-card h2 { color: #4c9aff; }
+
+    .lang-card p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.9;
+      min-height: 50px;
+    }
+
+    .card-action {
+      margin-top: 22px;
+      padding: 9px 17px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(255,255,255,.04);
       color: #fff;
+      font-size: 12px;
       font-weight: 800;
     }
 
-    .quiz-action:hover,
-    .run-button:hover,
-    .next-lesson-button:hover {
-      filter: brightness(1.1);
+    .lang-card:hover .card-action {
+      background: rgba(255,255,255,.09);
     }
 
-    .quiz-action:active,
-    .run-button:active,
-    .next-lesson-button:active,
-    .reset-button:active {
-      transform: scale(0.98);
-    }
-
-    .quiz-action:focus-visible,
-    .run-button:focus-visible,
-    .reset-button:focus-visible,
-    .next-lesson-button:focus-visible,
-    .lecture-back:focus-visible,
-    .quiz-option:focus-visible {
-      outline: 2px solid var(--lecture-cyan);
-      outline-offset: 3px;
-    }
-
-    #openQuizBtn {
-      width: 100%;
-      margin-top: 20px;
-    }
-
-    .editor-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 15px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      flex-wrap: wrap;
-    }
-
-    #fileNameDisplay {
-      direction: ltr;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.9rem;
-      color: var(--lecture-cyan);
-      overflow-wrap: anywhere;
-    }
-
-    .editor-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .reset-button {
-      background: rgba(255, 255, 255, 0.08);
-      color: inherit;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .reset-button:hover {
-      background: rgba(255, 255, 255, 0.13);
-    }
-
-    .CodeMirror {
-      height: 340px;
-      direction: ltr;
-      text-align: left;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .CodeMirror-gutters {
-      border-left: 0;
-    }
-
-    .terminal-panel {
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .terminal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 16px;
-      background: rgba(0, 0, 0, 0.15);
-    }
-
-    .terminal-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .terminal-title i {
-      color: var(--lecture-green);
-    }
-
-    .terminal-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .terminal-dots span {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #64748b;
-    }
-
-    .terminal-output {
-      min-height: 90px;
-      max-height: 250px;
-      overflow: auto;
-      margin: 0;
-      padding: 16px;
-      direction: ltr;
-      text-align: left;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      font: 13px/1.8 "JetBrains Mono", monospace;
-      color: #d1d5db;
-    }
-
-    .quiz-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      padding: 20px;
-      align-items: center;
-      justify-content: center;
-      background: rgba(5, 6, 16, 0.82);
-      backdrop-filter: blur(8px);
-    }
-
-    .quiz-dialog {
-      width: min(100%, 520px);
-      max-height: 85vh;
-      overflow: auto;
-      padding: 24px;
-      border-radius: 20px;
-      background: #191a2b;
-      border: 1px solid var(--lecture-border);
-      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
-    }
-
-    .quiz-dialog-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .quiz-dialog-header h2 {
-      margin-top: 0;
-      font-size: 1.25rem;
-    }
-
-    #quizQuestion {
-      line-height: 1.9;
-      overflow-wrap: anywhere;
-    }
-
-    .quiz-option {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 13px;
-      text-align: right;
-      cursor: pointer;
-      font: inherit;
-      color: inherit;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.04);
-      transition: border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .quiz-option:hover:not(:disabled) {
-      border-color: var(--lecture-cyan);
-      background: rgba(54, 191, 229, 0.08);
-    }
-
-    .quiz-option.selected {
-      border-color: var(--lecture-cyan);
-      background: rgba(54, 191, 229, 0.12);
-    }
-
-    .quiz-option:disabled {
-      cursor: default;
-      opacity: 0.85;
-    }
-
-    #quizFeedback {
-      margin-top: 15px;
-      line-height: 1.8;
-    }
-
-    #quizFeedback[data-result="correct"] {
-      color: var(--lecture-green);
-    }
-
-    #quizFeedback[data-result="incorrect"] {
-      color: var(--lecture-red);
-    }
-
-    .quiz-completion-message {
-      margin-top: 18px;
-      padding: 16px;
-      border: 1px solid rgba(67, 201, 154, 0.3);
-      border-radius: 14px;
-      background: rgba(67, 201, 154, 0.08);
+    .footer-note {
+      position: relative;
+      z-index: 1;
+      margin: 32px auto 0;
+      text-align: center;
+      color: #718096;
+      font-size: 12px;
       line-height: 1.9;
     }
 
-    .next-lesson-button {
-      width: 100%;
-      margin-top: 14px;
-      padding: 13px 16px;
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
     }
 
-    .status-message {
-      padding: 16px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      line-height: 1.8;
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 1000px) {
-      .lecture-workspace {
-        grid-template-columns: minmax(0, 1fr);
+    @media (max-width: 760px) {
+      body {
+        padding: 18px 14px 30px;
       }
 
-      .CodeMirror {
-        height: 320px;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .lecture-page {
-        padding: 14px;
+      .topbar {
+        margin-bottom: 30px;
       }
 
-      .lecture-card {
-        padding: 17px;
+      .lang-cards-container {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+        gap: 16px;
       }
 
-      .lecture-topbar {
-        align-items: stretch;
+      .lang-card {
+        padding: 23px 18px;
       }
 
-      .lecture-back {
-        width: 100%;
+      .card-icon {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 12px;
       }
 
-      .editor-toolbar {
-        align-items: stretch;
+      .lang-card p {
+        min-height: 0;
       }
 
-      .editor-actions {
-        width: 100%;
-      }
-
-      .editor-actions button {
-        flex: 1;
-      }
-
-      .CodeMirror {
-        height: 290px;
-        font-size: 13px;
-      }
-
-      .quiz-dialog {
-        padding: 18px;
+      .lang-header {
+        margin-bottom: 28px;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
       }
     }
   </style>
 </head>
+<body>
+  <div class="particles" id="particles" aria-hidden="true"></div>
 
-<body class="dark-theme">
-  <div class="app-layout">
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <i class="ri-robot-2-fill"></i> Cody Academy
-      </div>
+  <header class="topbar">
+    <a href="dashboard.html" class="back-btn">
+      <i class="ri-home-4-line" aria-hidden="true"></i>
+      <span>الرجوع للصفحة الرئيسية</span>
+    </a>
 
-      <nav class="nav-menu" aria-label="القائمة الرئيسية">
-        <a href="dashboard.html" class="nav-item">
-          <i class="ri-home-5-line"></i> الرئيسية
-        </a>
-        <a href="languages.html" class="nav-item active" aria-current="page">
-          <i class="ri-map-2-line"></i> المسارات
-        </a>
-        <a href="playground.html" class="nav-item">
-          <i class="ri-terminal-box-line"></i> محرر الأكواد
-        </a>
-        <a href="profile.html" class="nav-item">
-          <i class="ri-user-smile-line"></i> حسابي
-        </a>
-        <a href="#" class="nav-item logout">
-          <i class="ri-logout-box-r-line"></i> خروج
-        </a>
-      </nav>
-    </aside>
-
-    <main class="main-content">
-      <div class="lecture-page">
-        <header class="lecture-topbar">
-          <div class="lecture-heading">
-            <h1>مساحة التعلّم <span aria-hidden="true">✨</span></h1>
-            <p>تعلّم، جرّب الكود، واكتشف بنفسك.</p>
-          </div>
-
-          <a href="languages.html" class="lecture-back">
-            <i class="ri-arrow-right-line" aria-hidden="true"></i>
-            العودة للمسارات
-          </a>
-        </header>
-
-        <section class="lecture-card progress-card" aria-label="تقدم الدرس">
-          <div class="progress-information">
-            <span>تقدمك في الدرس</span>
-            <span id="progressText" aria-live="polite">جاري التحميل...</span>
-          </div>
-          <div
-            class="progress-track"
-            role="progressbar"
-            aria-label="نسبة إنجاز الدرس"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow="0"
-            id="progressTrack"
-          >
-            <div id="progressBar"></div>
-          </div>
-        </section>
-
-        <div class="lecture-workspace">
-          <section class="lecture-card" aria-label="محتوى الدرس">
-            <div class="cody-bubble">
-              <div class="cody-avatar" aria-hidden="true">
-                <i class="ri-robot-2-fill"></i>
-              </div>
-              <div class="cody-text">
-                <h2 id="lessonTitle">جاري تحميل الدرس...</h2>
-                <p id="codyIntro">كودي بيجهّز الدرس ليك.</p>
-              </div>
-            </div>
-
-            <h3 class="section-label">
-              <i class="ri-book-open-line" aria-hidden="true"></i>
-              شرح الدرس
-            </h3>
-            <p id="lessonDescription" class="lesson-description">
-              جاري تحميل المحتوى...
-            </p>
-
-            <h3 class="section-label">
-              <i class="ri-lightbulb-line" aria-hidden="true"></i>
-              مهمتك
-            </h3>
-            <div class="task-box">
-              <p id="lessonTask" class="lesson-task">ستظهر مهمتك هنا.</p>
-            </div>
-
-            <h3 class="section-label">
-              <i class="ri-sparkling-line" aria-hidden="true"></i>
-              تلميحات كودي
-            </h3>
-            <ul id="lessonHints">
-              <li>جاري تجهيز التلميحات...</li>
-            </ul>
-
-            <button
-              id="openQuizBtn"
-              class="quiz-action"
-              type="button"
-              onclick="showQuiz()"
-            >
-              <i class="ri-question-answer-line" aria-hidden="true"></i>
-              اختبر فهمك
-            </button>
-
-            <div id="lessonCompletionArea" aria-live="polite"></div>
-          </section>
-
-          <section class="editor-card" aria-label="محرر الأكواد">
-            <div class="editor-toolbar">
-              <span id="fileNameDisplay">main.js</span>
-
-              <div class="editor-actions">
-                <button
-                  id="resetCodeBtn"
-                  class="reset-button"
-                  type="button"
-                  onclick="resetCode()"
-                >
-                  <i class="ri-refresh-line" aria-hidden="true"></i>
-                  إعادة الضبط
-                </button>
-
-                <button
-                  id="runCodeBtn"
-                  class="run-button"
-                  type="button"
-                  onclick="runUserCode()"
-                >
-                  <i class="ri-play-fill" aria-hidden="true"></i>
-                  تشغيل الكود
-                </button>
-              </div>
-            </div>
-
-            <textarea id="codeEditor" aria-label="اكتب الكود هنا"></textarea>
-
-            <div class="terminal-panel">
-              <div class="terminal-header">
-                <strong class="terminal-title">
-                  <i class="ri-terminal-box-line" aria-hidden="true"></i>
-                  النتيجة
-                </strong>
-
-                <div class="terminal-dots" aria-hidden="true">
-                  <span style="background:#ff6b6b"></span>
-                  <span style="background:#ffcb57"></span>
-                  <span style="background:#35d6a3"></span>
-                </div>
-              </div>
-
-              <pre id="terminalOutput" class="terminal-output" aria-live="polite">Console Ready...</pre>
-            </div>
-          </section>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <div
-    id="quizModal"
-    class="quiz-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="quizDialogTitle"
-    aria-hidden="true"
-  >
-    <div class="quiz-dialog">
-      <div class="quiz-dialog-header">
-        <h2 id="quizDialogTitle">اختبر فهمك</h2>
-
-        <button
-          id="closeQuizBtn"
-          type="button"
-          class="reset-button"
-          onclick="document.getElementById('quizModal').style.display='none'; document.getElementById('quizModal').setAttribute('aria-hidden','true');"
-          aria-label="إغلاق الاختبار"
-        >
-          <i class="ri-close-line" aria-hidden="true"></i>
-          إغلاق
-        </button>
-      </div>
-
-      <p id="quizQuestion">جاري تحميل السؤال...</p>
-      <div id="quizOptions"></div>
-      <div id="quizFeedback" aria-live="polite"></div>
-
-      <button
-        id="submitQuizBtn"
-        class="quiz-action"
-        type="button"
-        onclick="submitQuiz()"
-        style="display:none;width:100%;margin-top:14px"
-      >
-        تأكيد الإجابة
-      </button>
+    <div class="brand">
+      <i class="ri-robot-2-line" aria-hidden="true"></i>
+      <span>Cody Academy</span>
     </div>
-  </div>
+  </header>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closebrackets.min.js"></script>
+  <main>
+    <section class="lang-header">
+      <h1>مساراتك البرمجية</h1>
+      <p>
+        اختر اللغة التي تريد تعلمها وابدأ من الصفر.
+        كل مسار يحتوي على دروس وأمثلة وتدريبات تساعدك على التقدم خطوة بخطوة.
+      </p>
+    </section>
 
-  <script type="module" src="js/lecture.js"></script>
+    <section class="lang-cards-container" aria-label="لغات البرمجة">
+      <a href="levels.html?lang=python" class="lang-card py-card">
+        <div class="card-icon">
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" loading="lazy">
+        </div>
+        <h2>Python</h2>
+        <p>ابدأ بأساسيات البرمجة وتعلم كتابة أول برنامج لك.</p>
+        <span class="card-action">ابدأ التعلم ←</span>
+      </a>
+
+      <a href="levels.html?lang=javascript" class="lang-card js-card">
+        <div class="card-icon">
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" loading="lazy">
+        </div>
+        <h2>JavaScript</h2>
+        <p>تعلم المتغيرات والشروط وأساسيات كتابة الكود بنفسك.</p>
+        <span class="card-action">افتح المنهج ←</span>
+      </a>
+
+      <a href="levels.html?lang=cpp" class="lang-card cpp-card">
+        <div class="card-icon">
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" loading="lazy">
+        </div>
+        <h2>C++</h2>
+        <p>تعلم أساسيات اللغة وابدأ بكتابة برامجك الأولى.</p>
+        <span class="card-action">افتح المنهج ←</span>
+      </a>
+    </section>
+
+    <p class="footer-note">
+      اختر مسارك وابدأ رحلة البرمجة مع كودي 🤖
+    </p>
+  </main>
+
+  <script>
+    "use strict";
+
+    const particlesContainer = document.getElementById("particles");
+    const symbols = ["{ }", "</>", "( )", "0", "1", ";", "=>", "++", "=="];
+
+    for (let i = 0; i < 15; i++) {
+      const particle = document.createElement("div");
+
+      particle.className = "particle";
+      particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      particle.style.left = Math.random() * 100 + "%";
+      particle.style.animationDelay = Math.random() * 12 + "s";
+      particle.style.animationDuration = (9 + Math.random() * 6) + "s";
+      particle.style.fontSize = (15 + Math.random() * 15) + "px";
+
+      particlesContainer.appendChild(particle);
+    }
+  </script>
 </body>
 </html>
