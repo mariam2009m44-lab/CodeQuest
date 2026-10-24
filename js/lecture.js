@@ -1,17 +1,10 @@
 import { requireUser } from "./auth.js";
 
-/* =========================================
-   1. إعدادات الصفحة والمنهج
-========================================= */
-
 const params = new URLSearchParams(window.location.search);
 const lang = (params.get("lang") || "javascript").toLowerCase();
 
 function parseIndex(value) {
-  if (value === null || !/^\d+$/.test(value)) {
-    return 0;
-  }
-
+  if (value === null || !/^\d+$/.test(value)) return 0;
   const number = Number(value);
   return Number.isSafeInteger(number) ? number : 0;
 }
@@ -26,14 +19,12 @@ const LANGUAGES = Object.freeze({
     mode: "javascript",
     label: "JavaScript"
   },
-
   python: {
     file: "./json/python_curriculum.json",
     ext: ".py",
     mode: "python",
     label: "Python"
   },
-
   cpp: {
     file: "./json/cpp_curriculum.json",
     ext: ".cpp",
@@ -50,15 +41,10 @@ let editor = null;
 let currentLesson = null;
 let currentCurriculum = null;
 let selectedOptionIdx = null;
-
 let pythonWorker = null;
 let pythonTimeout = null;
 let executionId = 0;
 let running = false;
-
-/* =========================================
-   2. أدوات الواجهة
-========================================= */
 
 function showOutput(message) {
   const terminal = $("terminalOutput");
@@ -75,22 +61,16 @@ function showError(message) {
 
 function displayLessonText(id, value) {
   const element = $(id);
-
-  if (element) {
-    element.textContent = String(value ?? "");
-  }
+  if (element) element.textContent = String(value ?? "");
 }
 
 function setRunning(value) {
   running = value;
-
   const button = $("runCodeBtn");
 
   if (button) {
     button.disabled = value;
-    button.textContent = value
-      ? "جارٍ التشغيل..."
-      : "▶ تشغيل الكود";
+    button.textContent = value ? "جارٍ التشغيل..." : "▶ تشغيل الكود";
   }
 }
 
@@ -109,23 +89,12 @@ function getLessonDescription(lesson) {
   );
 }
 
-/* =========================================
-   3. حفظ إنجاز الدروس ومزامنة التقدم
-========================================= */
-
 function getCompletedLessons() {
   try {
-    const raw = localStorage.getItem(
-      `cq_completed_lessons_${lang}`
-    );
-
+    const raw = localStorage.getItem(`cq_completed_lessons_${lang}`);
     const parsed = raw ? JSON.parse(raw) : [];
-
-    return new Set(
-      Array.isArray(parsed) ? parsed.map(String) : []
-    );
-  } catch (error) {
-    console.warn("تعذر قراءة تقدم الدروس:", error);
+    return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+  } catch {
     return new Set();
   }
 }
@@ -137,7 +106,6 @@ function getLessonKey() {
 function markCurrentLessonCompleted() {
   try {
     const completed = getCompletedLessons();
-
     completed.add(getLessonKey());
 
     localStorage.setItem(
@@ -146,12 +114,10 @@ function markCurrentLessonCompleted() {
     );
 
     updateLessonProgress();
-  } catch (error) {
-    console.error("تعذر حفظ إنجاز الدرس:", error);
-
+  } catch {
     displayLessonText(
       "quizFeedback",
-      "إجابة صحيحة، لكن تعذر حفظ التقدم على هذا الجهاز."
+      "الإجابة صحيحة، لكن تعذر حفظ التقدم على هذا الجهاز."
     );
   }
 }
@@ -159,51 +125,125 @@ function markCurrentLessonCompleted() {
 function updateLessonProgress() {
   if (!currentCurriculum) return;
 
-  const allLessons = currentCurriculum.chapters.flatMap(
-    (chapter) =>
-      Array.isArray(chapter.lessons) ? chapter.lessons : []
-  );
-
-  const completed = getCompletedLessons();
-
+  const chapters = currentCurriculum.chapters || [];
   const validKeys = new Set();
+  let total = 0;
 
-  currentCurriculum.chapters.forEach((chapter, chapterIndex) => {
-    const lessons = Array.isArray(chapter.lessons)
-      ? chapter.lessons
-      : [];
+  chapters.forEach((chapter, chapterIndex) => {
+    const lessons = Array.isArray(chapter.lessons) ? chapter.lessons : [];
 
     lessons.forEach((_, lessonIndex) => {
       validKeys.add(`${chapterIndex}:${lessonIndex}`);
+      total += 1;
     });
   });
 
-  const done = [...completed].filter((key) =>
-    validKeys.has(key)
-  ).length;
-
-  const total = allLessons.length;
-
-  const percentage = total
-    ? Math.round((done / total) * 100)
-    : 0;
-
+  const completed = getCompletedLessons();
+  const done = [...completed].filter((key) => validKeys.has(key)).length;
+  const percentage = total ? Math.round((done / total) * 100) : 0;
   const progressBar = $("progressBar");
 
   if (progressBar) {
     progressBar.style.width = `${percentage}%`;
-    progressBar.setAttribute(
-      "aria-valuenow",
-      String(percentage)
-    );
+    progressBar.setAttribute("aria-valuenow", String(percentage));
   }
 
   displayLessonText("progressText", `${percentage}%`);
 }
 
-/* =========================================
-   4. إدارة عمليات التنفيذ
-========================================= */
+function getNextLessonDestination() {
+  if (!currentCurriculum || !Array.isArray(currentCurriculum.chapters)) {
+    return null;
+  }
+
+  const chapters = currentCurriculum.chapters;
+  const currentChapter = chapters[chapterIdx];
+  const currentLessons = Array.isArray(currentChapter?.lessons)
+    ? currentChapter.lessons
+    : [];
+
+  if (lessonIdx + 1 < currentLessons.length) {
+    return {
+      chapter: chapterIdx,
+      lesson: lessonIdx + 1
+    };
+  }
+
+  for (let index = chapterIdx + 1; index < chapters.length; index += 1) {
+        const lessons = Array.isArray(chapters[index].lessons)
+      ? chapters[index].lessons
+      : [];
+
+    if (lessons.length > 0) {
+      return {
+        chapter: index,
+        lesson: 0
+      };
+    }
+  }
+
+  return null;
+}
+
+function showNextLessonAction() {
+  const feedback = $("quizFeedback");
+  if (!feedback) return;
+
+  $("nextLessonBtn")?.remove();
+  $("quizCompletionMessage")?.remove();
+
+  const destination = getNextLessonDestination();
+  const button = document.createElement("button");
+
+  button.id = "nextLessonBtn";
+  button.type = "button";
+  button.className = "quiz-action";
+
+  button.style.cssText = [
+    "display:block",
+    "width:100%",
+    "margin-top:14px",
+    "background:linear-gradient(135deg,#7955E8,#36BFE5)",
+    "color:#fff",
+    "border:0",
+    "border-radius:12px",
+    "padding:12px 16px",
+    "font:inherit",
+    "font-weight:700",
+    "cursor:pointer"
+  ].join(";");
+
+  if (destination) {
+    button.textContent = "الدرس التالي ←";
+
+    button.addEventListener("click", () => {
+      const url = new URL("lecture.html", window.location.href);
+
+      url.searchParams.set("lang", lang);
+      url.searchParams.set("chapter", String(destination.chapter));
+      url.searchParams.set("lesson", String(destination.lesson));
+
+      window.location.href = url.href;
+    });
+  } else {
+    button.textContent = "إنهاء المسار والعودة ←";
+
+    button.addEventListener("click", () => {
+      window.location.href = "languages.html";
+    });
+
+    const message = document.createElement("p");
+
+    message.id = "quizCompletionMessage";
+    message.textContent = "أحسنت! لقد أنهيت جميع دروس هذا المسار.";
+    message.style.cssText =
+      "margin-top:14px;line-height:1.8;color:#36BFE5";
+
+    feedback.insertAdjacentElement("afterend", message);
+  }
+
+  feedback.insertAdjacentElement("afterend", button);
+}
 
 function stopPythonWorker() {
   if (pythonTimeout !== null) {
@@ -231,10 +271,6 @@ function finishExecution(id) {
   stopPythonWorker();
   setRunning(false);
 }
-
-/* =========================================
-   5. تشغيل Python باستخدام Pyodide
-========================================= */
 
 function createPythonWorker() {
   const workerSource = `
@@ -304,9 +340,9 @@ function createPythonWorker() {
 function runPython(code, id) {
   try {
     pythonWorker = createPythonWorker();
-  } catch (error) {
+  } catch {
     showError(
-      "تعذر إنشاء بيئة Python. تأكدي من تشغيل المنصة عبر خادم محلي أو استضافتها على HTTPS."
+      "تعذر إنشاء بيئة Python. شغّل المنصة عبر خادم محلي أو HTTPS."
     );
 
     finishExecution(id);
@@ -316,9 +352,7 @@ function runPython(code, id) {
   const worker = pythonWorker;
 
   worker.onmessage = (event) => {
-    if (id !== executionId || worker !== pythonWorker) {
-      return;
-    }
+    if (id !== executionId || worker !== pythonWorker) return;
 
     const data = event.data;
 
@@ -337,35 +371,21 @@ function runPython(code, id) {
   };
 
   worker.onerror = () => {
-    if (id !== executionId || worker !== pythonWorker) {
-      return;
-    }
+    if (id !== executionId || worker !== pythonWorker) return;
 
-    showError(
-      "تعذر تشغيل Python. تحققي من اتصال الإنترنت وإمكانية تحميل Pyodide."
-    );
-
+    showError("تعذر تشغيل Python. تحقّق من اتصال الإنترنت.");
     finishExecution(id);
   };
 
   pythonTimeout = setTimeout(() => {
-    if (id !== executionId || worker !== pythonWorker) {
-      return;
-    }
+    if (id !== executionId || worker !== pythonWorker) return;
 
-    showError(
-      "انتهت مهلة التشغيل. قد يكون تحميل Python بطيئًا أو أن الكود يستغرق وقتًا طويلًا."
-    );
-
+    showError("انتهت مهلة التشغيل.");
     finishExecution(id);
   }, 30000);
 
   worker.postMessage({ id, code });
 }
-
-/* =========================================
-   6. تشغيل JavaScript في إطار معزول
-========================================= */
 
 function runJavaScript(code, id) {
   const frame = document.createElement("iframe");
@@ -387,18 +407,14 @@ function runJavaScript(code, id) {
 
     finished = true;
 
-    if (timeout !== null) {
-      clearTimeout(timeout);
-    }
+    if (timeout !== null) clearTimeout(timeout);
 
     window.removeEventListener("message", listener);
     frame.remove();
 
     if (id !== executionId) return;
 
-    if (message) {
-      outputs.push(message);
-    }
+    if (message) outputs.push(message);
 
     showOutput(
       outputs.join("\n") || "تم تنفيذ الكود دون مخرجات."
@@ -407,11 +423,7 @@ function runJavaScript(code, id) {
     setRunning(false);
   };
 
-  const safeCode = JSON.stringify(code).replace(
-    /</g,
-    "\\u003c"
-  );
-
+  const safeCode = JSON.stringify(code).replace(/</g, "\\u003c");
   const safeId = JSON.stringify(id);
 
   const source = `<!doctype html>
@@ -456,21 +468,14 @@ function runJavaScript(code, id) {
   };
 
   window.onunhandledrejection = (event) => {
-    send(
-      "error",
-      event.reason?.message || event.reason
-    );
+    send("error", event.reason?.message || event.reason);
   };
 
   try {
     const code = ${safeCode};
-
     await new Function('"use strict";\\n' + code)();
   } catch (error) {
-    send(
-      "error",
-      error?.stack || error?.message || String(error)
-    );
+    send("error", error?.stack || error?.message || String(error));
   }
 
   send("done");
@@ -496,13 +501,11 @@ function runJavaScript(code, id) {
       return;
     }
 
-    if (event.data.type === "done") {
-      finish();
-    }
+    if (event.data.type === "done") finish();
   }
 
   timeout = setTimeout(() => {
-    finish("انتهت مهلة التشغيل. جرّبي كودًا أبسط.");
+    finish("انتهت مهلة التشغيل. جرّب كودًا أبسط.");
   }, 5000);
 
   window.addEventListener("message", listener);
@@ -511,23 +514,13 @@ function runJavaScript(code, id) {
   frame.srcdoc = source;
 }
 
-/* =========================================
-   7. تشغيل C++
-========================================= */
-
 function runCpp() {
   showOutput(
-    "تشغيل C++ غير متاح حاليًا.\n\n" +
-    "لم يتم ربط خدمة تنفيذ حقيقية لهذه اللغة بعد. " +
-    "لن يتم اعتبار الكود منفذًا حتى يتم ربط خدمة مناسبة."
+    "تشغيل C++ غير متاح حاليًا.\n\nلم يتم ربط خدمة تنفيذ لهذه اللغة بعد."
   );
 
   setRunning(false);
 }
-
-/* =========================================
-   8. أزرار المحرر
-========================================= */
 
 window.runUserCode = async function runUserCode() {
   if (!editor || running) return;
@@ -535,7 +528,7 @@ window.runUserCode = async function runUserCode() {
   const code = editor.getValue();
 
   if (!code.trim()) {
-    showOutput("اكتبي الكود أولًا، ثم اضغطي على تشغيل.");
+    showOutput("اكتب الكود أولًا، ثم اضغط على تشغيل.");
     return;
   }
 
@@ -575,14 +568,8 @@ window.resetCode = function resetCode() {
 window.showQuiz = function showQuiz() {
   const modal = $("quizModal");
 
-  if (modal) {
-    modal.style.display = "flex";
-  }
+  if (modal) modal.style.display = "flex";
 };
-
-/* =========================================
-   9. تجهيز الاختبار
-========================================= */
 
 function renderQuiz(quiz) {
   const optionsDiv = $("quizOptions");
@@ -590,24 +577,25 @@ function renderQuiz(quiz) {
 
   selectedOptionIdx = null;
 
+  $("nextLessonBtn")?.remove();
+  $("quizCompletionMessage")?.remove();
+
+  const feedback = $("quizFeedback");
+
+  if (feedback) {
+    feedback.textContent = "";
+    delete feedback.dataset.result;
+  }
+
   displayLessonText(
     "quizQuestion",
     quiz?.question || "لا يوجد اختبار لهذا الدرس حاليًا."
   );
 
-  displayLessonText("quizFeedback", "");
+  if (optionsDiv) optionsDiv.replaceChildren();
+  if (submitButton) submitButton.style.display = "none";
 
-  if (optionsDiv) {
-    optionsDiv.replaceChildren();
-  }
-
-  if (submitButton) {
-    submitButton.style.display = "none";
-  }
-
-  if (!quiz || !Array.isArray(quiz.options) || !optionsDiv) {
-    return;
-  }
+  if (!quiz || !Array.isArray(quiz.options) || !optionsDiv) return;
 
   quiz.options.forEach((option, index) => {
     const button = document.createElement("button");
@@ -623,11 +611,15 @@ function renderQuiz(quiz) {
         item.classList.toggle("selected", item === button);
       });
 
-      if (submitButton) {
-        submitButton.style.display = "block";
+      if (submitButton) submitButton.style.display = "block";
+
+      if (feedback) {
+        feedback.textContent = "";
+        delete feedback.dataset.result;
       }
 
-      displayLessonText("quizFeedback", "");
+      $("nextLessonBtn")?.remove();
+      $("quizCompletionMessage")?.remove();
     });
 
     optionsDiv.appendChild(button);
@@ -635,9 +627,7 @@ function renderQuiz(quiz) {
 }
 
 window.submitQuiz = function submitQuiz() {
-  if (selectedOptionIdx === null || !currentLesson?.quiz) {
-    return;
-  }
+  if (selectedOptionIdx === null || !currentLesson?.quiz) return;
 
   const quiz = currentLesson.quiz;
   const feedback = $("quizFeedback");
@@ -646,35 +636,26 @@ window.submitQuiz = function submitQuiz() {
   if (!feedback) return;
 
   if (selectedOptionIdx === quiz.correct_index) {
-    feedback.textContent =
-      quiz.success_msg || "إجابة صحيحة! أحسنت.";
-
+    feedback.textContent = quiz.success_msg || "إجابة صحيحة!";
     feedback.dataset.result = "correct";
 
     markCurrentLessonCompleted();
 
-    if (submitButton) {
-      submitButton.style.display = "none";
-    }
+    if (submitButton) submitButton.style.display = "none";
 
-    const optionsDiv = $("quizOptions");
-
-    optionsDiv?.querySelectorAll(".quiz-option").forEach((button) => {
+    $("quizOptions")?.querySelectorAll(".quiz-option").forEach((button) => {
       button.disabled = true;
     });
 
+    showNextLessonAction();
     return;
   }
 
   feedback.textContent =
-    quiz.fail_msg || "الإجابة غير صحيحة. حاولي مرة أخرى.";
+    quiz.fail_msg || "الإجابة غير صحيحة. حاول مرة أخرى.";
 
   feedback.dataset.result = "incorrect";
 };
-
-/* =========================================
-   10. تحميل الدرس
-========================================= */
 
 async function initLesson() {
   if (!config) {
@@ -713,9 +694,7 @@ async function initLesson() {
     currentLesson = chapter?.lessons?.[lessonIdx];
 
     if (!currentLesson) {
-      throw new Error(
-        "الدرس المطلوب غير موجود. ارجعي إلى قائمة الدروس واختاري درسًا صحيحًا."
-      );
+      throw new Error("الدرس المطلوب غير موجود. ارجع إلى قائمة الدروس.");
     }
 
     displayLessonText("lessonTitle", currentLesson.title);
@@ -745,9 +724,7 @@ async function initLesson() {
     }
 
     if (!window.CodeMirror || !editorElement) {
-      throw new Error(
-        "تعذر تحميل محرر CodeMirror. تحققي من ملفات المحرر في الصفحة."
-      );
+      throw new Error("تعذر تحميل محرر CodeMirror.");
     }
 
     if (editor) {
@@ -767,13 +744,9 @@ async function initLesson() {
 
     editor.setValue(getLessonCode(currentLesson));
 
-    displayLessonText(
-      "fileNameDisplay",
-      "main" + config.ext
-    );
+    displayLessonText("fileNameDisplay", "main" + config.ext);
 
     updateLessonProgress();
-
     renderQuiz(currentLesson.quiz || null);
 
     showOutput(
@@ -786,16 +759,12 @@ async function initLesson() {
 
     displayLessonText(
       "codyIntro",
-      "تعذر تحميل الدرس. تحققي من ملف المنهج واتصال الإنترنت."
+      "تعذر تحميل الدرس. تحقق من ملف المنهج واتصال الإنترنت."
     );
 
     showError(error?.message || "حدث خطأ أثناء تحميل الدرس.");
   }
 }
-
-/* =========================================
-   11. إغلاق الصفحة والتحقق من الحساب
-========================================= */
 
 window.addEventListener("beforeunload", () => {
   executionId += 1;
@@ -807,11 +776,9 @@ requireUser()
   .catch((error) => {
     console.error("Authentication failed:", error);
 
-    if (error?.message === "يجب تسجيل الدخول.") {
-      return;
-    }
+    if (error?.message === "يجب تسجيل الدخول.") return;
 
     showError(
-      "تعذر التحقق من الحساب. أعيدي تحميل الصفحة أو سجلي الدخول مجددًا."
+      "تعذر التحقق من الحساب. أعد تحميل الصفحة أو سجّل الدخول مجددًا."
     );
   });
