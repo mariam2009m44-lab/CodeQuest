@@ -1,63 +1,534 @@
-
 {
   "language": "cpp",
   "title": "مسار C++",
   "chapters": [
     {
       "id": "cpp_ch1",
-      "title": "الفصل الأول: القوة والسرعة",
+      "title": "الفصل الأول: البداية مع C++",
       "lessons": [
         {
           "id": "cpp_l1",
-          "title": "مرحباً بالعالم",
-          "objective": "كتابة أول برنامج وتعلم الهيكل الأساسي.",
-          "cody_intro": "C++ لغة قوية تُستخدم في الألعاب والأنظمة. يبدأ البرنامج الأساسي بالدالة main، ونستخدم cout لطباعة النصوص. نضع النصوص بين علامتي اقتباس مزدوجتين.",
+          "title": "مرحبًا بالعالم",
+          "objective": "كتابة أول برنامج بلغة C++",
+          "cody_intro": "أهلًا بك في عالم C++! سنبدأ ببرنامج بسيط يطبع رسالة على الشاشة.",
           "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << \"Hello World!\" << endl;\n    return 0;\n}",
-          "task": "غيّر النص المطبوع إلى I am a C++ Coder.",
+          "task": "غيّر الرسالة إلى I am a C++ Coder.",
           "hints": [
-            "ابحث عن النص الموجود بين علامتي الاقتباس المزدوجتين.",
-            "اترك return 0; كما هو في هذا المثال."
+            "ابحث عن النص الموجود بين علامتي الاقتباس.",
+            "لا تحذف الفاصلة المنقوطة في نهاية أمر الطباعة."
           ],
           "quiz": {
-            "question": "ما الأمر الذي نستخدمه للطباعة في C++؟",
-            "options": [
-              "print",
-              "cout",
-              "System.out",
-              "echo"
-            ],
+            "question": "ما الأمر المستخدم لطباعة النصوص في هذا المثال؟",
+            "options": ["print", "cout", "echo", "write"],
             "correct_index": 1,
-            "success_msg": "أحسنت! cout هي الإجابة الصحيحة.",
-            "fail_msg": "حاول مرة أخرى، وراجع مثال الطباعة."
+            "success_msg": "أحسنت! cout تُستخدم للطباعة.",
+            "fail_msg": "راجع مثال الطباعة وحاول مرة أخرى."
           },
           "xp_reward": 70
         },
         {
           "id": "cpp_l2",
-          "title": "المتغيرات والأنواع",
-          "objective": "استخدام المتغيرات وأنواع البيانات المختلفة.",
-          "cody_intro": "في C++ نحدد نوع المتغير قبل استخدامه. النوع int للأعداد الصحيحة، والنوع string لتخزين النصوص. نحتاج إلى تضمين مكتبة string عند استخدامه.",
+          "title": "المتغيرات وأنواع البيانات",
+          "objective": "التعرف على المتغيرات وأنواع البيانات الأساسية",
+          "cody_intro": "المتغير مكان نخزن فيه قيمة. في C++ نحدد نوع البيانات التي سيحملها المتغير.",
           "code_example": "#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    int score = 100;\n    string name = \"Cody\";\n    cout << name << \" scored \" << score << endl;\n    return 0;\n}",
-          "task": "غيّر الاسم إلى اسم تختاره، وغيّر النقاط إلى 500.",
+          "task": "غيّر الاسم إلى اسم تختاره واجعل score تساوي 500.",
           "hints": [
-            "تأكد من وجود #include <string> لاستخدام string.",
-            "ضع النصوص بين علامتي اقتباس مزدوجتين، والأعداد الصحيحة في متغير من النوع int."
+            "يُستخدم int للأعداد الصحيحة.",
+            "يُستخدم string لتخزين النصوص، ويجب تضمين مكتبة string."
           ],
           "quiz": {
-            "question": "ما النوع الذي نستخدمه للأعداد الصحيحة في C++؟",
-            "options": [
-              "string",
-              "float",
-              "int",
-              "bool"
-            ],
+            "question": "أي نوع بيانات يناسب عددًا صحيحًا مثل 25؟",
+            "options": ["string", "int", "bool", "char"],
+            "correct_index": 1,
+            "success_msg": "إجابة صحيحة! int مناسب للأعداد الصحيحة.",
+            "fail_msg": "حاول مرة أخرى وفكّر في نوع البيانات."
+          },
+          "xp_reward": 80
+        },
+        {
+          "id": "cpp_l3",
+          "title": "التعليقات في الكود",
+          "objective": "كتابة تعليقات توضح وظيفة الكود",
+          "cody_intro": "التعليقات تساعدنا على فهم البرنامج. التعليق الذي يبدأ بـ // لا يُنفذ باعتباره أمرًا برمجيًا.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Print a welcome message\n    cout << \"Welcome to Cody Academy!\" << endl;\n    return 0;\n}",
+          "task": "أضف تعليقًا يوضح وظيفة أمر الطباعة.",
+          "hints": [
+            "ابدأ التعليق بعلامتي //.",
+            "اكتب التعليق في سطر مستقل قبل الأمر الذي يوضحه."
+          ],
+          "quiz": {
+            "question": "كيف نكتب تعليقًا من سطر واحد في C++؟",
+            "options": ["<!-- -->", "//", "**", "##"],
+            "correct_index": 1,
+            "success_msg": "ممتاز! نستخدم // للتعليق من سطر واحد.",
+            "fail_msg": "تذكّر الرمز المستخدم للتعليقات في C++."
+          },
+          "xp_reward": 70
+        }
+      ]
+    },
+    {
+      "id": "cpp_ch2",
+      "title": "الفصل الثاني: الإدخال والعمليات الحسابية",
+      "lessons": [
+        {
+          "id": "cpp_l4",
+          "title": "استقبال البيانات باستخدام cin",
+          "objective": "قراءة مدخلات المستخدم",
+          "cody_intro": "باستخدام cin نستطيع استقبال قيمة من المستخدم وتخزينها داخل متغير.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int age;\n    cout << \"Enter your age: \";\n    cin >> age;\n    cout << \"Your age is \" << age << endl;\n    return 0;\n}",
+          "task": "أنشئ متغيرًا للدرجة واستقبل قيمته من المستخدم.",
+          "hints": [
+            "أنشئ متغيرًا باستخدام int.",
+            "استخدم cin >> variable لاستقبال القيمة."
+          ],
+          "quiz": {
+            "question": "ما وظيفة cin؟",
+            "options": ["طباعة النصوص", "استقبال المدخلات", "إنهاء البرنامج", "تعريف دالة"],
+            "correct_index": 1,
+            "success_msg": "صحيح! cin تستقبل المدخلات.",
+            "fail_msg": "راجع المثال وحاول مرة أخرى."
+          },
+          "xp_reward": 80
+        },
+        {
+          "id": "cpp_l5",
+          "title": "العمليات الحسابية",
+          "objective": "استخدام الجمع والطرح والضرب والقسمة",
+          "cody_intro": "يمكننا إجراء العمليات الحسابية باستخدام + و- و* و/. انتبه إلى نوع البيانات عند القسمة.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int a = 12;\n    int b = 4;\n    cout << a + b << endl;\n    cout << a - b << endl;\n    cout << a * b << endl;\n    cout << a / b << endl;\n    return 0;\n}",
+          "task": "أضف عملية حسابية تطبع باقي قسمة العدد الأول على الثاني باستخدام %.",
+          "hints": [
+            "رمز الضرب هو *.",
+            "رمز باقي القسمة هو %."
+          ],
+          "quiz": {
+            "question": "ما الرمز المستخدم لحساب باقي القسمة؟",
+            "options": ["/", "*", "%", "+"],
             "correct_index": 2,
-            "success_msg": "أحسنت! int هو النوع المناسب للأعداد الصحيحة.",
-            "fail_msg": "راجع أنواع البيانات وحاول مرة أخرى."
+            "success_msg": "أحسنت! % يحسب باقي القسمة.",
+            "fail_msg": "راجع رموز العمليات الحسابية."
+          },
+          "xp_reward": 80
+        },
+        {
+          "id": "cpp_l6",
+          "title": "الثوابت باستخدام const",
+          "objective": "فهم القيم التي لا نريد تغييرها",
+          "cody_intro": "عندما نستخدم const مع متغير، فإننا نمنع تغيير قيمته بعد تهيئته.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    const double pi = 3.14159;\n    double radius = 2.0;\n    cout << pi * radius * radius << endl;\n    return 0;\n}",
+          "task": "أنشئ ثابتًا باسم daysInWeek قيمته 7 واطبعه.",
+          "hints": [
+            "اكتب const قبل نوع البيانات.",
+            "يجب إعطاء الثابت قيمة عند تعريفه."
+          ],
+          "quiz": {
+            "question": "ما فائدة const؟",
+            "options": ["تغيير نوع المتغير", "منع إعادة إسناد قيمة جديدة", "طباعة المتغير", "تكرار الكود"],
+            "correct_index": 1,
+            "success_msg": "إجابة صحيحة!",
+            "fail_msg": "فكّر في الفرق بين المتغير العادي والثابت."
           },
           "xp_reward": 80
         }
       ]
-    }
-  ]
+    },
+    {
+      "id": "cpp_ch3",
+      "title": "الفصل الثالث: الشروط واتخاذ القرارات",
+      "lessons": [
+        {
+          "id": "cpp_l7",
+          "title": "الشرط if",
+          "objective": "تنفيذ كود عندما يتحقق شرط",
+          "cody_intro": "تسمح لنا if باتخاذ قرار داخل البرنامج بناءً على شرط معين.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int score = 85;\n    if (score >= 50) {\n        cout << \"Passed\" << endl;\n    }\n    return 0;\n}",
+          "task": "غيّر الدرجة واختبر متى تظهر رسالة النجاح.",
+          "hints": [
+            "يوضع الشرط بين قوسين.",
+            "تُكتب الأوامر التي تنفذ عند تحقق الشرط داخل الأقواس المعقوفة."
+          ],
+          "quiz": {
+            "question": "متى ينفذ الكود الموجود داخل if؟",
+            "options": ["دائمًا", "عندما يتحقق الشرط", "عند إغلاق البرنامج", "مرة واحدة قبل الشرط"],
+            "correct_index": 1,
+            "success_msg": "رائع! ينفذ الكود عندما يكون الشرط صحيحًا.",
+            "fail_msg": "راجع طريقة عمل if."
+          },
+          "xp_reward": 80
+        },
+        {
+          "id": "cpp_l8",
+          "title": "استخدام else",
+          "objective": "تحديد ما يحدث عندما لا يتحقق الشرط",
+          "cody_intro": "نستخدم else لتحديد الأوامر التي تنفذ عندما يكون شرط if غير صحيح.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int score = 40;\n    if (score >= 50) {\n        cout << \"Passed\" << endl;\n    } else {\n        cout << \"Try again\" << endl;\n    }\n    return 0;\n}",
+          "task": "اجعل البرنامج يطبع Passed إذا كانت الدرجة 50 أو أكثر، وTry again فيما عدا ذلك.",
+          "hints": [
+            "تأتي else بعد قوس إغلاق if.",
+            "لا تكتب شرطًا بعد else."
+          ],
+          "quiz": {
+            "question": "متى ينفذ فرع else؟",
+            "options": ["عندما يتحقق شرط if", "عندما لا يتحقق شرط if", "قبل if دائمًا", "لا ينفذ أبدًا"],
+            "correct_index": 1,
+            "success_msg": "صحيح!",
+            "fail_msg": "راجع المثال مرة أخرى."
+          },
+          "xp_reward": 80
+        },
+        {
+          "id": "cpp_l9",
+          "title": "الشروط المتعددة باستخدام else if",
+          "objective": "التعامل مع أكثر من حالة",
+          "cody_intro": "تساعدنا else if على اختبار حالات متعددة بترتيب محدد.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int score = 75;\n    if (score >= 90) {\n        cout << \"Excellent\" << endl;\n    } else if (score >= 50) {\n        cout << \"Passed\" << endl;\n    } else {\n        cout << \"Try again\" << endl;\n    }\n    return 0;\n}",
+          "task": "أضف حالة تطبع Good إذا كانت الدرجة بين 70 و89.",
+          "hints": [
+            "اكتب else if بين if وelse.",
+            "رتّب الشروط من الأعلى إلى الأقل لتجنب التقاط حالة مبكرًا."
+          ],
+          "quiz": {
+            "question": "ما فائدة else if؟",
+            "options": ["تعريف متغير", "اختبار حالة إضافية", "إنهاء البرنامج", "تكرار الأوامر"],
+            "correct_index": 1,
+            "success_msg": "أحسنت!",
+            "fail_msg": "راجع الشروط المتعددة."
+          },
+          "xp_reward": 90
+        }
+      ]
+    },
+    {
+      "id": "cpp_ch4",
+      "title": "الفصل الرابع: الحلقات التكرارية",
+      "lessons": [
+        {
+          "id": "cpp_l10",
+          "title": "حلقة for",
+          "objective": "تكرار الأوامر عددًا محددًا من المرات",
+          "cody_intro": "تساعدنا حلقة for على تكرار الكود دون كتابته عدة مرات.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    for (int i = 1; i <= 5; i++) {\n        cout << i << endl;\n    }\n    return 0;\n}",
+          "task": "عدّل الحلقة لتطبع الأعداد من 1 إلى 10.",
+          "hints": [
+            "ابدأ المتغير من 1.",
+            "غيّر حد الشرط إلى 10."
+          ],
+          "quiz": {
+            "question": "ما فائدة i++ في هذا المثال؟",
+            "options": ["إنقاص i", "زيادة i بمقدار واحد", "إنهاء البرنامج", "طباعة i"],
+            "correct_index": 1,
+            "success_msg": "صحيح! تزيد i بمقدار واحد.",
+            "fail_msg": "راجع أجزاء حلقة for."
+          },
+          "xp_reward": 90
+        },
+        {
+          "id": "cpp_l11",
+          "title": "حلقة while",
+          "objective": "تكرار الأوامر ما دام الشرط صحيحًا",
+          "cody_intro": "تستمر while في تنفيذ الأوامر ما دام الشرط صحيحًا، لذلك يجب الانتباه إلى تحديث المتغير.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int count = 1;\n    while (count <= 5) {\n        cout << count << endl;\n        count++;\n    }\n    return 0;\n}",
+          "task": "اجعل الحلقة تطبع الأعداد من 1 إلى 3.",
+          "hints": [
+            "غيّر شرط الحلقة.",
+            "تأكد من زيادة count حتى لا تستمر الحلقة بلا نهاية."
+          ],
+          "quiz": {
+            "question": "متى تستمر حلقة while؟",
+            "options": ["طالما الشرط صحيح", "مرة واحدة دائمًا", "عندما يكون الشرط خطأ", "قبل بدء البرنامج فقط"],
+            "correct_index": 0,
+            "success_msg": "إجابة ممتازة!",
+            "fail_msg": "راجع شرط استمرار while."
+          },
+          "xp_reward": 90
+        },
+        {
+          "id": "cpp_l12",
+          "title": "break وcontinue",
+          "objective": "التحكم في سير الحلقات",
+          "cody_intro": "توقف break الحلقة بالكامل، بينما تتجاوز continue بقية التكرار الحالي وتنتقل للتكرار التالي.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    for (int i = 1; i <= 5; i++) {\n        if (i == 3) continue;\n        cout << i << endl;\n    }\n    return 0;\n}",
+          "task": "عدّل المثال ليتجاوز العدد 2 بدلًا من 3.",
+          "hints": [
+            "ابحث عن الشرط i == 3.",
+            "غيّر العدد فقط واترك continue كما هي."
+          ],
+          "quiz": {
+            "question": "ما الذي تفعله break داخل الحلقة؟",
+            "options": ["تزيد العداد", "توقف الحلقة", "تبدأ حلقة جديدة", "تطبع نصًا"],
+            "correct_index": 1,
+            "success_msg": "صحيح! break توقف الحلقة.",
+            "fail_msg": "راجع الفرق بين break وcontinue."
+          },
+          "xp_reward": 90
+        }
+      ]
+    },
+    {
+      "id": "cpp_ch5",
+      "title": "الفصل الخامس: الدوال",
+      "lessons": [
+        {
+          "id": "cpp_l13",
+          "title": "إنشاء دالة",
+          "objective": "تقسيم البرنامج إلى أجزاء قابلة لإعادة الاستخدام",
+          "cody_intro": "الدالة تجمع مجموعة أوامر تحت اسم محدد، ويمكننا استدعاؤها عند الحاجة.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nvoid greet() {\n    cout << \"Hello, coder!\" << endl;\n}\n\nint main() {\n    greet();\n    return 0;\n}",
+          "task": "أنشئ دالة باسم showMessage تطبع رسالة ترحيب ثم استدعها من main.",
+          "hints": [
+            "ابدأ تعريف الدالة بكلمة void إذا كانت لا تعيد قيمة.",
+            "استدع الدالة باستخدام اسمها ثم أقواس وفاصلة منقوطة."
+          ],
+          "quiz": {
+            "question": "ما معنى void في تعريف الدالة؟",
+            "options": ["تعيد نصًا", "لا تعيد قيمة", "توقف البرنامج", "تعرف متغيرًا"],
+            "correct_index": 1,
+            "success_msg": "أحسنت!",
+            "fail_msg": "راجع معنى void."
+          },
+          "xp_reward": 90
+        },
+        {
+          "id": "cpp_l14",
+          "title": "المعاملات والقيم المعادة",
+          "objective": "تمرير بيانات إلى الدوال وإرجاع نتيجة",
+          "cody_intro": "يمكن للدالة استقبال معاملات، ثم استخدام return لإرجاع نتيجة إلى المكان الذي استدعاها.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint add(int a, int b) {\n    return a + b;\n}\n\nint main() {\n    cout << add(3, 4) << endl;\n    return 0;\n}",
+          "task": "أنشئ دالة multiply تستقبل عددين صحيحين وتعيد حاصل ضربهما.",
+          "hints": [
+            "اجعل نوع إرجاع الدالة int.",
+            "استخدم return لإرجاع حاصل الضرب."
+          ],
+          "quiz": {
+            "question": "ما وظيفة return في الدالة؟",
+            "options": ["تكرار الدالة", "إرجاع قيمة وإنهاء تنفيذ الدالة", "تعريف متغير", "طباعة النتيجة تلقائيًا"],
+            "correct_index": 1,
+            "success_msg": "إجابة صحيحة!",
+            "fail_msg": "راجع مثال دالة الجمع."
+          },
+          "xp_reward": 100
+        },
+        {
+          "id": "cpp_l15",
+          "title": "نطاق المتغيرات",
+          "objective": "فهم أين يمكن الوصول إلى المتغير",
+          "cody_intro": "المتغير المحلي يُعرّف داخل دالة أو كتلة، ولا يمكن الوصول إليه مباشرة من خارج نطاقه.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int score = 90;\n    if (score >= 50) {\n        int bonus = 10;\n        cout << bonus << endl;\n    }\n    cout << score << endl;\n    return 0;\n}",
+          "task": "أضف متغيرًا محليًا داخل if واطبع قيمته داخل نفس الكتلة.",
+          "hints": [
+            "المتغير bonus متاح داخل الأقواس التي عُرّف فيها.",
+            "حافظ على الأقواس المعقوفة."
+          ],
+          "quiz": {
+            "question": "أين يمكن استخدام المتغير المحلي bonus في المثال؟",
+            "options": ["في كل الملفات", "داخل نطاق تعريفه", "قبل تعريفه فقط", "في أي دالة"],
+            "correct_index": 1,
+            "success_msg": "صحيح! النطاق يحدد مواضع استخدام المتغير.",
+            "fail_msg": "راجع مكان تعريف المتغير."
+          },
+          "xp_reward": 90
+        }
+      ]
+    },
+    {
+      "id": "cpp_ch6",
+      "title": "الفصل السادس: المصفوفات والنصوص",
+      "lessons": [
+        {
+          "id": "cpp_l16",
+          "title": "المصفوفات",
+          "objective": "تخزين عدة قيم من النوع نفسه",
+          "cody_intro": "المصفوفة تخزن مجموعة عناصر من النوع نفسه، ولكل عنصر فهرس يبدأ من الصفر.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int scores[3] = {80, 90, 100};\n    cout << scores[0] << endl;\n    cout << scores[1] << endl;\n    cout << scores[2] << endl;\n    return 0;\n}",
+          "task": "أضف مصفوفة تحتوي على ثلاثة أعداد واطبع العنصر الثاني.",
+          "hints": [
+            "الفهرس الأول هو 0.",
+            "العنصر الثاني له الفهرس 1."
+          ],
+          "quiz": {
+            "question": "ما فهرس أول عنصر في المصفوفة؟",
+            "options": ["0", "1", "-1", "3"],
+            "correct_index": 0,
+            "success_msg": "ممتاز! يبدأ الفهرس من الصفر.",
+            "fail_msg": "تذكّر أن فهرسة المصفوفات تبدأ من 0."
+          },
+          "xp_reward": 100
+        },
+        {
+          "id": "cpp_l17",
+          "title": "التعامل مع النصوص",
+          "objective": "استخدام string والتعامل مع النصوص",
+          "cody_intro": "يوفر النوع string طريقة سهلة لتخزين النصوص ومقارنتها ومعرفة طولها.",
+          "code_example": "#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    string name = \"Cody\";\n    cout << name << endl;\n    cout << name.length() << endl;\n    return 0;\n}",
+          "task": "غيّر النص إلى اسمك واطبع عدد حروفه باستخدام length().",
+          "hints": [
+            "اكتب النص بين علامتي اقتباس مزدوجتين.",
+            "استدع length باستخدام النقطة والأقواس."
+          ],
+          "quiz": {
+            "question": "ما وظيفة name.length()؟",
+            "options": ["تحذف النص", "تعطي طول النص", "تكرر النص", "تحول النص إلى عدد"],
+            "correct_index": 1,
+            "success_msg": "إجابة صحيحة!",
+            "fail_msg": "راجع المثال."
+          },
+          "xp_reward": 100
+        },
+        {
+          "id": "cpp_l18",
+          "title": "حلقة for مع المصفوفات",
+          "objective": "المرور على عناصر المصفوفة",
+          "cody_intro": "يمكن استخدام حلقة for لقراءة عناصر المصفوفة واحدًا تلو الآخر.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int numbers[4] = {2, 4, 6, 8};\n    for (int i = 0; i < 4; i++) {\n        cout << numbers[i] << endl;\n    }\n    return 0;\n}",
+          "task": "اجعل الحلقة تطبع كل عناصر المصفوفة ثم جرّب تغيير أحد الأعداد.",
+          "hints": [
+            "ابدأ i من 0.",
+            "لا تجعل الفهرس يصل إلى عدد العناصر نفسه."
+          ],
+          "quiz": {
+            "question": "إذا كانت المصفوفة تحتوي على 4 عناصر، فما آخر فهرس صالح؟",
+            "options": ["4", "3", "5", "1"],
+            "correct_index": 1,
+            "success_msg": "صحيح! آخر فهرس هو 3.",
+            "fail_msg": "اطرح واحدًا من عدد العناصر."
+          },
+          "xp_reward": 100
+        }
+      ]
+    },
+    {
+      "id": "cpp_ch7",
+      "title": "الفصل السابع: المراجع والمؤشرات",
+      "lessons": [
+        {
+          "id": "cpp_l19",
+          "title": "المراجع References",
+          "objective": "فهم المرجع بوصفه اسمًا بديلًا لمتغير",
+          "cody_intro": "المرجع اسم آخر لمتغير موجود، ويُكتب باستخدام & عند تعريفه.",
+          "code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int score = 10;\n    int& scoreRef = score;\n    scoreRef = 25;\n    cout << score << endl;\n    return 0;\n}",
+          "task": "أنشئ مرجعًا لمتغير آخر وغيّر قيمته عن طريق المرجع.",
+          "hints": [
+            "يجب تهيئة المرجع عند تعريفه.",
+            "تغيير المرجع يغيّر المتغير الأصلي."
+          ],
+          "quiz": {
+            "question": "ماذا يحدث عند تغيير scoreRef في المثال؟",
+            "options": ["يتغير المتغير الأصلي", "تُنشأ مصفوفة", "ينتهي البرنامج فورًا", "لا يحدث شيء"],
+            "correct_index": 0,
+            "success_msg": "أحسنت!",
+            "fail_msg": "تذكّر أن المرجع اسم آخر للمتغير."
+          },
+          "xp_reward": 110
+        },
+        {
+          "id": "cpp_l20",
+          "title": "مقدمة إلى المؤشرات Pointers",
+          "objective": "التعرف على العناوين والمؤشرات",
+"cody_intro": "المؤشرات تخزن عنوان متغير في الذاكرة، ويمكننا استخدامها للوصول إلى القيمة الموجودة في هذا العنوان.",
+"code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int score = 50;\n    int* scorePtr = &score;\n    cout << *scorePtr << endl;\n    scorePtr = 75;\n    cout << score << endl;\n    return 0;\n}",
+"task": "أنشئ مؤشرًا لمتغير من اختيارك واطبع القيمة باستخدام .",
+"hints": [
+"استخدم & للحصول على عنوان المتغير.",
+"استخدم * للوصول إلى القيمة عبر المؤشر."
+],
+"quiz": {
+"question": "ما وظيفة &score عند تعريف المؤشر؟",
+"options": [
+"حذف المتغير",
+"الحصول على عنوان المتغير",
+"طباعة النص",
+"إنهاء البرنامج"
+],
+"correct_index": 1,
+"success_msg": "ممتاز! & تُستخدم للحصول على عنوان المتغير.",
+"fail_msg": "راجع الفرق بين & و."
+},
+"xp_reward": 110
+},
+{
+"id": "cpp_l21",
+"title": "التحقق من المؤشرات باستخدام nullptr",
+"objective": "فهم المؤشرات التي لا تشير إلى كائن والتحقق منها قبل استخدامها",
+"cody_intro": "يمكن استخدام nullptr لتمثيل مؤشر لا يشير إلى كائن. من المهم التحقق من المؤشر قبل محاولة قراءة القيمة التي يشير إليها.",
+"code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int score = 90;\n    int ptr = nullptr;\n    ptr = &score;\n    if (ptr != nullptr) {\n        cout << *ptr << endl;\n    }\n    return 0;\n}",
+"task": "أضف شرطًا يتحقق من أن المؤشر لا يساوي nullptr قبل طباعة القيمة.",
+"hints": [
+"استخدم if (ptr != nullptr).",
+"لا تستخدم *ptr قبل التأكد من أن المؤشر صالح."
+],
+"quiz": {
+"question": "ماذا تعني nullptr؟",
+"options": [
+"مؤشر لا يشير إلى كائن",
+"أمر لطباعة النص",
+"حلقة تكرارية",
+"متغير نصي"
+],
+"correct_index": 0,
+"success_msg": "أحسنت! nullptr تعني أن المؤشر لا يشير إلى كائن.",
+"fail_msg": "راجع المثال مرة أخرى."
+},
+"xp_reward": 110
+}
+]
+},
+{
+"id": "cpp_ch8",
+"title": "الفصل الثامن: المشروع التطبيقي",
+"lessons": [
+{
+"id": "cpp_l22",
+"title": "مشروع حساب متوسط الدرجات",
+"objective": "دمج المتغيرات والإدخال والعمليات الحسابية",
+"cody_intro": "حان وقت التطبيق! سنقرأ ثلاث درجات ثم نحسب متوسطها.",
+"code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    double a, b, c;\n    cout << "Enter three scores: ";\n    cin >> a >> b >> c;\n    double average = (a + b + c) / 3.0;\n    cout << "Average: " << average << endl;\n    if (average >= 50) {\n        cout << "Passed" << endl;\n    } else {\n        cout << "Try again" << endl;\n    }\n    return 0;\n}",
+"task": "جرّب إدخال ثلاث درجات مختلفة، ثم اختبر متى تظهر رسالة Passed.",
+"hints": [
+"استخدم cin لاستقبال الدرجات الثلاث.",
+"استخدم if لمقارنة المتوسط بالعدد 50."
+],
+"quiz": {
+"question": "لماذا نستخدم 3.0 بدلًا من 3 في حساب المتوسط؟",
+"options": [
+"للمساعدة في الحصول على نتيجة عشرية",
+"لإنشاء حلقة",
+"لإنهاء البرنامج",
+"لطباعة النصوص"
+],
+"correct_index": 0,
+"success_msg": "صحيح! استخدام 3.0 يساعد على إجراء القسمة العشرية.",
+"fail_msg": "راجعي الفرق بين القسمة الصحيحة والقسمة العشرية."
+},
+"xp_reward": 120
+},
+{
+"id": "cpp_l23",
+"title": "مشروع آلة حاسبة بسيطة",
+"objective": "تطبيق الإدخال والشروط والعمليات الحسابية في مشروع واحد",
+"cody_intro": "في المشروع الأخير، سنبني آلة حاسبة بسيطة تختار العملية الحسابية التي تريد تنفيذها.",
+"code_example": "#include <iostream>\nusing namespace std;\n\nint main() {\n    double a, b;\n    char operation;\n    cout << "Choose an operation (+, -, , /): ";\n    cin >> operation;\n    cout << "Enter two numbers: ";\n    cin >> a >> b;\n\n    if (operation == '+') {\n        cout << a + b << endl;\n    } else if (operation == '-') {\n        cout << a - b << endl;\n    } else if (operation == '') {\n        cout << a * b << endl;\n    } else if (operation == '/') {\n        if (b != 0) {\n            cout << a / b << endl;\n        } else {\n            cout << "Cannot divide by zero" << endl;\n        }\n    } else {\n        cout << "Unknown operation" << endl;\n    }\n    return 0;\n}",
+"task": "شغّل البرنامج واختبر الجمع والطرح والضرب والقسمة، ثم جرّب إدخال عملية غير مدعومة والقسمة على صفر.",
+"hints": [
+"استخدم else if لاختبار كل عملية.",
+"تحقق من أن b لا تساوي صفرًا قبل تنفيذ القسمة."
+],
+"quiz": {
+"question": "لماذا نتحقق من أن b لا تساوي صفرًا قبل القسمة؟",
+"options": [
+"لتجنب القسمة على صفر",
+"لتغيير نوع المتغير",
+"لتكرار البرنامج",
+"لإنشاء مصفوفة"
+],
+"correct_index": 0,
+"success_msg": "ممتاز! يجب التعامل مع القسمة على صفر.",
+"fail_msg": "راجعي شرط القسمة في المثال."
+},
+"xp_reward": 130
+}
+]
+}
+]
 }
