@@ -1,124 +1,292 @@
+const CURRICULUM_FILES = Object.freeze({
+  python: "json/python_curriculum.json",
+  javascript: [
+    "json/javascript/chapter1.json",
+    "json/javascript/chapter2.json",
+    "json/javascript/chapter3.json",
+    "json/javascript/chapter4.json",
+    "json/javascript/chapter5.json",
+    "json/javascript/chapter6.json",
+    "json/javascript/chapter7.json",
+    "json/javascript/chapter8.json",
+    "json/javascript/chapter9.json",
+    "json/javascript/chapter10.json",
+    "json/javascript/chapter11.json",
+    "json/javascript/chapter12.json"
+  ],
+  cpp: "json/cpp_curriculum.json"
+});
 
-{
-  "language": "javascript",
-  "title": "منهج JavaScript الكامل - Cody Academy",
-  "description": "منهج عربي تفاعلي للأطفال والمبتدئين من الأساسيات حتى بناء لعبة ويب، مع شرح ومهام عملية وتلميحات واختبار لكل درس.",
-  "chapters": [
-    {
-      "id": "js_ch1",
-      "title": "الفصل الأول: البداية مع JavaScript",
-      "description": "التعرف على الطباعة والتعليقات",
-      "lessons": [
-        {
-          "id": "js1_1",
-          "title": "أول برنامج JavaScript",
-          "objective": "طباعة رسالة باستخدام console.log.",
-          "cody_intro": "أهلًا يا بطل! هنخلي الكمبيوتر يطبع أول رسالة لينا.",
-          "description": "console.log() تعرض قيمة في وحدة التحكم، والنص يكتب بين اقتباسين.",
-          "task": "اطبع: مرحبًا بك في Cody Academy!",
-          "starter_code": "console.log('');",
-          "code_example": "console.log('مرحبًا بك في Cody Academy!');",
-          "hints": [
-            "اكتب الرسالة بين اقتباسين.",
-            "ضع الرسالة داخل أقواس console.log()."
-          ],
-          "quiz": {
-            "question": "ما وظيفة console.log()؟",
-            "options": [
-              "عرض قيمة في وحدة التحكم",
-              "إنشاء صورة",
-              "إيقاف المتصفح"
-            ],
-            "correct_index": 0,
-            "explanation": "تُستخدم لعرض القيم أثناء تشغيل البرنامج.",
-            "success_msg": "أحسنت! إجابة صحيحة 🌟",
-            "fail_msg": "ولا يهمك، راجع الشرح وجرب مرة أخرى."
-          }
-        },
-        {
-          "id": "js1_2",
-          "title": "التعليقات والنصوص والأرقام",
-          "objective": "طباعة نص ورقم وكتابة تعليق.",
-          "cody_intro": "التعليقات تساعدنا نشرح الكود لأنفسنا ولغيرنا.",
-          "description": "النص بين اقتباسين، والرقم يُكتب دون اقتباس. التعليق يبدأ بـ //.",
-          "task": "اطبع اسمًا، ثم نتيجة 8 + 4، وأضف تعليقًا.",
-          "starter_code": "// اكتب تعليقًا\nconsole.log('Cody');\nconsole.log();",
-          "code_example": "// رسالة ونتيجة حسابية\nconsole.log('Cody');\nconsole.log(8 + 4);",
-          "hints": [
-            "ابدأ التعليق بـ //.",
-            "استخدم console.log لكل نتيجة."
-          ],
-          "quiz": {
-            "question": "أي سطر يُعد تعليقًا؟",
-            "options": [
-              "// هذا تعليق",
-              "console.log(4)",
-              "let score = 3"
-            ],
-            "correct_index": 0,
-            "explanation": "النص بعد // في السطر نفسه لا يُنفّذ ككود.",
-            "success_msg": "أحسنت! إجابة صحيحة 🌟",
-            "fail_msg": "ولا يهمك، راجع الشرح وجرب مرة أخرى."
-          }
-        }
-      ]
-    },
-    {
-      "id": "js_ch2",
-      "title": "الفصل الثاني: المتغيرات وأنواع البيانات",
-      "description": "تخزين البيانات وفهم أنواعها",
-      "lessons": [
-        {
-          "id": "js2_1",
-          "title": "المتغيرات let وconst",
-          "objective": "إنشاء المتغيرات وتحديث let.",
-          "cody_intro": "المتغير مثل صندوق يخزن معلومة نستعملها لاحقًا.",
-          "description": "let يسمح بإعادة إسناد القيمة، أما const فلا يسمح بإعادة إسناد قيمة جديدة للمتغير.",
-          "task": "أنشئ score بقيمة 10 ثم غيّره إلى 15 واطبعه.",
-          "starter_code": "let score = 10;\nscore = 0;\nconsole.log(score);",
-          "code_example": "let score = 10;\nscore = 15;\nconsole.log(score);",
-          "hints": [
-            "استخدم let لتعريف score.",
-            "حدّث القيمة دون كتابة let مرة ثانية."
-          ],
-          "quiz": {
-            "question": "أي كلمة تناسب متغيرًا ستتغير قيمته؟",
-            "options": [
-              "let",
-              "const",
-              "console"
-            ],
-            "correct_index": 0,
-            "explanation": "يمكن إعادة إسناد قيمة جديدة إلى متغير let.",
-            "success_msg": "أحسنت! إجابة صحيحة 🌟",
-            "fail_msg": "ولا يهمك، راجع الشرح وجرب مرة أخرى."
-          }
-        },
-        {
-          "id": "js2_2",
-          "title": "أنواع البيانات وtypeof",
-          "objective": "تمييز النص والرقم والقيمة المنطقية.",
-          "cody_intro": "الاسم نص، والعمر رقم، وtrue أو false قيمة منطقية.",
-          "description": "من الأنواع الشائعة String وNumber وBoolean. ويخبرنا typeof بنوع القيمة.",
-          "task": "أنشئ name وage وready ثم اطبع نوع كل واحد.",
-          "starter_code": "const name = 'Ali';\nconst age = 10;\nconst ready = true;\nconsole.log(typeof name);",
-          "code_example": "const name = 'Ali';\nconst age = 10;\nconst ready = true;\nconsole.log(typeof name);\nconsole.log(typeof age);\nconsole.log(typeof ready);",
-          "hints": [
-            "النص بين اقتباسين.",
-            "استخدم typeof قبل المتغير."
-          ],
-          "quiz": {
-            "question": "ما نوع القيمة true؟",
-            "options": [
-              "String",
-              "Boolean",
-              "Number"
-            ],
-            "correct_index": 1,
-            "explanation": "true قيمة منطقية من نوع Boolean.",
-            "success_msg": "أحسنت! إجابة صحيحة 🌟",
-            "fail_msg": "ولا يهمك، راجع الشرح وجرب مرة أخرى."
-          }
-        }
-      ]
-    },
+export const curriculum = Object.create(null);
+
+function validateLesson(lesson, language, chapterIndex, lessonIndex) {
+  const location =
+    `${language}، الفصل ${chapterIndex + 1}، الدرس ${lessonIndex + 1}`;
+
+  if (!lesson || typeof lesson !== "object" || Array.isArray(lesson)) {
+    throw new Error(`بيانات الدرس غير صحيحة: ${location}`);
+  }
+
+  if (typeof lesson.title !== "string" || !lesson.title.trim()) {
+    throw new Error(`عنوان الدرس مفقود: ${location}`);
+  }
+
+  if (
+    lesson.quiz !== undefined &&
+    lesson.quiz !== null &&
+    (
+      typeof lesson.quiz !== "object" ||
+      Array.isArray(lesson.quiz)
+    )
+  ) {
+    throw new Error(`بيانات الاختبار غير صحيحة: ${location}`);
+  }
+
+  if (lesson.quiz) {
+    const { question, options, correct_index } = lesson.quiz;
+
+    if (
+      typeof question !== "string" ||
+      !question.trim() ||
+      !Array.isArray(options) ||
+      options.length === 0 ||
+      !options.every(option => typeof option === "string") ||
+      !Number.isInteger(correct_index) ||
+      correct_index < 0 ||
+      correct_index >= options.length
+    ) {
+      throw new Error(`سؤال الاختبار أو إجابته غير صحيح: ${location}`);
+    }
+  }
+
+  if (
+    lesson.hints !== undefined &&
+    (
+      !Array.isArray(lesson.hints) ||
+      !lesson.hints.every(hint => typeof hint === "string")
+    )
+  ) {
+    throw new Error(`التلميحات غير صحيحة: ${location}`);
+  }
+
+  return {
+    ...lesson,
+    id: lesson.id || `${language}-${chapterIndex}-${lessonIndex}`,
+    objective: lesson.objective || "",
+    cody_intro: lesson.cody_intro || "",
+    task: lesson.task || "",
+    hints: lesson.hints || [],
+    code_example: lesson.code_example ?? lesson.code ?? "",
+    desc: lesson.objective || lesson.description || lesson.cody_intro || "",
+    description: lesson.description || lesson.objective || "",
+    quiz: lesson.quiz || null
+  };
+}
+
+function validateCurriculum(data, expectedLanguage) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error(`بيانات منهج ${expectedLanguage} غير صحيحة.`);
+  }
+
+  if (data.language && data.language !== expectedLanguage) {
+    throw new Error(
+      `لغة المنهج داخل الملف لا تطابق المسار: ${expectedLanguage}.`
+    );
+  }
+
+  if (!Array.isArray(data.chapters) || data.chapters.length === 0) {
+    throw new Error(`ملف منهج ${expectedLanguage} لا يحتوي على فصول.`);
+  }
+
+  const chapters = data.chapters.map((chapter, chapterIndex) => {
+    if (
+      !chapter ||
+      typeof chapter !== "object" ||
+      !Array.isArray(chapter.lessons) ||
+      chapter.lessons.length === 0
+    ) {
+      throw new Error(
+        `الفصل رقم ${chapterIndex + 1} في منهج ${expectedLanguage} غير صحيح أو فارغ.`
+      );
+    }
+
+    return {
+      ...chapter,
+      id: chapter.id || `${expectedLanguage}-chapter-${chapterIndex}`,
+      title: chapter.title || `الفصل ${chapterIndex + 1}`,
+      lessons: chapter.lessons.map((lesson, lessonIndex) =>
+        validateLesson(
+          lesson,
+          expectedLanguage,
+          chapterIndex,
+          lessonIndex
+        )
+      )
+    };
+  });
+
+  return {
+    ...data,
+    language: expectedLanguage,
+    title: data.title || `مسار ${expectedLanguage}`,
+    chapters
+  };
+}
+
+async function fetchJSON(file, language) {
+  const response = await fetch(file, { cache: "no-cache" });
+
+  if (!response.ok) {
+    throw new Error(
+      `تعذر تحميل ${file} لمسار ${language}. رمز الاستجابة: ${response.status}`
+    );
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    throw new Error(`الملف ${file} ليس JSON صالحًا.`);
+  }
+}
+
+async function loadCurriculum(language, files) {
+  let data;
+
+  if (Array.isArray(files)) {
+    const chapters = await Promise.all(
+      files.map(file => fetchJSON(file, language))
+    );
+
+    data = {
+      language,
+      title: "مسار JavaScript",
+      description: "منهج JavaScript مقسّم إلى فصول مستقلة.",
+      chapters
+    };
+  } else {
+    data = await fetchJSON(files, language);
+  }
+
+  return validateCurriculum(data, language);
+}
+
+const results = await Promise.allSettled(
+  Object.entries(CURRICULUM_FILES).map(async ([language, files]) => ({
+    language,
+    data: await loadCurriculum(language, files)
+  }))
+);
+
+const errors = [];
+
+for (let index = 0; index < results.length; index++) {
+  const result = results[index];
+
+  if (result.status === "fulfilled") {
+    curriculum[result.value.language] = result.value.data.chapters;
+  } else {
+    const language = Object.keys(CURRICULUM_FILES)[index];
+
+    errors.push(
+      `${language}: ${result.reason?.message || "خطأ غير معروف"}`
+    );
+
+    console.error(`Curriculum loading failed (${language}):`, result.reason);
+  }
+}
+
+if (errors.length > 0) {
+  throw new Error(
+    "تعذر تحميل جميع ملفات المنهج المطلوبة:\n" + errors.join("\n")
+  );
+}
+
+export function readSelection(search = location.search) {
+  const parameters = new URLSearchParams(search);
+  const language = parameters.get("lang") || "python";
+
+  if (!Object.hasOwn(curriculum, language)) {
+    throw new Error("مسار البرمجة المطلوب غير موجود.");
+  }
+
+  function readIndex(key) {
+    const value = parameters.get(key) ?? "0";
+
+    if (!/^\d+$/.test(value)) {
+      throw new Error("رابط الدرس غير صحيح.");
+    }
+
+    const number = Number(value);
+
+    if (!Number.isSafeInteger(number)) {
+      throw new Error("رقم الفصل أو الدرس أكبر من القيمة المسموح بها.");
+    }
+
+    return number;
+  }
+
+  return {
+    language,
+    chapterIndex: readIndex("chapter"),
+    lessonIndex: readIndex("lesson")
+  };
+}
+
+export function getLesson(selection) {
+  const chapters = curriculum[selection?.language];
+  const chapter = chapters?.[selection.chapterIndex];
+  const lesson = chapter?.lessons?.[selection.lessonIndex];
+
+  if (!lesson) {
+    throw new Error("الدرس المطلوب غير موجود في المنهج.");
+  }
+
+  return lesson;
+}
+
+export function getNextLesson(selection) {
+  const chapters = curriculum[selection?.language];
+
+  if (!chapters) {
+    throw new Error("مسار البرمجة المطلوب غير موجود.");
+  }
+
+  const chapter = chapters[selection.chapterIndex];
+
+  if (!chapter || !chapter.lessons[selection.lessonIndex]) {
+    throw new Error("الدرس الحالي غير موجود.");
+  }
+
+  if (selection.lessonIndex + 1 < chapter.lessons.length) {
+    return {
+      ...selection,
+      lessonIndex: selection.lessonIndex + 1
+    };
+  }
+
+  if (selection.chapterIndex + 1 < chapters.length) {
+    return {
+      ...selection,
+      chapterIndex: selection.chapterIndex + 1,
+      lessonIndex: 0
+    };
+  }
+
+  return null;
+}
+
+export function lessonUrl(selection) {
+  if (!curriculum[selection?.language]) {
+    throw new Error("مسار البرمجة المطلوب غير موجود.");
+  }
+
+  getLesson(selection);
+
+  const params = new URLSearchParams({
+    lang: selection.language,
+    chapter: String(selection.chapterIndex),
+    lesson: String(selection.lessonIndex)
+  });
+
+  return `lecture.html?${params.toString()}`;
+}
