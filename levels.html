@@ -6,6 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080d19">
   <title>الفصول التعليمية | CodeQuest</title>
+
+  <!-- إعادة توجيه بايثون إلى مساره الأصلي فقط -->
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const language = (
+        params.get("lang") ||
+        params.get("language") ||
+        ""
+      ).trim().toLowerCase();
+
+      if (language === "python" || language === "بايثون") {
+        window.location.replace("python-welcome.html");
+      }
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -220,7 +237,11 @@
       border-color: var(--accent);
     }
 
-    .chapter-top { display: flex; align-items: flex-start; gap: 13px; }
+    .chapter-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+    }
 
     .chapter-number {
       flex: 0 0 47px;
@@ -287,7 +308,8 @@
 
     .lesson-link .arrow { color: var(--accent); }
 
-    .start-button, .retry-button {
+    .start-button,
+    .retry-button {
       width: 100%;
       display: flex;
       align-items: center;
@@ -329,7 +351,11 @@
     }
 
     @media (max-width: 720px) {
-      .container { width: calc(100% - 22px); padding-top: 15px; }
+      .container {
+        width: calc(100% - 22px);
+        padding-top: 15px;
+      }
+
       .chapters { grid-template-columns: 1fr; }
       .hero { padding: 23px 18px; }
       .stats { gap: 8px; }
@@ -350,13 +376,16 @@
         <span class="brand-icon">&lt;/&gt;</span>
         <span>CodeQuest</span>
       </a>
+
       <a class="back-link" href="languages.html">← اختيار اللغة</a>
     </header>
 
     <section class="hero">
       <span class="eyebrow" id="languageBadge">🚀 مسار التعلم</span>
       <h1 id="pageTitle">فصول تعلم البرمجة</h1>
-      <p id="pageDescription">ابدأ من الأساسيات، وتعلّم بالتدريج، وطبّق ما تتعلمه في محرر الأكواد.</p>
+      <p id="pageDescription">
+        ابدأ من الأساسيات، وتعلّم بالتدريج، وطبّق ما تتعلمه في محرر الأكواد.
+      </p>
     </section>
 
     <section class="stats">
@@ -364,10 +393,12 @@
         <div class="stat-label">إجمالي الفصول</div>
         <div class="stat-value" id="chapterCount">—</div>
       </div>
+
       <div class="stat">
         <div class="stat-label">إجمالي الدروس</div>
         <div class="stat-value" id="lessonCount">—</div>
       </div>
+
       <div class="stat">
         <div class="stat-label">لغة البرمجة</div>
         <div class="stat-value language-name" id="languageLabel">—</div>
@@ -379,9 +410,11 @@
         <span>تقدمك في هذا المسار</span>
         <span class="progress-number" id="overallProgressText">0%</span>
       </div>
+
       <div class="progress-track">
         <div class="progress-fill" id="overallProgressBar"></div>
       </div>
+
       <p class="chapter-description" id="progressCaption" style="margin-top:10px">
         ابدأ أول درس لتتابع تقدمك.
       </p>
@@ -393,12 +426,16 @@
         <span id="curriculumStatus">جارٍ تحميل المنهج...</span>
       </div>
 
-      <div id="loadingState" class="state-box">جارٍ تحميل الفصول والدروس...</div>
+      <div id="loadingState" class="state-box">
+        جارٍ تحميل الفصول والدروس...
+      </div>
 
       <div id="errorState" class="state-box hidden" role="alert">
         <h2>تعذر تحميل المنهج</h2>
         <p id="errorMessage">تأكد من وجود ملف المنهج.</p>
-        <button id="retryButton" class="retry-button" type="button">إعادة المحاولة</button>
+        <button id="retryButton" class="retry-button" type="button">
+          إعادة المحاولة
+        </button>
         <div id="errorDetails" class="error-details"></div>
       </div>
 
@@ -419,19 +456,24 @@
         label: "JavaScript",
         icon: "🟨",
         file: "./json/js_curriculum.json",
-        description: "تعلّم JavaScript من الصفر، وطبّق المفاهيم في تمارين عملية."
+        description:
+          "تعلّم JavaScript من الصفر، وطبّق المفاهيم في تمارين عملية."
       },
+
       python: {
         label: "Python",
         icon: "🐍",
         file: "./json/python_curriculum.json",
-        description: "تعلّم Python خطوة بخطوة، من أول أمر إلى بناء برامجك الخاصة."
+        description:
+          "تعلّم Python خطوة بخطوة، من أول أمر إلى بناء برامجك الخاصة."
       },
+
       cpp: {
         label: "C++",
         icon: "⚙️",
         file: "./json/cpp_curriculum.json",
-        description: "تعلّم C++ من الأساسيات، وافهم المنطق البرمجي وطبّقه بنفسك."
+        description:
+          "تعلّم C++ من الأساسيات، وافهم المنطق البرمجي وطبّقه بنفسك."
       }
     };
 
@@ -460,8 +502,14 @@
     function normalizeLanguage(value) {
       const lang = String(value || "").trim().toLowerCase();
 
-      if (["python", "بايثون"].includes(lang)) return "python";
-      if (["cpp", "c++", "c plus plus", "سي بلس بلس"].includes(lang)) return "cpp";
+      if (["python", "بايثون"].includes(lang)) {
+        return "python";
+      }
+
+      if (["cpp", "c++", "c plus plus", "سي بلس بلس"].includes(lang)) {
+        return "cpp";
+      }
+
       return "javascript";
     }
 
@@ -473,7 +521,11 @@
         saved = localStorage.getItem("cq_language") || "";
       } catch {}
 
-      return normalizeLanguage(params.get("lang") || saved);
+      return normalizeLanguage(
+        params.get("lang") ||
+        params.get("language") ||
+        saved
+      );
     }
 
     const selectedLanguage = getSelectedLanguage();
@@ -484,8 +536,15 @@
 
     function makeElement(tag, className = "", text = "") {
       const node = document.createElement(tag);
-      if (className) node.className = className;
-      if (text !== undefined && text !== null) node.textContent = String(text);
+
+      if (className) {
+        node.className = className;
+      }
+
+      if (text !== undefined && text !== null) {
+        node.textContent = String(text);
+      }
+
       return node;
     }
 
@@ -497,29 +556,45 @@
     }
 
     function getChapters(data) {
-      if (Array.isArray(data)) return data;
-      if (!data || typeof data !== "object") return [];
+      if (Array.isArray(data)) {
+        return data;
+      }
+
+      if (!data || typeof data !== "object") {
+        return [];
+      }
 
       for (const key of ["chapters", "units", "curriculum", "lessons"]) {
-        if (Array.isArray(data[key])) return data[key];
+        if (Array.isArray(data[key])) {
+          return data[key];
+        }
       }
 
       return [];
     }
 
     function getLessons(chapter) {
-      if (Array.isArray(chapter)) return chapter;
-      if (!chapter || typeof chapter !== "object") return [];
+      if (Array.isArray(chapter)) {
+        return chapter;
+      }
+
+      if (!chapter || typeof chapter !== "object") {
+        return [];
+      }
 
       for (const key of ["lessons", "topics", "units", "content"]) {
-        if (Array.isArray(chapter[key])) return chapter[key];
+        if (Array.isArray(chapter[key])) {
+          return chapter[key];
+        }
       }
 
       return [];
     }
 
     function getChapterTitle(chapter, index) {
-      if (typeof chapter === "string") return chapter;
+      if (typeof chapter === "string") {
+        return chapter;
+      }
 
       return chapter?.title ||
         chapter?.name ||
@@ -539,7 +614,9 @@
     }
 
     function getLessonTitle(lesson, index) {
-      if (typeof lesson === "string") return lesson;
+      if (typeof lesson === "string") {
+        return lesson;
+      }
 
       return lesson?.title ||
         lesson?.name ||
@@ -550,9 +627,15 @@
 
     function getCompletedLessons() {
       try {
-        const raw = localStorage.getItem(`cq_completed_lessons_${selectedLanguage}`);
+        const raw = localStorage.getItem(
+          `cq_completed_lessons_${selectedLanguage}`
+        );
+
         const parsed = raw ? JSON.parse(raw) : [];
-        return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+
+        return new Set(
+          Array.isArray(parsed) ? parsed.map(String) : []
+        );
       } catch {
         return new Set();
       }
@@ -564,9 +647,11 @@
 
     function getLessonUrl(chapterIndex, lessonIndex) {
       const url = new URL("lecture.html", location.href);
+
       url.searchParams.set("lang", selectedLanguage);
       url.searchParams.set("chapter", String(chapterIndex));
       url.searchParams.set("lesson", String(lessonIndex));
+
       return url.pathname + url.search;
     }
 
@@ -578,14 +663,20 @@
       chapters.forEach((chapter, chapterIndex) => {
         getLessons(chapter).forEach((_, lessonIndex) => {
           total++;
-          if (completed.has(lessonKey(chapterIndex, lessonIndex))) done++;
+
+          if (completed.has(lessonKey(chapterIndex, lessonIndex))) {
+            done++;
+          }
         });
       });
 
-      const percent = total ? Math.round((done / total) * 100) : 0;
+      const percent = total
+        ? Math.round((done / total) * 100)
+        : 0;
 
       ui.progressText.textContent = `${percent}%`;
       ui.progressBar.style.width = `${percent}%`;
+
       ui.progressCaption.textContent = total
         ? `أكملت ${done} من ${total} درس. استمر في التعلم!`
         : "أضف الدروس إلى المنهج لبدء متابعة التقدم.";
@@ -596,6 +687,7 @@
     function createChapterCard(chapter, chapterIndex) {
       const card = makeElement("article", "chapter");
       const top = makeElement("div", "chapter-top");
+
       const number = makeElement(
         "div",
         "chapter-number",
@@ -603,9 +695,18 @@
       );
 
       const info = makeElement("div");
+
       info.append(
-        makeElement("h3", "", getChapterTitle(chapter, chapterIndex)),
-        makeElement("p", "chapter-description", getChapterDescription(chapter))
+        makeElement(
+          "h3",
+          "",
+          getChapterTitle(chapter, chapterIndex)
+        ),
+        makeElement(
+          "p",
+          "chapter-description",
+          getChapterDescription(chapter)
+        )
       );
 
       top.append(number, info);
@@ -613,8 +714,9 @@
       const lessons = getLessons(chapter);
       const completed = getCompletedLessons();
 
-      const completedInChapter = lessons.filter((_, lessonIndex) =>
-        completed.has(lessonKey(chapterIndex, lessonIndex))
+      const completedInChapter = lessons.filter(
+        (_, lessonIndex) =>
+          completed.has(lessonKey(chapterIndex, lessonIndex))
       ).length;
 
       const percent = lessons.length
@@ -622,31 +724,53 @@
         : 0;
 
       const progress = makeElement("div", "chapter-progress");
-      const progressLabel = makeElement("div", "chapter-progress-label");
+      const progressLabel = makeElement(
+        "div",
+        "chapter-progress-label"
+      );
 
       progressLabel.append(
-        makeElement("span", "", `تقدم الفصل: ${completedInChapter}/${lessons.length}`),
+        makeElement(
+          "span",
+          "",
+          `تقدم الفصل: ${completedInChapter}/${lessons.length}`
+        ),
         makeElement("span", "", `${percent}%`)
       );
 
       const track = makeElement("div", "progress-track");
       const fill = makeElement("div", "progress-fill");
+
       fill.style.width = `${percent}%`;
       track.append(fill);
       progress.append(progressLabel, track);
 
-      const count = makeElement("div", "lesson-count", `${lessons.length} درس في هذا الفصل`);
+      const count = makeElement(
+        "div",
+        "lesson-count",
+        `${lessons.length} درس في هذا الفصل`
+      );
+
       const lessonList = makeElement("div", "lesson-list");
 
       lessons.slice(0, 4).forEach((lesson, lessonIndex) => {
         const key = lessonKey(chapterIndex, lessonIndex);
         const isDone = completed.has(key);
         const link = makeElement("a", "lesson-link");
+
         link.href = getLessonUrl(chapterIndex, lessonIndex);
 
         link.append(
-          makeElement("span", "", `${isDone ? "✓ " : ""}${getLessonTitle(lesson, lessonIndex)}`),
-          makeElement("span", "arrow", isDone ? "مكتمل" : "←")
+          makeElement(
+            "span",
+            "",
+            `${isDone ? "✓ " : ""}${getLessonTitle(lesson, lessonIndex)}`
+          ),
+          makeElement(
+            "span",
+            "arrow",
+            isDone ? "مكتمل" : "←"
+          )
         );
 
         lessonList.append(link);
@@ -654,7 +778,11 @@
 
       if (lessons.length > 4) {
         lessonList.append(
-          makeElement("p", "chapter-description", `و ${lessons.length - 4} دروس أخرى`)
+          makeElement(
+            "p",
+            "chapter-description",
+            `و ${lessons.length - 4} دروس أخرى`
+          )
         );
       }
 
@@ -668,19 +796,29 @@
         start.href = getLessonUrl(chapterIndex, 0);
       } else {
         start.href = "#";
-        start.addEventListener("click", event => event.preventDefault());
+
+        start.addEventListener("click", event => {
+          event.preventDefault();
+   
+        });
       }
 
       card.append(top, progress, count, lessonList, start);
+
       return card;
     }
 
     function showError(error) {
       showState("error");
+
       ui.status.textContent = "تعذر تحميل المنهج";
-      ui.errorMessage.textContent = "تأكد من وجود ملف المنهج وصحة تنسيقه.";
+      ui.errorMessage.textContent =
+        "تأكد من وجود ملف المنهج وصحة تنسيقه.";
+
       ui.errorDetails.textContent =
-        error instanceof Error ? error.message : String(error);
+        error instanceof Error
+          ? error.message
+          : String(error);
     }
 
     async function loadCurriculum() {
@@ -694,21 +832,26 @@
       ui.status.textContent = "جارٍ تحميل المنهج...";
 
       try {
-        const response = await fetch(language.file, { cache: "no-store" });
+        const response = await fetch(
+          language.file,
+          { cache: "no-store" }
+        );
 
         if (!response.ok) {
-          throw new Error(`تعذر تحميل ${language.file} (HTTP ${response.status})`);
+          throw new Error(
+            `تعذر تحميل ${language.file} (HTTP ${response.status})`
+          );
         }
 
         const data = await response.json();
         const chapters = getChapters(data);
+
         const totalLessons = chapters.reduce(
-          (total, chapter) => total + getLessons(chapter).length,
+          (total, chapter) =>
+            total + getLessons(chapter).length,
           0
         );
 
-        ui.chapterCount.textContent = String(chapters.length);
-        
         ui.chapterCount.textContent = String(chapters.length);
         ui.lessonCount.textContent = String(totalLessons);
 
@@ -720,10 +863,13 @@
         }
 
         chapters.forEach((chapter, index) => {
-          ui.chapters.appendChild(createChapterCard(chapter, index));
+          ui.chapters.appendChild(
+            createChapterCard(chapter, index)
+          );
         });
 
         updateProgress(chapters);
+
         ui.status.textContent = "تم تحميل المنهج";
         showState("success");
       } catch (error) {
@@ -733,6 +879,7 @@
     }
 
     ui.retry.addEventListener("click", loadCurriculum);
+
     loadCurriculum();
   </script>
 </body>
