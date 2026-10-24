@@ -1,4 +1,3 @@
-
 import { requireUser } from "./auth.js";
 
 /* =========================================
@@ -6,8 +5,7 @@ import { requireUser } from "./auth.js";
 ========================================= */
 
 const params = new URLSearchParams(window.location.search);
-
-const lang = params.get("lang") || "javascript";
+const lang = (params.get("lang") || "javascript").toLowerCase();
 
 function parseIndex(value) {
   if (value === null || !/^\d+$/.test(value)) {
@@ -15,7 +13,6 @@ function parseIndex(value) {
   }
 
   const number = Number(value);
-
   return Number.isSafeInteger(number) ? number : 0;
 }
 
@@ -46,20 +43,18 @@ const LANGUAGES = Object.freeze({
 });
 
 const config = LANGUAGES[lang];
-
 const $ = (id) => document.getElementById(id);
-
 const editorElement = $("codeEditor");
 
 let editor = null;
 let currentLesson = null;
+let currentCurriculum = null;
 let selectedOptionIdx = null;
 
 let pythonWorker = null;
 let pythonTimeout = null;
 let executionId = 0;
 let running = false;
-let lessonInitialized = false;
 
 /* =========================================
    2. أدوات الواجهة
@@ -70,7 +65,6 @@ function showOutput(message) {
 
   if (terminal) {
     terminal.textContent = String(message ?? "");
-
     terminal.scrollTop = terminal.scrollHeight;
   }
 }
@@ -101,11 +95,7 @@ function setRunning(value) {
 }
 
 function getLessonCode(lesson) {
-  const code =
-    lesson?.code_example ??
-    lesson?.code ??
-    "";
-
+  const code = lesson?.code_example ?? lesson?.code ?? "";
   return typeof code === "string" ? code : String(code);
 }
 
@@ -120,7 +110,99 @@ function getLessonDescription(lesson) {
 }
 
 /* =========================================
-   3. إدارة عمليات التنفيذ
+   3. حفظ إنجاز الدروس ومزامنة التقدم
+========================================= */
+
+function getCompletedLessons() {
+  try {
+    const raw = localStorage.getItem(
+      `cq_completed_lessons_${lang}`
+    );
+
+    const parsed = raw ? JSON.parse(raw) : [];
+
+    return new Set(
+      Array.isArray(parsed) ? parsed.map(String) : []
+    );
+  } catch (error) {
+    console.warn("تعذر قراءة تقدم الدروس:", error);
+    return new Set();
+  }
+}
+
+function getLessonKey() {
+  return `${chapterIdx}:${lessonIdx}`;
+}
+
+function markCurrentLessonCompleted() {
+  try {
+    const completed = getCompletedLessons();
+
+    completed.add(getLessonKey());
+
+    localStorage.setItem(
+      `cq_completed_lessons_${lang}`,
+      JSON.stringify([...completed])
+    );
+
+    updateLessonProgress();
+  } catch (error) {
+    console.error("تعذر حفظ إنجاز الدرس:", error);
+
+    displayLessonText(
+      "quizFeedback",
+      "إجابة صحيحة، لكن تعذر حفظ التقدم على هذا الجهاز."
+    );
+  }
+}
+
+function updateLessonProgress() {
+  if (!currentCurriculum) return;
+
+  const allLessons = currentCurriculum.chapters.flatMap(
+    (chapter) =>
+      Array.isArray(chapter.lessons) ? chapter.lessons : []
+  );
+
+  const completed = getCompletedLessons();
+
+  const validKeys = new Set();
+
+  currentCurriculum.chapters.forEach((chapter, chapterIndex) => {
+    const lessons = Array.isArray(chapter.lessons)
+      ? chapter.lessons
+      : [];
+
+    lessons.forEach((_, lessonIndex) => {
+      validKeys.add(`${chapterIndex}:${lessonIndex}`);
+    });
+  });
+
+  const done = [...completed].filter((key) =>
+    validKeys.has(key)
+  ).length;
+
+  const total = allLessons.length;
+
+  const percentage = total
+    ? Math.round((done / total) * 100)
+    : 0;
+
+  const progressBar = $("progressBar");
+
+  if (progressBar) {
+    progressBar.style.width = `${percentage}%`;
+    progressBar.setAttribute(
+      "aria-valuenow",
+      String(percentage)
+    );
+  }
+
+  displayLessonText("progressText", `${percentage}%`);
+}
+
+/* =========================================
+   4. إدارة عمليات التنفيذ
 ========================================= */
 
 function stopPythonWorker() {
@@ -132,7 +214,6 @@ function stopPythonWorker() {
   if (pythonWorker) {
     pythonWorker.onmessage = null;
     pythonWorker.onerror = null;
-
     pythonWorker.terminate();
     pythonWorker = null;
   }
@@ -140,9 +221,7 @@ function stopPythonWorker() {
 
 function resetExecution() {
   executionId += 1;
-
   stopPythonWorker();
-
   setRunning(false);
 }
 
@@ -150,12 +229,11 @@ function finishExecution(id) {
   if (id !== executionId) return;
 
   stopPythonWorker();
-
   setRunning(false);
 }
 
 /* =========================================
-   4. تشغيل Python باستخدام Pyodide
+   5. تشغيل Python باستخدام Pyodide
 ========================================= */
 
 function createPythonWorker() {
@@ -205,10 +283,7 @@ function createPythonWorker() {
           output.join("\\n") || "تم تنفيذ الكود دون مخرجات."
         );
       } catch (error) {
-        send(
-          "error",
-          error?.message || String(error)
-        );
+        send("error", error?.message || String(error));
       }
     };
   `;
@@ -289,7 +364,7 @@ function runPython(code, id) {
 }
 
 /* =========================================
-   5. تشغيل JavaScript في إطار معزول
+   6. تشغيل JavaScript في إطار معزول
 ========================================= */
 
 function runJavaScript(code, id) {
@@ -332,10 +407,6 @@ function runJavaScript(code, id) {
     setRunning(false);
   };
 
-  /*
-   * حماية النص المدخل من إنهاء وسم script
-   * عند تضمين نص مثل </script> داخل الكود.
-   */
   const safeCode = JSON.stringify(code).replace(
     /</g,
     "\\u003c"
@@ -441,7 +512,7 @@ function runJavaScript(code, id) {
 }
 
 /* =========================================
-   6. تشغيل C++
+   7. تشغيل C++
 ========================================= */
 
 function runCpp() {
@@ -455,7 +526,7 @@ function runCpp() {
 }
 
 /* =========================================
-   7. أزرار المحرر
+   8. أزرار المحرر
 ========================================= */
 
 window.runUserCode = async function runUserCode() {
@@ -510,7 +581,7 @@ window.showQuiz = function showQuiz() {
 };
 
 /* =========================================
-   8. تجهيز الاختبار
+   9. تجهيز الاختبار
 ========================================= */
 
 function renderQuiz(quiz) {
@@ -580,6 +651,8 @@ window.submitQuiz = function submitQuiz() {
 
     feedback.dataset.result = "correct";
 
+    markCurrentLessonCompleted();
+
     if (submitButton) {
       submitButton.style.display = "none";
     }
@@ -600,7 +673,7 @@ window.submitQuiz = function submitQuiz() {
 };
 
 /* =========================================
-   9. تحميل الدرس
+   10. تحميل الدرس
 ========================================= */
 
 async function initLesson() {
@@ -634,6 +707,8 @@ async function initLesson() {
       throw new Error("ملف المنهج لا يحتوي على فصول صحيحة.");
     }
 
+    currentCurriculum = data;
+
     const chapter = data.chapters[chapterIdx];
     currentLesson = chapter?.lessons?.[lessonIdx];
 
@@ -645,10 +720,12 @@ async function initLesson() {
 
     displayLessonText("lessonTitle", currentLesson.title);
     displayLessonText("codyIntro", currentLesson.cody_intro);
+
     displayLessonText(
       "lessonDescription",
       getLessonDescription(currentLesson)
     );
+
     displayLessonText("lessonTask", currentLesson.task);
 
     const hintsList = $("lessonHints");
@@ -695,29 +772,7 @@ async function initLesson() {
       "main" + config.ext
     );
 
-    /*
-     * هذا مؤشر لموضع الدرس داخل المنهج،
-     * وليس نسبة إنجاز محفوظة في الحساب.
-     */
-    const allLessons = data.chapters.flatMap((item) =>
-      Array.isArray(item.lessons) ? item.lessons : []
-    );
-
-    const currentIndex = allLessons.indexOf(currentLesson);
-
-    const percentage =
-      allLessons.length > 0 && currentIndex >= 0
-        ? Math.round(((currentIndex + 1) / allLessons.length) * 100)
-        : 0;
-
-    const progressBar = $("progressBar");
-
-    if (progressBar) {
-      progressBar.style.width = `${percentage}%`;
-      progressBar.setAttribute("aria-valuenow", String(percentage));
-    }
-
-    displayLessonText("progressText", `${percentage}%`);
+    updateLessonProgress();
 
     renderQuiz(currentLesson.quiz || null);
 
@@ -726,8 +781,6 @@ async function initLesson() {
         ? "تم تحميل الدرس. تشغيل C++ غير متاح حتى ربط خدمة تنفيذ."
         : "تم تحميل الدرس. يمكنك تجربة الكود في المحرر."
     );
-
-    lessonInitialized = true;
   } catch (error) {
     console.error("Lesson initialization failed:", error);
 
@@ -741,7 +794,7 @@ async function initLesson() {
 }
 
 /* =========================================
-   10. إغلاق الصفحة والتحقق من الحساب
+   11. إغلاق الصفحة والتحقق من الحساب
 ========================================= */
 
 window.addEventListener("beforeunload", () => {
