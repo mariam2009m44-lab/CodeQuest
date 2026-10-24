@@ -1,3 +1,4 @@
+
 import { requireUser } from "./auth.js";
 
 const params = new URLSearchParams(window.location.search);
@@ -5,7 +6,9 @@ const lang = (params.get("lang") || "javascript").toLowerCase();
 
 function parseIndex(value) {
   if (value === null || !/^\d+$/.test(value)) return 0;
+
   const number = Number(value);
+
   return Number.isSafeInteger(number) ? number : 0;
 }
 
@@ -34,25 +37,29 @@ const LANGUAGES = Object.freeze({
 });
 
 const config = LANGUAGES[lang];
+
 const $ = (id) => document.getElementById(id);
+
 const editorElement = $("codeEditor");
 
 let editor = null;
 let currentLesson = null;
 let currentCurriculum = null;
 let selectedOptionIdx = null;
+
 let pythonWorker = null;
 let pythonTimeout = null;
+
 let executionId = 0;
 let running = false;
 
 function showOutput(message) {
   const terminal = $("terminalOutput");
 
-  if (terminal) {
-    terminal.textContent = String(message ?? "");
-    terminal.scrollTop = terminal.scrollHeight;
-  }
+  if (!terminal) return;
+
+  terminal.textContent = String(message ?? "");
+  terminal.scrollTop = terminal.scrollHeight;
 }
 
 function showError(message) {
@@ -61,39 +68,56 @@ function showError(message) {
 
 function displayLessonText(id, value) {
   const element = $(id);
-  if (element) element.textContent = String(value ?? "");
+
+  if (element) {
+    element.textContent = String(value ?? "");
+  }
 }
 
 function setRunning(value) {
   running = value;
+
   const button = $("runCodeBtn");
 
-  if (button) {
-    button.disabled = value;
-    button.textContent = value ? "جارٍ التشغيل..." : "▶ تشغيل الكود";
-  }
+  if (!button) return;
+
+  button.disabled = value;
+  button.textContent = value
+    ? "جارٍ التشغيل..."
+    : "▶ تشغيل الكود";
 }
 
 function getLessonCode(lesson) {
-  const code = lesson?.code_example ?? lesson?.code ?? "";
+  const code =
+    lesson?.starter_code ??
+    lesson?.code_example ??
+    lesson?.code ??
+    "";
+
   return typeof code === "string" ? code : String(code);
 }
 
 function getLessonDescription(lesson) {
   return (
-    lesson?.objective ||
     lesson?.description ||
+    lesson?.objective ||
     lesson?.desc ||
     lesson?.cody_intro ||
-    "ابدأ بقراءة الشرح، ثم جرّب المثال بنفسك."
+    "اقرأ الشرح، ثم جرّب المثال بنفسك."
   );
 }
 
 function getCompletedLessons() {
   try {
-    const raw = localStorage.getItem(`cq_completed_lessons_${lang}`);
+    const raw = localStorage.getItem(
+      `cq_completed_lessons_${lang}`
+    );
+
     const parsed = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+
+    return new Set(
+      Array.isArray(parsed) ? parsed.map(String) : []
+    );
   } catch {
     return new Set();
   }
@@ -106,6 +130,7 @@ function getLessonKey() {
 function markCurrentLessonCompleted() {
   try {
     const completed = getCompletedLessons();
+
     completed.add(getLessonKey());
 
     localStorage.setItem(
@@ -125,12 +150,18 @@ function markCurrentLessonCompleted() {
 function updateLessonProgress() {
   if (!currentCurriculum) return;
 
-  const chapters = currentCurriculum.chapters || [];
+  const chapters = Array.isArray(currentCurriculum.chapters)
+    ? currentCurriculum.chapters
+    : [];
+
   const validKeys = new Set();
+
   let total = 0;
 
   chapters.forEach((chapter, chapterIndex) => {
-    const lessons = Array.isArray(chapter.lessons) ? chapter.lessons : [];
+    const lessons = Array.isArray(chapter.lessons)
+      ? chapter.lessons
+      : [];
 
     lessons.forEach((_, lessonIndex) => {
       validKeys.add(`${chapterIndex}:${lessonIndex}`);
@@ -139,25 +170,44 @@ function updateLessonProgress() {
   });
 
   const completed = getCompletedLessons();
-  const done = [...completed].filter((key) => validKeys.has(key)).length;
-  const percentage = total ? Math.round((done / total) * 100) : 0;
+
+  const done = [...completed].filter(
+    (key) => validKeys.has(key)
+  ).length;
+
+  const percentage = total
+    ? Math.round((done / total) * 100)
+    : 0;
+
   const progressBar = $("progressBar");
 
   if (progressBar) {
     progressBar.style.width = `${percentage}%`;
-    progressBar.setAttribute("aria-valuenow", String(percentage));
+
+    progressBar.setAttribute(
+      "aria-valuenow",
+      String(percentage)
+    );
   }
 
-  displayLessonText("progressText", `${percentage}%`);
+  displayLessonText(
+    "progressText",
+    `${percentage}%`
+  );
 }
 
 function getNextLessonDestination() {
-  if (!currentCurriculum || !Array.isArray(currentCurriculum.chapters)) {
+  if (
+    !currentCurriculum ||
+    !Array.isArray(currentCurriculum.chapters)
+  ) {
     return null;
   }
 
   const chapters = currentCurriculum.chapters;
+
   const currentChapter = chapters[chapterIdx];
+
   const currentLessons = Array.isArray(currentChapter?.lessons)
     ? currentChapter.lessons
     : [];
@@ -169,8 +219,12 @@ function getNextLessonDestination() {
     };
   }
 
-  for (let index = chapterIdx + 1; index < chapters.length; index += 1) {
-        const lessons = Array.isArray(chapters[index].lessons)
+  for (
+    let index = chapterIdx + 1;
+    index < chapters.length;
+    index += 1
+  ) {
+    const lessons = Array.isArray(chapters[index]?.lessons)
       ? chapters[index].lessons
       : [];
 
@@ -187,12 +241,14 @@ function getNextLessonDestination() {
 
 function showNextLessonAction() {
   const feedback = $("quizFeedback");
+
   if (!feedback) return;
 
   $("nextLessonBtn")?.remove();
   $("quizCompletionMessage")?.remove();
 
   const destination = getNextLessonDestination();
+
   const button = document.createElement("button");
 
   button.id = "nextLessonBtn";
@@ -217,11 +273,22 @@ function showNextLessonAction() {
     button.textContent = "الدرس التالي ←";
 
     button.addEventListener("click", () => {
-      const url = new URL("lecture.html", window.location.href);
+      const url = new URL(
+        "lecture.html",
+        window.location.href
+      );
 
       url.searchParams.set("lang", lang);
-      url.searchParams.set("chapter", String(destination.chapter));
-      url.searchParams.set("lesson", String(destination.lesson));
+
+      url.searchParams.set(
+        "chapter",
+        String(destination.chapter)
+      );
+
+      url.searchParams.set(
+        "lesson",
+        String(destination.lesson)
+      );
 
       window.location.href = url.href;
     });
@@ -235,14 +302,23 @@ function showNextLessonAction() {
     const message = document.createElement("p");
 
     message.id = "quizCompletionMessage";
-    message.textContent = "أحسنت! لقد أنهيت جميع دروس هذا المسار.";
+
+    message.textContent =
+      "أحسنت! لقد أنهيت جميع دروس هذا المسار.";
+
     message.style.cssText =
       "margin-top:14px;line-height:1.8;color:#36BFE5";
 
-    feedback.insertAdjacentElement("afterend", message);
+    feedback.insertAdjacentElement(
+      "afterend",
+      message
+    );
   }
 
-  feedback.insertAdjacentElement("afterend", button);
+  feedback.insertAdjacentElement(
+    "afterend",
+    button
+  );
 }
 
 function stopPythonWorker() {
@@ -254,14 +330,18 @@ function stopPythonWorker() {
   if (pythonWorker) {
     pythonWorker.onmessage = null;
     pythonWorker.onerror = null;
+
     pythonWorker.terminate();
+
     pythonWorker = null;
   }
 }
 
 function resetExecution() {
   executionId += 1;
+
   stopPythonWorker();
+
   setRunning(false);
 }
 
@@ -269,6 +349,7 @@ function finishExecution(id) {
   if (id !== executionId) return;
 
   stopPythonWorker();
+
   setRunning(false);
 }
 
@@ -289,7 +370,10 @@ function createPythonWorker() {
 
       try {
         if (!pyodide) {
-          send("status", "جارٍ تحميل بيئة Python لأول مرة...");
+          send(
+            "status",
+            "جارٍ تحميل بيئة Python لأول مرة..."
+          );
 
           importScripts(
             "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"
@@ -316,17 +400,22 @@ function createPythonWorker() {
 
         send(
           "result",
-          output.join("\\n") || "تم تنفيذ الكود دون مخرجات."
+          output.join("\\n") ||
+            "تم تنفيذ الكود دون مخرجات."
         );
       } catch (error) {
-        send("error", error?.message || String(error));
+        send(
+          "error",
+          error?.message || String(error)
+        );
       }
     };
   `;
 
-  const blob = new Blob([workerSource], {
-    type: "text/javascript"
-  });
+  const blob = new Blob(
+    [workerSource],
+    { type: "text/javascript" }
+  );
 
   const workerUrl = URL.createObjectURL(blob);
 
@@ -346,13 +435,19 @@ function runPython(code, id) {
     );
 
     finishExecution(id);
+
     return;
   }
 
   const worker = pythonWorker;
 
   worker.onmessage = (event) => {
-    if (id !== executionId || worker !== pythonWorker) return;
+    if (
+      id !== executionId ||
+      worker !== pythonWorker
+    ) {
+      return;
+    }
 
     const data = event.data;
 
@@ -371,27 +466,49 @@ function runPython(code, id) {
   };
 
   worker.onerror = () => {
-    if (id !== executionId || worker !== pythonWorker) return;
+    if (
+      id !== executionId ||
+      worker !== pythonWorker
+    ) {
+      return;
+    }
 
-    showError("تعذر تشغيل Python. تحقّق من اتصال الإنترنت.");
+    showError(
+      "تعذر تشغيل Python. تحقّق من اتصال الإنترنت."
+    );
+
     finishExecution(id);
   };
 
   pythonTimeout = setTimeout(() => {
-    if (id !== executionId || worker !== pythonWorker) return;
+    if (
+      id !== executionId ||
+      worker !== pythonWorker
+    ) {
+      return;
+    }
 
     showError("انتهت مهلة التشغيل.");
+
     finishExecution(id);
   }, 30000);
 
-  worker.postMessage({ id, code });
+  worker.postMessage({
+    id,
+    code
+  });
 }
 
 function runJavaScript(code, id) {
   const frame = document.createElement("iframe");
 
   frame.setAttribute("sandbox", "allow-scripts");
-  frame.setAttribute("title", "JavaScript code runner");
+
+  frame.setAttribute(
+    "title",
+    "JavaScript code runner"
+  );
+
   frame.setAttribute("aria-hidden", "true");
 
   frame.style.cssText =
@@ -407,23 +524,34 @@ function runJavaScript(code, id) {
 
     finished = true;
 
-    if (timeout !== null) clearTimeout(timeout);
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
 
-    window.removeEventListener("message", listener);
+    window.removeEventListener(
+      "message",
+      listener
+    );
+
     frame.remove();
 
     if (id !== executionId) return;
 
-    if (message) outputs.push(message);
+    if (message) {
+      outputs.push(message);
+    }
 
     showOutput(
-      outputs.join("\n") || "تم تنفيذ الكود دون مخرجات."
+      outputs.join("\n") ||
+        "تم تنفيذ الكود دون مخرجات."
     );
 
     setRunning(false);
   };
 
-  const safeCode = JSON.stringify(code).replace(/</g, "\\u003c");
+  const safeCode = JSON.stringify(code)
+    .replace(/</g, "\\u003c");
+
   const safeId = JSON.stringify(id);
 
   const source = `<!doctype html>
@@ -444,38 +572,66 @@ function runJavaScript(code, id) {
   };
 
   const format = (value) => {
-    if (typeof value === "string") return value;
+    if (typeof value === "string") {
+      return value;
+    }
 
     try {
       const result = JSON.stringify(value);
-      return result === undefined ? String(value) : result;
+
+      return result === undefined
+        ? String(value)
+        : result;
     } catch {
       return String(value);
     }
   };
 
-  console.log = (...args) =>
-    send("log", args.map(format).join(" "));
+  console.log = (...args) => {
+    send(
+      "log",
+      args.map(format).join(" ")
+    );
+  };
 
-  console.warn = (...args) =>
-    send("log", args.map(format).join(" "));
+  console.warn = (...args) => {
+    send(
+      "log",
+      args.map(format).join(" ")
+    );
+  };
 
-  console.error = (...args) =>
-    send("error", args.map(format).join(" "));
+  console.error = (...args) => {
+    send(
+      "error",
+      args.map(format).join(" ")
+    );
+  };
 
   window.onerror = (message) => {
     send("error", message);
   };
 
   window.onunhandledrejection = (event) => {
-    send("error", event.reason?.message || event.reason);
+    send(
+      "error",
+      event.reason?.message || event.reason
+    );
   };
 
   try {
     const code = ${safeCode};
-    await new Function('"use strict";\\n' + code)();
+
+    await new Function(
+      '"use strict";\\n' + code
+    )();
   } catch (error) {
-    send("error", error?.stack || error?.message || String(error));
+    send(
+      "error",
+      error?.stack ||
+      error?.message ||
+      String(error)
+    );
   }
 
   send("done");
@@ -485,38 +641,63 @@ function runJavaScript(code, id) {
 </html>`;
 
   function listener(event) {
-    if (event.source !== frame.contentWindow) return;
-    if (event.data?.source !== "cody-js-runner") return;
-    if (event.data?.id !== id || finished) return;
+    if (event.source !== frame.contentWindow) {
+      return;
+    }
+
+    if (
+      event.data?.source !== "cody-js-runner" ||
+      event.data?.id !== id ||
+      finished
+    ) {
+      return;
+    }
 
     if (event.data.type === "log") {
       outputs.push(event.data.text);
+
       showOutput(outputs.join("\n"));
+
       return;
     }
 
     if (event.data.type === "error") {
-      outputs.push("Error: " + event.data.text);
+      outputs.push(
+        "Error: " + event.data.text
+      );
+
       showOutput(outputs.join("\n"));
+
       return;
     }
 
-    if (event.data.type === "done") finish();
+    if (event.data.type === "done") {
+      finish();
+    }
   }
 
   timeout = setTimeout(() => {
-    finish("انتهت مهلة التشغيل. جرّب كودًا أبسط.");
+    finish(
+      "انتهت مهلة التشغيل. جرّب كودًا أبسط."
+    );
   }, 5000);
 
-  window.addEventListener("message", listener);
+  window.addEventListener(
+    "message",
+    listener
+  );
 
   document.body.appendChild(frame);
+
   frame.srcdoc = source;
 }
 
 function runCpp() {
   showOutput(
-    "تشغيل C++ غير متاح حاليًا.\n\nلم يتم ربط خدمة تنفيذ لهذه اللغة بعد."
+    "تشغيل C++ غير متاح حاليًا.\n\n" +
+    "تم تحميل درس C++ والمحرر، لكن يلزم ربط خدمة " +
+    "ترجمة وتنفيذ فعلية لتشغيل البرامج.\n\n" +
+    "لم يتم إرسال الكود إلى أي خدمة خارجية."
   );
 
   setRunning(false);
@@ -528,7 +709,10 @@ window.runUserCode = async function runUserCode() {
   const code = editor.getValue();
 
   if (!code.trim()) {
-    showOutput("اكتب الكود أولًا، ثم اضغط على تشغيل.");
+    showOutput(
+      "اكتب الكود أولًا، ثم اضغط على تشغيل."
+    );
+
     return;
   }
 
@@ -537,21 +721,36 @@ window.runUserCode = async function runUserCode() {
   const id = executionId;
 
   setRunning(true);
+
   showOutput("جارٍ تجهيز بيئة التشغيل...");
 
   try {
     if (lang === "javascript") {
       runJavaScript(code, id);
-    } else if (lang === "python") {
-      runPython(code, id);
-    } else if (lang === "cpp") {
-      runCpp();
-    } else {
-      showError("لغة البرمجة المحددة غير مدعومة.");
-      finishExecution(id);
+      return;
     }
+
+    if (lang === "python") {
+      runPython(code, id);
+      return;
+    }
+
+    if (lang === "cpp") {
+      runCpp();
+      return;
+    }
+
+    showError(
+      "لغة البرمجة المحددة غير مدعومة."
+    );
+
+    finishExecution(id);
   } catch (error) {
-    showError(error?.message || "حدث خطأ أثناء التشغيل.");
+    showError(
+      error?.message ||
+      "حدث خطأ أثناء التشغيل."
+    );
+
     finishExecution(id);
   }
 };
@@ -561,57 +760,83 @@ window.resetCode = function resetCode() {
 
   resetExecution();
 
-  editor.setValue(getLessonCode(currentLesson));
-  showOutput("تمت إعادة الكود إلى المثال الأصلي.");
+  editor.setValue(
+    getLessonCode(currentLesson)
+  );
+
+  showOutput(
+    "تمت إعادة الكود إلى المثال الأصلي."
+  );
 };
 
 window.showQuiz = function showQuiz() {
   const modal = $("quizModal");
 
-  if (modal) modal.style.display = "flex";
+  if (modal) {
+    modal.style.display = "flex";
+  }
 };
 
 function renderQuiz(quiz) {
   const optionsDiv = $("quizOptions");
   const submitButton = $("submitQuizBtn");
+  const feedback = $("quizFeedback");
 
   selectedOptionIdx = null;
 
   $("nextLessonBtn")?.remove();
   $("quizCompletionMessage")?.remove();
 
-  const feedback = $("quizFeedback");
-
   if (feedback) {
     feedback.textContent = "";
+
     delete feedback.dataset.result;
   }
 
   displayLessonText(
     "quizQuestion",
-    quiz?.question || "لا يوجد اختبار لهذا الدرس حاليًا."
+    quiz?.question ||
+      "لا يوجد اختبار لهذا الدرس حاليًا."
   );
 
-  if (optionsDiv) optionsDiv.replaceChildren();
-  if (submitButton) submitButton.style.display = "none";
+  if (optionsDiv) {
+    optionsDiv.replaceChildren();
+  }
 
-  if (!quiz || !Array.isArray(quiz.options) || !optionsDiv) return;
+  if (submitButton) {
+    submitButton.style.display = "none";
+  }
+
+  if (
+    !quiz ||
+    !Array.isArray(quiz.options) ||
+    !optionsDiv
+  ) {
+    return;
+  }
 
   quiz.options.forEach((option, index) => {
     const button = document.createElement("button");
 
     button.type = "button";
     button.className = "quiz-option";
-    button.textContent = option;
+        button.textContent = String(option);
 
     button.addEventListener("click", () => {
       selectedOptionIdx = index;
 
-      optionsDiv.querySelectorAll(".quiz-option").forEach((item) => {
-        item.classList.toggle("selected", item === button);
-      });
+      optionsDiv
+        .querySelectorAll(".quiz-option")
+        .forEach((item) => {
+          item.classList.toggle(
+            "selected",
+            item === button
+          );
+        });
 
-      if (submitButton) submitButton.style.display = "block";
+      if (submitButton) {
+        submitButton.style.display = "block";
+      }
 
       if (feedback) {
         feedback.textContent = "";
@@ -627,7 +852,12 @@ function renderQuiz(quiz) {
 }
 
 window.submitQuiz = function submitQuiz() {
-  if (selectedOptionIdx === null || !currentLesson?.quiz) return;
+  if (
+    selectedOptionIdx === null ||
+    !currentLesson?.quiz
+  ) {
+    return;
+  }
 
   const quiz = currentLesson.quiz;
   const feedback = $("quizFeedback");
@@ -635,24 +865,36 @@ window.submitQuiz = function submitQuiz() {
 
   if (!feedback) return;
 
-  if (selectedOptionIdx === quiz.correct_index) {
-    feedback.textContent = quiz.success_msg || "إجابة صحيحة!";
+  if (
+    selectedOptionIdx === Number(quiz.correct_index)
+  ) {
+    feedback.textContent =
+      quiz.success_msg ||
+      quiz.explanation ||
+      "إجابة صحيحة!";
+
     feedback.dataset.result = "correct";
 
     markCurrentLessonCompleted();
 
-    if (submitButton) submitButton.style.display = "none";
+    if (submitButton) {
+      submitButton.style.display = "none";
+    }
 
-    $("quizOptions")?.querySelectorAll(".quiz-option").forEach((button) => {
-      button.disabled = true;
-    });
+    $("quizOptions")
+      ?.querySelectorAll(".quiz-option")
+      .forEach((button) => {
+        button.disabled = true;
+      });
 
     showNextLessonAction();
+
     return;
   }
 
   feedback.textContent =
-    quiz.fail_msg || "الإجابة غير صحيحة. حاول مرة أخرى.";
+    quiz.fail_msg ||
+    "الإجابة غير صحيحة. حاول مرة أخرى.";
 
   feedback.dataset.result = "incorrect";
 };
@@ -694,18 +936,29 @@ async function initLesson() {
     currentLesson = chapter?.lessons?.[lessonIdx];
 
     if (!currentLesson) {
-      throw new Error("الدرس المطلوب غير موجود. ارجع إلى قائمة الدروس.");
+      throw new Error(
+        "الدرس المطلوب غير موجود. ارجع إلى قائمة الدروس."
+      );
     }
 
     displayLessonText("lessonTitle", currentLesson.title);
-    displayLessonText("codyIntro", currentLesson.cody_intro);
+
+    displayLessonText(
+      "codyIntro",
+      currentLesson.cody_intro ||
+        "أهلًا بك! اقرأ الدرس وجرّب الكود بنفسك."
+    );
 
     displayLessonText(
       "lessonDescription",
       getLessonDescription(currentLesson)
     );
 
-    displayLessonText("lessonTask", currentLesson.task);
+    displayLessonText(
+      "lessonTask",
+      currentLesson.task ||
+        "جرّب تعديل المثال بنفسك."
+    );
 
     const hintsList = $("lessonHints");
 
@@ -718,7 +971,7 @@ async function initLesson() {
 
       hints.forEach((hint) => {
         const item = document.createElement("li");
-        item.textContent = hint;
+        item.textContent = String(hint);
         hintsList.appendChild(item);
       });
     }
@@ -744,14 +997,17 @@ async function initLesson() {
 
     editor.setValue(getLessonCode(currentLesson));
 
-    displayLessonText("fileNameDisplay", "main" + config.ext);
+    displayLessonText(
+      "fileNameDisplay",
+      "main" + config.ext
+    );
 
     updateLessonProgress();
     renderQuiz(currentLesson.quiz || null);
 
     showOutput(
       lang === "cpp"
-        ? "تم تحميل الدرس. تشغيل C++ غير متاح حتى ربط خدمة تنفيذ."
+        ? "تم تحميل الدرس. تشغيل C++ يحتاج إلى ربط خدمة تنفيذ."
         : "تم تحميل الدرس. يمكنك تجربة الكود في المحرر."
     );
   } catch (error) {
@@ -762,7 +1018,9 @@ async function initLesson() {
       "تعذر تحميل الدرس. تحقق من ملف المنهج واتصال الإنترنت."
     );
 
-    showError(error?.message || "حدث خطأ أثناء تحميل الدرس.");
+    showError(
+      error?.message || "حدث خطأ أثناء تحميل الدرس."
+    );
   }
 }
 
@@ -776,7 +1034,9 @@ requireUser()
   .catch((error) => {
     console.error("Authentication failed:", error);
 
-    if (error?.message === "يجب تسجيل الدخول.") return;
+    if (error?.message === "يجب تسجيل الدخول.") {
+      return;
+    }
 
     showError(
       "تعذر التحقق من الحساب. أعد تحميل الصفحة أو سجّل الدخول مجددًا."
