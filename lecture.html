@@ -1,13 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#10111f">
+  <meta name="description" content="Cody Academy — تعلّم البرمجة وجرّب الأكواد وتقدّم في مسارك التعليمي.">
   <title>المحاضرة | Cody Academy</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
@@ -17,6 +18,17 @@
   <link rel="stylesheet" href="css/style.css">
 
   <style>
+    :root {
+      --lecture-purple: #7955e8;
+      --lecture-purple-light: #a995ff;
+      --lecture-cyan: #36bfe5;
+      --lecture-green: #43c99a;
+      --lecture-red: #ff8585;
+      --lecture-panel: rgba(121, 85, 232, 0.08);
+      --lecture-border: rgba(54, 191, 229, 0.2);
+      --lecture-surface: rgba(255, 255, 255, 0.035);
+    }
+
     .lecture-page {
       max-width: 1450px;
       width: 100%;
@@ -36,16 +48,37 @@
     .lecture-heading h1 {
       margin: 0 0 6px;
       font-size: clamp(1.35rem, 3vw, 2rem);
+      font-weight: 900;
     }
 
     .lecture-heading p {
       margin: 0;
-      opacity: .7;
+      opacity: 0.7;
+      line-height: 1.8;
+    }
+
+    .lecture-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border: 1px solid var(--lecture-border);
+      border-radius: 12px;
+      color: inherit;
+      background: var(--lecture-panel);
+      text-decoration: none;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .lecture-back:hover {
+      background: rgba(54, 191, 229, 0.12);
+      border-color: var(--lecture-cyan);
     }
 
     .lecture-workspace {
       display: grid;
-      grid-template-columns: minmax(280px, .8fr) minmax(0, 1.4fr);
+      grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.4fr);
       gap: 20px;
       align-items: start;
     }
@@ -54,13 +87,47 @@
     .editor-card {
       min-width: 0;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,.09);
+      border: 1px solid var(--lecture-border);
       border-radius: 20px;
-      background: rgba(255,255,255,.035);
+      background: var(--lecture-surface);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
     }
 
     .lecture-card {
       padding: 22px;
+    }
+
+    .progress-card {
+      margin-bottom: 20px;
+    }
+
+    .progress-information {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 0.92rem;
+    }
+
+    #progressText {
+      color: var(--lecture-cyan);
+      font-weight: 800;
+    }
+
+    .progress-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #progressBar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--lecture-purple), var(--lecture-cyan));
+      transition: width 0.35s ease;
     }
 
     .cody-bubble {
@@ -76,15 +143,21 @@
       flex: 0 0 48px;
       width: 48px;
       height: 48px;
+      border: 1px solid rgba(121, 85, 232, 0.3);
       border-radius: 16px;
-      background: rgba(139,92,246,.18);
-      color: #b9a0ff;
+      background: rgba(121, 85, 232, 0.16);
+      color: var(--lecture-purple-light);
       font-size: 25px;
+    }
+
+    .cody-text {
+      min-width: 0;
     }
 
     .cody-text h2 {
       margin: 0 0 8px;
       font-size: 1.2rem;
+      font-weight: 800;
     }
 
     .cody-text p,
@@ -94,20 +167,36 @@
       overflow-wrap: anywhere;
     }
 
+    .cody-text p {
+      margin: 0;
+      opacity: 0.82;
+    }
+
     .section-label {
       display: flex;
       align-items: center;
       gap: 8px;
       margin: 22px 0 10px;
       font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .section-label i {
+      color: var(--lecture-cyan);
+      font-size: 1.2rem;
+    }
+
+    .lesson-description {
+      margin: 0;
+      opacity: 0.9;
     }
 
     .task-box,
     .hint-box {
       padding: 15px;
       border-radius: 14px;
-      background: rgba(139,92,246,.09);
-      border: 1px solid rgba(139,92,246,.15);
+      background: var(--lecture-panel);
+      border: 1px solid var(--lecture-border);
     }
 
     .task-box p,
@@ -121,19 +210,61 @@
       line-height: 2;
     }
 
-    .progress-track {
-      height: 8px;
-      overflow: hidden;
-      border-radius: 99px;
-      background: rgba(255,255,255,.1);
+    #lessonHints li {
+      padding-right: 3px;
+      margin-bottom: 5px;
     }
 
-    #progressBar {
-      width: 0;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #8b5cf6, #38bdf8);
-      transition: width .3s ease;
+    .quiz-action,
+    .run-button,
+    .reset-button,
+    .next-lesson-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      font: inherit;
+      border: 0;
+      border-radius: 11px;
+      padding: 10px 15px;
+      transition: filter 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    }
+
+    .quiz-action,
+    .run-button,
+    .next-lesson-button {
+      background: linear-gradient(135deg, var(--lecture-purple), var(--lecture-cyan));
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .quiz-action:hover,
+    .run-button:hover,
+    .next-lesson-button:hover {
+      filter: brightness(1.1);
+    }
+
+    .quiz-action:active,
+    .run-button:active,
+    .next-lesson-button:active,
+    .reset-button:active {
+      transform: scale(0.98);
+    }
+
+    .quiz-action:focus-visible,
+    .run-button:focus-visible,
+    .reset-button:focus-visible,
+    .next-lesson-button:focus-visible,
+    .lecture-back:focus-visible,
+    .quiz-option:focus-visible {
+      outline: 2px solid var(--lecture-cyan);
+      outline-offset: 3px;
+    }
+
+    #openQuizBtn {
+      width: 100%;
+      margin-top: 20px;
     }
 
     .editor-toolbar {
@@ -142,14 +273,16 @@
       justify-content: space-between;
       gap: 12px;
       padding: 15px 18px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       flex-wrap: wrap;
     }
 
     #fileNameDisplay {
       direction: ltr;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .9rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9rem;
+      color: var(--lecture-cyan);
+      overflow-wrap: anywhere;
     }
 
     .editor-actions {
@@ -158,37 +291,31 @@
       flex-wrap: wrap;
     }
 
-    .editor-actions button,
-    .quiz-action {
-      cursor: pointer;
-      font: inherit;
-      border: 0;
-      border-radius: 10px;
-      padding: 9px 14px;
-    }
-
-    .run-button,
-    .quiz-action {
-      background: #8b5cf6;
-      color: white;
-    }
-
     .reset-button {
-      background: rgba(255,255,255,.08);
+      background: rgba(255, 255, 255, 0.08);
       color: inherit;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .reset-button:hover {
+      background: rgba(255, 255, 255, 0.13);
     }
 
     .CodeMirror {
       height: 340px;
       direction: ltr;
       text-align: left;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 14px;
       line-height: 1.7;
     }
 
+    .CodeMirror-gutters {
+      border-left: 0;
+    }
+
     .terminal-panel {
-      border-top: 1px solid rgba(255,255,255,.08);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .terminal-header {
@@ -197,7 +324,17 @@
       justify-content: space-between;
       gap: 12px;
       padding: 12px 16px;
-      background: rgba(0,0,0,.15);
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .terminal-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-title i {
+      color: var(--lecture-green);
     }
 
     .terminal-dots {
@@ -216,12 +353,13 @@
       min-height: 90px;
       max-height: 250px;
       overflow: auto;
+      margin: 0;
       padding: 16px;
       direction: ltr;
       text-align: left;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      font: 13px/1.8 'JetBrains Mono', monospace;
+      font: 13px/1.8 "JetBrains Mono", monospace;
       color: #d1d5db;
     }
 
@@ -233,7 +371,8 @@
       padding: 20px;
       align-items: center;
       justify-content: center;
-      background: rgba(0,0,0,.72);
+      background: rgba(5, 6, 16, 0.82);
+      backdrop-filter: blur(8px);
     }
 
     .quiz-dialog {
@@ -243,7 +382,25 @@
       padding: 24px;
       border-radius: 20px;
       background: #191a2b;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid var(--lecture-border);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+    }
+
+    .quiz-dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quiz-dialog-header h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+
+    #quizQuestion {
+      line-height: 1.9;
+      overflow-wrap: anywhere;
     }
 
     .quiz-option {
@@ -255,14 +412,25 @@
       cursor: pointer;
       font: inherit;
       color: inherit;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
-      background: rgba(255,255,255,.04);
+      background: rgba(255, 255, 255, 0.04);
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .quiz-option:hover:not(:disabled) {
+      border-color: var(--lecture-cyan);
+      background: rgba(54, 191, 229, 0.08);
     }
 
     .quiz-option.selected {
-      border-color: #a78bfa;
-      background: rgba(139,92,246,.18);
+      border-color: var(--lecture-cyan);
+      background: rgba(54, 191, 229, 0.12);
+    }
+
+    .quiz-option:disabled {
+      cursor: default;
+      opacity: 0.85;
     }
 
     #quizFeedback {
@@ -270,24 +438,97 @@
       line-height: 1.8;
     }
 
+    #quizFeedback[data-result="correct"] {
+      color: var(--lecture-green);
+    }
+
+    #quizFeedback[data-result="incorrect"] {
+      color: var(--lecture-red);
+    }
+
+    .quiz-completion-message {
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid rgba(67, 201, 154, 0.3);
+      border-radius: 14px;
+      background: rgba(67, 201, 154, 0.08);
+      line-height: 1.9;
+    }
+
+    .next-lesson-button {
+      width: 100%;
+      margin-top: 14px;
+      padding: 13px 16px;
+    }
+
     .status-message {
       padding: 16px;
       border-radius: 12px;
-      background: rgba(255,255,255,.05);
+      background: rgba(255, 255, 255, 0.05);
       line-height: 1.8;
     }
 
-    @media (max-width: 850px) {
-      .lecture-page {
-        padding: 14px;
-      }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
 
+    @media (max-width: 1000px) {
       .lecture-workspace {
         grid-template-columns: minmax(0, 1fr);
       }
 
       .CodeMirror {
-        height: 300px;
+        height: 320px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .lecture-page {
+        padding: 14px;
+      }
+
+      .lecture-card {
+        padding: 17px;
+      }
+
+      .lecture-topbar {
+        align-items: stretch;
+      }
+
+      .lecture-back {
+        width: 100%;
+      }
+
+      .editor-toolbar {
+        align-items: stretch;
+      }
+
+      .editor-actions {
+        width: 100%;
+      }
+
+      .editor-actions button {
+        flex: 1;
+      }
+
+      .CodeMirror {
+        height: 290px;
+        font-size: 13px;
+      }
+
+      .quiz-dialog {
+        padding: 18px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
       }
     }
   </style>
@@ -300,11 +541,11 @@
         <i class="ri-robot-2-fill"></i> Cody Academy
       </div>
 
-      <nav class="nav-menu">
+      <nav class="nav-menu" aria-label="القائمة الرئيسية">
         <a href="dashboard.html" class="nav-item">
           <i class="ri-home-5-line"></i> الرئيسية
         </a>
-        <a href="languages.html" class="nav-item active">
+        <a href="languages.html" class="nav-item active" aria-current="page">
           <i class="ri-map-2-line"></i> المسارات
         </a>
         <a href="playground.html" class="nav-item">
@@ -326,25 +567,35 @@
             <h1>مساحة التعلّم <span aria-hidden="true">✨</span></h1>
             <p>تعلّم، جرّب الكود، واكتشف بنفسك.</p>
           </div>
-          <a href="languages.html" class="nav-item">
-            <i class="ri-arrow-right-line"></i> العودة للمسارات
+
+          <a href="languages.html" class="lecture-back">
+            <i class="ri-arrow-right-line" aria-hidden="true"></i>
+            العودة للمسارات
           </a>
         </header>
 
-        <section class="lecture-card" style="margin-bottom:20px">
-          <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:10px">
+        <section class="lecture-card progress-card" aria-label="تقدم الدرس">
+          <div class="progress-information">
             <span>تقدمك في الدرس</span>
-            <span id="progressText">جاري التحميل...</span>
+            <span id="progressText" aria-live="polite">جاري التحميل...</span>
           </div>
-          <div class="progress-track">
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-label="نسبة إنجاز الدرس"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="progressTrack"
+          >
             <div id="progressBar"></div>
           </div>
         </section>
 
         <div class="lecture-workspace">
-          <section class="lecture-card">
+          <section class="lecture-card" aria-label="محتوى الدرس">
             <div class="cody-bubble">
-              <div class="cody-avatar">
+              <div class="cody-avatar" aria-hidden="true">
                 <i class="ri-robot-2-fill"></i>
               </div>
               <div class="cody-text">
@@ -354,31 +605,40 @@
             </div>
 
             <h3 class="section-label">
-              <i class="ri-book-open-line"></i> شرح الدرس
+              <i class="ri-book-open-line" aria-hidden="true"></i>
+              شرح الدرس
             </h3>
             <p id="lessonDescription" class="lesson-description">
               جاري تحميل المحتوى...
             </p>
 
             <h3 class="section-label">
-              <i class="ri-lightbulb-line"></i> مهمتك
+              <i class="ri-lightbulb-line" aria-hidden="true"></i>
+              مهمتك
             </h3>
             <div class="task-box">
-              <p id="lessonTask" class="lesson-task">
-                ستظهر مهمتك هنا.
-              </p>
+              <p id="lessonTask" class="lesson-task">ستظهر مهمتك هنا.</p>
             </div>
 
             <h3 class="section-label">
-              <i class="ri-sparkling-line"></i> تلميحات كودي
+              <i class="ri-sparkling-line" aria-hidden="true"></i>
+              تلميحات كودي
             </h3>
             <ul id="lessonHints">
               <li>جاري تجهيز التلميحات...</li>
             </ul>
 
-            <button id="openQuizBtn" class="quiz-action" type="button" onclick="showQuiz()" style="width:100%;margin-top:20px">
-              <i class="ri-question-answer-line"></i> اختبر فهمك
+            <button
+              id="openQuizBtn"
+              class="quiz-action"
+              type="button"
+              onclick="showQuiz()"
+            >
+              <i class="ri-question-answer-line" aria-hidden="true"></i>
+              اختبر فهمك
             </button>
+
+            <div id="lessonCompletionArea" aria-live="polite"></div>
           </section>
 
           <section class="editor-card" aria-label="محرر الأكواد">
@@ -386,11 +646,24 @@
               <span id="fileNameDisplay">main.js</span>
 
               <div class="editor-actions">
-                <button id="resetCodeBtn" class="reset-button" type="button" onclick="resetCode()">
-                  <i class="ri-refresh-line"></i> إعادة الضبط
+                <button
+                  id="resetCodeBtn"
+                  class="reset-button"
+                  type="button"
+                  onclick="resetCode()"
+                >
+                  <i class="ri-refresh-line" aria-hidden="true"></i>
+                  إعادة الضبط
                 </button>
-                <button id="runCodeBtn" class="run-button" type="button" onclick="runUserCode()">
-                  <i class="ri-play-fill"></i> تشغيل الكود
+
+                <button
+                  id="runCodeBtn"
+                  class="run-button"
+                  type="button"
+                  onclick="runUserCode()"
+                >
+                  <i class="ri-play-fill" aria-hidden="true"></i>
+                  تشغيل الكود
                 </button>
               </div>
             </div>
@@ -399,13 +672,18 @@
 
             <div class="terminal-panel">
               <div class="terminal-header">
-                <strong>النتيجة</strong>
+                <strong class="terminal-title">
+                  <i class="ri-terminal-box-line" aria-hidden="true"></i>
+                  النتيجة
+                </strong>
+
                 <div class="terminal-dots" aria-hidden="true">
                   <span style="background:#ff6b6b"></span>
                   <span style="background:#ffcb57"></span>
                   <span style="background:#35d6a3"></span>
                 </div>
               </div>
+
               <pre id="terminalOutput" class="terminal-output" aria-live="polite">Console Ready...</pre>
             </div>
           </section>
@@ -414,12 +692,27 @@
     </main>
   </div>
 
-  <div id="quizModal" class="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quizQuestion">
+  <div
+    id="quizModal"
+    class="quiz-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="quizDialogTitle"
+    aria-hidden="true"
+  >
     <div class="quiz-dialog">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-        <h2 style="margin-top:0">اختبر فهمك</h2>
-        <button type="button" class="reset-button" onclick="document.getElementById('quizModal').style.display='none'" aria-label="إغلاق الاختبار">
-          <i class="ri-close-line"></i> إغلاق
+      <div class="quiz-dialog-header">
+        <h2 id="quizDialogTitle">اختبر فهمك</h2>
+
+        <button
+          id="closeQuizBtn"
+          type="button"
+          class="reset-button"
+          onclick="document.getElementById('quizModal').style.display='none'; document.getElementById('quizModal').setAttribute('aria-hidden','true');"
+          aria-label="إغلاق الاختبار"
+        >
+          <i class="ri-close-line" aria-hidden="true"></i>
+          إغلاق
         </button>
       </div>
 
@@ -427,7 +720,13 @@
       <div id="quizOptions"></div>
       <div id="quizFeedback" aria-live="polite"></div>
 
-      <button id="submitQuizBtn" class="quiz-action" type="button" onclick="submitQuiz()" style="display:none;width:100%;margin-top:14px">
+      <button
+        id="submitQuizBtn"
+        class="quiz-action"
+        type="button"
+        onclick="submitQuiz()"
+        style="display:none;width:100%;margin-top:14px"
+      >
         تأكيد الإجابة
       </button>
     </div>
