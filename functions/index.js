@@ -1,4 +1,3 @@
-
 const { initializeApp } = require("firebase-admin/app");
 const {
   getFirestore,
@@ -81,6 +80,30 @@ function safeOutput(value) {
   return value.slice(0, 20000);
 }
 
+async function readJudge0Response(response) {
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new HttpsError(
+      "internal",
+      "وصلت استجابة غير مفهومة من خدمة التشغيل."
+    );
+  }
+
+  if (!response.ok) {
+    console.error("Judge0 HTTP error:", response.status, data);
+
+    throw new HttpsError(
+      "unavailable",
+      "خدمة تشغيل الأكواد غير متاحة حاليًا."
+    );
+  }
+
+  return data;
+}
+
 exports.runCode = onCall(
   CALL_OPTIONS,
   async request => {
@@ -90,61 +113,103 @@ exports.runCode = onCall(
     validateCodeInput(data);
 
     const baseUrl = JUDGE0_URL.value().replace(/\/+$/, "");
-    const endpoint =
-      `${baseUrl}/submissions` +
-      "?base64_encoded=false&wait=true";
 
-    let response;
+    let submission;
 
+    // الخطوة الأولى: إرسال الكود إلى Judge0 واستلام token.
     try {
-      response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          source_code: data.code,
-          language_id: LANGUAGES[data.language],
-          stdin: ""
-        }),
-        signal: AbortSignal.timeout(35000)
-      });
+      const response = await fetch(
+        `${baseUrl}/submissions?base64_encoded=false&wait=false`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            source_code: data.code,
+            language_id: LANGUAGES[data.language],
+            stdin: ""
+          }),
+          signal: AbortSignal.timeout(15000)
+        }
+      );
+
+      submission = await readJudge0Response(response);
     } catch (error) {
-      console.error("Judge0 connection error:", error);
+      if (error instanceof HttpsError) throw error;
+
+      console.error("Judge0 submission error:", error);
 
       throw new HttpsError(
         "unavailable",
-        "تعذر الاتصال بخدمة تشغيل الأكواد. حاولي مرة أخرى."
+        "تعذر إرسال الكود إلى خدمة التشغيل."
       );
     }
 
-    if (!response.ok) {
-      console.error("Judge0 response status:", response.status);
+    if (!submission.token) {
+      console.error("Judge0 did not return a token:", submission);
 
-      throw new HttpsError(
-        "unavailable",
-        "خدمة تشغيل الأكواد غير متاحة حاليًا."
-      );
-    }
-
-    let result;
-
-    try {
-      result = await response.json();
-    } catch {
       throw new HttpsError(
         "internal",
-        "وصلت استجابة غير مفهومة من خدمة التشغيل."
+        "خدمة التشغيل لم تُرجع رقم التنفيذ."
+      );
+    }
+
+    // الخطوة الثانية: الاستعلام عن النتيجة حتى انتهاء التنفيذ.
+    const maxAttempts = 12;
+    let result = null;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      try {
+        const response = await fetch(
+          `${baseUrl}/submissions/${encodeURIComponent(
+            submission.token
+          )}?base64_encoded=false`,
+          {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            },
+            signal: AbortSignal.timeout(10000)
+          }
+        );
+
+        result = await readJudge0Response(response);
+      } catch (error) {
+        if (error instanceof HttpsError) throw error;
+
+        console.error("Judge0 polling error:", error);
+
+        throw new HttpsError(
+          "unavailable",
+          "تعذر الحصول على نتيجة تنفيذ الكود."
+        );
+      }
+
+      const statusId = result.status?.id;
+
+      // 1 و2 تعنيان أن التنفيذ لم ينتهِ بعد.
+      if (statusId && statusId > 2) {
+        break;
+      }
+    }
+
+    if (!result || !result.status || result.status.id <= 2) {
+      throw new HttpsError(
+        "deadline-exceeded",
+        "استغرق التنفيذ وقتًا طويلًا. حاولي مرة أخرى."
       );
     }
 
     return {
-      ok: result.status?.id === 3,
+      ok: result.status.id === 3,
       stdout: safeOutput(result.stdout),
       stderr: safeOutput(result.stderr),
       compileOutput: safeOutput(result.compile_output),
       message: safeOutput(result.message),
-      status: result.status?.description || "Unknown",
+      status: result.status.description || "Unknown",
       time: result.time || null,
       memory: result.memory || null
     };
@@ -152,8 +217,7 @@ exports.runCode = onCall(
 );
 
 /*
- * لا تمنحي المكافآت بمجرد استقبال gameId.
- * اربطي كل لعبة بتحقق خادمي من النتيجة قبل تفعيل المكافآت.
+ * المكافآت متوقفة حتى يتم التحقق من نتيجة اللعبة على الخادم.
  */
 exports.claimGameReward = onCall(
   CALL_OPTIONS,
@@ -168,8 +232,7 @@ exports.claimGameReward = onCall(
 );
 
 /*
- * نتيجة عامة للوحة الشرف.
- * لا يتم نشر البريد الإلكتروني أو بيانات الحساب الخاصة.
+ * مزامنة بيانات لوحة الشرف العامة دون نشر البريد الإلكتروني.
  */
 exports.syncLeaderboard = onDocumentWritten(
   {
