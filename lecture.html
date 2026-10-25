@@ -14,7 +14,6 @@
     :root {
       --bg: #050914;
       --panel: rgba(14, 25, 47, .88);
-      --panel2: #0b1426;
       --cyan: #00e5ff;
       --purple: #9b7bff;
       --muted: #a0aec0;
@@ -38,24 +37,14 @@
         var(--bg);
     }
 
-    button, textarea {
-      font: inherit;
-    }
+    button, textarea { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; }
 
-    button, a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    button:focus-visible, a:focus-visible, textarea:focus-visible {
+    button:focus-visible,
+    a:focus-visible,
+    textarea:focus-visible {
       outline: 2px solid var(--cyan);
       outline-offset: 3px;
     }
@@ -84,11 +73,11 @@
       font-size: 17px;
     }
 
-    .brand i {
-      font-size: 27px;
-    }
+    .brand i { font-size: 27px; }
 
-    .back-btn, .secondary-btn, .primary-btn {
+    .back-btn,
+    .secondary-btn,
+    .primary-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -138,10 +127,7 @@
       line-height: 1.6;
     }
 
-    h2 {
-      margin: 0;
-      font-size: 18px;
-    }
+    h2 { margin: 0; font-size: 18px; }
 
     .muted {
       color: var(--muted);
@@ -198,9 +184,7 @@
       background: rgba(255,255,255,.025);
     }
 
-    .panel-body {
-      padding: 18px;
-    }
+    .panel-body { padding: 18px; }
 
     .cody {
       display: flex;
@@ -247,9 +231,7 @@
       line-height: 1.9;
     }
 
-    .hint-box[hidden] {
-      display: none;
-    }
+    .hint-box[hidden] { display: none; }
 
     .editor-toolbar {
       display: flex;
@@ -296,9 +278,7 @@
       font: 13px/1.8 Consolas, Monaco, monospace;
     }
 
-    .terminal.error {
-      color: var(--red);
-    }
+    .terminal.error { color: var(--red); }
 
     .quiz-option {
       display: block;
@@ -324,17 +304,9 @@
       line-height: 1.9;
     }
 
-    .feedback:empty {
-      display: none;
-    }
-
-    .feedback.success {
-      color: var(--green);
-    }
-
-    .feedback.error {
-      color: #ff9a9a;
-    }
+    .feedback:empty { display: none; }
+    .feedback.success { color: var(--green); }
+    .feedback.error { color: #ff9a9a; }
 
     .lesson-actions {
       display: flex;
@@ -358,32 +330,15 @@
     }
 
     @media (max-width: 800px) {
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-
-      .page {
-        width: 94%;
-        margin-top: 16px;
-      }
-
-      .lesson-heading {
-        padding: 18px;
-      }
-
-      .editor {
-        min-height: 260px;
-      }
-
-      .topbar {
-        padding: 10px 3%;
-      }
+      .workspace { grid-template-columns: 1fr; }
+      .page { width: 94%; margin-top: 16px; }
+      .lesson-heading { padding: 18px; }
+      .editor { min-height: 260px; }
+      .topbar { padding: 10px 3%; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        transition: none !important;
-      }
+      *, *::before, *::after { transition: none !important; }
     }
   </style>
 </head>
@@ -405,15 +360,17 @@
     <section class="lesson-heading">
       <div class="eyebrow" id="languageLabel">مسار التعلم</div>
       <h1 id="lessonTitle">جارٍ تحميل الدرس...</h1>
-      <p class="muted" id="lessonDescription">
-        لحظات ونجهز لك الدرس.
-      </p>
+      <p class="muted" id="lessonDescription">لحظات ونجهز لك الدرس.</p>
 
       <div class="progress-row">
         <span class="muted">تقدم المسار</span>
-        <div class="progress-track" role="progressbar"
-             aria-label="تقدم الدروس" aria-valuemin="0"
-             aria-valuemax="100" aria-valuenow="0" id="progressTrack">
+        <div class="progress-track"
+             role="progressbar"
+             aria-label="تقدم الدروس"
+             aria-valuemin="0"
+             aria-valuemax="100"
+             aria-valuenow="0"
+             id="progressTrack">
           <div class="progress-fill" id="progressBar"></div>
         </div>
         <strong id="progressText">0%</strong>
@@ -498,24 +455,30 @@
                   <i class="ri-play-fill"></i>
                   تشغيل الكود
                 </button>
+
                 <button class="secondary-btn" id="resetCodeBtn" type="button">
                   <i class="ri-refresh-line"></i>
                   إعادة المثال
                 </button>
+
                 <button class="secondary-btn" id="clearOutputBtn" type="button">
                   مسح النتيجة
                 </button>
               </div>
             </div>
 
-            <textarea id="codeEditor" class="editor"
-              spellcheck="false" autocapitalize="off"
-              autocomplete="off" aria-label="محرر الكود"
-              dir="ltr"></textarea>
+            <textarea id="codeEditor"
+                      class="editor"
+                      spellcheck="false"
+                      autocapitalize="off"
+                      autocomplete="off"
+                      aria-label="محرر الكود"
+                      dir="ltr"></textarea>
 
             <div class="panel-header">
               <h2><i class="ri-terminal-box-line"></i> نتيجة التشغيل</h2>
             </div>
+
             <pre class="terminal" id="terminalOutput" aria-live="polite">اكتب الكود واضغط على تشغيل.</pre>
           </article>
 
@@ -533,6 +496,7 @@
                 <button class="primary-btn" id="nextLessonBtn" type="button" hidden>
                   الدرس التالي <i class="ri-arrow-left-line"></i>
                 </button>
+
                 <a class="secondary-btn" id="backToLevels" href="levels.html">
                   العودة للفصول
                 </a>
@@ -543,19 +507,28 @@
       </div>
     </div>
 
-    <footer class="footer">
-      تعلّم خطوة بخطوة مع كودي 🤖
-    </footer>
+    <footer class="footer">تعلّم خطوة بخطوة مع كودي 🤖</footer>
   </main>
 
   <script type="module">
-    import { requireUser } from "./js/auth.js";
+    import {
+      requireUser,
+      saveLessonProgress,
+      getLessonProgress
+    } from "./js/auth.js";
+
+    import { functions } from "./js/firebase-config.js";
+
+    import {
+      httpsCallable
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 
     const params = new URLSearchParams(location.search);
     const lang = (params.get("lang") || "javascript").toLowerCase();
 
     function safeIndex(value) {
       if (value === null || !/^\d+$/.test(value)) return 0;
+
       const parsed = Number(value);
       return Number.isSafeInteger(parsed) ? parsed : 0;
     }
@@ -588,6 +561,7 @@
     let quizPassed = false;
     let pyodideInstance = null;
     let runCounter = 0;
+    let savingProgress = false;
 
     const lessonKey = `${chapterIndex}:${lessonIndex}`;
     const storageKey = `cq_completed_lessons_${lang}`;
@@ -606,18 +580,50 @@
     function getCompleted() {
       try {
         const value = JSON.parse(localStorage.getItem(storageKey) || "[]");
-        return new Set(Array.isArray(value) ? value.map(String) : []);
+
+        return new Set(
+          Array.isArray(value) ? value.map(String) : []
+        );
       } catch {
         return new Set();
       }
     }
 
+    async function loadCompletedProgress() {
+      try {
+        const remoteProgress = await getLessonProgress(lang);
+        const completed = getCompleted();
+
+        for (const item of remoteProgress) {
+          if (item.completed === true) {
+            completed.add(`${item.chapter}:${item.lesson}`);
+          }
+        }
+
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify([...completed])
+        );
+
+        return completed;
+      } catch (error) {
+        console.error("تعذر تحميل تقدم الدروس:", error);
+        return getCompleted();
+      }
+    }
+
     function updateProgress() {
       const chapters = Array.isArray(curriculum?.chapters)
-        ? curriculum.chapters : [];
+        ? curriculum.chapters
+        : [];
 
-      const total = chapters.reduce((sum, chapter) =>
-        sum + (Array.isArray(chapter.lessons) ? chapter.lessons.length : 0), 0);
+      const total = chapters.reduce((sum, chapter) => {
+        return sum + (
+          Array.isArray(chapter.lessons)
+            ? chapter.lessons.length
+            : 0
+        );
+      }, 0);
 
       const completed = getCompleted();
       const valid = new Set();
@@ -641,11 +647,17 @@
       const currentLessons = currentChapter?.lessons || [];
 
       if (lessonIndex + 1 < currentLessons.length) {
-        return { chapter: chapterIndex, lesson: lessonIndex + 1 };
+        return {
+          chapter: chapterIndex,
+          lesson: lessonIndex + 1
+        };
       }
 
       for (let ci = chapterIndex + 1; ci < chapters.length; ci++) {
-        if (Array.isArray(chapters[ci].lessons) && chapters[ci].lessons.length) {
+        if (
+          Array.isArray(chapters[ci].lessons) &&
+          chapters[ci].lessons.length > 0
+        ) {
           return { chapter: ci, lesson: 0 };
         }
       }
@@ -668,23 +680,30 @@
 
       if (Array.isArray(quiz)) {
         return quiz.find(item =>
-          item && Array.isArray(item.options) &&
+          item &&
+          Array.isArray(item.options) &&
           Number.isInteger(item.correct_index)
         ) || null;
       }
 
-      return quiz && Array.isArray(quiz.options) &&
-        Number.isInteger(quiz.correct_index) ? quiz : null;
+      return quiz &&
+        Array.isArray(quiz.options) &&
+        Number.isInteger(quiz.correct_index)
+        ? quiz
+        : null;
     }
 
     function renderQuiz() {
       const quiz = getQuiz();
       const options = $("quizOptions");
+
       options.replaceChildren();
       selectedOption = null;
 
       if (!quiz) {
-        $("quizQuestion").textContent = "لا يوجد سؤال اختياري صالح لهذا الدرس.";
+        $("quizQuestion").textContent =
+          "لا يوجد سؤال اختياري صالح لهذا الدرس.";
+
         $("checkQuizBtn").disabled = true;
         return;
       }
@@ -694,15 +713,18 @@
 
       quiz.options.forEach((option, index) => {
         const button = document.createElement("button");
+
         button.type = "button";
         button.className = "quiz-option";
         button.textContent = String(option);
 
         button.addEventListener("click", () => {
           selectedOption = index;
-          options.querySelectorAll(".quiz-option").forEach(item =>
-            item.classList.toggle("selected", item === button)
-          );
+
+          options.querySelectorAll(".quiz-option").forEach(item => {
+            item.classList.toggle("selected", item === button);
+          });
+
           $("quizFeedback").textContent = "";
           $("quizFeedback").className = "feedback";
         });
@@ -711,30 +733,71 @@
       });
     }
 
-    function markCompleted() {
+    async function markCompleted() {
+      if (savingProgress) return;
+
+      savingProgress = true;
+
+      const completed = getCompleted();
+      completed.add(lessonKey);
+
       try {
-        const completed = getCompleted();
-        completed.add(lessonKey);
-        localStorage.setItem(storageKey, JSON.stringify([...completed]));
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify([...completed])
+        );
       } catch (error) {
-        console.error("Could not save progress:", error);
+        console.error("تعذر حفظ التقدم المحلي:", error);
       }
 
       quizPassed = true;
       updateProgress();
       updateNavigation();
+
+      const checkButton = $("checkQuizBtn");
+      checkButton.disabled = true;
+
+      try {
+        await saveLessonProgress({
+          language: lang,
+          chapter: chapterIndex,
+          lesson: lessonIndex,
+          completed: true
+        });
+
+        $("quizFeedback").textContent =
+          "إجابة صحيحة! تم حفظ إكمال الدرس في حسابك.";
+
+        $("quizFeedback").className = "feedback success";
+      } catch (error) {
+        console.error("تعذر حفظ التقدم في Firebase:", error);
+
+        $("quizFeedback").textContent =
+                    "إجابة صحيحة! تقدمك محفوظ محليًا، لكن تعذرت مزامنته مع حسابك.";
+
+        $("quizFeedback").className = "feedback error";
+      } finally {
+        checkButton.disabled = false;
+        savingProgress = false;
+      }
     }
 
     function renderLesson() {
       const chapters = Array.isArray(curriculum.chapters)
-        ? curriculum.chapters : [];
+        ? curriculum.chapters
+        : [];
 
       const chapter = chapters[chapterIndex];
-      const lessons = Array.isArray(chapter?.lessons) ? chapter.lessons : [];
+      const lessons = Array.isArray(chapter?.lessons)
+        ? chapter.lessons
+        : [];
+
       lesson = lessons[lessonIndex];
 
       if (!lesson) {
-        showStatus("لم يتم العثور على هذا الدرس. ارجع إلى المنهج واختر درسًا صحيحًا.");
+        showStatus(
+          "لم يتم العثور على هذا الدرس. ارجع إلى المنهج واختر درسًا صحيحًا."
+        );
         return;
       }
 
@@ -743,52 +806,79 @@
 
       $("languageLabel").textContent = `مسار ${config.label}`;
       $("lessonTitle").textContent = lesson.title || "درس برمجي";
+
       $("lessonDescription").textContent =
-        lesson.objective || lesson.description || "تعلّم المفهوم ثم جرّب بنفسك.";
+        lesson.objective ||
+        lesson.description ||
+        "تعلّم المفهوم ثم جرّب بنفسك.";
+
       $("lessonNumber").textContent =
         `الفصل ${chapterIndex + 1} · الدرس ${lessonIndex + 1}`;
 
       $("codyIntro").textContent =
-        lesson.cody_intro || "أهلًا بك! اقرأ الدرس وجرّب كتابة الكود بنفسك.";
+        lesson.cody_intro ||
+        "أهلًا بك! اقرأ الدرس وجرّب كتابة الكود بنفسك.";
+
       $("lessonExplanation").textContent =
-        lesson.description || lesson.objective || "ابدأ بقراءة المثال وتجربته.";
+        lesson.description ||
+        lesson.objective ||
+        "ابدأ بقراءة المثال وتجربته.";
+
       $("lessonTask").textContent =
-        lesson.task || "جرّب تعديل المثال واكتشف كيف يعمل.";
+        lesson.task ||
+        "جرّب تعديل المثال واكتشف كيف يعمل.";
 
       $("editorLanguage").textContent = config.label.toUpperCase();
 
-      const starter = lesson.starter_code ?? lesson.code_example ?? lesson.code ?? "";
-      $("codeEditor").value = typeof starter === "string"
-        ? starter : String(starter);
+      const starter =
+        lesson.starter_code ??
+        lesson.code_example ??
+        lesson.code ??
+        "";
 
-      $("terminalOutput").textContent = "اكتب الكود واضغط على تشغيل.";
+      $("codeEditor").value =
+        typeof starter === "string"
+          ? starter
+          : String(starter);
+
+      $("terminalOutput").textContent =
+        "اكتب الكود واضغط على تشغيل.";
+
       $("hintBox").hidden = true;
       hintIndex = 0;
 
-      $("hintBtn").disabled =
-                !Array.isArray(lesson.hints) || lesson.hints.length === 0;
+      const hints = Array.isArray(lesson.hints)
+        ? lesson.hints
+        : [];
 
+      $("hintBtn").disabled = hints.length === 0;
       $("hintBtn").textContent = "أظهر تلميحًا";
+
       $("quizFeedback").textContent = "";
       $("quizFeedback").className = "feedback";
 
       quizPassed = getCompleted().has(lessonKey);
+
       renderQuiz();
       updateProgress();
       updateNavigation();
 
       const levelsUrl = new URL("levels.html", location.href);
       levelsUrl.searchParams.set("lang", lang);
+
       $("backBtn").href = levelsUrl.href;
       $("backToLevels").href = levelsUrl.href;
     }
 
     $("hintBtn").addEventListener("click", () => {
-      const hints = Array.isArray(lesson?.hints) ? lesson.hints : [];
+      const hints = Array.isArray(lesson?.hints)
+        ? lesson.hints
+        : [];
 
       if (!hints.length) {
         $("hintBox").hidden = false;
-        $("hintBox").textContent = "لا توجد تلميحات لهذا الدرس حتى الآن.";
+        $("hintBox").textContent =
+          "لا توجد تلميحات لهذا الدرس حتى الآن.";
         return;
       }
 
@@ -799,17 +889,22 @@
         `تلميح ${hintIndex + 1} من ${hints.length}: ${hints[hintIndex]}`;
 
       hintIndex++;
-      $("hintBtn").textContent = hintIndex >= hints.length
-        ? "ابدأ التلميحات من جديد"
-        : "أظهر التلميح التالي";
+
+      $("hintBtn").textContent =
+        hintIndex >= hints.length
+          ? "ابدأ التلميحات من جديد"
+          : "أظهر التلميح التالي";
     });
 
-    $("checkQuizBtn").addEventListener("click", () => {
+    $("checkQuizBtn").addEventListener("click", async () => {
       const quiz = getQuiz();
+
       if (!quiz) return;
 
       if (selectedOption === null) {
-        $("quizFeedback").textContent = "اختَر إجابة أولًا ثم تحقّق منها.";
+        $("quizFeedback").textContent =
+          "اختَر إجابة أولًا ثم تحقّق منها.";
+
         $("quizFeedback").className = "feedback error";
         return;
       }
@@ -817,11 +912,14 @@
       if (selectedOption === quiz.correct_index) {
         $("quizFeedback").textContent =
           `إجابة صحيحة! ${quiz.explanation || "أحسنت!"}`;
+
         $("quizFeedback").className = "feedback success";
-        markCompleted();
+
+        await markCompleted();
       } else {
         $("quizFeedback").textContent =
           quiz.fail_msg || "حاول مرة أخرى بعد مراجعة الشرح.";
+
         $("quizFeedback").className = "feedback error";
       }
     });
@@ -832,15 +930,16 @@
       const next = getNextLesson();
 
       if (!next) {
-        const url = new URL("languages.html", location.href);
-        location.href = url.href;
+        location.href = new URL("languages.html", location.href).href;
         return;
       }
 
       const url = new URL("lecture.html", location.href);
+
       url.searchParams.set("lang", lang);
       url.searchParams.set("chapter", String(next.chapter));
       url.searchParams.set("lesson", String(next.lesson));
+
       location.href = url.href;
     });
 
@@ -848,10 +947,15 @@
       if (!lesson) return;
 
       const starter =
-        lesson.starter_code ?? lesson.code_example ?? lesson.code ?? "";
+        lesson.starter_code ??
+        lesson.code_example ??
+        lesson.code ??
+        "";
 
       $("codeEditor").value =
-        typeof starter === "string" ? starter : String(starter);
+        typeof starter === "string"
+          ? starter
+          : String(starter);
 
       showOutput("تمت إعادة الكود إلى المثال الأصلي.");
     });
@@ -862,8 +966,10 @@
 
     async function runJavaScript(code, runId) {
       const frame = document.createElement("iframe");
+
       frame.setAttribute("sandbox", "allow-scripts");
       frame.title = "بيئة تشغيل JavaScript";
+
       frame.style.cssText =
         "position:absolute;width:1px;height:1px;opacity:0;pointer-events:none";
 
@@ -891,10 +997,13 @@
         } else if (event.data.type === "done") {
           finished = true;
           cleanup();
-          $("runCodeBtn").disabled = false;
 
-          if (!output.length) {
-            showOutput("تم تنفيذ الكود دون مخرجات.");
+          if (runId === runCounter) {
+            $("runCodeBtn").disabled = false;
+
+            if (!output.length) {
+              showOutput("تم تنفيذ الكود دون مخرجات.");
+            }
           }
         }
       }
@@ -903,6 +1012,7 @@
 <html><body><script>
 (() => {
   const runId = ${JSON.stringify(runId)};
+
   const send = (type, text = "") =>
     parent.postMessage({
       source: "cody-lesson-runner",
@@ -913,6 +1023,7 @@
 
   const format = value => {
     if (typeof value === "string") return value;
+
     try {
       const result = JSON.stringify(value);
       return result === undefined ? String(value) : result;
@@ -921,12 +1032,19 @@
     }
   };
 
-  console.log = (...args) => send("output", args.map(format).join(" "));
+  console.log = (...args) =>
+    send("output", args.map(format).join(" "));
+
   console.info = console.log;
-  console.warn = (...args) => send("output", args.map(format).join(" "));
-  console.error = (...args) => send("error", args.map(format).join(" "));
+
+  console.warn = (...args) =>
+    send("output", args.map(format).join(" "));
+
+  console.error = (...args) =>
+    send("error", args.map(format).join(" "));
 
   window.onerror = message => send("error", message);
+
   window.onunhandledrejection = event =>
     send("error", event.reason?.message || event.reason || "Promise error");
 
@@ -937,10 +1055,11 @@
     } catch (error) {
       send("error", error?.stack || error?.message || String(error));
     }
+
     send("done");
   })();
 })();
-<\/script></body></html>`;
+<\\/script></body></html>`;
 
       window.addEventListener("message", onMessage);
       document.body.appendChild(frame);
@@ -948,11 +1067,16 @@
 
       timeoutId = setTimeout(() => {
         if (finished) return;
+
         finished = true;
         cleanup();
 
         if (runId === runCounter) {
-          showOutput("انتهت مهلة التشغيل. جرّب كودًا أبسط.", true);
+          showOutput(
+            "انتهت مهلة التشغيل. جرّب كودًا أبسط.",
+            true
+          );
+
           $("runCodeBtn").disabled = false;
         }
       }, 6000);
@@ -966,6 +1090,7 @@
           const module = await import(
             "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs"
           );
+
           pyodideInstance = await module.loadPyodide();
         }
 
@@ -988,7 +1113,9 @@
         await pyodideInstance.runPythonAsync(code);
 
         if (runId === runCounter) {
-          showOutput(output.join("\n") || "تم تنفيذ الكود دون مخرجات.");
+          showOutput(
+            output.join("\n") || "تم تنفيذ الكود دون مخرجات."
+          );
         }
       } catch (error) {
         if (runId === runCounter) {
@@ -996,6 +1123,55 @@
             "تعذر تشغيل Python.\n" +
             (error?.message || String(error)) +
             "\nتأكّد من اتصال الإنترنت وتشغيل الصفحة عبر HTTPS أو خادم محلي.",
+            true
+          );
+        }
+      } finally {
+        if (runId === runCounter) {
+          $("runCodeBtn").disabled = false;
+        }
+      }
+    }
+
+    async function runCpp(code, runId) {
+      try {
+        showOutput("جارٍ إرسال الكود إلى مترجم C++...");
+
+        const runCode = httpsCallable(functions, "runCode");
+
+        const result = await runCode({
+          language: "cpp",
+          code
+        });
+
+        if (runId !== runCounter) return;
+
+        const data = result.data || {};
+
+        const output = [
+          data.stdout,
+          data.compileOutput,
+          data.stderr,
+          data.message
+        ].filter(Boolean).join("\n");
+
+        showOutput(
+          output ||
+          (
+            data.ok
+              ? "تم تشغيل الكود بنجاح دون مخرجات."
+              : `انتهى التشغيل: ${data.status || "حالة غير معروفة"}`
+          ),
+          !data.ok
+        );
+      } catch (error) {
+        console.error("C++ execution error:", error);
+
+        if (runId === runCounter) {
+          showOutput(
+            "تعذر تشغيل C++.\n" +
+            (error?.message ||
+              "تحققي من اتصال الإنترنت وإعدادات Firebase Functions."),
             true
           );
         }
@@ -1015,11 +1191,12 @@
       }
 
       const runId = ++runCounter;
+
       $("runCodeBtn").disabled = true;
       showOutput("جارٍ تشغيل الكود...");
 
       if (lang === "javascript") {
-        runJavaScript(code, runId);
+        await runJavaScript(code, runId);
         return;
       }
 
@@ -1028,33 +1205,41 @@
         return;
       }
 
-      showOutput(
-        "محرر C++ جاهز لكتابة الكود، لكن تشغيله يحتاج إلى مترجم C++ فعلي.\n" +
-        "لم يتم إرسال الكود إلى أي خدمة خارجية.",
-        true
-      );
+      if (lang === "cpp") {
+        await runCpp(code, runId);
+        return;
+      }
 
+      showOutput("لغة البرمجة غير مدعومة.", true);
       $("runCodeBtn").disabled = false;
     });
 
     async function init() {
       if (!config) {
-        showStatus("لغة البرمجة غير مدعومة. ارجع إلى صفحة اختيار اللغة.");
+        showStatus(
+          "لغة البرمجة غير مدعومة. ارجع إلى صفحة اختيار اللغة."
+        );
         return;
       }
 
       try {
         await requireUser();
       } catch {
-        showStatus("يجب تسجيل الدخول إلى حسابك أولًا لاستخدام الدروس.");
+        showStatus(
+          "يجب تسجيل الدخول إلى حسابك أولًا لاستخدام الدروس."
+        );
         return;
       }
 
       try {
-        const response = await fetch(config.file, { cache: "no-store" });
+        const response = await fetch(config.file, {
+          cache: "no-store"
+        });
 
         if (!response.ok) {
-          throw new Error(`تعذر تحميل المنهج (${response.status}).`);
+          throw new Error(
+            `تعذر تحميل المنهج (${response.status}).`
+          );
         }
 
         curriculum = await response.json();
@@ -1063,9 +1248,12 @@
           throw new Error("تنسيق ملف المنهج غير صحيح.");
         }
 
+        await loadCompletedProgress();
+
         renderLesson();
       } catch (error) {
         console.error("CodeQuest lesson loading error:", error);
+
         showStatus(
           `تعذر تحميل الدرس: ${error?.message || String(error)}. ` +
           "تأكّد من وجود ملف المنهج واتصالك بالإنترنت."
