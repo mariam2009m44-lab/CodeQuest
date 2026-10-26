@@ -1,107 +1,707 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070B14">
+    <meta name="description" content="لعبة ترتيب قطع الكود في CodeQuest.">
     <title>بازل الأكواد | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="css/global.css">
+
     <style>
-        body { display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 80px; }
-        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: var(--primary); font-size: 1.3rem; }
-        .game-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
-        .target-zone { width: 100%; min-height: 120px; background: rgba(0,0,0,0.6); border: 2px dashed var(--primary); border-radius: 20px; padding: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
-        .target-zone.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
-        .pieces { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; width: 100%; }
-        .piece { background: #1e1e1e; border: 1px solid #444; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-family: monospace; font-size: 1.1rem; color: var(--primary); box-shadow: 0 4px 0 #111; }
-        .piece.placed { background: #0a0a0a; border-color: var(--success); color: #fff; }
+        :root {
+            color-scheme: dark;
+            --game-bg: #070b14;
+            --game-panel: rgba(17, 25, 42, 0.92);
+            --game-border: rgba(148, 163, 184, 0.2);
+            --game-cyan: #22d3ee;
+            --game-purple: #a78bfa;
+            --game-muted: #a7b2c5;
+            --game-success: #34d399;
+            --game-danger: #fb7185;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px 16px 110px;
+            background:
+                radial-gradient(ellipse at top, rgba(34, 211, 238, 0.1), transparent 48%),
+                var(--game-bg);
+            color: #f8fafc;
+            font-family: "Cairo", sans-serif;
+        }
+
+        button,
+        a {
+            font: inherit;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .page-container {
+            width: min(100%, 760px);
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--game-cyan);
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .game-title {
+            margin: 0;
+            color: var(--game-cyan);
+            font-size: clamp(1.15rem, 4vw, 1.65rem);
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .game-card {
+            padding: clamp(18px, 4vw, 30px);
+            border: 1px solid var(--game-border);
+            border-radius: 24px;
+            background: var(--game-panel);
+            box-shadow: 0 18px 55px rgba(0, 0, 0, 0.2);
+        }
+
+        .intro {
+            margin: 0 0 8px;
+            color: var(--game-muted);
+            line-height: 1.9;
+            text-align: center;
+        }
+
+        .objective {
+            margin: 0 0 24px;
+            color: #f8fafc;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .objective code {
+            color: var(--game-purple);
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        .section-label {
+            display: block;
+            margin: 0 0 10px;
+            color: var(--game-muted);
+            font-size: 0.88rem;
+            font-weight: 800;
+        }
+
+        .target-zone {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 110px;
+            margin-bottom: 24px;
+            padding: 16px;
+            border: 2px dashed rgba(34, 211, 238, 0.45);
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.18);
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .target-zone.correct {
+            border-color: var(--game-success);
+            background: rgba(52, 211, 153, 0.08);
+        }
+
+        .target-zone.incorrect {
+            border-color: var(--game-danger);
+        }
+
+        .empty-message {
+            color: #8491a7;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .pieces {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 55px;
+            margin-bottom: 24px;
+        }
+
+        .piece {
+            max-width: 100%;
+            padding: 11px 14px;
+            border: 1px solid rgba(167, 139, 250, 0.35);
+            border-radius: 12px;
+            background: #151b2b;
+            color: #c4b5fd;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.98rem;
+            overflow-wrap: anywhere;
+            direction: ltr;
+            unicode-bidi: isolate;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s, background 0.15s;
+        }
+
+        .piece:hover:not(:disabled) {
+            transform: translateY(-2px);
+            border-color: var(--game-cyan);
+        }
+
+        .piece:focus-visible,
+        .action-button:focus-visible,
+        .mobile-nav-item:focus-visible {
+            outline: 3px solid var(--game-cyan);
+            outline-offset: 3px;
+        }
+
+        .piece.placed {
+            border-color: rgba(52, 211, 153, 0.45);
+            background: rgba(52, 211, 153, 0.08);
+            color: #d1fae5;
+        }
+
+        .piece:disabled {
+            cursor: default;
+            opacity: 0.8;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .action-button {
+            min-height: 46px;
+            padding: 10px 12px;
+            border: 1px solid var(--game-border);
+            border-radius: 12px;
+            background: #172033;
+            color: #f8fafc;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        .action-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .action-button.primary {
+            border-color: transparent;
+            background: linear-gradient(135deg, #0891b2, #6366f1);
+            color: #fff;
+        }
+
+        .action-button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            min-height: 32px;
+            margin: 18px 0 0;
+            line-height: 1.8;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        .feedback.success {
+            color: var(--game-success);
+        }
+
+        .feedback.error {
+            color: var(--game-danger);
+        }
+
+        .feedback.info {
+            color: var(--game-cyan);
+        }
+
+        .reward {
+            display: none;
+            margin-top: 18px;
+            padding: 16px;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: 16px;
+            background: rgba(52, 211, 153, 0.07);
+            text-align: center;
+        }
+
+        .reward.visible {
+            display: block;
+        }
+
+        .reward h2 {
+            margin: 0 0 8px;
+            color: var(--game-success);
+            font-size: 1.15rem;
+        }
+
+        .reward p {
+            margin: 0;
+            color: #d1fae5;
+            line-height: 1.8;
+        }
+
+        .mobile-bottom-nav {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-around;
+            gap: 4px;
+            padding: 10px 4px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            border-top: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(7, 11, 20, 0.96);
+            backdrop-filter: blur(16px);
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--game-muted);
+            font-size: 0.72rem;
+            text-decoration: none;
+        }
+
+        .mobile-nav-item i {
+            font-size: 1.35rem;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--game-cyan);
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 18px 12px 105px;
+            }
+
+            .header {
+                flex-wrap: wrap;
+            }
+
+            .game-card {
+                border-radius: 18px;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .piece {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+            }
+        }
     </style>
-
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
 </head>
+
 <body>
-    <div class="header"><a href="games.html" style="color:var(--primary); font-weight:bold; text-decoration:none;">← رجوع</a><h1>🧩 بازل الأكواد</h1><div style="width:50px;"></div></div>
-    <div class="game-area">
-        <p style="color:var(--text-muted); text-align:center;">رتب القطع لبناء كود يطبع "Hello World"</p>
-        <div class="target-zone" id="targetZone"></div>
-        <div class="pieces" id="piecesContainer"></div>
-        <button class="btn btn-primary" onclick="checkCode()">✓ تحقق من الحل</button>
-    </div>
-    <div class="bottom-nav"><a href="dashboard.html"><i class="ri-home-4-line"></i> الرئيسية</a><a href="games.html" class="active"><i class="ri-gamepad-line"></i> الألعاب</a><a href="profile.html"><i class="ri-user-3-line"></i> ملفي</a></div>
-    <script>
-        const correctCode = ['console.log', '(', '"Hello World"', ')', ';'];
-        let availablePieces = [...correctCode].sort(() => Math.random() - 0.5);
-        let userBuild = [];
-        function render() {
-            const container = document.getElementById('piecesContainer'); container.innerHTML = '';
-            availablePieces.forEach(p => {
-                if(!userBuild.includes(p)) {
-                    const el = document.createElement('div'); el.className = 'piece'; el.innerText = p;
-                    el.onclick = () => { userBuild.push(p); updateUI(); };
-                    container.appendChild(el);
-                }
-            });
-        }
-        function updateUI() {
-            const target = document.getElementById('targetZone'); target.innerHTML = '';
-            userBuild.forEach(p => {
-                const el = document.createElement('div'); el.className = 'piece placed'; el.innerText = p;
-                el.onclick = () => { userBuild = userBuild.filter(x => x !== p); updateUI(); };
-                target.appendChild(el);
-            });
-            render();
-        }
-        function checkCode() {
-            if (userBuild.join(' ') === correctCode.join(' ')) {
-                document.getElementById('targetZone').classList.add('correct');
-                confetti({ particleCount: 150, spread: 70 });
-                setTimeout(claimReward, 1000);
-            } else { alert("❌ الترتيب غير صحيح، حاول مرة أخرى!"); }
-        }
-        async function claimReward() {
-            const uid = Auth.getUserId();
-            if(uid) { await firebase.firestore().collection('users').doc(uid).update({ points: firebase.firestore.FieldValue.increment(20) }); }
-            alert("🎉 مبروك! +20 نقطة"); window.location.href = 'games.html';
-        }
-        Auth.init((l) => { if(!l) window.location.href = 'login.html'; else render(); });
-    </script>
+    <main class="page-container">
+        <header class="header">
+            <a href="games.html" class="back-link">
+                <i class="ri-arrow-right-line" aria-hidden="true"></i>
+                العودة للألعاب
+            </a>
 
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+            <h1 class="game-title">🧩 بازل الأكواد</h1>
+        </header>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+        <section class="game-card" aria-labelledby="gameInstructions">
+            <p class="intro" id="gameInstructions">
+                رتّب قطع الكود بالترتيب الصحيح، ثم تحقّق من إجابتك.
+            </p>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="languages.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
+            <p class="objective">
+                الهدف: طباعة <code>Hello World</code> باستخدام JavaScript.
+            </p>
+
+            <span class="section-label">الكود الذي تبنيه</span>
+
+            <div
+                class="target-zone"
+                id="targetZone"
+                aria-label="قطع الكود المختارة"
+                aria-live="polite"
+            >
+                <span class="empty-message" id="emptyMessage">
+                    اضغط على القطع بالترتيب المطلوب
+                </span>
+            </div>
+
+            <span class="section-label">القطع المتاحة — اضغط لإضافتها</span>
+
+            <div
+                class="pieces"
+                id="piecesContainer"
+                aria-label="قطع الكود المتاحة"
+            ></div>
+
+            <div class="actions">
+                <button type="button" class="action-button primary" id="checkButton">
+                    <i class="ri-check-line" aria-hidden="true"></i>
+                    تحقق من الحل
+                </button>
+
+                <button type="button" class="action-button" id="undoButton">
+                    <i class="ri-arrow-go-back-line" aria-hidden="true"></i>
+                    تراجع
+                </button>
+
+                <button type="button" class="action-button" id="resetButton">
+                    <i class="ri-refresh-line" aria-hidden="true"></i>
+                    إعادة المحاولة
+                </button>
+            </div>
+
+            <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+
+            <section class="reward" id="rewardPanel" aria-live="polite">
+                <h2>🎉 أحسنت! الحل صحيح</h2>
+                <p id="rewardMessage">
+                    أكملت التحدي بنجاح.
+                </p>
+            </section>
+        </section>
+    </main>
+
+    <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <i class="ri-home-5-line" aria-hidden="true"></i>
+            <span>الرئيسية</span>
+        </a>
+
+        <a href="languages.html" class="mobile-nav-item">
+            <i class="ri-book-open-line" aria-hidden="true"></i>
+            <span>الدروس</span>
+        </a>
+
+        <a href="games.html" class="mobile-nav-item active" aria-current="page">
+            <i class="ri-gamepad-line" aria-hidden="true"></i>
+            <span>الألعاب</span>
+        </a>
+
+        <a href="playground.html" class="mobile-nav-item">
+            <i class="ri-code-box-line" aria-hidden="true"></i>
+            <span>الملعب</span>
+        </a>
+
+        <a href="profile.html" class="mobile-nav-item">
+            <i class="ri-user-smile-line" aria-hidden="true"></i>
+            <span>حسابي</span>
+        </a>
     </nav>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
+
+    <script type="module">
+        import { requireUser } from "./js/auth.js";
+        import { db } from "./js/firebase-config.js";
+        import {
+            doc,
+            updateDoc,
+            increment,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const correctCode = [
+            'console.log',
+            '(',
+            '"Hello World"',
+            ')',
+            ';'
+        ];
+
+        const piecesContainer = document.getElementById("piecesContainer");
+        const targetZone = document.getElementById("targetZone");
+        const feedback = document.getElementById("feedback");
+        const emptyMessage = document.getElementById("emptyMessage");
+        const checkButton = document.getElementById("checkButton");
+        const undoButton = document.getElementById("undoButton");
+        const resetButton = document.getElementById("resetButton");
+        const rewardPanel = document.getElementById("rewardPanel");
+        const rewardMessage = document.getElementById("rewardMessage");
+
+        let currentUser = null;
+        let availablePieces = [];
+        let userBuild = [];
+        let completed = false;
+        let rewardSaving = false;
+
+        function shufflePieces() {
+            const pieces = correctCode.map((value, index) => ({
+                id: index,
+                value
+            }));
+
+            for (let i = pieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+            }
+
+            return pieces;
+        }
+
+        function setFeedback(message, type = "info") {
+            feedback.textContent = message;
+            feedback.className = `feedback ${type}`;
+        }
+
+        function renderPieces() {
+            piecesContainer.replaceChildren();
+
+            availablePieces.forEach(piece => {
+                if (userBuild.some(item => item.id === piece.id)) {
+                    return;
                 }
+
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "piece";
+                button.textContent = piece.value;
+                button.setAttribute("aria-label", `إضافة ${piece.value}`);
+
+                button.addEventListener("click", () => {
+                    if (completed) return;
+
+                    userBuild.push(piece);
+                    targetZone.classList.remove("correct", "incorrect");
+                    rewardPanel.classList.remove("visible");
+                    setFeedback("");
+                    renderAll();
+                });
+
+                piecesContainer.appendChild(button);
             });
-        });
+
+            if (!piecesContainer.children.length && !completed) {
+                const message = document.createElement("span");
+                message.className = "empty-message";
+                message.textContent = "أضفت كل القطع إلى الكود.";
+                piecesContainer.appendChild(message);
+            }
+        }
+
+        function renderTarget() {
+            targetZone.replaceChildren();
+
+            if (userBuild.length === 0) {
+                const message = document.createElement("span");
+                message.className = "empty-message";
+                message.textContent = "اضغط على القطع بالترتيب المطلوب";
+                targetZone.appendChild(message);
+                return;
+            }
+
+            userBuild.forEach((piece, index) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "piece placed";
+                button.textContent = piece.value;
+                button.disabled = completed;
+                button.setAttribute("aria-label", `إزالة ${piece.value}`);
+
+                button.addEventListener("click", () => {
+                    if (completed) return;
+
+                    userBuild.splice(index, 1);
+                    targetZone.classList.remove("correct", "incorrect");
+                    setFeedback("");
+                    renderAll();
+                });
+
+                targetZone.appendChild(button);
+            });
+        }
+
+        function renderAll() {
+            renderTarget();
+            renderPieces();
+
+            undoButton.disabled = userBuild.length === 0 || completed;
+            checkButton.disabled = completed || rewardSaving;
+            resetButton.disabled = rewardSaving;
+        }
+
+        function resetGame() {
+            if (rewardSaving) return;
+
+            availablePieces = shufflePieces();
+            userBuild = [];
+            completed = false;
+
+            targetZone.classList.remove("correct", "incorrect");
+            rewardPanel.classList.remove("visible");
+            rewardMessage.textContent = "أكملت التحدي بنجاح.";
+
+            setFeedback("رتّب القطع لتكوين الكود الصحيح.");
+            renderAll();
+        }
+
+        function undoLastPiece() {
+            if (completed || rewardSaving || userBuild.length === 0) {
+                return;
+            }
+
+            userBuild.pop();
+            targetZone.classList.remove("correct", "incorrect");
+            setFeedback("");
+            renderAll();
+        }
+
+        async function saveReward() {
+            if (!currentUser?.uid || rewardSaving) {
+                return;
+            }
+
+            rewardSaving = true;
+            renderAll();
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    xp: increment(20),
+                    coins: increment(10),
+                    updatedAt: serverTimestamp()
+                });
+
+                rewardMessage.textContent =
+                    "تم تسجيل المكافأة: +20 XP و+10 عملات.";
+
+                setFeedback("تم حفظ المكافأة في حسابك.", "success");
+            } catch (error) {
+                console.error("تعذر حفظ مكافأة اللعبة:", error);
+
+                rewardMessage.textContent =
+                    "الحل صحيح، لكن تعذر حفظ المكافأة في الحساب. تقدّمك في هذه الجولة غير محفوظ.";
+
+                setFeedback(
+                    "تعذر حفظ المكافأة. تحقّق من اتصال الإنترنت وصلاحيات قاعدة البيانات.",
+                    "error"
+                );
+            } finally {
+                rewardSaving = false;
+                checkButton.disabled = true;
+                undoButton.disabled = true;
+                resetButton.disabled = false;
+            }
+        }
+
+        async function checkSolution() {
+            if (completed || rewardSaving) return;
+
+            if (userBuild.length !== correctCode.length) {
+                targetZone.classList.add("incorrect");
+                setFeedback("أكمل كل القطع أولًا، ثم تحقّق من الحل.", "error");
+                return;
+            }
+
+            const isCorrect = userBuild.every(
+                (piece, index) => piece.value === correctCode[index]
+            );
+
+            if (!isCorrect) {
+                targetZone.classList.remove("correct");
+                targetZone.classList.add("incorrect");
+                setFeedback(
+                    "الترتيب غير صحيح. اضغط على قطعة في منطقة الكود لإزالتها، ثم حاول مرة أخرى.",
+                    "error"
+                );
+                return;
+            }
+
+            completed = true;
+            targetZone.classList.remove("incorrect");
+            targetZone.classList.add("correct");
+            rewardPanel.classList.add("visible");
+
+            setFeedback("إجابة صحيحة! جارٍ حفظ المكافأة...", "success");
+            renderAll();
+
+            await saveReward();
+
+            if (typeof window.confetti === "function") {
+                window.confetti({
+                    particleCount: 100,
+                    spread: 65,
+                    origin: { y: 0.7 }
+                });
+            }
+        }
+
+        checkButton.addEventListener("click", checkSolution);
+        undoButton.addEventListener("click", undoLastPiece);
+        resetButton.addEventListener("click", resetGame);
+
+        try {
+            currentUser = await requireUser();
+
+            if (!currentUser?.uid) {
+                throw new Error("Authentication required");
+            }
+
+            resetGame();
+        } catch (error) {
+            console.error("تعذر تهيئة اللعبة:", error);
+
+            setFeedback(
+                "تعذر التحقق من تسجيل الدخول. ارجع إلى صفحة تسجيل الدخول وحاول مرة أخرى.",
+                "error"
+            );
+
+            checkButton.disabled = true;
+            undoButton.disabled = true;
+            resetButton.disabled = true;
+        }
     </script>
-<script type="module" src="js/route-guard.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script type="module" src="js/route-guard.js"></script>
 </body>
 </html>
