@@ -9,9 +9,7 @@ const form =
   document.getElementById("loginForm") ||
   document.getElementById("signupForm");
 
-if (!form) {
-  console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
-} else {
+if (form) {
   const isSignup = form.id === "signupForm";
   const submitButton = form.querySelector('[type="submit"]');
   const emailInput = document.getElementById("email");
@@ -27,12 +25,29 @@ if (!form) {
     "playground.html",
     "profile.html",
     "games.html",
+    "game-quiz.html",
+    "game-memory.html",
+    "game-build.html",
+    "game-bug.html",
+    "game-match.html",
+    "game-speed.html",
     "projects.html",
-    "achievements.html",
+    "avatar.html",
     "progress.html",
     "shop.html",
+    "store.html",
     "leaderboard.html",
-    "settings.html"
+    "settings.html",
+    "python-welcome.html",
+    "python-chapters.html",
+    "python-lesson.html",
+    "python-exam.html",
+    "python-projects.html",
+    "java-chapters.html",
+    "java-lessons.html",
+    "lang-intro.html",
+    "vr-lab.html",
+    "studio.html"
   ]);
 
   function getNextPage() {
@@ -48,9 +63,7 @@ if (!form) {
       ) {
         return `${page}${url.search}${url.hash}`;
       }
-    } catch {
-      // استخدام صفحة لوحة التحكم عند وجود رابط غير صالح.
-    }
+    } catch {}
 
     return "dashboard.html";
   }
@@ -76,9 +89,11 @@ if (!form) {
   }
 
   const message = document.createElement("p");
+
+  message.className = "auth-message";
   message.setAttribute("role", "status");
   message.setAttribute("aria-live", "polite");
-  message.className = "auth-message";
+
   form.insertAdjacentElement("afterend", message);
 
   function displayMessage(text, isError = false) {
@@ -103,7 +118,7 @@ if (!form) {
     }
 
     const originalText = submitButton?.textContent || "";
-    
+
     if (submitButton) {
       submitButton.disabled = true;
       submitButton.textContent = "جارٍ التحقق...";
@@ -159,6 +174,7 @@ if (!form) {
       }
 
       const originalText = resetButton.textContent;
+
       resetButton.disabled = true;
       resetButton.textContent = "جارٍ الإرسال...";
 
@@ -176,4 +192,6 @@ if (!form) {
       }
     });
   }
+} else {
+  console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
 }
