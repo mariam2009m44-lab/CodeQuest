@@ -1,3 +1,4 @@
+
 import {
   loginUser,
   registerUser,
@@ -9,13 +10,25 @@ const form =
   document.getElementById("loginForm") ||
   document.getElementById("signupForm");
 
-if (form) {
+if (!form) {
+  console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
+} else {
   const isSignup = form.id === "signupForm";
   const submitButton = form.querySelector('[type="submit"]');
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const nameInput = document.getElementById("name");
   const params = new URLSearchParams(window.location.search);
+
+  const sibling = document.querySelector(
+    isSignup ? 'a[href="login.html"]' : 'a[href="signup.html"]'
+  );
+
+  if (sibling && params.has("next")) {
+    const target = new URL(sibling.href);
+    target.searchParams.set("next", params.get("next"));
+    sibling.href = target.href;
+  }
 
   const allowedPages = new Set([
     "dashboard.html",
@@ -47,7 +60,9 @@ if (form) {
     "java-lessons.html",
     "lang-intro.html",
     "vr-lab.html",
-    "studio.html"
+    "studio.html",
+    "parent.html",
+    "achievements.html"
   ]);
 
   function getNextPage() {
@@ -63,13 +78,15 @@ if (form) {
       ) {
         return `${page}${url.search}${url.hash}`;
       }
-    } catch {}
+    } catch (error) {
+      console.warn("Invalid redirect destination:", error);
+    }
 
     return "dashboard.html";
   }
 
   if (nameInput) {
-    nameInput.autocomplete = "name";
+    nameInput.autocomplete = "nickname";
     nameInput.maxLength = 50;
     nameInput.required = true;
   }
@@ -84,12 +101,10 @@ if (form) {
     passwordInput.autocomplete = isSignup
       ? "new-password"
       : "current-password";
-
     passwordInput.required = true;
   }
 
   const message = document.createElement("p");
-
   message.className = "auth-message";
   message.setAttribute("role", "status");
   message.setAttribute("aria-live", "polite");
@@ -192,6 +207,4 @@ if (form) {
       }
     });
   }
-} else {
-  console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
 }
