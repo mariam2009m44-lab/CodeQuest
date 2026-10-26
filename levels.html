@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -541,8 +540,10 @@
       }
     }
   </style>
+<link rel="stylesheet" href="css/pro-accessibility.css">
+<link rel="manifest" href="manifest.json">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 </head>
-
 <body>
   <main class="container">
 
@@ -857,7 +858,7 @@
 
         meta.append(lessonPill, completedPill);
 
-                const progress = document.createElement("div");
+        const progress = document.createElement("div");
         progress.className = "chapter-progress";
         progress.setAttribute("role", "progressbar");
         progress.setAttribute("aria-label", `تقدم الفصل ${chapterIndex + 1}`);
@@ -902,7 +903,6 @@
         list.appendChild(card);
       });
     }
-
     function showError(title, message, details = "") {
       $("#errorTitle").textContent = title;
       $("#errorMessage").textContent = message;
@@ -918,7 +918,7 @@
       if (!language) {
         showError(
           "لغة البرمجة غير معروفة",
-          "اختارِي لغة صحيحة من صفحة لغات البرمجة.",
+          "اختاري لغة صحيحة من صفحة لغات البرمجة.",
           `القيمة المستلمة: ${requestedLanguage}`
         );
         return;
@@ -991,7 +991,7 @@
 
         showError(
           "تعذر تحميل المنهج",
-          "تأكدي إن ملف المنهج موجود في مجلد json وإن الصفحة تعمل من خلال موقع أو خادم محلي.",
+          "تأكد من أن ملف المنهج موجود في مجلد json وأن الصفحة تعمل من خلال الموقع أو خادم محلي.",
           error instanceof Error
             ? error.message
             : "حدث خطأ غير معروف."
@@ -1004,8 +1004,8 @@
 
       /*
        * لا نعرض أي درس على أنه مكتمل من غير مصدر حقيقي.
-       * إذا كانت getLessonProgress في auth.js تُرجع بيانات التقدم،
-       * يمكن قراءة النتيجة هنا بعد التأكد من شكل البيانات الفعلي.
+       * يجب أن تكون صيغة البيانات التي تعيدها getLessonProgress
+       * متوافقة مع مفاتيح الفصول والدروس المستخدمة هنا.
        */
       try {
         if (typeof getLessonProgress !== "function") {
@@ -1044,6 +1044,7 @@
       await loadCurriculum();
     } catch (error) {
       console.error("تعذر التحقق من تسجيل الدخول:", error);
+
       showError(
         "تعذر التحقق من الحساب",
         "سجّل الدخول أولًا، ثم افتح المسار التعليمي مرة أخرى.",
@@ -1051,5 +1052,7 @@
       );
     }
   </script>
+
+  <script src="js/pro-accessibility.js" defer></script>
 </body>
 </html>
