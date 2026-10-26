@@ -82,28 +82,19 @@ export function authError(error) {
     "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
     "auth/missing-email": "اكتبي البريد الإلكتروني.",
     "auth/missing-password": "اكتبي كلمة المرور.",
-    "auth/invalid-credential":
-      "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    "auth/invalid-credential": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
     "auth/user-not-found": "لا يوجد حساب بهذه البيانات.",
     "auth/wrong-password": "كلمة المرور غير صحيحة.",
-    "auth/email-already-in-use":
-      "البريد الإلكتروني مسجل بالفعل.",
+    "auth/email-already-in-use": "البريد الإلكتروني مسجل بالفعل.",
     "auth/weak-password": "اختاري كلمة مرور أقوى.",
-    "auth/too-many-requests":
-      "محاولات كثيرة. حاولي مرة أخرى لاحقًا.",
-    "auth/network-request-failed":
-      "تحققي من اتصال الإنترنت.",
-    "auth/operation-not-allowed":
-      "طريقة تسجيل الحساب غير مفعّلة في Firebase.",
+    "auth/too-many-requests": "محاولات كثيرة. حاولي مرة أخرى لاحقًا.",
+    "auth/network-request-failed": "تحققي من اتصال الإنترنت.",
+    "auth/operation-not-allowed": "طريقة تسجيل الحساب غير مفعّلة في Firebase.",
     "auth/user-disabled": "هذا الحساب غير مفعّل.",
-    "auth/invalid-action-code":
-      "الرابط غير صالح أو انتهت صلاحيته.",
-    "auth/expired-action-code":
-      "انتهت صلاحية الرابط. اطلبي رابطًا جديدًا.",
-    "permission-denied":
-      "ليست لديك صلاحية الوصول إلى هذه البيانات.",
-    "unavailable":
-      "الخدمة غير متاحة حاليًا."
+    "auth/invalid-action-code": "الرابط غير صالح أو انتهت صلاحيته.",
+    "auth/expired-action-code": "انتهت صلاحية الرابط. اطلبي رابطًا جديدًا.",
+    "permission-denied": "ليست لديك صلاحية الوصول إلى هذه البيانات.",
+    "unavailable": "الخدمة غير متاحة حاليًا."
   };
 
   return messages[error?.code] ||
@@ -119,10 +110,6 @@ function normalizeError(error) {
   return new Error(authError(error));
 }
 
-/**
- * إنشاء ملف المستخدم في Firestore عند الحاجة فقط.
- * لا يعيد ضبط بيانات المستخدم الموجودة بالفعل.
- */
 export async function ensureUserProfile(user) {
   if (!user?.uid) {
     throw new Error("تعذر تحديد الحساب الحالي.");
@@ -163,14 +150,15 @@ export async function ensureUserProfile(user) {
     updatedAt: serverTimestamp()
   };
 
-  await setDoc(profileRef, profile);
+  try {
+    await setDoc(profileRef, profile);
+  } catch (error) {
+    throw normalizeError(error);
+  }
 
   return profile;
 }
 
-/**
- * إنشاء حساب جديد.
- */
 export async function registerUser(name, email, password) {
   const cleanName = normalizeName(name);
   const cleanEmail = normalizeEmail(email);
@@ -198,9 +186,6 @@ export async function registerUser(name, email, password) {
   }
 }
 
-/**
- * تسجيل الدخول.
- */
 export async function loginUser(email, password) {
   const cleanEmail = normalizeEmail(email);
 
@@ -222,9 +207,6 @@ export async function loginUser(email, password) {
   }
 }
 
-/**
- * إرسال رابط إعادة تعيين كلمة المرور.
- */
 export async function resetPassword(email) {
   const cleanEmail = normalizeEmail(email);
 
@@ -237,9 +219,6 @@ export async function resetPassword(email) {
   }
 }
 
-/**
- * تسجيل الخروج.
- */
 export async function logoutUser() {
   try {
     await signOut(auth);
@@ -248,65 +227,54 @@ export async function logoutUser() {
   }
 }
 
-/**
- * انتظار معرفة حالة تسجيل الدخول.
- */
 export function requireUser() {
   return new Promise((resolve, reject) => {
-    let unsubscribe = () => {};
+    let unsubscribe = null;
     let settled = false;
+    let cleanupPending = false;
 
-    const finish = callback => value => {
+    function finish(callback, value) {
       if (settled) return;
 
       settled = true;
-      unsubscribe();
-      callback(value);
-    };
 
-    const resolveOnce = finish(resolve);
-    const rejectOnce = finish(reject);
+      if (unsubscribe) {
+        unsubscribe();
+      } else {
+        cleanupPending = true;
+      }
+
+      callback(value);
+    }
 
     unsubscribe = onAuthStateChanged(
       auth,
       user => {
         if (user) {
-          resolveOnce(user);
+          finish(resolve, user);
         } else {
-          rejectOnce(
-            new Error("يجب تسجيل الدخول أولًا.")
-          );
+          finish(reject, new Error("يجب تسجيل الدخول أولًا."));
         }
       },
-      error => rejectOnce(normalizeError(error))
+      error => {
+        finish(reject, normalizeError(error));
+      }
     );
+
+    if (cleanupPending) {
+      unsubscribe();
+    }
   });
 }
 
-/**
- * الحصول على المستخدم الحالي.
- */
 export function getCurrentUser() {
   return auth.currentUser;
 }
 
-/**
- * إنشاء معرّف ثابت للدرس.
- */
 function getLessonDocumentId(language, chapter, lesson) {
   return `${language}_${chapter}_${lesson}`;
 }
 
-/**
- * حفظ إكمال درس للمستخدم الحالي في Firestore.
- *
- * المسار:
- * users/{uid}/lessonProgress/{language_chapter_lesson}
- *
- * ملاحظة:
- * يجب نشر قواعد Firestore المناسبة لهذا المسار
- * قبل الاعتماد على الحفظ السحابي.
- */
 export async function saveLessonProgress({
   language,
   chapter,
@@ -365,10 +333,6 @@ export async function saveLessonProgress({
   }
 }
 
-/**
- * قراءة تقدم الدروس المحفوظة للمستخدم الحالي
- * في مسار لغة واحدة.
- */
 export async function getLessonProgress(language) {
   const user = auth.currentUser;
 
