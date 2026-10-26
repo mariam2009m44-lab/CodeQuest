@@ -19,17 +19,15 @@ function redirectToLogin() {
 
   const loginUrl = new URL("login.html", window.location.href);
 
-  // الاحتفاظ بالصفحة المطلوبة ومعاملاتها، دون استخدام عنوان خارجي.
-  const next = `${currentPage}${window.location.search}${window.location.hash}`;
+  const next =
+    `${currentPage}${window.location.search}${window.location.hash}`;
 
   loginUrl.searchParams.set("next", next);
   window.location.replace(loginUrl.href);
 }
 
 async function protectPage() {
-  if (PUBLIC_PAGES.has(currentPage)) {
-    return;
-  }
+  if (PUBLIC_PAGES.has(currentPage)) return;
 
   try {
     const user = await requireUser();
@@ -41,7 +39,11 @@ async function protectPage() {
 
     document.documentElement.dataset.authenticated = "true";
   } catch (error) {
-    console.warn("Page authentication required:", error?.message);
+    console.warn(
+      "Page authentication required:",
+      error?.message
+    );
+
     redirectToLogin();
   }
 }
