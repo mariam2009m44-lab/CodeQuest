@@ -1,0 +1,101 @@
+/* CodeQuest - Accessibility Improvements */
+
+(() => {
+  "use strict";
+
+  // تجنب تشغيل السكربت أكثر من مرة.
+  if (window.__codeQuestAccessibilityLoaded) {
+    return;
+  }
+
+  window.__codeQuestAccessibilityLoaded = true;
+
+  // إضافة وصف لعناصر الأيقونات التي لا تحتوي على وصف.
+  document.querySelectorAll("button, a").forEach((element) => {
+    const text = (element.textContent || "").trim();
+    const label = element.getAttribute("aria-label");
+    const title = element.getAttribute("title");
+
+    if (!text && !label && title) {
+      element.setAttribute("aria-label", title);
+    }
+  });
+
+  // تحسين سلوك روابط الانتقال داخل الصفحة.
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const targetId = link.getAttribute("href");
+
+      if (!targetId || targetId === "#") {
+        return;
+      }
+
+      let target;
+
+      try {
+        target = document.querySelector(targetId);
+      } catch {
+        return;
+      }
+
+      if (!target) {
+        return;
+      }
+
+      event.preventDefault();
+
+      target.scrollIntoView({
+        behavior: window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches
+          ? "auto"
+          : "smooth",
+        block: "start"
+      });
+
+      // جعل الهدف قابلًا للتركيز عند الحاجة.
+      if (!target.hasAttribute("tabindex")) {
+        target.setAttribute("tabindex", "-1");
+      }
+
+      target.focus({ preventScroll: true });
+    });
+  });
+
+  // الإعلان عن رسائل الحالة المهمة لقارئات الشاشة.
+  document.querySelectorAll(
+    '[role="status"], [role="alert"]'
+  ).forEach((element) => {
+    if (!element.hasAttribute("aria-live")) {
+      element.setAttribute(
+        "aria-live",
+        element.getAttribute("role") === "alert"
+          ? "assertive"
+          : "polite"
+      );
+    }
+  });
+
+  // دعم المستخدم الذي يفضّل تقليل الحركة.
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+
+  function updateMotionPreference() {
+    document.documentElement.classList.toggle(
+      "reduce-motion",
+      reducedMotion.matches
+    );
+  }
+
+  updateMotionPreference();
+
+  if (typeof reducedMotion.addEventListener === "function") {
+    reducedMotion.addEventListener(
+      "change",
+      updateMotionPreference
+    );
+  } else if (typeof reducedMotion.addListener === "function") {
+    reducedMotion.addListener(updateMotionPreference);
+  }
+})();
