@@ -1,3 +1,4 @@
+
 import { requireUser } from "./auth.js";
 
 const PUBLIC_PAGES = new Set([
