@@ -1,0 +1,63 @@
+/* =========================================
+   CodeQuest — Accessibility Styles
+   File: css/pro-accessibility.css
+   ========================================= */
+
+/* وضوح التركيز عند استخدام لوحة المفاتيح */
+:focus-visible {
+  outline: 3px solid #60a5fa !important;
+  outline-offset: 4px;
+}
+
+/* تحسين تباين النص المحدد */
+::selection {
+  color: #070b14;
+  background: #facc15;
+}
+
+/* دعم المستخدمين الذين يفضلون تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* إظهار حالة الأزرار غير المتاحة */
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* منع الصور والوسائط من تجاوز عرض الشاشة */
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+/* الحفاظ على قابلية قراءة النص عند تكبير الشاشة */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* عدم إخفاء حدود التركيز في العناصر التفاعلية */
+a,
+button,
+input,
+select,
+textarea {
+  scroll-margin-block: 16px;
+}
+
+/* تحسين ظهور رسائل التنبيه */
+[role="alert"],
+[role="status"] {
+  overflow-wrap: anywhere;
+}
