@@ -1,5 +1,3 @@
-
-
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -121,7 +119,7 @@ function normalizeError(error) {
 }
 
 /**
- * إنشاء الملف الشخصي للمستخدم إذا لم يكن موجودًا.
+ * إنشاء الملف الشخصي إذا لم يكن موجودًا.
  */
 export async function ensureUserProfile(user) {
   if (!user?.uid) {
@@ -238,7 +236,6 @@ export async function loginUser(email, password) {
  */
 export async function resetPassword(email) {
   const cleanEmail = normalizeEmail(email);
-
   validateEmail(cleanEmail);
 
   try {
@@ -249,22 +246,24 @@ export async function resetPassword(email) {
 }
 
 /**
- * تسجيل الخروج ومسح بيانات الجلسة المؤقتة.
+ * تسجيل الخروج ومسح مسودات الجلسة.
  */
 export async function logoutUser() {
   try {
     await signOut(auth);
 
-    for (const key of [
+    const sessionKeys = [
       "currentProjectId",
       "currentProjectName",
       "playgroundCode",
       "playgroundLang"
-    ]) {
+    ];
+
+    for (const key of sessionKeys) {
       try {
         sessionStorage.removeItem(key);
       } catch {
-        // تجاهل تعذر الوصول إلى تخزين الجلسة.
+        // تجاهل تعذر الوصول إلى sessionStorage.
       }
     }
   } catch (error) {
@@ -273,7 +272,7 @@ export async function logoutUser() {
 }
 
 /**
- * انتظار التأكد من حالة تسجيل الدخول.
+ * انتظار تأكيد حالة تسجيل الدخول.
  */
 export function requireUser() {
   return new Promise((resolve, reject) => {
@@ -297,7 +296,7 @@ export function requireUser() {
 
     unsubscribe = onAuthStateChanged(
       auth,
-      user => {
+      (user) => {
         if (user) {
           finish(resolve, user);
         } else {
@@ -307,7 +306,7 @@ export function requireUser() {
           );
         }
       },
-      error => {
+      (error) => {
         finish(reject, normalizeError(error));
       }
     );
@@ -319,7 +318,7 @@ export function requireUser() {
 }
 
 /**
- * إرجاع المستخدم الحالي، إن كان متاحًا.
+ * إرجاع المستخدم الحالي إن كان متاحًا.
  */
 export function getCurrentUser() {
   return auth.currentUser;
@@ -330,7 +329,8 @@ function getLessonDocumentId(language, chapter, lesson) {
 }
 
 /**
- * حفظ تقدم درس للمستخدم الحالي.
+ * حفظ حالة إكمال الدرس في:
+ * users/{uid}/lessonProgress/{language_chapter_lesson}
  */
 export async function saveLessonProgress({
   language,
@@ -338,17 +338,18 @@ export async function saveLessonProgress({
   lesson,
   completed = true
 }) {
-  const user = auth.currentUser;
-
-  if (!user?.uid) {
-    throw new Error("سجّلي الدخول أولًا لحفظ تقدمك.");
-  }
-
   validateLanguage(language);
   validateLessonPosition(chapter, lesson);
 
   if (typeof completed !== "boolean") {
     throw new Error("حالة إكمال الدرس غير صحيحة.");
+  }
+
+  // انتظري تأكيد حالة الحساب بدل الاعتماد على currentUser وحده.
+  const user = await requireUser();
+
+  if (!user?.uid) {
+    throw new Error("سجّلي الدخول أولًا لحفظ تقدمك.");
   }
 
   try {
@@ -394,13 +395,14 @@ export async function saveLessonProgress({
  * جلب الدروس المكتملة للغة محددة.
  */
 export async function getLessonProgress(language) {
-  const user = auth.currentUser;
+  validateLanguage(language);
+
+  // انتظري تأكيد حالة الحساب قبل قراءة سجلات التقدم.
+  const user = await requireUser();
 
   if (!user?.uid) {
     throw new Error("سجّلي الدخول أولًا لعرض تقدمك.");
   }
-
-  validateLanguage(language);
 
   try {
     const progressCollection = collection(
@@ -413,12 +415,12 @@ export async function getLessonProgress(language) {
     const snapshot = await getDocs(progressCollection);
 
     return snapshot.docs
-      .map(item => ({
+      .map((item) => ({
         id: item.id,
         ...item.data()
       }))
-      .filter(item => item.language === language)
-      .filter(item =>
+      .filter((item) => item.language === language)
+      .filter((item) =>
         Number.isSafeInteger(item.chapter) &&
         item.chapter >= 0 &&
         Number.isSafeInteger(item.lesson) &&
