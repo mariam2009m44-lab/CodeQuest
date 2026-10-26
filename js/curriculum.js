@@ -1,11 +1,40 @@
 
 const CURRICULUM_FILES = Object.freeze({
-  python: "json/python_curriculum.json",
-  javascript: "json/js_curriculum.json",
-  cpp: "json/cpp_curriculum.json"
+  python: "./json/python_curriculum.json",
+  javascript: "./json/js_curriculum.json",
+  cpp: "./json/cpp_curriculum.json"
 });
 
 export const curriculum = Object.create(null);
+
+function validateQuiz(quiz, location) {
+  if (quiz == null) return null;
+
+  const questions = Array.isArray(quiz) ? quiz : [quiz];
+
+  for (const [index, question] of questions.entries()) {
+    const label = questions.length > 1
+      ? `${location}، السؤال ${index + 1}`
+      : location;
+
+    if (
+      !question ||
+      typeof question !== "object" ||
+      typeof question.question !== "string" ||
+      !question.question.trim() ||
+      !Array.isArray(question.options) ||
+      question.options.length < 2 ||
+      !question.options.every(option => typeof option === "string") ||
+      !Number.isInteger(question.correct_index) ||
+      question.correct_index < 0 ||
+      question.correct_index >= question.options.length
+    ) {
+      throw new Error(`بيانات الاختبار غير صحيحة: ${label}`);
+    }
+  }
+
+  return quiz;
+}
 
 function validateLesson(lesson, language, chapterIndex, lessonIndex) {
   const location =
@@ -20,37 +49,14 @@ function validateLesson(lesson, language, chapterIndex, lessonIndex) {
   }
 
   if (
-    lesson.quiz !== undefined &&
-    lesson.quiz !== null &&
-    typeof lesson.quiz !== "object"
-  ) {
-    throw new Error(`بيانات الاختبار غير صحيحة: ${location}`);
-  }
-
-  if (lesson.quiz) {
-    const { question, options, correct_index } = lesson.quiz;
-
-    if (
-      typeof question !== "string" ||
-      !question.trim() ||
-      !Array.isArray(options) ||
-      options.length === 0 ||
-      !options.every(option => typeof option === "string") ||
-      !Number.isInteger(correct_index) ||
-      correct_index < 0 ||
-      correct_index >= options.length
-    ) {
-      throw new Error(`سؤال الاختبار أو إجابته غير صحيح: ${location}`);
-    }
-  }
-
-  if (
     lesson.hints !== undefined &&
     (!Array.isArray(lesson.hints) ||
       !lesson.hints.every(hint => typeof hint === "string"))
   ) {
     throw new Error(`التلميحات غير صحيحة: ${location}`);
   }
+
+  const quiz = validateQuiz(lesson.quiz, location);
 
   return {
     ...lesson,
@@ -60,25 +66,30 @@ function validateLesson(lesson, language, chapterIndex, lessonIndex) {
     task: lesson.task || "",
     hints: lesson.hints || [],
     code_example: lesson.code_example ?? lesson.code ?? "",
-    desc: lesson.objective || lesson.description || lesson.cody_intro || "",
-    description: lesson.description || lesson.objective || "",
-    quiz: lesson.quiz || null
+    desc:
+      lesson.objective ||
+      lesson.description ||
+      lesson.cody_intro ||
+      "",
+    description:
+      lesson.description ||
+      lesson.objective ||
+      "",
+    quiz
   };
 }
 
 function validateCurriculum(data, expectedLanguage) {
   if (!data || typeof data !== "object" || Array.isArray(data)) {
-    throw new Error(`ملف منهج ${expectedLanguage} لا يحتوي على بيانات صحيحة.`);
+    throw new Error(`بيانات منهج ${expectedLanguage} غير صحيحة.`);
   }
 
   if (data.language && data.language !== expectedLanguage) {
-    throw new Error(
-      `لغة المنهج داخل الملف لا تطابق المسار: ${expectedLanguage}.`
-    );
+    throw new Error(`لغة المنهج لا تطابق الملف: ${expectedLanguage}.`);
   }
 
   if (!Array.isArray(data.chapters) || data.chapters.length === 0) {
-    throw new Error(`ملف منهج ${expectedLanguage} لا يحتوي على فصول.`);
+    throw new Error(`منهج ${expectedLanguage} لا يحتوي على فصول.`);
   }
 
   const chapters = data.chapters.map((chapter, chapterIndex) => {
@@ -89,7 +100,7 @@ function validateCurriculum(data, expectedLanguage) {
       chapter.lessons.length === 0
     ) {
       throw new Error(
-        `الفصل رقم ${chapterIndex + 1} في منهج ${expectedLanguage} غير صحيح أو فارغ.`
+        `الفصل ${chapterIndex + 1} في منهج ${expectedLanguage} غير صحيح أو فارغ.`
       );
     }
 
@@ -136,7 +147,6 @@ async function loadCurriculum(language, file) {
   return validateCurriculum(data, language);
 }
 
-// تحميل المسارات الثلاثة والتحقق منها قبل استخدام المنهج.
 const results = await Promise.allSettled(
   Object.entries(CURRICULUM_FILES).map(async ([language, file]) => ({
     language,
@@ -153,15 +163,18 @@ for (let index = 0; index < results.length; index++) {
     curriculum[result.value.language] = result.value.data.chapters;
   } else {
     const language = Object.keys(CURRICULUM_FILES)[index];
-    errors.push(`${language}: ${result.reason?.message || "خطأ غير معروف"}`);
-    console.error(`Curriculum loading failed (${language}):`, result.reason);
+
+    errors.push(
+      `${language}: ${result.reason?.message || "خطأ غير معروف"}`
+    );
+
+    console.error(`فشل تحميل منهج ${language}:`, result.reason);
   }
 }
 
-// لا نخفي فشل تحميل أي مسار؛ نعرض خطأ واضحًا بدل بيانات ناقصة.
 if (errors.length > 0) {
   throw new Error(
-    "تعذر تحميل جميع ملفات المنهج المطلوبة:\n" + errors.join("\n")
+    "تعذر تحميل ملفات المناهج:\n" + errors.join("\n")
   );
 }
 
@@ -183,7 +196,7 @@ export function readSelection(search = location.search) {
     const number = Number(value);
 
     if (!Number.isSafeInteger(number)) {
-      throw new Error("رقم الفصل أو الدرس أكبر من القيمة المسموح بها.");
+      throw new Error("رقم الفصل أو الدرس غير صالح.");
     }
 
     return number;
@@ -198,8 +211,8 @@ export function readSelection(search = location.search) {
 
 export function getLesson(selection) {
   const chapters = curriculum[selection?.language];
-  const chapter = chapters?.[selection.chapterIndex];
-  const lesson = chapter?.lessons?.[selection.lessonIndex];
+  const chapter = chapters?.[selection?.chapterIndex];
+  const lesson = chapter?.lessons?.[selection?.lessonIndex];
 
   if (!lesson) {
     throw new Error("الدرس المطلوب غير موجود في المنهج.");
@@ -244,7 +257,6 @@ export function lessonUrl(selection) {
     throw new Error("مسار البرمجة المطلوب غير موجود.");
   }
 
-  // التحقق من أن الفصل والدرس موجودان قبل إنشاء الرابط.
   getLesson(selection);
 
   const params = new URLSearchParams({
