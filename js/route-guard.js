@@ -4,7 +4,11 @@ import { requireUser } from "./auth.js";
 const PUBLIC_PAGES = new Set([
   "index.html",
   "login.html",
-  "signup.html"
+  "signup.html",
+  "demo.html",
+  "privacy.html",
+  "parents-guide.html",
+  "offline.html"
 ]);
 
 const currentPage =
