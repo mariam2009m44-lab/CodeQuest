@@ -1,84 +1,386 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeQuest VR Lab</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: 'Cairo', sans-serif; }
-        .vr-ui { position: absolute; top: 20px; right: 20px; z-index: 10; }
-        .vr-btn { background: #00E5FF; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; font-family: 'Cairo'; }
-    </style>
-<link rel="stylesheet" href="css/global.css">
-<link rel="stylesheet" href="global.css">
+    <meta name="theme-color" content="#050914">
+    <meta name="description" content="استكشف معمل Cody للواقع الافتراضي وتعرّف على عالم البرمجة بطريقة تفاعلية.">
+    <title>معمل الواقع الافتراضي | CodeQuest</title>
 
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/global.css">
+
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+            background: #050914;
+            color: #fff;
+            font-family: "Cairo", sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .vr-ui {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 20;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .vr-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 10px 18px;
+            border: 1px solid rgba(0, 229, 255, 0.45);
+            border-radius: 12px;
+            background: rgba(5, 9, 20, 0.88);
+            color: #00e5ff;
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+        }
+
+        .vr-btn:hover {
+            background: #00e5ff;
+            color: #050914;
+        }
+
+        .vr-title {
+            position: fixed;
+            top: 82px;
+            right: 16px;
+            z-index: 10;
+            max-width: min(420px, calc(100vw - 32px));
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            background: rgba(5, 9, 20, 0.82);
+            backdrop-filter: blur(12px);
+            pointer-events: none;
+        }
+
+        .vr-title h1 {
+            margin: 0 0 6px;
+            font-size: 1.25rem;
+            color: #00e5ff;
+        }
+
+        .vr-title p {
+            margin: 0;
+            color: #d1d5db;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .mobile-bottom-nav {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 20;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 4px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            background: rgba(5, 9, 20, 0.94);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(14px);
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #aab4c5;
+            text-decoration: none;
+            font-size: 0.72rem;
+        }
+
+        .mobile-nav-item i {
+            font-size: 1.35rem;
+        }
+
+        .mobile-nav-item.active {
+            color: #00e5ff;
+        }
+
+        .vr-help {
+            position: fixed;
+            left: 16px;
+            bottom: 86px;
+            z-index: 10;
+            max-width: 280px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(5, 9, 20, 0.85);
+            color: #e5e7eb;
+            font-size: 0.82rem;
+            line-height: 1.7;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .vr-ui {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+
+            .vr-btn {
+                min-height: 40px;
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+
+            .vr-title {
+                top: 62px;
+                right: 10px;
+                padding: 10px 12px;
+            }
+
+            .vr-title h1 {
+                font-size: 1.05rem;
+            }
+
+            .vr-title p {
+                font-size: 0.8rem;
+            }
+
+            .vr-help {
+                left: 10px;
+                bottom: 82px;
+                max-width: 220px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <div class="vr-ui">
-        <a href="index.html" class="vr-btn">⬅️ خروج من VR</a>
+    <header class="vr-ui">
+        <a href="dashboard.html" class="vr-btn">
+            <i class="ri-home-5-line" aria-hidden="true"></i>
+            الرئيسية
+        </a>
+
+        <a href="languages.html" class="vr-btn">
+            <i class="ri-book-open-line" aria-hidden="true"></i>
+            مسارات التعلّم
+        </a>
+
+        <button type="button" id="enterVrButton" class="vr-btn">
+            <i class="ri-vr-line" aria-hidden="true"></i>
+            دخول VR
+        </button>
+    </header>
+
+    <section class="vr-title">
+        <h1>معمل Cody للواقع الافتراضي</h1>
+        <p>استكشف عالم البرمجة وتعرّف على المسارات التعليمية داخل بيئة ثلاثية الأبعاد.</p>
+    </section>
+
+    <div class="vr-help">
+        حرّك الهاتف أو اسحب الشاشة لاستكشاف المشهد. قد تحتاج إلى تدوير الهاتف للوضع الأفقي للحصول على تجربة أفضل.
     </div>
 
-    <a-scene>
+    <a-scene
+        embedded
+        background="color: #050914"
+        renderer="colorManagement: true; antialias: true"
+        vr-mode-ui="enabled: false"
+        loading-screen="enabled: true"
+    >
         <a-sky color="#050914"></a-sky>
-        <a-plane position="0 0 0" rotation="-90 0 0" width="20" height="20" color="#0a0f1d"></a-plane>
-        
-        <!-- مجسم Cody -->
+
+        <a-plane
+            position="0 0 0"
+            rotation="-90 0 0"
+            width="30"
+            height="30"
+            color="#0a0f1d"
+        ></a-plane>
+
         <a-entity position="0 1.5 -3">
-            <a-sphere color="#00E5FF" radius="0.5"></a-sphere>
-            <a-text value="Cody VR Assistant" align="center" position="0 -0.8 0" color="#FFD700" width="4"></a-text>
+            <a-sphere
+                color="#00E5FF"
+                radius="0.5"
+                material="emissive: #003344; emissiveIntensity: 0.7"
+                animation="property: position; to: 0 1.7 -3; dir: alternate; dur: 2200; loop: true"
+            ></a-sphere>
+
+            <a-text
+                value="Cody VR Assistant"
+                align="center"
+                position="0 -0.8 0"
+                color="#FFD700"
+                width="4"
+            ></a-text>
         </a-entity>
 
-        <!-- لوحة الدروس -->
-        <a-entity position="-2 2 -4">
-            <a-box color="#8B5CF6" width="2" height="1.5" depth="0.1"></a-box>
-            <a-text value="مسار JavaScript" align="center" position="0 0 0.1" color="#FFFFFF" width="3"></a-text>
+        <a-entity
+            position="-2 2 -4"
+            class="clickable"
+            data-destination="languages.html?lang=JavaScript"
+        >
+            <a-box
+                color="#8B5CF6"
+                width="2"
+                height="1.5"
+                depth="0.1"
+            ></a-box>
+
+            <a-text
+                value="JavaScript"
+                align="center"
+                position="0 0 0.1"
+                color="#FFFFFF"
+                width="3"
+            ></a-text>
         </a-entity>
 
-        <!-- لوحة المتجر -->
-        <a-entity position="2 2 -4">
-            <a-box color="#FFD700" width="2" height="1.5" depth="0.1"></a-box>
-            <a-text value="المتجر" align="center" position="0 0 0.1" color="#000000" width="3"></a-text>
+        <a-entity
+            position="2 2 -4"
+            class="clickable"
+            data-destination="store.html"
+        >
+            <a-box
+                color="#FFD700"
+                width="2"
+                height="1.5"
+                depth="0.1"
+            ></a-box>
+
+            <a-text
+                value="Store"
+                align="center"
+                position="0 0 0.1"
+                color="#000000"
+                width="3"
+            ></a-text>
         </a-entity>
 
-        <a-entity camera look-controls position="0 1.6 0"></a-entity>
+        <a-entity
+            position="0 0.1 -4"
+            class="clickable"
+            data-destination="languages.html?lang=Python"
+        >
+            <a-box
+                color="#3776AB"
+                width="2"
+                height="0.1"
+                depth="1"
+            ></a-box>
+
+            <a-text
+                value="Explore Python"
+                align="center"
+                position="0 0.2 0"
+                color="#FFFFFF"
+                width="4"
+            ></a-text>
+        </a-entity>
+
+        <a-entity
+            camera
+            look-controls
+            wasd-controls
+            position="0 1.6 0"
+        >
+            <a-cursor
+                color="#00E5FF"
+                fuse="false"
+                raycaster="objects: .clickable"
+            ></a-cursor>
+        </a-entity>
     </a-scene>
-    <script src="global.js"></script>
 
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <i class="ri-home-5-line" aria-hidden="true"></i>
+            <span>الرئيسية</span>
+        </a>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+        <a href="languages.html" class="mobile-nav-item">
+            <i class="ri-book-open-line" aria-hidden="true"></i>
+            <span>الدروس</span>
+        </a>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
+        <a href="games.html" class="mobile-nav-item">
+            <i class="ri-gamepad-line" aria-hidden="true"></i>
+            <span>الألعاب</span>
+        </a>
+
+        <a href="playground.html" class="mobile-nav-item">
+            <i class="ri-code-box-line" aria-hidden="true"></i>
+            <span>الملعب</span>
+        </a>
+
+        <a href="profile.html" class="mobile-nav-item">
+            <i class="ri-user-smile-line" aria-hidden="true"></i>
+            <span>حسابي</span>
+        </a>
     </nav>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
+            const currentPage = window.location.pathname.split("/").pop() || "index.html";
+
+            document.querySelectorAll(".mobile-nav-item").forEach(link => {
+                if (link.getAttribute("href") === currentPage) {
+                    link.classList.add("active");
+                    link.setAttribute("aria-current", "page");
+                }
+            });
+
+            document.querySelectorAll(".clickable").forEach(entity => {
+                entity.addEventListener("click", () => {
+                    const destination = entity.dataset.destination;
+
+                    if (destination) {
+                        window.location.href = destination;
+                    }
+                });
+            });
+
+            const enterVrButton = document.getElementById("enterVrButton");
+
+            enterVrButton.addEventListener("click", () => {
+                const scene = document.querySelector("a-scene");
+
+                if (scene && scene.enterVR) {
+                    scene.enterVR();
+                } else {
+                    alert("وضع الواقع الافتراضي غير متاح على هذا الجهاز أو المتصفح.");
                 }
             });
         });
     </script>
-<script type="module" src="js/route-guard.js"></script>
+
+    <script type="module" src="js/route-guard.js"></script>
 </body>
 </html>
