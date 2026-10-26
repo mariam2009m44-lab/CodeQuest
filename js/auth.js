@@ -1,3 +1,5 @@
+
+
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -79,53 +81,30 @@ function validateLessonPosition(chapter, lesson) {
 
 export function authError(error) {
   const messages = {
-    "auth/invalid-email":
-      "البريد الإلكتروني غير صحيح.",
-
-    "auth/missing-email":
-      "اكتبي البريد الإلكتروني.",
-
-    "auth/missing-password":
-      "اكتبي كلمة المرور.",
-
+    "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
+    "auth/missing-email": "اكتبي البريد الإلكتروني.",
+    "auth/missing-password": "اكتبي كلمة المرور.",
     "auth/invalid-credential":
       "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
-
-    "auth/user-not-found":
-      "لا يوجد حساب بهذه البيانات.",
-
-    "auth/wrong-password":
-      "كلمة المرور غير صحيحة.",
-
+    "auth/user-not-found": "لا يوجد حساب بهذه البيانات.",
+    "auth/wrong-password": "كلمة المرور غير صحيحة.",
     "auth/email-already-in-use":
       "البريد الإلكتروني مسجل بالفعل.",
-
-    "auth/weak-password":
-      "اختاري كلمة مرور أقوى.",
-
+    "auth/weak-password": "اختاري كلمة مرور أقوى.",
     "auth/too-many-requests":
       "محاولات كثيرة. حاولي مرة أخرى لاحقًا.",
-
     "auth/network-request-failed":
       "تحققي من اتصال الإنترنت.",
-
     "auth/operation-not-allowed":
       "طريقة تسجيل الحساب غير مفعّلة في Firebase.",
-
-    "auth/user-disabled":
-      "هذا الحساب غير مفعّل.",
-
+    "auth/user-disabled": "هذا الحساب غير مفعّل.",
     "auth/invalid-action-code":
       "الرابط غير صالح أو انتهت صلاحيته.",
-
     "auth/expired-action-code":
       "انتهت صلاحية الرابط. اطلبي رابطًا جديدًا.",
-
     "permission-denied":
       "ليست لديك صلاحية الوصول إلى هذه البيانات.",
-
-    "unavailable":
-      "الخدمة غير متاحة حاليًا."
+    "unavailable": "الخدمة غير متاحة حاليًا."
   };
 
   return messages[error?.code] ||
@@ -143,7 +122,6 @@ function normalizeError(error) {
 
 /**
  * إنشاء الملف الشخصي للمستخدم إذا لم يكن موجودًا.
- * تظل النقاط والعملات بقيمة صفر؛ لا تُمنح مكافآت من هذا الملف.
  */
 export async function ensureUserProfile(user) {
   if (!user?.uid) {
@@ -166,14 +144,9 @@ export async function ensureUserProfile(user) {
       };
     }
 
-    const suggestedName =
-      user.displayName ||
-      user.email?.split("@")[0] ||
-      "متعلم";
-
+    const suggestedName = user.displayName || "متعلم";
     const normalizedName = normalizeName(suggestedName);
 
-    // قواعد Firestore تشترط أن يتكون الاسم من حرفين على الأقل.
     const displayName =
       normalizedName.length >= 2
         ? normalizedName
@@ -237,7 +210,7 @@ export async function registerUser(name, email, password) {
 }
 
 /**
- * تسجيل الدخول بحساب موجود.
+ * تسجيل الدخول.
  */
 export async function loginUser(email, password) {
   const cleanEmail = normalizeEmail(email);
@@ -276,11 +249,24 @@ export async function resetPassword(email) {
 }
 
 /**
- * تسجيل الخروج.
+ * تسجيل الخروج ومسح بيانات الجلسة المؤقتة.
  */
 export async function logoutUser() {
   try {
     await signOut(auth);
+
+    for (const key of [
+      "currentProjectId",
+      "currentProjectName",
+      "playgroundCode",
+      "playgroundLang"
+    ]) {
+      try {
+        sessionStorage.removeItem(key);
+      } catch {
+        // تجاهل تعذر الوصول إلى تخزين الجلسة.
+      }
+    }
   } catch (error) {
     throw normalizeError(error);
   }
@@ -296,9 +282,7 @@ export function requireUser() {
     let cleanupPending = false;
 
     function finish(callback, value) {
-      if (settled) {
-        return;
-      }
+      if (settled) return;
 
       settled = true;
 
@@ -328,7 +312,6 @@ export function requireUser() {
       }
     );
 
-    // معالجة حالة استدعاء رد الاتصال قبل إرجاع unsubscribe.
     if (cleanupPending && unsubscribe) {
       unsubscribe();
     }
