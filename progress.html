@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#090d19">
   <title>تقدمي | CodeQuest</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/pro-accessibility.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
   <style>
     body {
       background: var(--bg-deep);
@@ -68,7 +72,10 @@
       width: 156px;
       height: 156px;
       border-radius: 50%;
-      background: conic-gradient(var(--primary) 0%, var(--border-soft) 0);
+      background: conic-gradient(
+        var(--primary) 0%,
+        var(--border-soft) 0%
+      );
       display: grid;
       place-items: center;
       position: relative;
@@ -152,6 +159,7 @@
     }
   </style>
 </head>
+
 <body>
   <main class="container">
     <header class="header">
@@ -159,6 +167,7 @@
         <p class="muted">مساحة التعلم · Cody Academy</p>
         <h1>تقدمك في التعلم</h1>
       </div>
+
       <a href="dashboard.html" class="btn-secondary">
         <i class="ri-home-5-line" aria-hidden="true"></i>
         الرئيسية
@@ -168,6 +177,7 @@
     <section class="dashboard-grid">
       <article class="card gauge-container">
         <h3>تقدم مسارات التعلم</h3>
+
         <div
           class="gauge"
           id="progressGauge"
@@ -176,13 +186,15 @@
         >
           <div class="gauge-value" id="overallProgress">0%</div>
         </div>
+
         <p class="muted">
-          النسبة محسوبة من متوسط تقدم اللغات المحفوظ في حسابك.
+          النسبة محسوبة من الدروس المكتملة في المناهج المتاحة.
         </p>
       </article>
 
       <article class="card">
         <h3>النشاط الأسبوعي</h3>
+
         <div id="weeklyActivity" class="weekly-empty">
           لا توجد بيانات أسبوعية محفوظة حتى الآن.
           <br>
@@ -192,29 +204,55 @@
 
       <article class="card" style="grid-column: 1 / -1;">
         <h3>إحصائياتك التفصيلية</h3>
+
         <div class="stats-list">
           <div class="stat-row">
-            <span><i class="ri-book-open-line" aria-hidden="true"></i> الدروس المكتملة</span>
+            <span>
+              <i class="ri-book-open-line" aria-hidden="true"></i>
+              الدروس المكتملة
+            </span>
             <span id="lessonsStat">—</span>
           </div>
+
           <div class="stat-row">
-            <span><i class="ri-code-s-slash-line" aria-hidden="true"></i> التمارين الناجحة</span>
+            <span>
+              <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+              التمارين الناجحة
+            </span>
             <span id="exercisesStat">—</span>
           </div>
+
           <div class="stat-row">
-            <span><i class="ri-folder-code-line" aria-hidden="true"></i> المشروعات المحفوظة</span>
+            <span>
+              <i class="ri-folder-code-line" aria-hidden="true"></i>
+              المشروعات المحفوظة
+            </span>
             <span id="projectsStat">—</span>
           </div>
+
           <div class="stat-row">
-            <span><i class="ri-gamepad-line" aria-hidden="true"></i> مكافآت الألعاب المسجلة</span>
+            <span>
+              <i class="ri-gamepad-line" aria-hidden="true"></i>
+              مكافآت الألعاب المسجلة
+            </span>
             <span id="gamesStat">—</span>
           </div>
+
           <div class="stat-row">
-            <span><i class="ri-flashlight-line" aria-hidden="true"></i> نقاط الخبرة</span>
+            <span>
+              <i class="ri-flashlight-line" aria-hidden="true"></i>
+              نقاط الخبرة
+            </span>
             <span id="xpStat">—</span>
           </div>
         </div>
-        <p id="statusMessage" class="status-message" role="status" aria-live="polite">
+
+        <p
+          id="statusMessage"
+          class="status-message"
+          role="status"
+          aria-live="polite"
+        >
           جارٍ تحميل بياناتك...
         </p>
       </article>
@@ -234,14 +272,15 @@
       where
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    const $ = id => document.getElementById(id);
+    const $ = (id) => document.getElementById(id);
 
-    function showError(message) {
+    function showStatus(message) {
       $("statusMessage").textContent = message;
     }
 
     function safeCount(value) {
       const number = Number(value);
+
       return Number.isFinite(number) && number >= 0
         ? Math.floor(number)
         : 0;
@@ -249,86 +288,227 @@
 
     function setProgress(value) {
       const percent = Math.max(0, Math.min(100, value));
+
       $("overallProgress").textContent = `${percent}%`;
+
       $("progressGauge").style.background =
-        `conic-gradient(var(--primary) ${percent}%, var(--border-soft) ${percent}%)`;
+        `conic-gradient(
+          var(--primary) ${percent}%,
+          var(--border-soft) ${percent}%
+        )`;
+    }
+
+    async function readCurriculum(file) {
+      const response = await fetch(file, {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `تعذر تحميل المنهج: ${file} (${response.status})`
+        );
+      }
+
+      const data = await response.json();
+
+      // يدعم المنهج سواء كان مصفوفة أو كائنًا يحتوي على chapters.
+      const chapters = Array.isArray(data)
+        ? data
+        : Array.isArray(data.chapters)
+          ? data.chapters
+          : [];
+
+      return chapters;
     }
 
     async function loadProgress() {
+      showStatus("جارٍ تحميل تقدمك...");
+
       const user = await requireUser();
+
+      if (!user?.uid) {
+        throw new Error("سجّل الدخول أولًا لعرض تقدمك.");
+      }
 
       const userRef = doc(db, "users", user.uid);
       const userSnapshot = await getDoc(userRef);
 
-      if (!userSnapshot.exists()) {
-        throw new Error("ملف الحساب غير موجود.");
-      }
+      const profile = userSnapshot.exists()
+        ? userSnapshot.data()
+        : {};
 
-      const data = userSnapshot.data();
-      const languageProgress = data.languageProgress || {};
-
-      const values = [
-        languageProgress.python,
-        languageProgress.javascript,
-        languageProgress.cpp
-      ].filter(value =>
-        typeof value === "number" &&
-        Number.isFinite(value) &&
-        value >= 0
-      );
-
-      const average = values.length
-        ? Math.round(
-            values.reduce((sum, value) => sum + Math.min(100, value), 0) /
-            values.length
-          )
-        : 0;
-
-      setProgress(average);
-
-      $("lessonsStat").textContent =
-        safeCount(data.completedLessons);
-
-      $("exercisesStat").textContent =
-        data.completedExercises === undefined
-          ? "غير مسجل"
-          : safeCount(data.completedExercises);
-
-      $("xpStat").textContent = safeCount(data.xp);
-
-      const projectsQuery = query(
-        collection(db, "projects"),
-        where("userId", "==", user.uid)
-      );
-
-      const rewardsCollection = collection(
+      // سجلات الدروس المحفوظة هي المصدر الأساسي للتقدم.
+      const lessonProgressRef = collection(
         db,
         "users",
         user.uid,
-        "gameRewards"
+        "lessonProgress"
       );
 
-      const [projectsSnapshot, rewardsSnapshot] = await Promise.all([
-        getDocs(projectsQuery),
-        getDocs(rewardsCollection)
-      ]);
+      const lessonSnapshot = await getDocs(lessonProgressRef);
 
-      $("projectsStat").textContent = projectsSnapshot.size;
-      $("gamesStat").textContent = rewardsSnapshot.size;
+      const savedLessons = lessonSnapshot.docs
+        .map((item) => ({
+          id: item.id,
+          ...item.data()
+        }))
+        .filter((item) =>
+          item.completed === true &&
+          ["python", "javascript", "cpp"].includes(item.language) &&
+          Number.isSafeInteger(item.chapter) &&
+          item.chapter >= 0 &&
+          Number.isSafeInteger(item.lesson) &&
+          item.lesson >= 0
+        );
 
-      $("statusMessage").textContent =
-        "تم تحميل البيانات المحفوظة من حسابك.";
+      // إزالة التكرار حسب اللغة والفصل والدرس.
+      const completedByLanguage = new Map();
+
+      for (const item of savedLessons) {
+        if (!completedByLanguage.has(item.language)) {
+          completedByLanguage.set(item.language, new Set());
+        }
+
+        completedByLanguage
+          .get(item.language)
+          .add(`${item.chapter}:${item.lesson}`);
+      }
+
+      const curriculumFiles = {
+        python: "./json/python_curriculum.json",
+        javascript: "./json/js_curriculum.json",
+        cpp: "./json/cpp_curriculum.json"
+      };
+
+      let totalLessons = 0;
+      let completedLessons = 0;
+      let loadedCurricula = 0;
+
+      for (const [language, file] of Object.entries(curriculumFiles)) {
+        try {
+          const chapters = await readCurriculum(file);
+
+          const lessonCounts = chapters.map((chapter) =>
+            Array.isArray(chapter?.lessons)
+              ? chapter.lessons.length
+              : 0
+          );
+
+          const languageTotal = lessonCounts.reduce(
+            (sum, count) => sum + count,
+            0
+          );
+
+          const completedSet =
+            completedByLanguage.get(language) || new Set();
+
+          let languageCompleted = 0;
+
+          for (const key of completedSet) {
+            const [chapterText, lessonText] = key.split(":");
+            const chapterIndex = Number(chapterText);
+            const lessonIndex = Number(lessonText);
+
+            // لا نحتسب أي سجل يشير إلى درس غير موجود في المنهج.
+            if (
+              chapterIndex >= 0 &&
+              chapterIndex < lessonCounts.length &&
+              lessonIndex >= 0 &&
+              lessonIndex < lessonCounts[chapterIndex]
+            ) {
+              languageCompleted++;
+            }
+          }
+
+          totalLessons += languageTotal;
+          completedLessons += languageCompleted;
+          loadedCurricula++;
+        } catch (error) {
+          console.warn(
+            `تعذر حساب تقدم ${language}:`,
+            error
+          );
+        }
+      }
+
+      const percent = totalLessons > 0
+        ? Math.round(
+            (completedLessons / totalLessons) * 100
+          )
+        : 0;
+
+      setProgress(percent);
+
+      $("lessonsStat").textContent = loadedCurricula > 0
+        ? `${completedLessons} من ${totalLessons}`
+        : String(savedLessons.length);
+
+      // هذه الإحصائيات لا تُعرض كأنها محفوظة إن لم تتوفر بياناتها.
+      $("exercisesStat").textContent = "غير مسجل";
+      $("xpStat").textContent = safeCount(profile.xp);
+
+      // هذه البيانات اختيارية؛ لا نجعل فشلها يمنع عرض تقدم الدروس.
+      try {
+        const projectsQuery = query(
+          collection(db, "projects"),
+          where("userId", "==", user.uid)
+        );
+
+        const projectsSnapshot = await getDocs(projectsQuery);
+        $("projectsStat").textContent = String(
+          projectsSnapshot.size
+        );
+      } catch (error) {
+        console.warn("تعذر تحميل المشروعات:", error);
+        $("projectsStat").textContent = "غير متاح";
+      }
+
+      try {
+        const rewardsCollection = collection(
+          db,
+          "users",
+          user.uid,
+          "gameRewards"
+        );
+
+        const rewardsSnapshot = await getDocs(
+          rewardsCollection
+        );
+
+        $("gamesStat").textContent = String(
+          rewardsSnapshot.size
+        );
+      } catch (error) {
+        console.warn("تعذر تحميل مكافآت الألعاب:", error);
+        $("gamesStat").textContent = "غير متاح";
+      }
+
+      if (loadedCurricula === 0) {
+        showStatus(
+          "تعذر تحميل ملفات المناهج؛ تحقق من وجود ملفات JSON."
+        );
+      } else {
+        showStatus(
+          "تم تحميل تقدم الدروس من سجلات حسابك المحفوظة."
+        );
+      }
     }
 
-    loadProgress().catch(error => {
+    loadProgress().catch((error) => {
       console.error("Progress loading error:", error);
 
-      showError(
-        error?.code === "permission-denied"
-          ? "لا توجد صلاحية لقراءة بعض البيانات. راجعي قواعد Firestore."
-          : error?.message || "تعذر تحميل التقدم."
-      );
+      if (error?.code === "permission-denied") {
+        showStatus(
+          "لا توجد صلاحية لقراءة بعض البيانات. يجب مراجعة قواعد Firestore."
+        );
+      } else {
+        showStatus(
+          error?.message || "تعذر تحميل تقدمك حاليًا."
+        );
+      }
     });
   </script>
+
+  <script src="js/pro-accessibility.js" defer></script>
 </body>
 </html>
