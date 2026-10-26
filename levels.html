@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,10 +7,12 @@
   <meta name="theme-color" content="#070b14">
   <meta name="description" content="استكشف فصول ودروس البرمجة في CodeQuest وتابع تقدمك التعليمي.">
   <title>المسارات التعليمية | CodeQuest</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/pro-accessibility.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <style>
     :root {
@@ -48,7 +51,8 @@
       line-height: 1.8;
     }
 
-    a, button {
+    a,
+    button {
       font: inherit;
     }
 
@@ -283,13 +287,15 @@
       border: 1px solid var(--border);
       border-radius: 27px;
       background: linear-gradient(145deg, #111b2d, #0d1523);
-      transition: transform .2s, border-color .2s, background .2s;
+      box-shadow: 0 8px 24px #00000012;
+      transition: transform .2s, border-color .2s, background .2s, box-shadow .2s;
     }
 
     .chapter-card:hover {
       transform: translateY(-3px);
       border-color: #536580;
       background: var(--panel-hover);
+      box-shadow: 0 12px 28px #00000020;
     }
 
     .chapter-top {
@@ -304,16 +310,35 @@
       place-items: center;
       width: 49px;
       height: 49px;
-      border: 1px solid #ffffff12;
+      border: 1px solid color-mix(in srgb, var(--language-color, #facc15) 20%, transparent);
       border-radius: 16px;
-      background: #ffffff08;
-      color: var(--accent);
+      background: color-mix(in srgb, var(--language-color, #facc15) 9%, #101929);
+      color: var(--language-color, var(--accent));
       font-size: 19px;
       font-weight: 900;
     }
 
-    .chapter-icon {
-      font-size: 29px;
+    .language-logo {
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      border: 1px solid color-mix(in srgb, var(--language-color) 35%, transparent);
+      border-radius: 15px;
+      background: color-mix(in srgb, var(--language-color) 12%, #101929);
+      color: var(--language-color);
+      font-family: Inter, "Cairo", sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: -.5px;
+      direction: ltr;
+      transition: transform 180ms ease, background 180ms ease;
+    }
+
+    .chapter-card:hover .language-logo {
+      transform: translateY(-2px);
+      background: color-mix(in srgb, var(--language-color) 18%, #101929);
     }
 
     .chapter-status {
@@ -531,22 +556,27 @@
       .section-note {
         font-size: 12px;
       }
+
+      .language-logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+        font-size: 13px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
+      *,
+      *::before,
+      *::after {
         scroll-behavior: auto !important;
         transition: none !important;
       }
     }
   </style>
-<link rel="stylesheet" href="css/pro-accessibility.css">
-<link rel="manifest" href="manifest.json">
-<meta name="referrer" content="strict-origin-when-cross-origin">
 </head>
 <body>
   <main class="container">
-
     <header class="topbar">
       <a class="brand" href="dashboard.html" aria-label="لوحة التحكم">
         <span class="brand-icon" aria-hidden="true">🚀</span>
@@ -650,7 +680,6 @@
     } from "./js/auth.js";
 
     const $ = (selector) => document.querySelector(selector);
-
     const params = new URLSearchParams(location.search);
 
     const requestedLanguage = (
@@ -673,20 +702,20 @@
     const LANGUAGES = {
       javascript: {
         name: "JavaScript",
-        icon: "🟨",
+        icon: "JS",
         color: "#facc15",
         file: "./json/js_curriculum.json"
       },
       python: {
         name: "Python",
-        icon: "🐍",
+        icon: "Py",
         color: "#60a5fa",
         file: "./json/python_curriculum.json"
       },
       cpp: {
         name: "C++",
-        icon: "⚙️",
-        color: "#60a5fa",
+        icon: "C++",
+        color: "#7dd3fc",
         file: "./json/cpp_curriculum.json"
       }
     };
@@ -697,18 +726,10 @@
     let loadRequest = 0;
 
     function showState(state) {
-      $("#loadingState").classList.toggle(
-        "hidden", state !== "loading"
-      );
-      $("#errorState").classList.toggle(
-        "hidden", state !== "error"
-      );
-      $("#emptyState").classList.toggle(
-        "hidden", state !== "empty"
-      );
-      $("#chapterList").classList.toggle(
-        "hidden", state !== "success"
-      );
+      $("#loadingState").classList.toggle("hidden", state !== "loading");
+      $("#errorState").classList.toggle("hidden", state !== "error");
+      $("#emptyState").classList.toggle("hidden", state !== "empty");
+      $("#chapterList").classList.toggle("hidden", state !== "success");
     }
 
     function getText(value, fallback = "") {
@@ -736,18 +757,14 @@
     }
 
     function lessonIsComplete(chapterIndex, lessonIndex) {
-      return completedLessons.has(
-        `${chapterIndex}:${lessonIndex}`
-      );
+      return completedLessons.has(`${chapterIndex}:${lessonIndex}`);
     }
 
     function makeLessonUrl(chapterIndex, lessonIndex) {
       const url = new URL("lecture.html", location.href);
-
       url.searchParams.set("lang", languageKey);
       url.searchParams.set("chapter", String(chapterIndex));
       url.searchParams.set("lesson", String(lessonIndex));
-
       return url.href;
     }
 
@@ -771,12 +788,9 @@
 
       $("#totalChapters").textContent = String(chapters.length);
       $("#totalLessons").textContent = String(totalLessons);
-
       $("#overallPercent").textContent = `${percentage}%`;
       $("#overallFill").style.width = `${percentage}%`;
-      $("#overallTrack").setAttribute(
-        "aria-valuenow", String(percentage)
-      );
+      $("#overallTrack").setAttribute("aria-valuenow", String(percentage));
 
       $("#chapterCountNote").textContent =
         `${chapters.length} فصول · ${totalLessons} دروس`;
@@ -795,20 +809,17 @@
 
         const chapterCompleted = lessons.reduce(
           (count, _, lessonIndex) =>
-            count + Number(
-              lessonIsComplete(chapterIndex, lessonIndex)
-            ),
+            count + Number(lessonIsComplete(chapterIndex, lessonIndex)),
           0
         );
 
         const percentage = lessons.length
-          ? Math.round(
-              chapterCompleted / lessons.length * 100
-            )
+          ? Math.round(chapterCompleted / lessons.length * 100)
           : 0;
 
         const card = document.createElement("article");
         card.className = "chapter-card";
+        card.style.setProperty("--language-color", language.color);
 
         const top = document.createElement("div");
         top.className = "chapter-top";
@@ -818,11 +829,13 @@
         number.textContent = String(chapterIndex + 1).padStart(2, "0");
 
         const icon = document.createElement("span");
-        icon.className = "chapter-icon";
+        icon.className = "language-logo";
         icon.textContent = language.icon;
+        icon.style.setProperty("--language-color", language.color);
         icon.setAttribute("aria-hidden", "true");
 
         const status = document.createElement("span");
+        
         status.className = "chapter-status";
         status.textContent = percentage === 100 && lessons.length
           ? "مكتمل ✓"
@@ -903,6 +916,7 @@
         list.appendChild(card);
       });
     }
+
     function showError(title, message, details = "") {
       $("#errorTitle").textContent = title;
       $("#errorMessage").textContent = message;
@@ -912,7 +926,6 @@
 
     async function loadCurriculum() {
       const currentRequest = ++loadRequest;
-
       showState("loading");
 
       if (!language) {
@@ -925,8 +938,7 @@
       }
 
       $("#languageName").textContent = language.name;
-      $("#pageTitle").textContent =
-        `مسار ${language.name} ${language.icon}`;
+      $("#pageTitle").textContent = `مسار ${language.name}`;
       $("#pageDescription").textContent =
         `ابدأ من الأساسيات في ${language.name}، وتقدّم فصلًا بعد فصل من خلال الدروس والتطبيقات العملية.`;
 
@@ -952,14 +964,12 @@
             : [];
 
         const normalizedChapters = chapters
-          .filter((chapter) =>
-            chapter && typeof chapter === "object"
-          )
+          .filter((chapter) => chapter && typeof chapter === "object")
           .map((chapter) => ({
             ...chapter,
             lessons: Array.isArray(chapter.lessons)
-              ? chapter.lessons.filter((lesson) =>
-                  lesson && typeof lesson === "object"
+              ? chapter.lessons.filter(
+                  (lesson) => lesson && typeof lesson === "object"
                 )
               : []
           }));
@@ -1002,11 +1012,6 @@
     async function loadCompletedLessons() {
       const completed = new Set();
 
-      /*
-       * لا نعرض أي درس على أنه مكتمل من غير مصدر حقيقي.
-       * يجب أن تكون صيغة البيانات التي تعيدها getLessonProgress
-       * متوافقة مع مفاتيح الفصول والدروس المستخدمة هنا.
-       */
       try {
         if (typeof getLessonProgress !== "function") {
           return completed;
