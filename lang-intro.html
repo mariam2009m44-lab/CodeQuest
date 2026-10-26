@@ -1,96 +1,285 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070B14">
+    <meta name="description" content="اكتشف لغات البرمجة واختر مسارك التعليمي في CodeQuest.">
     <title>تعرف على اللغة | CodeQuest</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script><script src="js/auth.js"></script>
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        body { display:flex; flex-direction:column; align-items:center; padding:20px; justify-content:center; min-height:100vh; }
-        .intro-card { background:var(--glass); border:2px solid var(--primary); border-radius:30px; padding:30px 20px; width:100%; max-width:500px; text-align:center; box-shadow:0 0 40px rgba(0,229,255,0.2); position:relative; overflow:hidden; }
-        .cody-img { width:100px; height:100px; border-radius:50%; border:3px solid var(--primary); margin-bottom:20px; background:#000; animation: float 3s infinite; }
-        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
-        .title { font-size:2rem; font-weight:900; color:var(--primary); margin-bottom:10px; text-shadow:0 0 10px var(--primary); }
-        .desc { color:var(--text-muted); font-size:1.1rem; line-height:1.6; margin-bottom:20px; }
-        .features { text-align:right; margin-bottom:30px; }
-        .features li { margin-bottom:10px; color:#fff; font-size:1rem; display:flex; align-items:center; gap:10px;}
-        .features li i { color:var(--gold); }
-    </style>
 
-    <!-- Prism.js Dark Theme -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css">
+    <link rel="stylesheet" href="css/global.css">
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px 20px 100px;
+        }
+
+        .intro-card {
+            background: var(--glass);
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cody-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            margin-bottom: 20px;
+            background: #000;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .desc {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .features {
+            text-align: right;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 30px;
+        }
+
+        .features li {
+            margin-bottom: 12px;
+            color: #fff;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features li i {
+            color: var(--gold);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .start-button {
+            width: 100%;
+            min-height: 48px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--primary);
+        }
+
+        @media (max-width: 380px) {
+            .intro-card {
+                padding: 24px 16px;
+            }
+
+            .title {
+                font-size: 1.7rem;
+            }
+
+            .desc {
+                font-size: 1rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cody-img {
+                animation: none;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <div class="intro-card" id="card">
-        <img src="cody-avatar.svg" id="cody" class="cody-img">
+    <main class="intro-card" id="card">
+        <img
+            src="cody-avatar.svg"
+            id="cody"
+            class="cody-img"
+            alt="شخصية كودي التعليمية"
+            width="100"
+            height="100"
+        >
+
         <h1 class="title" id="langTitle">جاري التحميل...</h1>
         <p class="desc" id="langDesc"></p>
         <ul class="features" id="featuresList"></ul>
-        <button class="btn btn-primary" style="width:100%;" onclick="startLearning()">🚀 ابدأ المغامرة الآن</button>
-    </div>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const lang = urlParams.get('lang') || 'JavaScript';
-        const av = localStorage.getItem('cq_avatar'); if(av) document.getElementById('cody').src = av;
 
-        const data = {
-            'JavaScript': { color: '#f7df1e', desc: 'لغة الويب التفاعلية! بها نصنع المواقع والألعاب التي تحبها.', features: ['بناء المواقع', 'صناعة الألعاب', 'التحكم في المتصفح'] },
-            'Python': { color: '#3776ab', desc: 'لغة المستقبل! نستخدمها في الذكاء الاصطناعي وتحليل البيانات.', features: ['الذكاء الاصطناعي', 'تحليل البيانات', 'أكواد بسيطة وقوية'] },
-            'C++': { color: '#00599c', desc: 'لغة القوة والسرعة! وراء كل لعبة ضخمة ونظام تشغيل.', features: ['تطوير الألعاب 3D', 'أنظمة التشغيل', 'البرمجة التنافسية'] }
-        };
+        <button
+            type="button"
+            class="btn btn-primary start-button"
+            id="startButton"
+        >
+            🚀 ابدأ المغامرة الآن
+        </button>
+    </main>
 
-        const d = data[lang] || data['JavaScript'];
-        document.getElementById('langTitle').innerText = lang;
-        document.getElementById('langTitle').style.color = d.color;
-        document.getElementById('langDesc').innerText = d.desc;
-        document.getElementById('card').style.borderColor = d.color;
-        document.getElementById('card').style.boxShadow = `0 0 40px ${d.color}40`;
-        
-        const list = document.getElementById('featuresList');
-        d.features.forEach(f => { list.innerHTML += `<li><i class="ri-check-line"></i> ${f}</li>`; });
+    <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <i class="ri-home-5-line" aria-hidden="true"></i>
+            <span>الرئيسية</span>
+        </a>
 
-        function startLearning() {
-            localStorage.setItem('cq_language', lang);
-            window.location.href = 'levels.html';
-        }
-        Auth.init(l => { if(!l) window.location.href='login.html'; });
-    </script>
+        <a href="languages.html" class="mobile-nav-item">
+            <i class="ri-book-open-line" aria-hidden="true"></i>
+            <span>الدروس</span>
+        </a>
 
-    
-    <!-- Prism.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+        <a href="games.html" class="mobile-nav-item">
+            <i class="ri-gamepad-line" aria-hidden="true"></i>
+            <span>الألعاب</span>
+        </a>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+        <a href="playground.html" class="mobile-nav-item">
+            <i class="ri-code-box-line" aria-hidden="true"></i>
+            <span>الملعب</span>
+        </a>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="dashboard.html" class="mobile-nav-item"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
-        <a href="lessons.html" class="mobile-nav-item"><i class="ri-book-open-line"></i><span>الدروس</span></a>
-        <a href="games.html" class="mobile-nav-item"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-        <a href="playground.html" class="mobile-nav-item"><i class="ri-code-box-line"></i><span>الملعب</span></a>
-        <a href="profile.html" class="mobile-nav-item"><i class="ri-user-smile-line"></i><span>حسابي</span></a>
+        <a href="profile.html" class="mobile-nav-item">
+            <i class="ri-user-smile-line" aria-hidden="true"></i>
+            <span>حسابي</span>
+        </a>
     </nav>
+
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentPath = window.location.pathname.split("/").pop() || "index.html";
-            document.querySelectorAll('.mobile-nav-item').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
+        (() => {
+            const params = new URLSearchParams(window.location.search);
+            const requestedLanguage = params.get("lang") || "JavaScript";
+
+            const languages = {
+                JavaScript: {
+                    color: "#f7df1e",
+                    desc: "لغة الويب التفاعلية! بها نصنع المواقع والألعاب التي تحبها.",
+                    features: [
+                        "بناء المواقع التفاعلية",
+                        "صناعة الألعاب",
+                        "التحكم في المتصفح"
+                    ]
+                },
+                Python: {
+                    color: "#3776ab",
+                    desc: "لغة سهلة للبدء في البرمجة، ونستخدمها في الذكاء الاصطناعي وتحليل البيانات.",
+                    features: [
+                        "مقدمة إلى الذكاء الاصطناعي",
+                        "تحليل البيانات",
+                        "كتابة الأكواد خطوة بخطوة"
+                    ]
+                },
+                "C++": {
+                    color: "#00599c",
+                    desc: "لغة قوية وسريعة تُستخدم في تطبيقات كثيرة، ومنها تطوير الألعاب والبرامج.",
+                    features: [
+                        "مقدمة إلى تطوير الألعاب",
+                        "فهم أساسيات البرمجة",
+                        "حل المسائل البرمجية"
+                    ]
+                }
+            };
+
+            const language = Object.prototype.hasOwnProperty.call(
+                languages,
+                requestedLanguage
+            ) ? requestedLanguage : "JavaScript";
+
+            const details = languages[language];
+
+            const title = document.getElementById("langTitle");
+            const description = document.getElementById("langDesc");
+            const card = document.getElementById("card");
+            const featuresList = document.getElementById("featuresList");
+            const avatar = document.getElementById("cody");
+            const startButton = document.getElementById("startButton");
+
+            title.textContent = language;
+            title.style.color = details.color;
+            description.textContent = details.desc;
+            card.style.borderColor = details.color;
+            card.style.boxShadow = `0 0 40px ${details.color}40`;
+            avatar.style.borderColor = details.color;
+
+            details.features.forEach(feature => {
+                const item = document.createElement("li");
+                const icon = document.createElement("i");
+                const text = document.createElement("span");
+
+                icon.className = "ri-check-line";
+                icon.setAttribute("aria-hidden", "true");
+                text.textContent = feature;
+
+                item.append(icon, text);
+                featuresList.appendChild(item);
+            });
+
+            try {
+                const savedAvatar = localStorage.getItem("cq_avatar");
+                if (savedAvatar) {
+                    avatar.src = savedAvatar;
+                }
+
+                localStorage.setItem("cq_language", language);
+            } catch (error) {
+                console.warn("تعذر الوصول إلى التخزين المحلي.", error);
+            }
+
+            startButton.addEventListener("click", () => {
+                try {
+                    localStorage.setItem("cq_language", language);
+                } catch (error) {
+                    console.warn("تعذر حفظ اللغة المختارة.", error);
+                }
+
+                window.location.href = "levels.html";
+            });
+
+            const currentPage = window.location.pathname.split("/").pop();
+
+            document.querySelectorAll(".mobile-nav-item").forEach(link => {
+                if (link.getAttribute("href") === currentPage) {
+                    link.classList.add("active");
+                    link.setAttribute("aria-current", "page");
                 }
             });
-        });
+        })();
     </script>
-<script type="module" src="js/route-guard.js"></script>
+
+    <script type="module" src="js/route-guard.js"></script>
 </body>
 </html>
