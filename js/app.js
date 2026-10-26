@@ -1,5 +1,5 @@
-
 import { auth, db } from "./firebase-config.js";
+
 import {
   logoutUser,
   requireUser,
@@ -8,8 +8,44 @@ import {
 
 import {
   doc,
+  collection,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+/*
+ * Cody Academy — Application Controller
+ * - يحمي الصفحات الخاصة بالحساب.
+ * - يسمح للصفحة الرئيسية بالعمل دون تسجيل دخول.
+ * - يعرض تقدم الدروس من Firestore دون تعديل XP أو العملات.
+ */
+
+const PUBLIC_PAGES = new Set([
+  "index.html",
+  "login.html",
+  "signup.html",
+  "register.html",
+  "forgot-password.html",
+  "reset-password.html"
+]);
+
+const LANGUAGES = {
+  python: {
+    file: "./json/python_curriculum.json",
+    selector: ".course-python .course-progress"
+  },
+  javascript: {
+    file: "./json/js_curriculum.json",
+    selector: ".course-javascript .course-progress"
+  },
+  cpp: {
+    file: "./json/cpp_curriculum.json",
+    selector: ".course-cpp .course-progress"
+  }
+};
+
+function currentPage() {
+  return location.pathname.split("/").pop() || "index.html";
+}
 
 function showToast(message, type = "info") {
   let container = document.getElementById("toast-container");
@@ -19,14 +55,17 @@ function showToast(message, type = "info") {
     container.id = "toast-container";
     container.setAttribute("role", "status");
     container.setAttribute("aria-live", "polite");
+
     container.style.cssText =
       "position:fixed;bottom:20px;left:20px;z-index:9999;" +
       "display:flex;flex-direction:column;gap:10px;" +
       "max-width:calc(100vw - 40px)";
+
     document.body.appendChild(container);
   }
 
   const toast = document.createElement("div");
+
   const colors = {
     error: "#e74c3c",
     warning: "#f39c12",
@@ -34,7 +73,11 @@ function showToast(message, type = "info") {
     info: "#344054"
   };
 
-  toast.setAttribute("role", type === "error" ? "alert" : "status");
+  toast.setAttribute(
+    "role",
+    type === "error" ? "alert" : "status"
+  );
+
   toast.style.cssText =
     "padding:12px 20px;border-radius:12px;color:white;" +
     "font-size:14px;font-weight:600;overflow-wrap:anywhere;" +
@@ -60,23 +103,29 @@ function setText(selector, value) {
 
 function safeNumber(value) {
   const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : 0;
+
+  return Number.isFinite(number) && number >= 0
+    ? number
+    : 0;
 }
 
 function getLoginRedirectUrl() {
-  const currentPage =
-    window.location.pathname.split("/").pop() || "dashboard.html";
+  const page = currentPage();
 
-  const safePage = /^[a-zA-Z0-9_-]+\.html$/.test(currentPage)
-    ? currentPage
+  const safePage = /^[a-zA-Z0-9_-]+\.html$/.test(page)
+    ? page
     : "dashboard.html";
 
-  const next = safePage + window.location.search;
+  const next = safePage + location.search;
+
   return `login.html?next=${encodeURIComponent(next)}`;
 }
 
 function setProgress(selector, value) {
-  const percentage = Math.max(0, Math.min(100, safeNumber(value)));
+  const percentage = Math.max(
+    0,
+    Math.min(100, safeNumber(value))
+  );
 
   document.querySelectorAll(selector).forEach(bar => {
     const fill = bar.querySelector(".course-progress-fill");
@@ -100,13 +149,148 @@ function setProgress(selector, value) {
   });
 }
 
+/*
+ * تحميل عدد الدروس الفعلي من ملفات المنهج.
+ * لا نفترض أن كل لغة تحتوي على العدد نفسه من الدروس.
+ */
+async function loadCurriculumTotals() {
+  const totals = {};
+
+  await Promise.all(
+    Object.entries(LANGUAGES).map(async ([language, config]) => {
+      try {
+        const response = await fetch(config.file, {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `HTTP ${response.status}: ${config.file}`
+          );
+        }
+
+        const curriculum = await response.json();
+
+        if (!Array.isArray(curriculum.chapters)) {
+          throw new Error("تنسيق المنهج غير صحيح.");
+        }
+
+        totals[language] = curriculum.chapters.map(chapter =>
+          Array.isArray(chapter?.lessons)
+            ? chapter.lessons.length
+            : 0
+        );
+      } catch (error) {
+        console.error(
+          `تعذر تحميل منهج ${language}:`,
+          error
+        );
+
+        totals[language] = null;
+      }
+    })
+  );
+
+  return totals;
+}
+
+function isValidCompletedLesson(item, totals) {
+  if (!item || item.completed !== true) {
+    return false;
+  }
+
+  const language = item.language;
+
+  if (!Object.prototype.hasOwnProperty.call(
+    LANGUAGES,
+    language
+  )) {
+    return false;
+  }
+
+  if (
+    !Number.isSafeInteger(item.chapter) ||
+    !Number.isSafeInteger(item.lesson) ||
+    item.chapter < 0 ||
+    item.lesson < 0
+  ) {
+    return false;
+  }
+
+  const chapters = totals[language];
+
+  // لو تعذر تحميل المنهج، لا نخمن صحة أرقام الدروس.
+  if (!Array.isArray(chapters)) {
+    return false;
+  }
+
+  if (item.chapter >= chapters.length) {
+    return false;
+  }
+
+  return item.lesson < chapters[item.chapter];
+}
+
+function calculateLessonStats(documents, totals) {
+  const completedByLanguage = {
+    python: new Set(),
+    javascript: new Set(),
+    cpp: new Set()
+  };
+
+  for (const item of documents) {
+    if (!isValidCompletedLesson(item, totals)) {
+      continue;
+    }
+
+    const key = `${item.chapter}:${item.lesson}`;
+
+    completedByLanguage[item.language].add(key);
+  }
+
+  const percentages = {};
+
+  let completedTotal = 0;
+
+  for (const language of Object.keys(LANGUAGES)) {
+    const completed = completedByLanguage[language].size;
+    const chapters = totals[language];
+
+    completedTotal += completed;
+
+    if (!Array.isArray(chapters)) {
+      percentages[language] = null;
+      continue;
+    }
+
+    const total = chapters.reduce(
+      (sum, count) => sum + count,
+      0
+    );
+
+    percentages[language] = total > 0
+      ? Math.round((completed / total) * 100)
+      : 0;
+  }
+
+  return {
+    completedTotal,
+    percentages
+  };
+}
+
 export const App = {
   user: "متعلم",
   xp: 0,
   coins: 0,
   currentUid: null,
+
   unsubscribeProfile: null,
+  unsubscribeLessonProgress: null,
+
   initPromise: null,
+  curriculumTotals: null,
+  lessonStats: null,
 
   init() {
     if (!this.initPromise) {
@@ -122,6 +306,16 @@ export const App = {
   async initialize() {
     this.highlightNav();
     this.bindLogout();
+    this.bindProtectedLinks();
+
+    /*
+     * الصفحة الرئيسية وصفحات الدخول عامة.
+     * لا تحوّل الزائر إلى صفحة تسجيل الدخول لمجرد
+     * أنه فتح الصفحة الرئيسية.
+     */
+    if (PUBLIC_PAGES.has(currentPage())) {
+      return;
+    }
 
     let user;
 
@@ -130,10 +324,7 @@ export const App = {
     } catch (error) {
       console.error("Authentication verification failed:", error);
 
-      if (!location.pathname.endsWith("/login.html")) {
-        location.replace(getLoginRedirectUrl());
-      }
-
+      location.replace(getLoginRedirectUrl());
       return;
     }
 
@@ -145,11 +336,16 @@ export const App = {
     try {
       await ensureUserProfile(user);
 
-      this.unsubscribeProfile?.();
       this.currentUid = user.uid;
+
+      this.curriculumTotals = await loadCurriculumTotals();
+
+      this.unsubscribeProfile?.();
+      this.unsubscribeLessonProgress?.();
 
       this.unsubscribeProfile = onSnapshot(
         doc(db, "users", user.uid),
+
         snapshot => {
           if (!snapshot.exists()) {
             showToast("ملف الحساب غير موجود.", "error");
@@ -159,20 +355,61 @@ export const App = {
           const data = snapshot.data();
 
           this.user =
-            data.displayName || user.displayName || "متعلم";
+            data.displayName ||
+            user.displayName ||
+            "متعلم";
+
           this.xp = safeNumber(data.xp);
           this.coins = safeNumber(data.coins);
 
           this.updateUI(data);
         },
+
         error => {
           console.error("Profile subscription error:", error);
           showToast("تعذر تحديث بيانات الحساب.", "error");
         }
       );
+
+      /*
+       * قراءة تقدم الدروس من المصدر الذي تحفظ فيه
+       * lecture.html الدروس المكتملة فعلًا.
+       */
+      this.unsubscribeLessonProgress = onSnapshot(
+        collection(
+          db,
+          "users",
+          user.uid,
+          "lessonProgress"
+        ),
+
+        snapshot => {
+          const documents = snapshot.docs.map(item => ({
+            id: item.id,
+            ...item.data()
+          }));
+
+          this.lessonStats = calculateLessonStats(
+            documents,
+            this.curriculumTotals || {}
+          );
+
+          this.updateLessonProgressUI();
+        },
+
+        error => {
+          console.error("Lesson progress error:", error);
+
+          showToast(
+            "تعذر تحميل تقدم الدروس من حسابك.",
+            "error"
+          );
+        }
+      );
     } catch (error) {
       console.error("Profile initialization error:", error);
-      showToast("تعذر تحميل ملفك الشخصي.", "error");
+
+      showToast("تعذر تحميل بيانات حسابك.", "error");
     }
   },
 
@@ -184,6 +421,7 @@ export const App = {
     setText(".js-user-xp", this.xp);
     setText(".js-user-coins", this.coins);
     setText(".js-user-level", level);
+
     setText("#userLevel", level);
     setText("#currentXP", xpInLevel);
 
@@ -193,79 +431,165 @@ export const App = {
       progressBar.style.width = `${xpInLevel}%`;
     }
 
-    setText(
-      ".js-completed-lessons",
-      safeNumber(data.completedLessons)
-    );
+    /*
+     * عدد الدروس يُحدّث من مجموعة lessonProgress،
+     * ولا نستخدم completedLessons القديم كمصدر للحقيقة.
+     */
+    if (!this.lessonStats) {
+      setText(
+        ".js-completed-lessons",
+        safeNumber(data.completedLessons)
+      );
+    }
+
     setText(
       ".js-completed-projects",
       safeNumber(data.completedProjects)
     );
+
     setText(
       ".js-learning-streak",
       safeNumber(data.streak)
     );
 
-    const progress = data.languageProgress || {};
+    /*
+     * لو لم يصل تحديث تقدم الدروس بعد، نعرض النسب
+     * المحفوظة مؤقتًا في ملف المستخدم.
+     */
+    if (!this.lessonStats) {
+      const progress = data.languageProgress || {};
 
-    if (progress.python !== undefined) {
-      setProgress(".course-python .course-progress", progress.python);
-    }
-
-    if (progress.javascript !== undefined) {
-      setProgress(
-        ".course-javascript .course-progress",
-        progress.javascript
-      );
-    }
-
-    if (progress.cpp !== undefined) {
-      setProgress(".course-cpp .course-progress", progress.cpp);
+      for (const [language, config] of Object.entries(LANGUAGES)) {
+        if (progress[language] !== undefined) {
+          setProgress(
+            config.selector,
+            progress[language]
+          );
+        }
+      }
     }
   },
 
-  bindLogout() {
-    document.querySelectorAll(".logout, #logoutButton").forEach(element => {
-      if (element.dataset.logoutBound === "true") return;
+  updateLessonProgressUI() {
+    if (!this.lessonStats) return;
 
-      element.dataset.logoutBound = "true";
+    setText(
+      ".js-completed-lessons",
+      this.lessonStats.completedTotal
+    );
 
-      element.addEventListener("click", async event => {
+    for (const [language, percentage] of Object.entries(
+      this.lessonStats.percentages
+    )) {
+      if (percentage === null) {
+        console.warn(
+          `لم يتم حساب نسبة ${language} لتعذر تحميل المنهج.`
+        );
+
+        continue;
+      }
+
+      setProgress(
+        LANGUAGES[language].selector,
+        percentage
+      );
+    }
+  },
+
+  bindProtectedLinks() {
+    document.querySelectorAll("[data-protected]").forEach(link => {
+      if (link.dataset.protectionBound === "true") {
+        return;
+      }
+
+      link.dataset.protectionBound = "true";
+
+      link.addEventListener("click", async event => {
+        /*
+         * إذا كانت الصفحة نفسها عامة، نتحقق من الدخول
+         * عند الضغط على رابط محمي فقط.
+         */
+        if (!PUBLIC_PAGES.has(currentPage())) {
+          return;
+        }
+
         event.preventDefault();
 
-        if (element.dataset.logoutPending === "true") return;
-
-        element.dataset.logoutPending = "true";
-        element.setAttribute("aria-busy", "true");
+        const destination = link.getAttribute("href");
 
         try {
-          await logoutUser();
-          location.replace("login.html");
-        } catch (error) {
-          console.error("Logout error:", error);
-          delete element.dataset.logoutPending;
-          element.removeAttribute("aria-busy");
-          showToast("تعذر تسجيل الخروج. حاولي مرة أخرى.", "error");
+          await requireUser();
+
+          if (destination) {
+            location.href = destination;
+          }
+        } catch {
+          const next = destination || "dashboard.html";
+
+          location.href =
+            `login.html?next=${encodeURIComponent(next)}`;
         }
       });
     });
   },
 
+  bindLogout() {
+    document.querySelectorAll(".logout, #logoutButton").forEach(
+      element => {
+        if (element.dataset.logoutBound === "true") {
+          return;
+        }
+
+        element.dataset.logoutBound = "true";
+
+        element.addEventListener("click", async event => {
+          event.preventDefault();
+
+          if (element.dataset.logoutPending === "true") {
+            return;
+          }
+
+          element.dataset.logoutPending = "true";
+          element.setAttribute("aria-busy", "true");
+
+          try {
+            await logoutUser();
+
+            location.replace("login.html");
+          } catch (error) {
+            console.error("Logout error:", error);
+
+            delete element.dataset.logoutPending;
+            element.removeAttribute("aria-busy");
+
+            showToast(
+              "تعذر تسجيل الخروج. حاولي مرة أخرى.",
+              "error"
+            );
+          }
+        });
+      }
+    );
+  },
+
   highlightNav() {
-    const current =
-      location.pathname.split("/").pop() || "index.html";
+    const current = currentPage();
 
     document.querySelectorAll(
       ".nav-link, .mobile-nav a, .nav-item, .mobile-nav-item"
     ).forEach(link => {
       const href = link.getAttribute("href");
+
       if (!href || href === "#") return;
 
       try {
-        const destination = new URL(href, location.href)
-          .pathname.split("/").pop();
+        const destination = new URL(
+          href,
+          location.href
+        ).pathname.split("/").pop();
 
         const active = destination === current;
+
         link.classList.toggle("active", active);
 
         if (active) {
@@ -279,18 +603,29 @@ export const App = {
     });
   },
 
+  // لا تمنح نقاطًا أو عملات مباشرة من المتصفح.
   addXP() {
-    throw new Error("لا يمكن منح نقاط الخبرة من المتصفح.");
+    throw new Error(
+      "لا يمكن منح نقاط الخبرة من المتصفح."
+    );
   },
 
   addCoins() {
-    throw new Error("لا يمكن تعديل العملات من المتصفح.");
+    throw new Error(
+      "لا يمكن تعديل العملات من المتصفح."
+    );
   },
 
   destroy() {
     this.unsubscribeProfile?.();
     this.unsubscribeProfile = null;
+
+    this.unsubscribeLessonProgress?.();
+    this.unsubscribeLessonProgress = null;
+
     this.currentUid = null;
+    this.lessonStats = null;
+    this.curriculumTotals = null;
     this.initPromise = null;
   }
 };
