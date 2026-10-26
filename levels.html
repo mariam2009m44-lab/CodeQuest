@@ -5,9 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070b14">
-  <title>الفصول التعليمية | CodeQuest</title>
+  <meta name="description" content="استكشف فصول ودروس البرمجة في CodeQuest وتابع تقدمك التعليمي.">
+  <title>المسارات التعليمية | CodeQuest</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
@@ -15,51 +17,75 @@
       color-scheme: dark;
       --bg: #070b14;
       --panel: #101929;
-      --hover: #151f32;
+      --panel-hover: #151f32;
       --border: #263247;
       --text: #f1f5fb;
       --muted: #8b98ad;
       --accent: #facc15;
       --blue: #60a5fa;
       --green: #34d399;
+      --purple: #a78bfa;
       --danger: #fb7185;
+      --radius: 24px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
-      background: radial-gradient(ellipse at top right, #11172b 0, transparent 42%), var(--bg);
       color: var(--text);
-      font-family: Cairo, sans-serif;
+      background:
+        radial-gradient(ellipse at 100% 0%, #182344 0, transparent 38%),
+        radial-gradient(ellipse at 0% 60%, #101b30 0, transparent 35%),
+        var(--bg);
+      font-family: "Cairo", sans-serif;
       line-height: 1.8;
     }
 
-    a, button { font: inherit; }
-    a { color: inherit; text-decoration: none; }
-    button { cursor: pointer; }
+    a, button {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 4px;
+    }
 
     .container {
       width: min(1120px, 100%);
-      margin-inline: auto;
-      padding: 28px 22px 42px;
+      margin: auto;
+      padding: 25px 22px 40px;
     }
 
-    .topbar, .brand, .back-button, .section-heading,
-    .progress-heading, .chapter-top {
+    .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 28px;
     }
-
-    .topbar { margin-bottom: 28px; }
 
     .brand {
-      justify-content: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       font-size: 23px;
       font-weight: 900;
     }
@@ -75,184 +101,262 @@
       font-size: 25px;
     }
 
-    .back-button {
+    .nav-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .nav-button {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
+      gap: 8px;
       min-height: 44px;
-      padding: 8px 16px;
+      padding: 8px 14px;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: var(--panel);
+      transition: background .2s, border-color .2s;
     }
 
-    .back-button:hover { background: var(--hover); }
+    .nav-button:hover {
+      background: var(--panel-hover);
+      border-color: #536580;
+    }
 
     .hero {
       position: relative;
       overflow: hidden;
-      padding: 32px;
-      margin-bottom: 26px;
-      border: 1px solid var(--border);
+      padding: 34px;
+      margin-bottom: 22px;
+      border: 1px solid #34425c;
       border-radius: 30px;
       background: linear-gradient(125deg, #14243b, #17152e);
     }
 
+    .hero::after {
+      content: "✦";
+      position: absolute;
+      left: 22px;
+      bottom: -95px;
+      color: #ffffff08;
+      font-size: 230px;
+      pointer-events: none;
+    }
+
     .eyebrow {
-      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #a5b4cc;
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     h1 {
+      position: relative;
+      z-index: 1;
       margin: 12px 0;
-      font-size: clamp(27px, 5vw, 43px);
+      font-size: clamp(28px, 5vw, 44px);
       font-weight: 900;
       line-height: 1.45;
     }
 
     .hero-description {
+      position: relative;
+      z-index: 1;
       max-width: 650px;
       margin: 0;
-      color: #aebbd0;
-      font-size: 17px;
+      color: #b4c1d6;
+      font-size: 16px;
     }
 
     .stats {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 15px;
-      margin-bottom: 26px;
+      margin-bottom: 22px;
     }
 
-    .stat, .progress-card, .chapter-card, .status-card {
+    .stat {
       min-width: 0;
+      padding: 20px;
       border: 1px solid var(--border);
-      border-radius: 28px;
-      background: var(--panel);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, #121d30, #0e1625);
     }
-
-    .stat { padding: 22px 18px; }
 
     .stat-label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 7px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .stat-value {
       display: block;
       overflow-wrap: anywhere;
-      font-size: 24px;
+      font-size: clamp(20px, 3vw, 27px);
       font-weight: 900;
     }
 
     .progress-card {
       padding: 25px;
-      margin-bottom: 44px;
+      margin-bottom: 40px;
+      border: 1px solid var(--border);
+      border-radius: 27px;
+      background: var(--panel);
     }
 
-    .progress-heading { flex-wrap: wrap; }
+    .progress-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
 
     .progress-heading h2 {
       margin: 0;
-      font-size: 21px;
+      font-size: 20px;
       font-weight: 900;
     }
 
     .progress-percent {
       color: var(--accent);
-      font-size: 23px;
+      font-size: 24px;
       font-weight: 900;
     }
 
     .progress-track {
-      height: 12px;
+      height: 11px;
       overflow: hidden;
       border-radius: 99px;
-      background: #222c3e;
+      background: #263247;
     }
 
     .progress-fill {
       width: 0;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent), #f59e0b);
-      transition: width .3s ease;
+      background: linear-gradient(90deg, #f59e0b, var(--accent));
+      transition: width .4s ease;
     }
 
-    .progress-note, .section-note {
+    .progress-note {
+      margin: 13px 0 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
+      gap: 12px;
       margin-bottom: 20px;
     }
 
     .section-heading h2 {
       margin: 0;
-      font-size: clamp(23px, 4vw, 34px);
+      font-size: clamp(23px, 4vw, 32px);
       font-weight: 900;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .chapter-list {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
+      gap: 19px;
     }
 
     .chapter-card {
-      padding: 25px;
-      transition: border-color .2s, transform .2s, background .2s;
+      min-width: 0;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 27px;
+      background: linear-gradient(145deg, #111b2d, #0d1523);
+      transition: transform .2s, border-color .2s, background .2s;
     }
 
     .chapter-card:hover {
-      border-color: #536580;
-      background: var(--hover);
       transform: translateY(-3px);
+      border-color: #536580;
+      background: var(--panel-hover);
+    }
+
+    .chapter-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
     }
 
     .chapter-number {
       display: grid;
       place-items: center;
-      flex: 0 0 48px;
-      height: 48px;
+      width: 49px;
+      height: 49px;
       border: 1px solid #ffffff12;
       border-radius: 16px;
       background: #ffffff08;
       color: var(--accent);
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 900;
     }
 
-    .chapter-icon { font-size: 27px; }
+    .chapter-icon {
+      font-size: 29px;
+    }
+
+    .chapter-status {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: #b8c5d8;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .chapter-status.complete {
+      border-color: #1b6650;
+      background: #34d39912;
+      color: var(--green);
+    }
 
     .chapter-title {
-      margin: 18px 0 8px;
-      font-size: 23px;
+      margin: 17px 0 8px;
+      font-size: 22px;
       font-weight: 900;
-      line-height: 1.5;
+      line-height: 1.55;
       overflow-wrap: anywhere;
     }
 
     .chapter-description {
       min-height: 48px;
-      margin: 0 0 18px;
+      margin: 0 0 17px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       overflow-wrap: anywhere;
     }
 
     .chapter-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 9px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 17px;
     }
 
     .meta-pill {
-      padding: 5px 11px;
+      padding: 5px 10px;
       border: 1px solid var(--border);
       border-radius: 99px;
       color: #bac7da;
@@ -261,106 +365,173 @@
 
     .chapter-progress {
       height: 7px;
-      margin-bottom: 19px;
+      margin-bottom: 18px;
       overflow: hidden;
       border-radius: 99px;
-      background: #252f41;
+      background: #263247;
     }
 
     .chapter-progress span {
       display: block;
+      width: 0;
       height: 100%;
       border-radius: inherit;
-      background: var(--green);
+      background: linear-gradient(90deg, #10b981, var(--green));
+      transition: width .35s ease;
     }
 
     .chapter-action {
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
       width: 100%;
-      min-height: 52px;
-      padding: 11px 16px;
+      min-height: 51px;
+      padding: 11px 15px;
       border: 0;
-      border-radius: 16px;
+      border-radius: 15px;
       background: var(--accent);
       color: #111318;
       font-weight: 900;
       text-align: center;
-      transition: filter .2s;
+      transition: filter .2s, transform .2s;
     }
 
-    .chapter-action:hover { filter: brightness(1.07); }
-
-    .chapter-action:focus-visible,
-    a:focus-visible,
-    button:focus-visible {
-      outline: 3px solid var(--blue);
-      outline-offset: 3px;
-    }
-
-    .chapter-action.disabled {
-      opacity: .6;
-      cursor: not-allowed;
+    .chapter-action:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
     }
 
     .status-card {
-      padding: 34px 24px;
+      padding: 35px 23px;
+      border: 1px solid var(--border);
+      border-radius: 27px;
+      background: var(--panel);
       text-align: center;
     }
 
-    .status-icon { font-size: 43px; }
+    .status-icon {
+      margin-bottom: 5px;
+      font-size: 43px;
+    }
 
     .status-card h3 {
-      margin: 8px 0 12px;
-      font-size: 28px;
+      margin: 8px 0;
+      font-size: 24px;
       font-weight: 900;
     }
 
     .status-card p {
-      margin: 0 auto 20px;
+      max-width: 600px;
+      margin: 0 auto 17px;
       color: var(--muted);
       overflow-wrap: anywhere;
     }
 
     .status-card .chapter-action {
-      max-width: 420px;
+      max-width: 320px;
       margin: 0 auto;
     }
 
     .status-details {
-      margin-top: 16px !important;
-      font-size: 13px;
-      overflow-wrap: anywhere;
+      margin-top: 15px !important;
+      font-size: 12px;
     }
 
-    .hidden { display: none !important; }
+    .hidden {
+      display: none !important;
+    }
 
     .footer {
-      padding: 38px 12px 8px;
-      color: #647087;
+      padding: 35px 10px 8px;
+      color: #69768d;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     @media (max-width: 650px) {
-      .container { padding: 20px 15px 30px; }
-      .topbar { margin-bottom: 20px; }
-      .brand { font-size: 19px; }
-      .brand-icon { width: 42px; height: 42px; }
-      .back-button { padding: 7px 10px; font-size: 13px; }
-      .hero { padding: 23px 20px; border-radius: 26px; }
-      .hero-description { font-size: 15px; }
-      .stats { gap: 9px; }
-      .stat { padding: 15px 10px; border-radius: 22px; }
-      .stat-label { font-size: 12px; }
-      .stat-value { font-size: 19px; }
-      .progress-card { padding: 20px; margin-bottom: 34px; }
-      .progress-heading h2 { font-size: 18px; }
-      .chapter-list { grid-template-columns: 1fr; gap: 15px; }
-      .chapter-card { padding: 21px; }
-      .chapter-description { min-height: 0; }
-      .section-note { font-size: 12px; }
+      .container {
+        padding: 17px 13px 28px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        margin-bottom: 20px;
+      }
+
+      .brand {
+        gap: 8px;
+        font-size: 19px;
+      }
+
+      .brand-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 22px;
+      }
+
+      .nav-actions {
+        gap: 6px;
+      }
+
+      .nav-button {
+        min-height: 40px;
+        padding: 6px 9px;
+        font-size: 12px;
+      }
+
+      .hero {
+        padding: 23px 19px;
+        border-radius: 24px;
+      }
+
+      .hero-description {
+        font-size: 14px;
+      }
+
+      .stats {
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 13px 10px;
+        border-radius: 18px;
+      }
+
+      .stat-label {
+        font-size: 11px;
+      }
+
+      .stat-value {
+        font-size: 18px;
+      }
+
+      .progress-card {
+        padding: 19px;
+        margin-bottom: 32px;
+      }
+
+      .progress-heading h2 {
+        font-size: 17px;
+      }
+
+      .chapter-list {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .chapter-card {
+        padding: 20px;
+        border-radius: 23px;
+      }
+
+      .chapter-description {
+        min-height: 0;
+      }
+
+      .section-note {
+        font-size: 12px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -374,23 +545,24 @@
 
 <body>
   <main class="container">
+
     <header class="topbar">
-      <a class="brand" href="dashboard.html" aria-label="العودة إلى لوحة التحكم">
+      <a class="brand" href="dashboard.html" aria-label="لوحة التحكم">
         <span class="brand-icon" aria-hidden="true">🚀</span>
         <span>CodeQuest</span>
       </a>
 
-      <a class="back-button" href="languages.html">
-        <span aria-hidden="true">→</span>
-        لغات البرمجة
-      </a>
+      <nav class="nav-actions" aria-label="التنقل">
+        <a class="nav-button" href="dashboard.html">⌂ الرئيسية</a>
+        <a class="nav-button" href="languages.html">لغات البرمجة ←</a>
+      </nav>
     </header>
 
     <section class="hero">
-      <span class="eyebrow">✦ مسارك التعليمي</span>
+      <span class="eyebrow">✦ رحلتك نحو الاحتراف</span>
       <h1 id="pageTitle">الفصول التعليمية 📚</h1>
       <p class="hero-description" id="pageDescription">
-        تعلّم خطوة بخطوة، وأكمل الدروس لتطوير مهاراتك البرمجية.
+        تعلّم البرمجة خطوة بخطوة، وطبّق كل مفهوم بنفسك، وتابع إنجازاتك.
       </p>
     </section>
 
@@ -411,9 +583,9 @@
       </article>
     </section>
 
-    <section class="progress-card" aria-label="تقدمك في المنهج">
+    <section class="progress-card" aria-label="التقدم العام">
       <div class="progress-heading">
-        <h2>تقدمك في هذا المسار</h2>
+        <h2>رحلتك التعليمية</h2>
         <span class="progress-percent" id="overallPercent">0%</span>
       </div>
 
@@ -430,28 +602,28 @@
       </div>
 
       <p class="progress-note" id="progressNote">
-        ابدأ أول درس لتتابع تقدمك.
+        جارٍ تجهيز تقدمك التعليمي...
       </p>
     </section>
 
     <section aria-labelledby="chaptersHeading">
       <div class="section-heading">
-        <h2 id="chaptersHeading">الفصول التعليمية 📚</h2>
+        <h2 id="chaptersHeading">فصول المنهج ✦</h2>
         <span class="section-note" id="chapterCountNote">جارٍ تحميل المنهج...</span>
       </div>
 
       <div class="status-card" id="loadingState" role="status">
         <div class="status-icon">⏳</div>
-        <h3>جارٍ تحميل المنهج</h3>
-        <p>انتظر قليلًا حتى تظهر الفصول والدروس.</p>
+        <h3>لحظة واحدة!</h3>
+        <p>جارٍ تحميل الفصول ومزامنة تقدمك.</p>
       </div>
 
       <div class="status-card hidden" id="errorState" role="alert">
         <div class="status-icon">⚠️</div>
         <h3 id="errorTitle">تعذر تحميل المنهج</h3>
-        <p id="errorMessage">تأكد من وجود ملف المنهج وصحة مساره.</p>
+        <p id="errorMessage">تحقّق من الاتصال وملف المنهج.</p>
         <button class="chapter-action" id="retryButton" type="button">
-          إعادة المحاولة
+          إعادة المحاولة ↻
         </button>
         <p class="status-details" id="errorDetails"></p>
       </div>
@@ -460,21 +632,26 @@
 
       <div class="status-card hidden" id="emptyState">
         <div class="status-icon">🧩</div>
-        <h3>المنهج فارغ</h3>
-        <p>تم تحميل الملف، لكن لم يتم العثور على فصول ودروس صالحة داخله.</p>
+        <h3>لا توجد فصول</h3>
+        <p>لم نعثر على فصول صالحة في ملف المنهج لهذه اللغة.</p>
       </div>
     </section>
 
     <footer class="footer">
-      CodeQuest · تعلّم، جرّب، وطوّر مهاراتك
+      CodeQuest · تعلّم، جرّب، واصنع شيئًا مميزًا
     </footer>
   </main>
 
   <script type="module">
+    import {
+      requireUser,
+      getLessonProgress
+    } from "./js/auth.js";
+
     const $ = (selector) => document.querySelector(selector);
+
     const params = new URLSearchParams(location.search);
 
-    // Use the exact language keys supported by js/lecture.js.
     const requestedLanguage = (
       params.get("lang") ||
       params.get("language") ||
@@ -490,9 +667,9 @@
       "c++": "cpp"
     };
 
-    const languageKey = aliases[requestedLanguage] || "javascript";
+    const languageKey = aliases[requestedLanguage];
 
-    const languages = {
+    const LANGUAGES = {
       javascript: {
         name: "JavaScript",
         icon: "🟨",
@@ -513,156 +690,59 @@
       }
     };
 
-    const language = languages[languageKey];
+    const language = LANGUAGES[languageKey];
+
+    let completedLessons = new Set();
+    let loadRequest = 0;
 
     function showState(state) {
-      $("#loadingState").classList.toggle("hidden", state !== "loading");
-      $("#errorState").classList.toggle("hidden", state !== "error");
-      $("#emptyState").classList.toggle("hidden", state !== "empty");
-      $("#chapterList").classList.toggle("hidden", state !== "success");
+      $("#loadingState").classList.toggle(
+        "hidden", state !== "loading"
+      );
+      $("#errorState").classList.toggle(
+        "hidden", state !== "error"
+      );
+      $("#emptyState").classList.toggle(
+        "hidden", state !== "empty"
+      );
+      $("#chapterList").classList.toggle(
+        "hidden", state !== "success"
+      );
     }
 
-    function firstValue(object, keys, fallback = undefined) {
-      if (!object || typeof object !== "object") return fallback;
-
-      for (const key of keys) {
-        if (object[key] !== undefined && object[key] !== null) {
-          return object[key];
-        }
+    function getText(value, fallback = "") {
+      if (typeof value === "string" || typeof value === "number") {
+        return String(value);
       }
 
       return fallback;
     }
 
-    function textValue(value, fallback = "") {
-      return typeof value === "string" || typeof value === "number"
-        ? String(value)
-        : fallback;
-    }
-
-    function normalizeLessons(chapter) {
-      const lessons = firstValue(chapter, ["lessons"], []);
-      return Array.isArray(lessons) ? lessons : [];
-    }
-
-    // lecture.js expects curriculum.chapters and chapter.lessons arrays.
-    // Only accept this structure here so the displayed indexes match it.
-    function normalizeCurriculum(data) {
-      if (
-        !data ||
-        typeof data !== "object" ||
-        !Array.isArray(data.chapters)
-      ) {
-        return [];
-      }
-
-      return data.chapters.filter(
-        (chapter) =>
-          chapter &&
-          typeof chapter === "object" &&
-          Array.isArray(chapter.lessons)
-      );
-    }
-
-    function chapterTitle(chapter, index) {
-      return textValue(
-        firstValue(chapter, ["title", "name", "chapter_title"]),
+    function getChapterTitle(chapter, index) {
+      return getText(
+        chapter.title || chapter.name,
         `الفصل ${index + 1}`
       );
     }
 
-    function chapterDescription(chapter) {
-      return textValue(
-        firstValue(chapter, [
-          "description", "intro", "summary", "overview", "cody_intro"
-        ]),
-        "استكشف الدروس وتعلّم مفاهيم جديدة خطوة بخطوة."
+    function getChapterDescription(chapter) {
+      return getText(
+        chapter.description ||
+        chapter.intro ||
+        chapter.summary,
+        "استكشف هذا الفصل وتعلّم مفاهيم برمجية جديدة."
       );
     }
 
-    function getProgressKeys() {
-      return [
-        `codequest_progress_${languageKey}`,
-        `lessonProgress_${languageKey}`,
-        `progress_${languageKey}`
-      ];
-    }
-
-    function readLocalProgress() {
-      // This reads only known local-storage formats. Firebase progress
-      // is not assumed to exist in the browser's local storage.
-      for (const key of getProgressKeys()) {
-        try {
-          const raw = localStorage.getItem(key);
-          if (!raw) continue;
-
-          const data = JSON.parse(raw);
-          if (data && typeof data === "object") return data;
-        } catch {
-          // Ignore malformed or unavailable local data.
-        }
-      }
-
-      return null;
-    }
-
-    function completedLessonSet(progress) {
-      const completed = new Set();
-      if (!progress) return completed;
-
-      const add = (chapter, lesson) => {
-        const c = Number(chapter);
-        const l = Number(lesson);
-
-        if (
-          Number.isInteger(c) && c >= 0 &&
-          Number.isInteger(l) && l >= 0
-        ) {
-          completed.add(`${c}:${l}`);
-        }
-      };
-
-      const isComplete = (value) =>
-        value === true ||
-        value?.completed === true ||
-        value?.status === "completed";
-
-      if (Array.isArray(progress)) {
-        for (const item of progress) {
-          if (item && isComplete(item)) {
-            add(item.chapter, item.lesson);
-          }
-        }
-        return completed;
-      }
-
-      const source = progress.completedLessons || progress.lessons || progress;
-
-      if (Array.isArray(source)) {
-        for (const item of source) {
-          if (typeof item === "string") {
-            const match = item.match(/^(\d+):(\d+)$/);
-            if (match) add(match[1], match[2]);
-          } else if (item && isComplete(item)) {
-            add(item.chapter, item.lesson);
-          }
-        }
-      } else if (source && typeof source === "object") {
-        for (const [key, value] of Object.entries(source)) {
-          const match = key.match(/^(\d+):(\d+)$/);
-          if (match && isComplete(value)) {
-            add(match[1], match[2]);
-          }
-        }
-      }
-
-      return completed;
+    function lessonIsComplete(chapterIndex, lessonIndex) {
+      return completedLessons.has(
+        `${chapterIndex}:${lessonIndex}`
+      );
     }
 
     function makeLessonUrl(chapterIndex, lessonIndex) {
       const url = new URL("lecture.html", location.href);
 
-      // These names and numeric indexes match js/lecture.js.
       url.searchParams.set("lang", languageKey);
       url.searchParams.set("chapter", String(chapterIndex));
       url.searchParams.set("lesson", String(lessonIndex));
@@ -670,26 +750,61 @@
       return url.href;
     }
 
-    function renderChapters(chapters) {
-      const list = $("#chapterList");
-      const progressSet = completedLessonSet(readLocalProgress());
-
-      list.replaceChildren();
-
+    function renderProgress(chapters) {
       let totalLessons = 0;
-      let totalCompleted = 0;
+      let completedCount = 0;
 
       chapters.forEach((chapter, chapterIndex) => {
-        const lessons = normalizeLessons(chapter);
-        totalLessons += lessons.length;
+        chapter.lessons.forEach((_, lessonIndex) => {
+          totalLessons++;
 
-        const chapterCompleted = lessons.reduce((count, _, lessonIndex) => {
-          return count + (
-            progressSet.has(`${chapterIndex}:${lessonIndex}`) ? 1 : 0
-          );
-        }, 0);
+          if (lessonIsComplete(chapterIndex, lessonIndex)) {
+            completedCount++;
+          }
+        });
+      });
 
-        totalCompleted += chapterCompleted;
+      const percentage = totalLessons
+        ? Math.round(completedCount / totalLessons * 100)
+        : 0;
+
+      $("#totalChapters").textContent = String(chapters.length);
+      $("#totalLessons").textContent = String(totalLessons);
+
+      $("#overallPercent").textContent = `${percentage}%`;
+      $("#overallFill").style.width = `${percentage}%`;
+      $("#overallTrack").setAttribute(
+        "aria-valuenow", String(percentage)
+      );
+
+      $("#chapterCountNote").textContent =
+        `${chapters.length} فصول · ${totalLessons} دروس`;
+
+      $("#progressNote").textContent = totalLessons
+        ? `أكملت ${completedCount} من ${totalLessons} درس. كل خطوة بتقربك من هدفك!`
+        : "لا توجد دروس في هذا المسار حتى الآن.";
+    }
+
+    function renderChapters(chapters) {
+      const list = $("#chapterList");
+      list.replaceChildren();
+
+      chapters.forEach((chapter, chapterIndex) => {
+        const lessons = chapter.lessons;
+
+        const chapterCompleted = lessons.reduce(
+          (count, _, lessonIndex) =>
+            count + Number(
+              lessonIsComplete(chapterIndex, lessonIndex)
+            ),
+          0
+        );
+
+        const percentage = lessons.length
+          ? Math.round(
+              chapterCompleted / lessons.length * 100
+            )
+          : 0;
 
         const card = document.createElement("article");
         card.className = "chapter-card";
@@ -706,146 +821,235 @@
         icon.textContent = language.icon;
         icon.setAttribute("aria-hidden", "true");
 
-        top.append(number, icon);
+        const status = document.createElement("span");
+        status.className = "chapter-status";
+        status.textContent = percentage === 100 && lessons.length
+          ? "مكتمل ✓"
+          : percentage > 0
+            ? "مستمر ✦"
+            : "لم يبدأ";
+
+        if (percentage === 100 && lessons.length) {
+          status.classList.add("complete");
+        }
+
+        top.append(number, icon, status);
 
         const title = document.createElement("h3");
         title.className = "chapter-title";
-        title.textContent = chapterTitle(chapter, chapterIndex);
+        title.textContent = getChapterTitle(chapter, chapterIndex);
 
         const description = document.createElement("p");
         description.className = "chapter-description";
-        description.textContent = chapterDescription(chapter);
+        description.textContent = getChapterDescription(chapter);
 
         const meta = document.createElement("div");
         meta.className = "chapter-meta";
 
-        const lessonsPill = document.createElement("span");
-        lessonsPill.className = "meta-pill";
-        lessonsPill.textContent = `${lessons.length} درس`;
+        const lessonPill = document.createElement("span");
+        lessonPill.className = "meta-pill";
+        lessonPill.textContent = `${lessons.length} درس`;
 
         const completedPill = document.createElement("span");
         completedPill.className = "meta-pill";
-        completedPill.textContent = `${chapterCompleted} من ${lessons.length} مكتمل`;
+        completedPill.textContent =
+          `${chapterCompleted} من ${lessons.length} مكتمل`;
 
-        meta.append(lessonsPill, completedPill);
+        meta.append(lessonPill, completedPill);
 
-        const progressTrack = document.createElement("div");
-        progressTrack.className = "chapter-progress";
-        progressTrack.setAttribute("role", "progressbar");
-        progressTrack.setAttribute("aria-valuemin", "0");
-        progressTrack.setAttribute("aria-valuemax", "100");
+                const progress = document.createElement("div");
+        progress.className = "chapter-progress";
+        progress.setAttribute("role", "progressbar");
+        progress.setAttribute("aria-label", `تقدم الفصل ${chapterIndex + 1}`);
+        progress.setAttribute("aria-valuemin", "0");
+        progress.setAttribute("aria-valuemax", "100");
+        progress.setAttribute("aria-valuenow", String(percentage));
 
-        const fill = document.createElement("span");
-        const percent = lessons.length
-          ? Math.round((chapterCompleted / lessons.length) * 100)
-          : 0;
-
-        fill.style.width = `${percent}%`;
-        progressTrack.setAttribute("aria-valuenow", String(percent));
-        progressTrack.append(fill);
+        const progressFill = document.createElement("span");
+        progressFill.style.width = `${percentage}%`;
+        progress.appendChild(progressFill);
 
         const action = document.createElement("a");
         action.className = "chapter-action";
+        action.href = lessons.length
+          ? makeLessonUrl(chapterIndex, 0)
+          : "#";
 
-        if (lessons.length > 0) {
-          // Open the first incomplete lesson when local progress is available.
-          let firstLesson = lessons.findIndex((_, lessonIndex) =>
-            !progressSet.has(`${chapterIndex}:${lessonIndex}`)
-          );
+        action.textContent = lessons.length
+          ? chapterCompleted > 0
+            ? "متابعة التعلّم ←"
+            : "ابدأ الفصل ←"
+          : "لا توجد دروس بعد";
 
-          if (firstLesson < 0) firstLesson = 0;
-
-          action.href = makeLessonUrl(chapterIndex, firstLesson);
-          
-          action.textContent = chapterCompleted === lessons.length
-            ? "مراجعة الفصل ↻"
-            : chapterCompleted > 0
-              ? "تابع التعلّم ←"
-              : "ابدأ الفصل ←";
-        } else {
-          action.href = "#";
-          action.textContent = "لا توجد دروس بعد";
-          action.classList.add("disabled");
+        if (!lessons.length) {
           action.setAttribute("aria-disabled", "true");
-          action.addEventListener("click", (event) => event.preventDefault());
+          action.style.opacity = "0.6";
+          action.style.cursor = "not-allowed";
+          action.addEventListener("click", (event) => {
+            event.preventDefault();
+          });
         }
 
-        card.append(top, title, description, meta, progressTrack, action);
-        list.append(card);
+        card.append(
+          top,
+          title,
+          description,
+          meta,
+          progress,
+          action
+        );
+
+        list.appendChild(card);
       });
+    }
 
-      $("#totalChapters").textContent = String(chapters.length);
-      $("#totalLessons").textContent = String(totalLessons);
-      $("#chapterCountNote").textContent =
-        `${chapters.length} فصل · ${totalLessons} درس`;
-
-      const overall = totalLessons
-        ? Math.round((totalCompleted / totalLessons) * 100)
-        : 0;
-
-      $("#overallPercent").textContent = `${overall}%`;
-      $("#overallFill").style.width = `${overall}%`;
-      $("#overallTrack").setAttribute("aria-valuenow", String(overall));
-
-      $("#progressNote").textContent = totalLessons
-        ? `أكملت ${totalCompleted} من ${totalLessons} درس. استمر في التعلّم!`
-        : "لا توجد دروس في هذا المسار حتى الآن.";
-
-      showState(chapters.length ? "success" : "empty");
+    function showError(title, message, details = "") {
+      $("#errorTitle").textContent = title;
+      $("#errorMessage").textContent = message;
+      $("#errorDetails").textContent = details;
+      showState("error");
     }
 
     async function loadCurriculum() {
+      const currentRequest = ++loadRequest;
+
       showState("loading");
-      $("#chapterCountNote").textContent = "جارٍ تحميل المنهج...";
-      $("#errorDetails").textContent = "";
+
+      if (!language) {
+        showError(
+          "لغة البرمجة غير معروفة",
+          "اختارِي لغة صحيحة من صفحة لغات البرمجة.",
+          `القيمة المستلمة: ${requestedLanguage}`
+        );
+        return;
+      }
+
+      $("#languageName").textContent = language.name;
+      $("#pageTitle").textContent =
+        `مسار ${language.name} ${language.icon}`;
+      $("#pageDescription").textContent =
+        `ابدأ من الأساسيات في ${language.name}، وتقدّم فصلًا بعد فصل من خلال الدروس والتطبيقات العملية.`;
 
       try {
         const response = await fetch(language.file, {
-          cache: "no-store",
-          headers: { Accept: "application/json" }
+          cache: "no-cache"
         });
 
         if (!response.ok) {
           throw new Error(
-            `تعذر الوصول إلى ${language.file} (HTTP ${response.status}).`
+            `تعذر تحميل ملف المنهج. رمز الاستجابة: ${response.status}`
           );
         }
 
         const data = await response.json();
-        const chapters = normalizeCurriculum(data);
 
-        if (!chapters.length) {
-          throw new Error(
-            "لم يتم العثور على فصول صالحة. تحقق من بنية ملف JSON."
-          );
+        if (currentRequest !== loadRequest) return;
+
+        const chapters = Array.isArray(data)
+          ? data
+          : Array.isArray(data.chapters)
+            ? data.chapters
+            : [];
+
+        const normalizedChapters = chapters
+          .filter((chapter) =>
+            chapter && typeof chapter === "object"
+          )
+          .map((chapter) => ({
+            ...chapter,
+            lessons: Array.isArray(chapter.lessons)
+              ? chapter.lessons.filter((lesson) =>
+                  lesson && typeof lesson === "object"
+                )
+              : []
+          }));
+
+        if (!normalizedChapters.length) {
+          showState("empty");
+          $("#chapterCountNote").textContent = "لا توجد فصول";
+          $("#totalChapters").textContent = "0";
+          $("#totalLessons").textContent = "0";
+          $("#overallPercent").textContent = "0%";
+          $("#overallFill").style.width = "0%";
+          $("#overallTrack").setAttribute("aria-valuenow", "0");
+          $("#progressNote").textContent =
+            "ملف المنهج لا يحتوي على فصول قابلة للعرض.";
+          return;
         }
 
-        renderChapters(chapters);
+        completedLessons = await loadCompletedLessons();
+
+        if (currentRequest !== loadRequest) return;
+
+        renderProgress(normalizedChapters);
+        renderChapters(normalizedChapters);
+        showState("success");
       } catch (error) {
+        if (currentRequest !== loadRequest) return;
+
         console.error("CodeQuest curriculum error:", error);
 
-        $("#errorTitle").textContent = "تعذر تحميل المنهج";
-        $("#errorMessage").textContent =
-          "تحقق من ملف JSON ومساره، ثم حاول مجددًا.";
-        $("#errorDetails").textContent =
-          error?.message || "حدث خطأ غير معروف أثناء تحميل المنهج.";
-
-        $("#chapterCountNote").textContent = "فشل تحميل المنهج";
-        showState("error");
+        showError(
+          "تعذر تحميل المنهج",
+          "تأكدي إن ملف المنهج موجود في مجلد json وإن الصفحة تعمل من خلال موقع أو خادم محلي.",
+          error instanceof Error
+            ? error.message
+            : "حدث خطأ غير معروف."
+        );
       }
     }
 
-    $("#languageName").textContent = language.name;
-    $("#languageName").style.color = language.color;
+    async function loadCompletedLessons() {
+      const completed = new Set();
 
-    $("#pageTitle").textContent = `تعلّم ${language.name} ${language.icon}`;
-    $("#pageDescription").textContent =
-      `تعلّم ${language.name} من الأساسيات، وافهم المنطق البرمجي وطبّقه بنفسك.`;
+      /*
+       * لا نعرض أي درس على أنه مكتمل من غير مصدر حقيقي.
+       * إذا كانت getLessonProgress في auth.js تُرجع بيانات التقدم،
+       * يمكن قراءة النتيجة هنا بعد التأكد من شكل البيانات الفعلي.
+       */
+      try {
+        if (typeof getLessonProgress !== "function") {
+          return completed;
+        }
+
+        const result = await getLessonProgress(languageKey);
+
+        if (result instanceof Set) {
+          result.forEach((item) => completed.add(String(item)));
+        } else if (Array.isArray(result)) {
+          result.forEach((item) => completed.add(String(item)));
+        } else if (
+          result &&
+          typeof result === "object" &&
+          Array.isArray(result.completedLessons)
+        ) {
+          result.completedLessons.forEach((item) =>
+            completed.add(String(item))
+          );
+        }
+      } catch (error) {
+        console.warn(
+          "تعذر قراءة تقدم الدروس؛ سيظهر التقدم صفرًا.",
+          error
+        );
+      }
+
+      return completed;
+    }
 
     $("#retryButton").addEventListener("click", loadCurriculum);
 
-    loadCurriculum();
+    try {
+      await requireUser();
+      await loadCurriculum();
+    } catch (error) {
+      console.error("تعذر التحقق من تسجيل الدخول:", error);
+      showError(
+        "تعذر التحقق من الحساب",
+        "سجّل الدخول أولًا، ثم افتح المسار التعليمي مرة أخرى.",
+        error instanceof Error ? error.message : ""
+      );
+    }
   </script>
 </body>
 </html>
- 
