@@ -837,15 +837,10 @@
         const status = document.createElement("span");
         
         status.className = "chapter-status";
-        status.textContent = percentage === 100 && lessons.length
+        status.textContent = percentage === 100
           ? "مكتمل ✓"
-          : percentage > 0
-            ? "مستمر ✦"
-            : "لم يبدأ";
-
-        if (percentage === 100 && lessons.length) {
-          status.classList.add("complete");
-        }
+          : `${chapterCompleted}/${lessons.length} درس`;
+        status.classList.toggle("complete", percentage === 100 && lessons.length > 0);
 
         top.append(number, icon, status);
 
@@ -864,12 +859,11 @@
         lessonPill.className = "meta-pill";
         lessonPill.textContent = `${lessons.length} درس`;
 
-        const completedPill = document.createElement("span");
-        completedPill.className = "meta-pill";
-        completedPill.textContent =
-          `${chapterCompleted} من ${lessons.length} مكتمل`;
+        const progressPill = document.createElement("span");
+        progressPill.className = "meta-pill";
+        progressPill.textContent = `التقدم ${percentage}%`;
 
-        meta.append(lessonPill, completedPill);
+        meta.append(lessonPill, progressPill);
 
         const progress = document.createElement("div");
         progress.className = "chapter-progress";
@@ -881,66 +875,190 @@
 
         const progressFill = document.createElement("span");
         progressFill.style.width = `${percentage}%`;
-        progress.appendChild(progressFill);
+        progress.append(progressFill);
 
         const action = document.createElement("a");
         action.className = "chapter-action";
-        action.href = lessons.length
-          ? makeLessonUrl(chapterIndex, 0)
-          : "#";
+        action.href = makeLessonUrl(chapterIndex, 0);
+        action.textContent = chapterCompleted === lessons.length && lessons.length > 0
+          ? "مراجعة الفصل ↗"
+          : chapterCompleted > 0
+            ? "متابعة التعلم ↗"
+            : "ابدأ الفصل ↗";
 
-        action.textContent = lessons.length
-          ? chapterCompleted > 0
-            ? "متابعة التعلّم ←"
-            : "ابدأ الفصل ←"
-          : "لا توجد دروس بعد";
-
-        if (!lessons.length) {
+        if (lessons.length === 0) {
+          action.textContent = "لا توجد دروس";
+          action.removeAttribute("href");
           action.setAttribute("aria-disabled", "true");
-          action.style.opacity = "0.6";
+          action.style.opacity = "0.55";
           action.style.cursor = "not-allowed";
-          action.addEventListener("click", (event) => {
-            event.preventDefault();
-          });
         }
 
-        card.append(
-          top,
-          title,
-          description,
-          meta,
-          progress,
-          action
-        );
-
-        list.appendChild(card);
+        card.append(top, title, description, meta, progress, action);
+        list.append(card);
       });
     }
 
-    function showError(title, message, details = "") {
-      $("#errorTitle").textContent = title;
-      $("#errorMessage").textContent = message;
-      $("#errorDetails").textContent = details;
+    function normalizeChapters(data) {
+      const possibleArrays = [
+        data,
+        data?.chapters,
+        data?.curriculum,
+        data?.units,
+        data?.course?.chapters
+      ];
+
+      const source = possibleArrays.find(Array.isArray);
+
+      if (!source) {
+        throw new Error("لم يتم العثور على قائمة الفصول داخل ملف المنهج.");
+      }
+
+      return source.map((chapter) => {
+        const lessonsSource = Array.isArray(chapter?.lessons)
+          ? chapter.lessons
+          : Array.isArray(chapter?.topics)
+            ? chapter.topics
+            : [];
+
+        return {
+          ...chapter,
+          lessons: lessonsSource
+        };
+      });
+    }
+
+    function getLessonIdentity(item) {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const itemLanguage = aliases[
+        String(item.language || item.lang || "").trim().toLowerCase()
+      ];
+
+      if (itemLanguage && itemLanguage !== languageKey) {
+        return null;
+      }
+
+      const chapterValue = item.chapterIndex ?? item.chapter;
+      const lessonValue = item.lessonIndex ?? item.lesson;
+
+      const chapterIndex = Number(chapterValue);
+      const lessonIndex = Number(lessonValue);
+
+      if (
+        !Number.isInteger(chapterIndex) ||
+        !Number.isInteger(lessonIndex) ||
+        chapterIndex < 0 ||
+        lessonIndex < 0
+      ) {
+        return null;
+      }
+
+      return `${chapterIndex}:${lessonIndex}`;
+    }
+
+    function isCompletedRecord(item) {
+      if (item === true) {
+        return true;
+      }
+
+      if (!item || typeof item !== "object") {
+        return false;
+      }
+
+      return item.completed === true ||
+        item.isCompleted === true ||
+        item.status === "completed" ||
+        item.done === true;
+    }
+
+    async function loadProgress() {
+      completedLessons = new Set();
+
+      try {
+        const result = await getLessonProgress();
+
+        if (Array.isArray(result)) {
+          result.forEach((item) => {
+            const identity = getLessonIdentity(item);
+
+            if (identity && isCompletedRecord(item)) {
+              completedLessons.add(identity);
+            }
+          });
+          return;
+        }
+
+        if (result && typeof result === "object") {
+          const records = Array.isArray(result.lessons)
+            ? result.lessons
+            : Array.isArray(result.progress)
+              ? result.progress
+              : null;
+
+          if (records) {
+            records.forEach((item) => {
+              const identity = getLessonIdentity(item);
+
+              if (identity && isCompletedRecord(item)) {
+                completedLessons.add(identity);
+              }
+            });
+            return;
+          }
+
+          Object.entries(result).forEach(([key, value]) => {
+            if (value === true && /^\d+:\d+$/.test(key)) {
+              completedLessons.add(key);
+              return;
+            }
+
+            if (value && typeof value === "object") {
+              const identity = getLessonIdentity(value);
+
+              if (identity && isCompletedRecord(value)) {
+                completedLessons.add(identity);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.warn("تعذر تحميل تقدم الدروس:", error);
+      }
+    }
+
+    function showError(error) {
       showState("error");
+      $("#errorTitle").textContent = "تعذر تحميل المنهج";
+      $("#errorMessage").textContent =
+        "لم نتمكن من تحميل الفصول. تحقّق من اتصال الإنترنت ووجود ملف المنهج في المسار الصحيح.";
+      $("#errorDetails").textContent = error?.message
+        ? `التفاصيل: ${error.message}`
+        : "";
     }
 
     async function loadCurriculum() {
-      const currentRequest = ++loadRequest;
+      const requestId = ++loadRequest;
+
       showState("loading");
+      $("#chapterCountNote").textContent = "جارٍ تحميل المنهج...";
+      $("#errorDetails").textContent = "";
 
       if (!language) {
-        showError(
-          "لغة البرمجة غير معروفة",
-          "اختاري لغة صحيحة من صفحة لغات البرمجة.",
-          `القيمة المستلمة: ${requestedLanguage}`
-        );
+        showError(new Error("رمز اللغة في الرابط غير معروف."));
+        $("#errorMessage").textContent =
+          "اختارِي لغة صحيحة من صفحة لغات البرمجة، ثم افتحي الفصول مرة أخرى.";
+        $("#errorDetails").textContent =
+          `القيمة الموجودة في الرابط: ${requestedLanguage}`;
         return;
       }
 
       $("#languageName").textContent = language.name;
-      $("#pageTitle").textContent = `مسار ${language.name}`;
+      $("#pageTitle").textContent = `فصول ${language.name} التعليمية 📚`;
       $("#pageDescription").textContent =
-        `ابدأ من الأساسيات في ${language.name}، وتقدّم فصلًا بعد فصل من خلال الدروس والتطبيقات العملية.`;
+        `تعلّم ${language.name} خطوة بخطوة، وطبّق كل مفهوم بنفسك، وتابع تقدمك في كل فصل.`;
 
       try {
         const response = await fetch(language.file, {
@@ -948,116 +1066,57 @@
         });
 
         if (!response.ok) {
-          throw new Error(
-            `تعذر تحميل ملف المنهج. رمز الاستجابة: ${response.status}`
-          );
+          throw new Error(`تعذر تحميل ملف المنهج (HTTP ${response.status}).`);
         }
 
         const data = await response.json();
+        const chapters = normalizeChapters(data);
 
-        if (currentRequest !== loadRequest) return;
+        await loadProgress();
 
-        const chapters = Array.isArray(data)
-          ? data
-          : Array.isArray(data.chapters)
-            ? data.chapters
-            : [];
-
-        const normalizedChapters = chapters
-          .filter((chapter) => chapter && typeof chapter === "object")
-          .map((chapter) => ({
-            ...chapter,
-            lessons: Array.isArray(chapter.lessons)
-              ? chapter.lessons.filter(
-                  (lesson) => lesson && typeof lesson === "object"
-                )
-              : []
-          }));
-
-        if (!normalizedChapters.length) {
-          showState("empty");
-          $("#chapterCountNote").textContent = "لا توجد فصول";
-          $("#totalChapters").textContent = "0";
-          $("#totalLessons").textContent = "0";
-          $("#overallPercent").textContent = "0%";
-          $("#overallFill").style.width = "0%";
-          $("#overallTrack").setAttribute("aria-valuenow", "0");
-          $("#progressNote").textContent =
-            "ملف المنهج لا يحتوي على فصول قابلة للعرض.";
+        if (requestId !== loadRequest) {
           return;
         }
 
-        completedLessons = await loadCompletedLessons();
+        renderProgress(chapters);
 
-        if (currentRequest !== loadRequest) return;
+        if (chapters.length === 0) {
+          showState("empty");
+          return;
+        }
 
-        renderProgress(normalizedChapters);
-        renderChapters(normalizedChapters);
+        renderChapters(chapters);
         showState("success");
       } catch (error) {
-        if (currentRequest !== loadRequest) return;
-
-        console.error("CodeQuest curriculum error:", error);
-
-        showError(
-          "تعذر تحميل المنهج",
-          "تأكد من أن ملف المنهج موجود في مجلد json وأن الصفحة تعمل من خلال الموقع أو خادم محلي.",
-          error instanceof Error
-            ? error.message
-            : "حدث خطأ غير معروف."
-        );
-      }
-    }
-
-    async function loadCompletedLessons() {
-      const completed = new Set();
-
-      try {
-        if (typeof getLessonProgress !== "function") {
-          return completed;
+        if (requestId !== loadRequest) {
+          return;
         }
 
-        const result = await getLessonProgress(languageKey);
-
-        if (result instanceof Set) {
-          result.forEach((item) => completed.add(String(item)));
-        } else if (Array.isArray(result)) {
-          result.forEach((item) => completed.add(String(item)));
-        } else if (
-          result &&
-          typeof result === "object" &&
-          Array.isArray(result.completedLessons)
-        ) {
-          result.completedLessons.forEach((item) =>
-            completed.add(String(item))
-          );
-        }
-      } catch (error) {
-        console.warn(
-          "تعذر قراءة تقدم الدروس؛ سيظهر التقدم صفرًا.",
-          error
-        );
+        console.error("خطأ في تحميل الفصول:", error);
+        showError(error);
       }
-
-      return completed;
     }
 
     $("#retryButton").addEventListener("click", loadCurriculum);
 
-    try {
-      await requireUser();
+    async function initialize() {
+      try {
+        await requireUser();
+      } catch (error) {
+        console.error("تعذر التحقق من تسجيل الدخول:", error);
+        showState("error");
+        $("#errorTitle").textContent = "تعذر التحقق من الحساب";
+        $("#errorMessage").textContent =
+          "تأكد من تسجيل الدخول، ثم حاول فتح الصفحة مرة أخرى.";
+        $("#errorDetails").textContent = "";
+        return;
+      }
+
       await loadCurriculum();
-    } catch (error) {
-      console.error("تعذر التحقق من تسجيل الدخول:", error);
-
-      showError(
-        "تعذر التحقق من الحساب",
-        "سجّل الدخول أولًا، ثم افتح المسار التعليمي مرة أخرى.",
-        error instanceof Error ? error.message : ""
-      );
     }
-  </script>
 
-  <script src="js/pro-accessibility.js" defer></script>
+    initialize();
+  </script>
 </body>
 </html>
+ 
