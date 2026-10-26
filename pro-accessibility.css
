@@ -1,0 +1,45 @@
+/* CodeQuest - Accessibility Improvements */
+
+/* وضوح العنصر المحدد بالكيبورد */
+:focus-visible {
+  outline: 3px solid #60a5fa !important;
+  outline-offset: 4px;
+}
+
+/* تحسين قراءة النصوص المحددة */
+::selection {
+  color: #070b14;
+  background: #facc15;
+}
+
+/* احترام إعداد تقليل الحركة في الجهاز */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* التأكد من وضوح العناصر المعطلة */
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* تحسين عرض المحتوى على الشاشات الصغيرة */
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+/* عدم إخفاء العناصر المهمة عند تكبير الخط */
+html {
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
