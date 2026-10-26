@@ -10,6 +10,22 @@ const PUBLIC_PAGES = new Set([
 const currentPage =
   window.location.pathname.split("/").pop() || "index.html";
 
+let redirectStarted = false;
+
+function redirectToLogin() {
+  if (redirectStarted) return;
+
+  redirectStarted = true;
+
+  const loginUrl = new URL("login.html", window.location.href);
+
+  // الاحتفاظ بالصفحة المطلوبة ومعاملاتها، دون استخدام عنوان خارجي.
+  const next = `${currentPage}${window.location.search}${window.location.hash}`;
+
+  loginUrl.searchParams.set("next", next);
+  window.location.replace(loginUrl.href);
+}
+
 async function protectPage() {
   if (PUBLIC_PAGES.has(currentPage)) {
     return;
@@ -19,19 +35,14 @@ async function protectPage() {
     const user = await requireUser();
 
     if (!user?.uid) {
-      throw new Error("Authentication required");
+      redirectToLogin();
+      return;
     }
 
     document.documentElement.dataset.authenticated = "true";
-  } catch {
-    const next =
-      `${currentPage}${window.location.search}${window.location.hash}`;
-
-    const loginUrl = new URL("login.html", window.location.href);
-
-    loginUrl.searchParams.set("next", next);
-
-    window.location.replace(loginUrl.href);
+  } catch (error) {
+    console.warn("Page authentication required:", error?.message);
+    redirectToLogin();
   }
 }
 
