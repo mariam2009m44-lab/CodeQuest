@@ -1,91 +1,255 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>المشاريع النهائية | Cody</title>
+  <meta name="theme-color" content="#050810">
+  <title>المشاريع النهائية | CodeQuest</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
   <style>
-    :root { --bg: #050810; --glass: rgba(15, 23, 42, 0.8); --border: rgba(255,255,255,0.1); --text: #ffffff; --muted: #94a3b8; --cyan: #6be8ff; --gold: #ffd48a; --green: #76e9c0; }
+    :root {
+      --bg: #050810;
+      --glass: rgba(15, 23, 42, 0.8);
+      --border: rgba(255,255,255,0.1);
+      --text: #fff;
+      --muted: #94a3b8;
+      --cyan: #6be8ff;
+      --gold: #ffd48a;
+      --green: #76e9c0;
+      --red: #ff91a9;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; display: flex; flex-direction: column; align-items: center; background-image: radial-gradient(circle at 50% 0%, rgba(255,212,138,0.08), transparent 60%); }
-    .header { text-align: center; margin-bottom: 50px; }
-    .header h1 { font-size: 2.5rem; color: var(--gold); font-weight: 900; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,212,138,0.3); }
-    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; max-width: 1100px; width: 100%; }
-    .project-card { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 30px; display: flex; flex-direction: column; transition: 0.3s; }
-    .project-card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-    .project-card h3 { font-size: 1.5rem; margin-bottom: 10px; color: var(--cyan); display: flex; align-items: center; gap: 10px; }
-    .project-card p { color: var(--muted); line-height: 1.7; margin-bottom: 20px; flex: 1; }
-    .code-preview { background: #000; padding: 20px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 0.9rem; color: #a5d6ff; direction: ltr; text-align: left; margin-bottom: 25px; overflow-x: auto; white-space: pre; border: 1px solid #1e293b; line-height: 1.6; }
-    .btn-start { background: var(--gold); color: #000; text-align: center; padding: 14px; border-radius: 12px; font-weight: 900; text-decoration: none; transition: 0.3s; font-size: 1.1rem; }
-    .btn-start:hover { filter: brightness(1.1); transform: scale(1.02); }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-image: radial-gradient(circle at 50% 0%, rgba(255,212,138,0.08), transparent 60%);
+    }
+    .header { text-align: center; margin-bottom: 35px; max-width: 850px; }
+    .header h1 {
+      font-size: 2.3rem;
+      color: var(--gold);
+      font-weight: 900;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(255,212,138,0.3);
+    }
+    .header p { color: var(--muted); line-height: 1.9; }
+    .header a { color: var(--cyan); }
+    .status {
+      width: 100%;
+      max-width: 850px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.9;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--glass);
+      margin-bottom: 25px;
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      width: 100%;
+    }
+    .project-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      transition: 0.3s;
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+    }
+    .project-card h2 {
+      font-size: 1.35rem;
+      margin-bottom: 12px;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .project-card p {
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 18px;
+      flex: 1;
+    }
+    .code-preview {
+      background: #000;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #a5d6ff;
+      direction: ltr;
+      text-align: left;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      white-space: pre;
+      border: 1px solid #1e293b;
+      line-height: 1.65;
+    }
+    .btn-start {
+      background: var(--gold);
+      color: #000;
+      text-align: center;
+      padding: 13px;
+      border-radius: 12px;
+      font-weight: 900;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+    .btn-start:hover { filter: brightness(1.08); }
+    .footer-link {
+      margin-top: 28px;
+      color: var(--cyan);
+      text-decoration: none;
+      font-weight: 700;
+    }
+    [hidden] { display: none !important; }
+    @media (max-width: 600px) {
+      body { padding: 25px 15px; }
+      .header h1 { font-size: 1.7rem; }
+      .project-card { padding: 20px; }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
+  <header class="header">
     <h1>مرحلة الاحتراف: المشاريع 🚀</h1>
-    <p style="color: var(--muted); font-size: 1.1rem;">مبروك! أنت الآن مبرمج بايثون. اختر مشروعاً، ادرس كوده، وحاول تعيد بناءه في <a href="playground.html" style="color: var(--cyan);">مختبر الأكواد</a>.</p>
+    <p>
+      اختار مشروعًا، وافهم الكود، وبعدها جرّب تعدّله وتعيد بناءه بنفسك
+      في <a href="playground.html">مختبر الأكواد</a>.
+    </p>
+  </header>
+
+  <div id="statusMessage" class="status" role="status">
+    جارٍ التحقق من الحساب ونتيجة الامتحان...
   </div>
 
-  <div class="projects-grid">
-    <!-- مشروع 1 -->
-    <div class="project-card">
-      <h3><i class="ri-gamepad-line"></i> لعبة تخمين الرقم</h3>
-      <p>لعبة ممتعة، الكمبيوتر بيفكر في رقم سري، وإنت بتحاول تخمنه. هتستخدم المتغيرات، الشروط، والحلقات.</p>
-      <div class="code-preview">import random
+  <main id="projectsContent" class="projects-grid" hidden>
+    <article class="project-card">
+      <h2><i class="ri-gamepad-line"></i> لعبة تخمين الرقم</h2>
+      <p>الكمبيوتر يختار رقمًا سريًا، وأنت تحاول تخمينه. المشروع يدرّبك على المتغيرات والشروط والحلقات.</p>
+      <pre class="code-preview"><code>import random
 
 secret = random.randint(1, 10)
 guess = 0
 
 while guess != secret:
-    guess = int(input("خمن الرقم من 1 لـ 10: "))
-    if guess < secret:
-        print("أكبر!")
-    elif guess > secret:
-        print("أصغر!")
+    guess = int(input("Guess 1 to 10: "))
+    if guess &lt; secret:
+        print("Higher!")
+    elif guess &gt; secret:
+        print("Lower!")
 
-print("عاش! خمنت صح")</div>
+print("Correct!")</code></pre>
       <a href="playground.html" class="btn-start">تطبيق في المختبر</a>
-    </div>
+    </article>
 
-    <!-- مشروع 2 -->
-    <div class="project-card">
-      <h3><i class="ri-calculator-line"></i> الآلة الحاسبة</h3>
-      <p>برنامج بياخد رقمين من المستخدم، وبيعمل عليهم عملية حسابية (جمع، طرح، ضرب، قسمة).</p>
-      <div class="code-preview">num1 = float(input("الرقم الأول: "))
-num2 = float(input("الرقم الثاني: "))
-op = input("العملية (+,-,*,/): ")
+    <article class="project-card">
+      <h2><i class="ri-calculator-line"></i> الآلة الحاسبة</h2>
+      <p>برنامج يستقبل رقمين وعملية حسابية، ثم يعرض الناتج. جرّب إضافة معالجة للقسمة على صفر.</p>
+      <pre class="code-preview"><code>num1 = float(input("First number: "))
+num2 = float(input("Second number: "))
+op = input("Operation (+,-,*,/): ")
 
-if op == '+':
+if op == "+":
     print(num1 + num2)
-elif op == '-':
+elif op == "-":
     print(num1 - num2)
-elif op == '*':
+elif op == "*":
     print(num1 * num2)
-elif op == '/':
-    print(num1 / num2)</div>
+elif op == "/":
+    if num2 != 0:
+        print(num1 / num2)
+    else:
+        print("Cannot divide by zero")</code></pre>
       <a href="playground.html" class="btn-start">تطبيق في المختبر</a>
-    </div>
+    </article>
 
-    <!-- مشروع 3 -->
-    <div class="project-card">
-      <h3><i class="ri-list-check"></i> مسجل المهام</h3>
-      <p>برنامج بسيط بيخليك تضيف مهامك وتشوفها. هتستخدم القوائم والحلقات عشان تنظم يومك.</p>
-      <div class="code-preview">tasks = []
+    <article class="project-card">
+      <h2><i class="ri-list-check"></i> قائمة المهام</h2>
+      <p>أضف مهامًا إلى قائمة، واكتب «خروج» عند الانتهاء. جرّب بعد ذلك إضافة ميزة لحذف مهمة.</p>
+      <pre class="code-preview"><code>tasks = []
 
 while True:
-    task = input("أضف مهمة (أو اكتب خروج): ")
-    if task == "خروج":
+    task = input("Add task (or exit): ")
+    if task == "exit":
         break
-    tasks.append(task)
-    
-print("\nمهامك اليوم:")
-for t in tasks:
-    print("- " + t)</div>
+    if task.strip():
+        tasks.append(task)
+
+print("\\nYour tasks:")
+for task in tasks:
+    print("- " + task)</code></pre>
       <a href="playground.html" class="btn-start">تطبيق في المختبر</a>
-    </div>
-  </div>
-<script type="module" src="js/route-guard.js"></script>
+    </article>
+  </main>
+
+  <a id="backLink" class="footer-link" href="python-chapters.html" hidden>
+    <i class="ri-arrow-right-line"></i> العودة إلى خريطة الفصول
+  </a>
+
+  <script type="module">
+    import { requireUser } from "./js/auth.js";
+
+    const EXAM_KEY_PREFIX = "codequest_python_exam_passed_";
+    const statusMessage = document.getElementById("statusMessage");
+    const projectsContent = document.getElementById("projectsContent");
+    const backLink = document.getElementById("backLink");
+
+    function blockAccess(message, redirectTo = "") {
+      statusMessage.textContent = message;
+      projectsContent.hidden = true;
+      backLink.hidden = false;
+
+      if (redirectTo) {
+        window.setTimeout(() => {
+          window.location.replace(redirectTo);
+        }, 1400);
+      }
+    }
+
+    try {
+      const user = await requireUser();
+
+      if (!user?.uid) {
+        blockAccess("سجّل الدخول أولًا للوصول إلى المشاريع.", "login.html");
+      } else {
+        const examKey = `${EXAM_KEY_PREFIX}${user.uid}`;
+        const passed = localStorage.getItem(examKey) === "true";
+
+        if (!passed) {
+          blockAccess("صفحة المشاريع مقفولة حاليًا. أكمل الفصول واجتز الامتحان أولًا.", "python-chapters.html");
+        } else {
+          statusMessage.hidden = true;
+          projectsContent.hidden = false;
+          backLink.hidden = false;
+        }
+      }
+    } catch (error) {
+      console.error("Projects access check failed:", error);
+      blockAccess("تعذر التحقق من الحساب. سجّل الدخول وحاول مرة أخرى.", "login.html");
+    }
+  </script>
+
+  <script type="module" src="js/route-guard.js"></script>
 </body>
 </html>
