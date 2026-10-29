@@ -1,145 +1,339 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#7955E8">
-  <meta name="description" content="CodeQuest — منصة تفاعلية لتعلّم البرمجة من خلال الدروس والتحديات والمشاريع التطبيقية.">
-  <title>CodeQuest | منصة تعلّم البرمجة</title>
+  <meta name="theme-color" content="#070912">
+  <meta name="description" content="CodeQuest — تعلّم البرمجة من خلال المسارات التفاعلية والتحديات والمشاريع التطبيقية.">
+  <title>CodeQuest | تعلّم البرمجة</title>
 
   <link rel="stylesheet" href="css/landing.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  
   <style>
-    .professional-contact {
-      padding: 65px 20px;
-      margin: 20px auto 45px;
-    }
-
-    .professional-contact .contact-panel {
+    /* القسم السفلي الجديد فقط */
+    .cq-signature {
+      --cq-bg: #070912;
+      --cq-text: #f5f6ff;
+      --cq-muted: #a1a7bc;
+      --cq-line: rgba(170, 181, 220, .17);
       position: relative;
       overflow: hidden;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 42px 30px;
-      border: 1px solid rgba(121, 85, 232, 0.2);
-      border-radius: 24px;
-      background: linear-gradient(135deg, #ffffff 0%, #f7f4ff 55%, #effcff 100%);
-      box-shadow: 0 16px 45px rgba(48, 35, 95, 0.08);
+      isolation: isolate;
+      padding: 88px 24px 0;
+      margin-top: 56px;
+      color: var(--cq-text);
+      background:
+        radial-gradient(ellipse at 12% 85%, rgba(70, 74, 255, .15), transparent 36%),
+        radial-gradient(ellipse at 85% 12%, rgba(116, 71, 255, .14), transparent 34%),
+        var(--cq-bg);
+      border-top: 1px solid var(--cq-line);
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .cq-signature *,
+    .cq-signature *::before,
+    .cq-signature *::after {
+      box-sizing: border-box;
+    }
+
+    .cq-signature::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      width: 520px;
+      height: 520px;
+      top: -330px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      border: 1px solid rgba(148, 132, 255, .12);
+      box-shadow:
+        0 0 0 55px rgba(148, 132, 255, .025),
+        0 0 0 110px rgba(148, 132, 255, .018);
+      pointer-events: none;
+    }
+
+    .cq-signature__inner {
+      width: min(1120px, 100%);
+      margin-inline: auto;
+    }
+
+    .cq-signature__intro {
+      max-width: 760px;
+      margin: 0 auto 66px;
       text-align: center;
     }
 
-    .professional-contact .contact-label {
-      display: inline-block;
-      padding: 7px 15px;
-      margin-bottom: 15px;
-      border-radius: 30px;
-      background: #eee8ff;
-      color: #6941c6;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .professional-contact h2 {
-      margin: 0 0 14px;
-      color: #20213a;
-      font-size: clamp(24px, 4vw, 34px);
-      font-weight: 900;
-    }
-
-    .professional-contact .contact-intro {
-      max-width: 700px;
-      margin: 0 auto 28px;
-      color: #5e6075;
-      line-height: 2;
-      font-size: 15px;
-    }
-
-    .professional-contact .founder-card {
-      max-width: 720px;
-      margin: 0 auto 28px;
-      padding: 22px;
-      border: 1px solid #e8e2fa;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.85);
-    }
-
-    .professional-contact .founder-card h3 {
-      margin: 0 0 10px;
-      color: #34265e;
-      font-size: 19px;
-    }
-
-    .professional-contact .founder-card p {
-      margin: 0;
-      color: #626276;
-      line-height: 2;
-      font-size: 14px;
-    }
-
-    .professional-contact .contact-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .professional-contact .contact-link {
+    .cq-signature__eyebrow {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 9px;
-      min-width: 150px;
-      padding: 12px 19px;
-      border: 1px solid #e3dcf6;
-      border-radius: 12px;
-      background: #fff;
-      color: #44346d;
-      font-family: inherit;
-      font-size: 14px;
+      gap: 10px;
+      margin-bottom: 20px;
+      color: #b9adff;
+      font-size: 11px;
       font-weight: 700;
-      text-decoration: none;
-      transition: transform 0.2s ease, box-shadow 0.2s ease,
-        border-color 0.2s ease;
+      letter-spacing: 2.5px;
     }
 
-    .professional-contact .contact-link:hover {
-      transform: translateY(-3px);
-      border-color: #b9a5f5;
-      box-shadow: 0 8px 20px rgba(83, 58, 145, 0.1);
+    .cq-signature__eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, #6b8cff, #b28aff);
     }
 
-    .professional-contact .contact-link.primary-contact {
-      border-color: #7955e8;
-      background: #7955e8;
+    .cq-signature__headline {
+      margin: 0 auto 20px;
+      color: var(--cq-text);
+      font-size: clamp(28px, 4.5vw, 48px);
+      font-weight: 800;
+      line-height: 1.5;
+      letter-spacing: -.8px;
+    }
+
+    .cq-signature__headline span {
+      color: #b8a5ff;
+      text-shadow: 0 0 35px rgba(139, 109, 255, .22);
+    }
+
+    .cq-signature__description {
+      max-width: 620px;
+      margin: 0 auto;
+      color: var(--cq-muted);
+      font-size: 15px;
+      line-height: 2.1;
+    }
+
+    .cq-signature__creator {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 44px;
+      padding: 36px 0;
+      border-top: 1px solid var(--cq-line);
+      border-bottom: 1px solid var(--cq-line);
+    }
+
+    .cq-signature__creator-label {
+      display: block;
+      margin-bottom: 12px;
+      color: #a99aff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.8px;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .cq-signature__name {
+      margin: 0 0 10px;
       color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(27px, 3vw, 36px);
+      font-weight: 600;
+      letter-spacing: -.8px;
+      direction: ltr;
+      text-align: right;
     }
 
-    .professional-contact .contact-note {
-      margin: 22px 0 0;
-      color: #77758a;
+    .cq-signature__role {
+      margin: 0;
+      color: var(--cq-muted);
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .cq-signature__quote {
+      position: relative;
+      padding: 8px 28px 8px 0;
+      border-right: 1px solid rgba(164, 145, 255, .48);
+    }
+
+    .cq-signature__quote-mark {
+      display: block;
+      margin-bottom: 7px;
+      color: #a99aff;
+      font-family: Georgia, serif;
+      font-size: 43px;
+      line-height: 1;
+    }
+
+    .cq-signature__quote p {
+      margin: 0;
+      color: #e0e3f0;
+      font-size: 15px;
+      line-height: 2;
+    }
+
+    .cq-signature__contact {
+      display: grid;
+      grid-template-columns: .8fr 1.2fr;
+      gap: 38px;
+      align-items: center;
+      padding: 40px 0;
+    }
+
+    .cq-signature__contact h3 {
+      margin: 0 0 10px;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .cq-signature__contact-copy {
+      margin: 0;
+      color: var(--cq-muted);
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .cq-signature__links {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      direction: ltr;
+    }
+
+    .cq-signature__link {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      min-width: 0;
+      min-height: 92px;
+      gap: 9px;
+      padding: 15px;
+      border: 1px solid var(--cq-line);
+      border-radius: 14px;
+      background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, .045),
+        rgba(255, 255, 255, .012)
+      );
+      color: #f4f4ff;
+      text-decoration: none;
+      transition:
+        border-color .22s ease,
+        background .22s ease,
+        transform .22s ease;
+    }
+
+    .cq-signature__link:hover {
+      transform: translateY(-3px);
+      border-color: rgba(166, 146, 255, .55);
+      background: rgba(135, 112, 255, .09);
+    }
+
+    .cq-signature__link:focus-visible {
+      outline: 2px solid #a99aff;
+      outline-offset: 4px;
+    }
+
+    .cq-signature__link-icon {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border: 1px solid rgba(169, 154, 255, .25);
+      border-radius: 9px;
+      color: #b9adff;
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .cq-signature__link-title {
       font-size: 12px;
+      font-weight: 700;
     }
 
-    @media (max-width: 600px) {
-      .professional-contact {
-        padding: 35px 15px;
+    .cq-signature__link-detail {
+      width: 100%;
+      overflow-wrap: anywhere;
+      color: #969db5;
+      font-size: 10px;
+      line-height: 1.8;
+    }
+
+    .cq-signature__bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 76px;
+      border-top: 1px solid var(--cq-line);
+    }
+
+    .cq-signature__brand {
+      color: #e7e8f4;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      direction: ltr;
+    }
+
+    .cq-signature__motto {
+      color: #777f98;
+      font-size: 11px;
+    }
+
+    .cq-signature__top {
+      color: #a99aff;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    @media (max-width: 760px) {
+      .cq-signature {
+        padding: 64px 20px 0;
+        margin-top: 36px;
       }
 
-      .professional-contact .contact-panel {
-        padding: 30px 18px;
-        border-radius: 18px;
+      .cq-signature__intro {
+        margin-bottom: 44px;
       }
 
-      .professional-contact .contact-links {
-        flex-direction: column;
+      .cq-signature__creator {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 30px 0;
       }
 
-      .professional-contact .contact-link {
-        width: 100%;
-        box-sizing: border-box;
+      .cq-signature__quote {
+        padding-right: 18px;
+      }
+
+      .cq-signature__contact {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 32px 0;
+      }
+
+      .cq-signature__links {
+        grid-template-columns: 1fr;
+      }
+
+      .cq-signature__link {
+        min-height: 76px;
+      }
+
+      .cq-signature__bottom {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 22px 0;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cq-signature__link {
+        transition: none;
+      }
+
+      .cq-signature__link:hover {
+        transform: none;
       }
     }
   </style>
@@ -297,71 +491,92 @@
       </a>
     </section>
 
-    <!-- القسم الجديد فقط: تعريف احترافي وتواصل -->
-    <section class="professional-contact" id="contact">
-      <div class="contact-panel">
-        <span class="contact-label">ABOUT THE PROJECT</span>
+    <!-- التوقيع والتواصل: إضافة جديدة دون حذف المحتوى السابق -->
+    <section class="cq-signature" id="contact" aria-labelledby="cq-heading">
+      <div class="cq-signature__inner">
 
-        <h2>وراء CodeQuest فكرة تصنع فرقًا</h2>
+        <div class="cq-signature__intro">
+          <span class="cq-signature__eyebrow">CODEQUEST · تجربة تعلّم مختلفة</span>
 
-        <p class="contact-intro">
-          CodeQuest منصة تعليمية تفاعلية تهدف إلى تبسيط تعلّم البرمجة
-          للمبتدئين، من خلال مسارات تعليمية وتدريبات وألعاب ومشاريع
-          تساعد المتعلّم على الانتقال من فهم المفاهيم إلى تطبيقها عمليًا.
-        </p>
+          <h2 class="cq-signature__headline" id="cq-heading">
+            اكتشف إمكانياتك.<br>
+            وابدأ بصناعة <span>المستقبل.</span>
+          </h2>
 
-        <div class="founder-card">
-          <h3>عن صاحبة المشروع</h3>
-          <p>
-            مريم فؤاد، طالبة مهتمة بالتكنولوجيا والبرمجة وبناء التجارب
-            التعليمية الرقمية. تعمل على تطوير CodeQuest لتقديم تجربة
-            تعلّم أكثر تفاعلًا وتنظيمًا، تجمع بين المعرفة والتطبيق العملي.
+          <p class="cq-signature__description">
+            مساحة تفاعلية لاكتشاف البرمجة، وتطوير الأفكار،
+            والتعلّم من خلال التجربة والممارسة والمشاريع التطبيقية.
           </p>
         </div>
 
-        <h3>للتواصل والتعاون</h3>
+        <div class="cq-signature__creator">
+          <div>
+            <span class="cq-signature__creator-label">DESIGNED BY</span>
+            <h3 class="cq-signature__name">Mariam Fouad</h3>
+            <p class="cq-signature__role">
+              تصميم وتطوير تجربة CodeQuest التعليمية.
+            </p>
+          </div>
 
-        <p class="contact-intro">
-          للاستفسارات أو التواصل المهني بشأن المشروع، يمكنك استخدام إحدى
-          وسائل التواصل التالية.
-        </p>
-
-        <div class="contact-links">
-          <a
-            class="contact-link primary-contact"
-            href="mailto:mariam2009m44@gmail.com"
-            aria-label="التواصل عبر البريد الإلكتروني"
-          >
-            <span aria-hidden="true">✉</span>
-            البريد الإلكتروني
-          </a>
-
-          <a
-            class="contact-link"
-            href="https://www.linkedin.com/in/mariam-fouad-3a7462371/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="زيارة حساب LinkedIn"
-          >
-            <span aria-hidden="true">in</span>
-            LinkedIn
-          </a>
-
-          <a
-            class="contact-link"
-            href="https://www.instagram.com/mariamfouad227/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="زيارة حساب Instagram"
-          >
-            <span aria-hidden="true">◎</span>
-            Instagram
-          </a>
+          <div class="cq-signature__quote">
+            <span class="cq-signature__quote-mark" aria-hidden="true">“</span>
+            <p>
+              كل بداية صغيرة قد تتحول إلى شيء يستحق أن يُبنى.
+            </p>
+          </div>
         </div>
 
-        <p class="contact-note">
-          CodeQuest · التعلّم اليوم، والإبداع غدًا.
-        </p>
+        <div class="cq-signature__contact">
+          <div>
+            <h3>لنتواصل</h3>
+            <p class="cq-signature__contact-copy">
+              للاستفسارات والتواصل المهني حول المشروع.
+            </p>
+          </div>
+
+          <div class="cq-signature__links">
+            <a
+              class="cq-signature__link"
+              href="mailto:mariam2009m44@gmail.com"
+              aria-label="Email Mariam Fouad"
+            >
+              <span class="cq-signature__link-icon" aria-hidden="true">✉</span>
+              <span class="cq-signature__link-title">Email</span>
+              <span class="cq-signature__link-detail">mariam2009m44@gmail.com</span>
+            </a>
+
+            <a
+              class="cq-signature__link"
+              href="https://www.linkedin.com/in/mariam-fouad-3a7462371/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Mariam Fouad on LinkedIn"
+            >
+              <span class="cq-signature__link-icon" aria-hidden="true">in</span>
+              <span class="cq-signature__link-title">LinkedIn</span>
+              <span class="cq-signature__link-detail">Professional profile</span>
+            </a>
+
+            <a
+              class="cq-signature__link"
+              href="https://www.instagram.com/mariamfouad227/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Mariam Fouad on Instagram"
+            >
+              <span class="cq-signature__link-icon" aria-hidden="true">◎</span>
+              <span class="cq-signature__link-title">Instagram</span>
+              <span class="cq-signature__link-detail">@mariamfouad227</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="cq-signature__bottom">
+          <span class="cq-signature__brand">CodeQuest</span>
+          <span class="cq-signature__motto">التعلّم اليوم، والإبداع غدًا.</span>
+          <a class="cq-signature__top" href="#home">العودة إلى الأعلى ↑</a>
+        </div>
+
       </div>
     </section>
   </main>
