@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#070912">
+  <meta name="theme-color" content="#ffffff">
   <meta name="description" content="CodeQuest — تعلّم البرمجة من خلال المسارات التفاعلية والتحديات والمشاريع التطبيقية.">
   <title>CodeQuest | تعلّم البرمجة</title>
 
@@ -12,23 +12,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    /* القسم السفلي الجديد فقط */
+    /* ==============================
+       CodeQuest Creator Section
+    ============================== */
+
     .cq-signature {
-      --cq-bg: #070912;
-      --cq-text: #f5f6ff;
-      --cq-muted: #a1a7bc;
-      --cq-line: rgba(170, 181, 220, .17);
       position: relative;
       overflow: hidden;
       isolation: isolate;
-      padding: 88px 24px 0;
-      margin-top: 56px;
-      color: var(--cq-text);
-      background:
-        radial-gradient(ellipse at 12% 85%, rgba(70, 74, 255, .15), transparent 36%),
-        radial-gradient(ellipse at 85% 12%, rgba(116, 71, 255, .14), transparent 34%),
-        var(--cq-bg);
-      border-top: 1px solid var(--cq-line);
+      padding: 100px 24px 30px;
+      margin-top: 55px;
+      background: #ffffff;
+      color: #111827;
       font-family: 'Cairo', sans-serif;
     }
 
@@ -38,308 +33,444 @@
       box-sizing: border-box;
     }
 
-    .cq-signature::before {
-      content: "";
-      position: absolute;
-      z-index: -1;
-      width: 520px;
-      height: 520px;
-      top: -330px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 50%;
-      border: 1px solid rgba(148, 132, 255, .12);
-      box-shadow:
-        0 0 0 55px rgba(148, 132, 255, .025),
-        0 0 0 110px rgba(148, 132, 255, .018);
-      pointer-events: none;
-    }
-
     .cq-signature__inner {
       width: min(1120px, 100%);
-      margin-inline: auto;
+      margin: auto;
     }
 
-    .cq-signature__intro {
-      max-width: 760px;
-      margin: 0 auto 66px;
-      text-align: center;
+    /* Main layout */
+
+    .cq-signature__layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 55px;
+    }
+
+    .cq-signature__copy {
+      position: relative;
+      z-index: 3;
     }
 
     .cq-signature__eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 20px;
-      color: #b9adff;
+      margin-bottom: 22px;
+      color: #8490a3;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 2.5px;
+      direction: ltr;
     }
 
     .cq-signature__eyebrow::before {
       content: "";
-      width: 24px;
+      width: 25px;
       height: 1px;
-      background: linear-gradient(90deg, #6b8cff, #b28aff);
+      background: #a5afbd;
     }
 
-    .cq-signature__headline {
-      margin: 0 auto 20px;
-      color: var(--cq-text);
-      font-size: clamp(28px, 4.5vw, 48px);
-      font-weight: 800;
-      line-height: 1.5;
-      letter-spacing: -.8px;
-    }
-
-    .cq-signature__headline span {
-      color: #b8a5ff;
-      text-shadow: 0 0 35px rgba(139, 109, 255, .22);
+    .cq-signature__name {
+      margin: 0 0 18px;
+      color: #111827;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(42px, 5vw, 68px);
+      font-weight: 600;
+      letter-spacing: -3px;
+      line-height: 1.08;
+      direction: ltr;
+      text-align: right;
     }
 
     .cq-signature__description {
-      max-width: 620px;
-      margin: 0 auto;
-      color: var(--cq-muted);
+      max-width: 390px;
+      margin: 0;
+      color: #788395;
       font-size: 15px;
       line-height: 2.1;
     }
 
-    .cq-signature__creator {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-      gap: 44px;
-      padding: 36px 0;
-      border-top: 1px solid var(--cq-line);
-      border-bottom: 1px solid var(--cq-line);
+    /* Interactive information */
+
+    .cq-signature__detail {
+      min-height: 105px;
+      margin-top: 35px;
+      padding: 15px 19px;
+      border-right: 2px solid #dbe4f0;
+      transition: opacity .25s ease, transform .25s ease;
     }
 
-    .cq-signature__creator-label {
-      display: block;
-      margin-bottom: 12px;
-      color: #a99aff;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2.8px;
-      direction: ltr;
-      text-align: right;
+    .cq-signature__detail.is-changing {
+      opacity: 0;
+      transform: translateY(7px);
     }
 
-    .cq-signature__name {
-      margin: 0 0 10px;
-      color: #fff;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: clamp(27px, 3vw, 36px);
-      font-weight: 600;
-      letter-spacing: -.8px;
-      direction: ltr;
-      text-align: right;
-    }
-
-    .cq-signature__role {
-      margin: 0;
-      color: var(--cq-muted);
-      font-size: 14px;
-      line-height: 2;
-    }
-
-    .cq-signature__quote {
-      position: relative;
-      padding: 8px 28px 8px 0;
-      border-right: 1px solid rgba(164, 145, 255, .48);
-    }
-
-    .cq-signature__quote-mark {
-      display: block;
-      margin-bottom: 7px;
-      color: #a99aff;
-      font-family: Georgia, serif;
-      font-size: 43px;
-      line-height: 1;
-    }
-
-    .cq-signature__quote p {
-      margin: 0;
-      color: #e0e3f0;
+    .cq-signature__detail-title {
+      margin: 0 0 7px;
+      color: #1e293b;
       font-size: 15px;
-      line-height: 2;
-    }
-
-    .cq-signature__contact {
-      display: grid;
-      grid-template-columns: .8fr 1.2fr;
-      gap: 38px;
-      align-items: center;
-      padding: 40px 0;
-    }
-
-    .cq-signature__contact h3 {
-      margin: 0 0 10px;
-      color: #fff;
-      font-size: 24px;
       font-weight: 700;
     }
 
-    .cq-signature__contact-copy {
+    .cq-signature__detail-text {
       margin: 0;
-      color: var(--cq-muted);
+      color: #8490a3;
       font-size: 13px;
-      line-height: 2;
+      line-height: 1.9;
     }
 
-    .cq-signature__links {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      direction: ltr;
-    }
+    /* Navigation tabs */
 
-    .cq-signature__link {
+    .cq-signature__tabs {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      min-width: 0;
-      min-height: 92px;
+      flex-wrap: wrap;
       gap: 9px;
-      padding: 15px;
-      border: 1px solid var(--cq-line);
-      border-radius: 14px;
+      margin-top: 25px;
+    }
+
+    .cq-signature__tab {
+      padding: 10px 18px;
+      border: 1px solid #e5e9ef;
+      border-radius: 30px;
+      background: #ffffff;
+      color: #64748b;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .cq-signature__tab:hover {
+      border-color: #aab6c6;
+      transform: translateY(-2px);
+    }
+
+    .cq-signature__tab[aria-selected="true"] {
+      background: #111827;
+      border-color: #111827;
+      color: #ffffff;
+    }
+
+    /* ==============================
+       3D Orbital Visual
+    ============================== */
+
+    .cq-signature__visual {
+      min-height: 450px;
+      display: grid;
+      place-items: center;
+      perspective: 1100px;
+    }
+
+    .cq-signature__stage {
+      position: relative;
+      width: min(100%, 440px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      transform-style: preserve-3d;
+    }
+
+    .cq-signature__orbit {
+      position: absolute;
+      width: 88%;
+      height: 88%;
+      border: 1px solid rgba(148, 163, 184, .34);
+      border-radius: 50%;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+
+    .cq-signature__orbit--one {
+      transform: rotateX(68deg) rotateZ(-18deg);
+      animation: cq-orbit-one 19s linear infinite;
+    }
+
+    .cq-signature__orbit--two {
+      width: 76%;
+      height: 76%;
+      transform: rotateY(68deg) rotateZ(25deg);
+      animation: cq-orbit-two 23s linear infinite;
+    }
+
+    .cq-signature__orbit--three {
+      width: 98%;
+      height: 55%;
+      border-color: rgba(148, 163, 184, .22);
+      transform: rotateX(75deg) rotateZ(55deg);
+      animation: cq-orbit-three 27s linear infinite;
+    }
+
+    @keyframes cq-orbit-one {
+      from {
+        transform: rotateX(68deg) rotateZ(-18deg);
+      }
+      to {
+        transform: rotateX(68deg) rotateZ(342deg);
+      }
+    }
+
+    @keyframes cq-orbit-two {
+      from {
+        transform: rotateY(68deg) rotateZ(25deg);
+      }
+      to {
+        transform: rotateY(68deg) rotateZ(-335deg);
+      }
+    }
+
+    @keyframes cq-orbit-three {
+      from {
+        transform: rotateX(75deg) rotateZ(55deg);
+      }
+      to {
+        transform: rotateX(75deg) rotateZ(415deg);
+      }
+    }
+
+    /* Glass center */
+
+    .cq-signature__core {
+      position: relative;
+      z-index: 3;
+      width: 190px;
+      height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 13px;
+      border: 1px solid rgba(255,255,255,.95);
+      border-radius: 38px;
       background: linear-gradient(
         145deg,
-        rgba(255, 255, 255, .045),
-        rgba(255, 255, 255, .012)
+        rgba(255,255,255,.94),
+        rgba(241,245,249,.72)
       );
-      color: #f4f4ff;
-      text-decoration: none;
-      transition:
-        border-color .22s ease,
-        background .22s ease,
-        transform .22s ease;
+      box-shadow:
+        0 25px 65px rgba(15,23,42,.09),
+        inset 0 1px 2px rgba(255,255,255,.95),
+        0 0 0 1px rgba(148,163,184,.12);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      transform: rotateX(8deg) rotateY(-10deg);
+      transition: transform .4s ease;
     }
 
-    .cq-signature__link:hover {
-      transform: translateY(-3px);
-      border-color: rgba(166, 146, 255, .55);
-      background: rgba(135, 112, 255, .09);
+    .cq-signature__core:hover {
+      transform: rotateX(0) rotateY(0) translateY(-5px);
     }
 
-    .cq-signature__link:focus-visible {
-      outline: 2px solid #a99aff;
-      outline-offset: 4px;
-    }
-
-    .cq-signature__link-icon {
+    .cq-signature__mark {
+      width: 49px;
+      height: 49px;
       display: grid;
-      width: 31px;
-      height: 31px;
       place-items: center;
-      border: 1px solid rgba(169, 154, 255, .25);
-      border-radius: 9px;
-      color: #b9adff;
+      border-radius: 15px;
+      background: #111827;
+      color: #ffffff;
       font-family: Arial, sans-serif;
-      font-size: 15px;
+      font-size: 19px;
       font-weight: 700;
     }
 
-    .cq-signature__link-title {
+    .cq-signature__core-name {
+      color: #1e293b;
+      font-family: Arial, sans-serif;
       font-size: 12px;
-      font-weight: 700;
-    }
-
-    .cq-signature__link-detail {
-      width: 100%;
-      overflow-wrap: anywhere;
-      color: #969db5;
-      font-size: 10px;
-      line-height: 1.8;
-    }
-
-    .cq-signature__bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      min-height: 76px;
-      border-top: 1px solid var(--cq-line);
-    }
-
-    .cq-signature__brand {
-      color: #e7e8f4;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 15px;
-      font-weight: 700;
+      font-weight: 750;
+      letter-spacing: 2px;
       direction: ltr;
     }
 
-    .cq-signature__motto {
-      color: #777f98;
+    /* Orbit buttons */
+
+    .cq-signature__node {
+      position: absolute;
+      z-index: 4;
+      width: 49px;
+      height: 49px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.95);
+      border-radius: 50%;
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 8px 28px rgba(15,23,42,.10);
+      color: #475569;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: transform .3s ease, background .3s ease, color .3s ease;
+    }
+
+    .cq-signature__node:hover,
+    .cq-signature__node[aria-pressed="true"] {
+      transform: scale(1.13);
+      background: #111827;
+      color: #ffffff;
+    }
+
+    .cq-signature__node svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .cq-signature__node--one {
+      top: 12%;
+      left: 15%;
+    }
+
+    .cq-signature__node--two {
+      top: 18%;
+      right: 9%;
+    }
+
+    .cq-signature__node--three {
+      bottom: 12%;
+      left: 47%;
+    }
+
+    /* Contact icons */
+
+    .cq-signature__socials {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 15px;
+      direction: ltr;
+    }
+
+    .cq-signature__social-link {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #e5e9ef;
+      border-radius: 50%;
+      background: #ffffff;
+      color: #475569;
+      text-decoration: none;
+      transition: .25s ease;
+    }
+
+    .cq-signature__social-link:hover {
+      transform: translateY(-3px);
+      border-color: #111827;
+      background: #111827;
+      color: #ffffff;
+    }
+
+    .cq-signature__social-link svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Footer */
+
+    .cq-signature__bottom {
+      max-width: 1120px;
+      margin: 75px auto 0;
+      padding: 22px 0;
+      border-top: 1px solid #f0f2f5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      color: #9aa3b2;
       font-size: 11px;
     }
 
-    .cq-signature__top {
-      color: #a99aff;
-      font-size: 12px;
-      text-decoration: none;
+    .cq-signature__brand {
+      color: #475569;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      direction: ltr;
     }
+
+    /* Responsive */
 
     @media (max-width: 760px) {
       .cq-signature {
-        padding: 64px 20px 0;
-        margin-top: 36px;
+        padding: 70px 20px 20px;
       }
 
-      .cq-signature__intro {
-        margin-bottom: 44px;
-      }
-
-      .cq-signature__creator {
+      .cq-signature__layout {
         grid-template-columns: 1fr;
-        gap: 28px;
-        padding: 30px 0;
+        gap: 25px;
       }
 
-      .cq-signature__quote {
-        padding-right: 18px;
+      .cq-signature__copy {
+        text-align: center;
       }
 
-      .cq-signature__contact {
-        grid-template-columns: 1fr;
-        gap: 24px;
-        padding: 32px 0;
+      .cq-signature__eyebrow {
+        justify-content: center;
       }
 
-      .cq-signature__links {
-        grid-template-columns: 1fr;
+      .cq-signature__name {
+        text-align: center;
+        font-size: 48px;
       }
 
-      .cq-signature__link {
-        min-height: 76px;
+      .cq-signature__description {
+        margin: auto;
+      }
+
+      .cq-signature__detail {
+        max-width: 380px;
+        margin: 28px auto 0;
+        text-align: right;
+      }
+
+      .cq-signature__tabs {
+        justify-content: center;
+      }
+
+      .cq-signature__visual {
+        min-height: 350px;
+      }
+
+      .cq-signature__stage {
+        width: min(100%, 350px);
+      }
+
+      .cq-signature__core {
+        width: 155px;
+        height: 155px;
+        border-radius: 30px;
+      }
+
+      .cq-signature__node {
+        width: 43px;
+        height: 43px;
       }
 
       .cq-signature__bottom {
-        flex-wrap: wrap;
+        flex-direction: column;
         justify-content: center;
-        padding: 22px 0;
+        margin-top: 45px;
         text-align: center;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .cq-signature__link {
-        transition: none;
+      .cq-signature__orbit {
+        animation: none !important;
       }
 
-      .cq-signature__link:hover {
-        transform: none;
+      .cq-signature__node,
+      .cq-signature__core,
+      .cq-signature__social-link {
+        transition: none !important;
       }
     }
   </style>
 </head>
 
 <body>
+
   <header class="container">
     <nav aria-label="القائمة الرئيسية">
       <a class="logo" href="index.html">Cody <span>&lt;/&gt;</span></a>
@@ -357,9 +488,15 @@
   </header>
 
   <main>
+
+    <!-- Hero Section -->
     <section class="hero container" id="home">
       <div class="hero-content">
-        <div class="eyebrow"><span></span> مغامرتك البرمجية تبدأ هنا</div>
+
+        <div class="eyebrow">
+          <span></span>
+          مغامرتك البرمجية تبدأ هنا
+        </div>
 
         <h1>
           تعلّم البرمجة<br>
@@ -380,10 +517,12 @@
             <span class="trust-icon">🛡️</span>
             <span>بيئة آمنة للأطفال</span>
           </div>
+
           <div class="trust-item">
             <span class="trust-icon">⭐</span>
             <span>تعلّم تفاعلي</span>
           </div>
+
           <div class="trust-item">
             <span class="trust-icon">💗</span>
             <span>مناسب لمستويات مختلفة</span>
@@ -429,14 +568,17 @@
       </div>
     </section>
 
+    <!-- Learning Section -->
     <section class="learning-section" id="paths">
       <div class="container">
+
         <div class="section-heading">
           <h2>ماذا ستتعلّم؟ ✨</h2>
           <p>اختار ما يناسبك وابدأ رحلتك في عالم البرمجة.</p>
         </div>
 
         <div class="cards">
+
           <article class="card">
             <div class="card-icon">🗺️</div>
             <h3>المسارات</h3>
@@ -472,10 +614,12 @@
               اكتشف المشاريع ←
             </a>
           </article>
+
         </div>
       </div>
     </section>
 
+    <!-- About Section -->
     <section class="about container" id="about">
       <div class="section-heading">
         <h2>أهلًا بك في عالم كودي 💙</h2>
@@ -491,108 +635,347 @@
       </a>
     </section>
 
-    <!-- التوقيع والتواصل: إضافة جديدة دون حذف المحتوى السابق -->
-    <section class="cq-signature" id="contact" aria-labelledby="cq-heading">
+    <!-- ==============================
+         Creator Signature Section
+    ============================== -->
+
+    <section class="cq-signature" id="contact">
       <div class="cq-signature__inner">
 
-        <div class="cq-signature__intro">
-          <span class="cq-signature__eyebrow">CODEQUEST · تجربة تعلّم مختلفة</span>
+        <div class="cq-signature__layout">
 
-          <h2 class="cq-signature__headline" id="cq-heading">
-            اكتشف إمكانياتك.<br>
-            وابدأ بصناعة <span>المستقبل.</span>
-          </h2>
+          <!-- Creator Information -->
+          <div class="cq-signature__copy">
 
-          <p class="cq-signature__description">
-            مساحة تفاعلية لاكتشاف البرمجة، وتطوير الأفكار،
-            والتعلّم من خلال التجربة والممارسة والمشاريع التطبيقية.
-          </p>
-        </div>
+            <span class="cq-signature__eyebrow">
+              THE CREATOR
+            </span>
 
-        <div class="cq-signature__creator">
-          <div>
-            <span class="cq-signature__creator-label">DESIGNED BY</span>
-            <h3 class="cq-signature__name">Mariam Fouad</h3>
-            <p class="cq-signature__role">
+            <h2 class="cq-signature__name">
+              Mariam<br>Fouad
+            </h2>
+
+            <p class="cq-signature__description">
               تصميم وتطوير تجربة CodeQuest التعليمية.
             </p>
+
+            <div
+              class="cq-signature__detail"
+              id="cq-detail"
+              aria-live="polite"
+            >
+              <h3
+                class="cq-signature__detail-title"
+                id="cq-detail-title"
+              >
+                CodeQuest
+              </h3>
+
+              <p
+                class="cq-signature__detail-text"
+                id="cq-detail-text"
+              >
+                مساحة تعليمية تفاعلية تجعل تعلم البرمجة تجربة عملية.
+              </p>
+            </div>
+
+            <div class="cq-signature__tabs" role="group" aria-label="استكشف">
+
+              <button
+                class="cq-signature__tab"
+                type="button"
+                data-panel="project"
+                aria-selected="true"
+              >
+                Project
+              </button>
+
+              <button
+                class="cq-signature__tab"
+                type="button"
+                data-panel="design"
+                aria-selected="false"
+              >
+                Design
+              </button>
+
+              <button
+                class="cq-signature__tab"
+                type="button"
+                data-panel="contact"
+                aria-selected="false"
+              >
+                Contact
+              </button>
+
+            </div>
           </div>
 
-          <div class="cq-signature__quote">
-            <span class="cq-signature__quote-mark" aria-hidden="true">“</span>
-            <p>
-              كل بداية صغيرة قد تتحول إلى شيء يستحق أن يُبنى.
-            </p>
+          <!-- 3D Glass Design -->
+          <div class="cq-signature__visual">
+
+            <div class="cq-signature__stage">
+
+              <div class="cq-signature__orbit cq-signature__orbit--one"></div>
+              <div class="cq-signature__orbit cq-signature__orbit--two"></div>
+              <div class="cq-signature__orbit cq-signature__orbit--three"></div>
+
+              <div class="cq-signature__core">
+                <div class="cq-signature__mark">CQ</div>
+                <div class="cq-signature__core-name">CODEQUEST</div>
+              </div>
+
+              <!-- Project Node -->
+              <button
+                class="cq-signature__node cq-signature__node--one"
+                type="button"
+                data-panel="project"
+                aria-label="Project"
+                aria-pressed="true"
+              >
+                <svg viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.7"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="16" rx="3"/>
+                  <path d="m8 10 3 2-3 2m5 0h3"/>
+                </svg>
+              </button>
+
+              <!-- Design Node -->
+              <button
+                class="cq-signature__node cq-signature__node--two"
+                type="button"
+                data-panel="design"
+                aria-label="Design"
+                aria-pressed="false"
+              >
+                <svg viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.7"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m12 3 2.3 5.7L20 11l-5.7 2.3L12 19l-2.3-5.7L4 11l5.7-2.3L12 3Z"/>
+                  <path d="m19 16 .9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16Z"/>
+                </svg>
+              </button>
+
+              <!-- Contact Node -->
+              <button
+                class="cq-signature__node cq-signature__node--three"
+                type="button"
+                data-panel="contact"
+                aria-label="Contact"
+                aria-pressed="false"
+              >
+                <svg viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.7"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="18" height="14" rx="3"/>
+                  <path d="m4 7 8 6 8-6"/>
+                </svg>
+              </button>
+
+            </div>
           </div>
+
         </div>
 
-        <div class="cq-signature__contact">
-          <div>
-            <h3>لنتواصل</h3>
-            <p class="cq-signature__contact-copy">
-              للاستفسارات والتواصل المهني حول المشروع.
-            </p>
-          </div>
-
-          <div class="cq-signature__links">
-            <a
-              class="cq-signature__link"
-              href="mailto:mariam2009m44@gmail.com"
-              aria-label="Email Mariam Fouad"
-            >
-              <span class="cq-signature__link-icon" aria-hidden="true">✉</span>
-              <span class="cq-signature__link-title">Email</span>
-              <span class="cq-signature__link-detail">mariam2009m44@gmail.com</span>
-            </a>
-
-            <a
-              class="cq-signature__link"
-              href="https://www.linkedin.com/in/mariam-fouad-3a7462371/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Mariam Fouad on LinkedIn"
-            >
-              <span class="cq-signature__link-icon" aria-hidden="true">in</span>
-              <span class="cq-signature__link-title">LinkedIn</span>
-              <span class="cq-signature__link-detail">Professional profile</span>
-            </a>
-
-            <a
-              class="cq-signature__link"
-              href="https://www.instagram.com/mariamfouad227/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Mariam Fouad on Instagram"
-            >
-              <span class="cq-signature__link-icon" aria-hidden="true">◎</span>
-              <span class="cq-signature__link-title">Instagram</span>
-              <span class="cq-signature__link-detail">@mariamfouad227</span>
-            </a>
-          </div>
-        </div>
-
+        <!-- Bottom -->
         <div class="cq-signature__bottom">
           <span class="cq-signature__brand">CodeQuest</span>
-          <span class="cq-signature__motto">التعلّم اليوم، والإبداع غدًا.</span>
-          <a class="cq-signature__top" href="#home">العودة إلى الأعلى ↑</a>
+          <span>Designed by Mariam Fouad</span>
+          <a href="#home">العودة إلى الأعلى ↑</a>
         </div>
 
       </div>
     </section>
+
   </main>
 
+  <!-- Original Footer -->
   <footer>
     <div class="container">
       Cody Coding Academy · نتعلّم اليوم لنصنع أفكار الغد ✨
     </div>
   </footer>
 
+  <!-- ==============================
+       Creator Section Interactions
+  ============================== -->
+
+  <script>
+    (() => {
+      const section = document.getElementById("contact");
+
+      if (!section || section.dataset.initialized === "true") {
+        return;
+      }
+
+      section.dataset.initialized = "true";
+
+      const detail = section.querySelector("#cq-detail");
+      const title = section.querySelector("#cq-detail-title");
+      const description = section.querySelector("#cq-detail-text");
+
+      const controls = [
+        ...section.querySelectorAll("[data-panel]")
+      ];
+
+      const panels = {
+        project: {
+          title: "CodeQuest",
+          text: "مساحة تعليمية تفاعلية تجعل تعلم البرمجة تجربة عملية."
+        },
+
+        design: {
+          title: "Design & Experience",
+          text: "تصميم واجهة تجمع بين البساطة والتفاعل وسهولة الاستخدام."
+        },
+
+        contact: {
+          title: "Let's Connect",
+          text: "يمكنك التواصل من خلال المنصات التالية."
+        }
+      };
+
+      const icons = {
+        email: `
+          <svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="3"/>
+            <path d="m4 7 8 6 8-6"/>
+          </svg>
+        `,
+
+        linkedin: `
+          <svg viewBox="0 0 24 24" fill="currentColor"
+            aria-hidden="true">
+            <path d="M5.2 3.5a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4ZM3.3 9.5h3.8v11H3.3v-11Zm6.2 0h3.6V11h.1c.5-.9 1.7-1.9 3.5-1.9 3.8 0 4.5 2.5 4.5 5.7v5.7h-3.8v-5.1c0-1.2 0-2.8-1.8-2.8s-2.1 1.3-2.1 2.7v5.2H9.5v-11Z"/>
+          </svg>
+        `,
+
+        instagram: `
+          <svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M17.5 6.5h.01"/>
+          </svg>
+        `
+      };
+
+      function removeSocials() {
+        const existing = detail.querySelector(
+          ".cq-signature__socials"
+        );
+
+        if (existing) {
+          existing.remove();
+        }
+      }
+
+      function createSocials() {
+        const socials = document.createElement("div");
+
+        socials.className = "cq-signature__socials";
+
+        socials.innerHTML = `
+          <a
+            class="cq-signature__social-link"
+            href="mailto:mariam2009m44@gmail.com"
+            aria-label="Email"
+          >
+            ${icons.email}
+          </a>
+
+          <a
+            class="cq-signature__social-link"
+            href="https://www.linkedin.com/in/mariam-fouad-3a7462371/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="LinkedIn"
+          >
+            ${icons.linkedin}
+          </a>
+
+          <a
+            class="cq-signature__social-link"
+            href="https://www.instagram.com/mariamfouad227/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+          >
+            ${icons.instagram}
+          </a>
+        `;
+
+        detail.appendChild(socials);
+      }
+
+      function showPanel(panelName) {
+        const panel = panels[panelName];
+
+        if (!panel) {
+          return;
+        }
+
+        detail.classList.add("is-changing");
+
+        window.setTimeout(() => {
+          title.textContent = panel.title;
+          description.textContent = panel.text;
+
+          removeSocials();
+
+          if (panelName === "contact") {
+            createSocials();
+          }
+
+          detail.classList.remove("is-changing");
+        }, 180);
+
+        controls.forEach(control => {
+          const selected = control.dataset.panel === panelName;
+
+          if (control.classList.contains("cq-signature__tab")) {
+            control.setAttribute(
+              "aria-selected",
+              String(selected)
+            );
+          }
+
+          if (control.classList.contains("cq-signature__node")) {
+            control.setAttribute(
+              "aria-pressed",
+              String(selected)
+            );
+          }
+        });
+      }
+
+      controls.forEach(control => {
+        control.addEventListener("click", () => {
+          showPanel(control.dataset.panel);
+        });
+      });
+
+    })();
+  </script>
+
+  <!-- Firebase Authentication Navigation -->
   <script type="module">
     import { auth } from "./js/firebase-config.js";
-    import { onAuthStateChanged } from
-      "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    const protectedLinks = document.querySelectorAll("a[data-protected]");
+    import {
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    const protectedLinks = document.querySelectorAll(
+      "a[data-protected]"
+    );
+
     const protectedPages = new Set([
       "languages.html",
       "games.html",
@@ -637,6 +1020,7 @@
         }
 
         event.preventDefault();
+
         await authReady;
 
         if (currentUser) {
@@ -644,12 +1028,17 @@
           return;
         }
 
-        const loginUrl = new URL("login.html", window.location.href);
+        const loginUrl = new URL(
+          "login.html",
+          window.location.href
+        );
+
         loginUrl.searchParams.set("next", destination);
 
         window.location.assign(loginUrl.href);
       });
     });
   </script>
+
 </body>
 </html>
