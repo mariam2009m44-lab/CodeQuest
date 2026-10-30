@@ -1,7 +1,12 @@
 
-import { requireUser, saveLessonProgress, getLessonProgress } from "./auth.js";
+import {
+  requireUser,
+  saveLessonProgress,
+  getLessonProgress
+} from "./auth.js";
 
-const BACKEND_URL = "https://codequest.mariam2009m44.workers.dev";
+const BACKEND_URL =
+  "https://codequest.mariam2009m44.workers.dev";
 
 const LANGUAGE_CONFIG = {
   javascript: {
@@ -35,8 +40,12 @@ const languageKey = (params.get("lang") || "javascript").toLowerCase();
 
 function parseIndex(value) {
   if (value === null || value.trim() === "") return 0;
+
   const number = Number(value);
-  return Number.isSafeInteger(number) && number >= 0 ? number : -1;
+
+  return Number.isSafeInteger(number) && number >= 0
+    ? number
+    : -1;
 }
 
 const chapterIndex = parseIndex(params.get("chapter"));
@@ -46,9 +55,11 @@ let currentUser = null;
 let curriculum = null;
 let currentChapter = null;
 let currentLesson = null;
+
 let lessonCompleted = false;
 let selectedQuizOption = null;
 let quizPassed = false;
+
 let editor = null;
 let quizRequestInProgress = false;
 let codeRunning = false;
@@ -59,17 +70,29 @@ function byId(id) {
 
 function setText(id, value) {
   const element = byId(id);
-  if (element) element.textContent = value ?? "";
+
+  if (element) {
+    element.textContent = value ?? "";
+  }
 }
 
 function setStatus(message, type = "info") {
   const status = byId("pageStatus");
+
   if (!status) return;
 
   status.textContent = message || "";
-  status.classList.remove("success", "error", "info");
 
-  if (message && ["success", "error", "info"].includes(type)) {
+  status.classList.remove(
+    "success",
+    "error",
+    "info"
+  );
+
+  if (
+    message &&
+    ["success", "error", "info"].includes(type)
+  ) {
     status.classList.add(type);
   }
 
@@ -80,7 +103,12 @@ function setFeedback(element, message, type = "") {
   if (!element) return;
 
   element.textContent = message || "";
-  element.classList.remove("success", "error", "info");
+
+  element.classList.remove(
+    "success",
+    "error",
+    "info"
+  );
 
   if (["success", "error", "info"].includes(type)) {
     element.classList.add(type);
@@ -93,14 +121,20 @@ function setBusy(isBusy) {
   const runButton = byId("runCodeBtn");
   const nextButton = byId("nextLessonBtn");
 
-  if (runButton) runButton.disabled = isBusy;
+  if (runButton) {
+    runButton.disabled = isBusy;
+  }
+
   if (nextButton) {
     nextButton.disabled = isBusy || !lessonCompleted;
   }
 }
 
 function getCodeEditorValue() {
-  if (editor && typeof editor.getValue === "function") {
+  if (
+    editor &&
+    typeof editor.getValue === "function"
+  ) {
     return editor.getValue();
   }
 
@@ -108,17 +142,24 @@ function getCodeEditorValue() {
 }
 
 function setCodeEditorValue(value) {
-  if (editor && typeof editor.setValue === "function") {
+  if (
+    editor &&
+    typeof editor.setValue === "function"
+  ) {
     editor.setValue(value);
     return;
   }
 
   const textarea = byId("codeEditor");
-  if (textarea) textarea.value = value;
+
+  if (textarea) {
+    textarea.value = value;
+  }
 }
 
 function initializeEditor() {
   const textarea = byId("codeEditor");
+
   if (!textarea) return;
 
   if (
@@ -137,8 +178,13 @@ function initializeEditor() {
       });
 
       editor.setSize("100%", "auto");
+
     } catch (error) {
-      console.warn("تعذر تشغيل CodeMirror:", error);
+      console.warn(
+        "تعذر تشغيل CodeMirror:",
+        error
+      );
+
       editor = null;
     }
   }
@@ -159,14 +205,15 @@ function updateEditorLanguage() {
 }
 
 /*
- * لا نقرأ الإجابة الصحيحة من ملف المنهج الموجود في المتصفح.
- * التحقق من الإجابة يتم على الخادم.
+ * لا نقرأ الإجابة الصحيحة من ملف المنهج الموجود
+ * في المتصفح. التحقق يتم على الخادم.
  */
 function normalizeQuiz(rawQuiz) {
   if (!rawQuiz) return null;
 
   if (Array.isArray(rawQuiz)) {
     rawQuiz = rawQuiz[0];
+
     if (!rawQuiz) return null;
   }
 
@@ -188,11 +235,13 @@ function normalizeQuiz(rawQuiz) {
 
   return {
     question: String(question),
+
     options: options.filter(
       (option) =>
         typeof option === "string" ||
         (option && typeof option === "object")
     ),
+
     explanation: String(
       rawQuiz.explanation ||
       rawQuiz.feedback ||
@@ -202,7 +251,10 @@ function normalizeQuiz(rawQuiz) {
 }
 
 function normalizeOption(option) {
-  if (typeof option === "object" && option !== null) {
+  if (
+    typeof option === "object" &&
+    option !== null
+  ) {
     return String(
       option.text ??
       option.label ??
@@ -237,7 +289,8 @@ function getLessons(chapter) {
 
 function getTotalLessons() {
   return getChapterList().reduce(
-    (total, chapter) => total + getLessons(chapter).length,
+    (total, chapter) =>
+      total + getLessons(chapter).length,
     0
   );
 }
@@ -279,16 +332,13 @@ function renderProgress(progressData) {
 
   if (Array.isArray(progressData)) {
     progressData.forEach((item) => {
-      if (
-        item &&
-        (
-          item.completed === true ||
-          item.status === "completed"
-        )
-      ) {
-        completed.add(`${item.chapter}:${item.lesson}`);
+      if (item?.completed === true) {
+        completed.add(
+          `${item.chapter}:${item.lesson}`
+        );
       }
     });
+
   } else if (
     progressData &&
     typeof progressData === "object"
@@ -312,17 +362,25 @@ function renderProgress(progressData) {
   const bar = byId("progressBar");
   const track = byId("progressTrack");
 
-  if (bar) bar.style.width = `${percent}%`;
+  if (bar) {
+    bar.style.width = `${percent}%`;
+  }
 
   if (track) {
-    track.setAttribute("aria-valuenow", String(percent));
+    track.setAttribute(
+      "aria-valuenow",
+      String(percent)
+    );
   }
 
   setText("progressText", `${percent}%`);
 }
 
 function renderLessonContent(lesson) {
-  setText("lessonNumber", `الدرس ${lessonIndex + 1}`);
+  setText(
+    "lessonNumber",
+    `الدرس ${lessonIndex + 1}`
+  );
 
   setText(
     "codyIntro",
@@ -338,7 +396,9 @@ function renderLessonContent(lesson) {
 
   setText(
     "lessonDescription",
-    lesson.objective || lesson.description || ""
+    lesson.objective ||
+    lesson.description ||
+    ""
   );
 
   setText(
@@ -406,15 +466,18 @@ function renderLessonContent(lesson) {
     if (quiz && quiz.options.length > 0) {
       quiz.options.forEach((option, index) => {
         const label = document.createElement("label");
+
         label.className = "quiz-option";
 
         const input = document.createElement("input");
+
         input.type = "radio";
         input.name = "lessonQuiz";
         input.value = String(index);
         input.disabled = quizPassed;
 
         const span = document.createElement("span");
+
         span.textContent = normalizeOption(option);
 
         input.addEventListener("change", () => {
@@ -438,8 +501,10 @@ function renderLessonContent(lesson) {
         label.append(input, span);
         optionsElement.append(label);
       });
+
     } else {
       const message = document.createElement("p");
+
       message.textContent =
         "لم يُضف سؤال لهذا الدرس بعد.";
 
@@ -486,7 +551,9 @@ async function loadCurriculum() {
   const config = LANGUAGE_CONFIG[languageKey];
 
   if (!config) {
-    throw new Error("لغة البرمجة المطلوبة غير معروفة.");
+    throw new Error(
+      "لغة البرمجة المطلوبة غير معروفة."
+    );
   }
 
   const response = await fetch(
@@ -543,7 +610,9 @@ async function loadCurriculum() {
 async function loadProgress() {
   try {
     const progress = await getLessonProgress(languageKey);
+
     renderProgress(progress);
+
   } catch (error) {
     console.warn(
       "تعذر تحميل تقدم الدروس:",
@@ -560,41 +629,18 @@ async function loadCurrentCompletion() {
   try {
     const progress = await getLessonProgress(languageKey);
 
-    if (Array.isArray(progress)) {
-      lessonCompleted = progress.some(
-        (item) =>
-          item &&
-          Number(item.chapter) === chapterIndex &&
-          Number(item.lesson) === lessonIndex &&
-          (
-            item.completed === true ||
-            item.status === "completed"
-          )
-      );
-
+    if (!Array.isArray(progress)) {
       return;
     }
 
-    if (
-      progress &&
-      typeof progress === "object"
-    ) {
-      const keys = [
-        `${chapterIndex}:${lessonIndex}`,
-        `${languageKey}:${chapterIndex}:${lessonIndex}`,
-        `${chapterIndex}_${lessonIndex}`
-      ];
+    lessonCompleted = progress.some(
+      (item) =>
+        item &&
+        item.chapter === chapterIndex &&
+        item.lesson === lessonIndex &&
+        item.completed === true
+    );
 
-      lessonCompleted = keys.some((key) => {
-        const value = progress[key];
-
-        return (
-          value === true ||
-          value?.completed === true ||
-          value?.status === "completed"
-        );
-      });
-    }
   } catch (error) {
     console.warn(
       "تعذر قراءة حالة إكمال الدرس:",
@@ -617,6 +663,7 @@ async function completeCurrentLesson() {
       completed: true
     });
 
+    // لا نعلن إكمال الدرس قبل نجاح الحفظ.
     lessonCompleted = true;
     quizPassed = true;
 
@@ -642,17 +689,12 @@ async function completeCurrentLesson() {
           input.disabled = true;
         });
 
-      options
-        .querySelectorAll(".quiz-option")
-        .forEach((item) => {
-          item.classList.remove("selected");
-        });
-
       const selected = options.querySelector(
         `input[value="${selectedQuizOption}"]`
       );
 
-      selected?.closest(".quiz-option")
+      selected
+        ?.closest(".quiz-option")
         ?.classList.add("selected");
     }
 
@@ -667,6 +709,7 @@ async function completeCurrentLesson() {
     if (nextButton) {
       nextButton.hidden = false;
       nextButton.disabled = codeRunning;
+
       nextButton.textContent = getNextLessonUrl()
         ? "الدرس التالي ←"
         : "العودة للمستويات";
@@ -675,14 +718,24 @@ async function completeCurrentLesson() {
     await loadProgress();
 
     return true;
+
   } catch (error) {
     console.error(
       "تعذر حفظ تقدم الدرس:",
       error
     );
 
+    lessonCompleted = false;
+    quizPassed = false;
+
     setStatus(
-      "تم تصحيح الإجابة، لكن تعذر حفظ التقدم. تحقق من الاتصال وحاول مجددًا.",
+      "إجابتك صحيحة، لكن لم نتمكن من حفظ التقدم. حاول مرة أخرى.",
+      "error"
+    );
+
+    setFeedback(
+      byId("quizFeedback"),
+      "الإجابة صحيحة، لكن الحفظ لم ينجح. اضغط تحقق مرة أخرى لإعادة المحاولة.",
       "error"
     );
 
@@ -754,10 +807,12 @@ async function checkQuizAnswer() {
       `${BACKEND_URL}/api/quiz/check`,
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
+
         body: JSON.stringify({
           language: languageKey,
           lessonId: currentLesson.id,
@@ -770,6 +825,7 @@ async function checkQuizAnswer() {
 
     try {
       result = await response.json();
+
     } catch {
       throw new Error(
         "استجابة الخادم غير مفهومة. حاول مرة أخرى."
@@ -800,6 +856,7 @@ async function checkQuizAnswer() {
       );
 
       await completeCurrentLesson();
+
     } else {
       setFeedback(
         feedback,
@@ -807,11 +864,8 @@ async function checkQuizAnswer() {
           "الإجابة غير صحيحة. حاول مرة أخرى.",
         "error"
       );
-
-      if (checkButton) {
-        checkButton.disabled = false;
-      }
     }
+
   } catch (error) {
     console.error(
       "Quiz check failed:",
@@ -825,11 +879,20 @@ async function checkQuizAnswer() {
       "error"
     );
 
-    if (checkButton) {
-      checkButton.disabled = false;
-    }
+    setStatus(
+      error?.message ||
+        "تعذر التحقق من الإجابة.",
+      "error"
+    );
+
   } finally {
     quizRequestInProgress = false;
+
+    // يسمح بإعادة المحاولة بعد فشل التحقق أو الحفظ.
+    if (checkButton && !quizPassed) {
+      checkButton.disabled =
+        selectedQuizOption === null;
+    }
   }
 }
 
@@ -863,11 +926,6 @@ function clearOutput() {
   }
 }
 
-/*
- * تشغيل JavaScript وPython داخل iframe منفصل.
- * ملاحظة: هذا عزل مبدئي وليس بيئة تنفيذ آمنة تمامًا
- * لتشغيل أكواد غير موثوقة على نطاق واسع.
- */
 function runJavaScript(code) {
   return runInSandbox("javascript", code);
 }
@@ -876,6 +934,10 @@ function runPython(code) {
   return runInSandbox("python", code);
 }
 
+/*
+ * تشغيل الكود داخل iframe منفصل.
+ * هذا عزل مبدئي وليس بيئة تنفيذ آمنة بالكامل.
+ */
 function runInSandbox(language, code) {
   return new Promise((resolve, reject) => {
     const frame = document.createElement("iframe");
@@ -886,6 +948,7 @@ function runInSandbox(language, code) {
 
     let finished = false;
     let timeoutId = null;
+
     const output = [];
 
     const finish = (error = null) => {
@@ -955,14 +1018,9 @@ function runInSandbox(language, code) {
           )
         );
       },
-      language === "python" ? 20000 : 5000
+      language === "python" ? 30000 : 5000
     );
 
-    
-    /*
-     * تهريب علامة < حتى لا يستطيع كود المستخدم
-     * إنهاء عنصر script داخل srcdoc.
-     */
     const safeCode = JSON.stringify(code)
       .replace(/</g, "\\u003c");
 
@@ -972,24 +1030,35 @@ function runInSandbox(language, code) {
 
         const format = (value) => {
           if (typeof value === "string") return value;
-          if (typeof value === "undefined") return "undefined";
+
+          if (typeof value === "undefined") {
+            return "undefined";
+          }
 
           try {
             const result = JSON.stringify(value);
+
             return result === undefined
               ? String(value)
               : result;
+
           } catch {
             return String(value);
           }
         };
 
         console.log = (...args) => {
-          send("output", args.map(format).join(" "));
+          send(
+            "output",
+            args.map(format).join(" ")
+          );
         };
 
         console.error = (...args) => {
-          send("output", "خطأ: " + args.map(format).join(" "));
+          send(
+            "output",
+            "خطأ: " + args.map(format).join(" ")
+          );
         };
 
         window.onerror = (message) => {
@@ -999,8 +1068,12 @@ function runInSandbox(language, code) {
         try {
           (new Function('"use strict";\\n' + userCode))();
           send("done");
+
         } catch (error) {
-          send("error", error?.message || error);
+          send(
+            "error",
+            error?.message || error
+          );
         }
       `
       : `
@@ -1012,6 +1085,7 @@ function runInSandbox(language, code) {
         load.onload = async () => {
           try {
             const pyodide = await loadPyodide();
+
             const captured = [];
 
             pyodide.setStdout({
@@ -1031,8 +1105,12 @@ function runInSandbox(language, code) {
             }
 
             send("done");
+
           } catch (error) {
-            send("error", error?.message || error);
+            send(
+              "error",
+              error?.message || error
+            );
           }
         };
 
@@ -1081,6 +1159,7 @@ function runInSandbox(language, code) {
 
 function encodeBase64Utf8(value) {
   const bytes = new TextEncoder().encode(value);
+
   let binary = "";
 
   for (const byte of bytes) {
@@ -1121,9 +1200,11 @@ async function runCpp(code) {
     `${endpoint}/submissions?base64_encoded=true&wait=false`,
     {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json"
       },
+
       body: JSON.stringify({
         language_id: 54,
         source_code: encodeBase64Utf8(code),
@@ -1173,9 +1254,11 @@ async function runCpp(code) {
 
     const stdout = decodeBase64Utf8(result.stdout);
     const stderr = decodeBase64Utf8(result.stderr);
+
     const compileOutput = decodeBase64Utf8(
       result.compile_output
     );
+
     const message = decodeBase64Utf8(result.message);
 
     if (statusId === 3) {
@@ -1225,6 +1308,7 @@ async function runCode() {
       "اكتب الكود أولًا ثم اضغط تشغيل.",
       "error"
     );
+
     return;
   }
 
@@ -1233,23 +1317,36 @@ async function runCode() {
   clearOutput();
   setBusy(true);
 
-  setStatus("جاري تشغيل الكود...", "info");
+  setStatus(
+    "جاري تشغيل الكود...",
+    "info"
+  );
 
   try {
     let result;
 
     if (languageKey === "javascript") {
       result = await runJavaScript(code);
+
     } else if (languageKey === "python") {
       result = await runPython(code);
+
     } else if (languageKey === "cpp") {
       result = await runCpp(code);
+
     } else {
-      throw new Error("لغة البرمجة غير مدعومة.");
+      throw new Error(
+        "لغة البرمجة غير مدعومة."
+      );
     }
 
     appendOutput(result, "success");
-    setStatus("تم تشغيل الكود.", "success");
+
+    setStatus(
+      "تم تشغيل الكود.",
+      "success"
+    );
+
   } catch (error) {
     appendOutput(
       error?.message || String(error),
@@ -1260,6 +1357,7 @@ async function runCode() {
       "لم ينجح تشغيل الكود. راجع رسالة الخطأ في نافذة النتائج.",
       "error"
     );
+
   } finally {
     setBusy(false);
   }
@@ -1268,7 +1366,10 @@ async function runCode() {
 function resetCode() {
   if (!currentLesson) return;
 
-  setCodeEditorValue(getLessonCode(currentLesson));
+  setCodeEditorValue(
+    getLessonCode(currentLesson)
+  );
+
   clearOutput();
 
   setStatus(
@@ -1287,24 +1388,56 @@ function navigateNextLesson() {
 }
 
 function attachEvents() {
-  byId("hintBtn")?.addEventListener("click", showHint);
-  byId("checkQuizBtn")?.addEventListener("click", checkQuizAnswer);
-  byId("runCodeBtn")?.addEventListener("click", runCode);
-  byId("resetCodeBtn")?.addEventListener("click", resetCode);
-  byId("clearOutputBtn")?.addEventListener("click", clearOutput);
-  byId("nextLessonBtn")?.addEventListener("click", navigateNextLesson);
+  byId("hintBtn")?.addEventListener(
+    "click",
+    showHint
+  );
 
-  byId("backBtn")?.addEventListener("click", () => {
-    window.location.href = getLevelsUrl();
-  });
+  byId("checkQuizBtn")?.addEventListener(
+    "click",
+    checkQuizAnswer
+  );
 
-  byId("backToLevels")?.addEventListener("click", () => {
-    window.location.href = getLevelsUrl();
-  });
+  byId("runCodeBtn")?.addEventListener(
+    "click",
+    runCode
+  );
+
+  byId("resetCodeBtn")?.addEventListener(
+    "click",
+    resetCode
+  );
+
+  byId("clearOutputBtn")?.addEventListener(
+    "click",
+    clearOutput
+  );
+
+  byId("nextLessonBtn")?.addEventListener(
+    "click",
+    navigateNextLesson
+  );
+
+  byId("backBtn")?.addEventListener(
+    "click",
+    () => {
+      window.location.href = getLevelsUrl();
+    }
+  );
+
+  byId("backToLevels")?.addEventListener(
+    "click",
+    () => {
+      window.location.href = getLevelsUrl();
+    }
+  );
 }
 
 async function initializeLecture() {
-  setStatus("جاري تحميل الدرس...", "info");
+  setStatus(
+    "جاري تحميل الدرس...",
+    "info"
+  );
 
   try {
     currentUser = await requireUser();
@@ -1312,7 +1445,9 @@ async function initializeLecture() {
     if (!currentUser) return;
 
     await loadCurriculum();
+
     initializeEditor();
+
     await loadCurrentCompletion();
 
     renderLessonContent(currentLesson);
@@ -1320,8 +1455,12 @@ async function initializeLecture() {
     await loadProgress();
 
     setStatus("", "info");
+
   } catch (error) {
-    console.error("فشل تحميل الدرس:", error);
+    console.error(
+      "فشل تحميل الدرس:",
+      error
+    );
 
     setStatus(
       error?.message ||
