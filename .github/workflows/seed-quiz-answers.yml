@@ -1,0 +1,110 @@
+
+name: Seed CodeQuest Quiz Answers
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cloudflare-worker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        run: npm install --no-save wrangler@4
+
+      - name: Prepare quiz answers
+        working-directory: .
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+
+          const files = [
+            ['python', 'json/python_curriculum.json'],
+            ['javascript', 'json/js_curriculum.json'],
+            ['cpp', 'json/cpp_curriculum.json']
+          ];
+
+          const records = [];
+          const seen = new Set();
+
+          for (const [language, file] of files) {
+            const curriculum = JSON.parse(fs.readFileSync(file, 'utf8'));
+
+            for (const chapter of curriculum.chapters ?? []) {
+              for (const lesson of chapter.lessons ?? []) {
+                const quiz = lesson.quiz;
+                if (!quiz) continue;
+
+                if (
+                  typeof lesson.id !== 'string' ||
+                  !Array.isArray(quiz.options) ||
+                  !Number.isInteger(quiz.correct_index) ||
+                  quiz.correct_index < 0 ||
+                  quiz.correct_index >= quiz.options.length
+                ) {
+                  throw new Error(`Invalid quiz: ${language}/${lesson.id}`);
+                }
+
+                const key = `quiz:${language}:${lesson.id}`;
+
+                if (seen.has(key)) {
+                  throw new Error(`Duplicate key: ${key}`);
+                }
+
+                seen.add(key);
+
+                records.push({
+                  key,
+                  value: JSON.stringify({
+                    correctIndex: quiz.correct_index,
+                    explanation:
+                      quiz.success_msg ||
+                      quiz.explanation ||
+                      'إجابة صحيحة!'
+                  })
+                });
+              }
+            }
+          }
+
+          if (records.length !== 73) {
+            throw new Error(
+              `Expected 73 quizzes, found ${records.length}`
+            );
+          }
+
+          const output = path.join(
+            process.env.RUNNER_TEMP,
+            'codequest-quiz-answers.json'
+          );
+
+          fs.writeFileSync(output, JSON.stringify(records));
+
+          console.log(
+            `Validated ${records.length} quiz answers.`
+          );
+          NODE
+
+      - name: Upload answers to Cloudflare KV
+        run: |
+          npx wrangler kv bulk put \
+            "$RUNNER_TEMP/codequest-quiz-answers.json" \
+            --binding=QUIZ_ANSWERS
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
