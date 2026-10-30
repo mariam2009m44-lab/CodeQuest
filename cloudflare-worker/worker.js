@@ -1,4 +1,5 @@
 
+
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
@@ -7,17 +8,19 @@ const FIREBASE_KEYS = createRemoteJWKSet(
   )
 );
 
-function jsonResponse(data, status, origin) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Vary": "Origin"
-    }
-  });
+function jsonResponse(data, status, origin = null) {
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Vary": "Origin"
+  };
+
+  if (origin) {
+    headers["Access-Control-Allow-Origin"] = origin;
+    headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
+    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+  }
+
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
 function getAllowedOrigin(request, env) {
@@ -63,6 +66,23 @@ const ALLOWED_LANGUAGES = new Set([
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+
+    // Health check can be opened directly in a browser.
+    if (url.pathname === "/health" && request.method === "GET") {
+      const origin = getAllowedOrigin(request, env);
+
+      if (request.headers.has("Origin") && !origin) {
+        return new Response("Origin not allowed", { status: 403 });
+      }
+
+      return jsonResponse({
+        success: true,
+        service: "CodeQuest Backend",
+        status: "running"
+      }, 200, origin);
+    }
+
     const origin = getAllowedOrigin(request, env);
 
     if (!origin) {
@@ -79,16 +99,6 @@ export default {
           "Vary": "Origin"
         }
       });
-    }
-
-    const url = new URL(request.url);
-
-    if (url.pathname === "/health" && request.method === "GET") {
-      return jsonResponse({
-        success: true,
-        service: "CodeQuest Backend",
-        status: "running"
-      }, 200, origin);
     }
 
     if (url.pathname === "/api/session" && request.method === "GET") {
