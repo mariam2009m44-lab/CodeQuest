@@ -10,9 +10,6 @@ permissions:
 jobs:
   seed:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cloudflare-worker
 
     steps:
       - name: Checkout repository
@@ -24,10 +21,10 @@ jobs:
           node-version: 22
 
       - name: Install Wrangler
+        working-directory: cloudflare-worker
         run: npm install --no-save wrangler@4
 
       - name: Prepare quiz answers
-        working-directory: .
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -101,10 +98,12 @@ jobs:
           NODE
 
       - name: Upload answers to Cloudflare KV
+        working-directory: cloudflare-worker
         run: |
           npx wrangler kv bulk put \
             "$RUNNER_TEMP/codequest-quiz-answers.json" \
-            --binding=QUIZ_ANSWERS
+            --binding=QUIZ_ANSWERS \
+            --config=wrangler.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
