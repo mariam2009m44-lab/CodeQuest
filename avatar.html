@@ -1,85 +1,376 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختر شخصيتك | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        .onboarding-container { max-width: 900px; margin: 0 auto; padding: var(--space-l) var(--space-m); min-height: 100vh; display: flex; flex-direction: column; }
-        .header-title { text-align: center; margin-bottom: var(--space-xl); }
-        .header-title h1 { font-size: 2.5rem; color: var(--text-primary); margin-bottom: var(--space-xs); }
-        .header-title p { color: var(--text-secondary); font-size: 1.1rem; }
-        .avatars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-m); margin-bottom: var(--space-xl); }
-        .avatar-card { background: var(--bg-panel); border: 2px solid var(--border-soft); border-radius: var(--radius-card); padding: var(--space-m); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.3s ease; }
-        .avatar-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        .avatar-card.selected { border-color: var(--primary); box-shadow: var(--glow-active); background: rgba(0, 217, 255, 0.05); }
-        .avatar-icon { font-size: 4rem; margin-bottom: var(--space-s); }
-        .avatar-name { font-weight: 700; color: var(--text-primary); }
-        .actions { margin-top: auto; text-align: center; }
-        .actions button { width: 100%; max-width: 300px; padding: var(--space-s) var(--space-l); font-size: 1.2rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اختر شخصيتك | Cody Academy</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(105, 75, 255, .18), transparent 35%),
+        radial-gradient(circle at 85% 80%, rgba(0, 217, 255, .13), transparent 35%),
+        var(--bg-main, #080d20);
+    }
+
+    .onboarding-container {
+      width: min(100% - 30px, 1050px);
+      min-height: 100vh;
+      margin: auto;
+      padding: 55px 0 35px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-title {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .header-title h1 {
+      color: var(--text-primary, #fff);
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .header-title p {
+      color: var(--text-secondary, #aab5d0);
+      font-size: 1rem;
+    }
+
+    .avatars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      margin-bottom: 35px;
+    }
+
+    .avatar-card {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid rgba(130, 155, 220, .2);
+      border-radius: 22px;
+      background: rgba(20, 29, 65, .72);
+      transition: transform .25s ease, border-color .25s ease,
+                  box-shadow .25s ease, background .25s ease;
+    }
+
+    .avatar-card:hover {
+      transform: translateY(-6px);
+      border-color: #50dfff;
+      box-shadow: 0 10px 35px rgba(0, 217, 255, .12);
+    }
+
+    .avatar-card.selected {
+      border-color: #50dfff;
+      background: rgba(25, 65, 110, .45);
+      box-shadow:
+        0 0 0 3px rgba(80, 223, 255, .12),
+        0 0 30px rgba(0, 217, 255, .2);
+    }
+
+    .avatar-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      color: #071322;
+      font-weight: 900;
+      border-radius: 50%;
+      background: #50dfff;
+    }
+
+    .avatar-art {
+      width: 100%;
+      max-width: 190px;
+      height: 190px;
+      object-fit: contain;
+      display: block;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 8px 15px rgba(0, 0, 0, .25));
+      transition: transform .3s ease;
+    }
+
+    .avatar-card:hover .avatar-art {
+      transform: translateY(-5px) scale(1.04);
+    }
+
+    .avatar-name {
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 900;
+    }
+
+    .avatar-description {
+      color: #aebbd9;
+      font-size: .82rem;
+      margin-top: 4px;
+    }
+
+    .actions {
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .actions button {
+      width: min(100%, 320px);
+      padding: 13px 22px;
+      border: 0;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .actions button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .save-message {
+      min-height: 25px;
+      margin-top: 12px;
+      color: #70e5ff;
+      font-size: .85rem;
+    }
+
+    @media (max-width: 700px) {
+      .avatars-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 13px;
+      }
+
+      .avatar-card {
+        padding: 13px 9px;
+      }
+
+      .avatar-art {
+        height: 145px;
+      }
+
+      .avatar-name {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .avatar-art {
+        height: 120px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="onboarding-container">
-        <div class="header-title">
-            <h1>اختر شخصيتك</h1>
-            <p>من تريد أن يكون مرشدك في هذه الرحلة؟</p>
-        </div>
-        <div class="avatars-grid" id="avatarsGrid"></div>
-        <div class="actions">
-            <button class="btn-primary" id="saveBtn" disabled onclick="saveAvatar()">حفظ والانتقال <i class="ri-arrow-left-line"></i></button>
-        </div>
+  <main class="onboarding-container">
+
+    <header class="header-title">
+      <h1>اختر شخصيتك الفضائية</h1>
+      <p>اختار الشخصية اللي هترافقك في رحلة تعلم البرمجة 🚀</p>
+    </header>
+
+    <section
+      class="avatars-grid"
+      id="avatarsGrid"
+      aria-label="الشخصيات المتاحة"
+    ></section>
+
+    <div class="actions">
+      <button
+        class="btn-primary"
+        id="saveBtn"
+        type="button"
+        disabled
+      >
+        حفظ والانتقال
+        <i class="ri-arrow-left-line"></i>
+      </button>
+
+      <p class="save-message" id="saveMessage" role="status"></p>
     </div>
 
-    <script type="module">
-        import { auth, db, doc, updateDoc } from './js/app.js';
-        import { showToast } from './js/ui.js';
+  </main>
 
-        const characters = [
-            { id: 'cody', name: 'كودي', icon: '🤖', desc: 'روبوت ذكي' },
-            { id: 'layla', name: 'ليلى', icon: '👩‍💻', desc: 'مبرمجة ماهرة' },
-            { id: 'omar', name: 'عمر', icon: '👨‍🚀', desc: 'مستكشف شجاع' },
-            { id: 'sara', name: 'سارة', icon: '🧚‍♀️', desc: 'مبتكرة' },
-            { id: 'robo', name: 'روبو', icon: '🦾', desc: 'آلة قوية' },
-            { id: 'nova', name: 'نوفا', icon: '👽', desc: 'كائن فضائي' }
-        ];
+  <script type="module">
+    import { auth, db, doc, updateDoc } from './js/app.js';
+    import { showToast } from './js/ui.js';
 
-        let selectedId = null;
+    const characters = [
+      {
+        id: 'cody',
+        name: 'كودي',
+        desc: 'رفيقك الذكي',
+        image: 'assets/avatars/cody.png'
+      },
+      {
+        id: 'layla',
+        name: 'ليلى',
+        desc: 'المبرمجة المبدعة',
+        image: 'assets/avatars/layla.png'
+      },
+      {
+        id: 'omar',
+        name: 'عمر',
+        desc: 'مستكشف الفضاء',
+        image: 'assets/avatars/omar.png'
+      },
+      {
+        id: 'sara',
+        name: 'سارة',
+        desc: 'العالمة الصغيرة',
+        image: 'assets/avatars/sara.png'
+      },
+      {
+        id: 'robo',
+        name: 'روبو',
+        desc: 'المساعد الآلي',
+        image: 'assets/avatars/robo.png'
+      },
+      {
+        id: 'nova',
+        name: 'نوفا',
+        desc: 'الصديق الفضائي',
+        image: 'assets/avatars/nova.png'
+      }
+    ];
 
-        function renderAvatars() {
-            const grid = document.getElementById('avatarsGrid');
-            characters.forEach(char => {
-                const card = document.createElement('div');
-                card.className = 'avatar-card';
-                card.onclick = () => {
-                    document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    selectedId = char.id;
-                    document.getElementById('saveBtn').disabled = false;
-                };
-                card.innerHTML = `<div class="avatar-icon">${char.icon}</div><div class="avatar-name">${char.name}</div><div style="font-size:0.8rem; color:var(--text-muted);">${char.desc}</div>`;
-                grid.appendChild(card);
-            });
-        }
+    const grid = document.getElementById('avatarsGrid');
+    const saveBtn = document.getElementById('saveBtn');
+    const saveMessage = document.getElementById('saveMessage');
 
-        window.saveAvatar = async () => {
-            if (selectedId && auth.currentUser) {
-                localStorage.setItem('cq_avatar', selectedId);
-                try {
-                    const userRef = doc(db, "users", auth.currentUser.uid);
-                    await updateDoc(userRef, { activeAvatar: selectedId });
-                    showToast('تم حفظ شخصيتك بنجاح!', 'success');
-                    setTimeout(() => window.location.href = 'languages.html', 1000);
-                } catch (e) {
-                    window.location.href = 'languages.html';
-                }
-            }
+    let selectedId = null;
+    let saving = false;
+
+    function renderAvatars() {
+      grid.innerHTML = '';
+
+      characters.forEach(character => {
+        const card = document.createElement('button');
+
+        card.type = 'button';
+        card.className = 'avatar-card';
+        card.dataset.id = character.id;
+        card.setAttribute('aria-pressed', 'false');
+
+        const image = document.createElement('img');
+        image.className = 'avatar-art';
+        image.src = character.image;
+        image.alt = character.name;
+        image.loading = 'lazy';
+
+        image.onerror = () => {
+          image.alt = `صورة ${character.name} غير متاحة حالياً`;
+          image.style.opacity = '.25';
         };
-        renderAvatars();
-    </script>
+
+        const name = document.createElement('span');
+        name.className = 'avatar-name';
+        name.textContent = character.name;
+
+        const description = document.createElement('span');
+        description.className = 'avatar-description';
+        description.textContent = character.desc;
+
+        card.append(image, name, description);
+
+        card.addEventListener('click', () => {
+          if (saving) return;
+
+          document.querySelectorAll('.avatar-card').forEach(item => {
+            item.classList.remove('selected');
+            item.setAttribute('aria-pressed', 'false');
+          });
+
+          card.classList.add('selected');
+          card.setAttribute('aria-pressed', 'true');
+
+          selectedId = character.id;
+          saveBtn.disabled = false;
+          saveMessage.textContent = `اخترت شخصية ${character.name}`;
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    async function saveAvatar() {
+      if (!selectedId || saving) return;
+
+      const user = auth.currentUser;
+
+      if (!user) {
+        showToast('سجّلي الدخول أولاً لحفظ الشخصية.', 'error');
+        return;
+      }
+
+      saving = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'جارٍ حفظ الشخصية...';
+      saveMessage.textContent = '';
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+
+        await updateDoc(userRef, {
+          activeAvatar: selectedId
+        });
+
+        localStorage.setItem('cq_avatar', selectedId);
+
+        showToast('تم حفظ شخصيتك بنجاح!', 'success');
+        saveMessage.textContent = 'تم الحفظ بنجاح!';
+
+        window.location.href = 'languages.html';
+
+      } catch (error) {
+        console.error('Avatar save error:', error);
+
+        showToast('لم نتمكن من حفظ الشخصية. حاولي مرة أخرى.', 'error');
+
+        saveMessage.textContent = 'حدث خطأ أثناء الحفظ.';
+        saving = false;
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'حفظ والانتقال <i class="ri-arrow-left-line"></i>';
+      }
+    }
+
+    saveBtn.addEventListener('click', saveAvatar);
+
+    renderAvatars();
+  </script>
 </body>
 </html>
