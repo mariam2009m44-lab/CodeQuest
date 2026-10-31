@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,16 +9,8 @@
 
   <title>ملفي الشخصي | Cody Academy</title>
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  >
-
-  <link
-    href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
-    rel="stylesheet"
-  >
-
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
 
   <style>
@@ -40,7 +34,7 @@
       position: relative;
       overflow: hidden;
       text-align: center;
-      padding: 42px 25px;
+      padding: 35px 25px;
       margin-bottom: 25px;
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -55,44 +49,45 @@
       height: 150px;
       background: linear-gradient(
         180deg,
-        rgba(107, 232, 255, .13),
+        rgba(107,232,255,.13),
         transparent
       );
       pointer-events: none;
     }
 
-    /* صورة الشخصية المختارة */
     .avatar-container {
-      width: 150px;
-      height: 150px;
+      width: 205px;
+      height: 205px;
       display: grid;
       place-items: center;
-      margin: 0 auto 18px;
+      margin: 0 auto 12px;
       position: relative;
-      overflow: hidden;
-      border: 3px solid var(--cyan);
+      overflow: visible;
+      border: 2px solid var(--cyan);
       border-radius: 50%;
-      background: var(--surface);
-      box-shadow: 0 0 30px rgba(107, 232, 255, .25);
-      animation: avatarFloat 3s ease-in-out infinite;
+      background: radial-gradient(
+        circle,
+        rgba(85,234,255,.13),
+        rgba(20,29,65,.4)
+      );
+      box-shadow: 0 0 30px rgba(107,232,255,.2);
+      animation: avatarFloat 3.2s ease-in-out infinite;
     }
 
-    .avatar-container img {
+    .avatar-container .avatar-illustration {
       width: 100%;
       height: 100%;
-      display: block;
-      object-fit: contain;
-      padding: 5px;
+      max-width: none;
+    }
+
+    .avatar-container .cody-character {
+      width: 100%;
+      height: 100%;
     }
 
     @keyframes avatarFloat {
-      0%, 100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-7px);
-      }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
 
     .profile-name {
@@ -114,9 +109,9 @@
       color: var(--cyan);
       font-size: .95rem;
       font-weight: 800;
-      border: 1px solid rgba(107, 232, 255, .2);
+      border: 1px solid rgba(107,232,255,.2);
       border-radius: 30px;
-      background: rgba(107, 232, 255, .09);
+      background: rgba(107,232,255,.09);
     }
 
     .level-progress-wrapper {
@@ -135,30 +130,32 @@
       font-weight: 800;
     }
 
+    .xp-number {
+      direction: ltr;
+      unicode-bidi: isolate;
+      display: inline-block;
+    }
+
     .progress-track {
       width: 100%;
       height: 12px;
       overflow: hidden;
       border-radius: 20px;
-      background: rgba(255, 255, 255, .07);
+      background: rgba(255,255,255,.07);
     }
 
     .progress-fill {
       width: 0%;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(
-        90deg,
-        var(--cyan),
-        #3a7bd5
-      );
+      background: linear-gradient(90deg,var(--cyan),#3a7bd5);
       box-shadow: 0 0 15px var(--cyan);
       transition: width .5s ease;
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3,minmax(0,1fr));
       gap: 18px;
       margin-bottom: 25px;
     }
@@ -170,7 +167,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       background: var(--surface-glass);
-      transition: transform .2s ease, border-color .2s ease;
+      transition: transform .2s ease,border-color .2s ease;
     }
 
     .stat-box:hover {
@@ -218,10 +215,7 @@
 
     .badges-grid {
       display: grid;
-      grid-template-columns: repeat(
-        auto-fill,
-        minmax(130px, 1fr)
-      );
+      grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
       gap: 15px;
     }
 
@@ -230,7 +224,7 @@
       text-align: center;
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, .03);
+      background: rgba(255,255,255,.03);
       opacity: .5;
       filter: grayscale(100%);
       transition: .25s ease;
@@ -240,7 +234,7 @@
       opacity: 1;
       filter: none;
       border-color: var(--gold);
-      box-shadow: 0 0 15px rgba(255, 212, 138, .14);
+      box-shadow: 0 0 15px rgba(255,212,138,.14);
     }
 
     .badge-item i {
@@ -256,44 +250,26 @@
       font-weight: 800;
     }
 
-    @media (max-width: 768px) {
+    @media(max-width:768px) {
       .stats-grid {
         grid-template-columns: 1fr;
         gap: 13px;
       }
 
-      .profile-header-card {
-        padding: 30px 18px;
-      }
-
-      .profile-name {
-        font-size: 1.55rem;
-      }
-
-      .level-labels {
-        font-size: .75rem;
-      }
-
-      .badges-section {
-        padding: 18px;
-      }
-
-      .avatar-container {
-        width: 125px;
-        height: 125px;
-      }
+      .profile-header-card { padding: 28px 15px; }
+      .profile-name { font-size: 1.55rem; }
+      .level-labels { font-size: .75rem; }
+      .badges-section { padding: 18px; }
+      .avatar-container { width: 175px; height: 175px; }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      .avatar-container {
-        animation: none;
-      }
+    @media(prefers-reduced-motion:reduce) {
+      .avatar-container { animation: none; }
     }
   </style>
 </head>
 
 <body>
-
   <div class="space-app">
 
     <aside class="space-sidebar" id="sidebar">
@@ -349,11 +325,7 @@
 
       </nav>
 
-      <a
-        href="login.html"
-        id="logoutButton"
-        class="logout-link logout"
-      >
+      <a href="login.html" id="logoutButton" class="logout-link logout">
         <i class="ri-logout-box-r-line"></i>
         <span>تسجيل الخروج</span>
       </a>
@@ -370,7 +342,6 @@
       <div class="profile-page">
 
         <header class="space-topbar">
-
           <div class="topbar-title">
 
             <div class="page-kicker">
@@ -385,30 +356,18 @@
             </p>
 
           </div>
-
         </header>
 
-        <p
-          id="profileStatus"
-          class="profile-status"
-          role="status"
-          aria-live="polite"
-        >
+        <p id="profileStatus" class="profile-status"
+           role="status" aria-live="polite">
           جارٍ تحميل بيانات الحساب...
         </p>
 
         <section class="profile-header-card">
 
-          <div
-            class="avatar-container"
-            id="userAvatar"
-            aria-label="شخصيتك المختارة"
-          >
-            <img
-              id="avatarImage"
-              src="assets/avatars/cody.png"
-              alt="شخصية كودي"
-            >
+          <div class="avatar-container" id="userAvatar"
+               aria-label="شخصيتك المختارة">
+            <!-- الشخصية تُرسم هنا من avatars.js -->
           </div>
 
           <h2 class="profile-name js-user-name">
@@ -424,17 +383,14 @@
           <div class="level-progress-wrapper">
 
             <div class="level-labels">
-
               <span>التقدم للمستوى التالي</span>
 
-              <span>
+              <span class="xp-number">
                 <span id="currentXP">0</span> / 100 XP
               </span>
-
             </div>
 
             <div class="progress-track">
-
               <div
                 class="progress-fill"
                 id="xpProgressBar"
@@ -443,58 +399,33 @@
                 aria-valuemax="100"
                 aria-valuenow="0"
               ></div>
-
             </div>
 
           </div>
 
         </section>
 
-        <section
-          class="stats-grid"
-          aria-label="إحصائيات الحساب"
-        >
+        <section class="stats-grid" aria-label="إحصائيات الحساب">
 
           <article class="stat-box">
-
-            <i
-              class="ri-flashlight-fill"
-              style="color:var(--cyan)"
-              aria-hidden="true"
-            ></i>
-
+            <i class="ri-flashlight-fill"
+               style="color:var(--cyan)" aria-hidden="true"></i>
             <h4>إجمالي نقاط الخبرة</h4>
-
             <div class="value js-user-xp">0</div>
-
           </article>
 
           <article class="stat-box">
-
-            <i
-              class="ri-coin-fill"
-              style="color:var(--gold)"
-              aria-hidden="true"
-            ></i>
-
+            <i class="ri-coin-fill"
+               style="color:var(--gold)" aria-hidden="true"></i>
             <h4>رصيد النجوم</h4>
-
             <div class="value js-user-coins">0</div>
-
           </article>
 
           <article class="stat-box">
-
-            <i
-              class="ri-book-open-fill"
-              style="color:var(--green)"
-              aria-hidden="true"
-            ></i>
-
+            <i class="ri-book-open-fill"
+               style="color:var(--green)" aria-hidden="true"></i>
             <h4>دروس مكتملة</h4>
-
             <div class="value js-completed-lessons">0</div>
-
           </article>
 
         </section>
@@ -502,11 +433,8 @@
         <section class="badges-section">
 
           <h3>
-            <i
-              class="ri-medal-fill"
-              style="color:var(--gold)"
-              aria-hidden="true"
-            ></i>
+            <i class="ri-medal-fill"
+               style="color:var(--gold)" aria-hidden="true"></i>
             الإنجازات والأوسمة
           </h3>
 
@@ -533,13 +461,10 @@
             </div>
 
           </div>
-
         </section>
 
       </div>
-
     </main>
-
   </div>
 
   <nav class="mobile-nav">
@@ -572,7 +497,6 @@
   </nav>
 
   <script type="module">
-
     import { App } from "./js/app.js";
     import { requireUser } from "./js/auth.js";
     import { db } from "./js/firebase-config.js";
@@ -586,44 +510,14 @@
       getDoc
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+    import {
+      renderAvatar,
+      installAvatarStyles
+    } from "./js/avatars.js";
+
+    installAvatarStyles();
+
     const $ = id => document.getElementById(id);
-
-    /*
-      أسماء الشخصيات ومسارات صورها.
-      يجب أن تكون الصور موجودة داخل assets/avatars/
-    */
-
-    const AVATARS = {
-      cody: {
-        name: "كودي",
-        image: "assets/avatars/cody.png"
-      },
-
-      layla: {
-        name: "ليلى",
-        image: "assets/avatars/layla.png"
-      },
-
-      omar: {
-        name: "عمر",
-        image: "assets/avatars/omar.png"
-      },
-
-      sara: {
-        name: "سارة",
-        image: "assets/avatars/sara.png"
-      },
-
-      robo: {
-        name: "روبو",
-        image: "assets/avatars/robo.png"
-      },
-
-      nova: {
-        name: "نوفا",
-        image: "assets/avatars/nova.png"
-      }
-    };
 
     function safeNumber(value) {
       const number = Number(value);
@@ -635,114 +529,64 @@
 
     function unlock(id, condition) {
       const badge = $(id);
-
       if (!badge) return;
 
-      badge.classList.toggle(
-        "unlocked",
-        Boolean(condition)
-      );
+      badge.classList.toggle("unlocked", Boolean(condition));
     }
 
-    /*
-      عرض الشخصية المحفوظة في Firebase.
-      localStorage يستخدم كخيار احتياطي فقط.
-    */
-
     async function loadAvatar(user) {
-
-      const avatarImage = $("avatarImage");
-
-      if (!avatarImage) return;
-
-      let avatarId = "cody";
+      let avatarId = localStorage.getItem("cq_avatar") || "cody";
 
       try {
-
         const userRef = doc(db, "users", user.uid);
         const userSnapshot = await getDoc(userRef);
 
         if (userSnapshot.exists()) {
+          const data = userSnapshot.data();
 
-          const userData = userSnapshot.data();
-
-          if (
-            userData.activeAvatar &&
-            AVATARS[userData.activeAvatar]
-          ) {
-            avatarId = userData.activeAvatar;
+          if (data.activeAvatar) {
+            avatarId = data.activeAvatar;
           }
-
         }
-
       } catch (error) {
-
-        console.error(
-          "Could not load saved avatar:",
-          error
-        );
-
-        const localAvatar = localStorage.getItem("cq_avatar");
-
-        if (localAvatar && AVATARS[localAvatar]) {
-          avatarId = localAvatar;
-        }
-
+        console.error("Avatar loading error:", error);
       }
 
-      const selectedAvatar = AVATARS[avatarId] || AVATARS.cody;
+      const validIds = [
+        "cody", "layla", "omar",
+        "sara", "robo", "nova"
+      ];
 
-      avatarImage.src = selectedAvatar.image;
-      avatarImage.alt = `شخصية ${selectedAvatar.name}`;
+      if (!validIds.includes(avatarId)) {
+        avatarId = "cody";
+      }
 
-      avatarImage.onerror = () => {
+      localStorage.setItem("cq_avatar", avatarId);
 
-        console.error(
-          "Avatar image not found:",
-          selectedAvatar.image
-        );
-
-        avatarImage.onerror = null;
-        avatarImage.src = AVATARS.cody.image;
-        avatarImage.alt = "شخصية كودي";
-
-      };
-
+      $("userAvatar").innerHTML = renderAvatar(avatarId);
+      $("userAvatar").setAttribute(
+        "aria-label",
+        "شخصيتك: " + avatarId
+      );
     }
 
     function updateLessonBadge() {
-
-      const counter = document.querySelector(
-        ".js-completed-lessons"
-      );
-
-      const completed = safeNumber(
-        counter?.textContent
-      );
+      const element = document.querySelector(".js-completed-lessons");
+      const completed = safeNumber(element?.textContent);
 
       unlock("badge-lessons", completed > 0);
-
     }
 
     function updateXPBadge() {
-
-      const counter = document.querySelector(
-        ".js-user-xp"
-      );
-
-      const xp = safeNumber(
-        counter?.textContent
-      );
+      const element = document.querySelector(".js-user-xp");
+      const xp = safeNumber(element?.textContent);
 
       unlock("badge-first-step", xp > 0);
-
     }
 
     function observeCounter(selector, callback) {
-
       const element = document.querySelector(selector);
-
-      if (!element) return null;
+      if (!element) return;
 
       const observer = new MutationObserver(callback);
 
@@ -753,46 +597,27 @@
       });
 
       return observer;
-
     }
 
-    // متابعة البيانات التي يحدثها App
-    observeCounter(
-      ".js-completed-lessons",
-      updateLessonBadge
-    );
-
-    observeCounter(
-      ".js-user-xp",
-      updateXPBadge
-    );
+    observeCounter(".js-completed-lessons", updateLessonBadge);
+    observeCounter(".js-user-xp", updateXPBadge);
 
     async function loadProfile() {
-
       const user = await requireUser();
 
-      // تحميل بيانات الحساب الأساسية
       await App.init();
 
-      if (
-        App.currentUid &&
-        App.currentUid !== user.uid
-      ) {
-        throw new Error(
-          "الحساب الحالي لا يطابق الحساب الذي تم تسجيل الدخول به."
-        );
+      if (App.currentUid && App.currentUid !== user.uid) {
+        throw new Error("الحساب الحالي لا يطابق الحساب المسجل.");
       }
 
-      // تحميل الشخصية المختارة
       await loadAvatar(user);
 
-      // تحميل المشروعات
       const projectsQuery = query(
         collection(db, "projects"),
         where("userId", "==", user.uid)
       );
 
-      // تحميل مكافآت الألعاب
       const rewardsCollection = collection(
         db,
         "users",
@@ -805,40 +630,24 @@
         getDocs(rewardsCollection)
       ]);
 
-      // تحديث الشارات
       updateXPBadge();
       updateLessonBadge();
 
-      unlock(
-        "badge-projects",
-        projects.size > 0
-      );
-
-      unlock(
-        "badge-games",
-        rewards.size > 0
-      );
+      unlock("badge-projects", projects.size > 0);
+      unlock("badge-games", rewards.size > 0);
 
       $("profileStatus").textContent =
         "تم تحميل بيانات حسابك بنجاح.";
-
     }
 
     loadProfile().catch(error => {
-
-      console.error(
-        "Profile loading error:",
-        error
-      );
+      console.error("Profile loading error:", error);
 
       $("profileStatus").textContent =
         error?.code === "permission-denied"
           ? "لا توجد صلاحية لقراءة بعض بيانات الحساب."
           : "تعذر تحميل الملف الشخصي. حاولي تحديث الصفحة.";
-
     });
-
   </script>
-
 </body>
 </html>
