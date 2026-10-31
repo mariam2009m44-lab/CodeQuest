@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   NavLink,
   Navigate,
@@ -7,7 +7,7 @@ import {
   Route,
   Routes,
   useLocation,
-  useNavigate,
+  useNavigate
 } from "react-router-dom";
 
 import {
@@ -25,11 +25,23 @@ import {
   ChevronLeft,
   Sparkles,
   BookOpen,
+  LoaderCircle
 } from "lucide-react";
 
-/* =========================================
-   NAVIGATION
-========================================= */
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+import {
+  collection,
+  doc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+import {
+  auth,
+  db,
+  logoutUser
+} from "./services/firebase.js";
 
 const navigation = [
   { label: "الرئيسية", path: "/", icon: Home },
@@ -39,35 +51,179 @@ const navigation = [
   { label: "الألعاب", path: "/games", icon: Gamepad2 },
   { label: "مشاريعي", path: "/projects", icon: FolderKanban },
   { label: "إنجازاتي", path: "/achievements", icon: Trophy },
-  { label: "الإعدادات", path: "/settings", icon: Settings },
+  { label: "الإعدادات", path: "/settings", icon: Settings }
 ];
 
-/* =========================================
-   APP LAYOUT
-========================================= */
+const languageData = [
+  {
+    id: "python",
+    name: "Python",
+    description: "ابدئي رحلتك في عالم البرمجة.",
+    logo: "/assets/logos/python.svg",
+    className: "python"
+  },
+  {
+    id: "javascript",
+    name: "JavaScript",
+    description: "تعلمي بناء مواقع وتطبيقات تفاعلية.",
+    logo: "/assets/logos/javascript.svg",
+    className: "javascript"
+  },
+  {
+    id: "cpp",
+    name: "C++",
+    description: "اكتشفي أساسيات البرمجة المتقدمة.",
+    logo: "/assets/logos/cpp.svg",
+    className: "cpp"
+  }
+];
 
-function AppLayout() {
+const curriculumTotals = {
+  python: 24,
+  javascript: 26,
+  cpp: 23
+};
+
+function safeNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0
+    ? number
+    : fallback;
+}
+
+function getDisplayName(user, profile) {
+  return (
+    profile?.displayName ||
+    user?.displayName ||
+    user?.email?.split("@")[0] ||
+    "بطل البرمجة"
+  );
+}
+
+function StatCard({ icon, label, value, color }) {
+  return (
+    <article className={`stat-card ${color}`}>
+      <div className="stat-icon">{icon}</div>
+      <div className="stat-info">
+        <span>{label}</span>
+        <strong>{value}</strong>
+      </div>
+    </article>
+  );
+}
+
+function CourseCard({ course, progress = 0 }) {
+  return (
+    <article className={`course-card ${course.className}`}>
+      <div className="course-card-top">
+        <img
+          className="course-logo"
+          src={course.logo}
+          alt={`${course.name} logo`}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+        <span className="course-status">
+          {progress > 0 ? `${progress}% مكتمل` : "ابدأ الآن"}
+        </span>
+      </div>
+
+      <h3>{course.name}</h3>
+      <p>{course.description}</p>
+
+      <div className="course-progress-track">
+        <div
+          className="course-progress-value"
+          style={{ width: `${Math.min(progress, 100)}%` }}
+        />
+      </div>
+
+      <NavLink
+        to={`/languages?lang=${course.id}`}
+        className="course-button"
+      >
+        استكشف اللغة <ChevronLeft size={17} />
+      </NavLink>
+    </article>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="cq-loading" dir="rtl">
+      <LoaderCircle size={38} className="cq-spinner" />
+      <h2>Cody Academy</h2>
+      <p>بنجهز مغامرتك البرمجية...</p>
+    </div>
+  );
+}
+
+function LoginPage() {
+  return (
+    <main className="cq-login" dir="rtl">
+      <div className="cq-login-card">
+        <div className="cq-login-icon">
+          <Rocket size={36} />
+        </div>
+        <h1>Cody Academy</h1>
+        <p>
+          سجّلي الدخول من صفحة تسجيل الدخول الأصلية
+          في CodeQuest، ثم افتحي لوحة Cody Academy.
+        </p>
+        <a className="primary-button" href="./login.html">
+          الذهاب لتسجيل الدخول
+        </a>
+      </div>
+    </main>
+  );
+}
+
+function ProtectedRoute({ user, children }) {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+function AppLayout({
+  user,
+  profile,
+  progress,
+  onLogout
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
 
   const currentPage =
-    navigation.find((item) => item.path === location.pathname)?.label ||
-    "مغامرتي الفضائية";
+    navigation.find(
+      (item) => item.path === location.pathname
+    )?.label || "مغامرتي الفضائية";
+
+  const displayName = getDisplayName(user, profile);
+
+  async function handleLogout() {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
+    try {
+      await onLogout();
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("تعذر تسجيل الخروج. حاولي مرة أخرى.");
+      setLoggingOut(false);
+    }
+  }
 
   function closeMobileMenu() {
     setMobileMenuOpen(false);
   }
 
-  function handleLogout() {
-    // تسجيل الخروج الحقيقي سيتم ربطه بخدمة Firebase لاحقًا.
-    navigate("/login");
-    closeMobileMenu();
-  }
-
   return (
     <div className="app-shell" dir="rtl">
-      {/* Mobile overlay */}
       {mobileMenuOpen && (
         <button
           type="button"
@@ -77,9 +233,10 @@ function AppLayout() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`sidebar ${mobileMenuOpen ? "sidebar-open" : ""}`}
+        className={`sidebar ${
+          mobileMenuOpen ? "sidebar-open" : ""
+        }`}
       >
         <div className="sidebar-brand">
           <div className="brand-icon">
@@ -107,13 +264,15 @@ function AppLayout() {
           </div>
 
           <div className="sidebar-user-info">
-            <strong>بطل البرمجة</strong>
-            <span>رحلتك بدأت!</span>
+            <strong>{displayName}</strong>
+            <span>رحلتك مستمرة!</span>
           </div>
         </div>
 
         <nav className="sidebar-nav">
-          <p className="sidebar-section-title">القائمة الرئيسية</p>
+          <p className="sidebar-section-title">
+            القائمة الرئيسية
+          </p>
 
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -130,7 +289,10 @@ function AppLayout() {
               >
                 <Icon size={19} />
                 <span>{item.label}</span>
-                <ChevronLeft className="sidebar-link-arrow" size={15} />
+                <ChevronLeft
+                  className="sidebar-link-arrow"
+                  size={15}
+                />
               </NavLink>
             );
           })}
@@ -141,7 +303,6 @@ function AppLayout() {
             <div className="cody-tip-icon">
               <Sparkles size={20} />
             </div>
-
             <strong>كودي معاك!</strong>
             <p>كل مبرمج عظيم بدأ بخطوة صغيرة.</p>
           </div>
@@ -150,14 +311,20 @@ function AppLayout() {
             type="button"
             className="sidebar-logout"
             onClick={handleLogout}
+            disabled={loggingOut}
           >
-            <LogOut size={18} />
-            <span>تسجيل الخروج</span>
+            {loggingOut ? (
+              <LoaderCircle size={18} className="cq-spinner" />
+            ) : (
+              <LogOut size={18} />
+            )}
+            <span>
+              {loggingOut ? "جاري الخروج..." : "تسجيل الخروج"}
+            </span>
           </button>
         </div>
       </aside>
 
-      {/* Main area */}
       <main className="main-area">
         <header className="top-header">
           <div className="header-right">
@@ -179,7 +346,7 @@ function AppLayout() {
           <div className="header-left">
             <div className="header-welcome">
               <span>أهلاً بعودتك،</span>
-              <strong>بطل البرمجة 👋</strong>
+              <strong>{displayName} 👋</strong>
             </div>
 
             <NavLink
@@ -193,7 +360,7 @@ function AppLayout() {
         </header>
 
         <div className="page-content">
-          <Outlet />
+          <Outlet context={{ user, profile, progress }} />
         </div>
 
         <footer className="app-footer">
@@ -202,7 +369,6 @@ function AppLayout() {
         </footer>
       </main>
 
-      {/* Mobile bottom navigation */}
       <nav className="mobile-bottom-nav">
         {navigation.slice(0, 4).map((item) => {
           const Icon = item.icon;
@@ -226,11 +392,17 @@ function AppLayout() {
   );
 }
 
-/* =========================================
-   DASHBOARD
-========================================= */
-
 function DashboardPage() {
+  const { profile, progress } = useOutletContext();
+
+  const xp = safeNumber(profile?.xp);
+  const coins = safeNumber(profile?.coins);
+  const level = Math.max(1, safeNumber(profile?.level, 1));
+  const projects = safeNumber(profile?.completedProjects);
+  const completedLessons = Object.values(progress).filter(
+    (item) => item?.completed === true
+  ).length;
+
   return (
     <div className="dashboard-page">
       <section className="welcome-banner">
@@ -242,8 +414,8 @@ function DashboardPage() {
           <h1>مستعد لمغامرة برمجية جديدة؟ 🚀</h1>
 
           <p>
-            اتعلم البرمجة، العب، ابنِ مشاريعك، واكتشف قدراتك
-            مع كودي!
+            اتعلم البرمجة، العب، ابنِ مشاريعك،
+            واكتشف قدراتك مع كودي!
           </p>
 
           <NavLink to="/languages" className="primary-button">
@@ -261,28 +433,28 @@ function DashboardPage() {
         <StatCard
           icon={<Trophy size={22} />}
           label="النقاط"
-          value="0"
+          value={coins}
           color="gold"
         />
 
         <StatCard
           icon={<Sparkles size={22} />}
           label="الخبرة XP"
-          value="0"
+          value={xp}
           color="purple"
         />
 
         <StatCard
           icon={<Rocket size={22} />}
           label="المستوى"
-          value="1"
+          value={level}
           color="blue"
         />
 
         <StatCard
           icon={<FolderKanban size={22} />}
           label="المشاريع"
-          value="0"
+          value={projects}
           color="green"
         />
       </section>
@@ -290,7 +462,9 @@ function DashboardPage() {
       <section className="section-heading">
         <div>
           <h2>رحلتك التعليمية</h2>
-          <p>اختار اللغة اللي تحب تبدأ بيها.</p>
+          <p>
+            أنهيت {completedLessons} درسًا. كمّلي رحلتك!
+          </p>
         </div>
 
         <NavLink to="/languages" className="text-link">
@@ -299,29 +473,22 @@ function DashboardPage() {
       </section>
 
       <section className="courses-grid">
-        <CourseCard
-          name="Python"
-          description="ابدأ رحلتك في عالم البرمجة."
-          logo="/assets/logos/python.svg"
-          path="/languages"
-          className="python"
-        />
+        {languageData.map((course) => {
+          const percentage = Math.round(
+            (
+              safeNumber(progress[course.id]?.completedCount) /
+              curriculumTotals[course.id]
+            ) * 100
+          );
 
-        <CourseCard
-          name="JavaScript"
-          description="تعلم بناء مواقع وتطبيقات تفاعلية."
-          logo="/assets/logos/javascript.svg"
-          path="/languages"
-          className="javascript"
-        />
-
-        <CourseCard
-          name="C++"
-          description="اكتشف أساسيات البرمجة المتقدمة."
-          logo="/assets/logos/cpp.svg"
-          path="/languages"
-          className="cpp"
-        />
+          return (
+            <CourseCard
+              key={course.id}
+              course={course}
+              progress={Math.min(percentage, 100)}
+            />
+          );
+        })}
       </section>
 
       <section className="cody-tip-card">
@@ -332,8 +499,8 @@ function DashboardPage() {
         <div>
           <h3>رسالة من كودي</h3>
           <p>
-            متقلقش لو قابلتك مشكلة في الكود. كل خطأ فرصة
-            جديدة للتعلم!
+            متقلقش لو قابلتك مشكلة في الكود.
+            كل خطأ فرصة جديدة للتعلم!
           </p>
         </div>
       </section>
@@ -341,87 +508,96 @@ function DashboardPage() {
   );
 }
 
-function StatCard({ icon, label, value, color }) {
-  return (
-    <article className={`stat-card ${color}`}>
-      <div className="stat-icon">{icon}</div>
+function ProfilePage() {
+  const { user, profile, progress } = useOutletContext();
+  const displayName = getDisplayName(user, profile);
 
-      <div className="stat-info">
-        <span>{label}</span>
-        <strong>{value}</strong>
+  const completedLessons = Object.values(progress).filter(
+    (item) => item?.completed === true
+  ).length;
+
+  return (
+    <section className="profile-page">
+      <div className="section-heading">
+        <div>
+          <h1>ملفي الشخصي</h1>
+          <p>تابعي بيانات حسابك وإنجازاتك التعليمية.</p>
+        </div>
       </div>
-    </article>
+
+      <article className="profile-card">
+        <div className="profile-avatar">🚀</div>
+        <h2>{displayName}</h2>
+        <p>{user?.email || "لا يوجد بريد إلكتروني"}</p>
+
+        <div className="profile-details">
+          <div>
+            <span>المستوى</span>
+            <strong>{safeNumber(profile?.level, 1)}</strong>
+          </div>
+          <div>
+            <span>الخبرة XP</span>
+            <strong>{safeNumber(profile?.xp)}</strong>
+          </div>
+          <div>
+            <span>الدروس المكتملة</span>
+            <strong>{completedLessons}</strong>
+          </div>
+        </div>
+      </article>
+    </section>
   );
 }
 
-function CourseCard({ name, description, logo, path, className }) {
+function LanguagesPage() {
   return (
-    <article className={`course-card ${className}`}>
-      <div className="course-card-top">
-        <img
-          className="course-logo"
-          src={logo}
-          alt={`${name} logo`}
-          onError={(event) => {
-            event.currentTarget.style.display = "none";
-          }}
-        />
-
-        <span className="course-status">ابدأ الآن</span>
+    <section className="languages-page">
+      <div className="section-heading">
+        <div>
+          <h1>لغات البرمجة</h1>
+          <p>اختاري اللغة التي تريدين تعلمها.</p>
+        </div>
       </div>
 
-      <h3>{name}</h3>
-      <p>{description}</p>
-
-      <NavLink to={path} className="course-button">
-        استكشف اللغة <ChevronLeft size={17} />
-      </NavLink>
-    </article>
+      <section className="courses-grid">
+        {languageData.map((course) => (
+          <CourseCard
+            key={course.id}
+            course={course}
+            progress={0}
+          />
+        ))}
+      </section>
+    </section>
   );
 }
 
-/* =========================================
-   PLACEHOLDER PAGES
-   These pages will be connected to their
-   real features in the next implementation steps.
-========================================= */
-
-const pageContent = {
-  "/profile": {
-    icon: UserRound,
-    title: "ملفي الشخصي",
-    description: "هنا هتقدر تشوف بيانات حسابك وشخصيتك وتقدمك.",
-  },
-  "/languages": {
-    icon: BookOpen,
-    title: "لغات البرمجة",
-    description: "اختار Python أو JavaScript أو C++ وابدأ التعلم.",
-  },
+const placeholderPages = {
   "/playground": {
     icon: Code2,
     title: "ساحة الأكواد",
-    description: "مساحة كتابة وتشغيل الأكواد البرمجية.",
+    description: "مساحة كتابة وتشغيل الأكواد البرمجية."
   },
   "/games": {
     icon: Gamepad2,
     title: "الألعاب",
-    description: "ألعاب تعليمية تفاعلية لتطوير مهاراتك البرمجية.",
+    description: "ألعاب تعليمية تفاعلية لتطوير مهاراتك البرمجية."
   },
   "/projects": {
     icon: FolderKanban,
     title: "مشاريعي",
-    description: "هنا هتلاقي مشاريعك وتحفظ إنجازاتك.",
+    description: "هنا هتلاقي مشاريعك وتحفظ إنجازاتك."
   },
   "/achievements": {
     icon: Trophy,
     title: "إنجازاتي",
-    description: "تابع الشارات والإنجازات اللي حققتها.",
+    description: "تابعي الشارات والإنجازات اللي حققتيها."
   },
   "/settings": {
     icon: Settings,
     title: "الإعدادات",
-    description: "إدارة إعدادات المنصة وحسابك.",
-  },
+    description: "إدارة إعدادات المنصة وحسابك."
+  }
 };
 
 function PlaceholderPage({ page }) {
@@ -438,43 +614,154 @@ function PlaceholderPage({ page }) {
 
       <span className="coming-soon-label">
         <Sparkles size={15} />
-        جاري تجهيز هذه الصفحة
+        سيتم ربط هذه الميزة في المرحلة التالية
       </span>
     </section>
   );
 }
 
-function LoginPage() {
-  return (
-    <div className="login-placeholder" dir="rtl">
-      <div className="login-placeholder-icon">
-        <Rocket size={35} />
-      </div>
-
-      <h1>Cody Academy</h1>
-      <p>
-        صفحة تسجيل الدخول سيتم ربطها بخدمة Firebase Authentication
-        في مرحلة إعداد الحسابات.
-      </p>
-
-      <NavLink to="/" className="primary-button">
-        العودة للرئيسية
-      </NavLink>
-    </div>
-  );
-}
-
-/* =========================================
-   APP ROUTES
-========================================= */
-
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [progress, setProgress] = useState({});
+  const [authLoading, setAuthLoading] = useState(true);
+  const [dataError, setDataError] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (currentUser) => {
+        setUser(currentUser);
+        setAuthLoading(false);
+      },
+      (error) => {
+        console.error("Authentication listener:", error);
+        setDataError("تعذر التحقق من حالة الحساب.");
+        setAuthLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setProfile(null);
+      setProgress({});
+      return undefined;
+    }
+
+    let profileReady = false;
+    let progressReady = false;
+
+    const profileRef = doc(db, "users", user.uid);
+    const progressRef = collection(
+      db,
+      "users",
+      user.uid,
+      "lessonProgress"
+    );
+
+    const unsubscribeProfile = onSnapshot(
+      profileRef,
+      (snapshot) => {
+        profileReady = true;
+
+        setProfile(
+          snapshot.exists()
+            ? { uid: user.uid, ...snapshot.data() }
+            : { uid: user.uid, displayName: user.displayName || "متعلم" }
+        );
+
+        if (profileReady && progressReady) {
+          setDataError("");
+        }
+      },
+      (error) => {
+        console.error("Profile listener:", error);
+        setDataError("تعذر تحميل بيانات الملف الشخصي.");
+      }
+    );
+
+    const unsubscribeProgress = onSnapshot(
+      progressRef,
+      (snapshot) => {
+        progressReady = true;
+
+        const records = {};
+
+        snapshot.forEach((item) => {
+          const data = item.data();
+          const language = data.language;
+
+          if (!language) return;
+
+          if (!records[language]) {
+            records[language] = {
+              completedCount: 0,
+              lessons: []
+            };
+          }
+
+          records[language].lessons.push(data);
+
+          if (data.completed === true) {
+            records[language].completedCount += 1;
+          }
+        });
+
+        setProgress(records);
+
+        if (profileReady && progressReady) {
+          setDataError("");
+        }
+      },
+      (error) => {
+        console.error("Progress listener:", error);
+        setDataError("تعذر تحميل تقدم الدروس.");
+      }
+    );
+
+    return () => {
+      unsubscribeProfile();
+      unsubscribeProgress();
+    };
+  }, [user]);
+
+  const handleLogout = async () => {
+    await logoutUser();
+  };
+
+  if (authLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route index element={<DashboardPage />} />
+      <Route
+        path="/login"
+        element={
+          user ? <Navigate to="/" replace /> : <LoginPage />
+        }
+      />
 
-        {Object.entries(pageContent).map(([path, page]) => (
+      <Route
+        element={
+          <ProtectedRoute user={user}>
+            <AppLayout
+              user={user}
+              profile={profile}
+              progress={progress}
+              onLogout={handleLogout}
+            />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="languages" element={<LanguagesPage />} />
+
+        {Object.entries(placeholderPages).map(([path, page]) => (
           <Route
             key={path}
             path={path.slice(1)}
@@ -482,10 +769,11 @@ export default function App() {
           />
         ))}
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
+        />
       </Route>
-
-      <Route path="/login" element={<LoginPage />} />
     </Routes>
   );
 }
