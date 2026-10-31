@@ -1,9 +1,13 @@
-import { useState } from "react";
+
+import React, { useState } from "react";
 import {
-  Routes,
-  Route,
   NavLink,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 
 import {
@@ -14,90 +18,193 @@ import {
   FolderKanban,
   Trophy,
   Settings,
-  LogOut,
   Menu,
   X,
-  ChevronLeft,
+  LogOut,
   Rocket,
-  Star,
-  Coins,
-  Flame,
-  BookOpen,
-  Bot,
-  LockKeyhole,
+  ChevronLeft,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
 
-/* =====================================
-   بيانات لغات البرمجة والشعارات الأصلية
-===================================== */
-
-const languages = [
-  {
-    name: "Python",
-    description: "ابدأ رحلتك مع لغة البرمجة Python",
-    progress: 0,
-    logo: "https://cdn.simpleicons.org/python/3776AB",
-    color: "python",
-    path: "/languages",
-  },
-  {
-    name: "JavaScript",
-    description: "تعلم بناء المواقع والتطبيقات",
-    progress: 0,
-    logo: "https://cdn.simpleicons.org/javascript/F7DF1E",
-    color: "javascript",
-    path: "/languages",
-  },
-  {
-    name: "C++",
-    description: "اكتشف أساسيات البرمجة المتقدمة",
-    progress: 0,
-    logo: "https://cdn.simpleicons.org/cplusplus/00599C",
-    color: "cpp",
-    path: "/languages",
-  },
-];
-
-/* =====================================
-   روابط القائمة
-===================================== */
+/* =========================================
+   NAVIGATION
+========================================= */
 
 const navigation = [
   { label: "الرئيسية", path: "/", icon: Home },
   { label: "ملفي الشخصي", path: "/profile", icon: UserRound },
-  { label: "لغات البرمجة", path: "/languages", icon: Code2 },
-  { label: "ساحة الأكواد", path: "/playground", icon: BookOpen },
+  { label: "لغات البرمجة", path: "/languages", icon: BookOpen },
+  { label: "ساحة الأكواد", path: "/playground", icon: Code2 },
   { label: "الألعاب", path: "/games", icon: Gamepad2 },
   { label: "مشاريعي", path: "/projects", icon: FolderKanban },
   { label: "إنجازاتي", path: "/achievements", icon: Trophy },
   { label: "الإعدادات", path: "/settings", icon: Settings },
 ];
 
-/* =====================================
-   القائمة الجانبية
-===================================== */
+/* =========================================
+   APP LAYOUT
+========================================= */
 
-function Sidebar({ onNavigate }) {
+function AppLayout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const currentPage =
+    navigation.find((item) => item.path === location.pathname)?.label ||
+    "مغامرتي الفضائية";
+
+  function closeMobileMenu() {
+    setMobileMenuOpen(false);
+  }
+
+  function handleLogout() {
+    // تسجيل الخروج الحقيقي سيتم ربطه بخدمة Firebase لاحقًا.
+    navigate("/login");
+    closeMobileMenu();
+  }
+
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        <div className="brand-icon">
-          <Rocket size={25} />
+    <div className="app-shell" dir="rtl">
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <button
+          type="button"
+          className="sidebar-overlay"
+          aria-label="إغلاق القائمة"
+          onClick={closeMobileMenu}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`sidebar ${mobileMenuOpen ? "sidebar-open" : ""}`}
+      >
+        <div className="sidebar-brand">
+          <div className="brand-icon">
+            <Rocket size={25} />
+          </div>
+
+          <div className="brand-text">
+            <h2>Cody Academy</h2>
+            <span>SPACE EDITION</span>
+          </div>
+
+          <button
+            type="button"
+            className="mobile-close"
+            onClick={closeMobileMenu}
+            aria-label="إغلاق القائمة"
+          >
+            <X size={21} />
+          </button>
         </div>
 
-        <div>
-          <h2>Cody Academy</h2>
-          <span>رحلتك في عالم البرمجة</span>
+        <div className="sidebar-user">
+          <div className="sidebar-user-avatar">
+            <span>🚀</span>
+          </div>
+
+          <div className="sidebar-user-info">
+            <strong>بطل البرمجة</strong>
+            <span>رحلتك بدأت!</span>
+          </div>
         </div>
-      </div>
 
-      <div className="sidebar-section-title">
-        القائمة الرئيسية
-      </div>
+        <nav className="sidebar-nav">
+          <p className="sidebar-section-title">القائمة الرئيسية</p>
 
-      <nav className="sidebar-navigation">
-        {navigation.map((item) => {
+          {navigation.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === "/"}
+                onClick={closeMobileMenu}
+                className={({ isActive }) =>
+                  `sidebar-link ${isActive ? "active" : ""}`
+                }
+              >
+                <Icon size={19} />
+                <span>{item.label}</span>
+                <ChevronLeft className="sidebar-link-arrow" size={15} />
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <div className="sidebar-cody-tip">
+            <div className="cody-tip-icon">
+              <Sparkles size={20} />
+            </div>
+
+            <strong>كودي معاك!</strong>
+            <p>كل مبرمج عظيم بدأ بخطوة صغيرة.</p>
+          </div>
+
+          <button
+            type="button"
+            className="sidebar-logout"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} />
+            <span>تسجيل الخروج</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main area */}
+      <main className="main-area">
+        <header className="top-header">
+          <div className="header-right">
+            <button
+              type="button"
+              className="mobile-menu-button"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="فتح القائمة"
+            >
+              <Menu size={23} />
+            </button>
+
+            <div className="header-page-title">
+              <span>مغامرتي الفضائية</span>
+              <small>{currentPage}</small>
+            </div>
+          </div>
+
+          <div className="header-left">
+            <div className="header-welcome">
+              <span>أهلاً بعودتك،</span>
+              <strong>بطل البرمجة 👋</strong>
+            </div>
+
+            <NavLink
+              to="/profile"
+              className="header-avatar"
+              aria-label="الملف الشخصي"
+            >
+              🚀
+            </NavLink>
+          </div>
+        </header>
+
+        <div className="page-content">
+          <Outlet />
+        </div>
+
+        <footer className="app-footer">
+          <span>© Cody Academy</span>
+          <span>صُنع بحب للمبرمجين الصغار ✨</span>
+        </footer>
+      </main>
+
+      {/* Mobile bottom navigation */}
+      <nav className="mobile-bottom-nav">
+        {navigation.slice(0, 4).map((item) => {
           const Icon = item.icon;
 
           return (
@@ -105,345 +212,128 @@ function Sidebar({ onNavigate }) {
               key={item.path}
               to={item.path}
               end={item.path === "/"}
-              onClick={onNavigate}
               className={({ isActive }) =>
-                `nav-link ${isActive ? "active" : ""}`
+                `mobile-bottom-link ${isActive ? "active" : ""}`
               }
             >
-              <Icon size={19} />
-
+              <Icon size={20} />
               <span>{item.label}</span>
-
-              <ChevronLeft
-                size={15}
-                className="nav-arrow"
-              />
             </NavLink>
           );
         })}
       </nav>
-
-      <div className="sidebar-bottom">
-        <div className="sidebar-cody">
-          <div className="cody-small-icon">
-            <Bot size={25} />
-          </div>
-
-          <div>
-            <strong>كودي معاك!</strong>
-            <p>مستعد يساعدك تتعلم</p>
-          </div>
-        </div>
-
-        <button
-          className="logout-button"
-          onClick={() => {
-            alert(
-              "سيتم ربط تسجيل الخروج بنظام Firebase في مرحلة المصادقة."
-            );
-          }}
-        >
-          <LogOut size={18} />
-          <span>تسجيل الخروج</span>
-        </button>
-      </div>
-    </aside>
-  );
-}
-
-/* =====================================
-   قائمة الموبايل السفلية
-===================================== */
-
-function MobileNavigation() {
-  return (
-    <nav className="mobile-navigation">
-      {navigation.slice(0, 5).map((item) => {
-        const Icon = item.icon;
-
-        return (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === "/"}
-            className={({ isActive }) =>
-              `mobile-nav-link ${isActive ? "active" : ""}`
-            }
-          >
-            <Icon size={20} />
-            <span>{item.label}</span>
-          </NavLink>
-        );
-      })}
-    </nav>
-  );
-}
-
-/* =====================================
-   الهيدر
-===================================== */
-
-function Header({ onMenuClick }) {
-  const location = useLocation();
-
-  const currentPage =
-    navigation.find(
-      (item) => item.path === location.pathname
-    )?.label || "Cody Academy";
-
-  return (
-    <header className="app-header">
-      <button
-        className="mobile-menu-button"
-        onClick={onMenuClick}
-        aria-label="فتح القائمة"
-      >
-        <Menu size={23} />
-      </button>
-
-      <div className="header-title">
-        <span>مساحتك التعليمية</span>
-        <h1>{currentPage}</h1>
-      </div>
-
-      <div className="header-user">
-        <div className="header-user-info">
-          <strong>بطل البرمجة</strong>
-          <span>المستكشف الصغير</span>
-        </div>
-
-        <div className="header-avatar">
-          <Rocket size={23} />
-        </div>
-      </div>
-    </header>
-  );
-}
-
-/* =====================================
-   بطاقات الإحصائيات
-===================================== */
-
-function StatCard({
-  icon: Icon,
-  title,
-  value,
-  detail,
-  color,
-}) {
-  return (
-    <article className={`stat-card ${color}`}>
-      <div className="stat-icon">
-        <Icon size={23} />
-      </div>
-
-      <div className="stat-content">
-        <span>{title}</span>
-        <strong>{value}</strong>
-        <small>{detail}</small>
-      </div>
-    </article>
-  );
-}
-
-/* =====================================
-   عنوان الأقسام
-===================================== */
-
-function SectionTitle({ title, subtitle }) {
-  return (
-    <div className="section-title">
-      <div>
-        <h2>{title}</h2>
-        {subtitle && <p>{subtitle}</p>}
-      </div>
     </div>
   );
 }
 
-/* =====================================
-   شعار لغة البرمجة
-===================================== */
+/* =========================================
+   DASHBOARD
+========================================= */
 
-function LanguageLogo({ language }) {
+function DashboardPage() {
   return (
-    <div className={`course-logo ${language.color}`}>
-      <img
-        src={language.logo}
-        alt={`${language.name} official logo`}
-        loading="lazy"
-        onError={(event) => {
-          event.currentTarget.style.display = "none";
-        }}
-      />
-    </div>
-  );
-}
-
-/* =====================================
-   كارت لغة البرمجة
-===================================== */
-
-function LanguageCard({ language }) {
-  return (
-    <article
-      className={`course-card ${language.color}`}
-    >
-      <div className="course-card-top">
-        <LanguageLogo language={language} />
-
-        <span className="course-level">
-          مبتدئ
-        </span>
-      </div>
-
-      <h3>{language.name}</h3>
-
-      <p>{language.description}</p>
-
-      <div className="progress-label">
-        <span>التقدم</span>
-        <strong>{language.progress}%</strong>
-      </div>
-
-      <div className="progress-track">
-        <div
-          className="progress-fill"
-          style={{
-            width: `${language.progress}%`,
-          }}
-        />
-      </div>
-
-      <NavLink
-        to={language.path}
-        className="course-button"
-      >
-        استكشف المنهج
-        <ChevronLeft size={17} />
-      </NavLink>
-    </article>
-  );
-}
-
-/* =====================================
-   الصفحة الرئيسية
-===================================== */
-
-function Dashboard() {
-  return (
-    <div className="page-content">
-
+    <div className="dashboard-page">
       <section className="welcome-banner">
-        <div className="welcome-text">
+        <div className="welcome-content">
           <span className="welcome-label">
-            <Sparkles size={15} />
-            أهلاً بعودتك!
+            <Sparkles size={15} /> SPACE EDITION
           </span>
 
-          <h2>
-            مستعد لمغامرة برمجية جديدة؟
-          </h2>
+          <h1>مستعد لمغامرة برمجية جديدة؟ 🚀</h1>
 
           <p>
-            كل سطر كود بتكتبه بيقربك خطوة
-            من إنك تصبح مبرمجًا محترفًا.
+            اتعلم البرمجة، العب، ابنِ مشاريعك، واكتشف قدراتك
+            مع كودي!
           </p>
 
-          <NavLink
-            to="/languages"
-            className="primary-button"
-          >
+          <NavLink to="/languages" className="primary-button">
             ابدأ التعلم
             <ChevronLeft size={18} />
           </NavLink>
         </div>
 
-        <div className="welcome-illustration">
-          <div className="welcome-orbit orbit-one" />
-          <div className="welcome-orbit orbit-two" />
-
-          <div className="welcome-rocket">
-            🚀
-          </div>
-
-          <Star
-            className="welcome-star star-one"
-            size={22}
-          />
-
-          <Star
-            className="welcome-star star-two"
-            size={16}
-          />
+        <div className="welcome-mascot" aria-label="كودي">
+          🤖
         </div>
       </section>
 
       <section className="stats-grid">
         <StatCard
-          icon={Coins}
-          title="النقاط"
+          icon={<Trophy size={22} />}
+          label="النقاط"
           value="0"
-          detail="اجمع نقاطًا بالتعلم"
+          color="gold"
+        />
+
+        <StatCard
+          icon={<Sparkles size={22} />}
+          label="الخبرة XP"
+          value="0"
           color="purple"
         />
 
         <StatCard
-          icon={Flame}
-          title="أيام الاستمرار"
-          value="0"
-          detail="ابدأ سلسلة تعلمك"
-          color="orange"
-        />
-
-        <StatCard
-          icon={Trophy}
-          title="المستوى"
+          icon={<Rocket size={22} />}
+          label="المستوى"
           value="1"
-          detail="المستكشف المبتدئ"
           color="blue"
         />
 
         <StatCard
-          icon={FolderKanban}
-          title="المشاريع"
+          icon={<FolderKanban size={22} />}
+          label="المشاريع"
           value="0"
-          detail="مشاريعك المكتملة"
           color="green"
         />
       </section>
 
-      <section className="content-section">
-        <SectionTitle
-          title="مسارات التعلم"
-          subtitle="اختار اللغة اللي تحب تبدأ بيها"
+      <section className="section-heading">
+        <div>
+          <h2>رحلتك التعليمية</h2>
+          <p>اختار اللغة اللي تحب تبدأ بيها.</p>
+        </div>
+
+        <NavLink to="/languages" className="text-link">
+          كل اللغات <ChevronLeft size={16} />
+        </NavLink>
+      </section>
+
+      <section className="courses-grid">
+        <CourseCard
+          name="Python"
+          description="ابدأ رحلتك في عالم البرمجة."
+          logo="/assets/logos/python.svg"
+          path="/languages"
+          className="python"
         />
 
-        <div className="courses-grid">
-          {languages.map((language) => (
-            <LanguageCard
-              key={language.name}
-              language={language}
-            />
-          ))}
-        </div>
+        <CourseCard
+          name="JavaScript"
+          description="تعلم بناء مواقع وتطبيقات تفاعلية."
+          logo="/assets/logos/javascript.svg"
+          path="/languages"
+          className="javascript"
+        />
+
+        <CourseCard
+          name="C++"
+          description="اكتشف أساسيات البرمجة المتقدمة."
+          logo="/assets/logos/cpp.svg"
+          path="/languages"
+          className="cpp"
+        />
       </section>
 
       <section className="cody-tip-card">
         <div className="cody-tip-icon">
-          <Bot size={32} />
+          <Sparkles size={23} />
         </div>
 
         <div>
-          <span>رسالة من كودي</span>
-
-          <h3>
-            كل مبرمج عظيم بدأ بأول سطر كود!
-          </h3>
-
+          <h3>رسالة من كودي</h3>
           <p>
-            خد وقتك في التعلم، وجرب بنفسك،
-            ومتخافش من الأخطاء.
+            متقلقش لو قابلتك مشكلة في الكود. كل خطأ فرصة
+            جديدة للتعلم!
           </p>
         </div>
       </section>
@@ -451,425 +341,151 @@ function Dashboard() {
   );
 }
 
-/* =====================================
-   الملف الشخصي
-===================================== */
-
-function Profile() {
+function StatCard({ icon, label, value, color }) {
   return (
-    <div className="page-content">
-      <SectionTitle
-        title="ملفي الشخصي"
-        subtitle="تابع معلوماتك وإنجازاتك التعليمية"
-      />
+    <article className={`stat-card ${color}`}>
+      <div className="stat-icon">{icon}</div>
 
-      <section className="profile-card">
-        <div className="profile-avatar">
-          🚀
-        </div>
-
-        <h2>بطل البرمجة</h2>
-
-        <p>المستكشف الصغير</p>
-
-        <div className="profile-details">
-          <div>
-            <span>المستوى</span>
-            <strong>1</strong>
-          </div>
-
-          <div>
-            <span>النقاط</span>
-            <strong>0</strong>
-          </div>
-
-          <div>
-            <span>المشاريع</span>
-            <strong>0</strong>
-          </div>
-        </div>
-
-        <p className="info-notice">
-          بيانات الحساب والتقدم ستُحمّل من Firebase
-          بعد ربط خدمة الحسابات.
-        </p>
-      </section>
-    </div>
-  );
-}
-
-/* =====================================
-   صفحة لغات البرمجة
-===================================== */
-
-function Languages() {
-  return (
-    <div className="page-content">
-      <SectionTitle
-        title="لغات البرمجة"
-        subtitle="اختار مسارك وابدأ أول مغامرة"
-      />
-
-      <div className="courses-grid">
-        {languages.map((language) => (
-          <LanguageCard
-            key={language.name}
-            language={language}
-          />
-        ))}
+      <div className="stat-info">
+        <span>{label}</span>
+        <strong>{value}</strong>
       </div>
-    </div>
+    </article>
   );
 }
 
-/* =====================================
-   محرر الأكواد
-===================================== */
-
-function Playground() {
-  const [code, setCode] = useState(
-    'print("Hello, Cody!")'
-  );
-
+function CourseCard({ name, description, logo, path, className }) {
   return (
-    <div className="page-content">
-      <SectionTitle
-        title="ساحة الأكواد"
-        subtitle="اكتب وجرب أفكارك البرمجية"
-      />
-
-      <section className="editor-card">
-        <div className="editor-toolbar">
-          <span>
-            <Code2 size={18} />
-            Python
-          </span>
-
-          <span className="editor-status">
-            مساحة تجريبية
-          </span>
-        </div>
-
-        <textarea
-          className="code-editor"
-          value={code}
-          onChange={(event) =>
-            setCode(event.target.value)
-          }
-          spellCheck="false"
-          dir="ltr"
-          aria-label="محرر الأكواد"
+    <article className={`course-card ${className}`}>
+      <div className="course-card-top">
+        <img
+          className="course-logo"
+          src={logo}
+          alt={`${name} logo`}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
         />
 
-        <div className="editor-footer">
-          <span>
-            المحرر الحالي للتجهيز فقط
-          </span>
-
-          <button
-            className="primary-button"
-            onClick={() =>
-              alert(
-                "سيتم ربط تشغيل الأكواد بخدمة التنفيذ الآمنة لاحقًا."
-              )
-            }
-          >
-            تشغيل الكود
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-/* =====================================
-   صفحة الألعاب
-===================================== */
-
-function Games() {
-  const games = [
-    {
-      emoji: "🧩",
-      title: "متاهة الأكواد",
-      description:
-        "ساعد كودي يوصل للهدف باستخدام التفكير المنطقي.",
-    },
-    {
-      emoji: "🌌",
-      title: "مهمة الفضاء",
-      description:
-        "اكتشف الطريق الصحيح خلال تحديات البرمجة.",
-    },
-    {
-      emoji: "💎",
-      title: "اجمع الكنوز",
-      description:
-        "حل التحديات واجمع الكنوز في مغامرتك.",
-    },
-  ];
-
-  return (
-    <div className="page-content">
-      <SectionTitle
-        title="عالم الألعاب"
-        subtitle="تعلم البرمجة من خلال المغامرات والتحديات"
-      />
-
-      <div className="games-grid">
-        {games.map((game) => (
-          <article
-            className="game-card"
-            key={game.title}
-          >
-            <div className="game-emoji">
-              {game.emoji}
-            </div>
-
-            <h3>{game.title}</h3>
-
-            <p>{game.description}</p>
-
-            <span className="coming-soon">
-              <LockKeyhole size={14} />
-              قيد التجهيز
-            </span>
-          </article>
-        ))}
+        <span className="course-status">ابدأ الآن</span>
       </div>
-    </div>
+
+      <h3>{name}</h3>
+      <p>{description}</p>
+
+      <NavLink to={path} className="course-button">
+        استكشف اللغة <ChevronLeft size={17} />
+      </NavLink>
+    </article>
   );
 }
 
-/* =====================================
-   صفحة المشاريع
-===================================== */
+/* =========================================
+   PLACEHOLDER PAGES
+   These pages will be connected to their
+   real features in the next implementation steps.
+========================================= */
 
-function Projects() {
+const pageContent = {
+  "/profile": {
+    icon: UserRound,
+    title: "ملفي الشخصي",
+    description: "هنا هتقدر تشوف بيانات حسابك وشخصيتك وتقدمك.",
+  },
+  "/languages": {
+    icon: BookOpen,
+    title: "لغات البرمجة",
+    description: "اختار Python أو JavaScript أو C++ وابدأ التعلم.",
+  },
+  "/playground": {
+    icon: Code2,
+    title: "ساحة الأكواد",
+    description: "مساحة كتابة وتشغيل الأكواد البرمجية.",
+  },
+  "/games": {
+    icon: Gamepad2,
+    title: "الألعاب",
+    description: "ألعاب تعليمية تفاعلية لتطوير مهاراتك البرمجية.",
+  },
+  "/projects": {
+    icon: FolderKanban,
+    title: "مشاريعي",
+    description: "هنا هتلاقي مشاريعك وتحفظ إنجازاتك.",
+  },
+  "/achievements": {
+    icon: Trophy,
+    title: "إنجازاتي",
+    description: "تابع الشارات والإنجازات اللي حققتها.",
+  },
+  "/settings": {
+    icon: Settings,
+    title: "الإعدادات",
+    description: "إدارة إعدادات المنصة وحسابك.",
+  },
+};
+
+function PlaceholderPage({ page }) {
+  const Icon = page.icon;
+
   return (
-    <div className="page-content">
-      <SectionTitle
-        title="مشاريعي"
-        subtitle="هنا هتلاقي المشاريع اللي بتبنيها أثناء التعلم"
-      />
-
-      <div className="empty-state">
-        <FolderKanban size={42} />
-
-        <h3>لسه مفيش مشاريع</h3>
-
-        <p>
-          ابدأ التعلم وأنشئ أول مشروع برمجي ليك.
-        </p>
-
-        <NavLink
-          to="/languages"
-          className="primary-button"
-        >
-          استكشف اللغات
-        </NavLink>
+    <section className="empty-state">
+      <div className="empty-state-icon">
+        <Icon size={38} />
       </div>
-    </div>
+
+      <h1>{page.title}</h1>
+      <p>{page.description}</p>
+
+      <span className="coming-soon-label">
+        <Sparkles size={15} />
+        جاري تجهيز هذه الصفحة
+      </span>
+    </section>
   );
 }
 
-/* =====================================
-   صفحة الإنجازات
-===================================== */
-
-function Achievements() {
+function LoginPage() {
   return (
-    <div className="page-content">
-      <SectionTitle
-        title="إنجازاتي"
-        subtitle="كل خطوة صغيرة تستحق التقدير"
-      />
-
-      <div className="empty-state">
-        <Trophy size={42} />
-
-        <h3>إنجازاتك في انتظارك!</h3>
-
-        <p>
-          أكمل الدروس والتحديات لفتح شارات جديدة.
-        </p>
+    <div className="login-placeholder" dir="rtl">
+      <div className="login-placeholder-icon">
+        <Rocket size={35} />
       </div>
-    </div>
-  );
-}
 
-/* =====================================
-   الإعدادات
-===================================== */
+      <h1>Cody Academy</h1>
+      <p>
+        صفحة تسجيل الدخول سيتم ربطها بخدمة Firebase Authentication
+        في مرحلة إعداد الحسابات.
+      </p>
 
-function SettingsPage() {
-  return (
-    <div className="page-content">
-      <SectionTitle
-        title="الإعدادات"
-        subtitle="إعدادات حسابك وتجربتك التعليمية"
-      />
-
-      <div className="settings-card">
-        <div className="settings-row">
-          <div>
-            <strong>الحساب</strong>
-            <p>إدارة بيانات حسابك</p>
-          </div>
-
-          <UserRound size={21} />
-        </div>
-
-        <div className="settings-row">
-          <div>
-            <strong>المظهر</strong>
-            <p>Cody Academy</p>
-          </div>
-
-          <Sparkles size={21} />
-        </div>
-
-        <div className="settings-row">
-          <div>
-            <strong>المساعدة</strong>
-            <p>معلومات عن المنصة</p>
-          </div>
-
-          <Bot size={21} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* =====================================
-   صفحة غير موجودة
-===================================== */
-
-function NotFound() {
-  return (
-    <div className="empty-state">
-      <h2>الصفحة مش موجودة</h2>
-
-      <NavLink
-        to="/"
-        className="primary-button"
-      >
+      <NavLink to="/" className="primary-button">
         العودة للرئيسية
       </NavLink>
     </div>
   );
 }
 
-/* =====================================
-   التطبيق الرئيسي
-===================================== */
+/* =========================================
+   APP ROUTES
+========================================= */
 
 export default function App() {
-  const [mobileMenuOpen, setMobileMenuOpen] =
-    useState(false);
-
   return (
-    <div className="app-shell" dir="rtl">
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<DashboardPage />} />
 
-      {mobileMenuOpen && (
-        <button
-          className="mobile-overlay"
-          aria-label="إغلاق القائمة"
-          onClick={() =>
-            setMobileMenuOpen(false)
-          }
-        />
-      )}
-
-      <Sidebar
-        onNavigate={() =>
-          setMobileMenuOpen(false)
-        }
-      />
-
-      <div
-        className={`mobile-sidebar ${
-          mobileMenuOpen
-            ? "mobile-sidebar-open"
-            : ""
-        }`}
-      >
-        <div className="mobile-sidebar-header">
-          <strong>Cody Academy</strong>
-
-          <button
-            onClick={() =>
-              setMobileMenuOpen(false)
-            }
-            aria-label="إغلاق القائمة"
-          >
-            <X size={22} />
-          </button>
-        </div>
-
-        <Sidebar
-          onNavigate={() =>
-            setMobileMenuOpen(false)
-          }
-        />
-      </div>
-
-      <main className="main-area">
-        <Header
-          onMenuClick={() =>
-            setMobileMenuOpen(true)
-          }
-        />
-
-        <Routes>
+        {Object.entries(pageContent).map(([path, page]) => (
           <Route
-            path="/"
-            element={<Dashboard />}
+            key={path}
+            path={path.slice(1)}
+            element={<PlaceholderPage page={page} />}
           />
+        ))}
 
-          <Route
-            path="/profile"
-            element={<Profile />}
-          />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
 
-          <Route
-            path="/languages"
-            element={<Languages />}
-          />
-
-          <Route
-            path="/playground"
-            element={<Playground />}
-          />
-
-          <Route
-            path="/games"
-            element={<Games />}
-          />
-
-          <Route
-            path="/projects"
-            element={<Projects />}
-          />
-
-          <Route
-            path="/achievements"
-            element={<Achievements />}
-          />
-
-          <Route
-            path="/settings"
-            element={<SettingsPage />}
-          />
-
-          <Route
-            path="*"
-            element={<NotFound />}
-          />
-        </Routes>
-      </main>
-
-      <MobileNavigation />
-    </div>
+      <Route path="/login" element={<LoginPage />} />
+    </Routes>
   );
 }
