@@ -1,17 +1,15 @@
 
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090d19">
-
   <title>ملفي الشخصي | Cody Academy</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/avatar-display.css">
 
   <style>
     :root {
@@ -97,8 +95,6 @@
       box-shadow: 0 0 12px #ff8585;
     }
 
-    /* Main profile card */
-
     .profile-header-card {
       position: relative;
       isolation: isolate;
@@ -140,77 +136,50 @@
     }
 
     .profile-orbit {
-      position: absolute;
-      z-index: -1;
-      top: 23px;
-      left: 50%;
-      width: 285px;
-      height: 285px;
-      border: 1px solid rgba(107,232,255,.08);
-      border-radius: 50%;
-      transform: translateX(-50%);
-      pointer-events: none;
-    }
-
-    .profile-orbit::before,
-    .profile-orbit::after {
-      content: "";
-      position: absolute;
-      border: 1px solid rgba(107,232,255,.06);
-      border-radius: 50%;
-    }
-
-    .profile-orbit::before {
-      inset: 18px;
-    }
-
-    .profile-orbit::after {
-      inset: 37px;
+      display: none !important;
     }
 
     .avatar-container {
       position: relative;
-      display: grid;
-      place-items: center;
-      width: 218px;
-      height: 218px;
-      margin: 0 auto 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 180px;
+      height: 205px;
+      margin: 0 auto 12px;
+      padding: 0;
       overflow: visible;
-      border: 2px solid rgba(107,232,255,.75);
-      border-radius: 50%;
-      background:
-        radial-gradient(circle, rgba(107,232,255,.15), rgba(30,45,85,.42) 65%, rgba(10,17,35,.4));
-      box-shadow:
-        0 0 0 8px rgba(107,232,255,.045),
-        0 0 38px rgba(107,232,255,.18),
-        inset 0 0 30px rgba(107,232,255,.07);
-      animation: profileAvatarFloat 4s ease-in-out infinite;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      animation: none;
     }
 
-    /* CSS character from js/avatars.js */
-
     .avatar-container .anime-avatar {
-      width: 190px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: 180px;
       height: 205px;
-      overflow: hidden;
-      border-radius: 50%;
-      background:
-        radial-gradient(circle at 50% 40%, rgba(107,232,255,.12), transparent 70%);
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
 
     .avatar-container .anime-character {
-      animation: none;
-      transform: scale(.83);
+      transform: scale(.82);
       transform-origin: 50% 90%;
+      animation: none;
     }
 
-    .avatar-container .anime-shadow {
-      opacity: .35;
-    }
-
-    @keyframes profileAvatarFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+    .avatar-container .anime-shadow,
+    .avatar-container .anime-star {
+      display: none;
     }
 
     .avatar-edit-hint {
@@ -257,8 +226,6 @@
     .profile-title i {
       font-size: 1.1rem;
     }
-
-    /* XP progress */
 
     .level-progress-wrapper {
       position: relative;
@@ -311,8 +278,6 @@
       font-size: .75rem;
     }
 
-    /* Section headings */
-
     .profile-section-heading {
       display: flex;
       justify-content: space-between;
@@ -340,8 +305,6 @@
       color: #8194b2;
       font-size: .77rem;
     }
-
-    /* Statistics */
 
     .stats-grid {
       display: grid;
@@ -405,8 +368,6 @@
       font-weight: 900;
       overflow-wrap: anywhere;
     }
-
-    /* Achievements */
 
     .badges-section {
       padding: 23px;
@@ -476,10 +437,7 @@
     }
 
     @media (max-width: 950px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, minmax(0,1fr));
-      }
-
+      .stats-grid,
       .badges-grid {
         grid-template-columns: repeat(2, minmax(0,1fr));
       }
@@ -492,13 +450,17 @@
       }
 
       .avatar-container {
-        width: 190px;
-        height: 190px;
+        width: 155px;
+        height: 175px;
       }
 
       .avatar-container .anime-avatar {
-        width: 170px;
-        height: 180px;
+        width: 155px;
+        height: 175px;
+      }
+
+      .avatar-container .anime-character {
+        transform: scale(.72);
       }
 
       .stats-grid {
@@ -547,12 +509,10 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .avatar-container {
-        animation: none;
-      }
-
+      .avatar-container,
       .stat-box,
       .profile-action {
+        animation: none;
         transition: none;
       }
     }
@@ -561,7 +521,6 @@
 
 <body>
   <div class="space-app">
-
     <aside class="space-sidebar" id="sidebar">
       <a class="space-brand" href="dashboard.html">
         <span class="brand-mark">C</span>
@@ -575,37 +534,30 @@
           <i class="ri-layout-grid-fill"></i>
           <span>لوحة التحكم</span>
         </a>
-
         <a class="nav-link" href="languages.html">
           <i class="ri-route-line"></i>
           <span>مسارات التعلم</span>
         </a>
-
         <a class="nav-link" href="playground.html">
           <i class="ri-code-s-slash-line"></i>
           <span>مختبر الأكواد</span>
         </a>
-
         <a class="nav-link" href="games.html">
           <i class="ri-gamepad-line"></i>
           <span>الألعاب والتحديات</span>
         </a>
-
         <a class="nav-link" href="projects.html">
           <i class="ri-folder-code-line"></i>
           <span>مشروعاتي</span>
         </a>
-
         <a class="nav-link" href="progress.html">
           <i class="ri-bar-chart-box-line"></i>
           <span>تقدمي</span>
         </a>
-
         <a class="nav-link" href="leaderboard.html">
           <i class="ri-trophy-line"></i>
           <span>لوحة الشرف</span>
         </a>
-
         <a class="nav-link active" href="profile.html">
           <i class="ri-user-settings-line"></i>
           <span>ملفي الشخصي</span>
@@ -625,26 +577,20 @@
 
     <main class="space-main">
       <div class="profile-page">
-
         <header class="space-topbar">
           <div class="topbar-title">
             <div class="page-kicker">
               <span class="online-dot"></span>
               حسابك الشخصي
             </div>
-
             <h1>ملفي الشخصي</h1>
-
-            <p>
-              تابعي رحلتك في عالم البرمجة وشوفي كل إنجازاتك في مكان واحد.
-            </p>
+            <p>تابعي رحلتك في عالم البرمجة وشوفي كل إنجازاتك في مكان واحد.</p>
 
             <div class="profile-top-actions">
               <a class="profile-action primary" href="avatar.html">
                 <i class="ri-user-smile-line"></i>
                 تغيير الشخصية
               </a>
-
               <a class="profile-action" href="dashboard.html">
                 <i class="ri-home-5-line"></i>
                 لوحة التحكم
@@ -660,9 +606,7 @@
         <section class="profile-header-card">
           <div class="profile-orbit" aria-hidden="true"></div>
 
-          <div class="avatar-container" id="userAvatar" aria-label="شخصيتك المختارة">
-            <!-- شخصية CSS يتم رسمها من avatars.js -->
-          </div>
+          <div class="avatar-container" id="userAvatar" aria-label="شخصيتك المختارة"></div>
 
           <div class="avatar-edit-hint">
             <i class="ri-sparkling-2-fill"></i>
@@ -684,7 +628,6 @@
           <div class="level-progress-wrapper">
             <div class="level-labels">
               <span>التقدم للمستوى التالي</span>
-
               <span class="xp-number">
                 <span id="currentXP">0</span> / 100 XP
               </span>
@@ -718,33 +661,25 @@
 
         <section class="stats-grid" aria-label="إحصائيات الحساب">
           <article class="stat-box" style="--stat-color:#6be8ff">
-            <div class="stat-icon">
-              <i class="ri-flashlight-fill"></i>
-            </div>
+            <div class="stat-icon"><i class="ri-flashlight-fill"></i></div>
             <h4>نقاط الخبرة</h4>
             <div class="value js-user-xp">0</div>
           </article>
 
           <article class="stat-box" style="--stat-color:#ffd48a">
-            <div class="stat-icon">
-              <i class="ri-coin-fill"></i>
-            </div>
+            <div class="stat-icon"><i class="ri-coin-fill"></i></div>
             <h4>رصيد النجوم</h4>
             <div class="value js-user-coins">0</div>
           </article>
 
           <article class="stat-box" style="--stat-color:#55e6b1">
-            <div class="stat-icon">
-              <i class="ri-book-open-fill"></i>
-            </div>
+            <div class="stat-icon"><i class="ri-book-open-fill"></i></div>
             <h4>دروس مكتملة</h4>
             <div class="value js-completed-lessons">0</div>
           </article>
 
           <article class="stat-box" style="--stat-color:#aa91ff">
-            <div class="stat-icon">
-              <i class="ri-code-box-fill"></i>
-            </div>
+            <div class="stat-icon"><i class="ri-code-box-fill"></i></div>
             <h4>مشروعاتي</h4>
             <div class="value js-completed-projects">0</div>
           </article>
@@ -760,7 +695,6 @@
 
         <section class="badges-section">
           <div class="badges-grid">
-
             <div class="badge-item" id="badge-first-step">
               <i class="ri-rocket-fill"></i>
               <span>أول خطوة</span>
@@ -784,7 +718,6 @@
               <span>بطل الألعاب</span>
               <small class="badge-state">لم يُفتح بعد</small>
             </div>
-
           </div>
 
           <p class="profile-footer-note">
@@ -792,7 +725,6 @@
             كمّلي الدروس وجرّبي الألعاب واعملي مشروعات جديدة!
           </p>
         </section>
-
       </div>
     </main>
   </div>
@@ -802,24 +734,19 @@
       <i class="ri-layout-grid-fill"></i>
       <span>الرئيسية</span>
     </a>
-
     <a href="languages.html">
       <i class="ri-route-line"></i>
       <span>التعلم</span>
     </a>
-
     <a href="playground.html">
       <i class="ri-code-box-line"></i>
       <span>الأكواد</span>
     </a>
-
     <a href="games.html">
       <i class="ri-gamepad-line"></i>
       <span>الألعاب</span>
     </a>
-
-    <a href="profile.html" class="
-active">
+    <a href="profile.html" class="active">
       <i class="ri-user-settings-line"></i>
       <span>حسابي</span>
     </a>
@@ -850,7 +777,6 @@ active">
 
     function safeNumber(value) {
       const number = Number(value);
-
       return Number.isFinite(number) && number >= 0
         ? Math.floor(number)
         : 0;
@@ -859,7 +785,6 @@ active">
     function setStatus(message, isError = false) {
       const status = $("profileStatus");
       if (!status) return;
-
       status.textContent = message;
       status.classList.toggle("error", isError);
     }
@@ -868,16 +793,13 @@ active">
       const badge = $(id);
       if (!badge) return;
 
+     
       const unlocked = Boolean(condition);
-
       badge.classList.toggle("unlocked", unlocked);
 
       const state = badge.querySelector(".badge-state");
-
       if (state) {
-        state.textContent = unlocked
-          ? "تم فتح الوسام"
-          : "لم يُفتح بعد";
+        state.textContent = unlocked ? "تم فتح الوسام" : "لم يُفتح بعد";
       }
     }
 
@@ -890,7 +812,6 @@ active">
 
         if (userSnapshot.exists()) {
           const profileData = userSnapshot.data();
-
           if (profileData.activeAvatar) {
             avatarId = profileData.activeAvatar;
           }
@@ -1021,10 +942,7 @@ active">
       }
 
       if (rewardsResult.status === "fulfilled") {
-        unlockBadge(
-          "badge-games",
-          rewardsResult.value.size > 0
-        );
+        unlockBadge("badge-games", rewardsResult.value.size > 0);
       } else {
         console.warn(
           "Game rewards could not be loaded:",
