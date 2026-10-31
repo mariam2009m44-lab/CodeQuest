@@ -5,232 +5,269 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090d19">
+
   <title>ملفي الشخصي | Cody Academy</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
+    rel="stylesheet"
+  >
+
   <link rel="stylesheet" href="css/dashboard.css">
 
   <style>
-    .profile-header-card {
-      background: var(--surface-glass);
+    .profile-page {
+      width: 100%;
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+
+    .profile-status {
+      margin: 18px 0;
+      padding: 12px 16px;
+      color: var(--muted);
+      font-size: .9rem;
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 40px 30px;
-      text-align: center;
+      border-radius: var(--radius-md);
+      background: var(--surface-glass);
+    }
+
+    .profile-header-card {
       position: relative;
       overflow: hidden;
+      text-align: center;
+      padding: 42px 25px;
+      margin-bottom: 25px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface-glass);
       backdrop-filter: blur(20px);
-      margin-bottom: 30px;
     }
 
     .profile-header-card::before {
       content: "";
       position: absolute;
       inset: 0 0 auto;
-      height: 120px;
+      height: 150px;
       background: linear-gradient(
         180deg,
-        rgba(107, 232, 255, .15),
+        rgba(107, 232, 255, .13),
         transparent
       );
       pointer-events: none;
     }
 
     .avatar-container {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      margin: 0 auto 20px;
-      background: var(--surface);
-      border: 4px solid var(--cyan);
+      width: 118px;
+      height: 118px;
       display: grid;
       place-items: center;
-      font-size: 4rem;
+      margin: 0 auto 18px;
       position: relative;
-      box-shadow: 0 0 30px rgba(107, 232, 255, .3);
+      border: 4px solid var(--cyan);
+      border-radius: 50%;
+      background: var(--surface);
+      font-size: 3.8rem;
+      box-shadow: 0 0 30px rgba(107, 232, 255, .25);
     }
 
     .profile-name {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #fff;
-      margin-bottom: 8px;
       position: relative;
+      margin-bottom: 10px;
+      color: #fff;
+      font-size: 1.9rem;
+      font-weight: 900;
       overflow-wrap: anywhere;
     }
 
     .profile-title {
-      color: var(--cyan);
-      font-weight: 800;
-      font-size: 1.05rem;
-      margin-bottom: 25px;
+      position: relative;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      background: rgba(107, 232, 255, .1);
-      padding: 6px 16px;
-      border-radius: 20px;
+      gap: 8px;
+      margin-bottom: 25px;
+      padding: 8px 18px;
+      color: var(--cyan);
+      font-size: .95rem;
+      font-weight: 800;
       border: 1px solid rgba(107, 232, 255, .2);
-      position: relative;
+      border-radius: 30px;
+      background: rgba(107, 232, 255, .09);
     }
 
     .level-progress-wrapper {
-      max-width: 420px;
-      margin: 0 auto;
       position: relative;
+      max-width: 430px;
+      margin: 0 auto;
     }
 
     .level-labels {
       display: flex;
       justify-content: space-between;
       gap: 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
       font-size: .85rem;
       font-weight: 800;
-      color: var(--muted);
-      margin-bottom: 8px;
     }
 
     .progress-track {
       width: 100%;
       height: 12px;
-      background: rgba(255, 255, 255, .05);
-      border-radius: 10px;
       overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .07);
     }
 
     .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--cyan), #3a7bd5);
       width: 0%;
-      border-radius: 10px;
-      transition: width .5s ease;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        var(--cyan),
+        #3a7bd5
+      );
       box-shadow: 0 0 15px var(--cyan);
+      transition: width .5s ease;
     }
 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .stat-box,
-    .badges-section {
-      background: var(--surface-glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      backdrop-filter: blur(10px);
-      min-width: 0;
+      gap: 18px;
+      margin-bottom: 25px;
     }
 
     .stat-box {
+      min-width: 0;
+      padding: 25px 18px;
       text-align: center;
-      transition: border-color .2s ease, transform .2s ease;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface-glass);
+      transition: transform .2s ease, border-color .2s ease;
     }
 
     .stat-box:hover {
       transform: translateY(-3px);
-      border-color: var(--gold);
+      border-color: var(--cyan);
     }
 
     .stat-box i {
-      font-size: 2.4rem;
-      margin-bottom: 12px;
       display: inline-block;
+      margin-bottom: 12px;
+      font-size: 2.3rem;
     }
 
     .stat-box h4 {
-      font-size: .9rem;
+      margin-bottom: 9px;
       color: var(--muted);
+      font-size: .9rem;
       font-weight: 700;
-      margin-bottom: 8px;
     }
 
     .stat-box .value {
+      color: #fff;
       font-size: 1.8rem;
       font-weight: 900;
-      color: #fff;
       overflow-wrap: anywhere;
     }
 
+    .badges-section {
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+    }
+
     .badges-section h3 {
-      font-size: 1.3rem;
-      font-weight: 900;
-      color: #fff;
-      margin-bottom: 20px;
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-bottom: 22px;
+      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 900;
     }
 
     .badges-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax(130px, 1fr)
+      );
       gap: 15px;
     }
 
     .badge-item {
-      background: rgba(255, 255, 255, .03);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
       padding: 20px 10px;
       text-align: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, .03);
       opacity: .5;
       filter: grayscale(100%);
-      transition: .2s ease;
+      transition: .25s ease;
     }
 
     .badge-item.unlocked {
       opacity: 1;
       filter: none;
       border-color: var(--gold);
-      box-shadow: 0 0 15px rgba(255, 212, 138, .15);
+      box-shadow: 0 0 15px rgba(255, 212, 138, .14);
     }
 
     .badge-item i {
-      font-size: 2.4rem;
-      color: var(--gold);
+      display: block;
       margin-bottom: 10px;
+      color: var(--gold);
+      font-size: 2.3rem;
     }
 
     .badge-item span {
-      display: block;
-      font-size: .8rem;
-      font-weight: 800;
       color: var(--text);
-    }
-
-    .profile-status {
-      margin: 18px 0;
-      color: var(--muted);
-      font-size: .9rem;
+      font-size: .85rem;
+      font-weight: 800;
     }
 
     @media (max-width: 768px) {
       .stats-grid {
         grid-template-columns: 1fr;
-        gap: 15px;
-      }
-
-      .profile-name {
-        font-size: 1.6rem;
+        gap: 13px;
       }
 
       .profile-header-card {
-        padding: 28px 18px;
+        padding: 30px 18px;
+      }
+
+      .profile-name {
+        font-size: 1.55rem;
       }
 
       .level-labels {
         font-size: .75rem;
       }
+
+      .badges-section {
+        padding: 18px;
+      }
     }
   </style>
 </head>
+
 <body>
+
   <div class="space-app">
+
     <aside class="space-sidebar" id="sidebar">
+
       <a class="space-brand" href="dashboard.html">
         <span class="brand-mark">C</span>
         <span class="brand-name">Cody</span>
@@ -239,144 +276,259 @@
       <div class="sidebar-caption">مساحة التعلم</div>
 
       <nav class="space-nav">
+
         <a class="nav-link" href="dashboard.html">
-          <i class="ri-layout-grid-fill"></i><span>لوحة التحكم</span>
+          <i class="ri-layout-grid-fill"></i>
+          <span>لوحة التحكم</span>
         </a>
+
         <a class="nav-link" href="languages.html">
-          <i class="ri-route-line"></i><span>مسارات التعلم</span>
+          <i class="ri-route-line"></i>
+          <span>مسارات التعلم</span>
         </a>
+
         <a class="nav-link" href="playground.html">
-          <i class="ri-code-s-slash-line"></i><span>مختبر الأكواد</span>
+          <i class="ri-code-s-slash-line"></i>
+          <span>مختبر الأكواد</span>
         </a>
+
         <a class="nav-link" href="games.html">
-          <i class="ri-gamepad-line"></i><span>الألعاب والتحديات</span>
+          <i class="ri-gamepad-line"></i>
+          <span>الألعاب والتحديات</span>
         </a>
+
         <a class="nav-link" href="projects.html">
-          <i class="ri-folder-code-line"></i><span>مشروعاتي</span>
+          <i class="ri-folder-code-line"></i>
+          <span>مشروعاتي</span>
         </a>
+
         <a class="nav-link" href="progress.html">
-          <i class="ri-bar-chart-box-line"></i><span>تقدمي</span>
+          <i class="ri-bar-chart-box-line"></i>
+          <span>تقدمي</span>
         </a>
+
         <a class="nav-link" href="leaderboard.html">
-          <i class="ri-trophy-line"></i><span>لوحة الشرف</span>
+          <i class="ri-trophy-line"></i>
+          <span>لوحة الشرف</span>
         </a>
+
         <a class="nav-link active" href="profile.html">
-          <i class="ri-user-settings-line"></i><span>ملفي الشخصي</span>
+          <i class="ri-user-settings-line"></i>
+          <span>ملفي الشخصي</span>
         </a>
+
       </nav>
 
-      <a href="login.html" id="logoutButton" class="logout-link logout">
+      <a
+        href="login.html"
+        id="logoutButton"
+        class="logout-link logout"
+      >
         <i class="ri-logout-box-r-line"></i>
         <span>تسجيل الخروج</span>
       </a>
 
       <div class="sidebar-version">
-        <span class="version-dot"></span> CODY <span>·</span> SPACE EDITION
+        <span class="version-dot"></span>
+        CODY <span>·</span> SPACE EDITION
       </div>
+
     </aside>
 
     <main class="space-main">
-      <header class="space-topbar">
-        <div class="topbar-title">
-          <div class="page-kicker">
-            <span class="online-dot"></span> حسابك الشخصي
+      <div class="profile-page">
+
+        <header class="space-topbar">
+          <div class="topbar-title">
+
+            <div class="page-kicker">
+              <span class="online-dot"></span>
+              حسابك الشخصي
+            </div>
+
+            <h1>ملفي الشخصي</h1>
+
+            <p>
+              كل إنجازاتك ورحلتك في عالم البرمجة في مكان واحد.
+            </p>
+
           </div>
-          <h1>ملفي الشخصي</h1>
-          <p>كل إنجازاتك ورحلتك في مكان واحد.</p>
-        </div>
-      </header>
+        </header>
 
-      <p id="profileStatus" class="profile-status" role="status" aria-live="polite">
-        جارٍ تحميل بيانات الحساب...
-      </p>
+        <p
+          id="profileStatus"
+          class="profile-status"
+          role="status"
+          aria-live="polite"
+        >
+          جارٍ تحميل بيانات الحساب...
+        </p>
 
-      <section class="profile-header-card">
-        <div class="avatar-container" id="userAvatar" aria-hidden="true">🧑‍🚀</div>
-        <h2 class="profile-name js-user-name">جاري التحميل...</h2>
+        <section class="profile-header-card">
 
-        <div class="profile-title">
-          <i class="ri-trophy-fill" aria-hidden="true"></i>
-          المستوى <span id="userLevel">1</span>
-        </div>
+          <div
+            class="avatar-container"
+            id="userAvatar"
+            aria-hidden="true"
+          >🧑‍🚀</div>
 
-        <div class="level-progress-wrapper">
-          <div class="level-labels">
-            <span>التقدم للمستوى التالي</span>
-            <span><span id="currentXP">0</span> / 100 XP</span>
-          </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              id="xpProgressBar"
-              role="progressbar"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow="0"
-            ></div>
-          </div>
-        </div>
-      </section>
+          <h2 class="profile-name js-user-name">
+            جاري التحميل...
+          </h2>
 
-      <section class="stats-grid" aria-label="إحصائيات الحساب">
-        <article class="stat-box">
-          <i class="ri-flashlight-fill" style="color:var(--cyan)" aria-hidden="true"></i>
-          <h4>إجمالي نقاط الخبرة</h4>
-          <div class="value js-user-xp">0</div>
-        </article>
-
-        <article class="stat-box">
-          <i class="ri-coin-fill" style="color:var(--gold)" aria-hidden="true"></i>
-          <h4>رصيد النجوم</h4>
-          <div class="value js-user-coins">0</div>
-        </article>
-
-        <article class="stat-box">
-          <i class="ri-book-open-fill" style="color:var(--green)" aria-hidden="true"></i>
-          <h4>دروس مكتملة</h4>
-          <div class="value js-completed-lessons">0</div>
-        </article>
-      </section>
-
-      <section class="badges-section">
-        <h3>
-          <i class="ri-medal-fill" style="color:var(--gold)" aria-hidden="true"></i>
-          الإنجازات والأوسمة
-        </h3>
-
-        <div class="badges-grid">
-          <div class="badge-item" id="badge-first-step">
-            <i class="ri-rocket-fill" aria-hidden="true"></i>
-            <span>أول خطوة</span>
+          <div class="profile-title">
+            <i class="ri-trophy-fill"></i>
+            المستوى
+            <span id="userLevel">1</span>
           </div>
 
-          <div class="badge-item" id="badge-lessons">
-            <i class="ri-book-open-fill" aria-hidden="true"></i>
-            <span>متعلم نشيط</span>
+          <div class="level-progress-wrapper">
+
+            <div class="level-labels">
+              <span>التقدم للمستوى التالي</span>
+
+              <span>
+                <span id="currentXP">0</span> / 100 XP
+              </span>
+            </div>
+
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                id="xpProgressBar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              ></div>
+            </div>
+
           </div>
 
-          <div class="badge-item" id="badge-projects">
-            <i class="ri-code-box-fill" aria-hidden="true"></i>
-            <span>باني المشروعات</span>
+        </section>
+
+        <section
+          class="stats-grid"
+          aria-label="إحصائيات الحساب"
+        >
+
+          <article class="stat-box">
+
+            <i
+              class="ri-flashlight-fill"
+              style="color:var(--cyan)"
+              aria-hidden="true"
+            ></i>
+
+            <h4>إجمالي نقاط الخبرة</h4>
+
+            <div class="value js-user-xp">0</div>
+
+          </article>
+
+          <article class="stat-box">
+
+            <i
+              class="ri-coin-fill"
+              style="color:var(--gold)"
+              aria-hidden="true"
+            ></i>
+
+            <h4>رصيد النجوم</h4>
+
+            <div class="value js-user-coins">0</div>
+
+          </article>
+
+          <article class="stat-box">
+
+            <i
+              class="ri-book-open-fill"
+              style="color:var(--green)"
+              aria-hidden="true"
+            ></i>
+
+            <h4>دروس مكتملة</h4>
+
+            <div class="value js-completed-lessons">0</div>
+
+          </article>
+
+        </section>
+
+        <section class="badges-section">
+
+          <h3>
+            <i
+              class="ri-medal-fill"
+              style="color:var(--gold)"
+              aria-hidden="true"
+            ></i>
+            الإنجازات والأوسمة
+          </h3>
+
+          <div class="badges-grid">
+
+            <div class="badge-item" id="badge-first-step">
+              <i class="ri-rocket-fill"></i>
+              <span>أول خطوة</span>
+            </div>
+
+            <div class="badge-item" id="badge-lessons">
+              <i class="ri-book-open-fill"></i>
+              <span>متعلم نشيط</span>
+            </div>
+
+            <div class="badge-item" id="badge-projects">
+              <i class="ri-code-box-fill"></i>
+              <span>باني المشروعات</span>
+            </div>
+
+            <div class="badge-item" id="badge-games">
+              <i class="ri-gamepad-fill"></i>
+              <span>بطل الألعاب</span>
+            </div>
+
           </div>
 
-          <div class="badge-item" id="badge-games">
-            <i class="ri-gamepad-fill" aria-hidden="true"></i>
-            <span>بطل الألعاب</span>
-          </div>
-        </div>
-      </section>
+        </section>
+
+      </div>
     </main>
+
   </div>
 
   <nav class="mobile-nav">
-    <a href="dashboard.html"><i class="ri-layout-grid-fill"></i><span>الرئيسية</span></a>
-    <a href="languages.html"><i class="ri-route-line"></i><span>التعلم</span></a>
-    <a href="playground.html"><i class="ri-code-box-line"></i><span>الأكواد</span></a>
-    <a href="games.html"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-    <a href="profile.html" class="active"><i class="ri-user-settings-line"></i><span>حسابي</span></a>
+
+    <a href="dashboard.html">
+      <i class="ri-layout-grid-fill"></i>
+      <span>الرئيسية</span>
+    </a>
+
+    <a href="languages.html">
+      <i class="ri-route-line"></i>
+      <span>التعلم</span>
+    </a>
+
+    <a href="playground.html">
+      <i class="ri-code-box-line"></i>
+      <span>الأكواد</span>
+    </a>
+
+    <a href="games.html">
+      <i class="ri-gamepad-line"></i>
+      <span>الألعاب</span>
+    </a>
+
+    <a href="profile.html" class="active">
+      <i class="ri-user-settings-line"></i>
+      <span>حسابي</span>
+    </a>
+
   </nav>
 
   <script type="module">
+
     import { App } from "./js/app.js";
     import { requireUser } from "./js/auth.js";
     import { db } from "./js/firebase-config.js";
@@ -392,18 +544,85 @@
 
     function safeNumber(value) {
       const number = Number(value);
+
       return Number.isFinite(number) && number >= 0
         ? Math.floor(number)
         : 0;
     }
 
     function unlock(id, condition) {
-      $(id)?.classList.toggle("unlocked", Boolean(condition));
+      const badge = $(id);
+
+      if (!badge) return;
+
+      badge.classList.toggle(
+        "unlocked",
+        Boolean(condition)
+      );
     }
+
+    function updateLessonBadge() {
+      const counter = document.querySelector(
+        ".js-completed-lessons"
+      );
+
+      const completed = safeNumber(
+        counter?.textContent
+      );
+
+      unlock("badge-lessons", completed > 0);
+    }
+
+    function updateXPBadge() {
+      const counter = document.querySelector(
+        ".js-user-xp"
+      );
+
+      const xp = safeNumber(
+        counter?.textContent
+      );
+
+      unlock("badge-first-step", xp > 0);
+    }
+
+    function observeCounter(selector, callback) {
+      const element = document.querySelector(selector);
+
+      if (!element) return null;
+
+      const observer = new MutationObserver(callback);
+
+      observer.observe(element, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+
+      return observer;
+    }
+
+    // متابعة البيانات التي يحدّثها App مباشرةً
+    const lessonObserver = observeCounter(
+      ".js-completed-lessons",
+      updateLessonBadge
+    );
+
+    const xpObserver = observeCounter(
+      ".js-user-xp",
+      updateXPBadge
+    );
 
     async function loadProfile() {
       const user = await requireUser();
+
+      // App هو المصدر الأساسي لبيانات الحساب
       await App.init();
+
+      if (App.currentUid && App.currentUid !== user.uid) {
+        throw new Error(
+          "الحساب الحالي لا يطابق الحساب الذي تم تسجيل الدخول به."
+        );
+      }
 
       const projectsQuery = query(
         collection(db, "projects"),
@@ -422,36 +641,37 @@
         getDocs(rewardsCollection)
       ]);
 
-      const xp = safeNumber(App.xp);
-      const lessons = document.querySelector(".js-completed-lessons");
-      const level = Math.floor(xp / 100) + 1;
-      const xpInLevel = xp % 100;
+      // تحديث الشارات من البيانات الفعلية
+      updateXPBadge();
+      updateLessonBadge();
 
-      $("userLevel").textContent = level;
-      $("currentXP").textContent = xpInLevel;
-      $("xpProgressBar").style.width = `${xpInLevel}%`;
-      $("xpProgressBar").setAttribute("aria-valuenow", String(xpInLevel));
-
-      unlock("badge-first-step", xp > 0);
       unlock(
-        "badge-lessons",
-        safeNumber(lessons?.textContent) > 0
+        "badge-projects",
+        projects.size > 0
       );
-      unlock("badge-projects", projects.size > 0);
-      unlock("badge-games", rewards.size > 0);
+
+      unlock(
+        "badge-games",
+        rewards.size > 0
+      );
 
       $("profileStatus").textContent =
-        "يتم تحديث النقاط والرصيد مباشرة من ملف حسابك.";
+        "تم تحميل بيانات الحساب. يتم تحديث بيانات التقدم تلقائيًا.";
     }
 
     loadProfile().catch(error => {
-      console.error("Profile loading error:", error);
+      console.error(
+        "Profile loading error:",
+        error
+      );
 
       $("profileStatus").textContent =
         error?.code === "permission-denied"
-          ? "لا توجد صلاحية لقراءة بعض البيانات."
-          : error?.message || "تعذر تحميل بيانات الحساب.";
+          ? "لا توجد صلاحية لقراءة بعض بيانات الحساب."
+          : "تعذر تحميل الملف الشخصي. حاولي تحديث الصفحة.";
     });
+
   </script>
+
 </body>
 </html>
