@@ -24,65 +24,87 @@ jobs:
         working-directory: cloudflare-worker
         run: npm install --no-save wrangler@4
 
-      - name: Prepare quiz answers
+      - name: Prepare private quiz answers
+        env:
+          QUIZ_ANSWERS_JSON: ${{ secrets.QUIZ_ANSWERS_JSON }}
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import path from 'node:path';
 
-          const files = [
-            ['python', 'json/python_curriculum.json'],
-            ['javascript', 'json/js_curriculum.json'],
-            ['cpp', 'json/cpp_curriculum.json']
-          ];
+          const raw = process.env.QUIZ_ANSWERS_JSON;
 
-          const records = [];
-          const seen = new Set();
-
-          for (const [language, file] of files) {
-            const curriculum = JSON.parse(fs.readFileSync(file, 'utf8'));
-
-            for (const chapter of curriculum.chapters ?? []) {
-              for (const lesson of chapter.lessons ?? []) {
-                const quiz = lesson.quiz;
-                if (!quiz) continue;
-
-                if (
-                  typeof lesson.id !== 'string' ||
-                  !Array.isArray(quiz.options) ||
-                  !Number.isInteger(quiz.correct_index) ||
-                  quiz.correct_index < 0 ||
-                  quiz.correct_index >= quiz.options.length
-                ) {
-                  throw new Error(`Invalid quiz: ${language}/${lesson.id}`);
-                }
-
-                const key = `quiz:${language}:${lesson.id}`;
-
-                if (seen.has(key)) {
-                  throw new Error(`Duplicate key: ${key}`);
-                }
-
-                seen.add(key);
-
-                records.push({
-                  key,
-                  value: JSON.stringify({
-                    correctIndex: quiz.correct_index,
-                    explanation:
-                      quiz.success_msg ||
-                      quiz.explanation ||
-                      'إجابة صحيحة!'
-                  })
-                });
-              }
-            }
+          if (!raw) {
+            throw new Error(
+              'Missing GitHub Secret: QUIZ_ANSWERS_JSON'
+            );
           }
 
-          if (records.length !== 73) {
+          let answers;
+
+          try {
+            answers = JSON.parse(raw);
+          } catch {
             throw new Error(
-              `Expected 73 quizzes, found ${records.length}`
+              'QUIZ_ANSWERS_JSON is not valid JSON.'
             );
+          }
+
+          const allowedLanguages = new Set([
+            'python',
+            'javascript',
+            'cpp'
+          ]);
+
+          const records = [];
+
+          for (const [identifier, answer] of Object.entries(answers)) {
+            const parts = identifier.split(':');
+
+            if (parts.length !== 2) {
+              throw new Error(
+                `Invalid quiz identifier: ${identifier}`
+              );
+            }
+
+            const [language, lessonId] = parts;
+
+            if (!allowedLanguages.has(language)) {
+              throw new Error(
+                `Unsupported language: ${language}`
+              );
+            }
+
+            if (
+              !/^[a-zA-Z0-9_-]{1,100}$/.test(lessonId)
+            ) {
+              throw new Error(
+                `Invalid lesson ID: ${lessonId}`
+              );
+            }
+
+            if (
+              !answer ||
+              !Number.isInteger(answer.correctIndex) ||
+              answer.correctIndex < 0 ||
+              typeof answer.explanation !== 'string'
+            ) {
+              throw new Error(
+                `Invalid answer data: ${identifier}`
+              );
+            }
+
+            records.push({
+              key: `quiz:${language}:${lessonId}`,
+              value: JSON.stringify({
+                correctIndex: answer.correctIndex,
+                explanation: answer.explanation
+              })
+            });
+          }
+
+          if (records.length === 0) {
+            throw new Error('No quiz answers were provided.');
           }
 
           const output = path.join(
@@ -90,10 +112,14 @@ jobs:
             'codequest-quiz-answers.json'
           );
 
-          fs.writeFileSync(output, JSON.stringify(records));
+          fs.writeFileSync(
+            output,
+            JSON.stringify(records),
+            'utf8'
+          );
 
           console.log(
-            `Validated ${records.length} quiz answers.`
+            `Validated ${records.length} private quiz answers.`
           );
           NODE
 
