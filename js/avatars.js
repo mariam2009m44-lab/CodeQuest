@@ -1,454 +1,686 @@
 
+
 /* =====================================================
-   CODY ACADEMY - AVATAR ENGINE
-   Six original vector characters.
-   No PNG, JPG, external image or library required.
+   CODY ACADEMY
+   CSS ANIME AVATARS
+   Original characters drawn entirely with HTML + CSS
 ===================================================== */
 
-const characters = {
-  cody: {
-    name: "كودي",
-    description: "رفيقك الذكي",
-    color: "#55eaff",
-    dark: "#19385e",
-    kind: "robot"
-  },
-  layla: {
-    name: "ليلى",
-    description: "المبرمجة المبدعة",
-    color: "#c58aff",
-    dark: "#563477",
-    kind: "girl"
-  },
-  omar: {
-    name: "عمر",
-    description: "مستكشف الفضاء",
-    color: "#55c8ff",
-    dark: "#244a78",
-    kind: "astronaut"
-  },
-  sara: {
-    name: "سارة",
-    description: "العالمة الصغيرة",
-    color: "#65eacb",
-    dark: "#236b69",
-    kind: "scientist"
-  },
-  robo: {
-    name: "روبو",
-    description: "المساعد الآلي",
-    color: "#ffc66d",
-    dark: "#66502d",
-    kind: "robot2"
-  },
-  nova: {
-    name: "نوفا",
-    description: "الصديق الفضائي",
-    color: "#b99aff",
-    dark: "#493b83",
-    kind: "alien"
-  }
-};
+const AVATARS = [
+  { id: "cody", skin: "#f4c5a7", hair: "#273047", hair2: "#384a70", outfit: "#48b9ed", eyes: "#263c75", style: "boy-one" },
+  { id: "layla", skin: "#f4c9b4", hair: "#40264f", hair2: "#754b91", outfit: "#a77bea", eyes: "#654a9e", style: "girl-one" },
+  { id: "omar", skin: "#dca987", hair: "#392c27", hair2: "#654637", outfit: "#e5a84f", eyes: "#49372c", style: "boy-two" },
+  { id: "sara", skin: "#f4d0b7", hair: "#9a583c", hair2: "#c17b51", outfit: "#53c8a6", eyes: "#397b73", style: "girl-two" },
+  { id: "robo", skin: "#e9b99f", hair: "#202b48", hair2: "#435c91", outfit: "#e47791", eyes: "#385caa", style: "boy-three" },
+  { id: "nova", skin: "#f1c4ae", hair: "#6941a0", hair2: "#a47ae0", outfit: "#8b7ce8", eyes: "#6d4bb2", style: "girl-three" }
+];
 
-function robotArt(color, dark, alternate = false) {
+const avatarMap = Object.fromEntries(
+  AVATARS.map(item => [item.id, item])
+);
+
+function avatarMarkup(item) {
   return `
-    <path d="M140 55V35" stroke="${color}" stroke-width="7" stroke-linecap="round"/>
-    <circle cx="140" cy="27" r="12" fill="${color}"/>
-    <circle cx="140" cy="27" r="5" fill="#fff"/>
+    <div class="anime-avatar anime-${item.style}"
+         style="
+          --skin:${item.skin};
+          --hair:${item.hair};
+          --hair2:${item.hair2};
+          --outfit:${item.outfit};
+          --eyes:${item.eyes};
+         ">
 
-    <path d="M78 170L48 207M202 170L232 207"
-      stroke="#b8d7ed" stroke-width="19" stroke-linecap="round"/>
-    <circle cx="47" cy="211" r="13" fill="${color}"/>
-    <circle cx="233" cy="211" r="13" fill="${color}"/>
+      <div class="anime-shadow"></div>
 
-    <path d="M91 153Q140 137 189 153L198 258Q140 279 82 258Z"
-      fill="${alternate ? dark : "#d8efff"}"
-      stroke="${color}" stroke-width="5"/>
+      <div class="anime-character">
 
-    <rect x="105" y="171" width="70" height="58" rx="18"
-      fill="${dark}" stroke="${color}" stroke-width="3"/>
+        <!-- Hair behind the head -->
+        <div class="anime-back-hair"></div>
 
-    ${alternate
-      ? `<circle cx="140" cy="200" r="16" fill="${color}"/>
-         <path d="M131 200H149" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`
-      : `<path d="M119 200H161" stroke="${color}" stroke-width="6" stroke-linecap="round"/>
-         <circle cx="140" cy="216" r="5" fill="#fff"/>`
-    }
+        <!-- Neck -->
+        <div class="anime-neck"></div>
 
-    <rect x="105" y="253" width="29" height="31" rx="10" fill="#b8d7ed"/>
-    <rect x="146" y="253" width="29" height="31" rx="10" fill="#b8d7ed"/>
-    <path d="M96 283H137M143 283H184"
-      stroke="${color}" stroke-width="12" stroke-linecap="round"/>
+        <!-- Body -->
+        <div class="anime-body">
+          <div class="anime-collar"></div>
+          <div class="anime-shirt-detail"></div>
+          <div class="anime-button"></div>
+        </div>
 
-    <rect x="72" y="61" width="136" height="105" rx="36"
-      fill="#d8e9f7" stroke="#fff" stroke-width="4"/>
+        <!-- Arms -->
+        <div class="anime-arm anime-arm-left"></div>
+        <div class="anime-arm anime-arm-right"></div>
 
-    <rect x="86" y="79" width="108" height="69" rx="25"
-      fill="${dark}"/>
+        <!-- Head -->
+        <div class="anime-head">
 
-    <ellipse cx="116" cy="108" rx="11" ry="14" fill="${color}"/>
-    <ellipse cx="164" cy="108" rx="11" ry="14" fill="${color}"/>
-    <circle cx="119" cy="103" r="4" fill="#fff"/>
-    <circle cx="167" cy="103" r="4" fill="#fff"/>
+          <div class="anime-ear anime-ear-left"></div>
+          <div class="anime-ear anime-ear-right"></div>
 
-    <path d="M121 128Q140 144 159 128"
-      fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+          <div class="anime-face">
 
-    <rect x="60" y="95" width="12" height="35" rx="6" fill="${color}"/>
-    <rect x="208" y="95" width="12" height="35" rx="6" fill="${color}"/>
+            <div class="anime-fringe"></div>
+            <div class="anime-side-hair anime-side-left"></div>
+            <div class="anime-side-hair anime-side-right"></div>
+
+            <div class="anime-eyebrow eyebrow-left"></div>
+            <div class="anime-eyebrow eyebrow-right"></div>
+
+            <div class="anime-eye eye-left">
+              <span></span>
+            </div>
+
+            <div class="anime-eye eye-right">
+              <span></span>
+            </div>
+
+            <div class="anime-blush blush-left"></div>
+            <div class="anime-blush blush-right"></div>
+
+            <div class="anime-nose"></div>
+            <div class="anime-mouth"></div>
+
+          </div>
+
+          <div class="anime-hair-decoration"></div>
+        </div>
+
+        <!-- Legs -->
+        <div class="anime-leg leg-left"></div>
+        <div class="anime-leg leg-right"></div>
+
+        <!-- Shoes -->
+        <div class="anime-shoe shoe-left"></div>
+        <div class="anime-shoe shoe-right"></div>
+
+      </div>
+
+      <!-- Decorative stars -->
+      <span class="anime-star star-one">✦</span>
+      <span class="anime-star star-two">✧</span>
+      <span class="anime-star star-three">·</span>
+
+    </div>
   `;
 }
-
-function humanArt(color, dark, hairColor, accessory = false) {
-  return `
-    <!-- Hair behind head -->
-    <path d="M78 115Q60 38 140 39Q220 38 202 125L194 177H86Z"
-      fill="${hairColor}"/>
-
-    <!-- Arms -->
-    <path d="M93 176L55 222M187 176L225 222"
-      stroke="#e9b99e" stroke-width="19" stroke-linecap="round"/>
-    <circle cx="53" cy="226" r="12" fill="#f1c4a9"/>
-    <circle cx="227" cy="226" r="12" fill="#f1c4a9"/>
-
-    <!-- Body and suit -->
-    <path d="M96 157Q140 141 184 157L205 261Q140 284 75 261Z"
-      fill="${dark}" stroke="${color}" stroke-width="5"/>
-
-    <path d="M111 178L140 204L169 178"
-      fill="none" stroke="${color}" stroke-width="5"
-      stroke-linecap="round"/>
-
-    <circle cx="140" cy="224" r="11" fill="${color}"/>
-    <path d="M88 246H192" stroke="#eaf7ff" stroke-width="7"/>
-
-    <!-- Legs -->
-    <path d="M108 260L102 287H134L138 263"
-      fill="#263e69"/>
-    <path d="M142 263L146 287H178L172 260"
-      fill="#263e69"/>
-    <path d="M99 289H136M144 289H181"
-      stroke="${color}" stroke-width="10" stroke-linecap="round"/>
-
-    <!-- Neck -->
-    <rect x="124" y="137" width="32" height="29" rx="11"
-      fill="#e9b99e"/>
-
-    <!-- Face -->
-    <ellipse cx="140" cy="105" rx="53" ry="65"
-      fill="#f5c9ad"/>
-
-    <!-- Hair -->
-    <path d="M87 101Q78 44 140 43Q205 43 194 104
-      Q173 76 146 79Q117 88 87 101Z"
-      fill="${hairColor}"/>
-
-    <path d="M88 93Q67 130 91 167L100 113Z"
-      fill="${hairColor}"/>
-    <path d="M192 93Q213 130 189 167L180 113Z"
-      fill="${hairColor}"/>
-
-    <!-- Eyes -->
-    <ellipse cx="120" cy="109" rx="7" ry="10" fill="#30283d"/>
-    <ellipse cx="160" cy="109" rx="7" ry="10" fill="#30283d"/>
-    <circle cx="122" cy="105" r="3" fill="#fff"/>
-    <circle cx="162" cy="105" r="3" fill="#fff"/>
-
-    <!-- Eyebrows -->
-    <path d="M108 94Q119 87 130 94M150 94Q161 87 172 94"
-      fill="none" stroke="${hairColor}" stroke-width="4"
-      stroke-linecap="round"/>
-
-    <!-- Nose and smile -->
-    <path d="M140 115L136 128L143 130"
-      fill="none" stroke="#c58c7c" stroke-width="2"/>
-    <path d="M127 140Q140 151 153 140"
-      fill="none" stroke="#a84f63" stroke-width="3"
-      stroke-linecap="round"/>
-
-    <!-- Cheeks -->
-    <ellipse cx="105" cy="132" rx="10" ry="5" fill="#ff91a7" opacity=".4"/>
-    <ellipse cx="175" cy="132" rx="10" ry="5" fill="#ff91a7" opacity=".4"/>
-
-    ${accessory
-      ? `<path d="M182 66L199 51L210 67L194 81Z"
-          fill="${color}" stroke="#fff" stroke-width="2"/>`
-      : `<path d="M95 66Q140 42 185 66"
-          fill="none" stroke="${color}" stroke-width="5"/>`
-    }
-  `;
-}
-
-function omarArt(color, dark) {
-  return `
-    <!-- Backpack -->
-    <rect x="48" y="147" width="36" height="86" rx="14"
-      fill="${dark}" stroke="${color}" stroke-width="3"/>
-    <rect x="196" y="147" width="36" height="86" rx="14"
-      fill="${dark}" stroke="${color}" stroke-width="3"/>
-
-    <!-- Arms -->
-    <path d="M92 172L54 213M188 172L226 213"
-      stroke="#dceeff" stroke-width="22" stroke-linecap="round"/>
-    <circle cx="52" cy="217" r="13" fill="${color}"/>
-    <circle cx="228" cy="217" r="13" fill="${color}"/>
-
-    <!-- Suit -->
-    <path d="M94 151Q140 133 186 151L203 259Q140 281 77 259Z"
-      fill="#e4f3ff" stroke="${color}" stroke-width="5"/>
-
-    <rect x="109" y="174" width="62" height="54" rx="12"
-      fill="${dark}" stroke="${color}" stroke-width="3"/>
-    <circle cx="140" cy="201" r="13" fill="${color}"/>
-    <path d="M132 201L138 207L150 193"
-      fill="none" stroke="#fff" stroke-width="4"/>
-
-    <!-- Boots -->
-    <path d="M106 255L101 284H135L138 258M142 258L145 284H179L174 255"
-      fill="#b8d8ef"/>
-    <path d="M96 285H137M143 285H184"
-      stroke="${color}" stroke-width="12" stroke-linecap="round"/>
-
-    <!-- Neck -->
-    <rect x="124" y="137" width="32" height="26" rx="10"
-      fill="#e9b99e"/>
-
-    <!-- Helmet -->
-    <circle cx="140" cy="104" r="75"
-      fill="#bceaff" fill-opacity=".15"
-      stroke="#e2f8ff" stroke-width="8"/>
-    <circle cx="140" cy="104" r="64"
-      fill="#6ac8ef" fill-opacity=".12"
-      stroke="${color}" stroke-width="2"/>
-
-    <!-- Face -->
-    <ellipse cx="140" cy="108" rx="43" ry="52" fill="#f1c3a6"/>
-
-    <!-- Hair -->
-    <path d="M97 95Q91 49 140 49Q188 49 183 95
-      Q158 76 130 79Q112 82 97 95Z"
-      fill="#26324b"/>
-
-    <ellipse cx="124" cy="111" rx="6" ry="8" fill="#26324b"/>
-    <ellipse cx="156" cy="111" rx="6" ry="8" fill="#26324b"/>
-    <circle cx="126" cy="108" r="2.5" fill="#fff"/>
-    <circle cx="158" cy="108" r="2.5" fill="#fff"/>
-
-    <path d="M129 133Q140 141 151 133"
-      fill="none" stroke="#a44e57" stroke-width="3"
-      stroke-linecap="round"/>
-
-    <path d="M88 76Q105 35 137 32"
-      fill="none" stroke="#fff" stroke-width="6"
-      stroke-linecap="round" opacity=".8"/>
-  `;
-}
-
-function novaArt(color, dark) {
-  return `
-    <!-- Ears -->
-    <path d="M88 106Q34 49 58 145L99 153Z"
-      fill="${color}" stroke="#e2d8ff" stroke-width="4"/>
-    <path d="M192 106Q246 49 222 145L181 153Z"
-      fill="${color}" stroke="#e2d8ff" stroke-width="4"/>
-
-    <!-- Antenna -->
-    <path d="M140 49V26" stroke="#e4d9ff" stroke-width="7"
-      stroke-linecap="round"/>
-    <circle cx="140" cy="19" r="12" fill="#fff"/>
-    <circle cx="140" cy="19" r="7" fill="${color}"/>
-
-    <!-- Body -->
-    <path d="M94 163Q140 139 186 163L201 260Q140 282 79 260Z"
-      fill="${dark}" stroke="${color}" stroke-width="5"/>
-
-    <circle cx="140" cy="218" r="13" fill="${color}"/>
-    <path d="M132 218H148" stroke="#fff" stroke-width="4"
-      stroke-linecap="round"/>
-
-    <!-- Arms -->
-    <path d="M94 181L57 224M186 181L223 224"
-      stroke="${color}" stroke-width="19" stroke-linecap="round"/>
-    <circle cx="56" cy="228" r="12" fill="#e2d8ff"/>
-    <circle cx="224" cy="228" r="12" fill="#e2d8ff"/>
-
-    <!-- Feet -->
-    <rect x="105" y="252" width="27" height="34" rx="12" fill="${color}"/>
-    <rect x="148" y="252" width="27" height="34" rx="12" fill="${color}"/>
-    <ellipse cx="117" cy="289" rx="23" ry="10" fill="#e2d8ff"/>
-    <ellipse cx="163" cy="289" rx="23" ry="10" fill="#e2d8ff"/>
-
-    <!-- Head -->
-    <path d="M140 43Q210 43 210 111Q210 178 140 178
-      Q70 178 70 111Q70 43 140 43Z"
-      fill="${color}" stroke="#e2d8ff" stroke-width="4"/>
-
-    <!-- Eyes -->
-    <ellipse cx="115" cy="111" rx="17" ry="23" fill="#fff"/>
-    <ellipse cx="165" cy="111" rx="17" ry="23" fill="#fff"/>
-    <ellipse cx="118" cy="113" rx="9" ry="14" fill="${dark}"/>
-    <ellipse cx="162" cy="113" rx="9" ry="14" fill="${dark}"/>
-    <circle cx="121" cy="106" r="4" fill="#fff"/>
-    <circle cx="165" cy="106" r="4" fill="#fff"/>
-
-    <!-- Smile -->
-    <path d="M123 145Q140 160 157 145"
-      fill="none" stroke="${dark}" stroke-width="4"
-      stroke-linecap="round"/>
-
-    <!-- Cheeks -->
-    <ellipse cx="91" cy="138" rx="11" ry="6" fill="#ffb8df" opacity=".7"/>
-    <ellipse cx="189" cy="138" rx="11" ry="6" fill="#ffb8df" opacity=".7"/>
-  `;
-}
-
-function characterSVG(id) {
-  const item = characters[id] || characters.cody;
-
-  let art;
-
-  switch (item.kind) {
-    case "robot":
-      art = robotArt(item.color, item.dark, false);
-      break;
-    case "robot2":
-      art = robotArt(item.color, item.dark, true);
-      break;
-    case "girl":
-      art = humanArt(item.color, item.dark, "#38275f", true);
-      break;
-    case "scientist":
-      art = humanArt(item.color, item.dark, "#5b352d", false);
-      break;
-    case "astronaut":
-      art = omarArt(item.color, item.dark);
-      break;
-    case "alien":
-      art = novaArt(item.color, item.dark);
-      break;
-    default:
-      art = robotArt("#55eaff", "#19385e");
-  }
-
-  return `
-    <svg
-      class="cody-character"
-      viewBox="0 0 280 320"
-      xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label="${item.name}"
-    >
-      <defs>
-        <radialGradient id="avatarGlow-${id}">
-          <stop offset="0%" stop-color="${item.color}" stop-opacity=".3"/>
-          <stop offset="100%" stop-color="${item.color}" stop-opacity="0"/>
-        </radialGradient>
-        <linearGradient id="avatarBackground-${id}" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${item.color}" stop-opacity=".12"/>
-          <stop offset="100%" stop-color="${item.dark}" stop-opacity=".02"/>
-        </linearGradient>
-      </defs>
-
-      <circle cx="140" cy="150" r="130"
-        fill="url(#avatarGlow-${id})"/>
-
-      <circle cx="38" cy="92" r="3" fill="#fff" opacity=".8"/>
-      <circle cx="237" cy="75" r="3" fill="${item.color}"/>
-      <circle cx="230" cy="215" r="3" fill="#fff" opacity=".6"/>
-      <path d="M42 183l5-5 5 5-5 5z" fill="${item.color}"/>
-
-      <ellipse cx="140" cy="300" rx="67" ry="9"
-        fill="#000" opacity=".18"/>
-
-      ${art}
-    </svg>
-  `;
-}
-
-/* Public API */
 
 export function getAllAvatars() {
-  return Object.entries(characters).map(([id, item]) => ({
-    id,
-    name: item.name,
-    description: item.description,
-    color: item.color
+  return AVATARS.map(item => ({
+    id: item.id
   }));
 }
 
 export function getAvatar(id) {
-  return characters[id] || characters.cody;
+  return avatarMap[id] || avatarMap.cody;
 }
 
 export function renderAvatar(id) {
-  return characterSVG(characters[id] ? id : "cody");
+  const item = getAvatar(id);
+  return avatarMarkup(item);
 }
 
 export function renderAvatarCard(id) {
-  const item = getAvatar(id);
-
   return `
-    <div class="avatar-illustration">
+    <div class="avatar-art-container">
       ${renderAvatar(id)}
     </div>
-    <div class="avatar-character-name">${item.name}</div>
-    <div class="avatar-character-description">${item.description}</div>
   `;
 }
 
 export function installAvatarStyles() {
-  if (document.getElementById("cody-avatar-styles")) return;
+  if (document.getElementById("anime-avatar-css")) return;
 
   const style = document.createElement("style");
-  style.id = "cody-avatar-styles";
+  style.id = "anime-avatar-css";
 
   style.textContent = `
-    .avatar-illustration {
+
+    /* ==================================
+       AVATAR STAGE
+    ================================== */
+
+    .avatar-art-container {
       width: 100%;
-      max-width: 220px;
-      aspect-ratio: 1 / 1.12;
-      display: grid;
-      place-items: center;
-      margin: auto;
-      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: visible;
     }
 
-    .cody-character {
+    .anime-avatar {
+      width: 210px;
+      height: 245px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      isolation: isolate;
+      overflow: hidden;
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 50% 42%,
+          color-mix(in srgb, var(--outfit), transparent 72%),
+          transparent 70%);
+    }
+
+    .anime-character {
+      width: 180px;
+      height: 225px;
+      position: relative;
+      transform-origin: 50% 90%;
+      animation: anime-idle 3.5s ease-in-out infinite;
+    }
+
+    .anime-shadow {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      width: 105px;
+      height: 13px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.22);
+      transform: translateX(-50%);
+      filter: blur(5px);
+    }
+
+    /* ==================================
+       BODY
+    ================================== */
+
+    .anime-body {
+      position: absolute;
+      z-index: 3;
+      bottom: 29px;
+      left: 39px;
+      width: 102px;
+      height: 91px;
+      border-radius: 42px 42px 18px 18px;
+      background: linear-gradient(
+        140deg,
+        color-mix(in srgb, var(--outfit), white 28%),
+        var(--outfit) 55%,
+        color-mix(in srgb, var(--outfit), black 20%)
+      );
+      border: 2px solid rgba(255,255,255,.42);
+      box-shadow: inset 0 5px 9px rgba(255,255,255,.16);
+    }
+
+    .anime-collar {
+      position: absolute;
+      top: -2px;
+      left: 29px;
+      width: 40px;
+      height: 25px;
+      background: rgba(255,255,255,.88);
+      clip-path: polygon(0 0, 50% 55%, 100% 0, 75% 100%, 25% 100%);
+    }
+
+    .anime-shirt-detail {
+      position: absolute;
+      left: 47px;
+      top: 29px;
+      width: 8px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.65);
+    }
+
+    .anime-button {
+      position: absolute;
+      left: 49px;
+      top: 69px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .anime-neck {
+      position: absolute;
+      z-index: 2;
+      top: 119px;
+      left: 73px;
+      width: 34px;
+      height: 36px;
+      border-radius: 0 0 13px 13px;
+      background: var(--skin);
+    }
+
+    .anime-arm {
+      position: absolute;
+      z-index: 2;
+      top: 159px;
+      width: 23px;
+      height: 70px;
+      border-radius: 20px;
+      background: var(--outfit);
+      border: 2px solid rgba(255,255,255,.3);
+    }
+
+    .anime-arm-left {
+      left: 27px;
+      transform: rotate(17deg);
+    }
+
+    .anime-arm-right {
+      right: 27px;
+      transform: rotate(-17deg);
+    }
+
+    /* ==================================
+       HEAD AND FACE
+    ================================== */
+
+    .anime-head {
+      position: absolute;
+      z-index: 5;
+      top: 24px;
+      left: 43px;
+      width: 94px;
+      height: 111px;
+    }
+
+    .anime-back-hair {
+      position: absolute;
+      z-index: 3;
+      top: 15px;
+      left: 31px;
+      width: 118px;
+      height: 127px;
+      border-radius: 48% 48% 35% 35%;
+      background: linear-gradient(
+        120deg,
+        var(--hair2),
+        var(--hair) 65%
+      );
+    }
+
+    .anime-face {
+      position: absolute;
+      z-index: 4;
+      inset: 8px 3px 0;
+      overflow: visible;
+      border-radius: 47% 47% 46% 46%;
+      background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--skin), white 18%),
+        var(--skin) 65%,
+        color-mix(in srgb, var(--skin), #b46f62 15%)
+      );
+      box-shadow: inset -5px -4px 8px rgba(128,65,55,.08);
+    }
+
+    .anime-ear {
+      position: absolute;
+      z-index: 2;
+      top: 56px;
+      width: 15px;
+      height: 23px;
+      border-radius: 50%;
+      background: var(--skin);
+    }
+
+    .anime-ear-left { left: -3px; }
+    .anime-ear-right { right: -3px; }
+
+    /* Anime bangs */
+    .anime-fringe {
+      position: absolute;
+      z-index: 7;
+      top: -6px;
+      left: -4px;
+      width: 100px;
+      height: 49px;
+      background: var(--hair);
+      border-radius: 52% 48% 22% 20%;
+      clip-path: polygon(
+        0 0, 100% 0, 100% 70%,
+        83% 52%, 73% 100%, 58% 58%,
+        42% 94%, 32% 58%, 15% 85%, 0 68%
+      );
+    }
+
+    .anime-side-hair {
+      position: absolute;
+      z-index: 6;
+      top: 22px;
+      width: 18px;
+      height: 72px;
+      background: var(--hair);
+    }
+
+    .anime-side-left {
+      left: -3px;
+      border-radius: 0 0 15px 9px;
+      transform: rotate(5deg);
+    }
+
+    .anime-side-right {
+      right: -3px;
+      border-radius: 0 0 9px 15px;
+      transform: rotate(-5deg);
+    }
+
+    /* Eyes */
+    .anime-eye {
+      position: absolute;
+      z-index: 8;
+      top: 53px;
+      width: 17px;
+      height: 22px;
+      border-radius: 48% 48% 45% 45%;
+      background: #fff;
+      overflow: hidden;
+      border: 1px solid rgba(30,30,50,.2);
+    }
+
+    .eye-left { left: 19px; }
+    .eye-right { right: 19px; }
+
+    .anime-eye span {
+      position: absolute;
+      bottom: 1px;
+      left: 3px;
+      width: 11px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--eyes);
+    }
+
+    .anime-eye span::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 4px;
+      height: 5px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .anime-eyebrow {
+      position: absolute;
+      z-index: 8;
+      top: 46px;
+      width: 20px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--hair);
+    }
+
+    .eyebrow-left { left: 17px; }
+    .eyebrow-right { right: 17px; }
+
+    .anime-blush {
+      position: absolute;
+      z-index: 7;
+      top: 80px;
+      width: 16px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ed8b9a;
+      opacity: .38;
+      filter: blur(2px);
+    }
+
+    .blush-left { left: 9px; }
+    .blush-right { right: 9px; }
+
+    .anime-nose {
+      position: absolute;
+      z-index: 8;
+      top: 77px;
+      left: 47px;
+      width: 4px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(153,90,80,.4);
+    }
+
+    .anime-mouth {
+      position: absolute;
+      z-index: 8;
+      top: 87px;
+      left: 39px;
+      width: 17px;
+      height: 8px;
+      border-bottom: 2px solid #a95462;
+      border-radius: 50%;
+    }
+
+    /* ==================================
+       HAIR VARIATIONS
+    ================================== */
+
+    .anime-girl-one .anime-back-hair,
+    .anime-girl-three .anime-back-hair {
+      height: 155px;
+      top: 3px;
+      border-radius: 48% 48% 20% 20%;
+    }
+
+    .anime-girl-one .anime-side-hair,
+    .anime-girl-three .anime-side-hair {
+      height: 100px;
+      width: 22px;
+    }
+
+    .anime-girl-one .anime-fringe {
+      height: 43px;
+      clip-path: polygon(
+        0 0, 100% 0, 100% 68%,
+        80% 100%, 65% 58%, 50% 95%,
+        34% 57%, 15% 95%, 0 60%
+      );
+    }
+
+    .anime-girl-two .anime-fringe {
+      height: 36px;
+      border-radius: 50% 50% 15% 15%;
+      clip-path: polygon(
+        0 0, 100% 0, 100% 75%,
+        70% 100%, 50% 65%, 28% 100%, 0 70%
+      );
+    }
+
+    .anime-girl-two .anime-side-hair {
+      height: 84px;
+      width: 15px;
+    }
+
+    .anime-boy-two .anime-fringe {
+      width: 100px;
+      height: 36px;
+      transform: rotate(-5deg);
+    }
+
+    .anime-boy-two .anime-back-hair {
+      height: 105px;
+      border-radius: 50% 50% 25% 25%;
+    }
+
+    .anime-boy-three .anime-fringe {
+      height: 43px;
+      transform: rotate(3deg);
+    }
+
+    .anime-boy-three .anime-back-hair {
+      height: 105px;
+      border-radius: 48% 48% 30% 30%;
+    }
+
+    /* ==================================
+       LEGS AND SHOES
+    ================================== */
+
+    .anime-leg {
+      position: absolute;
+      z-index: 1;
+      bottom: 8px;
+      width: 27px;
+      height: 44px;
+      border-radius: 8px 8px 13px 13px;
+      background: #293b59;
+    }
+
+    .leg-left { left: 59px; }
+    .leg-right { right: 59px; }
+
+    .anime-shoe {
+      position: absolute;
+      z-index: 2;
+      bottom: 3px;
+      width: 37px;
+      height: 16px;
+      border-radius: 13px 13px 7px 7px;
+      background: #f4f6ff;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,.12);
+    }
+
+    .shoe-left { left: 51px; }
+    .shoe-right { right: 51px; }
+
+    /* ==================================
+       ACCESSORIES
+    ================================== */
+
+    .anime-hair-decoration {
+      position: absolute;
+      z-index: 10;
+      top: 12px;
+      right: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50% 50% 50% 0;
+      background: var(--outfit);
+      transform: rotate(45deg);
+      box-shadow: 0 2px 7px rgba(0,0,0,.15);
+    }
+
+    .anime-boy-one .anime-hair-decoration,
+    .anime-boy-two .anime-hair-decoration,
+    .anime-boy-three .anime-hair-decoration {
+      display: none;
+    }
+
+    .anime-girl-two .anime-hair-decoration {
+      top: 19px;
+      right: -3px;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #fff;
+    }
+
+    .anime-girl-three .anime-hair-decoration {
+      top: 10px;
+      right: -5px;
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(255,255,255,.3);
+    }
+
+    /* ==================================
+       LITTLE STARS
+    ================================== */
+
+    .anime-star {
+      position: absolute;
+      z-index: 10;
+      color: #fff;
+      text-shadow: 0 0 10px var(--outfit);
+      animation: anime-sparkle 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .star-one {
+      top: 32px;
+      left: 23px;
+      font-size: 20px;
+    }
+
+    .star-two {
+      top: 90px;
+      right: 16px;
+      font-size: 25px;
+      animation-delay: .7s;
+    }
+
+    .star-three {
+      bottom: 65px;
+      left: 20px;
+      font-size: 30px;
+      animation-delay: 1.2s;
+    }
+
+    /* ==================================
+       ANIMATIONS
+    ================================== */
+
+    @keyframes anime-idle {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    @keyframes anime-sparkle {
+      0%, 100% {
+        opacity: .35;
+        transform: scale(.8) rotate(0deg);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2) rotate(15deg);
+      }
+    }
+
+    /* Selection card */
+    .avatar-card .avatar-art-container {
+      width: 100%;
+    }
+
+    .avatar-card .anime-avatar {
+      max-width: 100%;
+      margin: auto;
+    }
+
+    .avatar-card.selected .anime-avatar {
+      filter: drop-shadow(0 0 12px var(--cyan));
+    }
+
+    /* Profile */
+    .avatar-container .anime-avatar {
       width: 100%;
       height: 100%;
-      display: block;
-      overflow: visible;
-      transform-origin: 50% 75%;
-      animation: codyFloat 3.4s ease-in-out infinite;
-      filter: drop-shadow(0 12px 15px rgba(0,0,0,.22));
+      border-radius: 50%;
+      background: transparent;
     }
 
-    .avatar-card:hover .cody-character {
-      animation-duration: 1.8s;
+    .avatar-container .anime-character {
+      transform: scale(.88);
+      transform-origin: 50% 90%;
     }
 
-    .avatar-character-name {
-      color: #fff;
-      font-size: 1.12rem;
-      font-weight: 900;
-      text-align: center;
-      margin-top: 8px;
-    }
+    @media (max-width: 500px) {
+      .anime-avatar {
+        width: 160px;
+        height: 195px;
+      }
 
-    .avatar-character-description {
-      color: #aebbd9;
-      font-size: .83rem;
-      text-align: center;
-      margin-top: 3px;
-    }
-
-    @keyframes codyFloat {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-7px) rotate(1deg); }
+      .anime-character {
+        transform: scale(.83);
+        transform-origin: 50% 90%;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .cody-character { animation: none !important; }
+      .anime-character,
+      .anime-star {
+        animation: none !important;
+      }
     }
   `;
 
