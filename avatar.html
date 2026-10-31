@@ -4,24 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d20">
+
   <title>اختر شخصيتك | Cody Academy</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/global.css">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: 'Cairo', sans-serif;
       min-height: 100vh;
       background:
-        radial-gradient(circle at 15% 20%, rgba(105, 75, 255, .18), transparent 35%),
-        radial-gradient(circle at 85% 80%, rgba(0, 217, 255, .13), transparent 35%),
+        radial-gradient(circle at 15% 20%, rgba(105,75,255,.18), transparent 35%),
+        radial-gradient(circle at 85% 80%, rgba(0,217,255,.13), transparent 35%),
         var(--bg-main, #080d20);
     }
 
@@ -29,7 +29,7 @@
       width: min(100% - 30px, 1050px);
       min-height: 100vh;
       margin: auto;
-      padding: 55px 0 35px;
+      padding: 45px 0 35px;
       display: flex;
       flex-direction: column;
     }
@@ -40,14 +40,14 @@
     }
 
     .header-title h1 {
-      color: var(--text-primary, #fff);
+      color: #fff;
       font-size: clamp(1.8rem, 5vw, 2.6rem);
       font-weight: 900;
       margin-bottom: 8px;
     }
 
     .header-title p {
-      color: var(--text-secondary, #aab5d0);
+      color: #aab5d0;
       font-size: 1rem;
     }
 
@@ -62,31 +62,32 @@
       position: relative;
       min-width: 0;
       overflow: hidden;
-      padding: 20px 14px;
+      padding: 18px 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
       cursor: pointer;
-      border: 2px solid rgba(130, 155, 220, .2);
+      border: 2px solid rgba(130,155,220,.2);
       border-radius: 22px;
-      background: rgba(20, 29, 65, .72);
+      background: rgba(20,29,65,.72);
       transition: transform .25s ease, border-color .25s ease,
-                  box-shadow .25s ease, background .25s ease;
+        box-shadow .25s ease, background .25s ease;
+      font-family: inherit;
+      color: inherit;
     }
 
     .avatar-card:hover {
-      transform: translateY(-6px);
+      transform: translateY(-5px);
       border-color: #50dfff;
-      box-shadow: 0 10px 35px rgba(0, 217, 255, .12);
+      box-shadow: 0 10px 35px rgba(0,217,255,.12);
     }
 
     .avatar-card.selected {
       border-color: #50dfff;
-      background: rgba(25, 65, 110, .45);
-      box-shadow:
-        0 0 0 3px rgba(80, 223, 255, .12),
-        0 0 30px rgba(0, 217, 255, .2);
+      background: rgba(25,65,110,.45);
+      box-shadow: 0 0 0 3px rgba(80,223,255,.12),
+        0 0 30px rgba(0,217,255,.2);
     }
 
     .avatar-card.selected::after {
@@ -94,8 +95,8 @@
       position: absolute;
       top: 12px;
       left: 12px;
-      width: 27px;
-      height: 27px;
+      width: 29px;
+      height: 29px;
       display: grid;
       place-items: center;
       color: #071322;
@@ -104,31 +105,10 @@
       background: #50dfff;
     }
 
-    .avatar-art {
+    .avatar-card .avatar-illustration {
       width: 100%;
-      max-width: 190px;
-      height: 190px;
-      object-fit: contain;
-      display: block;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 8px 15px rgba(0, 0, 0, .25));
-      transition: transform .3s ease;
-    }
-
-    .avatar-card:hover .avatar-art {
-      transform: translateY(-5px) scale(1.04);
-    }
-
-    .avatar-name {
-      color: #fff;
-      font-size: 1.15rem;
-      font-weight: 900;
-    }
-
-    .avatar-description {
-      color: #aebbd9;
-      font-size: .82rem;
-      margin-top: 4px;
+      max-width: 205px;
+      height: 205px;
     }
 
     .actions {
@@ -166,29 +146,19 @@
         gap: 13px;
       }
 
-      .avatar-card {
-        padding: 13px 9px;
-      }
+      .avatar-card { padding: 12px 8px; }
 
-      .avatar-art {
-        height: 145px;
-      }
-
-      .avatar-name {
-        font-size: 1rem;
+      .avatar-card .avatar-illustration {
+        height: 155px;
       }
     }
 
     @media (max-width: 360px) {
-      .avatar-art {
-        height: 120px;
-      }
+      .avatar-card .avatar-illustration { height: 130px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
+      *, *::before, *::after {
         transition-duration: .01ms !important;
       }
     }
@@ -210,12 +180,7 @@
     ></section>
 
     <div class="actions">
-      <button
-        class="btn-primary"
-        id="saveBtn"
-        type="button"
-        disabled
-      >
+      <button class="btn-primary" id="saveBtn" type="button" disabled>
         حفظ والانتقال
         <i class="ri-arrow-left-line"></i>
       </button>
@@ -226,97 +191,49 @@
   </main>
 
   <script type="module">
-    import { auth, db, doc, updateDoc } from './js/app.js';
-    import { showToast } from './js/ui.js';
+    import { auth, db, doc, updateDoc } from "./js/app.js";
+    import { showToast } from "./js/ui.js";
 
-    const characters = [
-      {
-        id: 'cody',
-        name: 'كودي',
-        desc: 'رفيقك الذكي',
-        image: 'assets/avatars/cody.png'
-      },
-      {
-        id: 'layla',
-        name: 'ليلى',
-        desc: 'المبرمجة المبدعة',
-        image: 'assets/avatars/layla.png'
-      },
-      {
-        id: 'omar',
-        name: 'عمر',
-        desc: 'مستكشف الفضاء',
-        image: 'assets/avatars/omar.png'
-      },
-      {
-        id: 'sara',
-        name: 'سارة',
-        desc: 'العالمة الصغيرة',
-        image: 'assets/avatars/sara.png'
-      },
-      {
-        id: 'robo',
-        name: 'روبو',
-        desc: 'المساعد الآلي',
-        image: 'assets/avatars/robo.png'
-      },
-      {
-        id: 'nova',
-        name: 'نوفا',
-        desc: 'الصديق الفضائي',
-        image: 'assets/avatars/nova.png'
-      }
-    ];
+    import {
+      getAllAvatars,
+      renderAvatarCard,
+      installAvatarStyles
+    } from "./js/avatars.js";
 
-    const grid = document.getElementById('avatarsGrid');
-    const saveBtn = document.getElementById('saveBtn');
-    const saveMessage = document.getElementById('saveMessage');
+    installAvatarStyles();
+
+    const grid = document.getElementById("avatarsGrid");
+    const saveBtn = document.getElementById("saveBtn");
+    const saveMessage = document.getElementById("saveMessage");
+
+    const characters = getAllAvatars();
 
     let selectedId = null;
     let saving = false;
 
     function renderAvatars() {
-      grid.innerHTML = '';
+      grid.innerHTML = "";
 
       characters.forEach(character => {
-        const card = document.createElement('button');
+        const card = document.createElement("button");
 
-        card.type = 'button';
-        card.className = 'avatar-card';
+        card.type = "button";
+        card.className = "avatar-card";
         card.dataset.id = character.id;
-        card.setAttribute('aria-pressed', 'false');
+        card.setAttribute("aria-pressed", "false");
 
-        const image = document.createElement('img');
-        image.className = 'avatar-art';
-        image.src = character.image;
-        image.alt = character.name;
-        image.loading = 'lazy';
+        card.innerHTML = renderAvatarCard(character.id);
 
-        image.onerror = () => {
-          image.alt = `صورة ${character.name} غير متاحة حالياً`;
-          image.style.opacity = '.25';
-        };
-
-        const name = document.createElement('span');
-        name.className = 'avatar-name';
-        name.textContent = character.name;
-
-        const description = document.createElement('span');
-        description.className = 'avatar-description';
-        description.textContent = character.desc;
-
-        card.append(image, name, description);
-
-        card.addEventListener('click', () => {
+        card.addEventListener("click", () => {
           if (saving) return;
 
-          document.querySelectorAll('.avatar-card').forEach(item => {
-            item.classList.remove('selected');
-            item.setAttribute('aria-pressed', 'false');
+          document.querySelectorAll(".avatar-card").forEach(item => {
+            item.classList.remove("selected");
+            item.setAttribute("aria-pressed", "false");
           });
 
-          card.classList.add('selected');
-          card.setAttribute('aria-pressed', 'true');
+          card.classList.add("selected");
+          card.setAttribute("aria-pressed", "true");
 
           selectedId = character.id;
           saveBtn.disabled = false;
@@ -325,6 +242,15 @@
 
         grid.appendChild(card);
       });
+
+      // استعادة آخر اختيار محليًا لتسهيل التعديل
+      const saved = localStorage.getItem("cq_avatar");
+
+      if (characters.some(item => item.id === saved)) {
+        const previous = grid.querySelector(`[data-id="${saved}"]`);
+
+        if (previous) previous.click();
+      }
     }
 
     async function saveAvatar() {
@@ -333,42 +259,41 @@
       const user = auth.currentUser;
 
       if (!user) {
-        showToast('سجّلي الدخول أولاً لحفظ الشخصية.', 'error');
+        showToast("سجّلي الدخول أولاً لحفظ الشخصية.", "error");
         return;
       }
 
       saving = true;
       saveBtn.disabled = true;
-      saveBtn.textContent = 'جارٍ حفظ الشخصية...';
-      saveMessage.textContent = '';
+      saveBtn.textContent = "جارٍ حفظ الشخصية...";
+      saveMessage.textContent = "";
 
       try {
-        const userRef = doc(db, 'users', user.uid);
-
-        await updateDoc(userRef, {
+        await updateDoc(doc(db, "users", user.uid), {
           activeAvatar: selectedId
         });
 
-        localStorage.setItem('cq_avatar', selectedId);
+        localStorage.setItem("cq_avatar", selectedId);
 
-        showToast('تم حفظ شخصيتك بنجاح!', 'success');
-        saveMessage.textContent = 'تم الحفظ بنجاح!';
+        showToast("تم حفظ شخصيتك بنجاح!", "success");
+        saveMessage.textContent = "تم الحفظ بنجاح!";
 
-        window.location.href = 'languages.html';
+        window.location.href = "languages.html";
 
       } catch (error) {
-        console.error('Avatar save error:', error);
+        console.error("Avatar save error:", error);
 
-        showToast('لم نتمكن من حفظ الشخصية. حاولي مرة أخرى.', 'error');
+        showToast("لم نتمكن من حفظ الشخصية. حاولي مرة أخرى.", "error");
 
-        saveMessage.textContent = 'حدث خطأ أثناء الحفظ.';
+        saveMessage.textContent = "حدث خطأ أثناء الحفظ.";
         saving = false;
         saveBtn.disabled = false;
-        saveBtn.innerHTML = 'حفظ والانتقال <i class="ri-arrow-left-line"></i>';
+        saveBtn.innerHTML =
+          'حفظ والانتقال <i class="ri-arrow-left-line"></i>';
       }
     }
 
-    saveBtn.addEventListener('click', saveAvatar);
+    saveBtn.addEventListener("click", saveAvatar);
 
     renderAvatars();
   </script>
