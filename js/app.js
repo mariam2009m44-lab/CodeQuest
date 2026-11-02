@@ -14,9 +14,6 @@ import {
 
 /*
  * Cody Academy — Application Controller
- * - يحمي الصفحات الخاصة بالحساب.
- * - يسمح للصفحة الرئيسية بالعمل دون تسجيل دخول.
- * - يعرض تقدم الدروس من Firestore دون تعديل XP أو العملات.
  */
 
 const PUBLIC_PAGES = new Set([
@@ -149,10 +146,6 @@ function setProgress(selector, value) {
   });
 }
 
-/*
- * تحميل عدد الدروس الفعلي من ملفات المنهج.
- * لا نفترض أن كل لغة تحتوي على العدد نفسه من الدروس.
- */
 async function loadCurriculumTotals() {
   const totals = {};
 
@@ -219,7 +212,6 @@ function isValidCompletedLesson(item, totals) {
 
   const chapters = totals[language];
 
-  // لو تعذر تحميل المنهج، لا نخمن صحة أرقام الدروس.
   if (!Array.isArray(chapters)) {
     return false;
   }
@@ -308,11 +300,6 @@ export const App = {
     this.bindLogout();
     this.bindProtectedLinks();
 
-    /*
-     * الصفحة الرئيسية وصفحات الدخول عامة.
-     * لا تحوّل الزائر إلى صفحة تسجيل الدخول لمجرد
-     * أنه فتح الصفحة الرئيسية.
-     */
     if (PUBLIC_PAGES.has(currentPage())) {
       return;
     }
@@ -371,10 +358,6 @@ export const App = {
         }
       );
 
-      /*
-       * قراءة تقدم الدروس من المصدر الذي تحفظ فيه
-       * lecture.html الدروس المكتملة فعلًا.
-       */
       this.unsubscribeLessonProgress = onSnapshot(
         collection(
           db,
@@ -431,10 +414,6 @@ export const App = {
       progressBar.style.width = `${xpInLevel}%`;
     }
 
-    /*
-     * عدد الدروس يُحدّث من مجموعة lessonProgress،
-     * ولا نستخدم completedLessons القديم كمصدر للحقيقة.
-     */
     if (!this.lessonStats) {
       setText(
         ".js-completed-lessons",
@@ -452,10 +431,6 @@ export const App = {
       safeNumber(data.streak)
     );
 
-    /*
-     * لو لم يصل تحديث تقدم الدروس بعد، نعرض النسب
-     * المحفوظة مؤقتًا في ملف المستخدم.
-     */
     if (!this.lessonStats) {
       const progress = data.languageProgress || {};
 
@@ -505,10 +480,6 @@ export const App = {
       link.dataset.protectionBound = "true";
 
       link.addEventListener("click", async event => {
-        /*
-         * إذا كانت الصفحة نفسها عامة، نتحقق من الدخول
-         * عند الضغط على رابط محمي فقط.
-         */
         if (!PUBLIC_PAGES.has(currentPage())) {
           return;
         }
@@ -534,6 +505,31 @@ export const App = {
   },
 
   bindLogout() {
+    // Add a logout link to mobile navigation once.
+    const mobileNav = document.querySelector(".mobile-nav");
+
+    if (
+      mobileNav &&
+      !mobileNav.querySelector(".mobile-logout")
+    ) {
+      const logoutLink = document.createElement("a");
+
+      logoutLink.href = "login.html";
+      logoutLink.className = "mobile-logout logout";
+
+      const icon = document.createElement("i");
+      icon.className = "ri-logout-box-r-line";
+      icon.setAttribute("aria-hidden", "true");
+
+      const label = document.createElement("span");
+      label.textContent = "تسجيل الخروج";
+
+      logoutLink.append(icon, label);
+      logoutLink.setAttribute("aria-label", "تسجيل الخروج");
+
+      mobileNav.appendChild(logoutLink);
+    }
+
     document.querySelectorAll(".logout, #logoutButton").forEach(
       element => {
         if (element.dataset.logoutBound === "true") {
@@ -554,7 +550,6 @@ export const App = {
 
           try {
             await logoutUser();
-
             location.replace("login.html");
           } catch (error) {
             console.error("Logout error:", error);
@@ -563,7 +558,7 @@ export const App = {
             element.removeAttribute("aria-busy");
 
             showToast(
-              "تعذر تسجيل الخروج. حاولي مرة أخرى.",
+              "تعذر تسجيل الخروج. حاول مرة أخرى.",
               "error"
             );
           }
@@ -598,12 +593,11 @@ export const App = {
           link.removeAttribute("aria-current");
         }
       } catch {
-        // تجاهل روابط التنقل غير الصالحة.
+        // Ignore invalid navigation URLs.
       }
     });
   },
 
-  // لا تمنح نقاطًا أو عملات مباشرة من المتصفح.
   addXP() {
     throw new Error(
       "لا يمكن منح نقاط الخبرة من المتصفح."
