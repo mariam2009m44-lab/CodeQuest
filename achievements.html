@@ -1,0 +1,677 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b16">
+  <meta name="description" content="إنجازاتك وتقدمك في Cody Academy">
+  <title>إنجازاتي | Cody Academy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b16;
+      --panel: #111629;
+      --panel-light: #171e32;
+      --border: rgba(148,163,184,.16);
+      --text: #f1f5f9;
+      --muted: #9ca9bd;
+      --cyan: #22d3ee;
+      --purple: #a78bfa;
+      --green: #4ade80;
+      --gold: #fbbf24;
+      --red: #fb7185;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(124,58,237,.13), transparent 38%),
+        radial-gradient(ellipse at 90% 10%, rgba(34,211,238,.09), transparent 35%),
+        var(--bg);
+      font-family: "Cairo", sans-serif;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
+    .page {
+      width: min(1100px, calc(100% - 32px));
+      margin: auto;
+      padding: 28px 0 50px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color .2s ease;
+    }
+
+    .back-link:hover {
+      border-color: var(--cyan);
+    }
+
+    .brand {
+      color: var(--cyan);
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(27px, 5vw, 40px);
+      font-weight: 900;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 25px 0 34px;
+    }
+
+    .stat {
+      padding: 19px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: rgba(17,22,41,.88);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat-value {
+      display: block;
+      margin-top: 5px;
+      font-size: clamp(24px, 4vw, 32px);
+      font-weight: 900;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 15px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .section-heading span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .language-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+
+    .language-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: rgba(17,22,41,.88);
+    }
+
+    .language-name {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 13px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .language-count {
+      color: var(--cyan);
+      font-size: 13px;
+      direction: ltr;
+    }
+
+    .progress-track {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #252d43;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #0891b2, #8b5cf6);
+      transition: width .4s ease;
+    }
+
+    .progress-caption {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .badge-card {
+      min-height: 175px;
+      padding: 20px 16px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: rgba(17,22,41,.88);
+      text-align: center;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .badge-card.unlocked {
+      border-color: rgba(34,211,238,.35);
+      background: linear-gradient(145deg, rgba(34,211,238,.08), rgba(17,22,41,.95));
+    }
+
+    .badge-card.locked {
+      opacity: .58;
+    }
+
+    .badge-icon {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      place-items: center;
+      margin: 0 auto 11px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel-light);
+      font-size: 27px;
+    }
+
+    .unlocked .badge-icon {
+      border-color: rgba(251,191,36,.35);
+      background: rgba(251,191,36,.09);
+    }
+
+    .badge-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .badge-description {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .badge-status {
+      display: inline-block;
+      margin-top: 10px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .locked .badge-status {
+      color: var(--muted);
+    }
+
+    .status {
+      padding: 18px;
+      margin: 20px 0;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .status.error {
+      border-color: rgba(251,113,133,.4);
+      color: #fda4af;
+    }
+
+    .status[hidden] {
+      display: none;
+    }
+
+    .footer-action {
+      display: flex;
+      justify-content: center;
+      margin-top: 35px;
+    }
+
+    .primary-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 10px 22px;
+      border-radius: 12px;
+      background: linear-gradient(120deg, #0891b2, #6366f1);
+      color: white;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    @media (max-width: 700px) {
+      .summary,
+      .language-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .badges-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .stat {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .badges-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="back-link" href="dashboard.html">→ العودة إلى لوحة التحكم</a>
+      <div class="brand">CODY ACADEMY</div>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">رحلتك في التعلم</p>
+      <h1>إنجازاتي 🏆</h1>
+      <p class="subtitle">
+        كل درس تكمله هو خطوة جديدة في رحلتك كمبرمج.
+        تابع تقدمك واكتشف الشارات التي حصلت عليها.
+      </p>
+    </section>
+
+    <div id="pageStatus" class="status" role="status" aria-live="polite">
+      جارٍ تحميل إنجازاتك...
+    </div>
+
+    <section class="summary" aria-label="ملخص الإنجازات">
+      <article class="stat">
+        <span class="stat-label">الدروس المكتملة</span>
+        <strong class="stat-value" id="completedCount">—</strong>
+      </article>
+
+      <article class="stat">
+        <span class="stat-label">الشارات المفتوحة</span>
+        <strong class="stat-value" id="unlockedCount">—</strong>
+      </article>
+
+      <article class="stat">
+        <span class="stat-label">إجمالي الدروس</span>
+        <strong class="stat-value" id="totalCount">—</strong>
+      </article>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <h2>تقدم لغات البرمجة</h2>
+        <span>يُحدّث من تقدمك المحفوظ</span>
+      </div>
+
+      <div class="language-grid" id="languageGrid">
+        <article class="language-card">
+          جارٍ تحميل التقدم...
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <h2>مجموعتي من الشارات</h2>
+        <span id="badgeSummary">—</span>
+      </div>
+
+      <div class="badges-grid" id="badgesGrid"></div>
+    </section>
+
+    <div class="footer-action">
+      <a class="primary-link" href="levels.html">تابع التعلم ←</a>
+    </div>
+  </main>
+
+  <script type="module">
+    import {
+      requireUser,
+      getLessonProgress
+    } from "./js/auth.js";
+
+    const LANGUAGES = {
+      python: {
+        name: "Python",
+        file: "./json/python_curriculum.json"
+      },
+      javascript: {
+        name: "JavaScript",
+        file: "./json/js_curriculum.json"
+      },
+      cpp: {
+        name: "C++",
+        file: "./json/cpp_curriculum.json"
+      }
+    };
+
+    const BADGES = [
+      {
+        id: "first-step",
+        title: "أول خطوة",
+        description: "أكمل أول درس في رحلتك.",
+        icon: "🌱",
+        requirement: 1
+      },
+      {
+        id: "five-lessons",
+        title: "متعلم نشيط",
+        description: "أكمل 5 دروس.",
+        icon: "📘",
+        requirement: 5
+      },
+      {
+        id: "ten-lessons",
+        title: "مستكشف البرمجة",
+        description: "أكمل 10 دروس.",
+        icon: "🧭",
+        requirement: 10
+      },
+      {
+        id: "twenty-lessons",
+        title: "صانع التقدم",
+        description: "أكمل 20 درسًا.",
+        icon: "⚡",
+        requirement: 20
+      },
+      {
+        id: "thirty-lessons",
+        title: "بطل التعلم",
+        description: "أكمل 30 درسًا.",
+        icon: "🏅",
+        requirement: 30
+      },
+      {
+        id: "fifty-lessons",
+        title: "خبير المثابرة",
+        description: "أكمل 50 درسًا.",
+        icon: "🏆",
+        requirement: 50
+      }
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    function showStatus(message, type = "info") {
+      const status = $("pageStatus");
+      status.textContent = message;
+      status.classList.toggle("error", type === "error");
+      status.hidden = false;
+    }
+
+    async function loadCurriculumTotal(file) {
+      const response = await fetch(file, {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error(`تعذر تحميل ملف المنهج: ${file}`);
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data.chapters)) {
+        throw new Error("تنسيق ملف المنهج غير صحيح.");
+      }
+
+      return data.chapters.reduce((sum, chapter) => {
+        return sum + (
+          Array.isArray(chapter?.lessons)
+            ? chapter.lessons.length
+            : 0
+        );
+      }, 0);
+    }
+
+    function renderLanguageCards(progress, totals) {
+      const grid = $("languageGrid");
+      grid.replaceChildren();
+
+      for (const [key, language] of Object.entries(LANGUAGES)) {
+        const completed = progress[key].length;
+        const total = totals[key];
+        const percentage = total > 0
+          ? Math.min(100, Math.round((completed / total) * 100))
+          : 0;
+
+        const card = document.createElement("article");
+        card.className = "language-card";
+
+        const heading = document.createElement("div");
+        heading.className = "language-name";
+
+        const name = document.createElement("span");
+        name.textContent = language.name;
+
+        const count = document.createElement("span");
+        count.className = "language-count";
+        count.textContent = `${completed} / ${total}`;
+
+        heading.append(name, count);
+
+        const track = document.createElement("div");
+        track.className = "progress-track";
+        track.setAttribute("role", "progressbar");
+        track.setAttribute("aria-label", `تقدم ${language.name}`);
+        track.setAttribute("aria-valuemin", "0");
+        track.setAttribute("aria-valuemax", "100");
+        track.setAttribute("aria-valuenow", String(percentage));
+
+        const fill = document.createElement("div");
+        fill.className = "progress-fill";
+        fill.style.width = `${percentage}%`;
+
+        track.append(fill);
+
+        const caption = document.createElement("div");
+        caption.className = "progress-caption";
+        caption.textContent = `اكتمل ${percentage}% من المنهج`;
+
+        card.append(heading, track, caption);
+        grid.append(card);
+      }
+    }
+
+    function renderBadges(completedCount) {
+      const grid = $("badgesGrid");
+      grid.replaceChildren();
+
+      let unlocked = 0;
+
+      for (const badge of BADGES) {
+        const isUnlocked = completedCount >= badge.requirement;
+
+        if (isUnlocked) unlocked++;
+
+        const card = document.createElement("article");
+        card.className = `badge-card ${isUnlocked ? "unlocked" : "locked"}`;
+
+        const icon = document.createElement("div");
+        icon.className = "badge-icon";
+        icon.textContent = badge.icon;
+
+        const title = document.createElement("h3");
+        title.className = "badge-title";
+        title.textContent = badge.title;
+
+        const description = document.createElement("p");
+        description.className = "badge-description";
+        description.textContent = badge.description;
+
+        const status = document.createElement("span");
+        status.className = "badge-status";
+        status.textContent = isUnlocked ? "✓ تم الحصول عليها" : "🔒 لم تُفتح بعد";
+
+        card.append(icon, title, description, status);
+        grid.append(card);
+      }
+
+      $("unlockedCount").textContent = String(unlocked);
+      $("badgeSummary").textContent = `${unlocked} من ${BADGES.length} شارات`;
+    }
+
+    async function start() {
+      try {
+        await requireUser();
+
+        const progress = {};
+        const totals = {};
+
+        const languages = Object.keys(LANGUAGES);
+
+        const results = await Promise.all(
+          languages.map(async (key) => {
+            const [items, total] = await Promise.all([
+              getLessonProgress(key),
+              loadCurriculumTotal(LANGUAGES[key].file)
+            ]);
+
+            return { key, items, total };
+          })
+        );
+
+        for (const result of results) {
+          progress[result.key] = result.items;
+          totals[result.key] = result.total;
+        }
+
+        const completedCount = languages.reduce(
+          (sum, key) => sum + progress[key].length,
+          0
+        );
+
+        const totalCount = languages.reduce(
+          (sum, key) => sum + totals[key],
+          0
+        );
+
+        $("completedCount").textContent = String(completedCount);
+        $("totalCount").textContent = String(totalCount);
+
+        renderLanguageCards(progress, totals);
+        renderBadges(completedCount);
+
+        showStatus(
+          completedCount > 0
+            ? "إنجازاتك محدثة بناءً على الدروس التي أكملتها وحُفظت في حسابك."
+            : "لم تكمل أي دروس بعد. ابدأ أول درس لتحصل على شارتك الأولى!"
+        );
+
+      } catch (error) {
+        console.error("Achievements loading error:", error);
+
+        showStatus(
+          error?.message || "تعذر تحميل الإنجازات. حاول تسجيل الدخول مرة أخرى.",
+          "error"
+        );
+
+        $("languageGrid").replaceChildren();
+        $("badgesGrid").replaceChildren();
+        $("completedCount").textContent = "—";
+        $("unlockedCount").textContent = "—";
+        $("totalCount").textContent = "—";
+      }
+    }
+
+    start();
+  </script>
+</body>
+</html>
