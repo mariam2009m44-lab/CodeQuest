@@ -47,23 +47,38 @@ class ChatMessage(BaseModel):
 
 class CodyChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=MAX_QUESTION_LENGTH)
+
     history: list[ChatMessage] = Field(
         default_factory=list,
         max_length=MAX_HISTORY_MESSAGES
     )
-    page_context: str = Field(default="", max_length=MAX_CONTEXT_LENGTH)
+
+    page_context: str = Field(
+        default="",
+        max_length=MAX_CONTEXT_LENGTH
+    )
 
 
 def verify_cody_user(
     authorization: str | None = Header(default=None)
 ):
     if not authorization:
-        raise HTTPException(status_code=401, detail="Authentication required.")
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required."
+        )
 
     scheme, separator, token = authorization.partition(" ")
 
-    if not separator or scheme.lower() != "bearer" or not token.strip():
-        raise HTTPException(status_code=401, detail="Invalid authentication header.")
+    if (
+        not separator
+        or scheme.lower() != "bearer"
+        or not token.strip()
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid authentication header."
+        )
 
     try:
         try:
@@ -148,13 +163,11 @@ def prepare_history(history: list[ChatMessage], question: str) -> list[dict]:
             "parts": [{"text": text}]
         }
 
-        # Gemini conversation history should alternate user/model.
         if contents and contents[-1]["role"] == item["role"]:
             contents[-1]["parts"].extend(item["parts"])
         else:
             contents.append(item)
 
-    # The current request must start with a valid user turn.
     while contents and contents[-1]["role"] == "user":
         contents.pop()
 
