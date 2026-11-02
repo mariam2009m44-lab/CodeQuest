@@ -1,4 +1,5 @@
 
+
 import os
 import json
 import asyncio
@@ -19,6 +20,8 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ConfigDict
 
+from cody_chat import router as cody_chat_router
+
 
 # ==========================================
 # إعدادات التطبيق
@@ -30,7 +33,6 @@ app = FastAPI(
     version="1.1.0",
 )
 
-# في النشر الفعلي، حددي نطاقات الموقع في متغير CORS_ORIGINS.
 origins = [
     origin.strip()
     for origin in os.getenv("CORS_ORIGINS", "*").split(",")
@@ -45,13 +47,13 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+# تسجيل واجهة Cody AI
+app.include_router(cody_chat_router)
+
 
 # ==========================================
 # مسارات المشروع
 # ==========================================
-
-# الملف موجود في backend/main.py
-# parents[1] يرجع إلى المجلد الرئيسي للمشروع.
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 
@@ -411,8 +413,6 @@ async def run_code(
             timeout=JUDGE0_TIMEOUT
         ) as client:
 
-            # إرسال الكود للتشغيل
-
             response = await client.post(
                 f"{JUDGE0_URL}/submissions",
                 params={
@@ -434,8 +434,6 @@ async def run_code(
                     status_code=502,
                     detail="Execution service did not return a token."
                 )
-
-            # انتظار نتيجة التنفيذ
 
             deadline = time.monotonic() + EXECUTION_TIMEOUT
 
@@ -466,10 +464,6 @@ async def run_code(
                         status_code=502,
                         detail="Execution service returned an invalid status."
                     )
-
-                # 1 = In Queue
-                # 2 = Processing
-                # باقي الحالات تعني انتهاء التنفيذ
 
                 if status_id not in (1, 2):
                     break
