@@ -9,18 +9,6 @@ from sklearn.pipeline import Pipeline
 
 
 class CodyQuestionClassifier:
-    """
-    Cody AI - Question Classification Engine
-
-    Classifies questions into educational categories:
-    - programming
-    - math
-    - science
-    - general_knowledge
-    - lesson_help
-    - code_debugging
-    """
-
     CATEGORIES = {
         "programming",
         "math",
@@ -38,13 +26,10 @@ class CodyQuestionClassifier:
             / "data"
             / "training_data.json"
         )
-
         self.model: Pipeline | None = None
         self.is_trained = False
 
     def load_training_data(self) -> tuple[list[str], list[str]]:
-        """Load and validate the training dataset."""
-
         if not self.training_file.is_file():
             raise FileNotFoundError(
                 f"Training dataset not found: {self.training_file}"
@@ -53,8 +38,13 @@ class CodyQuestionClassifier:
         with self.training_file.open("r", encoding="utf-8") as file:
             data: Any = json.load(file)
 
+        if isinstance(data, dict):
+            data = data.get("examples")
+
         if not isinstance(data, list) or not data:
-            raise ValueError("Training dataset must be a non-empty list.")
+            raise ValueError(
+                "Training data must be a non-empty list or contain an examples list."
+            )
 
         texts: list[str] = []
         labels: list[str] = []
@@ -63,13 +53,13 @@ class CodyQuestionClassifier:
             if not isinstance(item, dict):
                 raise ValueError(f"Invalid dataset item at index {index}.")
 
-            text = item.get("text")
-            label = item.get("label")
+            text = item.get("text", item.get("question"))
+            label = item.get("label", item.get("category"))
 
             if not isinstance(text, str) or not text.strip():
                 raise ValueError(f"Invalid question at index {index}.")
 
-            if label not in self.CATEGORIES:
+            if not isinstance(label, str) or label not in self.CATEGORIES:
                 raise ValueError(
                     f"Unknown category at index {index}: {label}"
                 )
@@ -83,8 +73,6 @@ class CodyQuestionClassifier:
         return texts, labels
 
     def build_model(self) -> Pipeline:
-        """Create the machine learning pipeline."""
-
         return Pipeline([
             (
                 "vectorizer",
@@ -106,13 +94,10 @@ class CodyQuestionClassifier:
         ])
 
     def train(self) -> dict[str, Any]:
-        """Train the classifier using the local dataset."""
-
         texts, labels = self.load_training_data()
 
         self.model = self.build_model()
         self.model.fit(texts, labels)
-
         self.is_trained = True
 
         return {
@@ -123,8 +108,6 @@ class CodyQuestionClassifier:
         }
 
     def predict(self, question: str) -> dict[str, Any]:
-        """Predict the category of a new question."""
-
         if not self.is_trained or self.model is None:
             raise RuntimeError(
                 "The classifier must be trained before prediction."
@@ -133,38 +116,30 @@ class CodyQuestionClassifier:
         if not isinstance(question, str) or not question.strip():
             raise ValueError("Question cannot be empty.")
 
-        probabilities = self.model.predict_proba([question.strip()])[0]
+        clean_question = question.strip()
+        probabilities = self.model.predict_proba([clean_question])[0]
         classes = self.model.classes_
 
         best_index = int(probabilities.argmax())
         confidence = float(probabilities[best_index])
-
         category = str(classes[best_index])
 
-        # Low-confidence questions should be handled cautiously.
         if confidence < 0.40:
             category = "general_knowledge"
 
         return {
             "success": True,
-            "question": question.strip(),
+            "question": clean_question,
             "category": category,
             "confidence": round(confidence, 4),
             "needs_review": confidence < 0.40,
         }
 
     def save_model(self, output_file: str | Path | None = None) -> Path:
-        """Save the trained model locally."""
-
         if not self.is_trained or self.model is None:
             raise RuntimeError("Train the model before saving it.")
 
-        try:
-            import joblib
-        except ImportError as exc:
-            raise RuntimeError(
-                "Install joblib before saving the model."
-            ) from exc
+        import joblib
 
         destination = (
             Path(output_file)
@@ -180,8 +155,6 @@ class CodyQuestionClassifier:
         return destination
 
     def load_model(self, model_file: str | Path) -> None:
-        """Load a previously trained model."""
-
         import joblib
 
         path = Path(model_file)
@@ -198,6 +171,7 @@ def main() -> None:
 
     try:
         result = classifier.train()
+
         print("\n=== Cody ML Engine ===")
         print(result["message"])
         print(f"Training examples: {result['training_examples']}")
