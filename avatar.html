@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -218,6 +217,10 @@
       text-align: center;
     }
 
+    .save-message.error {
+      color: #ff8585;
+    }
+
     @media (max-width: 700px) {
       .avatar-page {
         width: min(100% - 20px, 520px);
@@ -271,19 +274,20 @@
         رحلتك تبدأ هنا
       </div>
 
-      <h1>اختار شخصيتك</h1>
+      <h1>اختر شخصيتك</h1>
 
-      <p>اختار الشكل اللي يعبر عنك ويكون رفيقك في رحلتك.</p>
+      <p>اختر الشكل الذي يعبر عنك ويكون رفيقك في رحلتك.</p>
     </header>
 
     <section
       class="avatars-grid"
       id="avatarsGrid"
       aria-label="اختيار شخصية"
+      aria-busy="true"
     ></section>
 
     <p class="selection-hint" id="selectionHint" aria-live="polite">
-      اضغط على الشخصية التي تفضلها
+      اختر الشخصية التي تفضلها
     </p>
 
     <div class="actions">
@@ -310,7 +314,19 @@
   </main>
 
   <script type="module">
-    import { auth, db, doc, updateDoc } from "./js/app.js";
+    import { auth, db } from "./js/firebase-config.js";
+
+    import {
+      doc,
+      getDoc,
+      updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    import {
+      requireUser,
+      ensureUserProfile
+    } from "./js/auth.js";
+
     import { showToast } from "./js/ui.js";
 
     import {
@@ -328,8 +344,45 @@
 
     let selectedId = null;
     let saving = false;
+    let currentUser = null;
 
     const characters = getAllAvatars();
+    const validAvatarIds = new Set(
+      characters.map(character => character.id)
+    );
+
+    function setMessage(message, isError = false) {
+      saveMessage.textContent = message;
+      saveMessage.classList.toggle("error", isError);
+    }
+
+    function selectAvatar(avatarId) {
+      if (!validAvatarIds.has(avatarId) || saving) {
+        return;
+      }
+
+      const card = grid.querySelector(
+        `[data-id="${avatarId}"]`
+      );
+
+      if (!card) return;
+
+      grid.querySelectorAll(".avatar-card").forEach(item => {
+        item.classList.remove("selected");
+        item.setAttribute("aria-pressed", "false");
+      });
+
+      card.classList.add("selected");
+      card.setAttribute("aria-pressed", "true");
+
+      selectedId = avatarId;
+      saveBtn.disabled = false;
+
+      selectionHint.textContent =
+        "تم تحديد الشخصية. يمكنك تأكيد الاختيار.";
+
+      setMessage("");
+    }
 
     function renderCharacters() {
       grid.innerHTML = "";
@@ -341,82 +394,174 @@
         card.className = "avatar-card";
         card.dataset.id = character.id;
 
-        card.setAttribute("aria-label", "اختيار هذه الشخصية");
+        card.setAttribute(
+          "aria-label",
+          `اختيار الشخصية ${character.name}`
+        );
+
         card.setAttribute("aria-pressed", "false");
 
         card.innerHTML = renderAvatarCard(character.id);
 
         card.addEventListener("click", () => {
-          if (saving) return;
-
-          document.querySelectorAll(".avatar-card").forEach(item => {
-            item.classList.remove("selected");
-            item.setAttribute("aria-pressed", "false");
-          });
-
-          card.classList.add("selected");
-          card.setAttribute("aria-pressed", "true");
-
-          selectedId = character.id;
-
-          saveBtn.disabled = false;
-          selectionHint.textContent = "تم تحديد الشخصية. يمكنك تأكيد اختيارك.";
-          saveMessage.textContent = "";
+          selectAvatar(character.id);
         });
 
         grid.appendChild(card);
       });
 
-      // Restore previously selected avatar
-      const previousId = localStorage.getItem("cq_avatar");
+      grid.setAttribute("aria-busy", "false");
+    }
 
-      if (characters.some(item => item.id === previousId)) {
-        const previousCard = grid.querySelector(
-          `[data-id="${previousId}"]`
+    async function loadSavedAvatar(user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const snapshot = await getDoc(userRef);
+
+        if (!snapshot.exists()) {
+          throw new Error("ملف المستخدم غير موجود في قاعدة البيانات.");
+        }
+
+        const savedAvatar = snapshot.data().activeAvatar;
+
+        if (validAvatarIds.has(savedAvatar)) {
+          selectAvatar(savedAvatar);
+          selectionHint.textContent =
+            "تم تحميل شخصيتك المحفوظة. يمكنك تغييرها إذا أردت.";
+        } else {
+          selectedId = null;
+          saveBtn.disabled = true;
+          selectionHint.textContent =
+            "اختر شخصية للمتابعة.";
+        }
+
+      } catch (error) {
+        console.error("Saved avatar loading error:", error);
+
+        selectedId = null;
+        saveBtn.disabled = true;
+
+        selectionHint.textContent =
+          "تعذر تحميل الشخصية المحفوظة. اختر شخصية جديدة.";
+
+        setMessage(
+          "تعذر قراءة الشخصية المحفوظة. يمكنك اختيار شخصية جديدة.",
+          true
+        );
+      }
+    }
+
+    async function initializeAvatarPage() {
+      try {
+        saveBtn.disabled = true;
+        selectionHint.textContent = "جارٍ التحقق من الحساب...";
+
+        currentUser = await requireUser();
+
+        if (!currentUser?.uid) {
+          throw new Error("لم يتم العثور على حساب مسجل الدخول.");
+        }
+
+        await ensureUserProfile(currentUser);
+
+        renderCharacters();
+
+        await loadSavedAvatar(currentUser);
+
+      } catch (error) {
+        console.error("Avatar page initialization error:", error);
+
+        grid.setAttribute("aria-busy", "false");
+
+        selectionHint.textContent =
+          "تعذر التحقق من الحساب. سجل الدخول ثم حاول مجددًا.";
+
+        setMessage(
+          error.message || "تعذر تحميل صفحة اختيار الشخصية.",
+          true
         );
 
-        if (previousCard) previousCard.click();
+        showToast(
+          "تعذر تحميل بيانات الحساب.",
+          "error"
+        );
       }
     }
 
     async function saveSelection() {
-      if (!selectedId || saving) return;
+      if (!selectedId || saving || !currentUser?.uid) {
+        return;
+      }
 
-      const user = auth.currentUser;
-
-      if (!user) {
-        showToast("يجب تسجيل الدخول أولاً.", "error");
+      if (!validAvatarIds.has(selectedId)) {
+        setMessage("اختيار الشخصية غير صالح.", true);
         return;
       }
 
       saving = true;
+
       saveBtn.disabled = true;
+      saveBtn.setAttribute("aria-busy", "true");
+
       saveBtn.innerHTML =
         '<i class="ri-loader-4-line"></i> جارٍ الحفظ...';
 
       try {
-        await updateDoc(doc(db, "users", user.uid), {
+        const userRef = doc(db, "users", currentUser.uid);
+
+        await updateDoc(userRef, {
           activeAvatar: selectedId
         });
 
-        localStorage.setItem("cq_avatar", selectedId);
+        try {
+          localStorage.setItem("cq_avatar", selectedId);
+        } catch (storageError) {
+          console.warn(
+            "Could not update local avatar cache:",
+            storageError
+          );
+        }
 
-        saveMessage.textContent = "تم حفظ اختيارك بنجاح.";
+        setMessage("تم حفظ الشخصية بنجاح.");
 
-        showToast("تم حفظ الشخصية!", "success");
+        showToast("تم حفظ الشخصية بنجاح.", "success");
 
-        window.location.href = "profile.html";
+        window.location.replace("profile.html");
 
       } catch (error) {
         console.error("Avatar save error:", error);
 
-        showToast("تعذر حفظ الشخصية. حاولي مرة أخرى.", "error");
+        const errorCode = error?.code || "";
 
-        saveMessage.textContent =
-          "لم يتم الحفظ. تأكدي من اتصال الإنترنت وحاولي مجددًا.";
+        if (
+          errorCode === "permission-denied" ||
+          errorCode === "firestore/permission-denied"
+        ) {
+          setMessage(
+            "رفضت قاعدة البيانات حفظ الاختيار. راجع صلاحيات Firestore.",
+            true
+          );
+        } else if (
+          errorCode === "unavailable" ||
+          errorCode === "firestore/unavailable"
+        ) {
+          setMessage(
+            "الخدمة غير متاحة حاليًا. تحقق من الاتصال وحاول مجددًا.",
+            true
+          );
+        } else {
+          setMessage(
+            "تعذر حفظ الشخصية. راجع Console لمعرفة تفاصيل الخطأ.",
+            true
+          );
+        }
+
+        showToast("تعذر حفظ الشخصية.", "error");
 
         saving = false;
         saveBtn.disabled = false;
+        saveBtn.removeAttribute("aria-busy");
+
         saveBtn.innerHTML =
           '<span>تأكيد الاختيار</span><i class="ri-arrow-left-line"></i>';
       }
@@ -425,6 +570,8 @@
     saveBtn.addEventListener("click", saveSelection);
 
     renderCharacters();
+    initializeAvatarPage();
+
   </script>
 
 </body>
