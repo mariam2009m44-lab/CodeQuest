@@ -1,3 +1,4 @@
+
 import { auth, db } from "./firebase-config.js";
 
 import {
@@ -505,31 +506,7 @@ export const App = {
   },
 
   bindLogout() {
-    // Add a logout link to mobile navigation once.
-    const mobileNav = document.querySelector(".mobile-nav");
-
-    if (
-      mobileNav &&
-      !mobileNav.querySelector(".mobile-logout")
-    ) {
-      const logoutLink = document.createElement("a");
-
-      logoutLink.href = "login.html";
-      logoutLink.className = "mobile-logout logout";
-
-      const icon = document.createElement("i");
-      icon.className = "ri-logout-box-r-line";
-      icon.setAttribute("aria-hidden", "true");
-
-      const label = document.createElement("span");
-      label.textContent = "تسجيل الخروج";
-
-      logoutLink.append(icon, label);
-      logoutLink.setAttribute("aria-label", "تسجيل الخروج");
-
-      mobileNav.appendChild(logoutLink);
-    }
-
+    // تسجيل الخروج يعمل من الأزرار الموجودة خارج شريط الموبايل.
     document.querySelectorAll(".logout, #logoutButton").forEach(
       element => {
         if (element.dataset.logoutBound === "true") {
