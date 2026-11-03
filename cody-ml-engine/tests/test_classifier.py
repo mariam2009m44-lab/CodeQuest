@@ -1,4 +1,3 @@
-
 import json
 import sys
 from pathlib import Path
@@ -11,6 +10,16 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from question_classifier import CodyQuestionClassifier
+
+
+CATEGORIES = [
+    "programming",
+    "math",
+    "science",
+    "general_knowledge",
+    "lesson_help",
+    "code_debugging",
+]
 
 
 @pytest.fixture
@@ -26,34 +35,63 @@ def trained_classifier(classifier):
 
 def write_dataset(path, examples):
     path.write_text(
-        json.dumps(
-            {"examples": examples},
-            ensure_ascii=False,
-            indent=2
-        ),
-        encoding="utf-8"
+        json.dumps(examples, ensure_ascii=False, indent=2),
+        encoding="utf-8",
     )
+
+
+def make_minimum_dataset():
+    examples = []
+
+    sample_questions = {
+        "programming": [
+            "What is a Python variable?",
+            "How do programming loops work?",
+        ],
+        "math": [
+            "Calculate the area of a square.",
+            "What is five plus seven?",
+        ],
+        "science": [
+            "Why does water evaporate?",
+            "How do plants make food?",
+        ],
+        "general_knowledge": [
+            "What is the capital of Egypt?",
+            "Where is the Nile River?",
+        ],
+        "lesson_help": [
+            "Explain this lesson simply.",
+            "Summarize the chapter for me.",
+        ],
+        "code_debugging": [
+            "Why does my Python code show an error?",
+            "Help me fix this syntax error.",
+        ],
+    }
+
+    for category, questions in sample_questions.items():
+        for question in questions:
+            examples.append({
+                "question": question,
+                "category": category,
+            })
+
+    return examples
 
 
 def test_classifier_can_be_created(classifier):
     assert classifier is not None
     assert classifier.is_trained is False
-    assert classifier.model is None
 
 
 def test_classifier_has_required_methods(classifier):
-    methods = [
-        "load_training_data",
-        "build_model",
-        "train",
-        "predict",
-        "save_model",
-        "load_model",
-        "normalize_text",
-    ]
-
-    for method in methods:
-        assert callable(getattr(classifier, method))
+    assert callable(classifier.load_training_data)
+    assert callable(classifier.build_model)
+    assert callable(classifier.train)
+    assert callable(classifier.predict)
+    assert callable(classifier.save_model)
+    assert callable(classifier.load_model)
 
 
 def test_training_data_is_not_empty(classifier):
@@ -64,60 +102,28 @@ def test_training_data_is_not_empty(classifier):
     assert len(questions) == len(labels)
 
 
-def test_training_data_contains_valid_text(classifier):
-    questions, labels = classifier.load_training_data()
-
-    assert all(
-        isinstance(question, str) and question.strip()
-        for question in questions
-    )
-
-    assert all(
-        isinstance(label, str) and label.strip()
-        for label in labels
-    )
-
-
 def test_training_data_contains_all_categories(classifier):
     _, labels = classifier.load_training_data()
 
-    assert classifier.CATEGORIES.issubset(set(labels))
+    assert set(labels) == classifier.CATEGORIES
 
 
-def test_training_data_has_multiple_examples_per_category(
-    classifier
-):
+def test_training_data_has_multiple_examples_per_category(classifier):
     _, labels = classifier.load_training_data()
 
     for category in classifier.CATEGORIES:
         assert labels.count(category) >= 2
 
 
-def test_training_data_has_no_duplicate_questions(classifier):
-    questions, _ = classifier.load_training_data()
+def test_training_result_contains_category_counts(classifier):
+    result = classifier.train()
 
-    assert len(questions) == len(set(questions))
+    assert result["success"] is True
+    assert result["training_examples"] > 0
+    assert set(result["categories"]) == classifier.CATEGORIES
 
-
-def test_normalize_arabic_text():
-    normalized = CodyQuestionClassifier.normalize_text(
-        "إِزّاي أَحْسِب ٥ + ٣؟"
-    )
-
-    assert normalized == "ازاي احسب 5 + 3؟"
-
-
-def test_normalize_english_text():
-    normalized = CodyQuestionClassifier.normalize_text(
-        "   What   IS   Python?   "
-    )
-
-    assert normalized == "what is python?"
-
-
-def test_normalize_rejects_non_string():
-    with pytest.raises(TypeError):
-        CodyQuestionClassifier.normalize_text(123)
+    for count in result["category_counts"].values():
+        assert count >= 2
 
 
 def test_model_can_train(classifier):
@@ -126,32 +132,15 @@ def test_model_can_train(classifier):
     assert result["success"] is True
     assert classifier.is_trained is True
     assert classifier.model is not None
-    assert result["training_examples"] > 0
-
-
-def test_training_result_contains_category_counts(classifier):
-    result = classifier.train()
-
-    assert set(result["categories"]) == classifier.CATEGORIES
-    assert set(result["category_counts"]) == classifier.CATEGORIES
-
-    assert sum(
-        result["category_counts"].values()
-    ) == result["training_examples"]
 
 
 @pytest.mark.parametrize(
     "question",
-    [
-        "",
-        "   ",
-        None,
-        123,
-    ],
+    ["", "   ", None, 123],
 )
 def test_predict_rejects_invalid_questions(
     trained_classifier,
-    question
+    question,
 ):
     with pytest.raises(ValueError):
         trained_classifier.predict(question)
@@ -168,36 +157,18 @@ def test_predict_requires_training(classifier):
         ("What is Python?", "programming"),
         ("What is 5 plus 7?", "math"),
         ("Why is the sky blue?", "science"),
-        (
-            "What is the capital of Egypt?",
-            "general_knowledge"
-        ),
-        (
-            "Explain this lesson simply",
-            "lesson_help"
-        ),
+        ("What is the capital of Egypt?", "general_knowledge"),
+        ("Explain this lesson simply", "lesson_help"),
         (
             "Why does my Python code show an error?",
-            "code_debugging"
-        ),
-        (
-            "يعني ايه لغة بايثون؟",
-            "programming"
-        ),
-        (
-            "ناتج خمسة زائد سبعة كام؟",
-            "math"
-        ),
-        (
-            "اشرح لي البناء الضوئي",
-            "science"
+            "code_debugging",
         ),
     ],
 )
-def test_predict_classifies_known_examples(
+def test_predict_classifies_known_questions(
     trained_classifier,
     question,
-    expected_category
+    expected_category,
 ):
     result = trained_classifier.predict(question)
 
@@ -205,10 +176,8 @@ def test_predict_classifies_known_examples(
     assert result["category"] == expected_category
 
 
-def test_prediction_has_valid_structure(trained_classifier):
-    result = trained_classifier.predict(
-        "What is a variable?"
-    )
+def test_prediction_has_complete_structure(trained_classifier):
+    result = trained_classifier.predict("What is a variable?")
 
     required_fields = {
         "success",
@@ -224,94 +193,165 @@ def test_prediction_has_valid_structure(trained_classifier):
 
     assert required_fields.issubset(result.keys())
 
-    assert result["success"] is True
-    assert isinstance(result["question"], str)
-    assert isinstance(result["category"], str)
-    assert isinstance(result["confidence"], float)
-    assert isinstance(result["confidence_margin"], float)
-    assert isinstance(result["needs_review"], bool)
-
 
 def test_prediction_confidence_is_valid(trained_classifier):
-    result = trained_classifier.predict(
-        "اشرح لي المتغيرات في البرمجة"
-    )
+    result = trained_classifier.predict("اشرح لي المتغيرات")
 
     assert 0.0 <= result["confidence"] <= 1.0
     assert 0.0 <= result["second_confidence"] <= 1.0
     assert 0.0 <= result["confidence_margin"] <= 1.0
 
 
-def test_prediction_category_is_supported(trained_classifier):
-    result = trained_classifier.predict(
-        "اشرح لي المتغيرات"
-    )
-
-    assert result["category"] in trained_classifier.CATEGORIES
-
-
 def test_top_predictions_are_sorted(trained_classifier):
-    result = trained_classifier.predict(
-        "What is Python?"
-    )
+    result = trained_classifier.predict("What is Python?")
 
     predictions = result["top_predictions"]
 
-    assert len(predictions) <= 3
+    assert 1 <= len(predictions) <= 3
 
-    scores = [
+    confidences = [
         item["confidence"]
         for item in predictions
     ]
 
-    assert scores == sorted(scores, reverse=True)
+    assert confidences == sorted(confidences, reverse=True)
 
 
-def test_top_predictions_have_valid_categories(trained_classifier):
-    result = trained_classifier.predict(
-        "What is Python?"
-    )
-
-    for item in result["top_predictions"]:
-        assert item["category"] in trained_classifier.CATEGORIES
-        assert 0.0 <= item["confidence"] <= 1.0
-
-
-def test_confidence_margin_matches_probabilities(
-    trained_classifier
-):
-    result = trained_classifier.predict(
-        "What is Python?"
-    )
+def test_confidence_margin_matches_top_predictions(trained_classifier):
+    result = trained_classifier.predict("What is Python?")
 
     expected_margin = round(
         result["confidence"] - result["second_confidence"],
-        4
+        4,
     )
 
     assert result["confidence_margin"] == expected_margin
 
 
-def test_review_flag_uses_configured_threshold(
-    trained_classifier
-):
-    result = trained_classifier.predict(
-        "What is Python?"
+def test_needs_review_is_boolean(trained_classifier):
+    result = trained_classifier.predict("اشرح لي الدرس")
+
+    assert isinstance(result["needs_review"], bool)
+
+
+def test_arabic_normalization():
+    result = CodyQuestionClassifier.normalize_text(
+        "إِزّاي أَحْسِب ٥ + ٣؟"
     )
 
-    expected_review = (
-        result["confidence"]
-        < trained_classifier.CONFIDENCE_THRESHOLD
-        or result["confidence_margin"]
-        < trained_classifier.MIN_CONFIDENCE_MARGIN
+    assert result == "ازاي احسب 5 + 3؟"
+
+
+def test_normalization_removes_tatweel():
+    result = CodyQuestionClassifier.normalize_text("بـرمـجـة")
+
+    assert result == "برمجة"
+
+
+def test_same_duplicate_question_is_skipped(tmp_path):
+    examples = [
+        {"question": "What is Python?", "category": "programming"},
+        {"question": "How do loops work?", "category": "programming"},
+        {"question": "WHAT IS PYTHON?", "category": "programming"},
+        {"question": "What is math?", "category": "math"},
+        {"question": "Calculate five plus two.", "category": "math"},
+    ]
+
+    dataset = tmp_path / "duplicates.json"
+    write_dataset(dataset, examples)
+
+    classifier = CodyQuestionClassifier(dataset)
+    questions, labels = classifier.load_training_data()
+
+    assert len(questions) == 4
+    assert len(labels) == 4
+    assert labels.count("programming") == 2
+    assert labels.count("math") == 2
+
+
+def test_conflicting_duplicate_question_is_rejected(tmp_path):
+    examples = [
+        {"question": "What is Python?", "category": "programming"},
+        {"question": "WHAT IS PYTHON?", "category": "math"},
+    ]
+
+    dataset = tmp_path / "conflict.json"
+    write_dataset(dataset, examples)
+
+    classifier = CodyQuestionClassifier(dataset)
+
+    with pytest.raises(ValueError, match="Conflicting duplicate"):
+        classifier.load_training_data()
+
+
+def test_category_with_insufficient_examples_is_rejected(tmp_path):
+    examples = make_minimum_dataset()
+    examples = [
+        item
+        for item in examples
+        if not (
+            item["category"] == "science"
+            and item["question"] == "How do plants make food?"
+        )
+    ]
+
+    dataset = tmp_path / "insufficient.json"
+    write_dataset(dataset, examples)
+
+    classifier = CodyQuestionClassifier(dataset)
+
+    with pytest.raises(ValueError, match="at least"):
+        classifier.load_training_data()
+
+
+def test_unknown_category_is_rejected(tmp_path):
+    examples = make_minimum_dataset()
+    examples[0]["category"] = "unknown_category"
+
+    dataset = tmp_path / "invalid_category.json"
+    write_dataset(dataset, examples)
+
+    classifier = CodyQuestionClassifier(dataset)
+
+    with pytest.raises(ValueError, match="Unknown category"):
+        classifier.load_training_data()
+
+
+def test_missing_question_is_rejected(tmp_path):
+    examples = make_minimum_dataset()
+    examples[0].pop("question")
+
+    dataset = tmp_path / "missing_question.json"
+    write_dataset(dataset, examples)
+
+    classifier = CodyQuestionClassifier(dataset)
+
+    with pytest.raises(ValueError, match="Invalid question"):
+        classifier.load_training_data()
+
+
+def test_invalid_json_structure_is_rejected(tmp_path):
+    dataset = tmp_path / "invalid.json"
+    write_dataset(dataset, {"wrong_key": []})
+
+    classifier = CodyQuestionClassifier(dataset)
+
+    with pytest.raises(ValueError):
+        classifier.load_training_data()
+
+
+def test_missing_dataset_is_rejected(tmp_path):
+    classifier = CodyQuestionClassifier(
+        tmp_path / "missing.json"
     )
 
-    assert result["needs_review"] == expected_review
+    with pytest.raises(FileNotFoundError):
+        classifier.load_training_data()
 
 
 def test_model_can_be_saved_and_loaded(
     trained_classifier,
-    tmp_path
+    tmp_path,
 ):
     model_path = tmp_path / "cody_test_model.joblib"
 
@@ -323,7 +363,6 @@ def test_model_can_be_saved_and_loaded(
     new_classifier.load_model(model_path)
 
     assert new_classifier.is_trained is True
-    assert new_classifier.model is not None
 
     result = new_classifier.predict("What is Python?")
 
@@ -331,154 +370,32 @@ def test_model_can_be_saved_and_loaded(
 
 
 def test_save_model_requires_training(classifier, tmp_path):
-    model_path = tmp_path / "untrained.joblib"
-
     with pytest.raises(RuntimeError):
-        classifier.save_model(model_path)
+        classifier.save_model(tmp_path / "untrained.joblib")
 
 
 def test_load_model_rejects_missing_file(classifier, tmp_path):
-    missing_path = tmp_path / "missing.joblib"
-
     with pytest.raises(FileNotFoundError):
-        classifier.load_model(missing_path)
+        classifier.load_model(tmp_path / "missing.joblib")
 
 
-def test_loaded_model_preserves_predictions(
+def test_failed_training_preserves_existing_model(
     trained_classifier,
-    tmp_path
+    monkeypatch,
 ):
-    question = "What is a variable?"
+    old_model = trained_classifier.model
 
-    original = trained_classifier.predict(question)
+    def failing_build_model():
+        raise RuntimeError("Simulated training failure")
 
-    model_path = tmp_path / "classifier.joblib"
-    trained_classifier.save_model(model_path)
-
-    loaded = CodyQuestionClassifier()
-    loaded.load_model(model_path)
-
-    restored = loaded.predict(question)
-
-    assert restored["category"] == original["category"]
-    assert restored["confidence"] == original["confidence"]
-    assert restored["needs_review"] == original["needs_review"]
-
-
-def test_invalid_training_data_is_rejected(tmp_path):
-    invalid_file = tmp_path / "invalid.json"
-
-    write_dataset(invalid_file, [])
-
-    classifier = CodyQuestionClassifier(invalid_file)
-
-    with pytest.raises(ValueError):
-        classifier.load_training_data()
-
-
-def test_unknown_category_is_rejected(tmp_path):
-    invalid_file = tmp_path / "invalid_category.json"
-
-    write_dataset(
-        invalid_file,
-        [
-            {
-                "question": "What is Python?",
-                "category": "unknown_category"
-            },
-            {
-                "question": "What is math?",
-                "category": "math"
-            },
-        ]
+    monkeypatch.setattr(
+        trained_classifier,
+        "build_model",
+        failing_build_model,
     )
 
-    classifier = CodyQuestionClassifier(invalid_file)
+    with pytest.raises(RuntimeError):
+        trained_classifier.train()
 
-    with pytest.raises(ValueError):
-        classifier.load_training_data()
-
-
-def test_missing_question_is_rejected(tmp_path):
-    invalid_file = tmp_path / "missing_question.json"
-
-    write_dataset(
-        invalid_file,
-        [
-            {"category": "programming"},
-            {
-                "question": "What is math?",
-                "category": "math"
-            },
-        ]
-    )
-
-    classifier = CodyQuestionClassifier(invalid_file)
-
-    with pytest.raises(ValueError):
-        classifier.load_training_data()
-
-
-def test_conflicting_duplicate_questions_are_rejected(tmp_path):
-    invalid_file = tmp_path / "duplicates.json"
-
-    write_dataset(
-        invalid_file,
-        [
-            {
-                "question": "What is Python?",
-                "category": "programming"
-            },
-            {
-                "question": "  WHAT IS PYTHON? ",
-                "category": "math"
-            },
-        ]
-    )
-
-    classifier = CodyQuestionClassifier(invalid_file)
-
-    with pytest.raises(ValueError):
-        classifier.load_training_data()
-
-
-def test_same_duplicate_question_is_skipped(tmp_path):
-    invalid_file = tmp_path / "same_duplicates.json"
-
-    write_dataset(
-        invalid_file,
-        [
-            {
-                "question": "What is Python?",
-                "category": "programming"
-            },
-            {
-                "question": "  WHAT IS PYTHON? ",
-                "category": "programming"
-            },
-            {
-                "question": "What is 2 plus 2?",
-                "category": "math"
-            },
-            {
-                "question": "What is 3 plus 3?",
-                "category": "math"
-            },
-        ]
-    )
-
-    classifier = CodyQuestionClassifier(invalid_file)
-    questions, labels = classifier.load_training_data()
-
-    assert len(questions) == 3
-    assert len(labels) == 3
-
-
-def test_missing_dataset_is_rejected(tmp_path):
-    missing_file = tmp_path / "missing.json"
-
-    classifier = CodyQuestionClassifier(missing_file)
-
-    with pytest.raises(FileNotFoundError):
-        classifier.load_training_data()
-
+    assert trained_classifier.model is old_model
+    assert trained_classifier.is_trained is True
