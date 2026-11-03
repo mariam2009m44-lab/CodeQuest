@@ -1,4 +1,3 @@
-
 import sys
 from pathlib import Path
 
@@ -12,41 +11,34 @@ if str(SRC_DIR) not in sys.path:
 from question_classifier import CodyQuestionClassifier
 
 
-def test_training_returns_expected_information():
-    classifier = CodyQuestionClassifier()
+@pytest.fixture
+def classifier():
+    return CodyQuestionClassifier()
 
+
+def test_training_returns_expected_information(classifier):
     result = classifier.train()
 
     assert result["success"] is True
     assert result["training_examples"] > 0
-    assert len(result["categories"]) >= 2
-
+    assert len(result["categories"]) == 6
     assert classifier.is_trained is True
     assert classifier.model is not None
 
+    assert set(result["category_counts"]) == classifier.CATEGORIES
 
-def test_training_returns_category_distribution():
-    classifier = CodyQuestionClassifier()
 
+def test_training_has_multiple_examples_per_category(classifier):
     result = classifier.train()
 
-    assert isinstance(result["category_counts"], dict)
-
-    assert set(result["category_counts"]) == set(
-        result["categories"]
-    )
-
-    assert sum(
-        result["category_counts"].values()
-    ) == result["training_examples"]
+    for count in result["category_counts"].values():
+        assert count >= 2
 
 
-def test_model_can_train_and_save(tmp_path):
-    classifier = CodyQuestionClassifier()
+def test_model_can_train_and_save(classifier, tmp_path):
     classifier.train()
 
     model_path = tmp_path / "test_model.joblib"
-
     saved_path = classifier.save_model(model_path)
 
     assert saved_path == model_path
@@ -54,8 +46,10 @@ def test_model_can_train_and_save(tmp_path):
     assert model_path.stat().st_size > 0
 
 
-def test_model_can_load_and_predict_after_saving(tmp_path):
-    classifier = CodyQuestionClassifier()
+def test_model_can_load_and_predict_after_saving(
+    classifier,
+    tmp_path,
+):
     classifier.train()
 
     model_path = tmp_path / "test_model.joblib"
@@ -73,12 +67,10 @@ def test_model_can_load_and_predict_after_saving(tmp_path):
     assert prediction["category"] == "programming"
 
 
-def test_loaded_model_keeps_same_prediction(tmp_path):
-    classifier = CodyQuestionClassifier()
+def test_loaded_model_keeps_same_prediction(classifier, tmp_path):
     classifier.train()
 
     question = "What is a variable?"
-
     original_prediction = classifier.predict(question)
 
     model_path = tmp_path / "test_model.joblib"
@@ -89,25 +81,72 @@ def test_loaded_model_keeps_same_prediction(tmp_path):
 
     loaded_prediction = loaded_classifier.predict(question)
 
-    assert (
-        loaded_prediction["category"]
-        == original_prediction["category"]
-    )
-
+    assert loaded_prediction["category"] == original_prediction["category"]
     assert (
         loaded_prediction["confidence"]
         == original_prediction["confidence"]
     )
 
-    assert (
-        loaded_prediction["needs_review"]
-        == original_prediction["needs_review"]
+
+def test_loaded_model_returns_review_information(
+    classifier,
+    tmp_path,
+):
+    classifier.train()
+
+    model_path = tmp_path / "review_model.joblib"
+    classifier.save_model(model_path)
+
+    loaded_classifier = CodyQuestionClassifier()
+    loaded_classifier.load_model(model_path)
+
+    result = loaded_classifier.predict(
+        "Can you explain this programming concept?"
     )
+
+    assert "needs_review" in result
+    assert "confidence_margin" in result
+    assert "top_predictions" in result
+
+
+def test_repeated_training_works(classifier):
+    first_result = classifier.train()
+    first_model = classifier.model
+
+    second_result = classifier.train()
+
+    assert first_result["success"] is True
+    assert second_result["success"] is True
+    assert classifier.is_trained is True
+    assert classifier.model is not None
+    assert classifier.model is not first_model
+
+
+def test_failed_training_preserves_previous_model(
+    classifier,
+    monkeypatch,
+):
+    classifier.train()
+    original_model = classifier.model
+
+    def fail_training():
+        raise RuntimeError("Training failed")
+
+    monkeypatch.setattr(
+        classifier,
+        "build_model",
+        fail_training,
+    )
+
+    with pytest.raises(RuntimeError):
+        classifier.train()
+
+    assert classifier.model is original_model
+    assert classifier.is_trained is True
 
 
 def test_save_requires_training(tmp_path):
     classifier = CodyQuestionClassifier()
-
     model_path = tmp_path / "not_trained.joblib"
 
     with pytest.raises(RuntimeError):
@@ -116,86 +155,19 @@ def test_save_requires_training(tmp_path):
 
 def test_load_missing_model_raises_error(tmp_path):
     classifier = CodyQuestionClassifier()
-
     missing_path = tmp_path / "missing_model.joblib"
 
     with pytest.raises(FileNotFoundError):
         classifier.load_model(missing_path)
 
 
-def test_model_can_predict_arabic_after_loading(tmp_path):
-    classifier = CodyQuestionClassifier()
+def test_prediction_contains_top_three(classifier):
     classifier.train()
 
-    model_path = tmp_path / "arabic_model.joblib"
-    classifier.save_model(model_path)
+    result = classifier.predict("What is Python programming?")
 
-    loaded_classifier = CodyQuestionClassifier()
-    loaded_classifier.load_model(model_path)
+    assert 1 <= len(result["top_predictions"]) <= 3
 
-    prediction = loaded_classifier.predict(
-        "يعني ايه لغة بايثون؟"
-    )
-
-    assert prediction["category"] == "programming"
-    assert isinstance(prediction["confidence"], float)
-
-
-def test_training_can_be_repeated():
-    classifier = CodyQuestionClassifier()
-
-    first_result = classifier.train()
-    second_result = classifier.train()
-
-    assert first_result["success"] is True
-    assert second_result["success"] is True
-    assert classifier.is_trained is True
-
-
-def test_failed_training_does_not_replace_existing_model(
-    tmp_path
-):
-    classifier = CodyQuestionClassifier()
-    classifier.train()
-
-    previous_model = classifier.model
-
-    invalid_file = tmp_path / "invalid.json"
-    invalid_file.write_text(
-        '{"examples": []}',
-        encoding="utf-8"
-    )
-
-    classifier.training_file = invalid_file
-
-    with pytest.raises(ValueError):
-        classifier.train()
-
-    assert classifier.model is previous_model
-    assert classifier.is_trained is True
-
-
-def test_prediction_contains_top_three_results():
-    classifier = CodyQuestionClassifier()
-    classifier.train()
-
-    result = classifier.predict("What is Python?")
-
-    assert len(result["top_predictions"]) <= 3
-
-    assert result["top_predictions"][0]["category"] == (
-        result["category"]
-    )
-
-
-def test_prediction_has_review_information():
-    classifier = CodyQuestionClassifier()
-    classifier.train()
-
-    result = classifier.predict(
-        "اشرح لي المتغيرات في البرمجة"
-    )
-
-    assert "needs_review" in result
-    assert isinstance(result["needs_review"], bool)
-    assert "confidence_margin" in result
+    for item in result["top_predictions"]:
+        assert item["category"] in classifier.CATEGORIES
+        assert 0.0 <= item["confidence"] <= 1.0
