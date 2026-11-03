@@ -481,3 +481,4 @@ def test_missing_dataset_is_rejected(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         classifier.load_training_data()
+
