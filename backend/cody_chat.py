@@ -213,7 +213,10 @@ async def chat_with_cody(
 
     try:
         prediction = classifier.predict(question)
+
         category = prediction["category"]
+        confidence = prediction["confidence"]
+        needs_review = prediction["needs_review"]
 
     except Exception:
         raise HTTPException(
@@ -221,11 +224,22 @@ async def chat_with_cody(
             detail="Unable to classify the question."
         )
 
+    # Do not force Cody to use an unreliable ML classification.
+    if needs_review:
+        prompt_category = (
+            "uncertain classification. Do not assume a subject. "
+            "Understand the student's question using the question "
+            "and current page context. Ask one brief clarification "
+            "if the subject or intention is unclear."
+        )
+    else:
+        prompt_category = category
+
     payload = {
         "systemInstruction": {
             "parts": [{
                 "text": build_system_instruction(
-                    category,
+                    prompt_category,
                     request.page_context
                 )
             }]
@@ -300,8 +314,8 @@ async def chat_with_cody(
             "success": True,
             "answer": answer,
             "category": category,
-            "confidence": prediction["confidence"],
-            "needs_review": prediction["needs_review"]
+            "confidence": confidence,
+            "needs_review": needs_review
         }
 
     except HTTPException:
