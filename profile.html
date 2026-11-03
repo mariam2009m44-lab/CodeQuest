@@ -384,7 +384,6 @@
       line-height:1.8;
     }
 
-    /* قائمة الخيارات */
     .profile-menu {
       position:relative;
       display:flex;
@@ -443,7 +442,6 @@
       background:rgba(107,232,255,.1);
     }
 
-    /* تسجيل الخروج */
     .profile-logout-section {
       display:flex;
       justify-content:center;
@@ -547,6 +545,7 @@
 
 <body>
   <div class="space-app">
+
     <aside class="space-sidebar" id="sidebar">
       <a class="space-brand" href="dashboard.html">
         <span class="brand-mark">C</span>
@@ -605,7 +604,9 @@
               <span class="online-dot"></span>
               حسابك الشخصي
             </div>
+
             <h1>ملفي الشخصي</h1>
+
             <p>تابع رحلتك في عالم البرمجة وشاهد كل إنجازاتك في مكان واحد.</p>
 
             <div class="profile-top-actions">
@@ -613,6 +614,7 @@
                 <i class="ri-user-smile-line"></i>
                 تغيير الشخصية
               </a>
+
               <a class="profile-action" href="dashboard.html">
                 <i class="ri-home-5-line"></i>
                 لوحة التحكم
@@ -626,6 +628,7 @@
         </p>
 
         <section class="profile-header-card">
+
           <div class="avatar-container" id="userAvatar" aria-label="شخصيتك المختارة"></div>
 
           <div class="avatar-edit-hint">
@@ -648,6 +651,7 @@
           <div class="level-progress-wrapper">
             <div class="level-labels">
               <span>التقدم للمستوى التالي</span>
+
               <span class="xp-number">
                 <span id="currentXP">0</span> / 100 XP
               </span>
@@ -677,6 +681,7 @@
         </div>
 
         <section class="stats-grid" aria-label="إحصائيات الحساب">
+
           <article class="stat-box" style="--stat-color:#6be8ff">
             <div class="stat-icon"><i class="ri-flashlight-fill"></i></div>
             <h4>نقاط الخبرة</h4>
@@ -700,6 +705,7 @@
             <h4>مشروعاتي</h4>
             <div class="value js-completed-projects">0</div>
           </article>
+
         </section>
 
         <div class="profile-section-heading">
@@ -767,12 +773,12 @@
     import { db } from "./js/firebase-config.js";
 
     import {
+      doc,
+      getDoc,
       collection,
       getDocs,
       query,
-      where,
-      doc,
-      getDoc
+      where
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     import {
@@ -784,11 +790,27 @@
 
     const $ = id => document.getElementById(id);
 
-    let profileObserver = null;
+    const VALID_AVATARS = new Set([
+      "cody",
+      "layla",
+      "omar",
+      "sara",
+      "robo",
+      "nova"
+    ]);
 
-    function safeNumber(value) {
-            const number = Number(value);
-      return Number.isFinite(number) && number > 0 ? number : 0;
+        function safeNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number >= 0
+        ? number
+        : 0;
+    }
+
+    function setText(selector, value) {
+      const element = document.querySelector(selector);
+      if (element) {
+        element.textContent = String(value ?? 0);
+      }
     }
 
     function setStatus(message, isError = false) {
@@ -799,26 +821,22 @@
       status.classList.toggle("error", isError);
     }
 
-    function setText(selector, value) {
-      document.querySelectorAll(selector).forEach(element => {
-        element.textContent = value;
-      });
-    }
-
-    function updateProgress(xp) {
+    function updateLevelDetails(xpValue) {
+      const xp = safeNumber(xpValue);
       const level = Math.floor(xp / 100) + 1;
-      const currentLevelXP = xp % 100;
-      const progress = Math.min(currentLevelXP, 100);
+      const progress = xp % 100;
+      const remaining = 100 - progress;
 
       $("userLevel").textContent = level;
-      $("currentXP").textContent = currentLevelXP;
+      $("currentXP").textContent = progress;
 
-      const bar = $("xpProgressBar");
-      bar.style.width = `${progress}%`;
-      bar.setAttribute("aria-valuenow", progress);
+      const progressBar = $("xpProgressBar");
+
+      progressBar.style.width = `${progress}%`;
+      progressBar.setAttribute("aria-valuenow", String(progress));
 
       $("nextLevelNote").textContent =
-        `تحتاج ${100 - currentLevelXP} نقطة للوصول إلى المستوى التالي.`;
+        `متبقي ${remaining} نقطة خبرة للوصول إلى المستوى ${level + 1}.`;
     }
 
     function updateBadge(id, unlocked) {
@@ -829,227 +847,161 @@
 
       const state = badge.querySelector(".badge-state");
       if (state) {
-        state.textContent = unlocked ? "تم فتح الوسام!" : "لم يُفتح بعد";
+        state.textContent = unlocked
+          ? "تم فتح الوسام"
+          : "لم يُفتح بعد";
       }
     }
 
-    function updateBadges({ xp, lessons, projects, games }) {
-      updateBadge("badge-first-step", xp > 0 || lessons > 0);
-      updateBadge("badge-lessons", lessons >= 5);
-      updateBadge("badge-projects", projects >= 1);
-      updateBadge("badge-games", games >= 3);
+    function renderUserAvatar(avatarId) {
+      const container = $("userAvatar");
+
+      if (!container) return;
+
+      const selectedAvatar = VALID_AVATARS.has(avatarId)
+        ? avatarId
+        : "cody";
+
+      container.innerHTML = renderAvatar(selectedAvatar);
     }
 
-    async function loadAvatar(userData) {
-      const avatarContainer = $("userAvatar");
-      if (!avatarContainer) return;
-
-      const possibleIds = [
-        userData.avatarId,
-        userData.avatar,
-        userData.selectedAvatar
-      ];
-
-      const avatarId = possibleIds.find(value =>
-        typeof value === "string" && value.trim()
-      );
-
-      if (!avatarId) {
-        avatarContainer.innerHTML = "";
-        return;
-      }
-
+    async function getCompletedProjects(uid) {
       try {
-        avatarContainer.innerHTML = "";
-        const avatar = renderAvatar(avatarId);
-
-        if (avatar instanceof HTMLElement) {
-          avatarContainer.appendChild(avatar);
-        } else if (typeof avatar === "string") {
-          avatarContainer.innerHTML = avatar;
-        }
-      } catch (error) {
-        console.error("Avatar loading error:", error);
-        avatarContainer.innerHTML = "";
-      }
-    }
-
-    async function loadProjects(userId) {
-      try {
+        const projectsRef = collection(db, "projects");
         const projectsQuery = query(
-          collection(db, "projects"),
-          where("userId", "==", userId)
+          projectsRef,
+          where("userId", "==", uid)
         );
 
         const snapshot = await getDocs(projectsQuery);
+
         return snapshot.size;
       } catch (error) {
         console.error("Projects loading error:", error);
-        return null;
+        return 0;
       }
     }
 
-    async function loadGameRewards(userId) {
+    async function getGameRewards(uid) {
       try {
         const rewardsRef = collection(
           db,
           "users",
-          userId,
+          uid,
           "gameRewards"
         );
 
         const snapshot = await getDocs(rewardsRef);
+
         return snapshot.size;
       } catch (error) {
         console.error("Game rewards loading error:", error);
-        return null;
+        return 0;
       }
     }
 
-    async function loadProfile(user) {
+    async function loadProfile() {
       try {
         setStatus("جارٍ تحميل بيانات حسابك...");
+
+        const user = await requireUser();
+
+        if (!user || !user.uid) {
+          throw new Error("لم يتم العثور على حساب المستخدم.");
+        }
+
+        await App.init();
 
         const userRef = doc(db, "users", user.uid);
         const userSnapshot = await getDoc(userRef);
 
         if (!userSnapshot.exists()) {
-          setStatus("لم يتم العثور على بيانات الملف الشخصي.", true);
-          return;
+          throw new Error("بيانات الحساب غير موجودة في قاعدة البيانات.");
         }
 
         const userData = userSnapshot.data();
 
         const displayName =
           userData.displayName ||
-          userData.name ||
           user.displayName ||
           "متعلم Cody";
 
         const xp = safeNumber(userData.xp);
         const coins = safeNumber(userData.coins);
-        const lessons = safeNumber(
-          userData.completedLessons ??
-          userData.lessonsCompleted
-        );
+        const lessons = safeNumber(userData.completedLessons);
 
         setText(".js-user-name", displayName);
-        setText(".js-user-xp", xp.toLocaleString("ar-EG"));
-        setText(".js-user-coins", coins.toLocaleString("ar-EG"));
-        setText(".js-completed-lessons", lessons.toLocaleString("ar-EG"));
+        setText(".js-user-xp", xp);
+        setText(".js-user-coins", coins);
+        setText(".js-completed-lessons", lessons);
 
-        updateProgress(xp);
-        await loadAvatar(userData);
+        updateLevelDetails(xp);
 
-        const [projects, games] = await Promise.all([
-          loadProjects(user.uid),
-          loadGameRewards(user.uid)
+        renderUserAvatar(userData.activeAvatar);
+
+        const [projects, gameRewards] = await Promise.all([
+          getCompletedProjects(user.uid),
+          getGameRewards(user.uid)
         ]);
 
-        if (projects !== null) {
-          setText(
-            ".js-completed-projects",
-            projects.toLocaleString("ar-EG")
-          );
-        }
+        setText(".js-completed-projects", projects);
 
-        updateBadges({
-          xp,
-          lessons,
-          projects: projects ?? 0,
-          games: games ?? 0
-        });
+        updateBadge(
+          "badge-first-step",
+          xp > 0 || lessons > 0
+        );
 
-        if (projects === null || games === null) {
-          setStatus("تم تحميل بياناتك الأساسية، لكن تعذر تحميل بعض الإحصائيات.", true);
-        } else {
-          setStatus("تم تحميل بيانات ملفك الشخصي بنجاح.");
-        }
+        updateBadge(
+          "badge-lessons",
+          lessons >= 5
+        );
+
+        updateBadge(
+          "badge-projects",
+          projects >= 1
+        );
+
+        updateBadge(
+          "badge-games",
+          gameRewards >= 1
+        );
+
+        setStatus("تم تحميل بيانات حسابك بنجاح.");
 
       } catch (error) {
         console.error("Profile loading error:", error);
-        setStatus("حدث خطأ أثناء تحميل بيانات حسابك. حاولي تحديث الصفحة.", true);
+
+        setStatus(
+          error.message || "حدث خطأ أثناء تحميل بيانات الحساب.",
+          true
+        );
       }
     }
 
-    function setupProfileMenu() {
-      const menu = $("profileMenu");
-      const button = $("profileMenuButton");
+    // فتح وإغلاق قائمة الخيارات
+    const profileMenu = $("profileMenu");
+    const profileMenuButton = $("profileMenuButton");
 
-      if (!menu || !button) return;
+    if (profileMenu && profileMenuButton) {
+      profileMenuButton.addEventListener("click", () => {
+        const isOpen = profileMenu.classList.toggle("open");
 
-      button.addEventListener("click", event => {
-        event.stopPropagation();
-
-        const isOpen = menu.classList.toggle("open");
-        button.setAttribute("aria-expanded", String(isOpen));
+        profileMenuButton.setAttribute(
+          "aria-expanded",
+          String(isOpen)
+        );
       });
 
       document.addEventListener("click", event => {
-        if (!menu.contains(event.target)) {
-          menu.classList.remove("open");
-          button.setAttribute("aria-expanded", "false");
-        }
-      });
-
-      document.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
-          menu.classList.remove("open");
-          button.setAttribute("aria-expanded", "false");
+        if (!profileMenu.contains(event.target)) {
+          profileMenu.classList.remove("open");
+          profileMenuButton.setAttribute("aria-expanded", "false");
         }
       });
     }
 
-    async function setupLogout() {
-      const logoutButton = $("logoutButton");
-      if (!logoutButton) return;
-
-      logoutButton.addEventListener("click", async event => {
-        event.preventDefault();
-
-        logoutButton.style.pointerEvents = "none";
-        logoutButton.style.opacity = ".6";
-
-        try {
-          const { auth } = await import("./js/firebase-config.js");
-          const { signOut } = await import(
-            "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"
-          );
-
-          await signOut(auth);
-          window.location.href = "login.html";
-        } catch (error) {
-          console.error("Logout error:", error);
-          logoutButton.style.pointerEvents = "";
-          logoutButton.style.opacity = "";
-          setStatus("تعذر تسجيل الخروج. حاولي مرة أخرى.", true);
-        }
-      });
-    }
-
-    async function initializeProfile() {
-      setupProfileMenu();
-      await setupLogout();
-
-      try {
-        const user = await requireUser();
-
-        if (!user || !user.uid) {
-          setStatus("يجب تسجيل الدخول أولًا.", true);
-          return;
-        }
-
-        await App.init();
-
-        await loadProfile(user);
-
-      } catch (error) {
-        console.error("Profile initialization error:", error);
-        setStatus("تعذر التحقق من حسابك. سجّلي الدخول مرة أخرى.", true);
-      }
-    }
-
-    initializeProfile();
+    // بدء تحميل الملف الشخصي
+    loadProfile();
   </script>
 </body>
 </html>
