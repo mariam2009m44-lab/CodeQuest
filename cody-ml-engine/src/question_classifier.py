@@ -1,15 +1,12 @@
-
-
 import json
 import re
 from pathlib import Path
 from typing import Any
 
 import joblib
-
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline, FeatureUnion
 
 
 class CodyQuestionClassifier:
@@ -22,10 +19,9 @@ class CodyQuestionClassifier:
         "code_debugging",
     }
 
-    # A prediction is reviewed if confidence is low
-    # or if the top two categories are too close.
     CONFIDENCE_THRESHOLD = 0.45
-    MIN_CONFIDENCE_MARGIN = 0.12
+    MARGIN_THRESHOLD = 0.12
+    MIN_EXAMPLES_PER_CATEGORY = 2
 
     def __init__(self, training_file: str | Path | None = None):
         self.training_file = (
@@ -41,23 +37,18 @@ class CodyQuestionClassifier:
 
     @staticmethod
     def normalize_text(text: str) -> str:
-        if not isinstance(text, str):
-            raise TypeError("Text must be a string.")
-
+        """Normalize Arabic and English text before training or prediction."""
         text = text.strip().lower()
 
-        # Convert Arabic digits into standard digits.
         arabic_digits = str.maketrans(
             "٠١٢٣٤٥٦٧٨٩",
-            "0123456789"
+            "0123456789",
         )
         text = text.translate(arabic_digits)
 
-        # Remove Arabic diacritics and tatweel.
         text = re.sub(r"[\u064B-\u065F\u0670]", "", text)
         text = text.replace("ـ", "")
 
-        # Normalize common Arabic letter variations.
         text = (
             text.replace("أ", "ا")
             .replace("إ", "ا")
@@ -65,7 +56,7 @@ class CodyQuestionClassifier:
             .replace("ى", "ي")
         )
 
-        # Normalize repeated whitespace.
+        # Normalize repeated whitespace without removing useful punctuation.
         text = re.sub(r"\s+", " ", text)
 
         return text.strip()
@@ -88,10 +79,7 @@ class CodyQuestionClassifier:
                 "or contain an examples list."
             )
 
-        texts: list[str] = []
-        labels: list[str] = []
-
-        seen_examples: dict[str, str] = {}
+        unique_examples: dict[str, str] = {}
 
         for index, item in enumerate(data):
             if not isinstance(item, dict):
@@ -99,112 +87,125 @@ class CodyQuestionClassifier:
                     f"Invalid dataset item at index {index}."
                 )
 
-            text = item.get("text") or item.get("question")
-            label = item.get("label") or item.get("category")
+            question = item.get("question") or item.get("text")
+            category = item.get("category") or item.get("label")
 
-            if not isinstance(text, str) or not text.strip():
+            if not isinstance(question, str) or not question.strip():
                 raise ValueError(
                     f"Invalid question at index {index}."
                 )
 
-            if not isinstance(label, str):
+            if not isinstance(category, str) or not category.strip():
                 raise ValueError(
                     f"Invalid category at index {index}."
                 )
 
-            label = label.strip()
+            category = category.strip()
 
-            if label not in self.CATEGORIES:
+            if category not in self.CATEGORIES:
                 raise ValueError(
-                    f"Unknown category at index {index}: {label}"
+                    f"Unknown category at index {index}: {category}"
                 )
 
-            normalized_text = self.normalize_text(text)
+            normalized_question = self.normalize_text(question)
 
-            if not normalized_text:
+            if not normalized_question:
                 raise ValueError(
-                    f"Empty normalized question at index {index}."
+                    f"Question at index {index} is empty after normalization."
                 )
 
-            # Avoid the same normalized question having
-            # conflicting labels.
-            previous_label = seen_examples.get(normalized_text)
+            # Identical normalized questions cannot have different labels.
+            if normalized_question in unique_examples:
+                previous_category = unique_examples[normalized_question]
 
-            if previous_label is not None:
-                if previous_label != label:
+                if previous_category != category:
                     raise ValueError(
-                        "Conflicting labels for duplicate question "
-                        f"at index {index}."
+                        "Conflicting duplicate question found at "
+                        f"index {index}: '{question}'. "
+                        f"Existing category: {previous_category}; "
+                        f"new category: {category}."
                     )
 
+                # Same question and same category: skip duplicate.
                 continue
 
-            seen_examples[normalized_text] = label
+            unique_examples[normalized_question] = category
 
-            texts.append(normalized_text)
-            labels.append(label)
-
-        if len(set(labels)) < 2:
-            raise ValueError(
-                "At least two categories are required."
-            )
-
-        category_counts = {
-            category: labels.count(category)
-            for category in set(labels)
+        category_counts: dict[str, int] = {
+            category: 0 for category in self.CATEGORIES
         }
 
-        for category, count in category_counts.items():
-            if count < 2:
-                raise ValueError(
-                    f"Category '{category}' needs at least "
-                    "2 training examples."
-                )
+        for category in unique_examples.values():
+            category_counts[category] += 1
+
+        missing_categories = [
+            category
+            for category, count in category_counts.items()
+            if count < self.MIN_EXAMPLES_PER_CATEGORY
+        ]
+
+        if missing_categories:
+            details = ", ".join(
+                f"{category}: {category_counts[category]}"
+                for category in sorted(missing_categories)
+            )
+            raise ValueError(
+                "Each category must contain at least "
+                f"{self.MIN_EXAMPLES_PER_CATEGORY} unique examples. "
+                f"Insufficient data: {details}"
+            )
+
+        texts = list(unique_examples.keys())
+        labels = list(unique_examples.values())
 
         return texts, labels
 
     def build_model(self) -> Pipeline:
-        text_features = FeatureUnion([
-            (
-                "character_features",
-                TfidfVectorizer(
-                    analyzer="char",
-                    ngram_range=(2, 5),
-                    max_features=15000,
-                    sublinear_tf=True,
+        text_features = FeatureUnion(
+            [
+                (
+                    "character_features",
+                    TfidfVectorizer(
+                        analyzer="char",
+                        ngram_range=(2, 5),
+                        max_features=20000,
+                        sublinear_tf=True,
+                    ),
                 ),
-            ),
-            (
-                "word_features",
-                TfidfVectorizer(
-                    analyzer="word",
-                    ngram_range=(1, 2),
-                    max_features=10000,
-                    sublinear_tf=True,
-                    token_pattern=r"(?u)\b\w+\b",
+                (
+                    "word_features",
+                    TfidfVectorizer(
+                        analyzer="word",
+                        ngram_range=(1, 2),
+                        max_features=15000,
+                        sublinear_tf=True,
+                        token_pattern=r"(?u)\b\w+\b",
+                    ),
                 ),
-            ),
-        ])
+            ]
+        )
 
-        return Pipeline([
-            ("features", text_features),
-            (
-                "classifier",
-                LogisticRegression(
-                    max_iter=2000,
-                    class_weight="balanced",
-                    random_state=42,
+        return Pipeline(
+            [
+                ("features", text_features),
+                (
+                    "classifier",
+                    LogisticRegression(
+                        max_iter=2000,
+                        class_weight="balanced",
+                        random_state=42,
+                    ),
                 ),
-            ),
-        ])
+            ]
+        )
 
     def train(self) -> dict[str, Any]:
         texts, labels = self.load_training_data()
 
+        # Train a separate model first. Keep the old model if training fails.
         new_model = self.build_model()
         new_model.fit(texts, labels)
 
-        # Assign only after successful training.
         self.model = new_model
         self.is_trained = True
 
@@ -234,9 +235,7 @@ class CodyQuestionClassifier:
         normalized_question = self.normalize_text(clean_question)
 
         if not normalized_question:
-            raise ValueError(
-                "Question contains no usable text."
-            )
+            raise ValueError("Question cannot be empty after normalization.")
 
         probabilities = self.model.predict_proba(
             [normalized_question]
@@ -246,34 +245,32 @@ class CodyQuestionClassifier:
 
         ranked_indices = probabilities.argsort()[::-1]
 
+        top_predictions = [
+            {
+                "category": str(classes[index]),
+                "confidence": round(float(probabilities[index]), 4),
+            }
+            for index in ranked_indices[:3]
+        ]
+
         best_index = int(ranked_indices[0])
         confidence = float(probabilities[best_index])
         category = str(classes[best_index])
 
         if len(ranked_indices) > 1:
             second_index = int(ranked_indices[1])
+            second_category = str(classes[second_index])
             second_confidence = float(probabilities[second_index])
             confidence_margin = confidence - second_confidence
-            second_category = str(classes[second_index])
         else:
+            second_category = None
             second_confidence = 0.0
             confidence_margin = confidence
-            second_category = None
 
         needs_review = (
             confidence < self.CONFIDENCE_THRESHOLD
-            or confidence_margin < self.MIN_CONFIDENCE_MARGIN
+            or confidence_margin < self.MARGIN_THRESHOLD
         )
-
-        top_predictions = [
-            {
-                "category": str(classes[int(index)]),
-                "confidence": round(
-                    float(probabilities[int(index)]), 4
-                ),
-            }
-            for index in ranked_indices[:3]
-        ]
 
         return {
             "success": True,
@@ -289,12 +286,10 @@ class CodyQuestionClassifier:
 
     def save_model(
         self,
-        output_file: str | Path | None = None
+        output_file: str | Path | None = None,
     ) -> Path:
         if not self.is_trained or self.model is None:
-            raise RuntimeError(
-                "Train the model before saving it."
-            )
+            raise RuntimeError("Train the model before saving it.")
 
         destination = (
             Path(output_file)
@@ -304,12 +299,20 @@ class CodyQuestionClassifier:
             / "cody_question_classifier.joblib"
         )
 
-        destination.parent.mkdir(
-            parents=True,
-            exist_ok=True
+        destination.parent.mkdir(parents=True, exist_ok=True)
+
+        # Save to a temporary file first to avoid replacing a valid model
+        # with an incomplete file if saving is interrupted.
+        temporary_path = destination.with_name(
+            destination.name + ".tmp"
         )
 
-        joblib.dump(self.model, destination)
+        try:
+            joblib.dump(self.model, temporary_path)
+            temporary_path.replace(destination)
+        finally:
+            if temporary_path.exists():
+                temporary_path.unlink()
 
         return destination
 
@@ -317,9 +320,7 @@ class CodyQuestionClassifier:
         path = Path(model_file)
 
         if not path.is_file():
-            raise FileNotFoundError(
-                f"Model not found: {path}"
-            )
+            raise FileNotFoundError(f"Model not found: {path}")
 
         loaded_model = joblib.load(path)
 
@@ -342,7 +343,7 @@ class CodyQuestionClassifier:
 
         if not loaded_categories.issubset(self.CATEGORIES):
             raise ValueError(
-                "Model contains unsupported categories."
+                "Invalid model: it contains unsupported categories."
             )
 
         self.model = loaded_model
@@ -357,17 +358,12 @@ def main() -> None:
 
         print("\n=== Cody ML Engine ===")
         print(result["message"])
-        print(
-            f"Training examples: {result['training_examples']}"
-        )
-
-        print("\nCategory distribution:")
-
-        for category, count in result["category_counts"].items():
-            print(f"  {category}: {count}")
+        print(f"Training examples: {result['training_examples']}")
+        print(f"Categories: {', '.join(result['categories'])}")
+        print(f"Category counts: {result['category_counts']}")
 
         saved_path = classifier.save_model()
-        print(f"\nModel saved at: {saved_path}")
+        print(f"Model saved at: {saved_path}")
 
         while True:
             question = input(
@@ -384,29 +380,25 @@ def main() -> None:
 
             prediction = classifier.predict(question)
 
-            print(f"\nCategory: {prediction['category']}")
+            print(f"Category: {prediction['category']}")
+            print(f"Confidence: {prediction['confidence']:.2%}")
             print(
-                f"Confidence: {prediction['confidence']:.2%}"
+                f"Second category: {prediction['second_category']}"
             )
             print(
                 f"Confidence margin: "
                 f"{prediction['confidence_margin']:.2%}"
             )
 
-            print("\nTop predictions:")
+            if prediction["needs_review"]:
+                print("This question needs further review.")
 
+            print("Top predictions:")
             for item in prediction["top_predictions"]:
                 print(
-                    f"  {item['category']}: "
+                    f"- {item['category']}: "
                     f"{item['confidence']:.2%}"
                 )
-
-            if prediction["needs_review"]:
-                print(
-                    "\nThis question needs further review."
-                )
-            else:
-                print("\nClassification accepted.")
 
     except (
         FileNotFoundError,
