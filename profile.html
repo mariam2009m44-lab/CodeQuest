@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
-  <link rel="stylesheet" href="css/avatar-display.css">
 
   <style>
     :root {
@@ -385,7 +384,7 @@
       line-height:1.8;
     }
 
-    /* قائمة الخيارات أعلى صفحة الملف الشخصي */
+    /* قائمة الخيارات */
     .profile-menu {
       position:relative;
       display:flex;
@@ -444,7 +443,7 @@
       background:rgba(107,232,255,.1);
     }
 
-    /* تسجيل الخروج أسفل محتوى الملف الشخصي */
+    /* تسجيل الخروج */
     .profile-logout-section {
       display:flex;
       justify-content:center;
@@ -785,297 +784,272 @@
 
     const $ = id => document.getElementById(id);
 
-let profileUser = null;
-let profileObserver = null;
-let projectsObserver = null;
-let lessonsObserver = null;
+    let profileObserver = null;
 
-function safeNumber(value) {
-  const number = Number(value);
-
-  return Number.isFinite(number) && number >= 0
-    ? Math.floor(number)
-    : 0;
-}
-
-function setStatus(message, isError = false) {
-  const status = $("profileStatus");
-  if (!status) return;
-
-  status.textContent = message;
-  status.classList.toggle("error", isError);
-}
-
-function unlockBadge(id, condition) {
-  const badge = $(id);
-  if (!badge) return;
-
-  const unlocked = Boolean(condition);
-  badge.classList.toggle("unlocked", unlocked);
-
-  const state = badge.querySelector(".badge-state");
-
-  if (state) {
-    state.textContent = unlocked
-      ? "تم فتح الوسام"
-      : "لم يُفتح بعد";
-  }
-}
-
-async function loadAvatar(user) {
-  let avatarId = "cody";
-
-  try {
-    const userRef = doc(db, "users", user.uid);
-    const snapshot = await getDoc(userRef);
-
-    if (snapshot.exists()) {
-      avatarId = snapshot.data().activeAvatar || "cody";
-    }
-  } catch (error) {
-    console.warn("Avatar loading error:", error);
-  }
-
-  const validIds = [
-    "cody",
-    "layla",
-    "omar",
-    "sara",
-    "robo",
-    "nova"
-  ];
-
-  if (!validIds.includes(avatarId)) {
-    avatarId = "cody";
-  }
-
-  const container = $("userAvatar");
-
-  if (container) {
-    container.innerHTML = renderAvatar(avatarId);
-    container.setAttribute(
-      "aria-label",
-      "الشخصية المختارة في Cody Academy"
-    );
-  }
-}
-
-function updateLevelDetails() {
-  const xp = safeNumber(
-    document.querySelector(".js-user-xp")?.textContent
-  );
-
-  const level = Math.floor(xp / 100) + 1;
-  const xpInLevel = xp % 100;
-  const remaining = 100 - xpInLevel;
-
-  $("userLevel").textContent = level;
-  $("currentXP").textContent = xpInLevel;
-
-  const bar = $("xpProgressBar");
-
-  if (bar) {
-    bar.style.width = `${xpInLevel}%`;
-    bar.setAttribute("aria-valuenow", String(xpInLevel));
-  }
-
-  $("nextLevelNote").textContent =
-    remaining === 100
-      ? "ابدأ جمع نقاط الخبرة للوصول للمستوى التالي."
-      : `متبقي ${remaining} نقطة خبرة للمستوى التالي.`;
-}
-
-function updateBadges() {
-  const xp = safeNumber(
-    document.querySelector(".js-user-xp")?.textContent
-  );
-
-  const lessons = safeNumber(
-    document.querySelector(".js-completed-lessons")?.textContent
-  );
-
-  const projects = safeNumber(
-    document.querySelector(".js-completed-projects")?.textContent
-  );
-
-  unlockBadge("badge-first-step", xp > 0);
-  unlockBadge("badge-lessons", lessons > 0);
-  unlockBadge("badge-projects", projects > 0);
-}
-
-async function loadProjectsAndRewards(user) {
-  try {
-    const projectsRef = collection(db, "projects");
-
-    const projectsQuery = query(
-      projectsRef,
-      where("userId", "==", user.uid)
-    );
-
-    const projectsSnapshot = await getDocs(projectsQuery);
-    const projectsCount = projectsSnapshot.size;
-
-    const projectsElement = document.querySelector(
-      ".js-completed-projects"
-    );
-
-    if (projectsElement) {
-      projectsElement.textContent = String(projectsCount);
+    function safeNumber(value) {
+            const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : 0;
     }
 
-    const rewardsRef = collection(
-      db,
-      "users",
-      user.uid,
-      "gameRewards"
-    );
+    function setStatus(message, isError = false) {
+      const status = $("profileStatus");
+      if (!status) return;
 
-    const rewardsSnapshot = await getDocs(rewardsRef);
-    const hasGameRewards = !rewardsSnapshot.empty;
-
-    unlockBadge("badge-games", hasGameRewards);
-
-    updateBadges();
-
-  } catch (error) {
-    console.error("Projects and rewards loading error:", error);
-
-    setStatus(
-      "تم تحميل الحساب، لكن تعذر تحميل بعض الإحصائيات.",
-      true
-    );
-  }
-}
-
-function observeProfileStats() {
-  const stats = [
-    ".js-user-xp",
-    ".js-completed-lessons",
-    ".js-completed-projects"
-  ];
-
-  const elements = stats
-    .map(selector => document.querySelector(selector))
-    .filter(Boolean);
-
-  if (!elements.length) return;
-
-  profileObserver?.disconnect();
-
-  profileObserver = new MutationObserver(() => {
-    updateLevelDetails();
-    updateBadges();
-  });
-
-  elements.forEach(element => {
-    profileObserver.observe(element, {
-      childList: true,
-      characterData: true,
-      subtree: true
-    });
-  });
-
-  updateLevelDetails();
-  updateBadges();
-}
-
-async function loadProfile() {
-  try {
-    setStatus("جارٍ تحميل بيانات حسابك...");
-
-    const user = await requireUser();
-
-    if (!user || !user.uid) {
-      throw new Error("لم يتم العثور على حساب المستخدم.");
+      status.textContent = message;
+      status.classList.toggle("error", isError);
     }
 
-    profileUser = user;
-
-    await App.init();
-
-    await loadAvatar(user);
-    await loadProjectsAndRewards(user);
-
-    observeProfileStats();
-
-    setStatus("تم تحميل ملفك الشخصي بنجاح.");
-
-  } catch (error) {
-    console.error("Profile loading error:", error);
-
-    setStatus(
-      "حدثت مشكلة أثناء تحميل الملف الشخصي. حاول تسجيل الدخول مرة أخرى.",
-      true
-    );
-
-    const nameElement = document.querySelector(".js-user-name");
-
-    if (nameElement) {
-      nameElement.textContent = "تعذر تحميل الحساب";
+    function setText(selector, value) {
+      document.querySelectorAll(selector).forEach(element => {
+        element.textContent = value;
+      });
     }
-  }
-}
 
-// قائمة الخيارات
-const profileMenu = $("profileMenu");
-const profileMenuButton = $("profileMenuButton");
+    function updateProgress(xp) {
+      const level = Math.floor(xp / 100) + 1;
+      const currentLevelXP = xp % 100;
+      const progress = Math.min(currentLevelXP, 100);
 
-profileMenuButton?.addEventListener("click", () => {
-  const isOpen = profileMenu.classList.toggle("open");
+      $("userLevel").textContent = level;
+      $("currentXP").textContent = currentLevelXP;
 
-  profileMenuButton.setAttribute(
-    "aria-expanded",
-    String(isOpen)
-  );
-});
+      const bar = $("xpProgressBar");
+      bar.style.width = `${progress}%`;
+      bar.setAttribute("aria-valuenow", progress);
 
-document.addEventListener("click", event => {
-  if (
-    profileMenu &&
-    !profileMenu.contains(event.target)
-  ) {
-    profileMenu.classList.remove("open");
+      $("nextLevelNote").textContent =
+        `تحتاج ${100 - currentLevelXP} نقطة للوصول إلى المستوى التالي.`;
+    }
 
-    profileMenuButton?.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-  }
-});
+    function updateBadge(id, unlocked) {
+      const badge = $(id);
+      if (!badge) return;
 
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && profileMenu) {
-    profileMenu.classList.remove("open");
+      badge.classList.toggle("unlocked", Boolean(unlocked));
 
-    profileMenuButton?.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-  }
-});
+      const state = badge.querySelector(".badge-state");
+      if (state) {
+        state.textContent = unlocked ? "تم فتح الوسام!" : "لم يُفتح بعد";
+      }
+    }
 
-// تحميل الملف الشخصي
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    loadProfile,
-    { once: true }
-  );
-} else {
-  loadProfile();
-}
+    function updateBadges({ xp, lessons, projects, games }) {
+      updateBadge("badge-first-step", xp > 0 || lessons > 0);
+      updateBadge("badge-lessons", lessons >= 5);
+      updateBadge("badge-projects", projects >= 1);
+      updateBadge("badge-games", games >= 3);
+    }
 
-// تنظيف المراقبات عند مغادرة الصفحة
-window.addEventListener(
-  "pagehide",
-  () => {
-    profileObserver?.disconnect();
-    projectsObserver?.disconnect();
-    lessonsObserver?.disconnect();
-  },
-  { once: true }
-);
+    async function loadAvatar(userData) {
+      const avatarContainer = $("userAvatar");
+      if (!avatarContainer) return;
 
-</script>
+      const possibleIds = [
+        userData.avatarId,
+        userData.avatar,
+        userData.selectedAvatar
+      ];
+
+      const avatarId = possibleIds.find(value =>
+        typeof value === "string" && value.trim()
+      );
+
+      if (!avatarId) {
+        avatarContainer.innerHTML = "";
+        return;
+      }
+
+      try {
+        avatarContainer.innerHTML = "";
+        const avatar = renderAvatar(avatarId);
+
+        if (avatar instanceof HTMLElement) {
+          avatarContainer.appendChild(avatar);
+        } else if (typeof avatar === "string") {
+          avatarContainer.innerHTML = avatar;
+        }
+      } catch (error) {
+        console.error("Avatar loading error:", error);
+        avatarContainer.innerHTML = "";
+      }
+    }
+
+    async function loadProjects(userId) {
+      try {
+        const projectsQuery = query(
+          collection(db, "projects"),
+          where("userId", "==", userId)
+        );
+
+        const snapshot = await getDocs(projectsQuery);
+        return snapshot.size;
+      } catch (error) {
+        console.error("Projects loading error:", error);
+        return null;
+      }
+    }
+
+    async function loadGameRewards(userId) {
+      try {
+        const rewardsRef = collection(
+          db,
+          "users",
+          userId,
+          "gameRewards"
+        );
+
+        const snapshot = await getDocs(rewardsRef);
+        return snapshot.size;
+      } catch (error) {
+        console.error("Game rewards loading error:", error);
+        return null;
+      }
+    }
+
+    async function loadProfile(user) {
+      try {
+        setStatus("جارٍ تحميل بيانات حسابك...");
+
+        const userRef = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userRef);
+
+        if (!userSnapshot.exists()) {
+          setStatus("لم يتم العثور على بيانات الملف الشخصي.", true);
+          return;
+        }
+
+        const userData = userSnapshot.data();
+
+        const displayName =
+          userData.displayName ||
+          userData.name ||
+          user.displayName ||
+          "متعلم Cody";
+
+        const xp = safeNumber(userData.xp);
+        const coins = safeNumber(userData.coins);
+        const lessons = safeNumber(
+          userData.completedLessons ??
+          userData.lessonsCompleted
+        );
+
+        setText(".js-user-name", displayName);
+        setText(".js-user-xp", xp.toLocaleString("ar-EG"));
+        setText(".js-user-coins", coins.toLocaleString("ar-EG"));
+        setText(".js-completed-lessons", lessons.toLocaleString("ar-EG"));
+
+        updateProgress(xp);
+        await loadAvatar(userData);
+
+        const [projects, games] = await Promise.all([
+          loadProjects(user.uid),
+          loadGameRewards(user.uid)
+        ]);
+
+        if (projects !== null) {
+          setText(
+            ".js-completed-projects",
+            projects.toLocaleString("ar-EG")
+          );
+        }
+
+        updateBadges({
+          xp,
+          lessons,
+          projects: projects ?? 0,
+          games: games ?? 0
+        });
+
+        if (projects === null || games === null) {
+          setStatus("تم تحميل بياناتك الأساسية، لكن تعذر تحميل بعض الإحصائيات.", true);
+        } else {
+          setStatus("تم تحميل بيانات ملفك الشخصي بنجاح.");
+        }
+
+      } catch (error) {
+        console.error("Profile loading error:", error);
+        setStatus("حدث خطأ أثناء تحميل بيانات حسابك. حاولي تحديث الصفحة.", true);
+      }
+    }
+
+    function setupProfileMenu() {
+      const menu = $("profileMenu");
+      const button = $("profileMenuButton");
+
+      if (!menu || !button) return;
+
+      button.addEventListener("click", event => {
+        event.stopPropagation();
+
+        const isOpen = menu.classList.toggle("open");
+        button.setAttribute("aria-expanded", String(isOpen));
+      });
+
+      document.addEventListener("click", event => {
+        if (!menu.contains(event.target)) {
+          menu.classList.remove("open");
+          button.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          menu.classList.remove("open");
+          button.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
+    async function setupLogout() {
+      const logoutButton = $("logoutButton");
+      if (!logoutButton) return;
+
+      logoutButton.addEventListener("click", async event => {
+        event.preventDefault();
+
+        logoutButton.style.pointerEvents = "none";
+        logoutButton.style.opacity = ".6";
+
+        try {
+          const { auth } = await import("./js/firebase-config.js");
+          const { signOut } = await import(
+            "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"
+          );
+
+          await signOut(auth);
+          window.location.href = "login.html";
+        } catch (error) {
+          console.error("Logout error:", error);
+          logoutButton.style.pointerEvents = "";
+          logoutButton.style.opacity = "";
+          setStatus("تعذر تسجيل الخروج. حاولي مرة أخرى.", true);
+        }
+      });
+    }
+
+    async function initializeProfile() {
+      setupProfileMenu();
+      await setupLogout();
+
+      try {
+        const user = await requireUser();
+
+        if (!user || !user.uid) {
+          setStatus("يجب تسجيل الدخول أولًا.", true);
+          return;
+        }
+
+        await App.init();
+
+        await loadProfile(user);
+
+      } catch (error) {
+        console.error("Profile initialization error:", error);
+        setStatus("تعذر التحقق من حسابك. سجّلي الدخول مرة أخرى.", true);
+      }
+    }
+
+    initializeProfile();
+  </script>
 </body>
 </html>
