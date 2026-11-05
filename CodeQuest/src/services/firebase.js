@@ -5,7 +5,7 @@ export {
   firebaseApp,
   firebaseConfig,
   functions
-} from "../../js/firebase-config.js";
+} from "../../../js/firebase-config.js";
 
 export {
   authError,
@@ -18,4 +18,4 @@ export {
   getCurrentUser,
   saveLessonProgress,
   getLessonProgress
-} from "../../js/auth.js";
+} from "../../../js/auth.js";
