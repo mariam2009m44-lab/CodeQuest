@@ -1,29 +1,38 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#050B1F">
-  <title>الإعدادات | CodeQuest</title>
+  <meta name="theme-color" content="#080B18">
+  <meta name="description" content="إعدادات منصة Cody Academy">
+
+  <title>الإعدادات | Cody Academy</title>
+
+  <!-- تطبيق الوضع المحفوظ قبل ظهور الصفحة -->
+  <script src="./js/theme.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/global.css">
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      min-height: 100vh;
+      padding: 28px 18px;
+      font-family: 'Cairo', sans-serif;
       background: var(--bg-deep);
       color: var(--text-primary);
-      padding: var(--space-l);
-      font-family: 'Cairo', sans-serif;
-      transition: background-color .2s ease, color .2s ease;
     }
 
     .container {
       width: 100%;
-      max-width: 800px;
+      max-width: 820px;
       margin: 0 auto;
     }
 
@@ -33,45 +42,64 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 16px;
-      margin-bottom: var(--space-xl);
+      margin-bottom: 28px;
     }
 
     .header h1 {
       margin: 0;
       font-size: 2rem;
+      font-weight: 900;
       color: var(--text-primary);
     }
 
-    .settings-group {
-      background: var(--bg-panel);
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
       border: 1px solid var(--border-soft);
-      border-radius: var(--radius-card);
-      margin-bottom: var(--space-m);
+      border-radius: 12px;
+      background: var(--bg-panel);
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .settings-group {
+      margin-bottom: 20px;
       overflow: hidden;
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      background: var(--bg-panel);
     }
 
     .settings-group-title {
-      padding: 15px 20px;
-      background: rgba(0, 217, 255, .05);
-      color: var(--primary);
-      font-weight: 700;
-      border-bottom: 1px solid var(--border-soft);
       display: flex;
       align-items: center;
       gap: 10px;
+      padding: 17px 20px;
+      color: var(--primary);
+      background: rgba(0, 217, 255, .05);
+      border-bottom: 1px solid var(--border-soft);
+      font-weight: 800;
+    }
+
+    .settings-group-title i {
+      font-size: 21px;
     }
 
     .setting-row {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 16px;
       padding: 20px;
       border-bottom: 1px solid var(--border-soft);
     }
 
     .setting-row:last-child {
-      border-bottom: none;
+      border-bottom: 0;
     }
 
     .setting-info {
@@ -79,24 +107,25 @@
     }
 
     .setting-info h3 {
-      color: var(--text-primary);
-      font-size: 1.05rem;
       margin: 0 0 5px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-weight: 800;
     }
 
     .setting-info p {
-      color: var(--text-muted);
-      font-size: .9rem;
-      line-height: 1.7;
       margin: 0;
+      color: var(--text-muted);
+      font-size: .88rem;
+      line-height: 1.8;
     }
 
     .toggle-switch {
       position: relative;
       display: inline-block;
-      flex: 0 0 50px;
-      width: 50px;
-      height: 28px;
+      flex: 0 0 52px;
+      width: 52px;
+      height: 29px;
     }
 
     .toggle-switch input {
@@ -108,24 +137,24 @@
 
     .slider {
       position: absolute;
-      cursor: pointer;
       inset: 0;
-      background: var(--bg-deep);
+      cursor: pointer;
       border: 1px solid var(--border-soft);
+      border-radius: 30px;
+      background: var(--bg-deep);
       transition: .25s;
-      border-radius: 34px;
     }
 
     .slider::before {
       position: absolute;
       content: "";
-      height: 20px;
-      width: 20px;
+      width: 21px;
+      height: 21px;
       left: 3px;
       bottom: 3px;
+      border-radius: 50%;
       background: var(--text-muted);
       transition: .25s;
-      border-radius: 50%;
     }
 
     .toggle-switch input:checked + .slider {
@@ -134,8 +163,8 @@
     }
 
     .toggle-switch input:checked + .slider::before {
-      transform: translateX(22px);
-      background: var(--bg-deep);
+      transform: translateX(23px);
+      background: white;
     }
 
     .toggle-switch input:focus-visible + .slider {
@@ -144,7 +173,7 @@
     }
 
     .toggle-switch input:disabled + .slider {
-      opacity: .55;
+      opacity: .5;
       cursor: not-allowed;
     }
 
@@ -156,11 +185,6 @@
       text-align: right;
       font: inherit;
       cursor: pointer;
-    }
-
-    .setting-action:focus-visible {
-      outline: 2px solid var(--primary);
-      outline-offset: -3px;
     }
 
     .setting-action-inner {
@@ -176,27 +200,27 @@
     }
 
     .btn-logout {
-      width: 100%;
-      padding: 15px;
-      background: rgba(255, 107, 107, .1);
-      border: 1px solid var(--accent-coral);
-      color: var(--accent-coral);
-      border-radius: var(--radius-card);
-      font-weight: 700;
-      font-size: 1.05rem;
-      cursor: pointer;
-      transition: .2s;
-      font-family: 'Cairo', sans-serif;
-      margin-top: var(--space-l);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
+      width: 100%;
+      margin-top: 26px;
+      padding: 15px;
+      border: 1px solid var(--danger);
+      border-radius: 15px;
+      background: rgba(255, 107, 107, .08);
+      color: var(--danger);
+      font-family: 'Cairo', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .2s;
     }
 
     .btn-logout:hover {
-      background: var(--accent-coral);
-      color: var(--bg-deep);
+      background: var(--danger);
+      color: white;
     }
 
     .btn-logout:disabled {
@@ -205,73 +229,51 @@
     }
 
     .page-status {
-      min-height: 24px;
-      margin: 12px 0 0;
+      min-height: 25px;
+      margin-top: 14px;
       color: var(--text-muted);
-      font-size: .9rem;
       text-align: center;
-    }
-
-    /* Light theme */
-    html[data-theme="light"] {
-      color-scheme: light;
-      --bg-deep: #F7F9FF;
-      --bg-panel: #FFFFFF;
-      --text-primary: #1E293B;
-      --text-muted: #64748B;
-      --border-soft: #DCE3EF;
-    }
-
-    html[data-theme="dark"] {
-      color-scheme: dark;
-    }
-
-    /* Disable animations when motion effects are off */
-    html[data-motion="off"] *,
-    html[data-motion="off"] *::before,
-    html[data-motion="off"] *::after {
-      animation: none !important;
-      transition: none !important;
-      scroll-behavior: auto !important;
+      font-size: .9rem;
     }
 
     @media (max-width: 520px) {
       body {
-        padding: 16px;
+        padding: 18px 13px;
       }
 
       .header h1 {
-        font-size: 1.6rem;
+        font-size: 1.55rem;
       }
 
       .setting-row {
-        padding: 16px;
+        padding: 16px 13px;
       }
-    }
 
-    @media (prefers-reduced-motion: reduce) {
-      html:not([data-motion="on"]) *,
-      html:not([data-motion="on"]) *::before,
-      html:not([data-motion="on"]) *::after {
-        animation-duration: .01ms !important;
-        transition-duration: .01ms !important;
-        scroll-behavior: auto !important;
+      .setting-info p {
+        font-size: .8rem;
       }
     }
   </style>
+
+  <!-- يجب أن يكون بعد تنسيقات الصفحة -->
+  <link rel="stylesheet" href="css/theme.css">
 </head>
 
 <body>
   <main class="container">
+
     <header class="header">
       <h1>الإعدادات</h1>
+
       <a href="dashboard.html" class="btn-secondary">
         <i class="ri-home-5-line" aria-hidden="true"></i>
         الرئيسية
       </a>
     </header>
 
+    <!-- المظهر -->
     <section class="settings-group" aria-labelledby="appearanceTitle">
+
       <div class="settings-group-title" id="appearanceTitle">
         <i class="ri-palette-line" aria-hidden="true"></i>
         المظهر والعرض
@@ -280,10 +282,15 @@
       <div class="setting-row">
         <div class="setting-info">
           <h3>الوضع الداكن</h3>
-          <p>تفعيل الخلفية الفضائية الداكنة</p>
+          <p>تفعيل المظهر الداكن أو الفاتح في صفحات المنصة.</p>
         </div>
+
         <label class="toggle-switch">
-          <input type="checkbox" id="darkModeToggle" checked>
+          <input
+            type="checkbox"
+            id="darkModeToggle"
+            aria-label="تفعيل الوضع الداكن"
+          >
           <span class="slider"></span>
         </label>
       </div>
@@ -291,16 +298,24 @@
       <div class="setting-row">
         <div class="setting-info">
           <h3>تأثيرات الحركة</h3>
-          <p>التحكم في الأنيميشن وتأثيرات الواجهة</p>
+          <p>التحكم في الأنيميشن وتأثيرات الواجهة.</p>
         </div>
+
         <label class="toggle-switch">
-          <input type="checkbox" id="motionToggle" checked>
+          <input
+            type="checkbox"
+            id="motionToggle"
+            aria-label="تفعيل تأثيرات الحركة"
+          >
           <span class="slider"></span>
         </label>
       </div>
+
     </section>
 
+    <!-- الإشعارات والصوت -->
     <section class="settings-group" aria-labelledby="notificationsTitle">
+
       <div class="settings-group-title" id="notificationsTitle">
         <i class="ri-notification-3-line" aria-hidden="true"></i>
         الإشعارات والأصوات
@@ -309,10 +324,15 @@
       <div class="setting-row">
         <div class="setting-info">
           <h3>المؤثرات الصوتية</h3>
-          <p>السماح بأصوات النجاح والتنبيهات داخل المنصة</p>
+          <p>السماح بأصوات النجاح والتنبيهات داخل المنصة.</p>
         </div>
+
         <label class="toggle-switch">
-          <input type="checkbox" id="soundToggle" checked>
+          <input
+            type="checkbox"
+            id="soundToggle"
+            aria-label="تفعيل المؤثرات الصوتية"
+          >
           <span class="slider"></span>
         </label>
       </div>
@@ -320,30 +340,44 @@
       <div class="setting-row">
         <div class="setting-info">
           <h3>تذكير المهام اليومية</h3>
-          <p>حفظ تفضيل التذكيرات؛ إرسال تذكيرات فعلية يحتاج إلى نظام إشعارات منفصل</p>
+          <p>حفظ تفضيل التذكيرات. إرسال التذكيرات الفعلية يحتاج إلى نظام إشعارات منفصل.</p>
         </div>
+
         <label class="toggle-switch">
-          <input type="checkbox" id="notifToggle">
+          <input
+            type="checkbox"
+            id="notifToggle"
+            aria-label="تفعيل تفضيل التذكيرات"
+          >
           <span class="slider"></span>
         </label>
       </div>
+
     </section>
 
+    <!-- الخصوصية -->
     <section class="settings-group" aria-labelledby="privacyTitle">
+
       <div class="settings-group-title" id="privacyTitle">
         <i class="ri-shield-user-line" aria-hidden="true"></i>
         الحساب والخصوصية
       </div>
 
-      <button class="setting-row setting-action" id="parentDashboardBtn" type="button">
+      <button
+        class="setting-row setting-action"
+        id="parentDashboardBtn"
+        type="button"
+      >
         <span class="setting-action-inner">
           <span class="setting-info">
             <h3>لوحة ولي الأمر</h3>
-            <p>هذه الميزة غير مفعّلة بعد</p>
+            <p>هذه الميزة غير مفعّلة بعد.</p>
           </span>
+
           <i class="ri-arrow-left-s-line" aria-hidden="true"></i>
         </span>
       </button>
+
     </section>
 
     <button class="btn-logout" id="logoutBtn" type="button">
@@ -351,12 +385,24 @@
       تسجيل الخروج من الحساب
     </button>
 
-    <p class="page-status" id="pageStatus" role="status" aria-live="polite"></p>
+    <p
+      class="page-status"
+      id="pageStatus"
+      role="status"
+      aria-live="polite"
+    ></p>
+
   </main>
 
   <script type="module">
-    import { requireUser, logoutUser } from "./js/auth.js";
-    import { showToast } from "./js/ui.js";
+    import {
+      requireUser,
+      logoutUser
+    } from "./js/auth.js";
+
+    import {
+      showToast
+    } from "./js/ui.js";
 
     const elements = {
       dark: document.getElementById("darkModeToggle"),
@@ -391,29 +437,45 @@
         return true;
       } catch (error) {
         console.error("Could not save setting:", key, error);
+
         elements.status.textContent =
           "تعذر حفظ الإعدادات على هذا الجهاز.";
-        showToast("تعذر حفظ الإعدادات على هذا الجهاز.", "error");
+
+        showToast(
+          "تعذر حفظ الإعدادات على هذا الجهاز.",
+          "error"
+        );
+
         return false;
       }
     }
 
     function applyTheme(isDark) {
-      document.documentElement.dataset.theme = isDark ? "dark" : "light";
-      document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+      const theme = isDark ? "dark" : "light";
+
+      if (window.CodyTheme) {
+        window.CodyTheme.apply(theme);
+      } else {
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      }
     }
 
     function applyMotion(isEnabled) {
-      document.documentElement.dataset.motion = isEnabled ? "on" : "off";
+      document.documentElement.dataset.motion =
+        isEnabled ? "on" : "off";
     }
 
     function initializeSettings() {
       const theme = readSetting(STORAGE_KEYS.theme, "dark");
       const sound = readSetting(STORAGE_KEYS.sound, "on");
-      const notifications = readSetting(STORAGE_KEYS.notifications, "off");
+      const notifications = readSetting(
+        STORAGE_KEYS.notifications,
+        "off"
+      );
       const motion = readSetting(STORAGE_KEYS.motion, "on");
 
-      elements.dark.checked = theme !== "light";
+      elements.dark.checked = theme === "dark";
       elements.sound.checked = sound !== "off";
       elements.notifications.checked = notifications === "on";
       elements.motion.checked = motion !== "off";
@@ -422,10 +484,20 @@
       applyMotion(elements.motion.checked);
     }
 
-    function bindToggle(element, storageKey, enabledValue, disabledValue, onApply, message) {
-      element.addEventListener("change", () => {
+    function bindToggle(
+      element,
+      storageKey,
+      enabledValue,
+      disabledValue,
+      onApply,
+      message
+    ) {
+      element.addEventListener("change", function () {
         const enabled = element.checked;
-        const value = enabled ? enabledValue : disabledValue;
+
+        const value = enabled
+          ? enabledValue
+          : disabledValue;
 
         if (!saveSetting(storageKey, value)) {
           element.checked = !enabled;
@@ -447,7 +519,7 @@
       "dark",
       "light",
       applyTheme,
-      "تم حفظ إعدادات المظهر."
+      "تم تغيير المظهر وحفظ اختيارك."
     );
 
     bindToggle(
@@ -477,11 +549,14 @@
       "تم حفظ إعدادات الحركة."
     );
 
-    elements.parent.addEventListener("click", () => {
-      showToast("لوحة ولي الأمر لم يتم تفعيلها بعد.", "info");
+    elements.parent.addEventListener("click", function () {
+      showToast(
+        "لوحة ولي الأمر لم يتم تفعيلها بعد.",
+        "info"
+      );
     });
 
-    elements.logout.addEventListener("click", async () => {
+    elements.logout.addEventListener("click", async function () {
       elements.logout.disabled = true;
       elements.logout.setAttribute("aria-busy", "true");
       elements.status.textContent = "جارٍ تسجيل الخروج...";
@@ -490,10 +565,17 @@
         await logoutUser();
       } catch (error) {
         console.error("Logout error:", error);
+
         elements.logout.disabled = false;
         elements.logout.removeAttribute("aria-busy");
-        elements.status.textContent = "تعذر تسجيل الخروج. حاول مرة أخرى.";
-        showToast("تعذر تسجيل الخروج. تحقق من الاتصال وحاول مرة أخرى.", "error");
+
+        elements.status.textContent =
+          "تعذر تسجيل الخروج. حاول مرة أخرى.";
+
+        showToast(
+          "تعذر تسجيل الخروج. تحقق من الاتصال وحاول مرة أخرى.",
+          "error"
+        );
       }
     });
 
@@ -504,10 +586,17 @@
     } catch (error) {
       if (error?.message !== "يجب تسجيل الدخول.") {
         console.error("Settings authentication error:", error);
-        elements.status.textContent = "تعذر التحقق من الحساب.";
-        showToast("تعذر التحقق من الحساب.", "error");
+
+        elements.status.textContent =
+          "تعذر التحقق من الحساب.";
+
+        showToast(
+          "تعذر التحقق من الحساب.",
+          "error"
+        );
       }
     }
   </script>
+
 </body>
 </html>
