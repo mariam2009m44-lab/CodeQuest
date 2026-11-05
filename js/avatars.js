@@ -1,14 +1,4 @@
 
-/* =========================================
-   CODY ACADEMY
-   Avatar System
-   Supports:
-   - renderAvatar()
-   - renderAvatarCard()
-   - getAllAvatars()
-   - installAvatarStyles()
-========================================= */
-
 const AVATARS = [
   {
     id: "cody",
@@ -63,6 +53,50 @@ const AVATARS = [
     clothes: "#ffbd59",
     accent: "#ffe0a0",
     style: "girl"
+  },
+  {
+    id: "astronaut",
+    name: "رائد الفضاء",
+    emoji: "👩‍🚀",
+    hair: "#26365f",
+    skin: "#d9eaff",
+    clothes: "#4b83d1",
+    accent: "#b9e5ff",
+    style: "robot",
+    storeItem: true
+  },
+  {
+    id: "fox",
+    name: "الثعلب الذكي",
+    emoji: "🦊",
+    hair: "#8c4b25",
+    skin: "#ffe0bf",
+    clothes: "#e88a43",
+    accent: "#ffd29a",
+    style: "boy",
+    storeItem: true
+  },
+  {
+    id: "robot",
+    name: "الروبوت المتقدم",
+    emoji: "🤖",
+    hair: "#607b9b",
+    skin: "#b9d8e8",
+    clothes: "#637bff",
+    accent: "#aabaff",
+    style: "robot",
+    storeItem: true
+  },
+  {
+    id: "dragon",
+    name: "تنين الكود",
+    emoji: "🐉",
+    hair: "#315d45",
+    skin: "#b7e4c7",
+    clothes: "#398c68",
+    accent: "#b6ffd8",
+    style: "robot",
+    storeItem: true
   }
 ];
 
@@ -83,11 +117,15 @@ function getAvatar(avatarId) {
     || AVATARS[0];
 }
 
-/* =========================================
-   Avatar SVG
-========================================= */
-
 function createAvatarSVG(avatar) {
+  if (avatar.emoji) {
+    return `
+      <svg class="anime-avatar-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 155 190" role="img" aria-label="${escapeAttribute(avatar.name)}">
+        <text x="77.5" y="130" text-anchor="middle" font-size="112">${escapeAttribute(avatar.emoji)}</text>
+      </svg>
+    `;
+  }
+
   const hair = escapeAttribute(avatar.hair);
   const skin = escapeAttribute(avatar.skin);
   const clothes = escapeAttribute(avatar.clothes);
@@ -184,11 +222,9 @@ function createAvatarSVG(avatar) {
       <ellipse cx="77" cy="178" rx="42" ry="7"
         fill="#000" opacity=".18"/>
 
-      <!-- Neck -->
       <rect x="66" y="105" width="23" height="25"
         rx="9" fill="${skin}"/>
 
-      <!-- Body -->
       <path
         d="M45 126 Q77 112 109 126
         Q125 142 127 177
@@ -196,7 +232,6 @@ function createAvatarSVG(avatar) {
         fill="url(#body-${avatar.id})"
       />
 
-      <!-- Shirt details -->
       <path
         d="M64 128 L77 145 L91 128"
         fill="none"
@@ -208,7 +243,6 @@ function createAvatarSVG(avatar) {
       <circle cx="77" cy="155" r="4"
         fill="${accent}" opacity=".9"/>
 
-      <!-- Arms -->
       <path d="M42 137 L29 161"
         stroke="${clothes}" stroke-width="13"
         stroke-linecap="round"/>
@@ -217,10 +251,8 @@ function createAvatarSVG(avatar) {
         stroke="${clothes}" stroke-width="13"
         stroke-linecap="round"/>
 
-      <!-- Head -->
       ${isRobot ? robotHead : humanHead}
 
-      <!-- Small decoration -->
       <circle cx="123" cy="34" r="4"
         fill="${accent}" opacity=".9"/>
 
@@ -230,10 +262,6 @@ function createAvatarSVG(avatar) {
     </svg>
   `;
 }
-
-/* =========================================
-   Public Functions
-========================================= */
 
 export function getAllAvatars() {
   return AVATARS.map(avatar => ({ ...avatar }));
@@ -260,10 +288,6 @@ export function renderAvatarCard(avatarId = DEFAULT_AVATAR) {
     </div>
   `;
 }
-
-/* =========================================
-   Shared Avatar Styles
-========================================= */
 
 export function installAvatarStyles() {
   if (document.getElementById("cody-avatar-styles")) {
