@@ -1,3 +1,8 @@
+/* =========================================
+   CODY ACADEMY - AVATAR DISPLAY
+========================================= */
+
+/* Profile avatar container */
 
 .profile-orbit {
   display: none !important;
@@ -7,15 +12,20 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+
   width: 180px !important;
   height: 205px !important;
+
   margin: 0 auto 14px !important;
   padding: 0 !important;
+
   overflow: visible !important;
+
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+
   animation: none !important;
 }
 
@@ -23,11 +33,15 @@
   display: flex !important;
   align-items: flex-end !important;
   justify-content: center !important;
+
   width: 180px !important;
   height: 205px !important;
+
   margin: 0 !important;
   padding: 0 !important;
+
   overflow: visible !important;
+
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -37,6 +51,7 @@
 .avatar-container .anime-character {
   transform: scale(.82) !important;
   transform-origin: 50% 90% !important;
+
   animation: none !important;
 }
 
@@ -44,6 +59,10 @@
 .avatar-container .anime-star {
   display: none !important;
 }
+
+/* =========================================
+   DASHBOARD AVATAR
+========================================= */
 
 .topbar-avatar {
   display: grid !important;
@@ -55,25 +74,55 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+
   width: 100%;
   height: 100%;
+
   overflow: hidden;
 }
 
 .dashboard-avatar-art .anime-avatar {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+
   width: 58px !important;
   height: 58px !important;
+
   margin: 0 !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
-  overflow: hidden !important;
+  box-shadow: none !important;
 }
 
+/*
+  لا نستخدم scale(.25)، لأنها تصغّر الشخصية
+  إلى حجم غير مناسب داخل لوحة التحكم.
+*/
+
 .dashboard-avatar-art .anime-character {
-  transform: scale(.25) !important;
-  transform-origin: 50% 90% !important;
+  width: 100% !important;
+  height: 100% !important;
+
+  transform: none !important;
+  transform-origin: center bottom !important;
+
   animation: none !important;
+}
+
+.dashboard-avatar-art .anime-avatar-svg {
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  max-width: 58px !important;
+  max-height: 58px !important;
 }
 
 .dashboard-avatar-art .anime-shadow,
@@ -81,7 +130,12 @@
   display: none !important;
 }
 
+/* =========================================
+   RESPONSIVE
+========================================= */
+
 @media (max-width: 600px) {
+
   .avatar-container {
     width: 155px !important;
     height: 175px !important;
@@ -95,13 +149,20 @@
   .avatar-container .anime-character {
     transform: scale(.72) !important;
   }
+
 }
 
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
 @media (prefers-reduced-motion: reduce) {
+
   .avatar-container,
   .avatar-container *,
   .dashboard-avatar-art * {
     animation: none !important;
     transition: none !important;
   }
+
 }
