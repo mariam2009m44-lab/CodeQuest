@@ -2,8 +2,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
-import App from "./App.jsx";
-import "./styles/global.css";
+
+import App from "../App.jsx";
+
+import "../../css/variables.css";
+import "../../css/global.css";
+import "../../src/styles/global.css";
 
 const rootElement = document.getElementById("root");
 
