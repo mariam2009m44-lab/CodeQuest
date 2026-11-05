@@ -1,3 +1,4 @@
+
 import { functions } from "./firebase-config.js";
 
 import {
@@ -43,16 +44,21 @@ export async function runCodeOnServer(language, code) {
   } catch (error) {
     console.error("Code execution error:", error);
 
-    if (error?.code === "unauthenticated") {
+    const errorCode = String(error?.code || "")
+      .replace(/^functions\//, "");
+
+    if (errorCode === "unauthenticated") {
       throw new Error("سجّلي الدخول أولًا لتشغيل الأكواد.");
     }
 
-    if (error?.code === "unavailable") {
+    if (errorCode === "unavailable") {
       throw new Error("خدمة تشغيل الأكواد غير متاحة حاليًا.");
     }
 
-    if (error?.code === "deadline-exceeded") {
-      throw new Error("استغرق تشغيل الكود وقتًا طويلًا. حاولي مرة أخرى.");
+    if (errorCode === "deadline-exceeded") {
+      throw new Error(
+        "استغرق تشغيل الكود وقتًا طويلًا. حاولي مرة أخرى."
+      );
     }
 
     if (error instanceof Error && error.message) {
