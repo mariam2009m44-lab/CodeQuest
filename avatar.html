@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -165,6 +166,61 @@
       max-width: 230px;
       height: 235px;
       margin: auto;
+    }
+
+    .avatar-card.locked {
+      opacity: .68;
+      cursor: not-allowed;
+      filter: saturate(.55);
+    }
+
+    .avatar-card.locked:hover {
+      transform: none;
+      border-color: rgba(143,164,220,.17);
+    }
+
+    .avatar-card.locked .avatar-art-container {
+      opacity: .48;
+    }
+
+    .avatar-name {
+      position: relative;
+      z-index: 3;
+      margin: 2px 0 8px;
+      color: #fff;
+      font-size: .95rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .avatar-lock {
+      position: absolute;
+      z-index: 10;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 20px;
+      color: #fff;
+      background: rgba(8,13,32,.88);
+      font-size: .72rem;
+      font-weight: 800;
+    }
+
+    .avatar-lock i {
+      font-size: 1rem;
+    }
+
+    .avatar-store-label {
+      position: relative;
+      z-index: 3;
+      margin: -3px 0 7px;
+      color: #65eaff;
+      font-size: .7rem;
+      font-weight: 800;
     }
 
     .selection-hint {
@@ -345,19 +401,56 @@
     let selectedId = null;
     let saving = false;
     let currentUser = null;
+    let ownedAvatarIds = new Set();
 
     const characters = getAllAvatars();
+
     const validAvatarIds = new Set(
       characters.map(character => character.id)
     );
+
+    const freeAvatarIds = new Set([
+      "cody",
+      "layla",
+      "omar",
+      "sara",
+      "robo",
+      "nova"
+    ]);
 
     function setMessage(message, isError = false) {
       saveMessage.textContent = message;
       saveMessage.classList.toggle("error", isError);
     }
 
+    function isAvatarOwned(character) {
+      if (!character) return false;
+
+      if (freeAvatarIds.has(character.id)) {
+        return true;
+      }
+
+      if (!character.storeItem) {
+        return true;
+      }
+
+      return ownedAvatarIds.has(character.id);
+    }
+
     function selectAvatar(avatarId) {
       if (!validAvatarIds.has(avatarId) || saving) {
+        return;
+      }
+
+      const character = characters.find(
+        item => item.id === avatarId
+      );
+
+      if (!character || !isAvatarOwned(character)) {
+        setMessage(
+          "هذه الشخصية مقفولة. يمكنك الحصول عليها من متجر كودي.",
+          true
+        );
         return;
       }
 
@@ -379,7 +472,7 @@
       saveBtn.disabled = false;
 
       selectionHint.textContent =
-        "تم تحديد الشخصية. يمكنك تأكيد الاختيار.";
+        `تم تحديد ${character.name}. يمكنك تأكيد الاختيار.`;
 
       setMessage("");
     }
@@ -388,6 +481,8 @@
       grid.innerHTML = "";
 
       characters.forEach(character => {
+        const owned = isAvatarOwned(character);
+
         const card = document.createElement("button");
 
         card.type = "button";
@@ -396,16 +491,44 @@
 
         card.setAttribute(
           "aria-label",
-          `اختيار الشخصية ${character.name}`
+          owned
+            ? `اختيار الشخصية ${character.name}`
+            : `${character.name}، شخصية مقفولة`
         );
 
         card.setAttribute("aria-pressed", "false");
 
-        card.innerHTML = renderAvatarCard(character.id);
+        if (!owned) {
+          card.classList.add("locked");
+          card.disabled = true;
+          card.setAttribute("aria-disabled", "true");
+        }
 
-        card.addEventListener("click", () => {
-          selectAvatar(character.id);
-        });
+        card.innerHTML = `
+          ${renderAvatarCard(character.id)}
+          <div class="avatar-name">${character.name}</div>
+          ${
+            character.storeItem
+              ? `<div class="avatar-store-label">شخصية المتجر</div>`
+              : ""
+          }
+          ${
+            owned
+              ? ""
+              : `
+                <div class="avatar-lock">
+                  <i class="ri-lock-fill"></i>
+                  مقفولة
+                </div>
+              `
+          }
+        `;
+
+        if (owned) {
+          card.addEventListener("click", () => {
+            selectAvatar(character.id);
+          });
+        }
 
         grid.appendChild(card);
       });
@@ -413,68 +536,88 @@
       grid.setAttribute("aria-busy", "false");
     }
 
-    async function loadSavedAvatar(user) {
-      try {
-        const userRef = doc(db, "users", user.uid);
-        const snapshot = await getDoc(userRef);
+    async function loadUserData(user) {
+      const userRef = doc(db, "users", user.uid);
+      const snapshot = await getDoc(userRef);
 
-        if (!snapshot.exists()) {
-          throw new Error("ملف المستخدم غير موجود في قاعدة البيانات.");
-        }
-
-        const savedAvatar = snapshot.data().activeAvatar;
-
-        if (validAvatarIds.has(savedAvatar)) {
-          selectAvatar(savedAvatar);
-          selectionHint.textContent =
-            "تم تحميل شخصيتك المحفوظة. يمكنك تغييرها إذا أردت.";
-        } else {
-          selectedId = null;
-          saveBtn.disabled = true;
-          selectionHint.textContent =
-            "اختر شخصية للمتابعة.";
-        }
-
-      } catch (error) {
-        console.error("Saved avatar loading error:", error);
-
-        selectedId = null;
-        saveBtn.disabled = true;
-
-        selectionHint.textContent =
-          "تعذر تحميل الشخصية المحفوظة. اختر شخصية جديدة.";
-
-        setMessage(
-          "تعذر قراءة الشخصية المحفوظة. يمكنك اختيار شخصية جديدة.",
-          true
+      if (!snapshot.exists()) {
+        throw new Error(
+          "ملف المستخدم غير موجود في قاعدة البيانات."
         );
       }
+
+      const userData = snapshot.data();
+
+      const inventory = Array.isArray(userData.inventory)
+        ? userData.inventory
+        : [];
+
+      ownedAvatarIds = new Set(
+        inventory.filter(item => typeof item === "string")
+      );
+
+      return userData;
+    }
+
+    async function loadSavedAvatar(userData) {
+      const savedAvatar = userData.activeAvatar;
+
+      const character = characters.find(
+        item => item.id === savedAvatar
+      );
+
+      if (
+        character &&
+        isAvatarOwned(character)
+      ) {
+        selectAvatar(savedAvatar);
+
+        selectionHint.textContent =
+          "تم تحميل شخصيتك المحفوظة. يمكنك تغييرها إذا أردت.";
+
+        return;
+      }
+
+      selectedId = null;
+      saveBtn.disabled = true;
+
+      selectionHint.textContent =
+        "اختر إحدى الشخصيات المتاحة لك.";
     }
 
     async function initializeAvatarPage() {
       try {
         saveBtn.disabled = true;
-        selectionHint.textContent = "جارٍ التحقق من الحساب...";
+
+        selectionHint.textContent =
+          "جارٍ التحقق من الحساب...";
 
         currentUser = await requireUser();
 
         if (!currentUser?.uid) {
-          throw new Error("لم يتم العثور على حساب مسجل الدخول.");
+          throw new Error(
+            "لم يتم العثور على حساب مسجل الدخول."
+          );
         }
 
         await ensureUserProfile(currentUser);
 
+        const userData = await loadUserData(currentUser);
+
         renderCharacters();
 
-        await loadSavedAvatar(currentUser);
+        await loadSavedAvatar(userData);
 
       } catch (error) {
-        console.error("Avatar page initialization error:", error);
+        console.error(
+          "Avatar page initialization error:",
+          error
+        );
 
         grid.setAttribute("aria-busy", "false");
 
         selectionHint.textContent =
-          "تعذر التحقق من الحساب. سجل الدخول ثم حاول مجددًا.";
+          "تعذر تحميل بيانات الحساب. سجل الدخول ثم حاول مجددًا.";
 
         setMessage(
           error.message || "تعذر تحميل صفحة اختيار الشخصية.",
@@ -489,32 +632,50 @@
     }
 
     async function saveSelection() {
-      if (!selectedId || saving || !currentUser?.uid) {
+      if (
+        !selectedId ||
+        saving ||
+        !currentUser?.uid
+      ) {
         return;
       }
 
-      if (!validAvatarIds.has(selectedId)) {
-        setMessage("اختيار الشخصية غير صالح.", true);
+      const character = characters.find(
+        item => item.id === selectedId
+      );
+
+      if (!character || !isAvatarOwned(character)) {
+        setMessage(
+          "لا يمكنك اختيار شخصية غير مملوكة.",
+          true
+        );
         return;
       }
 
       saving = true;
-
       saveBtn.disabled = true;
+
       saveBtn.setAttribute("aria-busy", "true");
 
       saveBtn.innerHTML =
         '<i class="ri-loader-4-line"></i> جارٍ الحفظ...';
 
       try {
-        const userRef = doc(db, "users", currentUser.uid);
+        const userRef = doc(
+          db,
+          "users",
+          currentUser.uid
+        );
 
         await updateDoc(userRef, {
           activeAvatar: selectedId
         });
 
         try {
-          localStorage.setItem("cq_avatar", selectedId);
+          localStorage.setItem(
+            "cq_avatar",
+            selectedId
+          );
         } catch (storageError) {
           console.warn(
             "Could not update local avatar cache:",
@@ -524,42 +685,34 @@
 
         setMessage("تم حفظ الشخصية بنجاح.");
 
-        showToast("تم حفظ الشخصية بنجاح.", "success");
+        showToast(
+          "تم حفظ الشخصية بنجاح.",
+          "success"
+        );
 
         window.location.replace("profile.html");
 
       } catch (error) {
-        console.error("Avatar save error:", error);
+        console.error(
+          "Avatar save error:",
+          error
+        );
 
-        const errorCode = error?.code || "";
+        setMessage(
+          error?.code === "permission-denied"
+            ? "رفضت قاعدة البيانات حفظ الاختيار. تحقق من صلاحيات Firestore."
+            : "تعذر حفظ الشخصية. حاول مرة أخرى.",
+          true
+        );
 
-        if (
-          errorCode === "permission-denied" ||
-          errorCode === "firestore/permission-denied"
-        ) {
-          setMessage(
-            "رفضت قاعدة البيانات حفظ الاختيار. راجع صلاحيات Firestore.",
-            true
-          );
-        } else if (
-          errorCode === "unavailable" ||
-          errorCode === "firestore/unavailable"
-        ) {
-          setMessage(
-            "الخدمة غير متاحة حاليًا. تحقق من الاتصال وحاول مجددًا.",
-            true
-          );
-        } else {
-          setMessage(
-            "تعذر حفظ الشخصية. راجع Console لمعرفة تفاصيل الخطأ.",
-            true
-          );
-        }
-
-        showToast("تعذر حفظ الشخصية.", "error");
+        showToast(
+          "تعذر حفظ الشخصية.",
+          "error"
+        );
 
         saving = false;
         saveBtn.disabled = false;
+
         saveBtn.removeAttribute("aria-busy");
 
         saveBtn.innerHTML =
@@ -567,11 +720,13 @@
       }
     }
 
-    saveBtn.addEventListener("click", saveSelection);
+    saveBtn.addEventListener(
+      "click",
+      saveSelection
+    );
 
     renderCharacters();
     initializeAvatarPage();
-
   </script>
 
 </body>
