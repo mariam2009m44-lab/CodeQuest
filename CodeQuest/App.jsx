@@ -38,11 +38,12 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+// مسار Firebase الصحيح
 import {
   auth,
   db,
   logoutUser
-} from "./services/firebase.js";
+} from "./src/services/firebase.js";
 
 /* =========================================
    NAVIGATION
@@ -949,12 +950,12 @@ export default function App() {
 
       (error) => {
         console.error(
+          
           "Profile listener:",
           error
         );
 
         setDataError(
-  
           "تعذر تحميل بيانات الملف الشخصي. تأكدي من اتصال الإنترنت وصلاحيات قاعدة البيانات."
         );
       }
