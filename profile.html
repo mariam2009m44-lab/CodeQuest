@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090d19">
+  <meta name="description" content="ملفك الشخصي في Cody Academy، تابع مستواك وإنجازاتك وشخصيتك التعليمية.">
   <title>ملفي الشخصي | Cody Academy</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -20,6 +21,15 @@
       --green:#55e6b1;
       --panel:rgba(17,27,52,.78);
       --border:rgba(148,184,255,.14);
+      --muted:#aabbd5;
+    }
+
+    * {
+      box-sizing:border-box;
+    }
+
+    body {
+      font-family:"Cairo",sans-serif;
     }
 
     .profile-page {
@@ -70,7 +80,7 @@
       gap:9px;
       margin:18px 0;
       padding:12px 16px;
-      color:var(--muted,#aabbd5);
+      color:var(--muted);
       font-size:.88rem;
       border:1px solid var(--border);
       border-radius:14px;
@@ -172,7 +182,7 @@
 
     .profile-subtitle {
       margin:0 auto 18px;
-      color:#aabbd5;
+      color:var(--muted);
       font-size:.9rem;
       line-height:1.8;
     }
@@ -385,7 +395,6 @@
       line-height:1.8;
     }
 
-    /* قائمة الخيارات أعلى صفحة الملف الشخصي */
     .profile-menu {
       position:relative;
       display:flex;
@@ -444,7 +453,6 @@
       background:rgba(107,232,255,.1);
     }
 
-    /* تسجيل الخروج أسفل محتوى الملف الشخصي */
     .profile-logout-section {
       display:flex;
       justify-content:center;
@@ -577,26 +585,13 @@
       <div class="profile-page">
 
         <div class="profile-menu" id="profileMenu">
-          <button
-            type="button"
-            class="profile-menu-button"
-            id="profileMenuButton"
-            aria-label="فتح قائمة الخيارات"
-            aria-expanded="false"
-            aria-controls="profileMenuContent"
-          >
+          <button type="button" class="profile-menu-button" id="profileMenuButton" aria-label="فتح قائمة الخيارات" aria-expanded="false" aria-controls="profileMenuContent">
             <i class="ri-more-2-fill"></i>
           </button>
 
           <div class="profile-menu-content" id="profileMenuContent">
-            <a href="settings.html">
-              <i class="ri-settings-3-line"></i>
-              إعدادات المنصة
-            </a>
-            <a href="profile.html">
-              <i class="ri-user-line"></i>
-              الملف الشخصي
-            </a>
+            <a href="settings.html"><i class="ri-settings-3-line"></i> إعدادات المنصة</a>
+            <a href="profile.html"><i class="ri-user-line"></i> الملف الشخصي</a>
           </div>
         </div>
 
@@ -649,21 +644,11 @@
           <div class="level-progress-wrapper">
             <div class="level-labels">
               <span>التقدم للمستوى التالي</span>
-              <span class="xp-number">
-                <span id="currentXP">0</span> / 100 XP
-              </span>
+              <span class="xp-number"><span id="currentXP">0</span> / 100 XP</span>
             </div>
 
             <div class="progress-track">
-              <div
-                class="progress-fill"
-                id="xpProgressBar"
-                role="progressbar"
-                aria-label="التقدم للمستوى التالي"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"
-              ></div>
+              <div class="progress-fill" id="xpProgressBar" role="progressbar" aria-label="التقدم للمستوى التالي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
             </div>
 
             <div class="next-level-note" id="nextLevelNote">
@@ -710,7 +695,6 @@
 
         <section class="badges-section">
           <div class="badges-grid">
-
             <div class="badge-item" id="badge-first-step">
               <i class="ri-rocket-fill"></i>
               <span>أول خطوة</span>
@@ -734,7 +718,6 @@
               <span>بطل الألعاب</span>
               <small class="badge-state">لم يُفتح بعد</small>
             </div>
-
           </div>
 
           <p class="profile-footer-note">
@@ -744,10 +727,10 @@
         </section>
 
         <section class="profile-logout-section" aria-label="إعدادات الحساب">
-          <a href="login.html" id="logoutButton" class="profile-logout-button logout">
+          <button type="button" id="logoutButton" class="profile-logout-button">
             <i class="ri-logout-box-r-line"></i>
             تسجيل الخروج
-          </a>
+          </button>
         </section>
 
       </div>
@@ -757,14 +740,14 @@
   <nav class="mobile-nav">
     <a href="dashboard.html"><i class="ri-layout-grid-fill"></i><span>الرئيسية</span></a>
     <a href="languages.html"><i class="ri-route-line"></i><span>التعلم</span></a>
-    <a href="playground.html"><i class="ri-code-box-line"></i><span>الأكواد</span></a>
+    <a href="playground.html"><i class="ri-code-s-slash-line"></i><span>الأكواد</span></a>
     <a href="games.html"><i class="ri-gamepad-line"></i><span>الألعاب</span></a>
-    <a href="profile.html" class="active"><i class="ri-user-settings-line"></i><span>حسابي</span></a>
+    <a href="profile.html" class="active"><i class="ri-user-line"></i><span>حسابي</span></a>
   </nav>
 
   <script type="module">
     import { App } from "./js/app.js";
-    import { requireUser } from "./js/auth.js";
+    import { requireUser, logout } from "./js/auth.js";
     import { db } from "./js/firebase-config.js";
 
     import {
@@ -778,6 +761,7 @@
 
     import {
       renderAvatar,
+      getAllAvatars,
       installAvatarStyles
     } from "./js/avatars.js";
 
@@ -785,297 +769,273 @@
 
     const $ = id => document.getElementById(id);
 
-let profileUser = null;
-let profileObserver = null;
-let projectsObserver = null;
-let lessonsObserver = null;
+    let profileUser = null;
+    let profileObserver = null;
 
-function safeNumber(value) {
-  const number = Number(value);
+    function safeNumber(value) {
+      const number = Number(value);
 
-  return Number.isFinite(number) && number >= 0
-    ? Math.floor(number)
-    : 0;
-}
-
-function setStatus(message, isError = false) {
-  const status = $("profileStatus");
-  if (!status) return;
-
-  status.textContent = message;
-  status.classList.toggle("error", isError);
-}
-
-function unlockBadge(id, condition) {
-  const badge = $(id);
-  if (!badge) return;
-
-  const unlocked = Boolean(condition);
-  badge.classList.toggle("unlocked", unlocked);
-
-  const state = badge.querySelector(".badge-state");
-
-  if (state) {
-    state.textContent = unlocked
-      ? "تم فتح الوسام"
-      : "لم يُفتح بعد";
-  }
-}
-
-async function loadAvatar(user) {
-  let avatarId = "cody";
-
-  try {
-    const userRef = doc(db, "users", user.uid);
-    const snapshot = await getDoc(userRef);
-
-    if (snapshot.exists()) {
-      avatarId = snapshot.data().activeAvatar || "cody";
-    }
-  } catch (error) {
-    console.warn("Avatar loading error:", error);
-  }
-
-  const validIds = [
-    "cody",
-    "layla",
-    "omar",
-    "sara",
-    "robo",
-    "nova"
-  ];
-
-  if (!validIds.includes(avatarId)) {
-    avatarId = "cody";
-  }
-
-  const container = $("userAvatar");
-
-  if (container) {
-    container.innerHTML = renderAvatar(avatarId);
-    container.setAttribute(
-      "aria-label",
-      "الشخصية المختارة في Cody Academy"
-    );
-  }
-}
-
-function updateLevelDetails() {
-  const xp = safeNumber(
-    document.querySelector(".js-user-xp")?.textContent
-  );
-
-  const level = Math.floor(xp / 100) + 1;
-  const xpInLevel = xp % 100;
-  const remaining = 100 - xpInLevel;
-
-  $("userLevel").textContent = level;
-  $("currentXP").textContent = xpInLevel;
-
-  const bar = $("xpProgressBar");
-
-  if (bar) {
-    bar.style.width = `${xpInLevel}%`;
-    bar.setAttribute("aria-valuenow", String(xpInLevel));
-  }
-
-  $("nextLevelNote").textContent =
-    remaining === 100
-      ? "ابدأ جمع نقاط الخبرة للوصول للمستوى التالي."
-      : `متبقي ${remaining} نقطة خبرة للمستوى التالي.`;
-}
-
-function updateBadges() {
-  const xp = safeNumber(
-    document.querySelector(".js-user-xp")?.textContent
-  );
-
-  const lessons = safeNumber(
-    document.querySelector(".js-completed-lessons")?.textContent
-  );
-
-  const projects = safeNumber(
-    document.querySelector(".js-completed-projects")?.textContent
-  );
-
-  unlockBadge("badge-first-step", xp > 0);
-  unlockBadge("badge-lessons", lessons > 0);
-  unlockBadge("badge-projects", projects > 0);
-}
-
-async function loadProjectsAndRewards(user) {
-  try {
-    const projectsRef = collection(db, "projects");
-
-    const projectsQuery = query(
-      projectsRef,
-      where("userId", "==", user.uid)
-    );
-
-    const projectsSnapshot = await getDocs(projectsQuery);
-    const projectsCount = projectsSnapshot.size;
-
-    const projectsElement = document.querySelector(
-      ".js-completed-projects"
-    );
-
-    if (projectsElement) {
-      projectsElement.textContent = String(projectsCount);
+      
+      return Number.isFinite(number) && number >= 0 ? number : 0;
     }
 
-    const rewardsRef = collection(
-      db,
-      "users",
-      user.uid,
-      "gameRewards"
-    );
+    function setStatus(message, isError = false) {
+      const status = $("profileStatus");
+      if (!status) return;
 
-    const rewardsSnapshot = await getDocs(rewardsRef);
-    const hasGameRewards = !rewardsSnapshot.empty;
-
-    unlockBadge("badge-games", hasGameRewards);
-
-    updateBadges();
-
-  } catch (error) {
-    console.error("Projects and rewards loading error:", error);
-
-    setStatus(
-      "تم تحميل الحساب، لكن تعذر تحميل بعض الإحصائيات.",
-      true
-    );
-  }
-}
-
-function observeProfileStats() {
-  const stats = [
-    ".js-user-xp",
-    ".js-completed-lessons",
-    ".js-completed-projects"
-  ];
-
-  const elements = stats
-    .map(selector => document.querySelector(selector))
-    .filter(Boolean);
-
-  if (!elements.length) return;
-
-  profileObserver?.disconnect();
-
-  profileObserver = new MutationObserver(() => {
-    updateLevelDetails();
-    updateBadges();
-  });
-
-  elements.forEach(element => {
-    profileObserver.observe(element, {
-      childList: true,
-      characterData: true,
-      subtree: true
-    });
-  });
-
-  updateLevelDetails();
-  updateBadges();
-}
-
-async function loadProfile() {
-  try {
-    setStatus("جارٍ تحميل بيانات حسابك...");
-
-    const user = await requireUser();
-
-    if (!user || !user.uid) {
-      throw new Error("لم يتم العثور على حساب المستخدم.");
+      status.textContent = message;
+      status.classList.toggle("error", isError);
     }
 
-    profileUser = user;
+    function unlockBadge(id, unlocked) {
+      const badge = $(id);
+      if (!badge) return;
 
-    await App.init();
+      badge.classList.toggle("unlocked", Boolean(unlocked));
 
-    await loadAvatar(user);
-    await loadProjectsAndRewards(user);
-
-    observeProfileStats();
-
-    setStatus("تم تحميل ملفك الشخصي بنجاح.");
-
-  } catch (error) {
-    console.error("Profile loading error:", error);
-
-    setStatus(
-      "حدثت مشكلة أثناء تحميل الملف الشخصي. حاول تسجيل الدخول مرة أخرى.",
-      true
-    );
-
-    const nameElement = document.querySelector(".js-user-name");
-
-    if (nameElement) {
-      nameElement.textContent = "تعذر تحميل الحساب";
+      const state = badge.querySelector(".badge-state");
+      if (state) {
+        state.textContent = unlocked ? "تم فتح الوسام" : "لم يُفتح بعد";
+      }
     }
-  }
-}
 
-// قائمة الخيارات
-const profileMenu = $("profileMenu");
-const profileMenuButton = $("profileMenuButton");
+    function updateBadges({
+      xp = 0,
+      lessons = 0,
+      projects = 0,
+      games = 0
+    }) {
+      unlockBadge("badge-first-step", xp > 0 || lessons > 0);
+      unlockBadge("badge-lessons", lessons >= 5);
+      unlockBadge("badge-projects", projects >= 1);
+      unlockBadge("badge-games", games >= 1);
+    }
 
-profileMenuButton?.addEventListener("click", () => {
-  const isOpen = profileMenu.classList.toggle("open");
+    function updateLevelDetails(xpValue) {
+      const xp = safeNumber(xpValue);
+      const level = Math.floor(xp / 100) + 1;
+      const currentXP = xp % 100;
+      const remainingXP = 100 - currentXP;
 
-  profileMenuButton.setAttribute(
-    "aria-expanded",
-    String(isOpen)
-  );
-});
+      $("userLevel").textContent = level;
+      $("currentXP").textContent = currentXP;
 
-document.addEventListener("click", event => {
-  if (
-    profileMenu &&
-    !profileMenu.contains(event.target)
-  ) {
-    profileMenu.classList.remove("open");
+      const progressBar = $("xpProgressBar");
 
-    profileMenuButton?.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-  }
-});
+      if (progressBar) {
+        progressBar.style.width = `${currentXP}%`;
+        progressBar.setAttribute("aria-valuenow", currentXP);
+      }
 
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && profileMenu) {
-    profileMenu.classList.remove("open");
+      $("nextLevelNote").textContent =
+        `تحتاج إلى ${remainingXP} نقطة خبرة للوصول إلى المستوى ${level + 1}.`;
+    }
 
-    profileMenuButton?.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-  }
-});
+    async function loadAvatar(userData) {
+      const container = $("userAvatar");
+      if (!container) return;
 
-// تحميل الملف الشخصي
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    loadProfile,
-    { once: true }
-  );
-} else {
-  loadProfile();
-}
+      const allAvatars = getAllAvatars();
+      const activeAvatar = userData.activeAvatar || "cody";
 
-// تنظيف المراقبات عند مغادرة الصفحة
-window.addEventListener(
-  "pagehide",
-  () => {
-    profileObserver?.disconnect();
-    projectsObserver?.disconnect();
-    lessonsObserver?.disconnect();
-  },
-  { once: true }
-);
+      const inventory = Array.isArray(userData.inventory)
+        ? userData.inventory
+        : [];
 
-</script>
+      const selectedAvatar = allAvatars.find(avatar => {
+        if (avatar.id !== activeAvatar) return false;
+
+        // الشخصيات الأساسية متاحة دون شراء.
+        if (!avatar.storeItem) return true;
+
+        // الشخصيات المدفوعة لا تظهر إلا إذا كانت مملوكة.
+        return inventory.includes(avatar.id);
+      });
+
+      const avatarToRender = selectedAvatar || "cody";
+
+      container.innerHTML = renderAvatar(
+        typeof avatarToRender === "string"
+          ? avatarToRender
+          : avatarToRender.id
+      );
+    }
+
+    async function loadProjectsAndRewards(uid) {
+      let projectsCount = 0;
+      let gamesCount = 0;
+      let projectsAvailable = true;
+      let rewardsAvailable = true;
+
+      try {
+        const projectsQuery = query(
+          collection(db, "projects"),
+          where("userId", "==", uid)
+        );
+
+        const projectsSnapshot = await getDocs(projectsQuery);
+        projectsCount = projectsSnapshot.size;
+      } catch (error) {
+        projectsAvailable = false;
+        console.error("تعذر تحميل المشروعات:", error);
+      }
+
+      try {
+        const rewardsSnapshot = await getDocs(
+          collection(db, "users", uid, "gameRewards")
+        );
+
+        gamesCount = rewardsSnapshot.size;
+      } catch (error) {
+        rewardsAvailable = false;
+        console.error("تعذر تحميل مكافآت الألعاب:", error);
+      }
+
+      return {
+        projectsCount,
+        gamesCount,
+        projectsAvailable,
+        rewardsAvailable
+      };
+    }
+
+    async function loadProfile() {
+      try {
+        setStatus("جارٍ تحميل بيانات حسابك...");
+
+        const user = await requireUser();
+
+        if (!user?.uid) {
+          throw new Error("لم يتم العثور على الحساب الحالي.");
+        }
+
+        profileUser = user;
+
+        // App مسؤول عن تحديث الاسم والإحصائيات العامة.
+        await App.init();
+
+        const userRef = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userRef);
+
+        if (!userSnapshot.exists()) {
+          throw new Error("ملف الحساب غير موجود.");
+        }
+
+        const userData = userSnapshot.data();
+
+        await loadAvatar(userData);
+
+        const xp = safeNumber(userData.xp);
+        const lessons = safeNumber(userData.completedLessons);
+
+        updateLevelDetails(xp);
+
+        const extraStats = await loadProjectsAndRewards(user.uid);
+
+        const projectsCount = extraStats.projectsAvailable
+          ? extraStats.projectsCount
+          : safeNumber(userData.completedProjects);
+
+        const gamesCount = extraStats.gamesAvailable
+          ? extraStats.gamesCount
+          : 0;
+
+        const projectsElement = document.querySelector(
+          ".js-completed-projects"
+        );
+
+        if (projectsElement) {
+          projectsElement.textContent = projectsCount;
+        }
+
+        updateBadges({
+          xp,
+          lessons,
+          projects: projectsCount,
+          games: gamesCount
+        });
+
+        if (!extraStats.projectsAvailable || !extraStats.rewardsAvailable) {
+          setStatus(
+            "تم تحميل بيانات حسابك، لكن تعذر تحميل بعض الإحصائيات الإضافية."
+          );
+        } else {
+          setStatus("تم تحميل بيانات حسابك بنجاح.");
+        }
+
+      } catch (error) {
+        console.error("Profile loading error:", error);
+
+        if (
+          error?.message?.includes("تسجيل الدخول") ||
+          error?.message?.includes("الحساب الحالي")
+        ) {
+          location.replace("login.html");
+          return;
+        }
+
+        setStatus(
+          error?.message || "حدث خطأ أثناء تحميل الملف الشخصي.",
+          true
+        );
+      }
+    }
+
+    function setupProfileMenu() {
+      const menu = $("profileMenu");
+      const button = $("profileMenuButton");
+
+      if (!menu || !button) return;
+
+      button.addEventListener("click", event => {
+        event.stopPropagation();
+
+        const isOpen = menu.classList.toggle("open");
+
+        button.setAttribute("aria-expanded", String(isOpen));
+      });
+
+      document.addEventListener("click", event => {
+        if (!menu.contains(event.target)) {
+          menu.classList.remove("open");
+          button.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          menu.classList.remove("open");
+          button.setAttribute("aria-expanded", "false");
+          button.focus();
+        }
+      });
+    }
+
+    function setupLogoutButton() {
+      const button = $("logoutButton");
+      if (!button) return;
+
+      // App.bindLogout في js/app.js يتولى تسجيل الخروج
+      // باستخدام logoutUser، لذلك لا نضيف مستمعًا ثانيًا.
+      button.setAttribute("aria-label", "تسجيل الخروج من الحساب");
+    }
+
+    async function initializeProfile() {
+      setupProfileMenu();
+      setupLogoutButton();
+
+      await loadProfile();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        initializeProfile,
+        { once: true }
+      );
+    } else {
+      initializeProfile();
+    }
+  </script>
 </body>
 </html>
