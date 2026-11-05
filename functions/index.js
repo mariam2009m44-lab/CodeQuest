@@ -1,4 +1,6 @@
+
 const { initializeApp } = require("firebase-admin/app");
+
 const {
   getFirestore,
   FieldValue
@@ -35,6 +37,13 @@ const LANGUAGES = Object.freeze({
   javascript: 63,
   python: 71,
   cpp: 54
+});
+
+const STORE_ITEMS = Object.freeze({
+  astronaut: 150,
+  fox: 200,
+  robot: 300,
+  dragon: 500
 });
 
 function requireAuth(request) {
@@ -116,7 +125,6 @@ exports.runCode = onCall(
 
     let submission;
 
-    // الخطوة الأولى: إرسال الكود إلى Judge0 واستلام token.
     try {
       const response = await fetch(
         `${baseUrl}/submissions?base64_encoded=false&wait=false`,
@@ -155,7 +163,6 @@ exports.runCode = onCall(
       );
     }
 
-    // الخطوة الثانية: الاستعلام عن النتيجة حتى انتهاء التنفيذ.
     const maxAttempts = 12;
     let result = null;
 
@@ -190,7 +197,6 @@ exports.runCode = onCall(
 
       const statusId = result.status?.id;
 
-      // 1 و2 تعنيان أن التنفيذ لم ينتهِ بعد.
       if (statusId && statusId > 2) {
         break;
       }
@@ -213,6 +219,112 @@ exports.runCode = onCall(
       time: result.time || null,
       memory: result.memory || null
     };
+  }
+);
+
+/*
+ * شراء عناصر متجر كودي من الخادم فقط.
+ */
+exports.purchaseStoreItem = onCall(
+  CALL_OPTIONS,
+  async request => {
+    const uid = requireAuth(request);
+    const itemId = request.data?.itemId;
+
+    if (
+      typeof itemId !== "string" ||
+      !Object.prototype.hasOwnProperty.call(
+        STORE_ITEMS,
+        itemId
+      )
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "العنصر المطلوب غير موجود في المتجر."
+      );
+    }
+
+    const price = STORE_ITEMS[itemId];
+    const userRef = db.collection("users").doc(uid);
+
+    try {
+      return await db.runTransaction(async transaction => {
+        const userSnap = await transaction.get(userRef);
+
+        if (!userSnap.exists) {
+          throw new HttpsError(
+            "not-found",
+            "ملف الحساب غير موجود."
+          );
+        }
+
+        const userData = userSnap.data() || {};
+
+        const coins = userData.coins;
+
+        const inventory = Array.isArray(userData.inventory)
+          ? userData.inventory
+          : [];
+
+        if (
+          typeof coins !== "number" ||
+          !Number.isFinite(coins) ||
+          coins < 0
+        ) {
+          throw new HttpsError(
+            "failed-precondition",
+            "رصيد العملات غير صالح."
+          );
+        }
+
+        if (inventory.includes(itemId)) {
+          return {
+            success: true,
+            alreadyOwned: true,
+            coins,
+            inventory
+          };
+        }
+
+        if (coins < price) {
+          throw new HttpsError(
+            "failed-precondition",
+            "لا تمتلك عملات كافية لشراء هذا العنصر."
+          );
+        }
+
+        const updatedInventory = [
+          ...inventory,
+          itemId
+        ];
+
+        const updatedCoins = coins - price;
+
+        transaction.update(userRef, {
+          coins: updatedCoins,
+          inventory: updatedInventory,
+          updatedAt: FieldValue.serverTimestamp()
+        });
+
+        return {
+          success: true,
+          alreadyOwned: false,
+          coins: updatedCoins,
+          inventory: updatedInventory
+        };
+      });
+    } catch (error) {
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+
+      console.error("Store purchase error:", error);
+
+      throw new HttpsError(
+        "internal",
+        "حدث خطأ أثناء إتمام عملية الشراء."
+      );
+    }
   }
 );
 
