@@ -1,5 +1,4 @@
 
-
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
@@ -7,6 +6,12 @@ const FIREBASE_KEYS = createRemoteJWKSet(
     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
   )
 );
+
+const ALLOWED_LANGUAGES = new Set([
+  "python",
+  "javascript",
+  "cpp"
+]);
 
 function jsonResponse(data, status, origin = null) {
   const headers = {
@@ -17,32 +22,56 @@ function jsonResponse(data, status, origin = null) {
   if (origin) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
-    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    headers["Access-Control-Allow-Headers"] =
+      "Content-Type, Authorization";
   }
 
-  return new Response(JSON.stringify(data), { status, headers });
+  return new Response(JSON.stringify(data), {
+    status,
+    headers
+  });
 }
 
 function getAllowedOrigin(request, env) {
   const origin = request.headers.get("Origin");
-  return origin === env.ALLOWED_ORIGIN ? origin : null;
+
+  return origin === env.ALLOWED_ORIGIN
+    ? origin
+    : null;
 }
 
 async function verifyFirebaseUser(request, env) {
-  const authorization = request.headers.get("Authorization") || "";
+  const authorization =
+    request.headers.get("Authorization") || "";
 
   if (!authorization.startsWith("Bearer ")) {
     throw new Error("MISSING_TOKEN");
   }
 
   const token = authorization.slice(7).trim();
-  if (!token) throw new Error("MISSING_TOKEN");
 
-  const { payload } = await jwtVerify(token, FIREBASE_KEYS, {
-    issuer: `https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}`,
-    audience: env.FIREBASE_PROJECT_ID,
-    algorithms: ["RS256"]
-  });
+  if (!token) {
+    throw new Error("MISSING_TOKEN");
+  }
+
+  let payload;
+
+  try {
+    const result = await jwtVerify(
+      token,
+      FIREBASE_KEYS,
+      {
+        issuer:
+          `https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}`,
+        audience: env.FIREBASE_PROJECT_ID,
+        algorithms: ["RS256"]
+      }
+    );
+
+    payload = result.payload;
+  } catch {
+    throw new Error("INVALID_TOKEN");
+  }
 
   if (
     typeof payload.sub !== "string" ||
@@ -54,26 +83,39 @@ async function verifyFirebaseUser(request, env) {
 
   return {
     uid: payload.sub,
-    email: typeof payload.email === "string" ? payload.email : null
+    email:
+      typeof payload.email === "string"
+        ? payload.email
+        : null
   };
 }
 
-const ALLOWED_LANGUAGES = new Set([
-  "python",
-  "javascript",
-  "cpp"
-]);
+function unauthorizedResponse(origin) {
+  return jsonResponse({
+    success: false,
+    message: "سجّل الدخول أولًا."
+  }, 401, origin);
+}
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Health check can be opened directly in a browser.
-    if (url.pathname === "/health" && request.method === "GET") {
+    // Health check
+    if (
+      url.pathname === "/health" &&
+      request.method === "GET"
+    ) {
       const origin = getAllowedOrigin(request, env);
 
-      if (request.headers.has("Origin") && !origin) {
-        return new Response("Origin not allowed", { status: 403 });
+      if (
+        request.headers.has("Origin") &&
+        !origin
+      ) {
+        return new Response(
+          "Origin not allowed",
+          { status: 403 }
+        );
       }
 
       return jsonResponse({
@@ -83,10 +125,14 @@ export default {
       }, 200, origin);
     }
 
+    // CORS
     const origin = getAllowedOrigin(request, env);
 
     if (!origin) {
-      return new Response("Origin not allowed", { status: 403 });
+      return new Response(
+        "Origin not allowed",
+        { status: 403 }
+      );
     }
 
     if (request.method === "OPTIONS") {
@@ -95,21 +141,30 @@ export default {
         headers: {
           "Access-Control-Allow-Origin": origin,
           "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          "Access-Control-Allow-Headers":
+            "Content-Type, Authorization",
           "Vary": "Origin"
         }
       });
     }
 
-    if (url.pathname === "/api/session" && request.method === "GET") {
+    // Session verification
+    if (
+      url.pathname === "/api/session" &&
+      request.method === "GET"
+    ) {
       try {
-        const user = await verifyFirebaseUser(request, env);
+        const user = await verifyFirebaseUser(
+          request,
+          env
+        );
 
         return jsonResponse({
           success: true,
           authenticated: true,
           user
         }, 200, origin);
+
       } catch {
         return jsonResponse({
           success: false,
@@ -119,33 +174,72 @@ export default {
       }
     }
 
+    // Quiz answer checking
     if (
       url.pathname === "/api/quiz/check" &&
       request.method === "POST"
     ) {
+      // Verify authentication separately.
       try {
         await verifyFirebaseUser(request, env);
+      } catch {
+        return unauthorizedResponse(origin);
+      }
 
-        const body = await request.json();
-        const { language, lessonId, selectedIndex } = body;
+      // Parse JSON safely.
+      let body;
 
-        if (
-          !ALLOWED_LANGUAGES.has(language) ||
-          typeof lessonId !== "string" ||
-          lessonId.length < 1 ||
-          lessonId.length > 100 ||
-          !Number.isInteger(selectedIndex) ||
-          selectedIndex < 0 ||
-          selectedIndex > 20
-        ) {
-          return jsonResponse({
-            success: false,
-            message: "بيانات الإجابة غير صحيحة."
-          }, 400, origin);
+      try {
+        body = await request.json();
+      } catch {
+        return jsonResponse({
+          success: false,
+          message: "JSON غير صالح."
+        }, 400, origin);
+      }
+
+      if (
+        !body ||
+        typeof body !== "object" ||
+        Array.isArray(body)
+      ) {
+        return jsonResponse({
+          success: false,
+          message: "بيانات غير صالحة."
+        }, 400, origin);
+      }
+
+      const {
+        language,
+        lessonId,
+        selectedIndex
+      } = body;
+
+      // Validate submitted values.
+      if (
+        !ALLOWED_LANGUAGES.has(language) ||
+        typeof lessonId !== "string" ||
+        !/^[a-zA-Z0-9_-]{1,100}$/.test(lessonId) ||
+        !Number.isInteger(selectedIndex) ||
+        selectedIndex < 0 ||
+        selectedIndex > 20
+      ) {
+        return jsonResponse({
+          success: false,
+          message: "بيانات الإجابة غير صحيحة."
+        }, 400, origin);
+      }
+
+      try {
+        if (!env.QUIZ_ANSWERS) {
+          throw new Error("QUIZ_BINDING_MISSING");
         }
 
-        const key = `quiz:${language}:${lessonId}`;
-        const answerData = await env.QUIZ_ANSWERS.get(key);
+        const key =
+          `quiz:${language}:${lessonId}`;
+
+        const answerData =
+          await env.QUIZ_ANSWERS.get(key);
 
         if (!answerData) {
           return jsonResponse({
@@ -156,30 +250,38 @@ export default {
 
         const answer = JSON.parse(answerData);
 
-        if (!Number.isInteger(answer.correctIndex)) {
+        if (
+          !answer ||
+          typeof answer !== "object" ||
+          !Number.isInteger(answer.correctIndex) ||
+          answer.correctIndex < 0 ||
+          answer.correctIndex > 20
+        ) {
           throw new Error("INVALID_ANSWER_DATA");
         }
 
-        const isCorrect = selectedIndex === answer.correctIndex;
+        const isCorrect =
+          selectedIndex === answer.correctIndex;
+
+        const explanation =
+          isCorrect &&
+          typeof answer.explanation === "string"
+            ? answer.explanation.slice(0, 500)
+            : isCorrect
+              ? "إجابة صحيحة!"
+              : "حاول مرة أخرى، وراجع شرح الدرس.";
 
         return jsonResponse({
           success: true,
           correct: isCorrect,
-          explanation: isCorrect
-            ? (answer.explanation || "إجابة صحيحة!")
-            : "حاول مرة أخرى، وراجع شرح الدرس."
+          explanation
         }, 200, origin);
 
       } catch (error) {
-        if (
-          error.message === "MISSING_TOKEN" ||
-          error.message === "INVALID_USER"
-        ) {
-          return jsonResponse({
-            success: false,
-            message: "سجّل الدخول أولاً."
-          }, 401, origin);
-        }
+        console.error(
+          "Quiz checking error:",
+          error
+        );
 
         return jsonResponse({
           success: false,
