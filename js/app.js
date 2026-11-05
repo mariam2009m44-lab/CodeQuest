@@ -1,1195 +1,797 @@
 
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080b18">
-  <meta name="description" content="Cody — منصة تفاعلية لتعلم البرمجة وصناعة المشروعات واكتشاف عالم التقنية.">
-
-  <title>لوحة التحكم | Cody Academy</title>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  >
-
-  <!-- Icons -->
-  <link
-    href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css"
-    rel="stylesheet"
-  >
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="css/dashboard.css">
-  <link rel="stylesheet" href="js/css/avatar-display.css">
-</head>
-
-<body>
-
-<div class="space-app">
-
-  <!-- =====================================
-       SIDEBAR
-  ====================================== -->
-
-  <aside class="space-sidebar" id="sidebar">
-
-    <a
-      class="space-brand"
-      href="dashboard.html"
-      aria-label="Cody الرئيسية"
-    >
-      <span class="brand-mark">C</span>
-      <span class="brand-name">Cody</span>
-    </a>
-
-    <div class="sidebar-caption">مساحة التعلم</div>
-
-    <nav class="space-nav" aria-label="التنقل الرئيسي">
-
-      <a
-        class="nav-link active"
-        href="dashboard.html"
-        aria-current="page"
-      >
-        <i class="ri-layout-grid-fill"></i>
-        <span>لوحة التحكم</span>
-      </a>
-
-      <a class="nav-link" href="languages.html">
-        <i class="ri-route-line"></i>
-        <span>مسارات التعلم</span>
-      </a>
-
-      <a class="nav-link" href="playground.html">
-        <i class="ri-code-s-slash-line"></i>
-        <span>مختبر الأكواد</span>
-      </a>
-
-      <a class="nav-link" href="games.html">
-        <i class="ri-gamepad-line"></i>
-        <span>الألعاب والتحديات</span>
-      </a>
-
-      <a class="nav-link" href="projects.html">
-        <i class="ri-folder-code-line"></i>
-        <span>مشروعاتي</span>
-      </a>
-
-      <a class="nav-link" href="achievements.html">
-        <i class="ri-medal-2-line"></i>
-        <span>إنجازاتي</span>
-      </a>
-
-      <a class="nav-link" href="profile.html">
-        <i class="ri-user-settings-line"></i>
-        <span>ملفي الشخصي</span>
-      </a>
-
-    </nav>
-
-    <!-- Learning Mission -->
-
-    <div class="sidebar-mission">
-
-      <div class="mission-visual">
-        <span class="mission-orbit"></span>
-
-        <span class="mission-planet">
-          <i class="ri-rocket-2-fill"></i>
-        </span>
-
-        <span class="mission-star star-one">✦</span>
-        <span class="mission-star star-two">✧</span>
-      </div>
-
-      <span class="mission-label">مهمة جديدة</span>
-
-      <strong>مستكشف الأكواد</strong>
-
-      <p>
-        كل تجربة جديدة تقرّبك من بناء مشروعك الأول.
-      </p>
-
-      <a href="languages.html" class="mission-link">
-        ابدأ الاستكشاف
-        <i class="ri-arrow-left-line"></i>
-      </a>
-
-    </div>
-
-    <!-- Logout -->
-
-    <a
-      href="#"
-      id="logoutButton"
-      class="logout-link logout"
-    >
-      <i class="ri-logout-box-r-line"></i>
-      <span>تسجيل الخروج</span>
-    </a>
-
-    <div class="sidebar-version">
-      <span class="version-dot"></span>
-      CODY <span>·</span> SPACE EDITION
-    </div>
-
-  </aside>
-
-
-  <!-- =====================================
-       MAIN CONTENT
-  ====================================== -->
-
-  <main class="space-main">
-
-    <!-- ===================================
-         TOPBAR
-    ==================================== -->
-
-    <header class="space-topbar">
-
-      <div class="topbar-title">
-
-        <div class="page-kicker">
-          <span class="online-dot"></span>
-          مساحة التعلم الخاصة بك
-        </div>
-
-        <h1>
-          أهلًا يا
-          <span class="js-user-name">بطل البرمجة</span>
-          <span class="wave">✦</span>
-        </h1>
-
-        <p>
-          كل يوم فرصة جديدة لتتعلم شيئًا وتصنع شيئًا مميزًا.
-        </p>
-
-      </div>
-
-      <div class="topbar-actions">
-
-        <a
-          href="achievements.html"
-          class="icon-action"
-          aria-label="إنجازاتي"
-          title="إنجازاتي"
-        >
-          <i class="ri-notification-3-line"></i>
-        </a>
-
-        <!-- Dynamic User Avatar -->
-
-        <a
-          href="profile.html"
-          class="topbar-avatar"
-          aria-label="الملف الشخصي"
-          title="الملف الشخصي"
-        >
-
-          <span
-            id="dashboardAvatarArt"
-            class="dashboard-avatar-art"
-            aria-hidden="true"
-          ></span>
-
-          <span class="avatar-status"></span>
-
-        </a>
-
-        <!-- Dashboard Menu -->
-
-        <div class="dashboard-menu" id="dashboardMenu">
-
-          <button
-            type="button"
-            class="dashboard-menu-button"
-            id="dashboardMenuButton"
-            aria-label="خيارات المنصة"
-            aria-expanded="false"
-            aria-controls="dashboardMenuPanel"
-          >
-            <i class="ri-more-2-fill"></i>
-          </button>
-
-          <div
-            class="dashboard-menu-panel"
-            id="dashboardMenuPanel"
-            hidden
-          >
-
-            <a href="settings.html">
-              <i class="ri-settings-3-line"></i>
-              <span>إعدادات المنصة</span>
-            </a>
-
-            <a href="profile.html">
-              <i class="ri-user-settings-line"></i>
-              <span>الملف الشخصي</span>
-            </a>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </header>
-
-
-    <!-- ===================================
-         WALLET
-    ==================================== -->
-
-    <section class="wallet-row" aria-label="رصيدك">
-
-      <!-- Coins -->
-
-      <article class="wallet-card wallet-coins">
-
-        <div class="wallet-icon">
-          <i class="ri-medal-fill"></i>
-        </div>
-
-        <div class="wallet-copy">
-
-          <small>رصيد النجوم</small>
-
-          <strong>
-            <span class="js-user-coins">0</span>
-            <span class="wallet-unit"> نقطة</span>
-          </strong>
-
-          <span class="wallet-caption">
-            كل إنجاز له قيمة
-          </span>
-
-        </div>
-
-        <div
-          class="wallet-decoration wallet-decoration-gold"
-          aria-hidden="true"
-        >
-          ✦
-        </div>
-
-      </article>
-
-
-      <!-- XP -->
-
-      <article class="wallet-card wallet-xp">
-
-        <div class="wallet-icon">
-          <i class="ri-flashlight-fill"></i>
-        </div>
-
-        <div class="wallet-copy">
-
-          <small>طاقة الخبرة</small>
-
-          <strong>
-            <span class="js-user-xp">0</span>
-            <span class="wallet-unit"> XP</span>
-          </strong>
-
-          <span class="wallet-caption">
-            تعلّم أكثر، واكتشف أكثر
-          </span>
-
-        </div>
-
-        <div
-          class="wallet-decoration wallet-decoration-cyan"
-          aria-hidden="true"
-        >
-          ✧
-        </div>
-
-      </article>
-
-    </section>
-
-
-    <!-- ===================================
-         HERO SECTION
-    ==================================== -->
-
-    <section class="space-hero">
-
-      <div class="hero-grid-pattern"></div>
-      <div class="hero-nebula"></div>
-
-      <div class="hero-content">
-
-        <span class="hero-badge">
-          <i class="ri-sparkling-2-fill"></i>
-          مستقبلك يبدأ بفكرة
-        </span>
-
-        <h2>
-          حوّل فضولك إلى<br>
-          <span>إبداع برمجي.</span>
-        </h2>
-
-        <p>
-          تعلّم البرمجة بأسلوب تفاعلي، واكتشف عوالم جديدة،
-          واكتب أول سطر كود يقربك من مشروعك القادم.
-        </p>
-
-        <div class="hero-actions">
-
-          <a
-            href="languages.html"
-            class="button-primary"
-          >
-            <span>ابدأ رحلة التعلم</span>
-            <i class="ri-arrow-left-line"></i>
-          </a>
-
-          <a
-            href="playground.html"
-            class="button-ghost"
-          >
-            <i class="ri-code-box-line"></i>
-            <span>افتح محرر الأكواد</span>
-          </a>
-
-        </div>
-
-        <div class="hero-trust">
-
-          <span class="trust-icon">
-            <i class="ri-code-s-slash-line"></i>
-          </span>
-
-          <span>تعلّم بالتجربة</span>
-
-          <span class="trust-separator"></span>
-
-          <span class="trust-icon">
-            <i class="ri-lightbulb-flash-line"></i>
-          </span>
-
-          <span>اصنع أفكارك</span>
-
-        </div>
-
-      </div>
-
-
-      <!-- Universe Illustration -->
-
-      <div class="hero-universe" aria-hidden="true">
-
-        <div class="universe-glow"></div>
-
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-        <div class="orbit orbit-three"></div>
-
-        <div class="planet planet-main">
-          <div class="planet-surface"></div>
-          <div class="planet-ring"></div>
-        </div>
-
-        <div class="planet planet-small planet-purple"></div>
-        <div class="planet planet-small planet-gold"></div>
-        <div class="planet planet-small planet-blue"></div>
-
-        <span class="universe-star universe-star-one">✦</span>
-        <span class="universe-star universe-star-two">✧</span>
-        <span class="universe-star universe-star-three">✦</span>
-
-        <div class="mascot-card">
-          <span class="mascot-sparkle">✧</span>
-          <span class="cody-mascot">🤖</span>
-          <span class="mascot-label">أنا كودي!</span>
-        </div>
-
-      </div>
-
-      <div class="hero-bottom-glow"></div>
-
-    </section>
-
-
-    <!-- ===================================
-         LEARNING STATISTICS
-    ==================================== -->
-
-    <section class="dashboard-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-eyebrow">
-            نظرة عامة
-          </span>
-
-          <h2>
-            رحلتك حتى الآن
-            <span class="heading-sparkle">✦</span>
-          </h2>
-
-          <p>
-            تابع تقدمك وشاهد كيف تتطور مهاراتك خطوة بخطوة.
-          </p>
-
-        </div>
-
-        <a href="achievements.html" class="section-link">
-          عرض الإنجازات
-          <i class="ri-arrow-left-line"></i>
-        </a>
-
-      </div>
-
-
-      <div class="stats-grid">
-
-        <!-- Completed Lessons -->
-
-        <article class="stat-card stat-lessons">
-
-          <div class="stat-card-top">
-
-            <span class="stat-icon">
-              <i class="ri-book-open-fill"></i>
-            </span>
-
-            <span class="stat-trend">
-              <i class="ri-sparkling-2-line"></i>
-            </span>
-
-          </div>
-
-          <span class="stat-label">
-            دروس مكتملة
-          </span>
-
-          <strong class="stat-number js-completed-lessons">
-            0
-          </strong>
-
-          <span class="stat-foot">
-            كل درس يضيف إلى خبرتك
-          </span>
-
-          <div class="stat-bottom-line"></div>
-
-        </article>
-
-
-        <!-- Level -->
-
-        <article class="stat-card stat-level">
-
-          <div class="stat-card-top">
-
-            <span class="stat-icon">
-              <i class="ri-trophy-fill"></i>
-            </span>
-
-            <span class="stat-trend">
-              <i class="ri-arrow-up-line"></i>
-            </span>
-
-          </div>
-
-          <span class="stat-label">
-            مستواك الحالي
-          </span>
-
-          <strong class="stat-number">
-            <span class="js-user-level">1</span>
-          </strong>
-
-          <span class="stat-foot">
-            واصل التعلم لتتقدم
-          </span>
-
-          <div class="stat-bottom-line"></div>
-
-        </article>
-
-
-        <!-- Learning Streak -->
-
-        <article class="stat-card stat-streak">
-
-          <div class="stat-card-top">
-
-            <span class="stat-icon">
-              <i class="ri-fire-fill"></i>
-            </span>
-
-            <span class="stat-trend">
-              <i class="ri-heart-pulse-line"></i>
-            </span>
-
-          </div>
-
-          <span class="stat-label">
-            أيام تعلم متتالية
-          </span>
-
-          <strong class="stat-number js-learning-streak">
-            0
-          </strong>
-
-          <span class="stat-foot">
-            الاستمرار يصنع الفرق
-          </span>
-
-          <div class="stat-bottom-line"></div>
-
-        </article>
-
-
-        <!-- Completed Projects -->
-
-        <article class="stat-card stat-projects">
-
-          <div class="stat-card-top">
-
-            <span class="stat-icon">
-              <i class="ri-rocket-2-fill"></i>
-            </span>
-
-            <span class="stat-trend">
-              <i class="ri-lightbulb-flash-line"></i>
-            </span>
-
-          </div>
-
-          <span class="stat-label">
-            مشروعات مكتملة
-          </span>
-
-          <strong class="stat-number js-completed-projects">
-            0
-          </strong>
-
-          <span class="stat-foot">
-            أفكار تتحول إلى واقع
-          </span>
-
-          <div class="stat-bottom-line"></div>
-
-        </article>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================
-         PROGRAMMING COURSES
-    ==================================== -->
-
-    <section class="dashboard-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-eyebrow">
-            مساراتك البرمجية
-          </span>
-
-          <h2>
-            اختر عالمك القادم
-            <span class="heading-sparkle">✦</span>
-          </h2>
-
-          <p>
-            ثلاثة مسارات مختلفة، وفرص لا نهائية للتجربة والإبداع.
-          </p>
-
-        </div>
-
-        <a href="languages.html" class="section-link">
-          جميع المسارات
-          <i class="ri-arrow-left-line"></i>
-        </a>
-
-      </div>
-
-
-      <div class="courses-grid">
-
-
-        <!-- =================================
-             PYTHON
-        ================================== -->
-
-        <a
-          href="python-welcome.html"
-          class="course-card course-python"
-          aria-label="ابدأ تعلم Python"
-        >
-
-          <div class="course-art">
-
-            <div class="course-art-stars"></div>
-            <div class="course-orbit"></div>
-
-            <div class="course-planet-visual">
-
-              <svg
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M23.488 9.14v2.966a4.284 4.284 0 01-4.173 4.236h-6.672a3.408 3.408 0 00-3.34 3.394v6.36c0 1.81 1.574 2.876 3.34 3.395a11.176 11.176 0 006.672 0c1.682-.487 3.34-1.467 3.34-3.394V23.55h-6.672v-.849h10.012c1.941 0 2.665-1.354 3.34-3.386a11.464 11.464 0 000-6.79c-.48-1.932-1.396-3.386-3.34-3.386Zm-3.752 16.108a1.273 1.273 0 11-1.254 1.269 1.26 1.26 0 011.254-1.27Z"
-                  fill="#387EB8"
-                />
-
-                <path
-                  d="M15.835 2a19.072 19.072 0 00-3.192.273c-2.827.499-3.34 1.544-3.34 3.472V8.29h6.68v.849H6.796a4.17 4.17 0 00-4.173 3.387 12.486 12.486 0 000 6.789c.475 1.977 1.609 3.386 3.55 3.386H8.47V19.65a4.245 4.245 0 014.173-4.15h6.672a3.365 3.365 0 003.34-3.394V5.745a3.729 3.729 0 00-3.34-3.472A20.838 20.838 0 0015.835 2Zm-3.612 2.048a1.273 1.273 0 11-1.254 1.277 1.268 1.268 0 011.254-1.277Z"
-                  fill="#FFE052"
-                />
-              </svg>
-
-            </div>
-
-            <span class="course-tag">
-              <i class="ri-sparkling-fill"></i>
-              مناسب للبداية
-            </span>
-
-            <span class="course-art-index">01</span>
-
-          </div>
-
-
-          <div class="course-content">
-
-            <div class="course-title-row">
-
-              <div>
-                <span class="course-subtitle">
-                  PROGRAMMING
-                </span>
-
-                <h3>Python</h3>
-              </div>
-
-              <span class="course-language-icon">
-
-                <svg
-                  viewBox="0 0 32 32"
-                  width="28"
-                  height="28"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M23.488 9.14v2.966a4.284 4.284 0 01-4.173 4.236h-6.672a3.408 3.408 0 00-3.34 3.394v6.36c0 1.81 1.574 2.876 3.34 3.395a11.176 11.176 0 006.672 0c1.682-.487 3.34-1.467 3.34-3.394V23.55h-6.672v-.849h10.012c1.941 0 2.665-1.354 3.34-3.386a11.464 11.464 0 000-6.79c-.48-1.932-1.396-3.386-3.34-3.386Zm-3.752 16.108a1.273 1.273 0 11-1.254 1.269 1.26 1.26 0 011.254-1.27Z"
-                    fill="#387EB8"
-                  />
-
-                  <path
-                    d="M15.835 2a19.072 19.072 0 00-3.192.273c-2.827.499-3.34 1.544-3.34 3.472V8.29h6.68v.849H6.796a4.17 4.17 0 00-4.173 3.387 12.486 12.486 0 000 6.789c.475 1.977 1.609 3.386 3.55 3.386H8.47V19.65a4.245 4.245 0 014.173-4.15h6.672a3.365 3.365 0 003.34-3.394V5.745a3.729 3.729 0 00-3.34-3.472A20.838 20.838 0 0015.835 2Zm-3.612 2.048a1.273 1.273 0 11-1.254 1.277 1.268 1.268 0 011.254-1.277Z"
-                    fill="#FFE052"
-                  />
-                </svg>
-
-              </span>
-
-            </div>
-
-            <p>
-              ابدأ من الأساسيات، واكتشف كيف تبني البرامج وتحل المشكلات خطوة بخطوة.
-            </p>
-
-            <div class="course-progress-info">
-              <span>نسبة إكمال المسار</span>
-              <strong class="js-python-progress-label">0%</strong>
-            </div>
-
-            <div
-              class="course-progress"
-              role="progressbar"
-              aria-label="تقدم مسار Python"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow="0"
-            >
-              <span class="course-progress-fill"></span>
-            </div>
-
-            <div class="course-footer">
-              <span>استكشف المسار</span>
-              <i class="ri-arrow-left-up-line"></i>
-            </div>
-
-          </div>
-
-        </a>
-
-
-        <!-- =================================
-             JAVASCRIPT
-        ================================== -->
-
-        <a
-          href="languages.html?language=javascript"
-          class="course-card course-javascript"
-          aria-label="ابدأ تعلم JavaScript"
-        >
-
-          <div class="course-art">
-
-            <div class="course-art-stars"></div>
-            <div class="course-orbit"></div>
-
-            <div class="course-planet-visual">
-
-              <svg
-                viewBox="0 0 1052 1052"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path fill="#f0db4f" d="M0 0h1052v1052H0z"/>
-
-                <path
-                  d="M965.9 801.1c-7.7-48-39-88.3-131.7-125.9-32.2-14.8-68.1-25.399-78.8-49.8-3.8-14.2-4.3-22.2-1.9-30.8 6.9-27.9 40.2-36.6 66.6-28.6 17 5.7 33.1 18.801 42.8 39.7 45.4-29.399 45.3-29.2 77-49.399-11.6-18-17.8-26.301-25.4-34-27.3-30.5-64.5-46.2-124-45-10.3 1.3-20.699 2.699-31 4-29.699 7.5-58 23.1-74.6 44-49.8 56.5-35.6 155.399 25 196.1 59.7 44.8 147.4 55 158.6 96.9 10.9 51.3-37.699 67.899-86 62-35.6-7.4-55.399-25.5-76.8-58.4-39.399 22.8-39.399 22.8-79.899 46.1 9.6 21 19.699 30.5 35.8 48.7 76.2 77.3 266.899 73.5 301.1-43.5 1.399-4.001 10.6-30.801 3.199-72.101zm-394-317.6h-98.4c0 85-.399 169.4-.399 254.4 0 54.1 2.8 103.7-6 118.9-14.4 29.899-51.7 26.2-68.7 20.399-17.3-8.5-26.1-20.6-36.3-37.699-2.8-4.9-4.9-8.7-5.601-9-26.699 16.3-53.3 32.699-80 49 13.301 27.3 32.9 51 58 66.399 37.5 22.5 87.9 29.4 140.601 17.3 34.3-10 63.899-30.699 79.399-62.199 22.4-41.3 17.6-91.3 17.4-146.6.5-90.2 0-180.4 0-270.9z"
-                  fill="#323330"
-                />
-              </svg>
-
-            </div>
-
-            <span class="course-tag">
-              <i class="ri-sparkling-fill"></i>
-              تجارب تفاعلية
-            </span>
-
-            <span class="course-art-index">02</span>
-
-          </div>
-
-
-         <div class="course-content">
-
-  <div class="course-title-row">
-
-    <div>
-      <span class="course-subtitle">WEB DEVELOPMENT</span>
-      <h3>JavaScript</h3>
-    </div>
-
-    <span class="course-language-icon">
-      <svg
-        viewBox="0 0 32 32"
-        width="28"
-        height="28"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <rect width="32" height="32" rx="3" fill="#F0DB4F"/>
-        <path
-          d="M19.2 24.1c.6 1 1.3 1.7 2.6 1.7 1.1 0 1.8-.5 1.8-1.3 0-.9-.7-1.2-2-1.8l-.7-.3c-2-.9-3.3-2-3.3-4.3 0-2.1 1.6-3.8 4.2-3.8 1.8 0 3.1.6 4 2.3l-2.2 1.4c-.5-.9-1-1.3-1.8-1.3-.8 0-1.3.5-1.3 1.2 0 .8.5 1.1 1.7 1.6l.7.3c2.4 1 3.7 2.1 3.7 4.5 0 2.6-2 4-4.7 4-2.6 0-4.2-1.2-5-2.9l2.3-1.3ZM9.2 24.3c.5.8.9 1.5 1.9 1.5.9 0 1.5-.4 1.5-1.9v-10h2.9v10c0 3-1.8 4.4-4.3 4.4-2.3 0-3.6-1.2-4.3-2.7l2.3-1.3Z"
-          fill="#323330"
-        />
-      </svg>
-    </span>
-
-  </div>
-
-  <p>
-    تعلّم بناء صفحات الويب وإضافة التفاعلات والحركة إلى المواقع باستخدام JavaScript.
-  </p>
-
-  <div class="course-progress-info">
-    <span>نسبة إكمال المسار</span>
-    <strong class="js-javascript-progress-label">0%</strong>
-  </div>
-
-  <div
-    class="course-progress"
-    role="progressbar"
-    aria-label="تقدم مسار JavaScript"
-    aria-valuemin="0"
-    aria-valuemax="100"
-    aria-valuenow="0"
-  >
-    <span class="course-progress-fill"></span>
-  </div>
-
-  <div class="course-footer">
-    <span>استكشف المسار</span>
-    <i class="ri-arrow-left-up-line"></i>
-  </div>
-
-</div>
-
-</a>
-
-
-<!-- =================================
-     C++
-================================== -->
-
-<a
-  href="languages.html?language=cpp"
-  class="course-card course-cpp"
-  aria-label="ابدأ تعلم C++"
->
-
-  <div class="course-art">
-
-    <div class="course-art-stars"></div>
-    <div class="course-orbit"></div>
-
-    <div class="course-planet-visual">
-
-      <svg
-        viewBox="0 0 128 128"
-        width="76"
-        height="76"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <path
-          fill="#00599C"
-          d="M117.2 34.4a8.6 8.6 0 0 0-4.3-7.5L68.3 1.2a8.7 8.7 0 0 0-8.6 0L15.1 26.9a8.6 8.6 0 0 0-4.3 7.5v51.2a8.6 8.6 0 0 0 4.3 7.5l44.6 25.7a8.7 8.7 0 0 0 8.6 0l44.6-25.7a8.6 8.6 0 0 0 4.3-7.5Z"
-        />
-        <path
-          fill="#004482"
-          d="M64 0a8.6 8.6 0 0 0-4.3 1.2L15.1 26.9a8.6 8.6 0 0 0-4.3 7.5v51.2a8.6 8.6 0 0 0 4.3 7.5l44.6 25.7a8.6 8.6 0 0 0 4.3 1.2Z"
-        />
-        <path
-          fill="#fff"
-          d="M64 20.8 29.5 40.7v39.8L64 100.4l34.5-19.9V40.7Zm0 8.7 27 15.6v31.2L64 91.9 37 76.3V45.1Z"
-        />
-        <path
-          fill="#fff"
-          d="M54.1 47.3c-8.1 0-13.5 6.2-13.5 16.7s5.4 16.7 13.5 16.7c5.4 0 9.3-2.8 11.4-8.2l-7.2-3.2c-1 2.8-2.3 4.2-4.2 4.2-3 0-4.8-3.4-4.8-9.5s1.8-9.5 4.8-9.5c1.9 0 3.2 1.4 4.2 4.2l7.2-3.2c-2.1-5.4-6-8.2-11.4-8.2Z"
-        />
-        <path
-          fill="#fff"
-          d="M77.3 48.3v7.2h-7.2v6.1h7.2v7.2h6.1v-7.2h7.2v-6.1h-7.2v-7.2Zm0 20.5V76h-7.2v6.1h7.2v7.2h6.1v-7.2h7.2V76h-7.2v-7.2Z"
-        />
-      </svg>
-
-    </div>
-
-    <span class="course-tag">
-      <i class="ri-code-s-slash-line"></i>
-      أساسيات البرمجة
-    </span>
-
-    <span class="course-art-index">03</span>
-
-  </div>
-
-
-  <div class="course-content">
-
-    <div class="course-title-row">
-
-      <div>
-        <span class="course-subtitle">COMPUTER SCIENCE</span>
-        <h3>C++</h3>
-      </div>
-
-      <span class="course-language-icon">
-        <i class="ri-code-box-fill"></i>
-      </span>
-
-    </div>
-
-    <p>
-      اكتشف أساسيات البرمجة والمنطق وحل المشكلات، وتعرّف على مفاهيم مهمة في علوم الحاسب.
-    </p>
-
-    <div class="course-progress-info">
-      <span>نسبة إكمال المسار</span>
-      <strong class="js-cpp-progress-label">0%</strong>
-    </div>
-
-    <div
-      class="course-progress"
-      role="progressbar"
-      aria-label="تقدم مسار C++"
-      aria-valuemin="0"
-      aria-valuemax="100"
-      aria-valuenow="0"
-    >
-      <span class="course-progress-fill"></span>
-    </div>
-
-    <div class="course-footer">
-      <span>استكشف المسار</span>
-      <i class="ri-arrow-left-up-line"></i>
-    </div>
-
-  </div>
-
-</a>
-
-</div>
-
-</section>
-
-
-<!-- =====================================
-     QUICK ACTIVITIES
-====================================== -->
-
-<section class="dashboard-section">
-
-  <div class="section-heading">
-
-    <div>
-      <span class="section-eyebrow">اكتشف المزيد</span>
-
-      <h2>
-        أنشطة تنتظرك
-        <span class="heading-sparkle">✦</span>
-      </h2>
-
-      <p>
-        جرّب، استكشف، وطبّق ما تعلمته في تجارب عملية.
-      </p>
-    </div>
-
-  </div>
-
-
-  <div class="activities-grid">
-
-    <!-- Playground -->
-
-    <a href="playground.html" class="activity-card activity-playground">
-
-      <div class="activity-icon">
-        <i class="ri-terminal-box-line"></i>
-      </div>
-
-      <div class="activity-copy">
-        <span class="activity-eyebrow">PRACTICE</span>
-        <h3>مختبر الأكواد</h3>
-        <p>اكتب الأكواد وجرب أفكارك في بيئة تفاعلية.</p>
-      </div>
-
-      <span class="activity-arrow">
-        <i class="ri-arrow-left-line"></i>
-      </span>
-
-    </a>
-
-
-    <!-- Games -->
-
-    <a href="games.html" class="activity-card activity-games">
-
-      <div class="activity-icon">
-        <i class="ri-gamepad-line"></i>
-      </div>
-
-      <div class="activity-copy">
-        <span class="activity-eyebrow">CHALLENGES</span>
-        <h3>الألعاب والتحديات</h3>
-        <p>اختبر تفكيرك وحاول حل تحديات البرمجة.</p>
-      </div>
-
-      <span class="activity-arrow">
-        <i class="ri-arrow-left-line"></i>
-      </span>
-
-    </a>
-
-
-    <!-- Projects -->
-
-    <a href="projects.html" class="activity-card activity-projects">
-
-      <div class="activity-icon">
-        <i class="ri-folder-code-line"></i>
-      </div>
-
-      <div class="activity-copy">
-        <span class="activity-eyebrow">CREATION</span>
-        <h3>مشروعاتي</h3>
-        <p>حوّل ما تتعلمه إلى مشروعات وأفكار جديدة.</p>
-      </div>
-
-      <span class="activity-arrow">
-        <i class="ri-arrow-left-line"></i>
-      </span>
-
-    </a>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================
-     FINAL LEARNING MESSAGE
-====================================== -->
-
-<section class="dashboard-encouragement">
-
-  <div class="encouragement-decoration">
-    <i class="ri-sparkling-2-fill"></i>
-  </div>
-
-  <div class="encouragement-content">
-
-    <span class="encouragement-label">A LITTLE REMINDER</span>
-
-    <h2>كل مبرمج بدأ بسطر واحد.</h2>
-
-    <p>
-      لا يشترط أن تعرف كل شيء من البداية.
-      استمر في التعلم، وامنح أفكارك فرصة لتصبح حقيقة.
-    </p>
-
-  </div>
-
-  <a href="languages.html" class="encouragement-button">
-    اكتشف مسارًا جديدًا
-    <i class="ri-arrow-left-line"></i>
-  </a>
-
-</section>
-
-
-<!-- =====================================
-     FOOTER
-====================================== -->
-
-<footer class="space-footer">
-
-  <a href="dashboard.html" class="footer-brand">
-    <span class="brand-mark">C</span>
-    <span>Cody Academy</span>
-  </a>
-
-  <p>
-    مساحة صغيرة لتتعلم، وتجرب، وتصنع مستقبلًا مليئًا بالأفكار.
-  </p>
-
-  <span class="footer-copyright">
-    © <span id="currentYear"></span> Cody Academy
-  </span>
-
-</footer>
-
-</main>
-
-
-<!-- =====================================
-     MOBILE BOTTOM NAVIGATION
-====================================== -->
-
-<nav class="mobile-nav" aria-label="التنقل السريع">
-
-  <a href="dashboard.html" class="mobile-nav-link active" aria-current="page">
-    <i class="ri-home-5-line"></i>
-    <span>الرئيسية</span>
-  </a>
-
-  <a href="languages.html" class="mobile-nav-link">
-    <i class="ri-route-line"></i>
-    <span>التعلم</span>
-  </a>
-
-  <a href="playground.html" class="mobile-nav-link">
-    <i class="ri-code-box-line"></i>
-    <span>المختبر</span>
-  </a>
-
-  <a href="achievements.html" class="mobile-nav-link">
-    <i class="ri-medal-line"></i>
-    <span>إنجازاتي</span>
-  </a>
-
-  <a href="profile.html" class="mobile-nav-link">
-    <i class="ri-user-line"></i>
-    <span>حسابي</span>
-  </a>
-
-</nav>
-
-
-<!-- =====================================
-     DASHBOARD INTERACTIONS
-====================================== -->
-
-<script>
-  // Current year
-  const yearElement = document.getElementById("currentYear");
-
-  if (yearElement) {
-    yearElement.textContent = new Date().getFullYear();
+import { auth, db } from "./firebase-config.js";
+
+import {
+  logoutUser,
+  requireUser,
+  ensureUserProfile
+} from "./auth.js";
+
+import {
+  doc,
+  collection,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+import {
+  getAllAvatars,
+  renderAvatar,
+  installAvatarStyles
+} from "./avatars.js";
+
+/*
+ * Cody Academy — Application Controller
+ * Authentication, Firestore synchronization,
+ * user progress and selected avatar rendering.
+ */
+
+const PUBLIC_PAGES = new Set([
+  "index.html",
+  "login.html",
+  "signup.html",
+  "register.html",
+  "forgot-password.html",
+  "reset-password.html"
+]);
+
+const LANGUAGES = {
+  python: {
+    file: "./json/python_curriculum.json",
+    selector: ".course-python .course-progress"
+  },
+
+  javascript: {
+    file: "./json/js_curriculum.json",
+    selector: ".course-javascript .course-progress"
+  },
+
+  cpp: {
+    file: "./json/cpp_curriculum.json",
+    selector: ".course-cpp .course-progress"
+  }
+};
+
+const DEFAULT_AVATAR = "cody";
+
+/* =========================================
+   General helpers
+========================================= */
+
+function currentPage() {
+  return location.pathname.split("/").pop() || "index.html";
+}
+
+function showToast(message, type = "info") {
+  let container = document.getElementById("toast-container");
+
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+
+    container.setAttribute("role", "status");
+    container.setAttribute("aria-live", "polite");
+
+    container.style.cssText =
+      "position:fixed;bottom:20px;left:20px;z-index:9999;" +
+      "display:flex;flex-direction:column;gap:10px;" +
+      "max-width:calc(100vw - 40px)";
+
+    document.body.appendChild(container);
   }
 
-  // Dashboard menu
-  const menuButton = document.getElementById("dashboardMenuButton");
-  const menuPanel = document.getElementById("dashboardMenuPanel");
-  const dashboardMenu = document.getElementById("dashboardMenu");
+  const toast = document.createElement("div");
 
-  if (menuButton && menuPanel && dashboardMenu) {
+  const colors = {
+    error: "#e74c3c",
+    warning: "#f39c12",
+    success: "#2ecc71",
+    info: "#344054"
+  };
 
-    menuButton.addEventListener("click", function (event) {
-      event.stopPropagation();
+  toast.setAttribute(
+    "role",
+    type === "error" ? "alert" : "status"
+  );
 
-      const isExpanded =
-        menuButton.getAttribute("aria-expanded") === "true";
+  toast.style.cssText =
+    "padding:12px 20px;border-radius:12px;color:white;" +
+    "font-size:14px;font-weight:600;overflow-wrap:anywhere;" +
+    `background:${colors[type] || colors.info}`;
 
-      menuButton.setAttribute(
-        "aria-expanded",
-        String(!isExpanded)
+  toast.textContent = String(message);
+
+  container.appendChild(toast);
+
+  window.setTimeout(() => {
+    toast.remove();
+
+    if (!container.childElementCount) {
+      container.remove();
+    }
+  }, 3500);
+}
+
+function setText(selector, value) {
+  document.querySelectorAll(selector).forEach(element => {
+    element.textContent = String(value ?? 0);
+  });
+}
+
+function safeNumber(value) {
+  const number = Number(value);
+
+  return Number.isFinite(number) && number >= 0
+    ? number
+    : 0;
+}
+
+function getLoginRedirectUrl() {
+  const page = currentPage();
+
+  const safePage = /^[a-zA-Z0-9_-]+\.html$/.test(page)
+    ? page
+    : "dashboard.html";
+
+  const next = safePage + location.search;
+
+  return `login.html?next=${encodeURIComponent(next)}`;
+}
+
+/* =========================================
+   Avatar system
+========================================= */
+
+/**
+ * Returns the selected avatar only when it exists
+ * and, for store avatars, is present in the user's inventory.
+ */
+function getUserAvatarId(userData = {}) {
+  const avatars = getAllAvatars();
+
+  const activeAvatar =
+    typeof userData.activeAvatar === "string"
+      ? userData.activeAvatar
+      : DEFAULT_AVATAR;
+
+  const inventory = Array.isArray(userData.inventory)
+    ? userData.inventory
+    : [];
+
+  const selectedAvatar = avatars.find(avatar => {
+    if (avatar.id !== activeAvatar) {
+      return false;
+    }
+
+    // Free/default avatars do not require inventory ownership.
+    if (!avatar.storeItem) {
+      return true;
+    }
+
+    // Store avatars must belong to the current user.
+    return inventory.includes(avatar.id);
+  });
+
+  return selectedAvatar?.id || DEFAULT_AVATAR;
+}
+
+/**
+ * Renders the same selected avatar wherever its container exists.
+ * This function does not create another Firestore listener.
+ */
+function renderUserAvatar(userData = {}) {
+  const dashboardContainer = document.getElementById(
+    "dashboardAvatarArt"
+  );
+
+  const profileContainer = document.getElementById(
+    "userAvatar"
+  );
+
+  if (!dashboardContainer && !profileContainer) {
+    return;
+  }
+
+  installAvatarStyles();
+
+  const avatarId = getUserAvatarId(userData);
+  const avatarHTML = renderAvatar(avatarId);
+
+  if (dashboardContainer) {
+    dashboardContainer.innerHTML = avatarHTML;
+  }
+
+  if (profileContainer) {
+    profileContainer.innerHTML = avatarHTML;
+  }
+}
+
+/* =========================================
+   Progress system
+========================================= */
+
+function setProgress(selector, value) {
+  const percentage = Math.max(
+    0,
+    Math.min(100, safeNumber(value))
+  );
+
+  document.querySelectorAll(selector).forEach(bar => {
+    const fill = bar.querySelector(".course-progress-fill");
+
+    if (fill) {
+      fill.style.width = `${percentage}%`;
+    }
+
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", "100");
+    bar.setAttribute("aria-valuenow", String(percentage));
+
+    const label = bar
+      .closest(".course-card")
+      ?.querySelector(".course-progress-info strong");
+
+    if (label) {
+      label.textContent = `${percentage}%`;
+    }
+  });
+}
+
+async function loadCurriculumTotals() {
+  const totals = {};
+
+  await Promise.all(
+    Object.entries(LANGUAGES).map(async ([language, config]) => {
+      try {
+        const response = await fetch(config.file, {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `HTTP ${response.status}: ${config.file}`
+          );
+        }
+
+        const curriculum = await response.json();
+
+        if (!Array.isArray(curriculum.chapters)) {
+          throw new Error("تنسيق المنهج غير صحيح.");
+        }
+
+        totals[language] = curriculum.chapters.map(chapter =>
+          Array.isArray(chapter?.lessons)
+            ? chapter.lessons.length
+            : 0
+        );
+
+      } catch (error) {
+        console.error(
+          `تعذر تحميل منهج ${language}:`,
+          error
+        );
+
+        totals[language] = null;
+      }
+    })
+  );
+
+  return totals;
+}
+
+function isValidCompletedLesson(item, totals) {
+  if (!item || item.completed !== true) {
+    return false;
+  }
+
+  const language = item.language;
+
+  if (!Object.prototype.hasOwnProperty.call(
+    LANGUAGES,
+    language
+  )) {
+    return false;
+  }
+
+  if (
+    !Number.isSafeInteger(item.chapter) ||
+    !Number.isSafeInteger(item.lesson) ||
+    item.chapter < 0 ||
+    item.lesson < 0
+  ) {
+    return false;
+  }
+
+  const chapters = totals[language];
+
+  if (!Array.isArray(chapters)) {
+    return false;
+  }
+
+  if (item.chapter >= chapters.length) {
+    return false;
+  }
+
+  return item.lesson < chapters[item.chapter];
+}
+
+function calculateLessonStats(documents, totals) {
+  const completedByLanguage = {
+    python: new Set(),
+    javascript: new Set(),
+    cpp: new Set()
+  };
+
+  for (const item of documents) {
+    if (!isValidCompletedLesson(item, totals)) {
+      continue;
+    }
+
+    const key = `${item.chapter}:${item.lesson}`;
+
+    completedByLanguage[item.language].add(key);
+  }
+
+  const percentages = {};
+
+  let completedTotal = 0;
+
+  for (const language of Object.keys(LANGUAGES)) {
+    const completed = completedByLanguage[language].size;
+    const chapters = totals[language];
+
+    completedTotal += completed;
+
+    if (!Array.isArray(chapters)) {
+      percentages[language] = null;
+      continue;
+    }
+
+    const total = chapters.reduce(
+      (sum, count) => sum + count,
+      0
+    );
+
+    percentages[language] = total > 0
+      ? Math.round((completed / total) * 100)
+      : 0;
+  }
+
+  return {
+    completedTotal,
+    percentages
+  };
+}
+
+/* =========================================
+   Main application controller
+========================================= */
+
+export const App = {
+  user: "متعلم",
+
+  xp: 0,
+  coins: 0,
+
+  currentUid: null,
+
+  unsubscribeProfile: null,
+  unsubscribeLessonProgress: null,
+
+  initPromise: null,
+
+  curriculumTotals: null,
+  lessonStats: null,
+
+  init() {
+    if (!this.initPromise) {
+      this.initPromise = this.initialize().catch(error => {
+        console.error("App initialization error:", error);
+
+        this.initPromise = null;
+      });
+    }
+
+    return this.initPromise;
+  },
+
+  async initialize() {
+    this.highlightNav();
+
+    this.bindLogout();
+    this.bindProtectedLinks();
+
+    if (PUBLIC_PAGES.has(currentPage())) {
+      return;
+    }
+
+    let user;
+
+    try {
+      user = await requireUser();
+
+    } catch (error) {
+      console.error(
+        "Authentication verification failed:",
+        error
       );
 
-      menuPanel.hidden = isExpanded;
-    });
+      location.replace(getLoginRedirectUrl());
+      return;
+    }
 
-    document.addEventListener("click", function (event) {
+    if (!user?.uid) {
+      location.replace(getLoginRedirectUrl());
+      return;
+    }
 
-      if (!dashboardMenu.contains(event.target)) {
-        menuPanel.hidden = true;
-        menuButton.setAttribute("aria-expanded", "false");
+    try {
+      await ensureUserProfile(user);
+
+      this.currentUid = user.uid;
+
+      this.curriculumTotals = await loadCurriculumTotals();
+
+      // Prevent duplicate listeners if initialization is repeated.
+      this.unsubscribeProfile?.();
+      this.unsubscribeLessonProgress?.();
+
+      /* -------------------------------------
+         User profile listener
+      ------------------------------------- */
+
+      this.unsubscribeProfile = onSnapshot(
+        doc(db, "users", user.uid),
+
+        snapshot => {
+          if (!snapshot.exists()) {
+            showToast("ملف الحساب غير موجود.", "error");
+            return;
+          }
+
+          const data = snapshot.data();
+
+          this.user =
+            data.displayName ||
+            user.displayName ||
+            "متعلم";
+
+          this.xp = safeNumber(data.xp);
+          this.coins = safeNumber(data.coins);
+
+          // Updates name, XP, coins, avatar and dashboard stats.
+          this.updateUI(data);
+        },
+
+        error => {
+          console.error(
+            "Profile subscription error:",
+            error
+          );
+
+          showToast(
+            "تعذر تحديث بيانات الحساب.",
+            "error"
+          );
+        }
+      );
+
+      /* -------------------------------------
+         Lesson progress listener
+      ------------------------------------- */
+
+      this.unsubscribeLessonProgress = onSnapshot(
+        collection(
+          db,
+          "users",
+          user.uid,
+          "lessonProgress"
+        ),
+
+        snapshot => {
+          const documents = snapshot.docs.map(item => ({
+            id: item.id,
+            ...item.data()
+          }));
+
+          this.lessonStats = calculateLessonStats(
+            documents,
+            this.curriculumTotals || {}
+          );
+
+          this.updateLessonProgressUI();
+        },
+
+        error => {
+          console.error(
+            "Lesson progress error:",
+            error
+          );
+
+          showToast(
+            "تعذر تحميل تقدم الدروس من حسابك.",
+            "error"
+          );
+        }
+      );
+
+    } catch (error) {
+      console.error(
+        "Profile initialization error:",
+        error
+      );
+
+      showToast(
+        "تعذر تحميل بيانات حسابك.",
+        "error"
+      );
+    }
+  },
+
+  /* =====================================
+     Update user interface
+  ===================================== */
+
+  updateUI(data = {}) {
+    const level = Math.floor(this.xp / 100) + 1;
+    const xpInLevel = this.xp % 100;
+
+    setText(".js-user-name", this.user);
+    setText(".js-user-xp", this.xp);
+    setText(".js-user-coins", this.coins);
+    setText(".js-user-level", level);
+
+    setText("#userLevel", level);
+    setText("#currentXP", xpInLevel);
+
+    // Render selected avatar from the same Firestore snapshot.
+    renderUserAvatar(data);
+
+    const progressBar = document.getElementById(
+      "xpProgressBar"
+    );
+
+    if (progressBar) {
+      progressBar.style.width = `${xpInLevel}%`;
+      progressBar.setAttribute(
+        "aria-valuenow",
+        String(xpInLevel)
+      );
+    }
+
+    if (!this.lessonStats) {
+      setText(
+        ".js-completed-lessons",
+        safeNumber(data.completedLessons)
+      );
+    }
+
+    setText(
+      ".js-completed-projects",
+      safeNumber(data.completedProjects)
+    );
+
+    setText(
+      ".js-learning-streak",
+      safeNumber(data.streak)
+    );
+
+    if (!this.lessonStats) {
+      const progress = data.languageProgress || {};
+
+      for (const [language, config] of Object.entries(LANGUAGES)) {
+        if (progress[language] !== undefined) {
+          setProgress(
+            config.selector,
+            progress[language]
+          );
+        }
+      }
+    }
+  },
+
+  /* =====================================
+     Update lesson progress interface
+  ===================================== */
+
+  updateLessonProgressUI() {
+    if (!this.lessonStats) {
+      return;
+    }
+
+    setText(
+      ".js-completed-lessons",
+      this.lessonStats.completedTotal
+    );
+
+    for (const [language, percentage] of Object.entries(
+      this.lessonStats.percentages
+    )) {
+      if (percentage === null) {
+        console.warn(
+          `لم يتم حساب نسبة ${language} لتعذر تحميل المنهج.`
+        );
+
+        continue;
       }
 
-    });
+      setProgress(
+        LANGUAGES[language].selector,
+        percentage
+      );
+    }
+  },
 
-    document.addEventListener("keydown", function (event) {
+  /* =====================================
+     Protected navigation
+  ===================================== */
 
-      if (event.key === "Escape") {
-        menuPanel.hidden = true;
-        menuButton.setAttribute("aria-expanded", "false");
-        menuButton.focus();
+  bindProtectedLinks() {
+    document.querySelectorAll("[data-protected]").forEach(link => {
+      if (link.dataset.protectionBound === "true") {
+        return;
       }
 
-    });
+      link.dataset.protectionBound = "true";
 
+      link.addEventListener("click", async event => {
+        if (!PUBLIC_PAGES.has(currentPage())) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const destination = link.getAttribute("href");
+
+        try {
+          await requireUser();
+
+          if (destination) {
+            location.href = destination;
+          }
+
+        } catch {
+          const next = destination || "dashboard.html";
+
+          location.href =
+            `login.html?next=${encodeURIComponent(next)}`;
+        }
+      });
+    });
+  },
+
+  /* =====================================
+     Logout
+  ===================================== */
+
+  bindLogout() {
+    document.querySelectorAll(
+      ".logout, #logoutButton"
+    ).forEach(element => {
+
+      if (element.dataset.logoutBound === "true") {
+        return;
+      }
+
+      element.dataset.logoutBound = "true";
+
+      element.addEventListener("click", async event => {
+        event.preventDefault();
+
+        if (element.dataset.logoutPending === "true") {
+          return;
+        }
+
+        element.dataset.logoutPending = "true";
+
+        element.setAttribute("aria-busy", "true");
+
+        try {
+          await logoutUser();
+
+          location.replace("login.html");
+
+        } catch (error) {
+          console.error("Logout error:", error);
+
+          delete element.dataset.logoutPending;
+
+          element.removeAttribute("aria-busy");
+
+          showToast(
+            "تعذر تسجيل الخروج. حاول مرة أخرى.",
+            "error"
+          );
+        }
+      });
+    });
+  },
+
+  /* =====================================
+     Active navigation
+  ===================================== */
+
+  highlightNav() {
+    const current = currentPage();
+
+    document.querySelectorAll(
+      ".nav-link, .mobile-nav a, .nav-item, .mobile-nav-item"
+    ).forEach(link => {
+      const href = link.getAttribute("href");
+
+      if (!href || href === "#") {
+        return;
+      }
+
+      try {
+        const destination = new URL(
+          href,
+          location.href
+        ).pathname.split("/").pop();
+
+        const active = destination === current;
+
+        link.classList.toggle("active", active);
+
+        if (active) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+
+      } catch {
+        // Ignore invalid navigation URLs.
+      }
+    });
+  },
+
+  /* =====================================
+     Protected economy operations
+  ===================================== */
+
+  addXP() {
+    throw new Error(
+      "لا يمكن منح نقاط الخبرة من المتصفح."
+    );
+  },
+
+  addCoins() {
+    throw new Error(
+      "لا يمكن تعديل العملات من المتصفح."
+    );
+  },
+
+  /* =====================================
+     Cleanup
+  ===================================== */
+
+  destroy() {
+    this.unsubscribeProfile?.();
+    this.unsubscribeProfile = null;
+
+    this.unsubscribeLessonProgress?.();
+    this.unsubscribeLessonProgress = null;
+
+    this.currentUid = null;
+
+    this.lessonStats = null;
+    this.curriculumTotals = null;
+
+    this.initPromise = null;
   }
-</script>
+};
 
+/* =========================================
+   Application startup
+========================================= */
 
-<!-- =====================================
-     MAIN APPLICATION
-====================================== -->
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => App.init(),
+    { once: true }
+  );
 
-<script type="module" src="js/app.js?v=3001"></script>
-
-</body>
-</html>
+} else {
+  App.init();
+}
