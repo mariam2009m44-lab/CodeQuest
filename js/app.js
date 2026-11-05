@@ -13,8 +13,16 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+import {
+  getAllAvatars,
+  renderAvatar,
+  installAvatarStyles
+} from "./avatars.js";
+
 /*
  * Cody Academy — Application Controller
+ * Authentication, Firestore synchronization,
+ * user progress and selected avatar rendering.
  */
 
 const PUBLIC_PAGES = new Set([
@@ -31,15 +39,23 @@ const LANGUAGES = {
     file: "./json/python_curriculum.json",
     selector: ".course-python .course-progress"
   },
+
   javascript: {
     file: "./json/js_curriculum.json",
     selector: ".course-javascript .course-progress"
   },
+
   cpp: {
     file: "./json/cpp_curriculum.json",
     selector: ".course-cpp .course-progress"
   }
 };
+
+const DEFAULT_AVATAR = "cody";
+
+/* =========================================
+   General helpers
+========================================= */
 
 function currentPage() {
   return location.pathname.split("/").pop() || "index.html";
@@ -51,6 +67,7 @@ function showToast(message, type = "info") {
   if (!container) {
     container = document.createElement("div");
     container.id = "toast-container";
+
     container.setAttribute("role", "status");
     container.setAttribute("aria-live", "polite");
 
@@ -82,6 +99,7 @@ function showToast(message, type = "info") {
     `background:${colors[type] || colors.info}`;
 
   toast.textContent = String(message);
+
   container.appendChild(toast);
 
   window.setTimeout(() => {
@@ -118,6 +136,78 @@ function getLoginRedirectUrl() {
 
   return `login.html?next=${encodeURIComponent(next)}`;
 }
+
+/* =========================================
+   Avatar system
+========================================= */
+
+/**
+ * Returns the selected avatar only when it exists
+ * and, for store avatars, is present in the user's inventory.
+ */
+function getUserAvatarId(userData = {}) {
+  const avatars = getAllAvatars();
+
+  const activeAvatar =
+    typeof userData.activeAvatar === "string"
+      ? userData.activeAvatar
+      : DEFAULT_AVATAR;
+
+  const inventory = Array.isArray(userData.inventory)
+    ? userData.inventory
+    : [];
+
+  const selectedAvatar = avatars.find(avatar => {
+    if (avatar.id !== activeAvatar) {
+      return false;
+    }
+
+    // Free/default avatars do not require inventory ownership.
+    if (!avatar.storeItem) {
+      return true;
+    }
+
+    // Store avatars must belong to the current user.
+    return inventory.includes(avatar.id);
+  });
+
+  return selectedAvatar?.id || DEFAULT_AVATAR;
+}
+
+/**
+ * Renders the same selected avatar wherever its container exists.
+ * This function does not create another Firestore listener.
+ */
+function renderUserAvatar(userData = {}) {
+  const dashboardContainer = document.getElementById(
+    "dashboardAvatarArt"
+  );
+
+  const profileContainer = document.getElementById(
+    "userAvatar"
+  );
+
+  if (!dashboardContainer && !profileContainer) {
+    return;
+  }
+
+  installAvatarStyles();
+
+  const avatarId = getUserAvatarId(userData);
+  const avatarHTML = renderAvatar(avatarId);
+
+  if (dashboardContainer) {
+    dashboardContainer.innerHTML = avatarHTML;
+  }
+
+  if (profileContainer) {
+    profileContainer.innerHTML = avatarHTML;
+  }
+}
+
+/* =========================================
+   Progress system
+========================================= */
 
 function setProgress(selector, value) {
   const percentage = Math.max(
@@ -174,6 +264,7 @@ async function loadCurriculumTotals() {
             ? chapter.lessons.length
             : 0
         );
+
       } catch (error) {
         console.error(
           `تعذر تحميل منهج ${language}:`,
@@ -272,16 +363,23 @@ function calculateLessonStats(documents, totals) {
   };
 }
 
+/* =========================================
+   Main application controller
+========================================= */
+
 export const App = {
   user: "متعلم",
+
   xp: 0,
   coins: 0,
+
   currentUid: null,
 
   unsubscribeProfile: null,
   unsubscribeLessonProgress: null,
 
   initPromise: null,
+
   curriculumTotals: null,
   lessonStats: null,
 
@@ -289,6 +387,7 @@ export const App = {
     if (!this.initPromise) {
       this.initPromise = this.initialize().catch(error => {
         console.error("App initialization error:", error);
+
         this.initPromise = null;
       });
     }
@@ -298,6 +397,7 @@ export const App = {
 
   async initialize() {
     this.highlightNav();
+
     this.bindLogout();
     this.bindProtectedLinks();
 
@@ -309,8 +409,12 @@ export const App = {
 
     try {
       user = await requireUser();
+
     } catch (error) {
-      console.error("Authentication verification failed:", error);
+      console.error(
+        "Authentication verification failed:",
+        error
+      );
 
       location.replace(getLoginRedirectUrl());
       return;
@@ -328,8 +432,13 @@ export const App = {
 
       this.curriculumTotals = await loadCurriculumTotals();
 
+      // Prevent duplicate listeners if initialization is repeated.
       this.unsubscribeProfile?.();
       this.unsubscribeLessonProgress?.();
+
+      /* -------------------------------------
+         User profile listener
+      ------------------------------------- */
 
       this.unsubscribeProfile = onSnapshot(
         doc(db, "users", user.uid),
@@ -350,14 +459,26 @@ export const App = {
           this.xp = safeNumber(data.xp);
           this.coins = safeNumber(data.coins);
 
+          // Updates name, XP, coins, avatar and dashboard stats.
           this.updateUI(data);
         },
 
         error => {
-          console.error("Profile subscription error:", error);
-          showToast("تعذر تحديث بيانات الحساب.", "error");
+          console.error(
+            "Profile subscription error:",
+            error
+          );
+
+          showToast(
+            "تعذر تحديث بيانات الحساب.",
+            "error"
+          );
         }
       );
+
+      /* -------------------------------------
+         Lesson progress listener
+      ------------------------------------- */
 
       this.unsubscribeLessonProgress = onSnapshot(
         collection(
@@ -382,7 +503,10 @@ export const App = {
         },
 
         error => {
-          console.error("Lesson progress error:", error);
+          console.error(
+            "Lesson progress error:",
+            error
+          );
 
           showToast(
             "تعذر تحميل تقدم الدروس من حسابك.",
@@ -390,12 +514,23 @@ export const App = {
           );
         }
       );
-    } catch (error) {
-      console.error("Profile initialization error:", error);
 
-      showToast("تعذر تحميل بيانات حسابك.", "error");
+    } catch (error) {
+      console.error(
+        "Profile initialization error:",
+        error
+      );
+
+      showToast(
+        "تعذر تحميل بيانات حسابك.",
+        "error"
+      );
     }
   },
+
+  /* =====================================
+     Update user interface
+  ===================================== */
 
   updateUI(data = {}) {
     const level = Math.floor(this.xp / 100) + 1;
@@ -409,10 +544,19 @@ export const App = {
     setText("#userLevel", level);
     setText("#currentXP", xpInLevel);
 
-    const progressBar = document.getElementById("xpProgressBar");
+    // Render selected avatar from the same Firestore snapshot.
+    renderUserAvatar(data);
+
+    const progressBar = document.getElementById(
+      "xpProgressBar"
+    );
 
     if (progressBar) {
       progressBar.style.width = `${xpInLevel}%`;
+      progressBar.setAttribute(
+        "aria-valuenow",
+        String(xpInLevel)
+      );
     }
 
     if (!this.lessonStats) {
@@ -446,8 +590,14 @@ export const App = {
     }
   },
 
+  /* =====================================
+     Update lesson progress interface
+  ===================================== */
+
   updateLessonProgressUI() {
-    if (!this.lessonStats) return;
+    if (!this.lessonStats) {
+      return;
+    }
 
     setText(
       ".js-completed-lessons",
@@ -472,6 +622,10 @@ export const App = {
     }
   },
 
+  /* =====================================
+     Protected navigation
+  ===================================== */
+
   bindProtectedLinks() {
     document.querySelectorAll("[data-protected]").forEach(link => {
       if (link.dataset.protectionBound === "true") {
@@ -495,6 +649,7 @@ export const App = {
           if (destination) {
             location.href = destination;
           }
+
         } catch {
           const next = destination || "dashboard.html";
 
@@ -505,44 +660,56 @@ export const App = {
     });
   },
 
+  /* =====================================
+     Logout
+  ===================================== */
+
   bindLogout() {
-    // تسجيل الخروج يعمل من الأزرار الموجودة خارج شريط الموبايل.
-    document.querySelectorAll(".logout, #logoutButton").forEach(
-      element => {
-        if (element.dataset.logoutBound === "true") {
+    document.querySelectorAll(
+      ".logout, #logoutButton"
+    ).forEach(element => {
+
+      if (element.dataset.logoutBound === "true") {
+        return;
+      }
+
+      element.dataset.logoutBound = "true";
+
+      element.addEventListener("click", async event => {
+        event.preventDefault();
+
+        if (element.dataset.logoutPending === "true") {
           return;
         }
 
-        element.dataset.logoutBound = "true";
+        element.dataset.logoutPending = "true";
 
-        element.addEventListener("click", async event => {
-          event.preventDefault();
+        element.setAttribute("aria-busy", "true");
 
-          if (element.dataset.logoutPending === "true") {
-            return;
-          }
+        try {
+          await logoutUser();
 
-          element.dataset.logoutPending = "true";
-          element.setAttribute("aria-busy", "true");
+          location.replace("login.html");
 
-          try {
-            await logoutUser();
-            location.replace("login.html");
-          } catch (error) {
-            console.error("Logout error:", error);
+        } catch (error) {
+          console.error("Logout error:", error);
 
-            delete element.dataset.logoutPending;
-            element.removeAttribute("aria-busy");
+          delete element.dataset.logoutPending;
 
-            showToast(
-              "تعذر تسجيل الخروج. حاول مرة أخرى.",
-              "error"
-            );
-          }
-        });
-      }
-    );
+          element.removeAttribute("aria-busy");
+
+          showToast(
+            "تعذر تسجيل الخروج. حاول مرة أخرى.",
+            "error"
+          );
+        }
+      });
+    });
   },
+
+  /* =====================================
+     Active navigation
+  ===================================== */
 
   highlightNav() {
     const current = currentPage();
@@ -552,7 +719,9 @@ export const App = {
     ).forEach(link => {
       const href = link.getAttribute("href");
 
-      if (!href || href === "#") return;
+      if (!href || href === "#") {
+        return;
+      }
 
       try {
         const destination = new URL(
@@ -569,11 +738,16 @@ export const App = {
         } else {
           link.removeAttribute("aria-current");
         }
+
       } catch {
         // Ignore invalid navigation URLs.
       }
     });
   },
+
+  /* =====================================
+     Protected economy operations
+  ===================================== */
 
   addXP() {
     throw new Error(
@@ -587,6 +761,10 @@ export const App = {
     );
   },
 
+  /* =====================================
+     Cleanup
+  ===================================== */
+
   destroy() {
     this.unsubscribeProfile?.();
     this.unsubscribeProfile = null;
@@ -595,11 +773,17 @@ export const App = {
     this.unsubscribeLessonProgress = null;
 
     this.currentUid = null;
+
     this.lessonStats = null;
     this.curriculumTotals = null;
+
     this.initPromise = null;
   }
 };
+
+/* =========================================
+   Application startup
+========================================= */
 
 if (document.readyState === "loading") {
   document.addEventListener(
@@ -607,6 +791,7 @@ if (document.readyState === "loading") {
     () => App.init(),
     { once: true }
   );
+
 } else {
   App.init();
 }
