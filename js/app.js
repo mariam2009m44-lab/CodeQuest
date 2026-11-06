@@ -456,10 +456,10 @@ export const App = {
             user.displayName ||
             "متعلم";
 
+          // Always update XP before rendering the interface.
           this.xp = safeNumber(data.xp);
           this.coins = safeNumber(data.coins);
 
-          // Updates name, XP, coins, avatar and dashboard stats.
           this.updateUI(data);
         },
 
@@ -533,32 +533,55 @@ export const App = {
   ===================================== */
 
   updateUI(data = {}) {
-    const level = Math.floor(this.xp / 100) + 1;
-    const xpInLevel = this.xp % 100;
+    const totalXP = safeNumber(this.xp);
+    const level = Math.floor(totalXP / 100) + 1;
+    const xpInLevel = totalXP % 100;
 
+    // User information
     setText(".js-user-name", this.user);
-    setText(".js-user-xp", this.xp);
+    setText(".js-user-xp", totalXP);
     setText(".js-user-coins", this.coins);
     setText(".js-user-level", level);
 
+    // Level information
     setText("#userLevel", level);
+
+    // Current level XP
     setText("#currentXP", xpInLevel);
+
+    // Total XP
+    setText("#currentXPLabel", totalXP);
+
+    // Current level progress percentage
+    setText("#xpProgressText", `${xpInLevel}%`);
 
     // Render selected avatar from the same Firestore snapshot.
     renderUserAvatar(data);
 
+    // XP progress fill
     const progressBar = document.getElementById(
       "xpProgressBar"
     );
 
     if (progressBar) {
       progressBar.style.width = `${xpInLevel}%`;
-      progressBar.setAttribute(
+    }
+
+    // Accessible progress container
+    const progressTrack = document.querySelector(
+      ".profile-progress-track[role='progressbar']"
+    );
+
+    if (progressTrack) {
+      progressTrack.setAttribute("aria-valuemin", "0");
+      progressTrack.setAttribute("aria-valuemax", "100");
+      progressTrack.setAttribute(
         "aria-valuenow",
         String(xpInLevel)
       );
     }
 
+    // Completed lessons
     if (!this.lessonStats) {
       setText(
         ".js-completed-lessons",
@@ -566,16 +589,19 @@ export const App = {
       );
     }
 
+    // Completed projects
     setText(
       ".js-completed-projects",
       safeNumber(data.completedProjects)
     );
 
+    // Learning streak
     setText(
       ".js-learning-streak",
       safeNumber(data.streak)
     );
 
+    // Fallback language progress
     if (!this.lessonStats) {
       const progress = data.languageProgress || {};
 
