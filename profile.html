@@ -15,13 +15,23 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
 
   <link rel="stylesheet" href="css/dashboard.css">
-  <link rel="stylesheet" href="css/profile.css?v=3">
+  <link rel="stylesheet" href="css/profile.css?v=4">
 
   <style>
-    .profile-page {
+    /* =========================================
+       PROFILE PAGE — Cody Academy
+    ========================================= */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body.profile-page {
       min-height: 100vh;
-      padding-bottom: 100px;
+      margin: 0;
+      padding: 0 0 100px;
       font-family: "Cairo", sans-serif;
+      overflow-x: hidden;
     }
 
     .profile-main {
@@ -29,90 +39,187 @@
       margin: 30px auto;
     }
 
+    /* =========================================
+       PROFILE HEADER
+    ========================================= */
+
     .profile-header-card {
       position: relative;
       isolation: isolate;
+      z-index: 1;
+
       display: flex;
-      align-items: center;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: flex-start;
+
       gap: 28px;
-      padding: 34px;
       min-height: 220px;
+      padding: 30px;
+
       overflow: hidden;
+      text-align: right !important;
+
       border: 1px solid rgba(139, 153, 255, .2);
-      border-radius: 28px;
-      background: linear-gradient(135deg, #151d39 0%, #10182d 55%, #172b43 100%);
+      border-radius: 26px;
+
+      background:
+        radial-gradient(
+          circle at 90% 10%,
+          rgba(93, 123, 255, .13),
+          transparent 40%
+        ),
+        linear-gradient(
+          135deg,
+          #151d39 0%,
+          #10182d 55%,
+          #172b43 100%
+        ) !important;
+
       box-shadow: 0 18px 55px rgba(0, 0, 0, .2);
     }
 
     .profile-header-card::before,
     .profile-header-card::after {
-      pointer-events: none;
+      content: none !important;
+      display: none !important;
     }
 
     .profile-avatar-section {
       position: relative;
       z-index: 2;
-      flex: 0 0 150px;
+
+      flex: 0 0 145px;
+
       display: flex;
       align-items: center;
       justify-content: center;
+
+      width: 145px;
+      height: 145px;
+      min-width: 0;
     }
 
     .profile-avatar-frame {
+      position: relative;
+
       width: 140px;
       height: 140px;
-      display: grid;
-      place-items: center;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
       overflow: hidden;
+
       border: 3px solid rgba(255,255,255,.35);
       border-radius: 50%;
+
       background: rgba(255,255,255,.09);
-      box-shadow: 0 0 0 8px rgba(255,255,255,.04),
-                  0 12px 35px rgba(0,0,0,.25);
+
+      box-shadow:
+        0 0 0 7px rgba(255,255,255,.035),
+        0 12px 35px rgba(0,0,0,.25);
     }
 
     #userAvatar {
       width: 100%;
       height: 100%;
-      display: grid;
-      place-items: center;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
       overflow: hidden;
     }
 
-    #userAvatar svg,
+    /* تصحيح حجم الشخصية المولدة من avatars.js */
+
+    #userAvatar .anime-avatar {
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 0 !important;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden !important;
+    }
+
+    #userAvatar .anime-character {
+      width: 100% !important;
+      height: 100% !important;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+    }
+
+    #userAvatar .anime-avatar-svg {
+      display: block;
+
+      width: 100% !important;
+      height: 100% !important;
+
+      max-width: 100% !important;
+      max-height: 100% !important;
+
+      object-fit: contain;
+      overflow: hidden;
+    }
+
     #userAvatar img {
       width: 100%;
       height: 100%;
-      max-width: 100%;
-      max-height: 100%;
       object-fit: contain;
     }
+
+    /* =========================================
+       USER INFORMATION
+    ========================================= */
 
     .profile-info {
       position: relative;
       z-index: 2;
-      min-width: 0;
+
       flex: 1;
+      min-width: 0;
     }
 
     .profile-name {
-      position: relative;
-      z-index: 3;
-      margin: 0 0 8px;
-      padding: 0;
+      position: relative !important;
+      z-index: 3 !important;
+
+      display: block;
+      width: 100%;
+
+      margin: 0 0 8px !important;
+      padding: 0 !important;
+
       color: #fff !important;
       background: transparent !important;
+
+      border: 0 !important;
+      box-shadow: none !important;
+
+      font-family: "Cairo", sans-serif;
       font-size: clamp(24px, 4vw, 34px);
       font-weight: 900;
       line-height: 1.5;
+
+      text-align: right;
       overflow-wrap: anywhere;
-      text-shadow: none;
+      text-shadow: none !important;
     }
 
     .profile-subtitle {
       margin: 0 0 16px;
       color: #c5cee4;
       font-size: 14px;
+      line-height: 1.8;
     }
 
     .profile-level-row {
@@ -125,12 +232,17 @@
     .profile-level-badge {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 7px;
+
       padding: 7px 13px;
+
       border: 1px solid rgba(255,255,255,.15);
       border-radius: 30px;
+
       background: rgba(255,255,255,.09);
       color: #fff;
+
       font-size: 13px;
       font-weight: 800;
     }
@@ -140,8 +252,58 @@
       font-size: 17px;
     }
 
+    /* =========================================
+       LOGOUT
+    ========================================= */
+
+    .profile-actions {
+      position: relative;
+      z-index: 3;
+
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .profile-action-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+
+      min-height: 42px;
+      padding: 9px 15px;
+
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px;
+
+      background: rgba(255,255,255,.07);
+      color: #fff;
+
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+
+      cursor: pointer;
+      transition: background .2s ease;
+    }
+
+    .profile-action-button:hover {
+      background: rgba(255,255,255,.13);
+    }
+
+    .profile-action-button.logout {
+      border-color: rgba(255,105,105,.25);
+      color: #ff9a9a;
+    }
+
+    /* =========================================
+       SECTIONS
+    ========================================= */
+
     .profile-content-section {
-      margin-top: 26px;
+      margin-top: 28px;
     }
 
     .profile-section-heading {
@@ -149,12 +311,14 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+
       margin-bottom: 17px;
     }
 
     .profile-section-heading h2 {
       margin: 0;
       color: var(--text-primary, #fff);
+
       font-size: 20px;
       font-weight: 900;
     }
@@ -163,7 +327,12 @@
       margin: 4px 0 0;
       color: var(--text-secondary, #9ba8c3);
       font-size: 13px;
+      line-height: 1.8;
     }
+
+    /* =========================================
+       STATISTICS
+    ========================================= */
 
     .profile-stats-grid {
       display: grid;
@@ -174,42 +343,63 @@
     .profile-stat-card {
       min-width: 0;
       padding: 20px;
+
       border: 1px solid rgba(145,160,195,.14);
       border-radius: 19px;
+
       background: var(--card-bg, rgba(255,255,255,.045));
+
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .profile-stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(105,132,255,.35);
     }
 
     .profile-stat-icon {
       width: 42px;
       height: 42px;
+
       display: grid;
       place-items: center;
+
       margin-bottom: 13px;
+
       border-radius: 13px;
       background: rgba(105,132,255,.13);
       color: #91a7ff;
+
       font-size: 22px;
     }
 
     .profile-stat-value {
       display: block;
+
       color: var(--text-primary, #fff);
       font-size: 25px;
       font-weight: 900;
-      line-height: 1.3;
+      line-height: 1.4;
     }
 
     .profile-stat-label {
       display: block;
       margin-top: 5px;
+
       color: var(--text-secondary, #9ba8c3);
       font-size: 12px;
     }
 
+    /* =========================================
+       XP PROGRESS
+    ========================================= */
+
     .profile-progress-card {
       padding: 23px;
+
       border: 1px solid rgba(145,160,195,.14);
       border-radius: 20px;
+
       background: var(--card-bg, rgba(255,255,255,.045));
     }
 
@@ -218,6 +408,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+
       margin-bottom: 13px;
     }
 
@@ -235,32 +426,46 @@
     .profile-progress-track {
       width: 100%;
       height: 12px;
+
       overflow: hidden;
       border-radius: 20px;
+
       background: rgba(145,160,195,.15);
     }
 
     #xpProgressBar {
       width: 0%;
       height: 100%;
+
       border-radius: inherit;
+
       background: linear-gradient(90deg, #637cff, #38d9c5);
+
       transition: width .5s ease;
     }
 
     .profile-xp-caption {
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 10px;
+
       margin-top: 10px;
+
       color: var(--text-secondary, #9ba8c3);
       font-size: 12px;
     }
 
+    /* =========================================
+       ACHIEVEMENTS
+    ========================================= */
+
     .profile-badges-card {
       padding: 24px;
+
       border: 1px solid rgba(145,160,195,.14);
       border-radius: 22px;
+
       background: var(--card-bg, rgba(255,255,255,.045));
     }
 
@@ -268,10 +473,13 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
+
       padding: 7px 12px;
+
       border-radius: 30px;
       background: rgba(105,132,255,.12);
       color: #aebdff;
+
       font-size: 13px;
       font-weight: 800;
       white-space: nowrap;
@@ -279,29 +487,40 @@
 
     .badges-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 15px;
     }
 
     .achievement-badge {
       position: relative;
+
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+
       min-width: 0;
       min-height: 175px;
       padding: 18px 12px;
+
       border: 1px solid rgba(145,160,195,.16);
       border-radius: 18px;
+
       background: rgba(255,255,255,.025);
       text-align: center;
+
       transition: transform .2s ease, border-color .2s ease;
     }
 
     .achievement-badge.is-unlocked {
       border-color: rgba(65,214,174,.35);
-      background: linear-gradient(145deg, rgba(42,190,151,.11), rgba(255,255,255,.025));
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(42,190,151,.11),
+          rgba(255,255,255,.025)
+        );
     }
 
     .achievement-badge.is-unlocked:hover {
@@ -316,12 +535,16 @@
     .achievement-badge-icon {
       width: 65px;
       height: 65px;
+
       display: grid;
       place-items: center;
+
       margin-bottom: 12px;
+
       border-radius: 50%;
       background: rgba(255,255,255,.07);
       color: #aab7d0;
+
       font-size: 31px;
     }
 
@@ -332,6 +555,7 @@
 
     .achievement-badge h3 {
       margin: 0;
+
       color: var(--text-primary, #fff);
       font-size: 14px;
       font-weight: 900;
@@ -339,6 +563,7 @@
 
     .achievement-badge p {
       margin: 5px 0 9px;
+
       color: var(--text-secondary, #9ba8c3);
       font-size: 11px;
       line-height: 1.7;
@@ -348,6 +573,7 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+
       color: #9ba8c3;
       font-size: 10px;
       font-weight: 800;
@@ -359,83 +585,94 @@
 
     .badge-system-note {
       margin: 17px 0 0;
+
       color: var(--text-secondary, #9ba8c3);
       font-size: 12px;
       line-height: 1.8;
     }
 
-    .profile-actions {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .profile-action-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 42px;
-      padding: 9px 15px;
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 12px;
-      background: rgba(255,255,255,.07);
-      color: #fff;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 800;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .profile-action-button:hover {
-      background: rgba(255,255,255,.13);
-    }
-
-    .profile-action-button.logout {
-      border-color: rgba(255,105,105,.25);
-      color: #ff9a9a;
-    }
-
     .profile-loading,
     .profile-empty {
       grid-column: 1 / -1;
+
       padding: 25px;
+
       color: var(--text-secondary, #9ba8c3);
       text-align: center;
       font-size: 13px;
+      line-height: 1.9;
     }
 
-    @media (max-width: 760px) {
+    /* =========================================
+       MOBILE NAVIGATION
+    ========================================= */
+
+    .mobile-bottom-nav {
+      z-index: 100;
+    }
+
+    /* =========================================
+       RESPONSIVE
+    ========================================= */
+
+    @media (max-width: 850px) {
+      .profile-header-card {
+        gap: 18px;
+        padding: 24px;
+      }
+
+      .profile-actions {
+        flex: 0 0 auto;
+      }
+
+      .profile-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 650px) {
       .profile-main {
-        width: min(100% - 22px, 600px);
-        margin-top: 18px;
+        width: calc(100% - 22px);
+        margin: 18px auto;
       }
 
       .profile-header-card {
-        flex-direction: column;
-        align-items: center;
-        gap: 17px;
-        padding: 25px 17px;
-        text-align: center;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center;
+
+        gap: 15px;
+        padding: 24px 17px;
+
+        text-align: center !important;
       }
 
       .profile-avatar-section {
-        flex-basis: auto;
-      }
-
-      .profile-avatar-frame {
+        flex: 0 0 120px;
         width: 120px;
         height: 120px;
       }
 
-      .profile-info {
-        width: 100%;
+      .profile-avatar-frame {
+        width: 116px;
+        height: 116px;
       }
 
-      .profile-level-row,
+      .profile-info {
+        width: 100%;
+        text-align: center;
+      }
+
+      .profile-name {
+        text-align: center;
+      }
+
+      .profile-level-row {
+        justify-content: center;
+      }
+
       .profile-actions {
+        width: 100%;
         justify-content: center;
       }
 
@@ -465,11 +702,24 @@
 
     @media (max-width: 360px) {
       .profile-stats-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .profile-section-heading h2 {
         font-size: 17px;
+      }
+
+      .profile-stat-value {
+        font-size: 22px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
       }
     }
   </style>
@@ -479,7 +729,7 @@
 
   <main class="profile-main">
 
-    <!-- Profile header -->
+    <!-- PROFILE HEADER -->
     <section class="profile-header-card">
 
       <div class="profile-avatar-section">
@@ -491,26 +741,34 @@
       </div>
 
       <div class="profile-info">
-        <h1 class="profile-name js-user-name">مستخدم Cody</h1>
+
+        <h1 class="profile-name js-user-name">
+          مستخدم Cody
+        </h1>
 
         <p class="profile-subtitle">
           رحلتك في تعلم البرمجة تبدأ من هنا 🚀
         </p>
 
         <div class="profile-level-row">
+
           <span class="profile-level-badge">
             <i class="ri-medal-line"></i>
-            المستوى <span id="userLevel" class="js-user-level">1</span>
+            المستوى
+            <span id="userLevel" class="js-user-level">1</span>
           </span>
 
           <span class="profile-level-badge">
             <i class="ri-flashlight-line"></i>
-            <span class="js-user-xp" id="totalXP">0</span> XP
+            <span class="js-user-xp" id="totalXP">0</span>
+            XP
           </span>
+
         </div>
       </div>
 
       <div class="profile-actions">
+
         <button
           type="button"
           class="profile-action-button logout"
@@ -519,11 +777,12 @@
           <i class="ri-logout-box-r-line"></i>
           تسجيل الخروج
         </button>
+
       </div>
 
     </section>
 
-    <!-- Statistics -->
+    <!-- STATISTICS -->
     <section class="profile-content-section">
 
       <div class="profile-section-heading">
@@ -539,38 +798,66 @@
           <div class="profile-stat-icon">
             <i class="ri-book-open-line"></i>
           </div>
-          <span class="profile-stat-value js-completed-lessons" id="completedLessons">0</span>
-          <span class="profile-stat-label">الدروس المكتملة</span>
+
+          <span
+            class="profile-stat-value js-completed-lessons"
+            id="completedLessons"
+          >0</span>
+
+          <span class="profile-stat-label">
+            الدروس المكتملة
+          </span>
         </article>
 
         <article class="profile-stat-card">
           <div class="profile-stat-icon">
             <i class="ri-code-s-slash-line"></i>
           </div>
-          <span class="profile-stat-value js-completed-projects" id="completedProjects">0</span>
-          <span class="profile-stat-label">المشروعات المكتملة</span>
+
+          <span
+            class="profile-stat-value js-completed-projects"
+            id="completedProjects"
+          >0</span>
+
+          <span class="profile-stat-label">
+            المشروعات المكتملة
+          </span>
         </article>
 
         <article class="profile-stat-card">
           <div class="profile-stat-icon">
             <i class="ri-fire-line"></i>
           </div>
-          <span class="profile-stat-value js-learning-streak" id="learningStreak">0</span>
-          <span class="profile-stat-label">أيام التعلم المتتالية</span>
+
+          <span
+            class="profile-stat-value js-learning-streak"
+            id="learningStreak"
+          >0</span>
+
+          <span class="profile-stat-label">
+            أيام التعلم المتتالية
+          </span>
         </article>
 
         <article class="profile-stat-card">
           <div class="profile-stat-icon">
             <i class="ri-star-line"></i>
           </div>
-          <span class="profile-stat-value js-user-xp" id="currentXP">0</span>
-          <span class="profile-stat-label">نقاط الخبرة XP</span>
+
+          <span
+            class="profile-stat-value"
+            id="currentXP"
+          >0</span>
+
+          <span class="profile-stat-label">
+            XP في المستوى الحالي
+          </span>
         </article>
 
       </div>
     </section>
 
-    <!-- XP Progress -->
+    <!-- XP PROGRESS -->
     <section class="profile-content-section">
 
       <div class="profile-section-heading">
@@ -583,26 +870,40 @@
       <div class="profile-progress-card">
 
         <div class="profile-progress-top">
-          <strong>نقاط الخبرة</strong>
+          <strong>تقدمك نحو المستوى التالي</strong>
           <span id="xpProgressText">0%</span>
         </div>
 
-        <div class="profile-progress-track">
+        <div
+          class="profile-progress-track"
+          role="progressbar"
+          aria-label="التقدم نحو المستوى التالي"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
           <div id="xpProgressBar"></div>
         </div>
 
         <div class="profile-xp-caption">
-          <span>إجمالي نقاطك: <strong id="currentXPLabel">0</strong></span>
-          <span>واصل رحلتك!</span>
+          <span>
+            إجمالي نقاطك:
+            <strong id="currentXPLabel">0</strong> XP
+          </span>
+
+          <span>
+            واصل رحلتك!
+          </span>
         </div>
 
       </div>
     </section>
 
-    <!-- Achievements -->
+    <!-- ACHIEVEMENTS -->
     <section class="profile-content-section">
 
       <div class="profile-section-heading">
+
         <div>
           <h2>أوسمتي وإنجازاتي 🏆</h2>
           <p>كل درس مكتمل يقربك من الحصول على وسام جديد</p>
@@ -610,21 +911,28 @@
 
         <span class="badge-summary" id="badgeSummary">
           <i class="ri-award-line"></i>
-          0 / 8
+          0 / 6
         </span>
+
       </div>
 
       <div class="profile-badges-card">
 
         <div class="badges-grid" id="badgesGrid">
+
           <div class="profile-loading">
             <i class="ri-loader-4-line"></i>
             جاري تحميل الأوسمة...
           </div>
+
         </div>
 
-        <p class="badge-system-note" id="badgeSystemNote" aria-live="polite">
-          يتم احتساب الأوسمة بناءً على عدد الدروس المكتملة المسجلة في حسابك.
+        <p
+          class="badge-system-note"
+          id="badgeSystemNote"
+          aria-live="polite"
+        >
+          يتم احتساب الأوسمة من الدروس المكتملة والمحـفوظة في حسابك.
         </p>
 
       </div>
@@ -632,14 +940,15 @@
 
   </main>
 
-  <!-- Mobile navigation -->
+  <!-- MOBILE NAVIGATION -->
   <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+
     <a href="dashboard.html">
       <i class="ri-home-5-line"></i>
       <span>الرئيسية</span>
     </a>
 
-    <a href="languages.html">
+        <a href="languages.html">
       <i class="ri-code-s-slash-line"></i>
       <span>التعلم</span>
     </a>
@@ -658,12 +967,66 @@
       <i class="ri-user-3-line"></i>
       <span>ملفي</span>
     </a>
+
   </nav>
 
-  <!-- Main application script -->
+  <!-- MAIN APPLICATION -->
   <script type="module" src="js/app.js?v=3001"></script>
 
-  <!-- Achievements system -->
+  <!-- XP DISPLAY SYNCHRONIZATION -->
+  <script>
+    (() => {
+      const currentXP = document.getElementById("currentXP");
+      const totalXP = document.getElementById("totalXP");
+      const progressText = document.getElementById("xpProgressText");
+      const totalXPLabel = document.getElementById("currentXPLabel");
+      const progressTrack = document.querySelector(".profile-progress-track");
+
+      if (!currentXP || !totalXP) return;
+
+      function syncXP() {
+        const current = Math.max(
+          0,
+          Math.min(100, Number.parseInt(currentXP.textContent, 10) || 0)
+        );
+
+        const total = Math.max(
+          0,
+          Number.parseInt(totalXP.textContent, 10) || 0
+        );
+
+        if (progressText) {
+          progressText.textContent = `${current}%`;
+        }
+
+        if (totalXPLabel) {
+          totalXPLabel.textContent = String(total);
+        }
+
+        if (progressTrack) {
+          progressTrack.setAttribute("aria-valuenow", String(current));
+        }
+      }
+
+      const observer = new MutationObserver(syncXP);
+
+      observer.observe(currentXP, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+
+      observer.observe(totalXP, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+
+      syncXP();
+    })();
+  </script>
+
+  <!-- ACHIEVEMENTS SYSTEM -->
   <script type="module">
     import { requireUser } from "./js/auth.js";
     import { db } from "./js/firebase-config.js";
@@ -673,193 +1036,244 @@
       getDocs
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    const badgeDefinitions = [
+    const BADGES = [
       {
         id: "first-step",
         title: "أول خطوة",
-        description: "أكمل أول درس في رحلتك البرمجية",
-        threshold: 1,
-        icon: "ri-flag-line"
+        description: "أكمل أول درس في رحلتك.",
+        requirement: 1,
+        icon: "ri-seedling-line"
       },
       {
-        id: "learning-lover",
-        title: "محب التعلم",
-        description: "أكمل 5 دروس",
-        threshold: 5,
+        id: "five-lessons",
+        title: "متعلم نشيط",
+        description: "أكمل 5 دروس.",
+        requirement: 5,
         icon: "ri-book-open-line"
       },
       {
-        id: "active-learner",
-        title: "متعلم نشيط",
-        description: "أكمل 10 دروس",
-        threshold: 10,
-        icon: "ri-lightbulb-line"
+        id: "ten-lessons",
+        title: "مستكشف البرمجة",
+        description: "أكمل 10 دروس.",
+        requirement: 10,
+        icon: "ri-compass-3-line"
       },
       {
-        id: "young-programmer",
-        title: "المبرمج الصغير",
-        description: "أكمل 20 درسًا",
-        threshold: 20,
-        icon: "ri-code-s-slash-line"
-      },
-      {
-        id: "progress-maker",
+        id: "twenty-lessons",
         title: "صانع التقدم",
-        description: "أكمل 30 درسًا",
-        threshold: 30,
-        icon: "ri-rocket-line"
+        description: "أكمل 20 درسًا.",
+        requirement: 20,
+        icon: "ri-flashlight-line"
       },
       {
-        id: "learning-hero",
+        id: "thirty-lessons",
         title: "بطل التعلم",
-        description: "أكمل 40 درسًا",
-        threshold: 40,
-        icon: "ri-shield-star-line"
-      },
-      {
-        id: "achievement-collector",
-        title: "جامع الإنجازات",
-        description: "أكمل 50 درسًا",
-        threshold: 50,
+        description: "أكمل 30 درسًا.",
+        requirement: 30,
         icon: "ri-medal-line"
       },
       {
-        id: "cody-star",
-        title: "نجم Cody",
-        description: "أكمل 75 درسًا",
-        threshold: 75,
+        id: "fifty-lessons",
+        title: "خبير المثابرة",
+        description: "أكمل 50 درسًا.",
+        requirement: 50,
         icon: "ri-trophy-line"
       }
     ];
+
+    const LANGUAGES = {
+      python: "./json/python_curriculum.json",
+      javascript: "./json/js_curriculum.json",
+      cpp: "./json/cpp_curriculum.json"
+    };
 
     const badgesGrid = document.getElementById("badgesGrid");
     const badgeSummary = document.getElementById("badgeSummary");
     const badgeSystemNote = document.getElementById("badgeSystemNote");
 
-    function renderBadges(completedLessons) {
-      const unlockedCount = badgeDefinitions.filter(
-        badge => completedLessons >= badge.threshold
+    async function loadCurriculums() {
+      const entries = Object.entries(LANGUAGES);
+
+      const results = await Promise.all(
+        entries.map(async ([language, url]) => {
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            throw new Error(`تعذر تحميل منهج ${language}.`);
+          }
+
+          const curriculum = await response.json();
+
+          if (!Array.isArray(curriculum.chapters)) {
+            throw new Error(`ملف منهج ${language} غير صالح.`);
+          }
+
+          return [language, curriculum];
+        })
+      );
+
+      return Object.fromEntries(results);
+    }
+
+    function isValidCompletedLesson(item, curriculums) {
+      if (!item || item.completed !== true) {
+        return false;
+      }
+
+      const language = String(item.language || "").trim().toLowerCase();
+
+      if (!Object.prototype.hasOwnProperty.call(LANGUAGES, language)) {
+        return false;
+      }
+
+      const chapterIndex = Number(item.chapter);
+      const lessonIndex = Number(item.lesson);
+
+      if (
+        !Number.isSafeInteger(chapterIndex) ||
+        !Number.isSafeInteger(lessonIndex) ||
+        chapterIndex < 0 ||
+        lessonIndex < 0
+      ) {
+        return false;
+      }
+
+      const curriculum = curriculums[language];
+      const chapter = curriculum?.chapters?.[chapterIndex];
+
+      if (!chapter || !Array.isArray(chapter.lessons)) {
+        return false;
+      }
+
+      return lessonIndex < chapter.lessons.length;
+    }
+
+    function renderBadges(completedCount) {
+      const unlockedCount = BADGES.filter(
+        badge => completedCount >= badge.requirement
       ).length;
 
       badgeSummary.innerHTML = `
         <i class="ri-award-line"></i>
-        ${unlockedCount} / ${badgeDefinitions.length}
+        ${unlockedCount} / ${BADGES.length}
       `;
 
-      badgesGrid.innerHTML = badgeDefinitions.map(badge => {
-        const unlocked = completedLessons >= badge.threshold;
+      badgesGrid.replaceChildren();
 
-        return `
-          <article class="achievement-badge ${unlocked ? "is-unlocked" : "is-locked"}">
-            <div class="achievement-badge-icon">
-              <i class="${badge.icon}"></i>
-            </div>
+      BADGES.forEach(badge => {
+        const unlocked = completedCount >= badge.requirement;
 
-            <h3>${badge.title}</h3>
+        const card = document.createElement("article");
+        card.className =
+          `achievement-badge ${unlocked ? "is-unlocked" : "is-locked"}`;
 
-            <p>${badge.description}</p>
+        const iconContainer = document.createElement("div");
+        iconContainer.className = "achievement-badge-icon";
 
-            <span class="achievement-badge-status">
-              ${
-                unlocked
-                  ? '<i class="ri-checkbox-circle-fill"></i> تم الحصول عليه'
-                  : '<i class="ri-lock-line"></i> لم يُفتح بعد'
-              }
-            </span>
+        const icon = document.createElement("i");
+        icon.className = badge.icon;
+        iconContainer.appendChild(icon);
 
-            <span class="achievement-badge-status">
-              ${completedLessons} / ${badge.threshold} درس
-            </span>
-          </article>
-        `;
-      }).join("");
+        const title = document.createElement("h3");
+        title.textContent = badge.title;
+
+        const description = document.createElement("p");
+        description.textContent = badge.description;
+
+        const status = document.createElement("span");
+        status.className = "achievement-badge-status";
+
+        const statusIcon = document.createElement("i");
+        statusIcon.className = unlocked
+          ? "ri-checkbox-circle-fill"
+          : "ri-lock-line";
+
+        const statusText = document.createElement("span");
+        statusText.textContent = unlocked
+          ? "تم الحصول عليه"
+          : "لم يُفتح بعد";
+
+        status.append(statusIcon, statusText);
+
+        const progress = document.createElement("span");
+        progress.className = "achievement-badge-status";
+        progress.textContent =
+          `${Math.min(completedCount, badge.requirement)} / ${badge.requirement} درس`;
+
+        card.append(
+          iconContainer,
+          title,
+          description,
+          status,
+          progress
+        );
+
+        badgesGrid.appendChild(card);
+      });
 
       badgeSystemNote.textContent =
-        `أكملت ${completedLessons} درسًا. حصلت على ${unlockedCount} من أصل ${badgeDefinitions.length} أوسمة.`;
-    }
-
-    function normalizeLanguage(value) {
-      const language = String(value || "").trim().toLowerCase();
-
-      const supported = [
-        "python",
-        "javascript",
-        "cpp"
-      ];
-
-      return supported.includes(language) ? language : null;
+        `أكملت ${completedCount} درسًا محفوظًا. حصلت على ${unlockedCount} من أصل ${BADGES.length} أوسمة.`;
     }
 
     async function loadAchievements() {
       try {
         const user = await requireUser();
 
-        if (!user || !user.uid) {
-          throw new Error("لم يتم العثور على حساب المستخدم.");
+        if (!user?.uid) {
+          throw new Error("يجب تسجيل الدخول أولًا.");
         }
 
-        const progressRef = collection(
-          db,
-          "users",
-          user.uid,
-          "lessonProgress"
-        );
+        const [curriculums, progressSnapshot] = await Promise.all([
+          loadCurriculums(),
 
-        const snapshot = await getDocs(progressRef);
+          getDocs(
+            collection(db, "users", user.uid, "lessonProgress")
+          )
+        ]);
 
         const completedLessons = new Set();
 
-        snapshot.forEach(documentSnapshot => {
-          const data = documentSnapshot.data();
+        progressSnapshot.forEach(documentSnapshot => {
+          const item = documentSnapshot.data();
 
-          if (data.completed !== true) return;
-
-          const language = 
-            normalizeLanguage(data.language);
-
-          if (!language) return;
-
-          if (
-            data.chapter === undefined ||
-            data.lesson === undefined
-          ) {
+          if (!isValidCompletedLesson(item, curriculums)) {
             return;
           }
 
-          const chapter = Number(data.chapter);
-          const lesson = Number(data.lesson);
-
-          if (
-            !Number.isInteger(chapter) ||
-            !Number.isInteger(lesson) ||
-            chapter < 0 ||
-            lesson < 0
-          ) {
-            return;
-          }
+          const language = String(item.language).trim().toLowerCase();
 
           completedLessons.add(
-            `${language}-${chapter}-${lesson}`
+            `${language}:${Number(item.chapter)}:${Number(item.lesson)}`
           );
         });
 
         renderBadges(completedLessons.size);
 
       } catch (error) {
-        console.error("Achievements loading error:", error);
+        console.error("Cody achievements error:", error);
 
-        badgesGrid.innerHTML = `
-          <div class="profile-empty">
-            <i class="ri-error-warning-line"></i>
-            <p>تعذر تحميل الأوسمة حاليًا.</p>
-            <p>تأكدي من تسجيل الدخول وصلاحيات قراءة تقدم الدروس.</p>
-          </div>
-        `;
+        badgesGrid.replaceChildren();
+
+        const errorBox = document.createElement("div");
+        errorBox.className = "profile-empty";
+
+        const icon = document.createElement("i");
+        icon.className = "ri-error-warning-line";
+
+        const message = document.createElement("p");
+        message.textContent = "تعذر تحميل الأوسمة حاليًا.";
+
+        const details = document.createElement("p");
+        details.textContent =
+          "تحققي من تسجيل الدخول واتصال Firebase وصلاحيات قراءة تقدم الدروس.";
+
+        errorBox.append(icon, message, details);
+        badgesGrid.appendChild(errorBox);
 
         badgeSummary.textContent = "غير متاح";
 
         badgeSystemNote.textContent =
-          "لم نتمكن من قراءة سجل الدروس من قاعدة البيانات. راجعي اتصال Firebase وصلاحيات Firestore.";
+          "حدثت مشكلة أثناء قراءة سجل الدروس. راجعي Console لمعرفة تفاصيل الخطأ.";
       }
     }
 
