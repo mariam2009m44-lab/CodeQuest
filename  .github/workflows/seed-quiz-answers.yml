@@ -1,0 +1,134 @@
+name: Seed CodeQuest Quiz Answers
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        working-directory: cloudflare-worker
+        run: npm install --no-save wrangler@4
+
+      - name: Prepare private quiz answers
+        env:
+          QUIZ_ANSWERS_JSON: ${{ secrets.QUIZ_ANSWERS_JSON }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+
+          const raw = process.env.QUIZ_ANSWERS_JSON;
+
+          if (!raw) {
+            throw new Error(
+              'Missing GitHub Secret: QUIZ_ANSWERS_JSON'
+            );
+          }
+
+          let answers;
+
+          try {
+            answers = JSON.parse(raw);
+          } catch {
+            throw new Error(
+              'QUIZ_ANSWERS_JSON is not valid JSON.'
+            );
+          }
+
+          const allowedLanguages = new Set([
+            'python',
+            'javascript',
+            'cpp'
+          ]);
+
+          const records = [];
+
+          for (const [identifier, answer] of Object.entries(answers)) {
+            const parts = identifier.split(':');
+
+            if (parts.length !== 2) {
+              throw new Error(
+                `Invalid quiz identifier: ${identifier}`
+              );
+            }
+
+            const [language, lessonId] = parts;
+
+            if (!allowedLanguages.has(language)) {
+              throw new Error(
+                `Unsupported language: ${language}`
+              );
+            }
+
+            if (
+              !/^[a-zA-Z0-9_-]{1,100}$/.test(lessonId)
+            ) {
+              throw new Error(
+                `Invalid lesson ID: ${lessonId}`
+              );
+            }
+
+            if (
+              !answer ||
+              !Number.isInteger(answer.correctIndex) ||
+              answer.correctIndex < 0 ||
+              typeof answer.explanation !== 'string'
+            ) {
+              throw new Error(
+                `Invalid answer data: ${identifier}`
+              );
+            }
+
+            records.push({
+              key: `quiz:${language}:${lessonId}`,
+              value: JSON.stringify({
+                correctIndex: answer.correctIndex,
+                explanation: answer.explanation
+              })
+            });
+          }
+
+          if (records.length === 0) {
+            throw new Error('No quiz answers were provided.');
+          }
+
+          const output = path.join(
+            process.env.RUNNER_TEMP,
+            'codequest-quiz-answers.json'
+          );
+
+          fs.writeFileSync(
+            output,
+            JSON.stringify(records),
+            'utf8'
+          );
+
+          console.log(
+            `Validated ${records.length} private quiz answers.`
+          );
+          NODE
+
+      - name: Upload answers to Cloudflare KV
+        working-directory: cloudflare-worker
+        run: |
+          npx wrangler kv bulk put \
+            "$RUNNER_TEMP/codequest-quiz-answers.json" \
+            --binding=QUIZ_ANSWERS \
+            --config=wrangler.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
