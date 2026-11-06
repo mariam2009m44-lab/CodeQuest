@@ -312,6 +312,19 @@
       color: var(--muted);
     }
 
+    #saveStatus {
+      margin-top: 12px;
+      font-size: .9rem;
+    }
+
+    #saveStatus.success {
+      color: var(--green);
+    }
+
+    #saveStatus.error {
+      color: var(--red);
+    }
+
     [hidden] {
       display: none !important;
     }
@@ -428,6 +441,7 @@
         <p id="resultMessage"></p>
         <div class="result-score" id="scoreText"></div>
         <p id="resultDetails"></p>
+        <p id="saveStatus"></p>
 
         <div class="result-actions">
           <a
@@ -460,15 +474,17 @@
   </main>
 
   <script type="module">
-    import { requireUser } from "./js/auth.js";
+    import {
+      requireUser,
+      saveLessonProgress,
+      getLessonProgress
+    } from "./js/auth.js";
 
     const EXAM_SIZE = 15;
     const PASS_PERCENTAGE = 80;
     const EXAM_KEY_PREFIX = "codequest_python_exam_passed_";
 
     const allQuestions = [
-
-      // الفصل الأول: الأساسيات والطباعة
       {
         category: "الطباعة",
         q: "ما وظيفة الأمر print() في Python؟",
@@ -506,17 +522,10 @@
         a: 2,
         explanation: "في Python لا نحتاج إلى كتابة نوع المتغير عند إنشائه."
       },
-
-      // الفصل الثاني: المتغيرات وأنواع البيانات
       {
         category: "أنواع البيانات",
         q: "ما نوع البيانات للقيمة 12.5؟",
-        opts: [
-          "int",
-          "float",
-          "str",
-          "bool"
-        ],
+        opts: ["int", "float", "str", "bool"],
         a: 1,
         explanation: "القيم التي تحتوي على جزء عشري تكون من النوع float."
       },
@@ -524,12 +533,7 @@
         category: "أنواع البيانات",
         q: "ما ناتج الكود؟",
         code: 'name = "Cody"\nprint(type(name))',
-        opts: [
-          "int",
-          "float",
-          "str",
-          "bool"
-        ],
+        opts: ["int", "float", "str", "bool"],
         a: 2,
         explanation: "النصوص الموضوعة بين علامات اقتباس نوعها str."
       },
@@ -545,29 +549,17 @@
         a: 0,
         explanation: "int() تحاول تحويل القيمة إلى عدد صحيح."
       },
-
-      // الفصل الثالث: العمليات الحسابية
       {
         category: "الحساب",
         q: "ما ناتج 17 // 5؟",
-        opts: [
-          "3.4",
-          "3",
-          "4",
-          "2"
-        ],
+        opts: ["3.4", "3", "4", "2"],
         a: 1,
         explanation: "العامل // يقسم ويعيد الجزء الصحيح من ناتج القسمة."
       },
       {
         category: "الحساب",
         q: "ما ناتج 2 ** 3؟",
-        opts: [
-          "5",
-          "6",
-          "8",
-          "9"
-        ],
+        opts: ["5", "6", "8", "9"],
         a: 2,
         explanation: "العامل ** يعني الأس، أي 2 × 2 × 2."
       },
@@ -575,17 +567,10 @@
         category: "الحساب",
         q: "ما ناتج الكود؟",
         code: "x = 10\nx += 5\nprint(x)",
-        opts: [
-          "5",
-          "10",
-          "15",
-          "105"
-        ],
+        opts: ["5", "10", "15", "105"],
         a: 2,
         explanation: "x += 5 تعني إضافة 5 إلى القيمة الحالية للمتغير."
       },
-
-      // الفصل الرابع: الشروط
       {
         category: "الشروط",
         q: "ما وظيفة if؟",
@@ -602,12 +587,7 @@
         category: "الشروط",
         q: "ما ناتج الكود؟",
         code: "age = 16\nif age >= 18:\n    print('Adult')\nelse:\n    print('Young')",
-        opts: [
-          "Adult",
-          "Young",
-          "16",
-          "خطأ دائمًا"
-        ],
+        opts: ["Adult", "Young", "16", "خطأ دائمًا"],
         a: 1,
         explanation: "القيمة 16 ليست أكبر من أو تساوي 18، لذلك يعمل فرع else."
       },
@@ -623,8 +603,6 @@
         a: 2,
         explanation: "= لإسناد قيمة، و== لمقارنة قيمتين."
       },
-
-      // الفصل الخامس: الحلقات
       {
         category: "الحلقات",
         q: "ما وظيفة for loop؟",
@@ -641,12 +619,7 @@
         category: "الحلقات",
         q: "كم مرة ينفذ الكود التالي أمر print؟",
         code: "for i in range(4):\n    print(i)",
-        opts: [
-          "3 مرات",
-          "4 مرات",
-          "5 مرات",
-          "مرة واحدة"
-        ],
+        opts: ["3 مرات", "4 مرات", "5 مرات", "مرة واحدة"],
         a: 1,
         explanation: "range(4) ينتج القيم 0 و1 و2 و3، أي أربع مرات."
       },
@@ -662,8 +635,6 @@
         a: 1,
         explanation: "break تنهي الحلقة التي توجد بداخلها."
       },
-
-      // الفصل السادس: القوائم
       {
         category: "القوائم",
         q: "كيف نصل إلى أول عنصر في القائمة؟",
@@ -680,12 +651,7 @@
         category: "القوائم",
         q: "ما ناتج الكود؟",
         code: "numbers = [10, 20, 30]\nprint(len(numbers))",
-        opts: [
-          "2",
-          "3",
-          "10",
-          "30"
-        ],
+        opts: ["2", "3", "10", "30"],
         a: 1,
         explanation: "len() تعيد عدد العناصر في القائمة، وهنا عددها ثلاثة."
       },
@@ -701,17 +667,10 @@
         a: 0,
         explanation: "append() تضيف عنصرًا جديدًا إلى نهاية القائمة."
       },
-
-      // الفصل السابع: الدوال
       {
         category: "الدوال",
         q: "ما الكلمة المفتاحية المستخدمة لتعريف دالة؟",
-        opts: [
-          "function",
-          "define",
-          "def",
-          "method"
-        ],
+        opts: ["function", "define", "def", "method"],
         a: 2,
         explanation: "نستخدم def لتعريف الدوال في Python."
       },
@@ -731,17 +690,10 @@
         category: "الدوال",
         q: "ما ناتج الكود؟",
         code: "def add(a, b):\n    return a + b\n\nprint(add(3, 4))",
-        opts: [
-          "34",
-          "7",
-          "3",
-          "4"
-        ],
+        opts: ["34", "7", "3", "4"],
         a: 1,
         explanation: "الدالة تجمع 3 و4 وتعيد الناتج 7."
       },
-
-      // الفصل الثامن: النصوص
       {
         category: "النصوص",
         q: "ما وظيفة lower()؟",
@@ -758,26 +710,14 @@
         category: "النصوص",
         q: "ما ناتج الكود؟",
         code: 'word = "Python"\nprint(word[0])',
-        opts: [
-          "y",
-          "P",
-          "n",
-          "Python"
-        ],
+        opts: ["y", "P", "n", "Python"],
         a: 1,
         explanation: "الفهرس صفر يشير إلى أول حرف، وهو P."
       },
-
-      // الفصل التاسع: الأخطاء
       {
         category: "الأخطاء",
         q: "ما نوع الخطأ الناتج عند استخدام اسم متغير غير معرّف؟",
-        opts: [
-          "TypeError",
-          "NameError",
-          "IndexError",
-          "ImportError"
-        ],
+        opts: ["TypeError", "NameError", "IndexError", "ImportError"],
         a: 1,
         explanation: "NameError يحدث عند استخدام اسم غير معروف في النطاق الحالي."
       },
@@ -793,17 +733,10 @@
         a: 0,
         explanation: "تسمح try/except بالتعامل مع الأخطاء المتوقعة أثناء التنفيذ."
       },
-
-      // الفصل العاشر: القواميس والمجموعات
       {
         category: "القواميس",
         q: "أي أقواس تستخدم عادةً لإنشاء قاموس؟",
-        opts: [
-          "[ ]",
-          "( )",
-          "{ }",
-          "< >"
-        ],
+        opts: ["[ ]", "( )", "{ }", "< >"],
         a: 2,
         explanation: "القواميس تُكتب عادةً باستخدام الأقواس المعقوفة."
       },
@@ -820,8 +753,6 @@
         a: 1,
         explanation: "نصل إلى قيمة القاموس باستخدام اسم المفتاح بين أقواس مربعة."
       },
-
-      // الفصل الحادي عشر: المكتبات والملفات
       {
         category: "المكتبات",
         q: "ما وظيفة import؟",
@@ -846,8 +777,6 @@
         a: 0,
         explanation: "with open() تساعد على إدارة الملف وإغلاقه تلقائيًا بعد الانتهاء."
       },
-
-      // الفصل الثاني عشر: التطبيق العملي
       {
         category: "التطبيق العملي",
         q: "ما أفضل طريقة لتخزين عدة درجات ثم حساب متوسطها؟",
@@ -864,14 +793,9 @@
         category: "التطبيق العملي",
         q: "ما ناتج الكود؟",
         code: "scores = [80, 90, 100]\naverage = sum(scores) / len(scores)\nprint(average)",
-        opts: [
-          "80",
-          "90",
-          "100",
-          "270"
-        ],
+        opts: ["80", "90", "100", "270"],
         a: 1,
-        explanation: "مجموع الدرجات 270، وعددها 3 ، لذلك المتوسط هو 90."
+        explanation: "مجموع الدرجات 270، وعددها 3، لذلك المتوسط هو 90."
       }
     ];
 
@@ -890,375 +814,391 @@
     const questionOptions = document.getElementById("questionOptions");
 
     const feedbackBox = document.getElementById("feedbackBox");
-    const nextButton = document.getElementById("nextButton");
+            const nextButton = document.getElementById("nextButton");
 
-    const quizArea = document.getElementById("quizArea");
-    const resultBox = document.getElementById("resultBox");
+        const resultBox = document.getElementById("resultBox");
+        const resultTitle = document.getElementById("resultTitle");
+        const resultMessage = document.getElementById("resultMessage");
+        const scoreText = document.getElementById("scoreText");
+        const resultDetails = document.getElementById("resultDetails");
+        const saveStatus = document.getElementById("saveStatus");
+        const retryButton = document.getElementById("retryButton");
+        const projectsLink = document.getElementById("projectsLink");
 
-    const resultTitle = document.getElementById("resultTitle");
-    const resultMessage = document.getElementById("resultMessage");
-    const scoreText = document.getElementById("scoreText");
-    const resultDetails = document.getElementById("resultDetails");
+        let currentUser = null;
+        let examQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        let examFinished = false;
 
-    const retryButton = document.getElementById("retryButton");
-    const projectsLink = document.getElementById("projectsLink");
+        // قراءة التقدم المحلي
+        function readLocalProgress() {
+          try {
+            const saved = JSON.parse(
+              localStorage.getItem("cody_python_progress") || "{}"
+            );
 
-    // حالة الامتحان
-    let currentUser = null;
-    let examQuestions = [];
-    let currentQuestionIndex = 0;
-    let score = 0;
-    let answered = false;
-    let examFinished = false;
+            return {
+              completed: Array.isArray(saved.completed)
+                ? saved.completed.map(Number)
+                : [],
+              stars: saved.stars || {}
+            };
+          } catch (error) {
+            console.error("Local progress error:", error);
 
-    totalQuestionsElement.textContent = EXAM_SIZE;
-
-    // قراءة التقدم المحلي
-    function readPythonProgress() {
-      try {
-        const saved = JSON.parse(
-          localStorage.getItem("cody_python_progress") || "{}"
-        );
-
-        return {
-          completed: Array.isArray(saved.completed)
-            ? saved.completed.map(Number)
-            : [],
-          stars: saved.stars || {}
-        };
-      } catch (error) {
-        console.error("تعذر قراءة التقدم المحلي:", error);
-
-        return {
-          completed: [],
-          stars: {}
-        };
-      }
-    }
-
-    // التحقق من إكمال الفصول الاثني عشر
-    function hasCompletedAllChapters() {
-      const progress = readPythonProgress();
-
-      for (let chapter = 1; chapter <= 12; chapter++) {
-        if (!progress.completed.includes(chapter)) {
-          return false;
+            return {
+              completed: [],
+              stars: {}
+            };
+          }
         }
-      }
 
-      return true;
-    }
+        // التحقق من إكمال الفصول الاثني عشر
+        async function hasCompletedAllChapters() {
+          const localProgress = readLocalProgress();
 
-    // خلط الأسئلة عشوائيًا
-    function shuffleArray(array) {
-      const shuffled = [...array];
+          const localCompleted = new Set(
+            localProgress.completed
+          );
 
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const randomIndex = Math.floor(Math.random() * (i + 1));
+          let cloudCompleted = new Set();
 
-        [shuffled[i], shuffled[randomIndex]] = [
-          shuffled[randomIndex],
-          shuffled[i]
-        ];
-      }
+          try {
+            const records = await getLessonProgress("python");
 
-      return shuffled;
-    }
+            records.forEach((record) => {
+              if (
+                Number(record.lesson) === 104 &&
+                Number(record.chapter) >= 0 &&
+                Number(record.chapter) < 12
+              ) {
+                cloudCompleted.add(
+                  Number(record.chapter) + 1
+                );
+              }
+            });
+          } catch (error) {
+            console.warn(
+              "Could not load cloud progress:",
+              error
+            );
+          }
 
-    // اختيار 15 سؤالًا من بنك الأسئلة
-    function createExamQuestions() {
-      return shuffleArray(allQuestions).slice(0, EXAM_SIZE);
-    }
+          for (let chapter = 1; chapter <= 12; chapter++) {
+            if (
+              !localCompleted.has(chapter) &&
+              !cloudCompleted.has(chapter)
+            ) {
+              return false;
+            }
+          }
 
-    // تحديث شريط التقدم
-    function updateProgress() {
-      const percentage =
-        (currentQuestionIndex / EXAM_SIZE) * 100;
+          return true;
+        }
 
-      progressFill.style.width = `${percentage}%`;
-    }
+        // خلط الأسئلة
+        function shuffleArray(array) {
+          const shuffled = [...array];
 
-    // عرض السؤال الحالي
-    function renderQuestion() {
-      if (currentQuestionIndex >= examQuestions.length) {
-        finishExam();
-        return;
-      }
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
 
-      answered = false;
+            [shuffled[i], shuffled[j]] = [
+              shuffled[j],
+              shuffled[i]
+            ];
+          }
 
-      const question = examQuestions[currentQuestionIndex];
+          return shuffled;
+        }
 
-      questionNumber.textContent =
-        `السؤال ${currentQuestionIndex + 1} من ${EXAM_SIZE}`;
+        // إظهار رسالة الحالة
+        function showStatus(message, isError = false) {
+          statusMessage.textContent = message;
+          statusMessage.style.color = isError
+            ? "var(--red)"
+            : "var(--muted)";
+        }
 
-      questionCategory.textContent = question.category;
-      questionText.textContent = question.q;
+        // بدء الامتحان
+        function startExam() {
+          examQuestions = shuffleArray(allQuestions).slice(
+            0,
+            Math.min(EXAM_SIZE, allQuestions.length)
+          );
 
-      if (question.code) {
-        questionCode.textContent = question.code;
-        questionCode.hidden = false;
-      } else {
-        questionCode.textContent = "";
-        questionCode.hidden = true;
-      }
+          currentQuestionIndex = 0;
+          score = 0;
+          answered = false;
+          examFinished = false;
 
-      questionOptions.innerHTML = "";
-      feedbackBox.textContent = "";
-      feedbackBox.className = "feedback";
+          currentScoreElement.textContent = "0";
+          totalQuestionsElement.textContent =
+            examQuestions.length;
 
-      nextButton.disabled = true;
+          progressFill.style.width = "0%";
 
-      nextButton.textContent =
-        currentQuestionIndex === EXAM_SIZE - 1
-          ? "عرض النتيجة"
-          : "السؤال التالي";
+          resultBox.classList.remove("active");
+          document.getElementById("quizArea").hidden = false;
 
-      question.opts.forEach((option, index) => {
-        const button = document.createElement("button");
+          renderQuestion();
+        }
 
-        button.type = "button";
-        button.className = "opt-btn";
-        button.textContent = option;
+        // عرض السؤال الحالي
+        function renderQuestion() {
+          const question = examQuestions[currentQuestionIndex];
 
-        button.addEventListener("click", () => {
-          selectAnswer(index, button);
+          if (!question) {
+            finishExam();
+            return;
+          }
+
+          answered = false;
+
+          questionNumber.textContent =
+            `السؤال ${currentQuestionIndex + 1} من ${examQuestions.length}`;
+
+          questionCategory.textContent = question.category;
+          questionText.textContent = question.q;
+
+          if (question.code) {
+            questionCode.textContent = question.code;
+            questionCode.hidden = false;
+          } else {
+            questionCode.textContent = "";
+            questionCode.hidden = true;
+          }
+
+          questionOptions.replaceChildren();
+
+          feedbackBox.className = "feedback";
+          feedbackBox.textContent = "";
+
+          nextButton.disabled = true;
+
+          nextButton.textContent =
+            currentQuestionIndex === examQuestions.length - 1
+              ? "عرض النتيجة"
+              : "السؤال التالي";
+
+          question.opts.forEach((option, index) => {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "opt-btn";
+            button.textContent = option;
+
+            button.addEventListener("click", () => {
+              selectAnswer(index);
+            });
+
+            questionOptions.appendChild(button);
+          });
+
+          const progress =
+            (currentQuestionIndex / examQuestions.length) * 100;
+
+          progressFill.style.width = `${progress}%`;
+        }
+
+        // اختيار الإجابة
+        function selectAnswer(selectedIndex) {
+          if (answered || examFinished) return;
+
+          answered = true;
+
+          const question = examQuestions[currentQuestionIndex];
+          const buttons = questionOptions.querySelectorAll(".opt-btn");
+
+          const isCorrect = selectedIndex === question.a;
+
+          buttons.forEach((button, index) => {
+            button.disabled = true;
+
+            if (index === question.a) {
+              button.classList.add("correct");
+            } else if (index === selectedIndex) {
+              button.classList.add("wrong");
+            }
+          });
+
+          if (isCorrect) {
+            score++;
+
+            currentScoreElement.textContent = score;
+
+            feedbackBox.className = "feedback show success";
+            feedbackBox.textContent =
+              `إجابة صحيحة! ${question.explanation}`;
+          } else {
+            feedbackBox.className = "feedback show error";
+            feedbackBox.textContent =
+              `الإجابة غير صحيحة. الإجابة الصحيحة: ${question.opts[question.a]}. ${question.explanation}`;
+          }
+
+          nextButton.disabled = false;
+        }
+
+        // الانتقال للسؤال التالي
+        nextButton.addEventListener("click", () => {
+          if (!answered || examFinished) return;
+
+          currentQuestionIndex++;
+
+          if (currentQuestionIndex >= examQuestions.length) {
+            finishExam();
+          } else {
+            renderQuestion();
+          }
         });
 
-        questionOptions.appendChild(button);
-      });
+        // حفظ نتيجة الامتحان
+        async function saveExamResult() {
+          const examKey = `${EXAM_KEY_PREFIX}${currentUser.uid}`;
 
-      updateProgress();
-    }
+          const resultData = {
+            passed: true,
+            score,
+            total: examQuestions.length,
+            percentage: Math.round(
+              (score / examQuestions.length) * 100
+            ),
+            completedAt: new Date().toISOString()
+          };
 
-    // اختيار الإجابة
-    function selectAnswer(selectedIndex, selectedButton) {
-      if (answered || examFinished) {
-        return;
-      }
+          // حفظ النتيجة محليًا أولًا
+          localStorage.setItem(
+            examKey,
+            JSON.stringify(resultData)
+          );
 
-      answered = true;
+          try {
+            await saveLessonProgress({
+              language: "python",
+              chapter: 12,
+              lesson: 105,
+              completed: true
+            });
 
-      const question = examQuestions[currentQuestionIndex];
-      const optionButtons = questionOptions.querySelectorAll(".opt-btn");
+            saveStatus.textContent =
+              "تم حفظ نتيجة الامتحان ومزامنتها مع الحساب.";
 
-      optionButtons.forEach(button => {
-        button.disabled = true;
-      });
+            saveStatus.className = "success";
 
-      const isCorrect = selectedIndex === question.a;
+            return true;
+          } catch (error) {
+            console.error("Exam progress save error:", error);
 
-      if (isCorrect) {
-        score++;
+            saveStatus.textContent =
+              "تم حفظ النتيجة على هذا الجهاز، لكن تعذرت المزامنة مع الحساب. تحقق من الاتصال وسجّل الدخول ثم أعد المحاولة.";
 
-        selectedButton.classList.add("correct");
+            saveStatus.className = "error";
 
-        feedbackBox.className = "feedback show success";
-        feedbackBox.textContent =
-          `إجابة صحيحة! ${question.explanation}`;
-
-      } else {
-        selectedButton.classList.add("wrong");
-
-        optionButtons[question.a].classList.add("correct");
-
-        feedbackBox.className = "feedback show error";
-
-        feedbackBox.textContent =
-          `إجابة غير صحيحة. الإجابة الصحيحة هي: ${
-            question.opts[question.a]
-          }. ${question.explanation}`;
-      }
-
-      currentScoreElement.textContent = score;
-      nextButton.disabled = false;
-    }
-
-    // الانتقال للسؤال التالي
-    nextButton.addEventListener("click", () => {
-      if (!answered || examFinished) {
-        return;
-      }
-
-      currentQuestionIndex++;
-
-      if (currentQuestionIndex >= EXAM_SIZE) {
-        finishExam();
-      } else {
-        renderQuestion();
-      }
-    });
-
-    // حفظ نجاح الامتحان على الجهاز
-    function saveExamResult() {
-      if (!currentUser || !currentUser.uid) {
-        return false;
-      }
-
-      const result = {
-        passed: true,
-        score,
-        total: EXAM_SIZE,
-        percentage: Math.round((score / EXAM_SIZE) * 100),
-        completedAt: new Date().toISOString()
-      };
-
-      try {
-        localStorage.setItem(
-          EXAM_KEY_PREFIX + currentUser.uid,
-          JSON.stringify(result)
-        );
-
-        return true;
-      } catch (error) {
-        console.error("تعذر حفظ نتيجة الامتحان:", error);
-        return false;
-      }
-    }
-
-    // إنهاء الامتحان وعرض النتيجة
-    function finishExam() {
-      if (examFinished) {
-        return;
-      }
-
-      examFinished = true;
-
-      quizArea.hidden = true;
-      resultBox.classList.add("active");
-
-      progressFill.style.width = "100%";
-
-      const percentage = Math.round(
-        (score / EXAM_SIZE) * 100
-      );
-
-      const passed = percentage >= PASS_PERCENTAGE;
-
-      scoreText.textContent =
-        `${score} من ${EXAM_SIZE} — ${percentage}%`;
-
-      resultDetails.textContent =
-        `عدد الإجابات الصحيحة: ${score}، وعدد الإجابات غير الصحيحة: ${
-          EXAM_SIZE - score
-        }.`;
-
-      if (passed) {
-        resultTitle.textContent = "تهانينا! لقد اجتزت الامتحان";
-
-        resultMessage.textContent =
-          "أظهرت فهمًا جيدًا لمفاهيم Python، ويمكنك الآن الانتقال إلى المشاريع العملية.";
-
-        const saved = saveExamResult();
-
-        if (saved) {
-          resultDetails.textContent +=
-            " تم حفظ نتيجة النجاح على هذا الجهاز.";
-        } else {
-          resultDetails.textContent +=
-            " تعذر حفظ النتيجة محليًا.";
+            return false;
+          }
         }
 
-        projectsLink.hidden = false;
-        retryButton.hidden = true;
+        // إنهاء الامتحان
+        async function finishExam() {
+          if (examFinished) return;
 
-      } else {
-        resultTitle.textContent = "لم يتم اجتياز الامتحان هذه المرة";
+          examFinished = true;
 
-        resultMessage.textContent =
-          `تحتاج إلى ${PASS_PERCENTAGE}% على الأقل للنجاح. راجع الموضوعات التي تحتاج إلى تدريب إضافي ثم أعد المحاولة.`;
+          document.getElementById("quizArea").hidden = true;
+          resultBox.classList.add("active");
 
-        projectsLink.hidden = true;
-        retryButton.hidden = false;
-      }
-    }
+          const percentage = Math.round(
+            (score / examQuestions.length) * 100
+          );
 
-    // بدء امتحان جديد
-    function startExam() {
-      score = 0;
-      currentQuestionIndex = 0;
-      answered = false;
-      examFinished = false;
+          const passed = percentage >= PASS_PERCENTAGE;
 
-      examQuestions = createExamQuestions();
+          progressFill.style.width = "100%";
 
-      currentScoreElement.textContent = "0";
+          scoreText.textContent =
+            `${score} من ${examQuestions.length} — ${percentage}%`;
 
-      resultBox.classList.remove("active");
-      quizArea.hidden = false;
+          resultDetails.textContent =
+            `درجة النجاح المطلوبة ${PASS_PERCENTAGE}%.`;
 
-      projectsLink.hidden = true;
-      retryButton.hidden = false;
+          saveStatus.textContent = "";
+          saveStatus.className = "";
 
-      renderQuestion();
-    }
+          if (passed) {
+            resultTitle.textContent = "أحسنت! تم اجتياز الامتحان";
+            resultMessage.textContent =
+              "لقد اجتزت الامتحان الشامل بنجاح. يمكنك الآن الانتقال إلى المشاريع التطبيقية.";
 
-    // إعادة الامتحان
-    retryButton.addEventListener("click", () => {
-      startExam();
-    });
+            projectsLink.hidden = false;
 
-    // التحقق من الحساب والتقدم قبل فتح الامتحان
-    async function initializeExam() {
-      try {
-        statusMessage.textContent =
-          "جارٍ التحقق من تسجيل الدخول...";
+            await saveExamResult();
+          } else {
+            resultTitle.textContent = "تحتاج إلى مزيد من التدريب";
+            resultMessage.textContent =
+              "لم تصل إلى درجة النجاح المطلوبة هذه المرة. راجع الفصول وحاول مرة أخرى.";
 
-        currentUser = await requireUser();
+            projectsLink.hidden = true;
 
-        if (!currentUser || !currentUser.uid) {
-          throw new Error("لم يتم العثور على حساب مستخدم صالح.");
+            saveStatus.textContent =
+              "لم يتم تسجيل الامتحان كمكتمل لأن درجة النجاح لم تتحقق.";
+
+            saveStatus.className = "error";
+          }
         }
 
-        statusMessage.textContent =
-          "جارٍ التحقق من إكمال الفصول الاثني عشر...";
+        // إعادة الامتحان
+        retryButton.addEventListener("click", () => {
+          startExam();
 
-        if (!hasCompletedAllChapters()) {
-          statusMessage.textContent =
-            "يجب إكمال الفصول الاثني عشر أولًا قبل دخول الامتحان الشامل. سيتم تحويلك إلى صفحة الفصول.";
-
-          setTimeout(() => {
-            window.location.href = "python-chapters.html";
-          }, 2500);
-
-          return;
-        }
-
-        statusMessage.hidden = true;
-        examContent.hidden = false;
-
-        startExam();
-
-      } catch (error) {
-        console.error("خطأ في تهيئة الامتحان:", error);
-
-        statusMessage.textContent =
-          "تعذر التحقق من الحساب أو تحميل الامتحان. تأكد من تسجيل الدخول ثم حاول مرة أخرى.";
-
-        const retryLoginButton = document.createElement("button");
-
-        retryLoginButton.type = "button";
-        retryLoginButton.className = "action-btn";
-        retryLoginButton.textContent = "العودة لتسجيل الدخول";
-
-        retryLoginButton.style.marginTop = "15px";
-
-        retryLoginButton.addEventListener("click", () => {
-          window.location.href = "login.html";
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
         });
 
-        statusMessage.appendChild(
-          document.createElement("br")
-        );
+        // التحقق من الحساب والتقدم قبل بدء الامتحان
+        async function initializeExam() {
+          try {
+            showStatus("جارٍ التحقق من الحساب...");
 
-        statusMessage.appendChild(retryLoginButton);
-      }
-    }
+            currentUser = await requireUser();
 
-    // تشغيل الصفحة
-    initializeExam();
-  </script>
+            if (!currentUser || !currentUser.uid) {
+              throw new Error("لم يتم العثور على حساب مسجل.");
+            }
 
-  <script type="module" src="./js/route-guard.js"></script>
-</body>
-</html>
+            showStatus("جارٍ التحقق من إكمال الفصول الاثني عشر...");
+
+            const completedAll =
+              await hasCompletedAllChapters();
+
+            if (!completedAll) {
+              showStatus(
+                "يجب إكمال الفصول الاثني عشر واجتياز امتحاناتها قبل دخول الامتحان الشامل.",
+                true
+              );
+
+              return;
+            }
+
+            statusMessage.hidden = true;
+            examContent.hidden = false;
+
+            startExam();
+
+          } catch (error) {
+            console.error("Exam initialization error:", error);
+
+            showStatus(
+              "تعذر التحقق من الحساب أو التقدم. تأكد من تسجيل الدخول والاتصال بالإنترنت، ثم أعد تحميل الصفحة.",
+              true
+            );
+          }
+        }
+
+        initializeExam();
+      </script>
+    </body>
+    </html>
