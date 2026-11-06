@@ -141,10 +141,6 @@ function getLoginRedirectUrl() {
    Avatar system
 ========================================= */
 
-/**
- * Returns the selected avatar only when it exists
- * and, for store avatars, is present in the user's inventory.
- */
 function getUserAvatarId(userData = {}) {
   const avatars = getAllAvatars();
 
@@ -162,22 +158,16 @@ function getUserAvatarId(userData = {}) {
       return false;
     }
 
-    // Free/default avatars do not require inventory ownership.
     if (!avatar.storeItem) {
       return true;
     }
 
-    // Store avatars must belong to the current user.
     return inventory.includes(avatar.id);
   });
 
   return selectedAvatar?.id || DEFAULT_AVATAR;
 }
 
-/**
- * Renders the same selected avatar wherever its container exists.
- * This function does not create another Firestore listener.
- */
 function renderUserAvatar(userData = {}) {
   const dashboardContainer = document.getElementById(
     "dashboardAvatarArt"
@@ -315,6 +305,17 @@ function isValidCompletedLesson(item, totals) {
   return item.lesson < chapters[item.chapter];
 }
 
+/*
+ * Corrected progress calculation:
+ *
+ * Legacy Python:
+ * 12 chapters × 4 lessons = 48 lessons.
+ * lesson === 104 means the entire chapter exam was passed.
+ *
+ * JavaScript and C++:
+ * Continue using their JSON curriculum lesson counts.
+ */
+
 function calculateLessonStats(documents, totals) {
   const completedByLanguage = {
     python: new Set(),
@@ -323,37 +324,98 @@ function calculateLessonStats(documents, totals) {
   };
 
   for (const item of documents) {
+    if (!item || item.completed !== true) {
+      continue;
+    }
+
+    /* -------------------------------------
+       Python legacy curriculum
+    ------------------------------------- */
+
+    if (item.language === "python") {
+      const chapter = item.chapter;
+      const lesson = item.lesson;
+
+      if (
+        !Number.isSafeInteger(chapter) ||
+        chapter < 0 ||
+        chapter >= 12
+      ) {
+        continue;
+      }
+
+      // Chapter exam passed: count all 4 lessons.
+      if (lesson === 104) {
+        for (let i = 0; i < 4; i++) {
+          completedByLanguage.python.add(
+            `${chapter}:${i}`
+          );
+        }
+
+        continue;
+      }
+
+      // Normal Python lessons: 0, 1, 2, 3.
+      if (
+        Number.isSafeInteger(lesson) &&
+        lesson >= 0 &&
+        lesson < 4
+      ) {
+        completedByLanguage.python.add(
+          `${chapter}:${lesson}`
+        );
+      }
+
+      continue;
+    }
+
+    /* -------------------------------------
+       JavaScript and C++
+    ------------------------------------- */
+
     if (!isValidCompletedLesson(item, totals)) {
       continue;
     }
 
-    const key = `${item.chapter}:${item.lesson}`;
-
-    completedByLanguage[item.language].add(key);
+    completedByLanguage[item.language].add(
+      `${item.chapter}:${item.lesson}`
+    );
   }
+
+  /* -------------------------------------
+     Calculate percentages
+  ------------------------------------- */
 
   const percentages = {};
 
   let completedTotal = 0;
 
   for (const language of Object.keys(LANGUAGES)) {
-    const completed = completedByLanguage[language].size;
-    const chapters = totals[language];
+    const completed =
+      completedByLanguage[language].size;
 
     completedTotal += completed;
 
-    if (!Array.isArray(chapters)) {
-      percentages[language] = null;
-      continue;
+    let totalLessons;
+
+    if (language === "python") {
+      totalLessons = 12 * 4;
+    } else {
+      const chapters = totals[language];
+
+      if (!Array.isArray(chapters)) {
+        percentages[language] = null;
+        continue;
+      }
+
+      totalLessons = chapters.reduce(
+        (sum, count) => sum + count,
+        0
+      );
     }
 
-    const total = chapters.reduce(
-      (sum, count) => sum + count,
-      0
-    );
-
-    percentages[language] = total > 0
-      ? Math.round((completed / total) * 100)
+    percentages[language] = totalLessons > 0
+      ? Math.round((completed / totalLessons) * 100)
       : 0;
   }
 
@@ -456,7 +518,6 @@ export const App = {
             user.displayName ||
             "متعلم";
 
-          // Always update XP before rendering the interface.
           this.xp = safeNumber(data.xp);
           this.coins = safeNumber(data.coins);
 
@@ -537,28 +598,18 @@ export const App = {
     const level = Math.floor(totalXP / 100) + 1;
     const xpInLevel = totalXP % 100;
 
-    // User information
     setText(".js-user-name", this.user);
     setText(".js-user-xp", totalXP);
     setText(".js-user-coins", this.coins);
     setText(".js-user-level", level);
 
-    // Level information
     setText("#userLevel", level);
-
-    // Current level XP
     setText("#currentXP", xpInLevel);
-
-    // Total XP
     setText("#currentXPLabel", totalXP);
-
-    // Current level progress percentage
     setText("#xpProgressText", `${xpInLevel}%`);
 
-    // Render selected avatar from the same Firestore snapshot.
     renderUserAvatar(data);
 
-    // XP progress fill
     const progressBar = document.getElementById(
       "xpProgressBar"
     );
@@ -567,7 +618,6 @@ export const App = {
       progressBar.style.width = `${xpInLevel}%`;
     }
 
-    // Accessible progress container
     const progressTrack = document.querySelector(
       ".profile-progress-track[role='progressbar']"
     );
@@ -581,7 +631,6 @@ export const App = {
       );
     }
 
-    // Completed lessons
     if (!this.lessonStats) {
       setText(
         ".js-completed-lessons",
@@ -589,19 +638,16 @@ export const App = {
       );
     }
 
-    // Completed projects
     setText(
       ".js-completed-projects",
       safeNumber(data.completedProjects)
     );
 
-    // Learning streak
     setText(
       ".js-learning-streak",
       safeNumber(data.streak)
     );
 
-    // Fallback language progress
     if (!this.lessonStats) {
       const progress = data.languageProgress || {};
 
