@@ -1,4 +1,3 @@
-
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
