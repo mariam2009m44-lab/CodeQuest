@@ -4,1112 +4,644 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090d19">
-  <meta name="description" content="ملفك الشخصي في Cody Academy، تابع مستواك وتقدمك وشخصيتك التعليمية.">
+  <meta name="description" content="ملفك الشخصي في Cody Academy، تابع مستواك وتقدمك وإنجازاتك.">
 
   <title>ملفي الشخصي | Cody Academy</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
+
   <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/profile.css?v=3">
 
   <style>
-    :root {
-      --profile-cyan: #6be8ff;
-      --profile-purple: #9b83ff;
-      --profile-gold: #ffd48a;
-      --profile-green: #55e6b1;
-      --profile-panel: rgba(17, 27, 52, .78);
-      --profile-border: rgba(148, 184, 255, .14);
-      --profile-muted: #aabbd5;
-    }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { font-family: "Cairo", sans-serif; }
-    button, a { -webkit-tap-highlight-color: transparent; }
-
     .profile-page {
-      width: 100%;
-      max-width: 1180px;
-      min-width: 0;
-      margin: 0 auto;
-      padding: 0 0 36px;
+      min-height: 100vh;
+      padding-bottom: 100px;
+      font-family: "Cairo", sans-serif;
     }
 
-    .profile-topbar {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 18px;
-      margin: 0 0 22px;
+    .profile-main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 30px auto;
     }
-
-    .profile-heading-copy { min-width: 0; }
-
-    .profile-kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 7px;
-      color: var(--profile-cyan);
-      font-size: .78rem;
-      font-weight: 800;
-    }
-
-    .profile-kicker-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--profile-green);
-      box-shadow: 0 0 12px rgba(85,230,177,.7);
-    }
-
-    .profile-page-title {
-      margin: 0;
-      color: #f5f8ff;
-      font-size: clamp(1.45rem, 3vw, 2rem);
-      font-weight: 900;
-      line-height: 1.5;
-    }
-
-    .profile-page-description {
-      margin: 5px 0 0;
-      color: var(--profile-muted);
-      font-size: .86rem;
-      line-height: 1.9;
-    }
-
-    .profile-menu {
-      position: relative;
-      z-index: 30;
-      flex: 0 0 auto;
-    }
-
-    .profile-menu-button {
-      display: grid;
-      place-items: center;
-      width: 44px;
-      height: 44px;
-      color: #eaf7ff;
-      font-size: 1.45rem;
-      border: 1px solid var(--profile-border);
-      border-radius: 14px;
-      background: rgba(255,255,255,.045);
-      cursor: pointer;
-      transition: .2s ease;
-    }
-
-    .profile-menu-button:hover {
-      border-color: var(--profile-cyan);
-      transform: translateY(-2px);
-    }
-
-    .profile-menu-content {
-      position: absolute;
-      top: 51px;
-      inset-inline-end: 0;
-      display: none;
-      min-width: 190px;
-      padding: 7px;
-      border: 1px solid var(--profile-border);
-      border-radius: 14px;
-      background: #111b34;
-      box-shadow: 0 14px 38px rgba(0,0,0,.3);
-    }
-
-    .profile-menu.open .profile-menu-content {
-      display: block;
-    }
-
-    .profile-menu-content a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 12px;
-      color: #eaf7ff;
-      font-size: .84rem;
-      font-weight: 700;
-      text-decoration: none;
-      border-radius: 9px;
-    }
-
-    .profile-menu-content a:hover {
-      background: rgba(107,232,255,.1);
-    }
-
-    .profile-top-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .profile-action {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 43px;
-      padding: 9px 16px;
-      color: #eaf7ff;
-      font-family: inherit;
-      font-size: .82rem;
-      font-weight: 800;
-      text-decoration: none;
-      border: 1px solid var(--profile-border);
-      border-radius: 13px;
-      background: rgba(255,255,255,.045);
-      transition: .2s ease;
-    }
-
-    .profile-action:hover {
-      transform: translateY(-2px);
-      border-color: var(--profile-cyan);
-    }
-
-    .profile-action.primary {
-      color: #061521;
-      background: linear-gradient(110deg,#6be8ff,#8bbcff);
-      border-color: transparent;
-    }
-
-    /* بطاقة الملف الشخصي */
 
     .profile-header-card {
       position: relative;
       isolation: isolate;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      min-width: 0;
-      margin: 0 0 26px;
-      padding: 30px 22px 26px;
+      gap: 28px;
+      padding: 34px;
+      min-height: 220px;
       overflow: hidden;
-      text-align: center;
-      border: 1px solid var(--profile-border);
-      border-radius: 25px;
-      background:
-        radial-gradient(ellipse at 50% 0%,rgba(107,232,255,.13),transparent 56%),
-        linear-gradient(145deg,rgba(20,34,66,.97),rgba(10,17,35,.98));
-      box-shadow: 0 18px 55px rgba(0,0,0,.16);
+      border: 1px solid rgba(139, 153, 255, .2);
+      border-radius: 28px;
+      background: linear-gradient(135deg, #151d39 0%, #10182d 55%, #172b43 100%);
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .2);
     }
 
     .profile-header-card::before,
     .profile-header-card::after {
-      content: "";
-      position: absolute;
-      z-index: -1;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      filter: blur(65px);
-      opacity: .12;
       pointer-events: none;
     }
 
-    .profile-header-card::before {
-      top: -145px;
-      inset-inline-end: -65px;
-      background: #48dfff;
-    }
-
-    .profile-header-card::after {
-      bottom: -165px;
-      inset-inline-start: -65px;
-      background: #9275ff;
-    }
-
-    .avatar-container {
+    .profile-avatar-section {
       position: relative;
-      z-index: 1;
+      z-index: 2;
+      flex: 0 0 150px;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex: 0 0 auto;
-      width: 190px;
-      height: 210px;
-      margin: 0 auto 4px;
-      overflow: visible;
     }
 
-    .avatar-container .anime-avatar {
+    .profile-avatar-frame {
+      width: 140px;
+      height: 140px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 3px solid rgba(255,255,255,.35);
+      border-radius: 50%;
+      background: rgba(255,255,255,.09);
+      box-shadow: 0 0 0 8px rgba(255,255,255,.04),
+                  0 12px 35px rgba(0,0,0,.25);
+    }
+
+    #userAvatar {
       width: 100%;
       height: 100%;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
     }
 
-    .avatar-container .anime-character {
-      transform: scale(.88);
-      transform-origin: 50% 90%;
-    }
-
-    .avatar-container .anime-avatar-svg {
-      display: block;
+    #userAvatar svg,
+    #userAvatar img {
       width: 100%;
       height: 100%;
-      max-width: 180px;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
     }
 
-    .avatar-edit-hint {
+    .profile-info {
       position: relative;
-      z-index: 1;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      margin: 0 0 8px;
-      color: var(--profile-cyan);
-      font-size: .78rem;
-      font-weight: 800;
+      z-index: 2;
+      min-width: 0;
+      flex: 1;
     }
 
     .profile-name {
       position: relative;
-      z-index: 2;
-      display: block;
-      width: min(100%, 700px);
-      margin: 0 auto 8px;
-      padding: 2px 8px;
-      color: #fff;
-      font-size: clamp(1.45rem,4vw,2rem);
+      z-index: 3;
+      margin: 0 0 8px;
+      padding: 0;
+      color: #fff !important;
+      background: transparent !important;
+      font-size: clamp(24px, 4vw, 34px);
       font-weight: 900;
-      line-height: 1.55;
+      line-height: 1.5;
       overflow-wrap: anywhere;
-      word-break: break-word;
-      text-shadow: 0 2px 14px rgba(0,0,0,.18);
+      text-shadow: none;
     }
 
     .profile-subtitle {
-      position: relative;
-      z-index: 1;
-      margin: 0 auto 15px;
-      color: var(--profile-muted);
-      font-size: .86rem;
-      line-height: 1.9;
+      margin: 0 0 16px;
+      color: #c5cee4;
+      font-size: 14px;
     }
 
-    .profile-title {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin: 0 0 20px;
-      padding: 8px 16px;
-      color: var(--profile-gold);
-      font-size: .86rem;
-      font-weight: 900;
-      border: 1px solid rgba(255,212,138,.2);
-      border-radius: 30px;
-      background: rgba(255,212,138,.075);
-    }
-
-    .level-progress-wrapper {
-      width: min(100%,460px);
-      margin: 0 auto;
-      padding: 16px;
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 17px;
-      background: rgba(0,0,0,.14);
-    }
-
-    .level-labels {
+    .profile-level-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 11px;
-      color: #b9c8df;
-      font-size: .8rem;
+    }
+
+    .profile-level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 13px;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 30px;
+      background: rgba(255,255,255,.09);
+      color: #fff;
+      font-size: 13px;
       font-weight: 800;
     }
 
-    .xp-number {
-      direction: ltr;
-      unicode-bidi: isolate;
-      color: var(--profile-cyan);
-      white-space: nowrap;
+    .profile-level-badge i {
+      color: #ffd166;
+      font-size: 17px;
     }
 
-    .progress-track {
-      width: 100%;
-      height: 10px;
-      overflow: hidden;
-      border-radius: 20px;
-      background: rgba(255,255,255,.09);
+    .profile-content-section {
+      margin-top: 26px;
     }
-
-    .progress-fill {
-      display: block;
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg,#47cfff,#8c8aff);
-      box-shadow: 0 0 15px rgba(107,232,255,.4);
-      transition: width .55s ease;
-    }
-
-    .next-level-note {
-      margin: 9px 0 0;
-      color: #a1b1ca;
-      font-size: .73rem;
-      line-height: 1.8;
-    }
-
-    /* عناوين الأقسام */
 
     .profile-section-heading {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 27px 2px 14px;
+      gap: 12px;
+      margin-bottom: 17px;
     }
 
-    .profile-section-heading h3 {
-      display: flex;
-      align-items: center;
-      gap: 9px;
+    .profile-section-heading h2 {
       margin: 0;
-      color: #f5f8ff;
-      font-size: 1.08rem;
+      color: var(--text-primary, #fff);
+      font-size: 20px;
       font-weight: 900;
     }
 
-    .profile-section-heading h3 i {
-      color: var(--profile-cyan);
-      font-size: 1.25rem;
+    .profile-section-heading p {
+      margin: 4px 0 0;
+      color: var(--text-secondary, #9ba8c3);
+      font-size: 13px;
     }
 
-    .section-caption {
-      color: #8194b2;
-      font-size: .74rem;
-    }
-
-    /* الإحصائيات */
-
-    .stats-grid {
+    .profile-stats-grid {
       display: grid;
-      grid-template-columns: repeat(4,minmax(0,1fr));
-      gap: 13px;
-      margin-bottom: 25px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
     }
 
-    .stat-box {
-      position: relative;
+    .profile-stat-card {
       min-width: 0;
-      padding: 20px 13px;
-      overflow: hidden;
-      text-align: center;
-      border: 1px solid var(--profile-border);
-      border-radius: 18px;
-      background: var(--profile-panel);
-      transition: transform .2s ease,border-color .2s ease;
+      padding: 20px;
+      border: 1px solid rgba(145,160,195,.14);
+      border-radius: 19px;
+      background: var(--card-bg, rgba(255,255,255,.045));
     }
 
-    .stat-box:hover {
-      transform: translateY(-3px);
-      border-color: rgba(107,232,255,.38);
-    }
-
-    .stat-icon {
+    .profile-stat-icon {
+      width: 42px;
+      height: 42px;
       display: grid;
       place-items: center;
-      width: 46px;
-      height: 46px;
-      margin: 0 auto 11px;
-      color: var(--stat-color,var(--profile-cyan));
-      font-size: 1.5rem;
-      border-radius: 14px;
-      background: rgba(107,232,255,.09);
+      margin-bottom: 13px;
+      border-radius: 13px;
+      background: rgba(105,132,255,.13);
+      color: #91a7ff;
+      font-size: 22px;
     }
 
-    .projects-stat-icon {
-      color: #c4b5fd;
-      background: rgba(139,92,246,.17);
-      border: 1px solid rgba(167,139,250,.2);
-    }
-
-    .stat-box h4 {
-      margin: 0 0 7px;
-      color: #a8b8d0;
-      font-size: .77rem;
-      font-weight: 700;
-    }
-
-    .stat-box .value {
-      color: #fff;
-      font-size: 1.6rem;
+    .profile-stat-value {
+      display: block;
+      color: var(--text-primary, #fff);
+      font-size: 25px;
       font-weight: 900;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
+      line-height: 1.3;
     }
 
-    /* الأوسمة */
+    .profile-stat-label {
+      display: block;
+      margin-top: 5px;
+      color: var(--text-secondary, #9ba8c3);
+      font-size: 12px;
+    }
 
-    .badges-section {
-      padding: 21px;
-      border: 1px solid var(--profile-border);
+    .profile-progress-card {
+      padding: 23px;
+      border: 1px solid rgba(145,160,195,.14);
       border-radius: 20px;
-      background: var(--profile-panel);
+      background: var(--card-bg, rgba(255,255,255,.045));
+    }
+
+    .profile-progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .profile-progress-top strong {
+      color: var(--text-primary, #fff);
+      font-size: 15px;
+    }
+
+    .profile-progress-top span {
+      color: #9eb0ff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .profile-progress-track {
+      width: 100%;
+      height: 12px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(145,160,195,.15);
+    }
+
+    #xpProgressBar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #637cff, #38d9c5);
+      transition: width .5s ease;
+    }
+
+    .profile-xp-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      color: var(--text-secondary, #9ba8c3);
+      font-size: 12px;
+    }
+
+    .profile-badges-card {
+      padding: 24px;
+      border: 1px solid rgba(145,160,195,.14);
+      border-radius: 22px;
+      background: var(--card-bg, rgba(255,255,255,.045));
+    }
+
+    .badge-summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 30px;
+      background: rgba(105,132,255,.12);
+      color: #aebdff;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .badges-grid {
       display: grid;
-      grid-template-columns: repeat(4,minmax(0,1fr));
-      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
     }
 
-    .badge-item {
+    .achievement-badge {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       min-width: 0;
-      padding: 17px 9px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 15px;
+      min-height: 175px;
+      padding: 18px 12px;
+      border: 1px solid rgba(145,160,195,.16);
+      border-radius: 18px;
       background: rgba(255,255,255,.025);
+      text-align: center;
+      transition: transform .2s ease, border-color .2s ease;
     }
 
-    .badge-item i {
-      display: block;
-      margin-bottom: 8px;
-      color: #8795ad;
-      font-size: 1.8rem;
+    .achievement-badge.is-unlocked {
+      border-color: rgba(65,214,174,.35);
+      background: linear-gradient(145deg, rgba(42,190,151,.11), rgba(255,255,255,.025));
     }
 
-    .badge-item span {
-      display: block;
-      color: #eaf1ff;
-      font-size: .76rem;
+    .achievement-badge.is-unlocked:hover {
+      transform: translateY(-4px);
+      border-color: rgba(65,214,174,.65);
+    }
+
+    .achievement-badge.is-locked {
+      opacity: .58;
+    }
+
+    .achievement-badge-icon {
+      width: 65px;
+      height: 65px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      color: #aab7d0;
+      font-size: 31px;
+    }
+
+    .achievement-badge.is-unlocked .achievement-badge-icon {
+      background: rgba(65,214,174,.13);
+      color: #54e0b5;
+    }
+
+    .achievement-badge h3 {
+      margin: 0;
+      color: var(--text-primary, #fff);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .achievement-badge p {
+      margin: 5px 0 9px;
+      color: var(--text-secondary, #9ba8c3);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .achievement-badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #9ba8c3;
+      font-size: 10px;
       font-weight: 800;
     }
 
-    .badge-state {
-      display: block;
-      margin-top: 5px;
-      color: #8b9bb5;
-      font-size: .66rem;
-      line-height: 1.6;
+    .achievement-badge.is-unlocked .achievement-badge-status {
+      color: #54e0b5;
     }
 
     .badge-system-note {
-      margin: 15px 0 0;
-      color: #a1b1ca;
-      font-size: .74rem;
-      line-height: 1.9;
-      text-align: center;
+      margin: 17px 0 0;
+      color: var(--text-secondary, #9ba8c3);
+      font-size: 12px;
+      line-height: 1.8;
     }
 
-    /* تسجيل الخروج */
-
-    .profile-logout-section {
+    .profile-actions {
       display: flex;
-      justify-content: center;
-      margin-top: 25px;
-      padding: 18px 0 8px;
-      border-top: 1px solid var(--profile-border);
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .profile-logout-button {
+    .profile-action-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
-      min-height: 45px;
-      padding: 10px 23px;
-      color: #ffaaaa;
+      gap: 8px;
+      min-height: 42px;
+      padding: 9px 15px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px;
+      background: rgba(255,255,255,.07);
+      color: #fff;
       font-family: inherit;
-      font-size: .88rem;
+      font-size: 13px;
       font-weight: 800;
-      border: 1px solid rgba(255,120,120,.25);
-      border-radius: 13px;
-      background: rgba(255,100,100,.07);
+      text-decoration: none;
       cursor: pointer;
-      transition: .2s ease;
     }
 
-    .profile-logout-button:hover {
-      background: rgba(255,100,100,.14);
-      border-color: #ff8585;
-      transform: translateY(-2px);
+    .profile-action-button:hover {
+      background: rgba(255,255,255,.13);
     }
 
-    .profile-logout-button[aria-busy="true"] {
-      opacity: .65;
-      cursor: wait;
-      pointer-events: none;
+    .profile-action-button.logout {
+      border-color: rgba(255,105,105,.25);
+      color: #ff9a9a;
     }
 
-    .mobile-nav { display: none; }
-
-    /* التابلت */
-
-    @media (max-width: 950px) {
-      .stats-grid,.badges-grid {
-        grid-template-columns: repeat(2,minmax(0,1fr));
-      }
+    .profile-loading,
+    .profile-empty {
+      grid-column: 1 / -1;
+      padding: 25px;
+      color: var(--text-secondary, #9ba8c3);
+      text-align: center;
+      font-size: 13px;
     }
 
-    /* الموبايل */
-
-    @media (max-width: 820px) {
-      .mobile-nav {
-        position: fixed;
-        z-index: 999;
-        inset-inline: 10px;
-        bottom: max(10px,env(safe-area-inset-bottom));
-        display: grid;
-        grid-template-columns: repeat(5,minmax(0,1fr));
-        gap: 4px;
-        padding: 8px 5px;
-        border: 1px solid var(--profile-border);
-        border-radius: 18px;
-        background: rgba(10,16,34,.96);
-        box-shadow: 0 10px 35px rgba(0,0,0,.3);
-        backdrop-filter: blur(18px);
+    @media (max-width: 760px) {
+      .profile-main {
+        width: min(100% - 22px, 600px);
+        margin-top: 18px;
       }
 
-      .mobile-nav a {
-        display: flex;
-        min-width: 0;
+      .profile-header-card {
         flex-direction: column;
         align-items: center;
+        gap: 17px;
+        padding: 25px 17px;
+        text-align: center;
+      }
+
+      .profile-avatar-section {
+        flex-basis: auto;
+      }
+
+      .profile-avatar-frame {
+        width: 120px;
+        height: 120px;
+      }
+
+      .profile-info {
+        width: 100%;
+      }
+
+      .profile-level-row,
+      .profile-actions {
         justify-content: center;
-        gap: 3px;
-        padding: 6px 2px;
-        color: #9aa6c4;
-        font-size: .63rem;
-        font-weight: 800;
-        text-decoration: none;
-        border-radius: 11px;
       }
 
-      .mobile-nav a i { font-size: 1.22rem; }
-
-      .mobile-nav a.active {
-        color: var(--profile-cyan);
-        background: rgba(107,232,255,.1);
+      .profile-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
       }
 
-      .space-main { padding-bottom: 105px !important; }
+      .profile-stat-card {
+        padding: 15px;
+      }
+
+      .badges-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .achievement-badge {
+        min-height: 165px;
+        padding: 14px 8px;
+      }
+
+      .profile-badges-card {
+        padding: 16px;
+      }
     }
 
-    @media (max-width: 600px) {
-      .profile-topbar { gap: 10px; }
-      .profile-page-description { font-size: .79rem; }
-      .profile-header-card { padding: 24px 13px 20px; }
-      .avatar-container { width: 160px; height: 180px; }
-
-      .avatar-container .anime-character {
-        transform: scale(.78);
-      }
-
-      .avatar-container .anime-avatar-svg {
-        max-width: 158px;
-      }
-
-      .profile-name {
-        font-size: clamp(1.35rem,6vw,1.7rem);
-      }
-
-      .profile-subtitle { font-size: .79rem; }
-      .level-progress-wrapper { padding: 13px; }
-      .level-labels { font-size: .7rem; }
-      .stats-grid { gap: 9px; }
-      .stat-box { padding: 15px 8px; }
-      .stat-box .value { font-size: 1.4rem; }
-      .stat-box h4 { font-size: .7rem; }
-      .badges-section { padding: 14px; }
-      .badge-item { padding: 14px 6px; }
-      .badge-item span { font-size: .7rem; }
-
-      .profile-top-actions {
-        display: grid;
+    @media (max-width: 360px) {
+      .profile-stats-grid {
         grid-template-columns: 1fr 1fr;
       }
 
-      .profile-action {
-        padding: 9px 7px;
-        font-size: .73rem;
-      }
-
-      .profile-section-heading {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 4px;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .mobile-nav {
-        inset-inline: 6px;
-        padding-inline: 3px;
-      }
-
-      .mobile-nav a { font-size: .57rem; }
-      .mobile-nav a i { font-size: 1.1rem; }
-      .badges-grid { gap: 7px; }
-      .badge-item { padding: 12px 4px; }
-      .profile-top-actions { gap: 7px; }
-    }
-
-    /* الوضع الفاتح */
-
-    html[data-theme="light"] .profile-header-card {
-      background:
-        radial-gradient(ellipse at 50% 0%,rgba(7,140,174,.1),transparent 56%),
-        linear-gradient(145deg,#fff,#edf4fc);
-    }
-
-    html[data-theme="light"] .profile-page-title,
-    html[data-theme="light"] .profile-name,
-    html[data-theme="light"] .stat-box .value,
-    html[data-theme="light"] .badge-item span,
-    html[data-theme="light"] .profile-section-heading h3 {
-      color: #18213a;
-    }
-
-    html[data-theme="light"] .profile-page-description,
-    html[data-theme="light"] .profile-subtitle,
-    html[data-theme="light"] .next-level-note,
-    html[data-theme="light"] .level-labels,
-    html[data-theme="light"] .stat-box h4,
-    html[data-theme="light"] .badge-system-note {
-      color: #586581;
-    }
-
-    html[data-theme="light"] .level-progress-wrapper {
-      background: rgba(30,50,80,.04);
-      border-color: rgba(49,65,105,.12);
-    }
-
-    html[data-theme="light"] .stat-box,
-    html[data-theme="light"] .badges-section {
-      background: rgba(255,255,255,.88);
-    }
-
-    html[data-theme="light"] .badge-item {
-      border-color: rgba(49,65,105,.1);
-      background: rgba(30,50,80,.025);
-    }
-
-    html[data-theme="light"] .profile-menu-button,
-    html[data-theme="light"] .profile-action {
-      color: #24324e;
-      background: rgba(255,255,255,.8);
-    }
-
-    html[data-theme="light"] .profile-menu-content {
-      background: #fff;
-      box-shadow: 0 12px 35px rgba(30,45,80,.14);
-    }
-
-    html[data-theme="light"] .profile-menu-content a {
-      color: #24324e;
-    }
-
-    html[data-theme="light"] .mobile-nav {
-      background: rgba(255,255,255,.97);
-      box-shadow: 0 10px 35px rgba(30,45,80,.14);
-    }
-
-    html[data-theme="light"] .mobile-nav a {
-      color: #586581;
-    }
-
-    html[data-theme="light"] .mobile-nav a.active {
-      color: #078cae;
-      background: rgba(7,140,174,.09);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,*::before,*::after {
-        scroll-behavior: auto !important;
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
+      .profile-section-heading h2 {
+        font-size: 17px;
       }
     }
   </style>
 </head>
 
-<body>
-  <div class="space-app">
+<body class="profile-page">
 
-    <!-- القائمة الجانبية -->
-    <aside class="space-sidebar" id="sidebar">
+  <main class="profile-main">
 
-      <a class="space-brand" href="dashboard.html">
-        <span class="brand-mark">C</span>
-        <span class="brand-name">Cody</span>
-      </a>
+    <!-- Profile header -->
+    <section class="profile-header-card">
 
-      <div class="sidebar-caption">مساحة التعلم</div>
-
-      <nav class="space-nav" aria-label="القائمة الرئيسية">
-
-        <a class="nav-link" href="dashboard.html">
-          <i class="ri-layout-grid-fill"></i>
-          <span>لوحة التحكم</span>
-        </a>
-
-        <a class="nav-link" href="languages.html">
-          <i class="ri-route-line"></i>
-          <span>مسارات التعلم</span>
-        </a>
-
-        <a class="nav-link" href="playground.html">
-          <i class="ri-code-s-slash-line"></i>
-          <span>مختبر الأكواد</span>
-        </a>
-
-        <a class="nav-link" href="games.html">
-          <i class="ri-gamepad-line"></i>
-          <span>الألعاب والتحديات</span>
-        </a>
-
-        <a class="nav-link" href="projects.html">
-          <i class="ri-folder-code-fill"></i>
-          <span>مشروعاتي</span>
-        </a>
-
-        <a class="nav-link" href="progress.html">
-          <i class="ri-bar-chart-box-line"></i>
-          <span>تقدمي</span>
-        </a>
-
-        <a class="nav-link" href="leaderboard.html">
-          <i class="ri-trophy-line"></i>
-          <span>لوحة الشرف</span>
-        </a>
-
-        <a class="nav-link active" href="profile.html" aria-current="page">
-          <i class="ri-user-settings-line"></i>
-          <span>ملفي الشخصي</span>
-        </a>
-
-      </nav>
-
-      <div class="sidebar-version">
-        <span class="version-dot"></span>
-        CODY <span>·</span> SPACE EDITION
+      <div class="profile-avatar-section">
+        <div class="profile-avatar-frame">
+          <div id="userAvatar" aria-label="الشخصية التعليمية">
+            <i class="ri-user-3-line"></i>
+          </div>
+        </div>
       </div>
 
-    </aside>
+      <div class="profile-info">
+        <h1 class="profile-name js-user-name">مستخدم Cody</h1>
 
-    <!-- المحتوى الرئيسي -->
-    <main class="space-main">
+        <p class="profile-subtitle">
+          رحلتك في تعلم البرمجة تبدأ من هنا 🚀
+        </p>
 
-      <div class="profile-page">
-
-        <!-- عنوان الصفحة -->
-        <div class="profile-topbar">
-
-          <div class="profile-heading-copy">
-
-            <div class="profile-kicker">
-              <span class="profile-kicker-dot"></span>
-              حسابك الشخصي
-            </div>
-
-            <h1 class="profile-page-title">ملفي الشخصي</h1>
-
-            <p class="profile-page-description">
-              تابع رحلتك في عالم البرمجة وشاهد تقدمك في مكان واحد.
-            </p>
-
-            <div class="profile-top-actions">
-
-              <a class="profile-action primary" href="avatar.html">
-                <i class="ri-user-smile-line"></i>
-                تغيير الشخصية
-              </a>
-
-              <a class="profile-action" href="dashboard.html">
-                <i class="ri-home-5-line"></i>
-                لوحة التحكم
-              </a>
-
-                      </div>
-
-          </div>
-
-          <!-- قائمة الخيارات -->
-          <div class="profile-menu" id="profileMenu">
-
-            <button
-              type="button"
-              class="profile-menu-button"
-              id="profileMenuButton"
-              aria-label="فتح قائمة الخيارات"
-              aria-expanded="false"
-              aria-controls="profileMenuContent"
-            >
-              <i class="ri-more-2-fill"></i>
-            </button>
-
-            <div class="profile-menu-content" id="profileMenuContent">
-
-              <a href="settings.html">
-                <i class="ri-settings-3-line"></i>
-                إعدادات المنصة
-              </a>
-
-              <a href="profile.html">
-                <i class="ri-user-line"></i>
-                الملف الشخصي
-              </a>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <!-- بطاقة الشخصية -->
-        <section class="profile-header-card" aria-label="معلومات الملف الشخصي">
-
-          <div
-            class="avatar-container"
-            id="userAvatar"
-            aria-label="شخصيتك المختارة"
-          ></div>
-
-          <div class="avatar-edit-hint">
-            <i class="ri-sparkling-2-fill"></i>
-            شخصيتك في عالم Cody
-          </div>
-
-          <h2 class="profile-name js-user-name">
-            جاري التحميل...
-          </h2>
-
-          <p class="profile-subtitle">
-            كل خطوة تتعلمها تقربك من هدفك.
-          </p>
-
-          <div class="profile-title">
-            <i class="ri-medal-fill"></i>
-            المستوى
-            <span id="userLevel" class="js-user-level">1</span>
-          </div>
-
-          <!-- شريط XP -->
-          <div class="level-progress-wrapper">
-
-            <div class="level-labels">
-              <span>التقدم للمستوى التالي</span>
-
-              <span class="xp-number">
-                <span id="currentXP">0</span> / 100 XP
-              </span>
-            </div>
-
-            <div class="progress-track">
-
-              <div
-                class="progress-fill"
-                id="xpProgressBar"
-                role="progressbar"
-                aria-label="التقدم للمستوى التالي"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"
-              ></div>
-
-            </div>
-
-            <p class="next-level-note" id="nextLevelNote">
-              اجمع نقاط XP من خلال إكمال الدروس والتحديات.
-            </p>
-
-          </div>
-
-        </section>
-
-        <!-- عنوان الإحصائيات -->
-        <div class="profile-section-heading">
-
-          <h3>
-            <i class="ri-bar-chart-grouped-line"></i>
-            إحصائيات رحلتك
-          </h3>
-
-          <span class="section-caption">
-            بيانات تقدمك المسجلة في حسابك
+        <div class="profile-level-row">
+          <span class="profile-level-badge">
+            <i class="ri-medal-line"></i>
+            المستوى <span id="userLevel" class="js-user-level">1</span>
           </span>
 
-        </div>
-
-        <!-- الإحصائيات -->
-        <section class="stats-grid" aria-label="إحصائيات الحساب">
-
-          <article class="stat-box">
-
-            <div class="stat-icon" style="--stat-color:#6be8ff">
-              <i class="ri-book-open-line"></i>
-            </div>
-
-            <h4>الدروس المكتملة</h4>
-
-            <div class="value js-completed-lessons" id="completedLessons">
-              0
-            </div>
-
-          </article>
-
-          <article class="stat-box">
-
-            <div class="stat-icon projects-stat-icon">
-              <i class="ri-folder-code-fill"></i>
-            </div>
-
-            <h4>المشروعات</h4>
-
-            <div class="value js-completed-projects" id="completedProjects">
-              0
-            </div>
-
-          </article>
-
-          <article class="stat-box">
-
-            <div class="stat-icon" style="--stat-color:#55e6b1">
-              <i class="ri-calendar-check-line"></i>
-            </div>
-
-            <h4>سلسلة التعلم</h4>
-
-            <div class="value js-learning-streak" id="learningStreak">
-              0
-            </div>
-
-          </article>
-
-          <article class="stat-box">
-
-            <div class="stat-icon" style="--stat-color:#ffd48a">
-              <i class="ri-flashlight-line"></i>
-            </div>
-
-            <h4>نقاط الخبرة XP</h4>
-
-            <div class="value js-user-xp" id="totalXP">
-              0
-            </div>
-
-          </article>
-
-        </section>
-
-        <!-- الأوسمة -->
-        <div class="profile-section-heading">
-
-          <h3>
-            <i class="ri-award-line"></i>
-            أوسمتي وإنجازاتي
-          </h3>
-
-          <span class="section-caption">
-            مساحة إنجازاتك في Cody
+          <span class="profile-level-badge">
+            <i class="ri-flashlight-line"></i>
+            <span class="js-user-xp" id="totalXP">0</span> XP
           </span>
-
         </div>
-
-        <section class="badges-section">
-
-          <div class="badges-grid">
-
-            <article class="badge-item">
-              <i class="ri-footprint-line"></i>
-              <span>أول خطوة</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-            <article class="badge-item">
-              <i class="ri-book-3-line"></i>
-              <span>محب التعلم</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-            <article class="badge-item">
-              <i class="ri-graduation-cap-line"></i>
-              <span>متعلم نشيط</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-            <article class="badge-item">
-              <i class="ri-code-s-slash-line"></i>
-              <span>المبرمج الصغير</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-            <article class="badge-item">
-              <i class="ri-tools-line"></i>
-              <span>صانع المشروعات</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-            <article class="badge-item">
-              <i class="ri-gamepad-line"></i>
-              <span>بطل التحديات</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-            <article class="badge-item">
-              <i class="ri-flashlight-line"></i>
-              <span>جامع النقاط</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-            <article class="badge-item">
-              <i class="ri-vip-crown-line"></i>
-              <span>نجم Cody</span>
-              <small class="badge-state">قريبًا</small>
-            </article>
-
-          </div>
-
-          <p class="badge-system-note">
-            الأوسمة المعروضة هنا واجهة تمهيدية، وسيتم تفعيلها عند ربط نظام المكافآت بشروط الإنجاز الفعلية.
-          </p>
-
-        </section>
-
-        <!-- تسجيل الخروج -->
-        <section class="profile-logout-section">
-
-          <button
-            type="button"
-            class="profile-logout-button"
-            id="logoutButton"
-          >
-            <i class="ri-logout-box-r-line"></i>
-            تسجيل الخروج
-          </button>
-
-        </section>
-
       </div>
 
-    </main>
+      <div class="profile-actions">
+        <button
+          type="button"
+          class="profile-action-button logout"
+          id="logoutButton"
+        >
+          <i class="ri-logout-box-r-line"></i>
+          تسجيل الخروج
+        </button>
+      </div>
 
-  </div>
+    </section>
 
-  <!-- قائمة التنقل للموبايل -->
-  <nav class="mobile-nav" aria-label="التنقل الرئيسي">
+    <!-- Statistics -->
+    <section class="profile-content-section">
 
+      <div class="profile-section-heading">
+        <div>
+          <h2>إحصائياتي</h2>
+          <p>تابع إنجازاتك وتقدمك في Cody Academy</p>
+        </div>
+      </div>
+
+      <div class="profile-stats-grid">
+
+        <article class="profile-stat-card">
+          <div class="profile-stat-icon">
+            <i class="ri-book-open-line"></i>
+          </div>
+          <span class="profile-stat-value js-completed-lessons" id="completedLessons">0</span>
+          <span class="profile-stat-label">الدروس المكتملة</span>
+        </article>
+
+        <article class="profile-stat-card">
+          <div class="profile-stat-icon">
+            <i class="ri-code-s-slash-line"></i>
+          </div>
+          <span class="profile-stat-value js-completed-projects" id="completedProjects">0</span>
+          <span class="profile-stat-label">المشروعات المكتملة</span>
+        </article>
+
+        <article class="profile-stat-card">
+          <div class="profile-stat-icon">
+            <i class="ri-fire-line"></i>
+          </div>
+          <span class="profile-stat-value js-learning-streak" id="learningStreak">0</span>
+          <span class="profile-stat-label">أيام التعلم المتتالية</span>
+        </article>
+
+        <article class="profile-stat-card">
+          <div class="profile-stat-icon">
+            <i class="ri-star-line"></i>
+          </div>
+          <span class="profile-stat-value js-user-xp" id="currentXP">0</span>
+          <span class="profile-stat-label">نقاط الخبرة XP</span>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- XP Progress -->
+    <section class="profile-content-section">
+
+      <div class="profile-section-heading">
+        <div>
+          <h2>تقدم المستوى</h2>
+          <p>استمر في التعلم للوصول إلى المستوى التالي</p>
+        </div>
+      </div>
+
+      <div class="profile-progress-card">
+
+        <div class="profile-progress-top">
+          <strong>نقاط الخبرة</strong>
+          <span id="xpProgressText">0%</span>
+        </div>
+
+        <div class="profile-progress-track">
+          <div id="xpProgressBar"></div>
+        </div>
+
+        <div class="profile-xp-caption">
+          <span>إجمالي نقاطك: <strong id="currentXPLabel">0</strong></span>
+          <span>واصل رحلتك!</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Achievements -->
+    <section class="profile-content-section">
+
+      <div class="profile-section-heading">
+        <div>
+          <h2>أوسمتي وإنجازاتي 🏆</h2>
+          <p>كل درس مكتمل يقربك من الحصول على وسام جديد</p>
+        </div>
+
+        <span class="badge-summary" id="badgeSummary">
+          <i class="ri-award-line"></i>
+          0 / 8
+        </span>
+      </div>
+
+      <div class="profile-badges-card">
+
+        <div class="badges-grid" id="badgesGrid">
+          <div class="profile-loading">
+            <i class="ri-loader-4-line"></i>
+            جاري تحميل الأوسمة...
+          </div>
+        </div>
+
+        <p class="badge-system-note" id="badgeSystemNote" aria-live="polite">
+          يتم احتساب الأوسمة بناءً على عدد الدروس المكتملة المسجلة في حسابك.
+        </p>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mobile navigation -->
+  <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
     <a href="dashboard.html">
       <i class="ri-home-5-line"></i>
       <span>الرئيسية</span>
     </a>
 
     <a href="languages.html">
-      <i class="ri-route-line"></i>
-      <span>المسارات</span>
-    </a>
-
-    <a href="playground.html">
       <i class="ri-code-s-slash-line"></i>
-      <span>المحرر</span>
+      <span>التعلم</span>
     </a>
 
     <a href="games.html">
@@ -1117,53 +649,222 @@
       <span>الألعاب</span>
     </a>
 
-    <a href="profile.html" class="active" aria-current="page">
-      <i class="ri-user-line"></i>
-      <span>حسابي</span>
+    <a href="achievements.html">
+      <i class="ri-trophy-line"></i>
+      <span>الإنجازات</span>
     </a>
 
+    <a href="profile.html" class="active">
+      <i class="ri-user-3-line"></i>
+      <span>ملفي</span>
+    </a>
   </nav>
 
-  <!-- التحكم في قائمة الخيارات -->
-  <script>
-    (() => {
-      "use strict";
-
-      const menu = document.getElementById("profileMenu");
-      const menuButton = document.getElementById("profileMenuButton");
-
-      if (!menu || !menuButton) return;
-
-      const closeMenu = () => {
-        menu.classList.remove("open");
-        menuButton.setAttribute("aria-expanded", "false");
-      };
-
-      menuButton.addEventListener("click", () => {
-        const opened = menu.classList.toggle("open");
-        menuButton.setAttribute("aria-expanded", String(opened));
-      });
-
-      document.addEventListener("click", event => {
-        if (!menu.contains(event.target)) {
-          closeMenu();
-        }
-      });
-
-      document.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
-          closeMenu();
-          menuButton.focus();
-        }
-      });
-
-    })();
-  </script>
-
-  <!-- نظام الحساب والشخصية والإحصائيات الأساسي -->
+  <!-- Main application script -->
   <script type="module" src="js/app.js?v=3001"></script>
+
+  <!-- Achievements system -->
+  <script type="module">
+    import { requireUser } from "./js/auth.js";
+    import { db } from "./js/firebase-config.js";
+
+    import {
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const badgeDefinitions = [
+      {
+        id: "first-step",
+        title: "أول خطوة",
+        description: "أكمل أول درس في رحلتك البرمجية",
+        threshold: 1,
+        icon: "ri-flag-line"
+      },
+      {
+        id: "learning-lover",
+        title: "محب التعلم",
+        description: "أكمل 5 دروس",
+        threshold: 5,
+        icon: "ri-book-open-line"
+      },
+      {
+        id: "active-learner",
+        title: "متعلم نشيط",
+        description: "أكمل 10 دروس",
+        threshold: 10,
+        icon: "ri-lightbulb-line"
+      },
+      {
+        id: "young-programmer",
+        title: "المبرمج الصغير",
+        description: "أكمل 20 درسًا",
+        threshold: 20,
+        icon: "ri-code-s-slash-line"
+      },
+      {
+        id: "progress-maker",
+        title: "صانع التقدم",
+        description: "أكمل 30 درسًا",
+        threshold: 30,
+        icon: "ri-rocket-line"
+      },
+      {
+        id: "learning-hero",
+        title: "بطل التعلم",
+        description: "أكمل 40 درسًا",
+        threshold: 40,
+        icon: "ri-shield-star-line"
+      },
+      {
+        id: "achievement-collector",
+        title: "جامع الإنجازات",
+        description: "أكمل 50 درسًا",
+        threshold: 50,
+        icon: "ri-medal-line"
+      },
+      {
+        id: "cody-star",
+        title: "نجم Cody",
+        description: "أكمل 75 درسًا",
+        threshold: 75,
+        icon: "ri-trophy-line"
+      }
+    ];
+
+    const badgesGrid = document.getElementById("badgesGrid");
+    const badgeSummary = document.getElementById("badgeSummary");
+    const badgeSystemNote = document.getElementById("badgeSystemNote");
+
+    function renderBadges(completedLessons) {
+      const unlockedCount = badgeDefinitions.filter(
+        badge => completedLessons >= badge.threshold
+      ).length;
+
+      badgeSummary.innerHTML = `
+        <i class="ri-award-line"></i>
+        ${unlockedCount} / ${badgeDefinitions.length}
+      `;
+
+      badgesGrid.innerHTML = badgeDefinitions.map(badge => {
+        const unlocked = completedLessons >= badge.threshold;
+
+        return `
+          <article class="achievement-badge ${unlocked ? "is-unlocked" : "is-locked"}">
+            <div class="achievement-badge-icon">
+              <i class="${badge.icon}"></i>
+            </div>
+
+            <h3>${badge.title}</h3>
+
+            <p>${badge.description}</p>
+
+            <span class="achievement-badge-status">
+              ${
+                unlocked
+                  ? '<i class="ri-checkbox-circle-fill"></i> تم الحصول عليه'
+                  : '<i class="ri-lock-line"></i> لم يُفتح بعد'
+              }
+            </span>
+
+            <span class="achievement-badge-status">
+              ${completedLessons} / ${badge.threshold} درس
+            </span>
+          </article>
+        `;
+      }).join("");
+
+      badgeSystemNote.textContent =
+        `أكملت ${completedLessons} درسًا. حصلت على ${unlockedCount} من أصل ${badgeDefinitions.length} أوسمة.`;
+    }
+
+    function normalizeLanguage(value) {
+      const language = String(value || "").trim().toLowerCase();
+
+      const supported = [
+        "python",
+        "javascript",
+        "cpp"
+      ];
+
+      return supported.includes(language) ? language : null;
+    }
+
+    async function loadAchievements() {
+      try {
+        const user = await requireUser();
+
+        if (!user || !user.uid) {
+          throw new Error("لم يتم العثور على حساب المستخدم.");
+        }
+
+        const progressRef = collection(
+          db,
+          "users",
+          user.uid,
+          "lessonProgress"
+        );
+
+        const snapshot = await getDocs(progressRef);
+
+        const completedLessons = new Set();
+
+        snapshot.forEach(documentSnapshot => {
+          const data = documentSnapshot.data();
+
+          if (data.completed !== true) return;
+
+          const language = 
+            normalizeLanguage(data.language);
+
+          if (!language) return;
+
+          if (
+            data.chapter === undefined ||
+            data.lesson === undefined
+          ) {
+            return;
+          }
+
+          const chapter = Number(data.chapter);
+          const lesson = Number(data.lesson);
+
+          if (
+            !Number.isInteger(chapter) ||
+            !Number.isInteger(lesson) ||
+            chapter < 0 ||
+            lesson < 0
+          ) {
+            return;
+          }
+
+          completedLessons.add(
+            `${language}-${chapter}-${lesson}`
+          );
+        });
+
+        renderBadges(completedLessons.size);
+
+      } catch (error) {
+        console.error("Achievements loading error:", error);
+
+        badgesGrid.innerHTML = `
+          <div class="profile-empty">
+            <i class="ri-error-warning-line"></i>
+            <p>تعذر تحميل الأوسمة حاليًا.</p>
+            <p>تأكدي من تسجيل الدخول وصلاحيات قراءة تقدم الدروس.</p>
+          </div>
+        `;
+
+        badgeSummary.textContent = "غير متاح";
+
+        badgeSystemNote.textContent =
+          "لم نتمكن من قراءة سجل الدروس من قاعدة البيانات. راجعي اتصال Firebase وصلاحيات Firestore.";
+      }
+    }
+
+    loadAchievements();
+  </script>
 
 </body>
 </html>
-
-          
