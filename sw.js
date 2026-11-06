@@ -1,5 +1,4 @@
-
-const CACHE_NAME = "cody-academy-v4";
+const CACHE_NAME = "cody-academy-v5";
 const START_URL = "./index.html";
 
 self.addEventListener("install", event => {
@@ -15,7 +14,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(names =>
       Promise.all(
         names
-          .filter(name => name !== CACHE_NAME)
+          .filter(name => name.startsWith("cody-academy-") && name !== CACHE_NAME)
           .map(name => caches.delete(name))
       )
     ).then(() => self.clients.claim())
@@ -40,9 +39,9 @@ self.addEventListener("fetch", event => {
           if (response.ok) {
             const copy = response.clone();
 
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, copy);
-            });
+            event.waitUntil(
+              caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {})
+            );
           }
 
           return response;
@@ -79,15 +78,19 @@ self.addEventListener("fetch", event => {
         if (response.ok && response.type === "basic") {
           const copy = response.clone();
 
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, copy);
-          });
+          event.waitUntil(
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {})
+          );
         }
 
         return response;
       });
 
-      return cached || networkRequest;
+      if (cached) {
+        event.waitUntil(networkRequest.catch(() => {}));
+        return cached;
+      }
+      return networkRequest.catch(() => new Response("Offline", { status: 503 }));
     })
   );
 });
