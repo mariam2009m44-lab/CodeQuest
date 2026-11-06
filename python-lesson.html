@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -50,7 +49,7 @@
     .close-btn { display: none; background: var(--border); border: none; border-radius: 8px; width: 36px; height: 36px; color: var(--text); cursor: pointer; }
 
     .chapters-list { flex: 1; overflow-y: auto; padding: 20px 15px; padding-bottom: 150px; }
-    
+
     .chapter-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
     .chapter-title { padding: 18px 15px; position: relative; cursor: pointer; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
     .chap-name { color: #ffffff !important; font-size: 1.1rem; font-weight: 700; display: block; padding-left: 35px; margin-bottom: 8px; }
@@ -68,13 +67,13 @@
     .lesson-link.locked-lesson { opacity: 0.5; cursor: not-allowed; }
 
     .main-area { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100dvh; position: relative; }
-    
+
     .top-bar { padding: 15px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; z-index: 10; }
     .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
     .menu-btn { display: none; background: var(--border); border: none; border-radius: 10px; width: 44px; height: 44px; color: var(--text); font-size: 1.5rem; cursor: pointer; }
     .back-btn { color: var(--text); text-decoration: none; font-weight: 800; font-size: 1rem; background: var(--border); padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 8px; }
     .stats-badge { background: rgba(251, 191, 36, 0.1); color: var(--gold); padding: 8px 16px; border-radius: 20px; font-weight: 900; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
-    
+
     .progress-container { width: 100%; }
     .progress-text { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
     .progress-text span:last-child { color: var(--cyan); }
@@ -82,7 +81,7 @@
     .progress-fill { height: 100%; background: var(--cyan); width: 0%; transition: 0.3s; border-radius: 10px; }
 
     .content-wrapper { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-    
+
     .chat-container { flex: 1; min-height: 0; padding: 20px; padding-bottom: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
     .message-row { display: flex; gap: 12px; align-items: flex-end; }
     .message-row.cody { flex-direction: row; }
@@ -91,11 +90,11 @@
     .message-row.student { flex-direction: row-reverse; }
     .message-row.student .avatar { background: #4f46e5; }
     .message-row.student .bubble { background: #4f46e5; border-radius: 20px 20px 20px 0; }
-    
+
     .avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0; }
     .bubble { padding: 16px 20px; font-size: 1.1rem; line-height: 1.8; max-width: 85%; color: #fff; }
     .bubble code { background: #000; color: var(--cyan); padding: 4px 8px; border-radius: 6px; font-family: 'Fira Code', monospace; direction: ltr; display: inline-block; font-size: 1rem; }
-    
+
     .typing-indicator { display: flex; gap: 6px; padding: 15px 18px; background: var(--surface); border-radius: 20px; border: 1px solid var(--border); }
     .typing-indicator span { width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
     .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
@@ -117,7 +116,7 @@
     .editor-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #161b22; border-bottom: 1px solid var(--border); }
     .editor-title { color: var(--text-muted); font-family: 'Fira Code', monospace; font-size: 1rem; }
     .btn-run { background: var(--green); color: #000; padding: 10px 20px; border-radius: 8px; font-weight: 900; display: flex; align-items: center; gap: 8px; font-size: 1rem; cursor: pointer; border: none; }
-    
+
     .code-area { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; overflow: hidden; }
     .CodeMirror { flex: 1; width: 100% !important; height: 100% !important; font-family: 'Fira Code', monospace; font-size: 1.1rem; direction: ltr; text-align: left; background: #0d1117 !important; }
     .output-area { height: 120px; background: #000; padding: 15px; font-family: 'Fira Code', monospace; color: #ccc; direction: ltr; text-align: left; overflow-y: auto; font-size: 1rem; white-space: pre-wrap; border-top: 1px solid var(--border); flex-shrink: 0; }
@@ -176,7 +175,7 @@
 
   <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
   <div class="editor-backdrop" id="editorBackdrop" onclick="closeEditor()"></div>
-  
+
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -187,7 +186,7 @@
     </div>
     <div class="chapters-list" id="chaptersList"></div>
   </div>
-  
+
   <div class="main-area">
     <div class="top-bar">
       <div class="top-row">
@@ -200,12 +199,12 @@
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
     </div>
-    
+
     <div class="content-wrapper">
       <div class="chat-container" id="chatContainer"></div>
       <div id="editorContainer" style="display: contents;"></div>
     </div>
-    
+
     <div class="exam-view" id="examView">
       <div class="exam-header">
         <h2 id="examTitle">امتحان الفصل</h2>
@@ -227,7 +226,7 @@
       <button class="btn-next" id="nextBtn" onclick="advanceChat()">متابعة <i class="ri-arrow-left-line"></i></button>
     </div>
   </div>
-  
+
   <script src="js/chapters/ch1.js"></script>
   <script src="js/chapters/ch2.js"></script>
   <script src="js/chapters/ch3.js"></script>
@@ -245,15 +244,76 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script>
     "use strict";
-    
+
     const chapterList = [
       { id: 1, title: "الطباعة" }, { id: 2, title: "المتغيرات" }, { id: 3, title: "العمليات الحسابية" },
       { id: 4, title: "الشروط" }, { id: 5, title: "التكرار" }, { id: 6, title: "القوائم" },
       { id: 7, title: "الدوال" }, { id: 8, title: "النصوص" }, { id: 9, title: "الأخطاء" },
       { id: 10, title: "القواميس" }, { id: 11, title: "المكتبات" }, { id: 12, title: "المشروع النهائي" }
     ];
-    
+
     const PROGRESS_KEY = "cody_python_progress", XP_KEY = "cody_xp";
+
+    // مزامنة تقدم Python مع حساب المستخدم في Firestore.
+    async function savePythonCloudProgress(lessonNumber) {
+      try {
+        const { saveLessonProgress } = await import("./js/auth.js");
+        await saveLessonProgress({
+          language: "python",
+          chapter: Number(chapterId) - 1,
+          lesson: Number(lessonNumber),
+          completed: true
+        });
+        return true;
+      } catch (error) {
+        console.error("Python progress save failed:", error);
+        return false;
+      }
+    }
+
+    function readPythonLocalProgress() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
+        return {
+          completed: Array.isArray(saved.completed) ? saved.completed.map(Number) : [],
+          stars: saved.stars || {}
+        };
+      } catch {
+        return { completed: [], stars: {} };
+      }
+    }
+
+    function savePythonLocalChapter(chapter) {
+      const progress = readPythonLocalProgress();
+      if (!progress.completed.includes(Number(chapter))) {
+        progress.completed.push(Number(chapter));
+      }
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    }
+
+    async function syncPythonProgressFromCloud() {
+      try {
+        const { getLessonProgress } = await import("./js/auth.js");
+        const records = await getLessonProgress("python");
+        const completedChapters = records
+          .filter(record =>
+            Number(record.lesson) === 104 &&
+            record.completed === true &&
+            Number.isInteger(Number(record.chapter))
+          )
+          .map(record => Number(record.chapter) + 1)
+          .filter(id => id >= 1 && id <= 12);
+
+        const progress = readPythonLocalProgress();
+        progress.completed = [...new Set([...progress.completed, ...completedChapters])];
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+        renderSidebar();
+        updateProgressBar();
+      } catch (error) {
+        console.warn("Python cloud progress sync skipped:", error);
+      }
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     let chapterId = parseInt(urlParams.get("ch"));
     let lessonId = parseInt(urlParams.get("lesson"));
@@ -276,7 +336,7 @@
       document.getElementById('sidebar').classList.toggle('open'); 
       document.getElementById('overlay').classList.toggle('open'); 
     }
-    
+
     function showTypingIndicator() {
         const row = document.createElement("div");
         row.className = "message-row cody";
@@ -298,7 +358,7 @@
             if (editorInstance) {
                 editorInstance.toTextArea();
                 editorInstance = null;
-            }
+                           }
             wrapper.remove();
         }
         if (backdrop) backdrop.classList.remove('show');
@@ -308,12 +368,12 @@
       const list = document.getElementById("chaptersList"); 
       list.innerHTML = "";
       const progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
-      
+
       chapterList.forEach((chap, index) => {
         const chapData = window.CHAPTERS && window.CHAPTERS[chap.id];
         const isCompleted = progress.completed.includes(chap.id);
         const isUnlocked = index === 0 || progress.completed.includes(chapterList[index - 1].id);
-        
+
         let totalLessons = chapData && chapData.lessons ? chapData.lessons.length : 0;
         let chapProgressPercent = isCompleted ? 100 : 0;
         if (String(chapterId) === String(chap.id) && lessonId > 1) {
@@ -324,25 +384,25 @@
         chapEl.className = `chapter-item ${isUnlocked ? "" : "locked"}`;
         const titleEl = document.createElement("div"); 
         titleEl.className = "chapter-title";
-        
+
         let icon = !isUnlocked ? '<i class="ri-lock-fill"></i>' : (isCompleted ? '<i class="ri-checkbox-circle-fill" style="color:var(--green);"></i>' : '<i class="ri-arrow-down-s-line"></i>');
-        
+
         titleEl.innerHTML = `
           <span class="chap-name">${chap.id}. ${chap.title}</span>
           <span class="chap-icon">${icon}</span>
           <div class="chap-mini-prog"><div class="chap-mini-fill" style="width: ${chapProgressPercent}%"></div></div>
         `;
-        
+
         const lessonsEl = document.createElement("div"); 
         lessonsEl.className = "lessons-list";
         if (String(chapterId) === String(chap.id)) lessonsEl.classList.add("open");
-        
+
         if (chapData && chapData.lessons) {
           chapData.lessons.forEach((lesson, lIndex) => {
             const lessonEl = document.createElement("a");
             const isLessonUnlocked = isUnlocked; 
             lessonEl.className = `lesson-link ${!isLessonUnlocked ? "locked-lesson" : ""} ${String(chapterId) === String(chap.id) && (lIndex + 1) === lessonId ? "active" : ""}`;
-            
+
             if (isLessonUnlocked) {
                 lessonEl.innerHTML = `<i class="ri-play-circle-line"></i> ${lesson.title}`;
                 lessonEl.href = `python-lesson.html?ch=${chap.id}&lesson=${lIndex + 1}`;
@@ -371,7 +431,7 @@
 
     function loadLesson() {
       localStorage.setItem("cody_last_lesson", JSON.stringify({ch: chapterId, lesson: lessonId}));
-      
+
       const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
       if (!chapter || !chapter.lessons[lessonId - 1]) {
         document.getElementById("chatContainer").innerHTML = `<div style="text-align:center; padding: 50px;"><h2>هذا الدرس قيد التطوير 🚧</h2></div>`;
@@ -379,7 +439,7 @@
       }
       currentLesson = chapter.lessons[lessonId - 1]; 
       isExamMode = currentLesson.title.includes('امتحان') || currentLesson.title.includes('الامتحان');
-      
+
       if (isExamMode) {
           startExam();
       } else {
@@ -397,7 +457,7 @@
       const step = currentLesson.steps[currentStepIndex];
       document.getElementById("bottomAction").classList.remove("show");
       closeEditor(); 
-      
+
       if (step.type === "cody") { 
         showTypingIndicator();
         setTimeout(() => {
@@ -412,15 +472,15 @@
         currentStepIndex++; 
       } else if (step.type === "challenge") { 
         addBubble("cody", "تحدي برمجي! اضغط على الزر بالأسفل لفتح المحرر 👇"); 
-        
+
         const btnWrapper = document.createElement("div");
         btnWrapper.className = "choices-container";
-        
+
         const openBtn = document.createElement("button");
         openBtn.className = "open-editor-btn";
         openBtn.innerHTML = '<i class="ri-code-s-slash-line"></i> فتح المحرر وكتابة الكود';
         openBtn.onclick = () => showEditor(step);
-        
+
         btnWrapper.appendChild(openBtn);
         document.getElementById("chatContainer").appendChild(btnWrapper);
         scrollToBottom();
@@ -438,11 +498,11 @@
         document.getElementById("examResultBox").classList.remove("show");
         document.getElementById("examQuestionBox").style.display = "block";
         document.getElementById("examTitle").textContent = currentLesson.title;
-        
+
         examQuestions = currentLesson.steps.filter(s => s.type === 'quiz');
         currentExamIndex = 0;
         examScore = 0;
-        
+
         if (examQuestions.length === 0) {
             document.getElementById("examQuestionText").textContent = "هذا الامتحان لا يحتوي على أسئلة حالياً.";
             document.getElementById("examProgFill").style.width = "100%";
@@ -466,10 +526,10 @@
         document.getElementById("examProgress").textContent = `سؤال ${currentExamIndex + 1} من ${examQuestions.length}`;
         document.getElementById("examProgFill").style.width = `${(currentExamIndex / examQuestions.length) * 100}%`;
         document.getElementById("examQuestionText").textContent = q.question;
-        
+
         const optsContainer = document.getElementById("examOptionsContainer");
         optsContainer.innerHTML = "";
-        
+
         q.options.forEach((opt, index) => {
             const btn = document.createElement("button");
             btn.className = "exam-opt-btn";
@@ -484,39 +544,62 @@
         });
     }
 
-    function endExam() {
+    async function endExam() {
         document.getElementById("examProgFill").style.width = "100%";
         document.getElementById("examQuestionBox").style.display = "none";
         document.getElementById("examResultBox").classList.add("show");
-        const scorePercent = Math.round((examScore / examQuestions.length) * 100);
-        document.getElementById("finalScore").textContent = `${examScore}/${examQuestions.length}`;
+
+        const scorePercent = examQuestions.length
+          ? Math.round((examScore / examQuestions.length) * 100)
+          : 0;
+
+        document.getElementById("finalScore").textContent =
+          `${examScore}/${examQuestions.length}`;
+
         const scoreRing = document.getElementById("scoreRing");
-        scoreRing.style.background = `conic-gradient(var(--green) ${scorePercent}%, var(--border) ${scorePercent}%)`;
-        
-        if (scorePercent >= 50) {
-            if (typeof window.confetti === "function") window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+        scoreRing.style.background =           `conic-gradient(var(--green) ${scorePercent}%, var(--border) ${scorePercent}%)`;
+
+        const passed = scorePercent >= 50;
+
+        if (passed) {
+            if (typeof window.confetti === "function") {
+              window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+            }
+
             document.getElementById("resultTitle").textContent = "عمل رائع! 🎉";
-            document.getElementById("resultMsg").textContent = "لقد اجتزت الامتحان بنجاح وتم فتح الفصل التالي.";
-            let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}');
-            if (!progress.completed.includes(chapterId)) {
-              progress.completed.push(chapterId);
-              localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+            document.getElementById("resultMsg").textContent =
+              "لقد اجتزت الامتحان بنجاح وتم فتح الفصل التالي.";
+
+            savePythonLocalChapter(chapterId);
+
+            // 104 علامة مخصصة لاجتياز امتحان الفصل في خريطة Python.
+            const cloudSaved = await savePythonCloudProgress(104);
+            if (!cloudSaved) {
+              document.getElementById("resultMsg").textContent =
+                "تم اجتياز الامتحان وحفظ التقدم على هذا الجهاز، لكن تعذرت المزامنة مع الحساب.";
             }
         } else {
             document.getElementById("resultTitle").textContent = "تحتاج للمزيد من التدريب 😅";
-            document.getElementById("resultMsg").textContent = "لم تجتز الامتحان هذه المرة، يمكنك المحاولة مرة أخرى.";
+            document.getElementById("resultMsg").textContent =
+              "لم تجتز الامتحان هذه المرة، يمكنك المحاولة مرة أخرى.";
         }
-        
+
         const btn = document.getElementById("nextBtn");
-        if (scorePercent >= 50) {
+        if (passed) {
             btn.innerHTML = 'الفصل التالي <i class="ri-arrow-left-line"></i>';
-            btn.onclick = () => { window.location.href = chapterId < 12 ? `python-lesson.html?ch=${chapterId + 1}&lesson=1` : "python-chapters.html"; };
+            btn.onclick = () => {
+              window.location.href = chapterId < 12
+                ? `python-lesson.html?ch=${chapterId + 1}&lesson=1`
+                : "python-chapters.html";
+            };
         } else {
             btn.innerHTML = 'إعادة المحاولة <i class="ri-refresh-line"></i>';
-            btn.onclick = () => { window.location.reload(); };
+            btn.onclick = () => window.location.reload();
         }
+
         document.getElementById("bottomAction").classList.add("show");
-        renderSidebar(); updateProgressBar();
+        renderSidebar();
+        updateProgressBar();
     }
 
     function addBubble(type, text) {
@@ -580,7 +663,7 @@
     function showEditor(step) {
       const backdrop = document.getElementById('editorBackdrop');
       backdrop.classList.add('show');
-      
+
       const wrapper = document.createElement("div"); 
       wrapper.id = "editorWrapper";
       wrapper.className = "editor-wrapper show";
@@ -596,17 +679,17 @@
           <textarea id="dynamicCodeEditor"></textarea>
           <div class="output-area" id="outputArea">&gt; Output...</div>
         </div>`;
-      
+
       document.getElementById("editorContainer").appendChild(wrapper);
-      
+
       setTimeout(() => {
         editorInstance = CodeMirror.fromTextArea(document.getElementById("dynamicCodeEditor"), { lineNumbers: true, mode: "python", theme: "dracula", indentUnit: 4, lineWrapping: true });
         editorInstance.setValue(step.defaultCode);
         setTimeout(() => { if(editorInstance) editorInstance.refresh(); }, 100);
       }, 50);
-      
+
       window.currentChallenge = step; challengeSolved = false; 
-      
+
       if (window.innerWidth > 900) {
           document.querySelector(".chat-container").style.maxWidth = "50%";
       } else {
@@ -657,21 +740,38 @@
       localStorage.setItem(XP_KEY, xp + amount); updateProgressBar(); 
     }
 
-    function endLesson() {
+    async function endLesson() {
       showTypingIndicator();
+
+      // lessonId يبدأ من 1 في رابط الصفحة؛ نخزن رقم الدرس بصيغة تبدأ من 0.
+      const cloudSaved = await savePythonCloudProgress(lessonId - 1);
+
       setTimeout(() => {
           removeTypingIndicator();
           addBubble("cody", "🎉 مبروك! أتممت هذا الدرس بنجاح.");
-          addBubble("cody", "📝 <b>مراجعة سريعة:</b> تأكد دائماً من قراءة الكود جيداً قبل تشغيله!");
+          addBubble("cody", "📝 <b>مراجعة سريعة:</b> تأكد دائمًا من قراءة الكود جيدًا قبل تشغيله!");
+
+          if (!cloudSaved) {
+            addBubble("cody", "⚠️ تعذرت مزامنة تقدم هذا الدرس مع الحساب. سيظل الدرس متاحًا على هذا الجهاز.");
+          }
+
           const btn = document.getElementById("nextBtn");
           if (lessonId < window.CHAPTERS[chapterId].lessons.length) {
             btn.innerHTML = 'الدرس التالي <i class="ri-arrow-left-line"></i>';
-            btn.onclick = () => { window.location.href = `python-lesson.html?ch=${chapterId}&lesson=${lessonId + 1}`; };
+            btn.onclick = () => {
+              window.location.href = `python-lesson.html?ch=${chapterId}&lesson=${lessonId + 1}`;
+            };
           } else {
             btn.innerHTML = 'العودة للخريطة <i class="ri-map-pin-line"></i>';
-            btn.onclick = () => { window.location.href = "python-chapters.html"; };
+            btn.onclick = () => {
+              window.location.href = "python-chapters.html";
+            };
           }
-          showNextButton(); scrollToBottom(); renderSidebar(); 
+
+          showNextButton();
+          scrollToBottom();
+          renderSidebar();
+          updateProgressBar();
       }, 800);
     }
 
@@ -681,6 +781,7 @@
     }
 
     loadLesson();
+    syncPythonProgressFromCloud();
   </script>
 <script type="module" src="js/route-guard.js"></script>
 </body>
