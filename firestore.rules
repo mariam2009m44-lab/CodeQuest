@@ -3,10 +3,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ==============================
-    // Authentication helpers
-    // ==============================
-
     function signedIn() {
       return request.auth != null;
     }
@@ -17,6 +13,33 @@ service cloud.firestore {
 
     function validLanguage(language) {
       return language in ['python', 'javascript', 'cpp'];
+    }
+
+    function validAvatarSelection(data) {
+      return !data.keys().hasAny(['activeAvatar'])
+        || data.activeAvatar in [
+          'cody', 'layla', 'omar', 'sara', 'robo', 'nova'
+        ]
+        || (
+          data.activeAvatar == 'astronaut'
+          && data.inventory is list
+          && data.inventory.hasAny(['astronaut'])
+        )
+        || (
+          data.activeAvatar == 'fox'
+          && data.inventory is list
+          && data.inventory.hasAny(['fox'])
+        )
+        || (
+          data.activeAvatar == 'robot'
+          && data.inventory is list
+          && data.inventory.hasAny(['robot'])
+        )
+        || (
+          data.activeAvatar == 'dragon'
+          && data.inventory is list
+          && data.inventory.hasAny(['dragon'])
+        );
     }
 
     function validProfile(uid) {
@@ -65,16 +88,8 @@ service cloud.firestore {
         && data.createdAt is timestamp
         && data.updatedAt is timestamp
         && progress is map
-        && progress.keys().hasAll([
-          'python',
-          'javascript',
-          'cpp'
-        ])
-        && progress.keys().hasOnly([
-          'python',
-          'javascript',
-          'cpp'
-        ])
+        && progress.keys().hasAll(['python', 'javascript', 'cpp'])
+        && progress.keys().hasOnly(['python', 'javascript', 'cpp'])
         && progress.python is number
         && progress.python >= 0
         && progress.python <= 100
@@ -86,17 +101,11 @@ service cloud.firestore {
         && progress.cpp <= 100;
     }
 
-    // ==============================
-    // User profile
-    // ==============================
-
     match /users/{uid} {
-
       allow get: if owns(uid);
       allow list: if false;
 
-      allow create: if owns(uid)
-                    && validProfile(uid);
+      allow create: if owns(uid) && validProfile(uid);
 
       allow update: if owns(uid)
         && request.resource.data
@@ -115,8 +124,7 @@ service cloud.firestore {
           ])
         && (
           !request.resource.data.diff(resource.data)
-            .affectedKeys()
-            .hasAny(['displayName'])
+            .affectedKeys().hasAny(['displayName'])
           || (
             request.resource.data.displayName is string
             && request.resource.data.displayName.size() >= 2
@@ -125,36 +133,25 @@ service cloud.firestore {
         )
         && (
           !request.resource.data.diff(resource.data)
-            .affectedKeys()
-            .hasAny(['updatedAt'])
+            .affectedKeys().hasAny(['updatedAt'])
           || request.resource.data.updatedAt is timestamp
+        )
+        && (
+          !request.resource.data.diff(resource.data)
+            .affectedKeys().hasAny(['activeAvatar'])
+          || validAvatarSelection(request.resource.data)
         );
 
       allow delete: if false;
 
-      // ==============================
-      // Lesson progress
-      // users/{uid}/lessonProgress/{lessonId}
-      // ==============================
-
       match /lessonProgress/{lessonId} {
-
         function validLessonProgress() {
           let data = request.resource.data;
-
           return data.keys().hasAll([
-              'language',
-              'chapter',
-              'lesson',
-              'completed',
-              'updatedAt'
+              'language', 'chapter', 'lesson', 'completed', 'updatedAt'
             ])
             && data.keys().hasOnly([
-              'language',
-              'chapter',
-              'lesson',
-              'completed',
-              'updatedAt'
+              'language', 'chapter', 'lesson', 'completed', 'updatedAt'
             ])
             && validLanguage(data.language)
             && data.chapter is int
@@ -166,49 +163,27 @@ service cloud.firestore {
         }
 
         allow get, list: if owns(uid);
-
-        allow create, update: if owns(uid)
-                              && validLessonProgress();
-
+        allow create, update: if owns(uid) && validLessonProgress();
         allow delete: if owns(uid);
       }
-
-      // ==============================
-      // Quiz results
-      // ==============================
 
       match /quizResults/{resultId} {
         allow read: if owns(uid);
         allow write: if false;
       }
 
-      // ==============================
-      // Game rewards
-      // ==============================
-
       match /gameRewards/{gameId} {
         allow read: if owns(uid);
         allow write: if false;
       }
 
-      // ==============================
-      // Saved code drafts
-      // ==============================
-
       match /drafts/{draftId} {
-
         allow read, delete: if owns(uid);
-
         allow create, update: if owns(uid)
           && request.resource.data.keys().hasOnly([
-            'code',
-            'language',
-            'updatedAt'
+            'code', 'language', 'updatedAt'
           ])
-          && request.resource.data.keys().hasAll([
-            'code',
-            'updatedAt'
-          ])
+          && request.resource.data.keys().hasAll(['code', 'updatedAt'])
           && request.resource.data.code is string
           && request.resource.data.code.size() <= 50000
           && request.resource.data.updatedAt is timestamp
@@ -219,12 +194,7 @@ service cloud.firestore {
       }
     }
 
-    // ==============================
-    // Projects
-    // ==============================
-
     match /projects/{projectId} {
-
       allow read, delete: if signedIn()
         && resource.data.userId == request.auth.uid;
 
@@ -240,15 +210,9 @@ service cloud.firestore {
       allow update: if signedIn()
         && resource.data.userId == request.auth.uid
         && request.resource.data.userId == resource.data.userId
-        && request.resource.data
-          .diff(resource.data)
-          .affectedKeys()
-          .hasOnly([
-            'name',
-            'language',
-            'code',
-            'date',
-            'updatedAt'
+        && request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly([
+            'name', 'language', 'code', 'date', 'updatedAt'
           ])
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 1
@@ -258,18 +222,10 @@ service cloud.firestore {
         && validLanguage(request.resource.data.language);
     }
 
-    // ==============================
-    // Public leaderboard
-    // ==============================
-
     match /leaderboardPublic/{uid} {
       allow read: if signedIn();
       allow write: if false;
     }
-
-    // ==============================
-    // Deny everything else
-    // ==============================
 
     match /{document=**} {
       allow read, write: if false;
