@@ -7,7 +7,6 @@ import App from "../App.jsx";
 
 import "../../css/variables.css";
 import "../../css/global.css";
-import "../../src/styles/global.css";
 
 const rootElement = document.getElementById("root");
 
@@ -24,4 +23,3 @@ ReactDOM.createRoot(rootElement).render(
     </HashRouter>
   </React.StrictMode>
 );
-
