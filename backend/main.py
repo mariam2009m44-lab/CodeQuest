@@ -1,5 +1,3 @@
-
-
 import os
 import json
 import asyncio
@@ -20,7 +18,10 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ConfigDict
 
-from cody_chat import router as cody_chat_router
+if __package__:
+    from .cody_chat import router as cody_chat_router
+else:
+    from cody_chat import router as cody_chat_router
 
 
 # ==========================================
@@ -47,8 +48,6 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-# تسجيل واجهة Cody AI
-app.include_router(cody_chat_router)
 
 
 # ==========================================
@@ -146,6 +145,11 @@ def verify_firebase_token(
 # نماذج البيانات
 # ==========================================
 
+app.include_router(
+    cody_chat_router,
+    dependencies=[Depends(verify_firebase_token)],
+)
+
 class QuizRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
@@ -217,7 +221,7 @@ def load_curriculum(language: str):
 
         return curriculum
 
-    except json.JSONDecodeError:
+    except ValueError:
         raise HTTPException(
             status_code=500,
             detail="Curriculum JSON contains invalid data."
