@@ -8,20 +8,21 @@
 
   <title>ملفي الشخصي | Cody Academy</title>
 
+  <!-- تطبيق الوضع المحفوظ قبل تحميل الصفحة -->
+  <script src="./js/theme.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
 
+  <!-- ملفات التصميم -->
+  <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dashboard.css">
-  <link rel="stylesheet" href="css/profile.css?v=4">
+  <link rel="stylesheet" href="css/profile.css?v=5">
 
   <style>
-    /* =========================================
-       PROFILE PAGE — Cody Academy
-    ========================================= */
-
     * {
       box-sizing: border-box;
     }
@@ -39,43 +40,26 @@
       margin: 30px auto;
     }
 
-    /* =========================================
-       PROFILE HEADER
-    ========================================= */
+    /* PROFILE HEADER */
 
     .profile-header-card {
       position: relative;
       isolation: isolate;
       z-index: 1;
-
       display: flex;
       flex-direction: row !important;
       align-items: center !important;
       justify-content: flex-start;
-
       gap: 28px;
       min-height: 220px;
       padding: 30px;
-
       overflow: hidden;
       text-align: right !important;
-
       border: 1px solid rgba(139, 153, 255, .2);
       border-radius: 26px;
-
       background:
-        radial-gradient(
-          circle at 90% 10%,
-          rgba(93, 123, 255, .13),
-          transparent 40%
-        ),
-        linear-gradient(
-          135deg,
-          #151d39 0%,
-          #10182d 55%,
-          #172b43 100%
-        ) !important;
-
+        radial-gradient(circle at 90% 10%, rgba(93, 123, 255, .13), transparent 40%),
+        linear-gradient(135deg, #151d39 0%, #10182d 55%, #172b43 100%) !important;
       box-shadow: 0 18px 55px rgba(0, 0, 0, .2);
     }
 
@@ -88,13 +72,10 @@
     .profile-avatar-section {
       position: relative;
       z-index: 2;
-
       flex: 0 0 145px;
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       width: 145px;
       height: 145px;
       min-width: 0;
@@ -102,21 +83,15 @@
 
     .profile-avatar-frame {
       position: relative;
-
       width: 140px;
       height: 140px;
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       overflow: hidden;
-
       border: 3px solid rgba(255,255,255,.35);
       border-radius: 50%;
-
       background: rgba(255,255,255,.09);
-
       box-shadow:
         0 0 0 7px rgba(255,255,255,.035),
         0 12px 35px rgba(0,0,0,.25);
@@ -125,48 +100,37 @@
     #userAvatar {
       width: 100%;
       height: 100%;
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       overflow: hidden;
     }
-
-    /* تصحيح حجم الشخصية المولدة من avatars.js */
 
     #userAvatar .anime-avatar {
       width: 100% !important;
       height: 100% !important;
       min-height: 0 !important;
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       overflow: hidden !important;
     }
 
     #userAvatar .anime-character {
       width: 100% !important;
       height: 100% !important;
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       overflow: hidden;
     }
 
     #userAvatar .anime-avatar-svg {
       display: block;
-
       width: 100% !important;
       height: 100% !important;
-
       max-width: 100% !important;
       max-height: 100% !important;
-
       object-fit: contain;
       overflow: hidden;
     }
@@ -177,14 +141,11 @@
       object-fit: contain;
     }
 
-    /* =========================================
-       USER INFORMATION
-    ========================================= */
+    /* USER INFORMATION */
 
     .profile-info {
       position: relative;
       z-index: 2;
-
       flex: 1;
       min-width: 0;
     }
@@ -192,24 +153,18 @@
     .profile-name {
       position: relative !important;
       z-index: 3 !important;
-
       display: block;
       width: 100%;
-
       margin: 0 0 8px !important;
       padding: 0 !important;
-
       color: #fff !important;
       background: transparent !important;
-
       border: 0 !important;
       box-shadow: none !important;
-
       font-family: "Cairo", sans-serif;
       font-size: clamp(24px, 4vw, 34px);
       font-weight: 900;
       line-height: 1.5;
-
       text-align: right;
       overflow-wrap: anywhere;
       text-shadow: none !important;
@@ -234,15 +189,11 @@
       align-items: center;
       justify-content: center;
       gap: 7px;
-
       padding: 7px 13px;
-
       border: 1px solid rgba(255,255,255,.15);
       border-radius: 30px;
-
       background: rgba(255,255,255,.09);
       color: #fff;
-
       font-size: 13px;
       font-weight: 800;
     }
@@ -252,14 +203,11 @@
       font-size: 17px;
     }
 
-    /* =========================================
-       LOGOUT
-    ========================================= */
+    /* PROFILE ACTIONS */
 
     .profile-actions {
       position: relative;
       z-index: 3;
-
       display: flex;
       align-items: center;
       flex-wrap: wrap;
@@ -271,26 +219,23 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-
       min-height: 42px;
       padding: 9px 15px;
-
       border: 1px solid rgba(255,255,255,.14);
       border-radius: 12px;
-
       background: rgba(255,255,255,.07);
       color: #fff;
-
       font-family: inherit;
       font-size: 13px;
       font-weight: 800;
-
+      text-decoration: none;
       cursor: pointer;
-      transition: background .2s ease;
+      transition: background .2s ease, transform .2s ease;
     }
 
     .profile-action-button:hover {
       background: rgba(255,255,255,.13);
+      transform: translateY(-2px);
     }
 
     .profile-action-button.logout {
@@ -298,9 +243,12 @@
       color: #ff9a9a;
     }
 
-    /* =========================================
-       SECTIONS
-    ========================================= */
+    .profile-action-button.avatar-change {
+      border-color: rgba(85,234,255,.28);
+      color: #65eaff;
+    }
+
+    /* SECTIONS */
 
     .profile-content-section {
       margin-top: 28px;
@@ -311,14 +259,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-
       margin-bottom: 17px;
     }
 
     .profile-section-heading h2 {
       margin: 0;
       color: var(--text-primary, #fff);
-
       font-size: 20px;
       font-weight: 900;
     }
@@ -330,9 +276,7 @@
       line-height: 1.8;
     }
 
-    /* =========================================
-       STATISTICS
-    ========================================= */
+    /* STATISTICS */
 
     .profile-stats-grid {
       display: grid;
@@ -343,12 +287,9 @@
     .profile-stat-card {
       min-width: 0;
       padding: 20px;
-
       border: 1px solid rgba(145,160,195,.14);
       border-radius: 19px;
-
       background: var(--card-bg, rgba(255,255,255,.045));
-
       transition: transform .2s ease, border-color .2s ease;
     }
 
@@ -360,22 +301,17 @@
     .profile-stat-icon {
       width: 42px;
       height: 42px;
-
       display: grid;
       place-items: center;
-
       margin-bottom: 13px;
-
       border-radius: 13px;
       background: rgba(105,132,255,.13);
       color: #91a7ff;
-
       font-size: 22px;
     }
 
     .profile-stat-value {
       display: block;
-
       color: var(--text-primary, #fff);
       font-size: 25px;
       font-weight: 900;
@@ -385,21 +321,16 @@
     .profile-stat-label {
       display: block;
       margin-top: 5px;
-
       color: var(--text-secondary, #9ba8c3);
       font-size: 12px;
     }
 
-    /* =========================================
-       XP PROGRESS
-    ========================================= */
+    /* XP PROGRESS */
 
     .profile-progress-card {
       padding: 23px;
-
       border: 1px solid rgba(145,160,195,.14);
       border-radius: 20px;
-
       background: var(--card-bg, rgba(255,255,255,.045));
     }
 
@@ -408,7 +339,6 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-
       margin-bottom: 13px;
     }
 
@@ -426,21 +356,16 @@
     .profile-progress-track {
       width: 100%;
       height: 12px;
-
       overflow: hidden;
       border-radius: 20px;
-
       background: rgba(145,160,195,.15);
     }
 
     #xpProgressBar {
       width: 0%;
       height: 100%;
-
       border-radius: inherit;
-
       background: linear-gradient(90deg, #637cff, #38d9c5);
-
       transition: width .5s ease;
     }
 
@@ -449,23 +374,17 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 10px;
-
       margin-top: 10px;
-
       color: var(--text-secondary, #9ba8c3);
       font-size: 12px;
     }
 
-    /* =========================================
-       ACHIEVEMENTS
-    ========================================= */
+    /* ACHIEVEMENTS */
 
     .profile-badges-card {
       padding: 24px;
-
       border: 1px solid rgba(145,160,195,.14);
       border-radius: 22px;
-
       background: var(--card-bg, rgba(255,255,255,.045));
     }
 
@@ -473,13 +392,10 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-
       padding: 7px 12px;
-
       border-radius: 30px;
       background: rgba(105,132,255,.12);
       color: #aebdff;
-
       font-size: 13px;
       font-weight: 800;
       white-space: nowrap;
@@ -493,34 +409,23 @@
 
     .achievement-badge {
       position: relative;
-
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-
       min-width: 0;
       min-height: 175px;
       padding: 18px 12px;
-
       border: 1px solid rgba(145,160,195,.16);
       border-radius: 18px;
-
       background: rgba(255,255,255,.025);
       text-align: center;
-
       transition: transform .2s ease, border-color .2s ease;
     }
 
     .achievement-badge.is-unlocked {
       border-color: rgba(65,214,174,.35);
-
-      background:
-        linear-gradient(
-          145deg,
-          rgba(42,190,151,.11),
-          rgba(255,255,255,.025)
-        );
+      background: linear-gradient(145deg, rgba(42,190,151,.11), rgba(255,255,255,.025));
     }
 
     .achievement-badge.is-unlocked:hover {
@@ -535,16 +440,12 @@
     .achievement-badge-icon {
       width: 65px;
       height: 65px;
-
       display: grid;
       place-items: center;
-
       margin-bottom: 12px;
-
       border-radius: 50%;
       background: rgba(255,255,255,.07);
       color: #aab7d0;
-
       font-size: 31px;
     }
 
@@ -555,7 +456,6 @@
 
     .achievement-badge h3 {
       margin: 0;
-
       color: var(--text-primary, #fff);
       font-size: 14px;
       font-weight: 900;
@@ -563,7 +463,6 @@
 
     .achievement-badge p {
       margin: 5px 0 9px;
-
       color: var(--text-secondary, #9ba8c3);
       font-size: 11px;
       line-height: 1.7;
@@ -573,7 +472,6 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-
       color: #9ba8c3;
       font-size: 10px;
       font-weight: 800;
@@ -585,7 +483,6 @@
 
     .badge-system-note {
       margin: 17px 0 0;
-
       color: var(--text-secondary, #9ba8c3);
       font-size: 12px;
       line-height: 1.8;
@@ -594,26 +491,18 @@
     .profile-loading,
     .profile-empty {
       grid-column: 1 / -1;
-
       padding: 25px;
-
       color: var(--text-secondary, #9ba8c3);
       text-align: center;
       font-size: 13px;
       line-height: 1.9;
     }
 
-    /* =========================================
-       MOBILE NAVIGATION
-    ========================================= */
+    /* MOBILE NAVIGATION */
 
-    .mobile-bottom-nav {
+    .mobile-nav {
       z-index: 100;
     }
-
-    /* =========================================
-       RESPONSIVE
-    ========================================= */
 
     @media (max-width: 850px) {
       .profile-header-card {
@@ -640,10 +529,8 @@
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center;
-
         gap: 15px;
         padding: 24px 17px;
-
         text-align: center !important;
       }
 
@@ -714,6 +601,111 @@
       }
     }
 
+    /* LIGHT THEME */
+
+    html[data-theme="light"] body.profile-page {
+      color: #182235;
+      background: #f5f7fc;
+    }
+
+    html[data-theme="light"] .profile-header-card {
+      background:
+        radial-gradient(circle at 90% 10%, rgba(8,145,178,.09), transparent 40%),
+        linear-gradient(135deg, #ffffff, #edf4fc) !important;
+      border-color: #dce5f1;
+      box-shadow: 0 18px 45px rgba(25,45,80,.08);
+    }
+
+    html[data-theme="light"] .profile-name {
+      color: #182235 !important;
+    }
+
+    html[data-theme="light"] .profile-subtitle {
+      color: #64748b;
+    }
+
+    html[data-theme="light"] .profile-level-badge {
+      color: #26354d;
+      background: #f1f5fb;
+      border-color: #dce5f1;
+    }
+
+    html[data-theme="light"] .profile-action-button {
+      color: #26354d;
+      background: #fff;
+      border-color: #dce5f1;
+    }
+
+    html[data-theme="light"] .profile-action-button.avatar-change {
+      color: #087f9b;
+      border-color: #b9e5ed;
+    }
+
+    html[data-theme="light"] .profile-action-button.logout {
+      color: #c24152;
+      border-color: #f1cbd0;
+    }
+
+    html[data-theme="light"] .profile-stat-card,
+    html[data-theme="light"] .profile-progress-card,
+    html[data-theme="light"] .profile-badges-card {
+      background: #fff;
+      border-color: #e2e7f0;
+      box-shadow: 0 8px 25px rgba(25,45,80,.04);
+    }
+
+    html[data-theme="light"] .profile-section-heading h2,
+    html[data-theme="light"] .profile-progress-top strong,
+    html[data-theme="light"] .profile-stat-value,
+    html[data-theme="light"] .achievement-badge h3 {
+      color: #182235;
+    }
+
+    html[data-theme="light"] .profile-section-heading p,
+    html[data-theme="light"] .profile-stat-label,
+    html[data-theme="light"] .profile-xp-caption,
+    html[data-theme="light"] .achievement-badge p,
+    html[data-theme="light"] .badge-system-note {
+      color: #64748b;
+    }
+
+    html[data-theme="light"] .achievement-badge {
+      background: #f8faff;
+      border-color: #e2e7f0;
+    }
+
+    html[data-theme="light"] .achievement-badge.is-unlocked {
+      background: linear-gradient(145deg, #e9faf4, #fff);
+      border-color: #a8e6d1;
+    }
+
+    html[data-theme="light"] .achievement-badge-status {
+      color: #64748b;
+    }
+
+    html[data-theme="light"] .achievement-badge.is-unlocked .achievement-badge-status {
+      color: #087f60;
+    }
+
+    html[data-theme="light"] .profile-progress-track {
+      background: #e8edf5;
+    }
+
+    html[data-theme="light"] .profile-xp-caption strong {
+      color: #26354d;
+    }
+
+    @media (max-width: 360px) {
+      .profile-actions {
+        gap: 7px;
+      }
+
+      .profile-action-button {
+        padding-inline: 10px;
+        font-size: 12px;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -769,6 +761,16 @@
 
       <div class="profile-actions">
 
+        <!-- تغيير الشخصية -->
+        <a
+          href="avatar.html"
+          class="profile-action-button avatar-change"
+        >
+          <i class="ri-user-smile-line"></i>
+          تغيير الشخصية
+        </a>
+
+        <!-- تسجيل الخروج -->
         <button
           type="button"
           class="profile-action-button logout"
@@ -857,7 +859,7 @@
       </div>
     </section>
 
-    <!-- XP PROGRESS -->
+        <!-- XP PROGRESS -->
     <section class="profile-content-section">
 
       <div class="profile-section-heading">
@@ -891,9 +893,7 @@
             <strong id="currentXPLabel">0</strong> XP
           </span>
 
-          <span>
-            واصل رحلتك!
-          </span>
+          <span>واصل رحلتك!</span>
         </div>
 
       </div>
@@ -932,7 +932,7 @@
           id="badgeSystemNote"
           aria-live="polite"
         >
-          يتم احتساب الأوسمة من الدروس المكتملة والمحـفوظة في حسابك.
+          يتم احتساب الأوسمة من الدروس المكتملة والمحفوظة في حسابك.
         </p>
 
       </div>
@@ -941,14 +941,14 @@
   </main>
 
   <!-- MOBILE NAVIGATION -->
-  <nav class="mobile-bottom-nav" aria-label="التنقل الرئيسي">
+  <nav class="mobile-nav" aria-label="التنقل الرئيسي">
 
     <a href="dashboard.html">
       <i class="ri-home-5-line"></i>
       <span>الرئيسية</span>
     </a>
 
-        <a href="languages.html">
+    <a href="languages.html">
       <i class="ri-code-s-slash-line"></i>
       <span>التعلم</span>
     </a>
@@ -963,7 +963,7 @@
       <span>الإنجازات</span>
     </a>
 
-    <a href="profile.html" class="active">
+    <a href="profile.html" class="active" aria-current="page">
       <i class="ri-user-3-line"></i>
       <span>ملفي</span>
     </a>
@@ -972,59 +972,6 @@
 
   <!-- MAIN APPLICATION -->
   <script type="module" src="js/app.js?v=3001"></script>
-
-  <!-- XP DISPLAY SYNCHRONIZATION -->
-  <script>
-    (() => {
-      const currentXP = document.getElementById("currentXP");
-      const totalXP = document.getElementById("totalXP");
-      const progressText = document.getElementById("xpProgressText");
-      const totalXPLabel = document.getElementById("currentXPLabel");
-      const progressTrack = document.querySelector(".profile-progress-track");
-
-      if (!currentXP || !totalXP) return;
-
-      function syncXP() {
-        const current = Math.max(
-          0,
-          Math.min(100, Number.parseInt(currentXP.textContent, 10) || 0)
-        );
-
-        const total = Math.max(
-          0,
-          Number.parseInt(totalXP.textContent, 10) || 0
-        );
-
-        if (progressText) {
-          progressText.textContent = `${current}%`;
-        }
-
-        if (totalXPLabel) {
-          totalXPLabel.textContent = String(total);
-        }
-
-        if (progressTrack) {
-          progressTrack.setAttribute("aria-valuenow", String(current));
-        }
-      }
-
-      const observer = new MutationObserver(syncXP);
-
-      observer.observe(currentXP, {
-        childList: true,
-        characterData: true,
-        subtree: true
-      });
-
-      observer.observe(totalXP, {
-        childList: true,
-        characterData: true,
-        subtree: true
-      });
-
-      syncXP();
-    })();
-  </script>
 
   <!-- ACHIEVEMENTS SYSTEM -->
   <script type="module">
@@ -1164,6 +1111,7 @@
         const unlocked = completedCount >= badge.requirement;
 
         const card = document.createElement("article");
+
         card.className =
           `achievement-badge ${unlocked ? "is-unlocked" : "is-locked"}`;
 
