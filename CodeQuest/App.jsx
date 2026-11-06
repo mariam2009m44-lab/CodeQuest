@@ -37,7 +37,6 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// مسار Firebase الصحيح
 import {
   auth,
   db,
@@ -50,12 +49,12 @@ import {
 
 const navigation = [
   { label: "الرئيسية", path: "/", icon: Home },
-  { label: "ملفي الشخصي", path: "/profile", icon: UserRound },
+  { label: "الملف الشخصي", path: "/profile", icon: UserRound },
   { label: "لغات البرمجة", path: "/languages", icon: BookOpen },
   { label: "ساحة الأكواد", path: "/playground", icon: Code2 },
   { label: "الألعاب", path: "/games", icon: Gamepad2 },
-  { label: "مشاريعي", path: "/projects", icon: FolderKanban },
-  { label: "إنجازاتي", path: "/achievements", icon: Trophy },
+  { label: "المشاريع", path: "/projects", icon: FolderKanban },
+  { label: "الإنجازات", path: "/achievements", icon: Trophy },
   { label: "الإعدادات", path: "/settings", icon: Settings }
 ];
 
@@ -67,21 +66,21 @@ const languageData = [
   {
     id: "python",
     name: "Python",
-    description: "ابدئي رحلتك في عالم البرمجة.",
+    description: "ابدأ رحلة تعلم لغة Python.",
     logo: "/assets/logos/python.svg",
     className: "python"
   },
   {
     id: "javascript",
     name: "JavaScript",
-    description: "تعلمي بناء مواقع وتطبيقات تفاعلية.",
+    description: "تعلم بناء مواقع وتطبيقات تفاعلية.",
     logo: "/assets/logos/javascript.svg",
     className: "javascript"
   },
   {
     id: "cpp",
     name: "C++",
-    description: "اكتشفي أساسيات البرمجة المتقدمة.",
+    description: "اكتشف أساسيات البرمجة المتقدمة.",
     logo: "/assets/logos/cpp.svg",
     className: "cpp"
   }
@@ -110,7 +109,7 @@ function getDisplayName(user, profile) {
     profile?.displayName ||
     user?.displayName ||
     user?.email?.split("@")[0] ||
-    "بطل البرمجة"
+    "مستكشف البرمجة"
   );
 }
 
@@ -154,14 +153,14 @@ function LoadingScreen() {
 
         <h2>Cody Academy</h2>
 
-        <p>جاري تجهيز مغامرتك البرمجية...</p>
+        <p>جاري تجهيز المغامرة البرمجية...</p>
       </div>
     </div>
   );
 }
 
 /* =========================================
-   EMPTY / PLACEHOLDER PAGE
+   COMING SOON
 ========================================= */
 
 function ComingSoon({ title, description, icon: Icon }) {
@@ -180,7 +179,7 @@ function ComingSoon({ title, description, icon: Icon }) {
 
         <p>
           {description ||
-            "نعمل على تجهيز هذه المغامرة لتكون جاهزة لك قريبًا."}
+            "نعمل على تجهيز هذه الميزة لتكون متاحة قريبًا."}
         </p>
 
         <NavLink to="/" className="primary-button">
@@ -193,7 +192,7 @@ function ComingSoon({ title, description, icon: Icon }) {
 }
 
 /* =========================================
-   APP AUTHENTICATION
+   MAIN APP
 ========================================= */
 
 export default function App() {
@@ -307,12 +306,6 @@ export default function App() {
     return <Navigate to="/login.html" replace />;
   }
 
-  const context = {
-    user,
-    profile,
-    progress
-  };
-
   return (
     <Routes>
       <Route
@@ -344,7 +337,7 @@ export default function App() {
           element={
             <ComingSoon
               title="ساحة الأكواد"
-              description="مساحة خاصة لكتابة الأكواد وتجربة أفكارك البرمجية."
+              description="مساحة لكتابة الأكواد البرمجية وتجربة الأفكار."
               icon={Code2}
             />
           }
@@ -355,7 +348,7 @@ export default function App() {
           element={
             <ComingSoon
               title="الألعاب التعليمية"
-              description="تعلمي البرمجة من خلال مجموعة من الألعاب والتحديات الممتعة."
+              description="مجموعة من الألعاب والتحديات التعليمية."
               icon={Gamepad2}
             />
           }
@@ -365,8 +358,8 @@ export default function App() {
           path="/projects"
           element={
             <ComingSoon
-              title="مشاريعي"
-              description="احفظي مشاريعك البرمجية وارجعي إليها في أي وقت."
+              title="المشاريع"
+              description="مساحة لحفظ المشاريع البرمجية ومتابعتها."
               icon={FolderKanban}
             />
           }
@@ -376,8 +369,8 @@ export default function App() {
           path="/achievements"
           element={
             <ComingSoon
-              title="إنجازاتي"
-              description="تابعي تقدمك واجمعي الإنجازات مع كل خطوة جديدة."
+              title="الإنجازات"
+              description="تابع التقدم واجمع الإنجازات مع كل خطوة جديدة."
               icon={Trophy}
             />
           }
@@ -388,7 +381,7 @@ export default function App() {
           element={
             <ComingSoon
               title="الإعدادات"
-              description="إدارة إعدادات حسابك وتفضيلاتك."
+              description="إدارة إعدادات الحساب وتفضيلات المنصة."
               icon={Settings}
             />
           }
@@ -407,11 +400,7 @@ export default function App() {
    MAIN LAYOUT
 ========================================= */
 
-function MainLayout({
-  user,
-  profile,
-  progress
-}) {
+function MainLayout({ user, profile, progress }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -419,10 +408,7 @@ function MainLayout({
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  const displayName = getDisplayName(
-    user,
-    profile
-  );
+  const displayName = getDisplayName(user, profile);
 
   async function handleLogout() {
     try {
@@ -497,7 +483,6 @@ function MainLayout({
                 }
               >
                 <Icon size={20} />
-
                 <span>{item.label}</span>
 
                 {location.pathname === item.path && (
@@ -513,7 +498,7 @@ function MainLayout({
             <Sparkles size={19} />
 
             <p>
-              كل خطوة صغيرة تقربك من أن تصبحي مبرمجة مميزة!
+              كل خطوة صغيرة تقربك من تحقيق أهدافك البرمجية!
             </p>
           </div>
 
@@ -573,16 +558,10 @@ function MainLayout({
 ========================================= */
 
 function Dashboard() {
-  const {
-    user,
-    profile,
-    progress
-  } = useOutletContext();
+  const { user, profile, progress } =
+    useOutletContext();
 
-  const displayName = getDisplayName(
-    user,
-    profile
-  );
+  const displayName = getDisplayName(user, profile);
 
   const completedLessons =
     getCompletedLessons(progress);
@@ -591,11 +570,10 @@ function Dashboard() {
     curriculumTotals
   ).reduce((sum, value) => sum + value, 0);
 
-  const overallProgress =
-    getProgressPercentage(
-      completedLessons,
-      totalLessons
-    );
+  const overallProgress = getProgressPercentage(
+    completedLessons,
+    totalLessons
+  );
 
   return (
     <div className="dashboard-page">
@@ -607,21 +585,21 @@ function Dashboard() {
           </span>
 
           <h1>
-            مستعدة لمغامرة
+            مغامرة برمجية
             <br />
-            <span>برمجية جديدة؟</span>
+            <span>جديدة بانتظارك!</span>
           </h1>
 
           <p>
-            تعلمي البرمجة خطوة بخطوة، واكتشفي مهارات
-            جديدة، واصنعي مشاريعك بنفسك!
+            تعلم البرمجة خطوة بخطوة، واكتشف مهارات
+            جديدة، واصنع مشاريعك بنفسك!
           </p>
 
           <NavLink
             to="/languages"
             className="hero-button"
           >
-            ابدئي التعلم الآن
+            ابدأ التعلم الآن
             <ChevronLeft size={19} />
           </NavLink>
         </div>
@@ -685,7 +663,7 @@ function Dashboard() {
               طريقك نحو الاحتراف
             </span>
 
-            <h2>رحلة تعلمك</h2>
+            <h2>رحلة التعلم</h2>
           </div>
 
           <NavLink to="/languages">
@@ -697,10 +675,10 @@ function Dashboard() {
         <div className="overall-progress-card">
           <div className="overall-progress-info">
             <div>
-              <strong>تقدمك الإجمالي</strong>
+              <strong>التقدم الإجمالي</strong>
 
               <p>
-                استمري في التعلم، فأنت تحققين تقدمًا رائعًا!
+                كل درس جديد يمثل خطوة نحو تطوير مهاراتك.
               </p>
             </div>
 
@@ -732,7 +710,7 @@ function Dashboard() {
         <div className="section-heading">
           <div>
             <span className="section-kicker">
-              اختاري مغامرتك
+              اكتشف مغامرتك التالية
             </span>
 
             <h2>لغات البرمجة</h2>
@@ -765,11 +743,11 @@ function Dashboard() {
             <h3>مساحة البرمجة</h3>
 
             <p>
-              اكتبي الأكواد وجربي أفكارك البرمجية.
+              اكتب الأكواد وجرب الأفكار البرمجية.
             </p>
 
             <NavLink to="/playground">
-              اذهبي إلى الساحة
+              الانتقال إلى الساحة
               <ChevronLeft size={16} />
             </NavLink>
           </div>
@@ -784,11 +762,11 @@ function Dashboard() {
             <h3>الألعاب التعليمية</h3>
 
             <p>
-              تعلمي من خلال اللعب والتحديات.
+              تعلم من خلال اللعب والتحديات.
             </p>
 
             <NavLink to="/games">
-              اكتشفي الألعاب
+              اكتشف الألعاب
               <ChevronLeft size={16} />
             </NavLink>
           </div>
@@ -802,12 +780,7 @@ function Dashboard() {
    STAT CARD
 ========================================= */
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  color
-}) {
+function StatCard({ icon: Icon, label, value, color }) {
   return (
     <div className={`stat-card stat-${color}`}>
       <div className="stat-icon">
@@ -826,10 +799,7 @@ function StatCard({
    LANGUAGE CARD
 ========================================= */
 
-function LanguageCard({
-  language,
-  progress
-}) {
+function LanguageCard({ language, progress }) {
   const completed = safeNumber(
     progress?.completedLessons
   );
@@ -867,7 +837,7 @@ function LanguageCard({
 
       <div className="language-progress">
         <div className="language-progress-label">
-          <span>تقدمك</span>
+          <span>التقدم</span>
 
           <span>
             {completed}/{total}
@@ -888,7 +858,7 @@ function LanguageCard({
         to={`/languages?language=${language.id}`}
         className="language-card-button"
       >
-        ابدئي التعلم
+        ابدأ التعلم
         <ChevronLeft size={17} />
       </NavLink>
     </div>
@@ -900,29 +870,22 @@ function LanguageCard({
 ========================================= */
 
 function ProfilePage() {
-  const {
-    user,
-    profile,
-    progress
-  } = useOutletContext();
+  const { user, profile, progress } =
+    useOutletContext();
 
-  const displayName = getDisplayName(
-    user,
-    profile
-  );
+  const displayName = getDisplayName(user, profile);
 
-    const completedLessons =
+  const completedLessons =
     getCompletedLessons(progress);
 
   const totalLessons = Object.values(
     curriculumTotals
   ).reduce((sum, value) => sum + value, 0);
 
-  const overallProgress =
-    getProgressPercentage(
-      completedLessons,
-      totalLessons
-    );
+  const overallProgress = getProgressPercentage(
+        completedLessons,
+    totalLessons
+  );
 
   const level = Math.max(
     1,
@@ -941,10 +904,10 @@ function ProfilePage() {
               هويتك البرمجية
             </span>
 
-            <h1>ملفي الشخصي</h1>
+            <h1>الملف الشخصي</h1>
 
             <p>
-              تابعي بياناتك وتقدمك في Cody Academy.
+              جميع بيانات الحساب والتقدم التعليمي في مكان واحد.
             </p>
           </div>
         </div>
@@ -992,10 +955,10 @@ function ProfilePage() {
         <div className="section-heading">
           <div>
             <span className="section-kicker">
-              إنجازاتك التعليمية
+              الإنجازات التعليمية
             </span>
 
-            <h2>تقدمك في التعلم</h2>
+            <h2>التقدم في التعلم</h2>
           </div>
 
           <strong>{overallProgress}%</strong>
@@ -1007,7 +970,7 @@ function ProfilePage() {
               <strong>التقدم الإجمالي</strong>
 
               <p>
-                استمري في التعلم لتحقيق المزيد من الإنجازات.
+                كل درس جديد يمثل خطوة نحو تطوير المهارات.
               </p>
             </div>
 
@@ -1039,10 +1002,10 @@ function ProfilePage() {
         <div className="section-heading">
           <div>
             <span className="section-kicker">
-              رحلتك البرمجية
+              الرحلة البرمجية
             </span>
 
-            <h2>اللغات التي تتعلمينها</h2>
+            <h2>لغات البرمجة</h2>
           </div>
         </div>
 
@@ -1073,14 +1036,13 @@ function LanguagesPage() {
         <div className="section-heading">
           <div>
             <span className="section-kicker">
-              اكتشفي وتعلمي
+              اكتشف وتعلم
             </span>
 
             <h1>لغات البرمجة</h1>
 
             <p>
-              اختاري لغة البرمجة التي تريدين تعلمها،
-              وابدئي رحلتك خطوة بخطوة.
+              اختر لغة البرمجة المناسبة وابدأ رحلة التعلم خطوة بخطوة.
             </p>
           </div>
         </div>
