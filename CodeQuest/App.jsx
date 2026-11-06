@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 
 import {
@@ -949,8 +948,7 @@ export default function App() {
       },
 
       (error) => {
-        console.error(
-          
+              console.error(
           "Profile listener:",
           error
         );
@@ -1100,3 +1098,4 @@ export default function App() {
     </Routes>
   );
 }
+        
