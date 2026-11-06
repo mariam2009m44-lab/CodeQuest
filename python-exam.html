@@ -5,14 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#050810">
-  <title>الامتحان الشامل | CodeQuest</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <title>الامتحان الشامل | Cody Academy</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+
   <style>
     :root {
       --bg: #050810;
-      --glass: rgba(15, 23, 42, 0.8);
-      --border: rgba(255,255,255,0.1);
+      --glass: rgba(15, 23, 42, .88);
+      --border: rgba(255,255,255,.1);
       --text: #fff;
       --muted: #94a3b8;
       --cyan: #6be8ff;
@@ -21,329 +23,1242 @@
       --gold: #ffd48a;
       --purple: #a99aff;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: 'Cairo', sans-serif;
+      font-family: Cairo, sans-serif;
       background: var(--bg);
       color: var(--text);
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      background-image: radial-gradient(circle at 50% 0%, rgba(169,154,255,0.1), transparent 60%);
+      padding: 18px;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(169,154,255,.13), transparent 60%);
     }
+
+    button {
+      font-family: inherit;
+    }
+
     .exam-container {
       width: 100%;
-      max-width: 800px;
+      max-width: 850px;
       background: var(--glass);
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 35px;
+      padding: 30px;
       backdrop-filter: blur(20px);
+      box-shadow: 0 20px 70px rgba(0,0,0,.25);
     }
-    .header { text-align: center; margin-bottom: 30px; }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
     .header h1 {
       font-size: 2rem;
       color: var(--purple);
       font-weight: 900;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
-    .header p { color: var(--muted); line-height: 1.8; }
+
+    .header p {
+      color: var(--muted);
+      line-height: 1.9;
+    }
+
+    .exam-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .info-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 13px;
+      text-align: center;
+    }
+
+    .info-card span {
+      display: block;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .info-card strong {
+      display: block;
+      color: var(--cyan);
+      font-size: 1.25rem;
+    }
+
     .notice {
       margin: 18px 0;
-      padding: 12px 15px;
+      padding: 13px 15px;
       border: 1px solid var(--border);
       border-radius: 12px;
       color: var(--muted);
-      line-height: 1.8;
+      line-height: 1.9;
+      background: rgba(255,255,255,.025);
     }
+
     .progress-bar {
       width: 100%;
-      height: 8px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
-      margin-bottom: 30px;
+      height: 9px;
+      background: rgba(255,255,255,.07);
+      border-radius: 20px;
+      margin-bottom: 25px;
       overflow: hidden;
     }
+
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--purple), var(--cyan));
       width: 0%;
-      transition: width 0.3s;
+      background: linear-gradient(90deg, var(--purple), var(--cyan));
+      transition: width .3s;
     }
-    .question-box { display: none; flex-direction: column; gap: 20px; }
-    .question-box.active { display: flex; animation: fadeIn 0.4s ease; }
-    .q-text { font-size: 1.3rem; font-weight: 800; line-height: 1.8; }
-    .options { display: flex; flex-direction: column; gap: 12px; }
+
+    .question-box {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .question-box.active {
+      display: flex;
+      animation: fadeIn .3s ease;
+    }
+
+    .question-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .question-tag {
+      color: var(--cyan);
+      background: rgba(107,232,255,.08);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .q-text {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.9;
+      white-space: pre-wrap;
+    }
+
+    .code-box {
+      direction: ltr;
+      text-align: left;
+      background: #080d19;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-x: auto;
+      color: #a9e8ff;
+      font-family: monospace;
+      font-size: 1rem;
+      line-height: 1.8;
+      white-space: pre;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
     .opt-btn {
-      background: rgba(255,255,255,0.03);
+      width: 100%;
+      background: rgba(255,255,255,.035);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 16px 20px;
+      padding: 15px 18px;
       border-radius: 12px;
       cursor: pointer;
-      font-family: 'Cairo', sans-serif;
-      font-size: 1.05rem;
+      font-size: 1rem;
       text-align: right;
-      transition: 0.2s;
+      transition: .2s;
     }
+
     .opt-btn:hover:not(:disabled) {
-      background: rgba(169,154,255,0.1);
+      background: rgba(169,154,255,.12);
       border-color: var(--purple);
+      transform: translateY(-1px);
     }
-    .opt-btn:disabled { cursor: default; }
+
+    .opt-btn:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+
     .opt-btn.correct {
-      background: rgba(118,233,192,0.2);
+      background: rgba(118,233,192,.14);
       border-color: var(--green);
       color: var(--green);
     }
+
     .opt-btn.wrong {
-      background: rgba(255,145,169,0.2);
+      background: rgba(255,145,169,.14);
       border-color: var(--red);
       color: var(--red);
     }
-    .result-box { display: none; text-align: center; }
-    .result-box.active { display: block; animation: fadeIn 0.4s ease; }
-    .result-box h2 { font-size: 2rem; color: var(--gold); margin-bottom: 15px; }
-    .result-box p { color: var(--muted); line-height: 1.9; }
-    .btn-finish {
+
+    .feedback {
+      display: none;
+      padding: 14px;
+      border-radius: 12px;
+      line-height: 1.9;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.success {
+      color: var(--green);
+      background: rgba(118,233,192,.08);
+      border: 1px solid rgba(118,233,192,.25);
+    }
+
+    .feedback.error {
+      color: var(--red);
+      background: rgba(255,145,169,.08);
+      border: 1px solid rgba(255,145,169,.25);
+    }
+
+    .action-btn {
+      border: 0;
       background: var(--purple);
-      color: #000;
-      padding: 13px 25px;
+      color: #090817;
+      padding: 13px 24px;
       border-radius: 12px;
       font-weight: 900;
       font-size: 1rem;
-      text-decoration: none;
-      display: inline-block;
-      margin: 10px 5px 0;
+      cursor: pointer;
     }
-    .btn-secondary {
+
+    .action-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .secondary-btn {
       background: transparent;
       color: var(--text);
       border: 1px solid var(--border);
     }
-    #statusMessage { text-align: center; padding: 25px; line-height: 1.9; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+
+    .result-box {
+      display: none;
+      text-align: center;
+      animation: fadeIn .4s ease;
     }
+
+    .result-box.active {
+      display: block;
+    }
+
+    .result-box h2 {
+      font-size: 2rem;
+      color: var(--gold);
+      margin-bottom: 15px;
+    }
+
+    .result-box p {
+      color: var(--muted);
+      line-height: 1.9;
+    }
+
+    .result-score {
+      font-size: 1.5rem;
+      color: var(--cyan);
+      font-weight: 900;
+      margin: 15px 0;
+    }
+
+    .result-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .result-actions a {
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    #statusMessage {
+      text-align: center;
+      padding: 25px 10px;
+      line-height: 2;
+      color: var(--muted);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(9px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     @media (max-width: 600px) {
-      .exam-container { padding: 22px; }
-      .header h1 { font-size: 1.55rem; }
-      .q-text { font-size: 1.1rem; }
+      .exam-container {
+        padding: 19px;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .q-text {
+        font-size: 1.05rem;
+      }
+
+      .exam-info {
+        gap: 6px;
+      }
+
+      .info-card {
+        padding: 9px 5px;
+      }
     }
   </style>
 </head>
+
 <body>
   <main class="exam-container">
+
     <header class="header">
-      <h1>الامتحان الشامل لمادة بايثون</h1>
-      <p>أجب عن 5 أسئلة عشوائية. تحتاج إلى 4 إجابات صحيحة على الأقل لاجتياز الامتحان.</p>
+      <h1>الامتحان الشامل لمادة Python</h1>
+      <p>
+        اختبر فهمك لما تعلمته خلال الفصول الاثني عشر.
+        الأسئلة تشمل المفاهيم والتطبيق وتحليل الأكواد.
+      </p>
     </header>
 
-    <div id="statusMessage">جارٍ التحقق من الحساب والتقدم...</div>
+    <div id="statusMessage">
+      جارٍ التحقق من الحساب والتقدم...
+    </div>
 
     <section id="examContent" hidden>
-      <div class="notice">النجاح في هذا الامتحان يفتح صفحة المشاريع لهذا الحساب على هذا المتصفح.</div>
-      <div class="progress-bar" aria-label="تقدم الامتحان">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-      <div id="quizArea">
-        <div class="question-box active" id="qBox">
-          <div class="q-text" id="qText">جاري تحميل السؤال...</div>
-          <div class="options" id="qOptions"></div>
+
+      <div class="exam-info">
+        <div class="info-card">
+          <span>عدد الأسئلة</span>
+          <strong id="totalQuestions">15</strong>
+        </div>
+
+        <div class="info-card">
+          <span>درجة النجاح</span>
+          <strong>80%</strong>
+        </div>
+
+        <div class="info-card">
+          <span>الإجابات الصحيحة</span>
+          <strong id="currentScore">0</strong>
         </div>
       </div>
-      <div class="result-box" id="resultBox" aria-live="polite">
+
+      <div class="notice">
+        سيتم اختيار 15 سؤالًا عشوائيًا من بنك الأسئلة.
+        لا يمكن تغيير الإجابة بعد تأكيدها.
+        ستظهر الإجابة الصحيحة وشرحها بعد كل سؤال.
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <section id="quizArea">
+        <div class="question-box active" id="questionBox">
+
+          <div class="question-meta">
+            <span id="questionNumber">السؤال 1</span>
+            <span class="question-tag" id="questionCategory">أساسيات Python</span>
+          </div>
+
+          <div class="q-text" id="questionText"></div>
+
+          <pre class="code-box" id="questionCode" hidden></pre>
+
+          <div class="options" id="questionOptions"></div>
+
+          <div class="feedback" id="feedbackBox"></div>
+
+          <button
+            class="action-btn"
+            id="nextButton"
+            type="button"
+            disabled
+          >
+            السؤال التالي
+          </button>
+
+        </div>
+      </section>
+
+      <section class="result-box" id="resultBox" aria-live="polite">
         <h2 id="resultTitle"></h2>
         <p id="resultMessage"></p>
-        <p id="scoreText" style="margin-top:12px;font-weight:900;color:var(--cyan)"></p>
-        <a id="projectsLink" href="python-projects.html" class="btn-finish" hidden>
-          الذهاب إلى المشاريع <i class="ri-arrow-left-line"></i>
-        </a>
-        <button id="retryButton" class="btn-finish btn-secondary" type="button" hidden>
-          إعادة الامتحان <i class="ri-refresh-line"></i>
-        </button>
-        <a href="python-chapters.html" class="btn-finish btn-secondary">العودة للفصول</a>
-      </div>
+        <div class="result-score" id="scoreText"></div>
+        <p id="resultDetails"></p>
+
+        <div class="result-actions">
+          <a
+            id="projectsLink"
+            href="python-projects.html"
+            class="action-btn"
+            hidden
+          >
+            الانتقال إلى المشاريع
+          </a>
+
+          <button
+            id="retryButton"
+            class="action-btn secondary-btn"
+            type="button"
+          >
+            إعادة الامتحان
+          </button>
+
+          <a
+            href="python-chapters.html"
+            class="action-btn secondary-btn"
+          >
+            العودة للفصول
+          </a>
+        </div>
+      </section>
+
     </section>
   </main>
 
   <script type="module">
     import { requireUser } from "./js/auth.js";
 
-    const PASS_MARK = 4;
+    const EXAM_SIZE = 15;
+    const PASS_PERCENTAGE = 80;
     const EXAM_KEY_PREFIX = "codequest_python_exam_passed_";
 
     const allQuestions = [
-      { q: "أي أمر يستخدم لطباعة النص؟", opts: ["echo", "print", "write"], a: 1 },
-      { q: "كيف نعرّف متغيرًا باسم x وقيمته 5؟", opts: ["x = 5", "var x = 5", "int x = 5"], a: 0 },
-      { q: "ما ناتج print(10 // 3)؟", opts: ["3.33", "3", "4"], a: 1 },
-      { q: "متى نستخدم if؟", opts: ["للتكرار", "لاتخاذ قرار", "للطباعة"], a: 1 },
-      { q: "ما وظيفة for loop؟", opts: ["تكرار الأوامر", "تعريف دالة", "حفظ البيانات"], a: 0 },
-      { q: "كيف نصل إلى العنصر الأول في قائمة Python؟", opts: ["list[1]", "list[0]", "list.first"], a: 1 },
-      { q: "ما الكلمة المفتاحية لتعريف دالة في Python؟", opts: ["function", "def", "func"], a: 1 },
-      { q: "أي عامل يمكن استخدامه لدمج نصين؟", opts: ["+", "*", "&"], a: 0 },
-      { q: "أي جزء يتعامل مع الاستثناء في تركيب try/except؟", opts: ["except", "repeat", "define"], a: 0 },
-      { q: "أي أقواس نستخدم عادةً لكتابة قاموس Python؟", opts: ["[ ]", "{ }", "( )"], a: 1 }
+
+      // الفصل الأول: الأساسيات والطباعة
+      {
+        category: "الطباعة",
+        q: "ما وظيفة الأمر print() في Python؟",
+        opts: [
+          "عرض البيانات على الشاشة",
+          "حذف الملفات",
+          "إنشاء متغير",
+          "إيقاف البرنامج"
+        ],
+        a: 0,
+        explanation: "تُستخدم print() لعرض النصوص والقيم على الشاشة."
+      },
+      {
+        category: "الطباعة",
+        q: "ما ناتج الكود التالي؟",
+        code: 'print("Hello")\nprint("Python")',
+        opts: [
+          "Hello Python في سطر واحد",
+          "Hello ثم Python في سطرين",
+          "Python فقط",
+          "لن يظهر أي شيء"
+        ],
+        a: 1,
+        explanation: "كل استدعاء print() يطبع في سطر جديد افتراضيًا."
+      },
+      {
+        category: "المتغيرات",
+        q: "أي طريقة صحيحة لإنشاء متغير باسم age قيمته 16؟",
+        opts: [
+          "int age = 16",
+          "var age = 16",
+          "age = 16",
+          "create age = 16"
+        ],
+        a: 2,
+        explanation: "في Python لا نحتاج إلى كتابة نوع المتغير عند إنشائه."
+      },
+
+      // الفصل الثاني: المتغيرات وأنواع البيانات
+      {
+        category: "أنواع البيانات",
+        q: "ما نوع البيانات للقيمة 12.5؟",
+        opts: [
+          "int",
+          "float",
+          "str",
+          "bool"
+        ],
+        a: 1,
+        explanation: "القيم التي تحتوي على جزء عشري تكون من النوع float."
+      },
+      {
+        category: "أنواع البيانات",
+        q: "ما ناتج الكود؟",
+        code: 'name = "Cody"\nprint(type(name))',
+        opts: [
+          "int",
+          "float",
+          "str",
+          "bool"
+        ],
+        a: 2,
+        explanation: "النصوص الموضوعة بين علامات اقتباس نوعها str."
+      },
+      {
+        category: "التحويل",
+        q: "ما وظيفة int()؟",
+        opts: [
+          "تحويل قيمة إلى عدد صحيح عند الإمكان",
+          "طباعة نص",
+          "إنشاء قائمة",
+          "حذف متغير"
+        ],
+        a: 0,
+        explanation: "int() تحاول تحويل القيمة إلى عدد صحيح."
+      },
+
+      // الفصل الثالث: العمليات الحسابية
+      {
+        category: "الحساب",
+        q: "ما ناتج 17 // 5؟",
+        opts: [
+          "3.4",
+          "3",
+          "4",
+          "2"
+        ],
+        a: 1,
+        explanation: "العامل // يقسم ويعيد الجزء الصحيح من ناتج القسمة."
+      },
+      {
+        category: "الحساب",
+        q: "ما ناتج 2 ** 3؟",
+        opts: [
+          "5",
+          "6",
+          "8",
+          "9"
+        ],
+        a: 2,
+        explanation: "العامل ** يعني الأس، أي 2 × 2 × 2."
+      },
+      {
+        category: "الحساب",
+        q: "ما ناتج الكود؟",
+        code: "x = 10\nx += 5\nprint(x)",
+        opts: [
+          "5",
+          "10",
+          "15",
+          "105"
+        ],
+        a: 2,
+        explanation: "x += 5 تعني إضافة 5 إلى القيمة الحالية للمتغير."
+      },
+
+      // الفصل الرابع: الشروط
+      {
+        category: "الشروط",
+        q: "ما وظيفة if؟",
+        opts: [
+          "تكرار الأوامر",
+          "اتخاذ قرار بناءً على شرط",
+          "تعريف قائمة",
+          "إنشاء ملف"
+        ],
+        a: 1,
+        explanation: "تُنفذ if الأوامر عندما يكون الشرط صحيحًا."
+      },
+      {
+        category: "الشروط",
+        q: "ما ناتج الكود؟",
+        code: "age = 16\nif age >= 18:\n    print('Adult')\nelse:\n    print('Young')",
+        opts: [
+          "Adult",
+          "Young",
+          "16",
+          "خطأ دائمًا"
+        ],
+        a: 1,
+        explanation: "القيمة 16 ليست أكبر من أو تساوي 18، لذلك يعمل فرع else."
+      },
+      {
+        category: "الشروط",
+        q: "ما الفرق بين = و ==؟",
+        opts: [
+          "لا يوجد فرق",
+          "= للمقارنة و == للإسناد",
+          "= للإسناد و == للمقارنة",
+          "كلاهما للطباعة"
+        ],
+        a: 2,
+        explanation: "= لإسناد قيمة، و== لمقارنة قيمتين."
+      },
+
+      // الفصل الخامس: الحلقات
+      {
+        category: "الحلقات",
+        q: "ما وظيفة for loop؟",
+        opts: [
+          "تكرار تنفيذ مجموعة أوامر",
+          "تعريف متغير فقط",
+          "إيقاف البرنامج",
+          "حذف قائمة"
+        ],
+        a: 0,
+        explanation: "تُستخدم for للتكرار على عناصر مجموعة أو نطاق."
+      },
+      {
+        category: "الحلقات",
+        q: "كم مرة ينفذ الكود التالي أمر print؟",
+        code: "for i in range(4):\n    print(i)",
+        opts: [
+          "3 مرات",
+          "4 مرات",
+          "5 مرات",
+          "مرة واحدة"
+        ],
+        a: 1,
+        explanation: "range(4) ينتج القيم 0 و1 و2 و3، أي أربع مرات."
+      },
+      {
+        category: "الحلقات",
+        q: "ما وظيفة break داخل الحلقة؟",
+        opts: [
+          "تخطي التكرار الحالي فقط",
+          "إنهاء الحلقة",
+          "إعادة تشغيل البرنامج",
+          "تعريف دالة"
+        ],
+        a: 1,
+        explanation: "break تنهي الحلقة التي توجد بداخلها."
+      },
+
+      // الفصل السادس: القوائم
+      {
+        category: "القوائم",
+        q: "كيف نصل إلى أول عنصر في القائمة؟",
+        opts: [
+          "items[1]",
+          "items[0]",
+          "items.first",
+          "items[-0]"
+        ],
+        a: 1,
+        explanation: "الفهرسة في Python تبدأ من الصفر."
+      },
+      {
+        category: "القوائم",
+        q: "ما ناتج الكود؟",
+        code: "numbers = [10, 20, 30]\nprint(len(numbers))",
+        opts: [
+          "2",
+          "3",
+          "10",
+          "30"
+        ],
+        a: 1,
+        explanation: "len() تعيد عدد العناصر في القائمة، وهنا عددها ثلاثة."
+      },
+      {
+        category: "القوائم",
+        q: "ما وظيفة append()؟",
+        opts: [
+          "إضافة عنصر إلى نهاية القائمة",
+          "حذف القائمة بالكامل",
+          "ترتيب الأرقام تنازليًا",
+          "تحويل القائمة إلى نص"
+        ],
+        a: 0,
+        explanation: "append() تضيف عنصرًا جديدًا إلى نهاية القائمة."
+      },
+
+      // الفصل السابع: الدوال
+      {
+        category: "الدوال",
+        q: "ما الكلمة المفتاحية المستخدمة لتعريف دالة؟",
+        opts: [
+          "function",
+          "define",
+          "def",
+          "method"
+        ],
+        a: 2,
+        explanation: "نستخدم def لتعريف الدوال في Python."
+      },
+      {
+        category: "الدوال",
+        q: "ما وظيفة return؟",
+        opts: [
+          "إيقاف الكمبيوتر",
+          "إرجاع نتيجة من الدالة",
+          "طباعة كل المتغيرات",
+          "إنشاء حلقة"
+        ],
+        a: 1,
+        explanation: "return تعيد قيمة من الدالة إلى المكان الذي استدعاها."
+      },
+      {
+        category: "الدوال",
+        q: "ما ناتج الكود؟",
+        code: "def add(a, b):\n    return a + b\n\nprint(add(3, 4))",
+        opts: [
+          "34",
+          "7",
+          "3",
+          "4"
+        ],
+        a: 1,
+        explanation: "الدالة تجمع 3 و4 وتعيد الناتج 7."
+      },
+
+      // الفصل الثامن: النصوص
+      {
+        category: "النصوص",
+        q: "ما وظيفة lower()؟",
+        opts: [
+          "تحويل الحروف إلى أحرف صغيرة",
+          "حذف النص",
+          "عكس النص",
+          "تحويل النص إلى قائمة"
+        ],
+        a: 0,
+        explanation: "lower() تعيد نسخة من النص بحروف صغيرة."
+      },
+      {
+        category: "النصوص",
+        q: "ما ناتج الكود؟",
+        code: 'word = "Python"\nprint(word[0])',
+        opts: [
+          "y",
+          "P",
+          "n",
+          "Python"
+        ],
+        a: 1,
+        explanation: "الفهرس صفر يشير إلى أول حرف، وهو P."
+      },
+
+      // الفصل التاسع: الأخطاء
+      {
+        category: "الأخطاء",
+        q: "ما نوع الخطأ الناتج عند استخدام اسم متغير غير معرّف؟",
+        opts: [
+          "TypeError",
+          "NameError",
+          "IndexError",
+          "ImportError"
+        ],
+        a: 1,
+        explanation: "NameError يحدث عند استخدام اسم غير معروف في النطاق الحالي."
+      },
+      {
+        category: "الأخطاء",
+        q: "ما فائدة try و except؟",
+        opts: [
+          "التعامل مع الاستثناءات",
+          "إنشاء قائمة",
+          "تعريف متغير",
+          "طباعة الصور"
+        ],
+        a: 0,
+        explanation: "تسمح try/except بالتعامل مع الأخطاء المتوقعة أثناء التنفيذ."
+      },
+
+      // الفصل العاشر: القواميس والمجموعات
+      {
+        category: "القواميس",
+        q: "أي أقواس تستخدم عادةً لإنشاء قاموس؟",
+        opts: [
+          "[ ]",
+          "( )",
+          "{ }",
+          "< >"
+        ],
+        a: 2,
+        explanation: "القواميس تُكتب عادةً باستخدام الأقواس المعقوفة."
+      },
+      {
+        category: "القواميس",
+        q: "كيف نصل إلى قيمة المفتاح name؟",
+        code: 'student = {"name": "Ali", "age": 16}',
+        opts: [
+          "student.name",
+          'student["name"]',
+          "student(0)",
+          "student->name"
+        ],
+        a: 1,
+        explanation: "نصل إلى قيمة القاموس باستخدام اسم المفتاح بين أقواس مربعة."
+      },
+
+      // الفصل الحادي عشر: المكتبات والملفات
+      {
+        category: "المكتبات",
+        q: "ما وظيفة import؟",
+        opts: [
+          "استيراد مكتبة أو وحدة",
+          "حذف مكتبة",
+          "إغلاق البرنامج",
+          "إنشاء شرط"
+        ],
+        a: 0,
+        explanation: "import تسمح باستخدام الوحدات والمكتبات داخل البرنامج."
+      },
+      {
+        category: "الملفات",
+        q: "ما الغرض من with open()؟",
+        opts: [
+          "فتح ملف وإدارته بطريقة آمنة",
+          "إنشاء حلقة",
+          "حذف جميع المتغيرات",
+          "تشغيل متصفح"
+        ],
+        a: 0,
+        explanation: "with open() تساعد على إدارة الملف وإغلاقه تلقائيًا بعد الانتهاء."
+      },
+
+      // الفصل الثاني عشر: التطبيق العملي
+      {
+        category: "التطبيق العملي",
+        q: "ما أفضل طريقة لتخزين عدة درجات ثم حساب متوسطها؟",
+        opts: [
+          "تخزينها في قائمة ثم حساب مجموعها وقسمته على عددها",
+          "حفظها في متغير نصي واحد فقط",
+          "استخدام print دون تخزين",
+          "حذف الدرجات بعد إدخالها"
+        ],
+        a: 0,
+        explanation: "القائمة مناسبة لتجميع الدرجات، ويمكن حساب المتوسط باستخدام sum() وlen()."
+      },
+      {
+        category: "التطبيق العملي",
+        q: "ما ناتج الكود؟",
+        code: "scores = [80, 90, 100]\naverage = sum(scores) / len(scores)\nprint(average)",
+        opts: [
+          "80",
+          "90",
+          "100",
+          "270"
+        ],
+        a: 1,
+        explanation: "مجموع الدرجات 270، وعددها 3 ، لذلك المتوسط هو 90."
+      }
     ];
 
+    // عناصر الصفحة
     const statusMessage = document.getElementById("statusMessage");
     const examContent = document.getElementById("examContent");
-    const qEl = document.getElementById("qText");
-    const optsEl = document.getElementById("qOptions");
-    const progressEl = document.getElementById("progressFill");
+
+    const totalQuestionsElement = document.getElementById("totalQuestions");
+    const currentScoreElement = document.getElementById("currentScore");
+    const progressFill = document.getElementById("progressFill");
+
+    const questionNumber = document.getElementById("questionNumber");
+    const questionCategory = document.getElementById("questionCategory");
+    const questionText = document.getElementById("questionText");
+    const questionCode = document.getElementById("questionCode");
+    const questionOptions = document.getElementById("questionOptions");
+
+    const feedbackBox = document.getElementById("feedbackBox");
+    const nextButton = document.getElementById("nextButton");
+
     const quizArea = document.getElementById("quizArea");
     const resultBox = document.getElementById("resultBox");
+
     const resultTitle = document.getElementById("resultTitle");
     const resultMessage = document.getElementById("resultMessage");
     const scoreText = document.getElementById("scoreText");
-    const projectsLink = document.getElementById("projectsLink");
+    const resultDetails = document.getElementById("resultDetails");
+
     const retryButton = document.getElementById("retryButton");
+    const projectsLink = document.getElementById("projectsLink");
 
-    let currentQuiz = [];
-    let currentIndex = 0;
+    // حالة الامتحان
+    let currentUser = null;
+    let examQuestions = [];
+    let currentQuestionIndex = 0;
     let score = 0;
-    let answerLocked = false;
-    let examStorageKey = "";
+    let answered = false;
+    let examFinished = false;
 
-    function showBlocked(message) {
-      statusMessage.textContent = message;
-      statusMessage.hidden = false;
-      examContent.hidden = true;
-    }
+    totalQuestionsElement.textContent = EXAM_SIZE;
 
-    function readCompletedChapters() {
+    // قراءة التقدم المحلي
+    function readPythonProgress() {
       try {
-        const saved = JSON.parse(localStorage.getItem("cody_python_progress") || "{}");
-        return Array.isArray(saved.completed) ? saved.completed : [];
-      } catch {
-        return [];
+        const saved = JSON.parse(
+          localStorage.getItem("cody_python_progress") || "{}"
+        );
+
+        return {
+          completed: Array.isArray(saved.completed)
+            ? saved.completed.map(Number)
+            : [],
+          stars: saved.stars || {}
+        };
+      } catch (error) {
+        console.error("تعذر قراءة التقدم المحلي:", error);
+
+        return {
+          completed: [],
+          stars: {}
+        };
       }
     }
 
-    function shuffle(array) {
-      const result = [...array];
-      for (let i = result.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [result[i], result[j]] = [result[j], result[i]];
+    // التحقق من إكمال الفصول الاثني عشر
+    function hasCompletedAllChapters() {
+      const progress = readPythonProgress();
+
+      for (let chapter = 1; chapter <= 12; chapter++) {
+        if (!progress.completed.includes(chapter)) {
+          return false;
+        }
       }
-      return result;
+
+      return true;
     }
 
-    function startExam() {
-      currentQuiz = shuffle(allQuestions).slice(0, 5);
-      currentIndex = 0;
-      score = 0;
-      answerLocked = false;
-      quizArea.hidden = false;
-      resultBox.classList.remove("active");
-      resultBox.style.display = "";
-      loadQuestion();
+    // خلط الأسئلة عشوائيًا
+    function shuffleArray(array) {
+      const shuffled = [...array];
+
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+
+        [shuffled[i], shuffled[randomIndex]] = [
+          shuffled[randomIndex],
+          shuffled[i]
+        ];
+      }
+
+      return shuffled;
     }
 
-    function loadQuestion() {
-      if (currentIndex >= currentQuiz.length) {
+    // اختيار 15 سؤالًا من بنك الأسئلة
+    function createExamQuestions() {
+      return shuffleArray(allQuestions).slice(0, EXAM_SIZE);
+    }
+
+    // تحديث شريط التقدم
+    function updateProgress() {
+      const percentage =
+        (currentQuestionIndex / EXAM_SIZE) * 100;
+
+      progressFill.style.width = `${percentage}%`;
+    }
+
+    // عرض السؤال الحالي
+    function renderQuestion() {
+      if (currentQuestionIndex >= examQuestions.length) {
         finishExam();
         return;
       }
 
-      answerLocked = false;
-      const question = currentQuiz[currentIndex];
-      qEl.textContent = `السؤال ${currentIndex + 1} من ${currentQuiz.length}: ${question.q}`;
-      optsEl.replaceChildren();
-      progressEl.style.width = `${(currentIndex / currentQuiz.length) * 100}%`;
+      answered = false;
+
+      const question = examQuestions[currentQuestionIndex];
+
+      questionNumber.textContent =
+        `السؤال ${currentQuestionIndex + 1} من ${EXAM_SIZE}`;
+
+      questionCategory.textContent = question.category;
+      questionText.textContent = question.q;
+
+      if (question.code) {
+        questionCode.textContent = question.code;
+        questionCode.hidden = false;
+      } else {
+        questionCode.textContent = "";
+        questionCode.hidden = true;
+      }
+
+      questionOptions.innerHTML = "";
+      feedbackBox.textContent = "";
+      feedbackBox.className = "feedback";
+
+      nextButton.disabled = true;
+
+      nextButton.textContent =
+        currentQuestionIndex === EXAM_SIZE - 1
+          ? "عرض النتيجة"
+          : "السؤال التالي";
 
       question.opts.forEach((option, index) => {
         const button = document.createElement("button");
+
         button.type = "button";
         button.className = "opt-btn";
         button.textContent = option;
-        button.addEventListener("click", () => checkAnswer(index, button));
-        optsEl.appendChild(button);
+
+        button.addEventListener("click", () => {
+          selectAnswer(index, button);
+        });
+
+        questionOptions.appendChild(button);
       });
+
+      updateProgress();
     }
 
-    function checkAnswer(selectedIndex, selectedButton) {
-      if (answerLocked) return;
-      answerLocked = true;
-
-      const question = currentQuiz[currentIndex];
-      const buttons = [...optsEl.querySelectorAll("button")];
-      buttons.forEach(button => button.disabled = true);
-
-      if (selectedIndex === question.a) {
-        selectedButton.classList.add("correct");
-        score++;
-      } else {
-        selectedButton.classList.add("wrong");
-        buttons[question.a]?.classList.add("correct");
+    // اختيار الإجابة
+    function selectAnswer(selectedIndex, selectedButton) {
+      if (answered || examFinished) {
+        return;
       }
 
-      window.setTimeout(() => {
-        currentIndex++;
-        loadQuestion();
-      }, 700);
+      answered = true;
+
+      const question = examQuestions[currentQuestionIndex];
+      const optionButtons = questionOptions.querySelectorAll(".opt-btn");
+
+      optionButtons.forEach(button => {
+        button.disabled = true;
+      });
+
+      const isCorrect = selectedIndex === question.a;
+
+      if (isCorrect) {
+        score++;
+
+        selectedButton.classList.add("correct");
+
+        feedbackBox.className = "feedback show success";
+        feedbackBox.textContent =
+          `إجابة صحيحة! ${question.explanation}`;
+
+      } else {
+        selectedButton.classList.add("wrong");
+
+        optionButtons[question.a].classList.add("correct");
+
+        feedbackBox.className = "feedback show error";
+
+        feedbackBox.textContent =
+          `إجابة غير صحيحة. الإجابة الصحيحة هي: ${
+            question.opts[question.a]
+          }. ${question.explanation}`;
+      }
+
+      currentScoreElement.textContent = score;
+      nextButton.disabled = false;
     }
 
+    // الانتقال للسؤال التالي
+    nextButton.addEventListener("click", () => {
+      if (!answered || examFinished) {
+        return;
+      }
+
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex >= EXAM_SIZE) {
+        finishExam();
+      } else {
+        renderQuestion();
+      }
+    });
+
+    // حفظ نجاح الامتحان على الجهاز
+    function saveExamResult() {
+      if (!currentUser || !currentUser.uid) {
+        return false;
+      }
+
+      const result = {
+        passed: true,
+        score,
+        total: EXAM_SIZE,
+        percentage: Math.round((score / EXAM_SIZE) * 100),
+        completedAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(
+          EXAM_KEY_PREFIX + currentUser.uid,
+          JSON.stringify(result)
+        );
+
+        return true;
+      } catch (error) {
+        console.error("تعذر حفظ نتيجة الامتحان:", error);
+        return false;
+      }
+    }
+
+    // إنهاء الامتحان وعرض النتيجة
     function finishExam() {
-      progressEl.style.width = "100%";
+      if (examFinished) {
+        return;
+      }
+
+      examFinished = true;
+
       quizArea.hidden = true;
       resultBox.classList.add("active");
-      resultBox.style.display = "block";
-      scoreText.textContent = `النتيجة: ${score} من ${currentQuiz.length}`;
 
-      const passed = score >= PASS_MARK;
+      progressFill.style.width = "100%";
+
+      const percentage = Math.round(
+        (score / EXAM_SIZE) * 100
+      );
+
+      const passed = percentage >= PASS_PERCENTAGE;
+
+      scoreText.textContent =
+        `${score} من ${EXAM_SIZE} — ${percentage}%`;
+
+      resultDetails.textContent =
+        `عدد الإجابات الصحيحة: ${score}، وعدد الإجابات غير الصحيحة: ${
+          EXAM_SIZE - score
+        }.`;
 
       if (passed) {
-        localStorage.setItem(examStorageKey, "true");
-        resultTitle.textContent = "مبروك! اجتزت الامتحان 🎉";
-        resultMessage.textContent = "حققت درجة النجاح. أصبحت صفحة المشاريع متاحة لهذا الحساب على هذا المتصفح.";
+        resultTitle.textContent = "تهانينا! لقد اجتزت الامتحان";
+
+        resultMessage.textContent =
+          "أظهرت فهمًا جيدًا لمفاهيم Python، ويمكنك الآن الانتقال إلى المشاريع العملية.";
+
+        const saved = saveExamResult();
+
+        if (saved) {
+          resultDetails.textContent +=
+            " تم حفظ نتيجة النجاح على هذا الجهاز.";
+        } else {
+          resultDetails.textContent +=
+            " تعذر حفظ النتيجة محليًا.";
+        }
+
         projectsLink.hidden = false;
         retryButton.hidden = true;
+
       } else {
-        // لا نسمح بنتيجة قديمة أن تظل فعّالة بعد رسوب محاولة جديدة.
-        localStorage.removeItem(examStorageKey);
-        resultTitle.textContent = "لسه محتاج تدريب شوية";
-        resultMessage.textContent = `النجاح يتطلب ${PASS_MARK} إجابات صحيحة من 5. راجع الدروس وحاول مرة أخرى.`;
+        resultTitle.textContent = "لم يتم اجتياز الامتحان هذه المرة";
+
+        resultMessage.textContent =
+          `تحتاج إلى ${PASS_PERCENTAGE}% على الأقل للنجاح. راجع الموضوعات التي تحتاج إلى تدريب إضافي ثم أعد المحاولة.`;
+
         projectsLink.hidden = true;
         retryButton.hidden = false;
       }
     }
 
-    retryButton.addEventListener("click", startExam);
+    // بدء امتحان جديد
+    function startExam() {
+      score = 0;
+      currentQuestionIndex = 0;
+      answered = false;
+      examFinished = false;
 
-    try {
-      const user = await requireUser();
+      examQuestions = createExamQuestions();
 
-      if (!user?.uid) {
-        showBlocked("سجّل الدخول أولًا لبدء الامتحان.");
-      } else {
-        examStorageKey = `${EXAM_KEY_PREFIX}${user.uid}`;
+      currentScoreElement.textContent = "0";
 
-        const completed = readCompletedChapters();
-        const allChaptersCompleted = Array.from({ length: 12 }, (_, i) => i + 1)
-          .every(id => completed.includes(id));
+      resultBox.classList.remove("active");
+      quizArea.hidden = false;
 
-        if (!allChaptersCompleted) {
-          showBlocked("لازم تكمل الفصول الـ12 قبل الامتحان. هنعيدك لخريطة الفصول.");
-          window.setTimeout(() => {
-            window.location.replace("python-chapters.html");
-          }, 1400);
-        } else {
-          statusMessage.hidden = true;
-          examContent.hidden = false;
-          startExam();
-        }
-      }
-    } catch (error) {
-      console.error("Exam authentication failed:", error);
-      showBlocked("تعذر التحقق من تسجيل الدخول. ارجع لصفحة تسجيل الدخول وحاول مرة أخرى.");
+      projectsLink.hidden = true;
+      retryButton.hidden = false;
+
+      renderQuestion();
     }
+
+    // إعادة الامتحان
+    retryButton.addEventListener("click", () => {
+      startExam();
+    });
+
+    // التحقق من الحساب والتقدم قبل فتح الامتحان
+    async function initializeExam() {
+      try {
+        statusMessage.textContent =
+          "جارٍ التحقق من تسجيل الدخول...";
+
+        currentUser = await requireUser();
+
+        if (!currentUser || !currentUser.uid) {
+          throw new Error("لم يتم العثور على حساب مستخدم صالح.");
+        }
+
+        statusMessage.textContent =
+          "جارٍ التحقق من إكمال الفصول الاثني عشر...";
+
+        if (!hasCompletedAllChapters()) {
+          statusMessage.textContent =
+            "يجب إكمال الفصول الاثني عشر أولًا قبل دخول الامتحان الشامل. سيتم تحويلك إلى صفحة الفصول.";
+
+          setTimeout(() => {
+            window.location.href = "python-chapters.html";
+          }, 2500);
+
+          return;
+        }
+
+        statusMessage.hidden = true;
+        examContent.hidden = false;
+
+        startExam();
+
+      } catch (error) {
+        console.error("خطأ في تهيئة الامتحان:", error);
+
+        statusMessage.textContent =
+          "تعذر التحقق من الحساب أو تحميل الامتحان. تأكد من تسجيل الدخول ثم حاول مرة أخرى.";
+
+        const retryLoginButton = document.createElement("button");
+
+        retryLoginButton.type = "button";
+        retryLoginButton.className = "action-btn";
+        retryLoginButton.textContent = "العودة لتسجيل الدخول";
+
+        retryLoginButton.style.marginTop = "15px";
+
+        retryLoginButton.addEventListener("click", () => {
+          window.location.href = "login.html";
+        });
+
+        statusMessage.appendChild(
+          document.createElement("br")
+        );
+
+        statusMessage.appendChild(retryLoginButton);
+      }
+    }
+
+    // تشغيل الصفحة
+    initializeExam();
   </script>
 
-  <script type="module" src="js/route-guard.js"></script>
+  <script type="module" src="./js/route-guard.js"></script>
 </body>
 </html>
