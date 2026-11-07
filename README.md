@@ -231,9 +231,9 @@ Frontend
   <img src="https://img.shields.io/badge/Judge0-34495E?style=flat-square" alt="Judge0">
 </p>---
 
-📂 Project Structure
+📁 Project Structure
 
-The following is a representative overview of the repository structure.
+The following tree provides an overview of the main files and directories in CodeQuest:
 
 CodeQuest/
 │
@@ -241,16 +241,13 @@ CodeQuest/
 ├── dashboard.html
 ├── login.html
 ├── signup.html
-│
 ├── languages.html
 ├── lecture.html
 ├── playground.html
-│
 ├── profile.html
 ├── progress.html
 ├── achievements.html
 ├── leaderboard.html
-│
 ├── games.html
 ├── projects.html
 ├── store.html
@@ -294,55 +291,6 @@ CodeQuest/
 ├── manifest.json
 ├── sw.js
 └── README.md
-
----
-
-🔥 Firebase Integration
-
-Firebase is used for authentication, database operations, and selected trusted backend processes.
-
-Firestore Data Structure
-
-users/
-  {uid}/
-    lessonProgress/
-      {lessonId}
-
-    quizResults/
-      {resultId}
-
-    gameRewards/
-      {gameId}
-
-    drafts/
-      {draftId}
-
-projects/
-  {projectId}
-
-leaderboardPublic/
-  {uid}
-
-Cloud Functions
-
-The Firebase Functions code includes the following exported operations:
-
-Function| Responsibility
-"runCode"| Code execution operation
-"purchaseStoreItem"| Store purchase processing
-"awardLessonReward"| Lesson reward processing
-"syncExistingLessonRewards"| Existing lesson reward synchronization
-"claimGameReward"| Game reward claim validation
-"syncLeaderboard"| Public leaderboard synchronization
-
-Security considerations:
-
-- Sensitive operations should be performed on trusted backend services.
-- Firestore security rules should restrict unauthorized access.
-- API keys and service credentials must not be committed to the repository.
-- Public leaderboard data should contain only the information intended for public display.
-
----
 
 ⚙️ Backend API
 
