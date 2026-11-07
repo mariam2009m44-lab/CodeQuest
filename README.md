@@ -775,3 +775,411 @@ Follow these steps to prepare a local development environment.
 ```bash
 git clone https://github.com/mariam2009m44-lab/CodeQuest.git
 cd CodeQuest
+
+### 2. Install Backend Dependencies
+
+Install the Python dependencies required by the FastAPI backend:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+### 3. Install Machine Learning Dependencies
+
+Install the dependencies used by the Cody ML Engine:
+
+```bash
+pip install -r cody-ml-engine/requirements.txt
+```
+
+### 4. Start the FastAPI Backend
+
+Run the backend development server from the repository root:
+
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+
+The backend will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Interactive API documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Health check:
+
+```text
+http://127.0.0.1:8000/health
+```
+
+### 5. Run the Main Frontend
+
+Open a separate terminal in the repository root and start a local static server:
+
+```bash
+python -m http.server 5500
+```
+
+Open the application at:
+
+```text
+http://localhost:5500
+```
+
+The frontend and FastAPI backend run on separate ports.
+
+### 6. Run the React/Vite Workspace
+
+CodeQuest also contains a separate React/Vite workspace.
+
+Navigate to its directory:
+
+```bash
+cd CodeQuest
+```
+
+Install the required packages:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+---
+
+## 🔐 Environment Configuration
+
+Some CodeQuest features require external services and environment-specific configuration.
+
+### Gemini API
+
+Cody's AI assistant uses the Google Gemini API.
+
+Configure the backend environment variables:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=your_configured_gemini_model
+```
+
+### Firebase
+
+Firebase-dependent features require a properly configured Firebase project.
+
+The integration may include:
+
+- Firebase Authentication.
+- Cloud Firestore.
+- Firebase Functions.
+- Server-side credentials and project configuration.
+
+### Judge0
+
+Code execution functionality depends on the configured Judge0 integration and its service endpoint.
+
+### Configuration Guidelines
+
+- Never commit private API keys or credentials.
+- Store sensitive configuration in environment variables or deployment secrets.
+- Keep server-side secrets out of frontend JavaScript.
+- Configure each external service according to its deployment requirements.
+
+---
+
+## 🧪 Testing and Quality Assurance
+
+CodeQuest includes automated tests for backend and machine learning components.
+
+### Backend Tests
+
+Backend tests are located in:
+
+```text
+backend/tests/
+```
+
+Run the backend test suite:
+
+```bash
+python -m pytest backend/tests -q
+```
+
+### Machine Learning Tests
+
+Machine learning tests are located in:
+
+```text
+cody-ml-engine/tests/
+```
+
+Run the ML test suite:
+
+```bash
+python -m pytest cody-ml-engine/tests -q
+```
+
+### Run Both Test Suites
+
+```bash
+python -m pytest backend/tests cody-ml-engine/tests -q
+```
+
+### GitHub Actions
+
+Automated workflows are available under:
+
+```text
+.github/workflows/
+```
+
+| Workflow | Purpose |
+|---|---|
+| `cody-ml-tests.yml` | Runs machine learning tests. |
+| `project-checks.yml` | Performs project checks. |
+| `seed-quiz-answers.yml` | Handles quiz answer seeding. |
+
+---
+
+## 🌐 Deployment
+
+CodeQuest consists of multiple components that can be deployed independently.
+
+### Frontend Deployment
+
+The main web application is published through GitHub Pages.
+
+**Live Application:**
+
+https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html
+
+**GitHub Repository:**
+
+https://github.com/mariam2009m44-lab/CodeQuest
+
+### FastAPI Backend
+
+The FastAPI backend requires a Python-compatible hosting environment.
+
+Deployment requirements include:
+
+- Python dependencies.
+- Environment variables.
+- API configuration.
+- Connectivity to Firebase and external services where required.
+
+### Firebase Deployment
+
+Firebase Functions and Firestore require their own project configuration and deployment setup.
+
+### Cloudflare Worker Deployment
+
+The Cloudflare Worker has a separate deployment configuration:
+
+```text
+cloudflare-worker/wrangler.toml
+```
+
+It must be configured and deployed independently from the FastAPI backend.
+
+### Deployment Considerations
+
+Publishing the frontend does not automatically deploy the backend, Firebase Functions, or Cloudflare Worker.
+
+Each component must be configured and deployed separately.
+
+---
+
+## 🛡️ Security
+
+Security is an important consideration for an educational platform that handles user accounts, learning progress, rewards, and code execution.
+
+### Security Components
+
+- Firebase Authentication integration.
+- Bearer-token validation for protected backend routes.
+- Firebase JWT verification in the Cloudflare Worker.
+- Server-side handling of sensitive operations.
+- Backend integration for code execution.
+- Firestore-based data organization.
+- Environment-based configuration for API credentials.
+
+### Security Best Practices
+
+- Never expose private API keys.
+- Validate user identity on protected server-side operations.
+- Do not rely on client-side claims for sensitive reward operations.
+- Validate incoming API data.
+- Configure appropriate Firestore security rules.
+- Keep dependencies updated.
+- Review permissions and deployment settings regularly.
+
+---
+
+## 📝 Implementation Notes
+
+The following architectural details are important when developing or maintaining CodeQuest.
+
+### Multiple Frontend Components
+
+The repository contains two separate frontend components:
+
+1. A multi-page HTML, CSS, and JavaScript application.
+2. A React/Vite workspace.
+
+They should be treated as separate components unless an explicit integration connects them.
+
+### Curriculum Management
+
+The main programming curricula are stored in JSON files under:
+
+```text
+json/
+```
+
+The curriculum loader is implemented in:
+
+```text
+js/curriculum.js
+```
+
+Current curriculum files include:
+
+| Language | Curriculum File |
+|---|---|
+| Python | `json/python_curriculum.json` |
+| JavaScript | `json/js_curriculum.json` |
+| C++ | `json/cpp_curriculum.json` |
+
+When updating curriculum content, preserve the expected JSON structure to maintain compatibility with the frontend.
+
+### Backend Architecture
+
+The platform uses separate components for different responsibilities:
+
+- FastAPI handles backend API operations.
+- Firebase provides authentication and cloud data services.
+- Firebase Functions handle selected server-side operations.
+- Cloudflare Worker provides additional API functionality.
+- The Cody ML Engine provides question-classification capabilities.
+
+These components have separate configurations and deployment requirements.
+
+### Rewards and Progress
+
+Lesson rewards use server-side transaction logic and duplicate-prevention mechanisms.
+
+The lesson reward implementation awards:
+
+- 10 XP.
+- 1 star.
+
+The level calculation follows this formula:
+
+```python
+level = (xp // 100) + 1
+```
+
+Game reward claims require trusted server-side verification and should not be considered fully enabled until that verification is implemented.
+
+### External Services
+
+Some platform functionality depends on third-party services, credentials, and deployment configuration.
+
+Feature availability may therefore differ between local development and the deployed application.
+
+---
+
+## 🗺️ Development Roadmap
+
+Potential areas for future development include:
+
+- [ ] Expand programming curricula and lesson content.
+- [ ] Improve interactive coding exercises.
+- [ ] Continue improving the Cody educational assistant.
+- [ ] Enhance contextual explanations and learning support.
+- [ ] Expand educational games and activities.
+- [ ] Improve learning analytics and progress visualization.
+- [ ] Complete trusted server-side verification for game rewards.
+- [ ] Improve consistency across user profiles and progress pages.
+- [ ] Expand project-based learning activities.
+- [ ] Improve mobile responsiveness and accessibility.
+- [ ] Strengthen automated testing and deployment workflows.
+
+*This roadmap describes potential development directions. Unfinished items should not be interpreted as already implemented features.*
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and constructive feedback are welcome.
+
+If you would like to contribute:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Test the affected functionality.
+5. Commit your changes with a clear message.
+6. Open a pull request describing your contribution.
+
+### Contribution Guidelines
+
+- Preserve the existing application structure unless a change is necessary.
+- Maintain consistency with the Arabic RTL interface.
+- Avoid unnecessary dependencies.
+- Protect API credentials and sensitive information.
+- Test changes before submitting them.
+- Document important changes when appropriate.
+
+---
+
+## 👩‍💻 Project Information
+
+| Property | Details |
+|---|---|
+| Project | CodeQuest — Cody Academy |
+| Category | Educational Technology / Programming Education |
+| Platform | Web Application |
+| Primary Interface Language | Arabic |
+| Layout Direction | Right-to-Left (RTL) |
+| Frontend | HTML, CSS, JavaScript, React, Vite |
+| Backend | Python, FastAPI, Node.js, Firebase Functions |
+| AI Integration | Google Gemini API |
+| Machine Learning | Scikit-learn |
+| Code Execution | Judge0 Integration |
+| Repository | [GitHub Repository](https://github.com/mariam2009m44-lab/CodeQuest) |
+| Live Application | [Open CodeQuest](https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html) |
+
+---
+
+## 📄 License
+
+No explicit open-source license is identified in this README.
+
+Unless a license is added to the repository, the project's source code remains subject to default copyright rules. Public availability on GitHub does not automatically grant permission to reuse, modify, or redistribute the code.
+
+---
+
+<p align="center">
+  <strong>🚀 CodeQuest — Cody Academy</strong>
+  <br>
+  <em>Learn to Code. Build Your Skills. Create Your Future.</em>
+</p>
+
