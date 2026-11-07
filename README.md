@@ -1,360 +1,276 @@
-CodeQuest — Cody Academy
+🚀 CodeQuest — Cody Academy
+
+An Interactive, AI-Assisted Programming Learning Platform
 
 <p align="center">
-  <strong>An Interactive, AI-Assisted Programming Education Platform</strong>
+  <img src="https://img.shields.io/badge/Platform-Web%20Application-7955E8?style=for-the-badge" alt="Platform">
+  <img src="https://img.shields.io/badge/Language-Arabic%20%7C%20RTL-36BFE5?style=for-the-badge" alt="Language">
+  <img src="https://img.shields.io/badge/AI-Powered-43C99A?style=for-the-badge" alt="AI Powered">
+  <img src="https://img.shields.io/badge/Status-Active%20Development-FFD66B?style=for-the-badge" alt="Status">
 </p><p align="center">
-  Learn to Code · Practice by Building · Track Your Progress
+  <b>Learn to Code. Build Projects. Play. Grow.</b>
+  <br>
+  An educational environment designed to make programming more accessible, interactive, and engaging for young learners.
 </p><p align="center">
-  <a href="https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html">Live Application</a> •
+  <a href="https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html">Live Platform</a>
+  ·
   <a href="https://github.com/mariam2009m44-lab/CodeQuest">GitHub Repository</a>
-</p><p align="center">
-  <img src="https://img.shields.io/badge/Platform-Web%20Application-7955E8?style=for-the-badge" alt="Web Application">
-  <img src="https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JavaScript-36BFE5?style=for-the-badge" alt="Frontend">
-  <img src="https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Database-Firebase-FFCA28?style=for-the-badge" alt="Firebase">
+  ·
+  <a href="https://github.com/mariam2009m44-lab">Developer Profile</a>
 </p>---
 
-Table of Contents
+📌 Overview
 
-- "1. Overview" (#1-overview)
-- "2. Vision and Mission" (#2-vision-and-mission)
-- "3. Educational Approach" (#3-educational-approach)
-- "4. Core Features" (#4-core-features)
-- "5. Technology Stack" (#5-technology-stack)
-- "6. System Architecture" (#6-system-architecture)
-- "7. Repository Structure" (#7-repository-structure)
-- "8. Backend and API Services" (#8-backend-and-api-services)
-- "9. Database Design" (#9-database-design)
-- "10. Security" (#10-security)
-- "11. Local Development" (#11-local-development)
-- "12. Deployment" (#12-deployment)
-- "13. Testing and Quality Assurance" (#13-testing-and-quality-assurance)
-- "14. Implementation Status" (#14-implementation-status)
-- "15. Development Roadmap" (#15-development-roadmap)
-- "16. Privacy and Responsible AI" (#16-privacy-and-responsible-ai)
-- "17. Contributing" (#17-contributing)
-- "18. Project Information" (#18-project-information)
-- "19. License" (#19-license)
+CodeQuest — Cody Academy is an Arabic-first programming education platform that combines structured learning, interactive coding, gamification, and AI-assisted guidance.
+
+The platform is designed to help beginners understand programming concepts through lessons, practical exercises, coding challenges, and projects.
+
+Its learning experience is built around Cody, an educational assistant intended to guide learners through programming concepts and support their problem-solving process.
+
+Rather than presenting programming as a collection of theoretical explanations, CodeQuest aims to create a learning environment where students can explore, experiment, practice, and track their progress.
+
+✨ Key Features
+
+Feature| Description
+📚 Structured Learning| Organized programming lessons and learning tracks.
+💻 Interactive Playground| A coding environment for writing and running code.
+🤖 Cody AI Assistant| AI-assisted explanations, hints, and learning support.
+🎮 Educational Games| Game-based activities designed to reinforce concepts.
+🏆 Achievements| Recognition for learning milestones and activities.
+⭐ XP & Stars| A gamification system for tracking learning rewards.
+👤 User Profiles| Personal learning information and progress.
+📊 Progress Tracking| A dedicated view of learning activity and achievements.
+🥇 Leaderboard| A competitive learning experience based on recorded progress.
+📱 Responsive Interface| An interface designed for different screen sizes.
+🌐 Arabic RTL Support| Right-to-left layout and Arabic-first content.
+🔐 Authentication| Firebase-based user authentication and access control.
+
+«Development note: Feature availability depends on the implementation and configuration of the connected services. The presence of a user interface does not necessarily mean that every feature is fully operational.»
 
 ---
 
-1. Overview
+🖥️ Platform Preview
 
-CodeQuest, also known as Cody Academy, is an interactive programming education platform designed to make software development more accessible, practical, and engaging for beginners.
+<p align="center">
+  <a href="https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html">
+    <img src="https://img.shields.io/badge/OPEN-LIVE%20PLATFORM-7955E8?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Open Live Platform">
+  </a>
+</p>Explore the platform:
 
-The platform combines structured programming curricula, interactive coding experiences, AI-assisted educational support, learner progress tracking, and gamification within a unified web application.
+Page| Purpose
+Dashboard| Main learning dashboard
+Learning Tracks| Programming language selection
+Playground| Interactive coding environment
+Profile| Personal account information
+Progress| Learning statistics and progress
+Achievements| Earned milestones and rewards
+Games| Educational games
+Projects| Practical programming activities
+Leaderboard| Learner rankings
+Store| Platform reward store
 
-CodeQuest is built around a simple idea: programming is best learned by understanding concepts, experimenting with code, solving problems, and creating practical projects.
+---
 
-The platform currently provides learning content for:
+🧠 Learning Tracks
 
-- Python
-- JavaScript
-- C++
+CodeQuest is designed around multiple programming learning paths.
 
-Its educational companion, Cody, is designed to provide AI-assisted explanations and contextual learning support.
+Track| Main Topics
+🐍 Python| Variables, data types, conditions, loops, functions, and practical programming.
+🟨 JavaScript| Fundamentals, DOM manipulation, events, and interactive web development.
+⚙️ C++| Syntax, variables, control flow, functions, arrays, and object-oriented programming.
 
-Project at a Glance
+The curriculum is intended to expand into additional topics, including:
 
-Attribute| Description
-Project Name| CodeQuest
-Platform Name| Cody Academy
-Category| Educational Technology
-Primary Focus| Programming Education
-Learning Languages| Python, JavaScript, C++
-Interface Direction| Arabic-first, RTL support
-Frontend| HTML, CSS, JavaScript
-Backend| Python, FastAPI
-Database| Cloud Firestore
-Authentication| Firebase Authentication
-AI Integration| Google Gemini API
-Frontend Hosting| GitHub Pages
+- HTML and CSS.
+- Web development.
+- Interactive web applications.
+- Advanced programming concepts.
+- Practical coding projects.
 
-2. Vision and Mission
+---
 
-Vision
+💻 Interactive Coding Environment
 
-To create an accessible and engaging digital learning environment where beginners can develop programming knowledge, computational thinking, and practical problem-solving skills.
+The CodeQuest Playground provides a dedicated interface for writing and experimenting with code.
 
-Mission
+Supported Languages
 
-- Make programming concepts easier to understand.
-- Encourage practical learning instead of passive content consumption.
-- Provide AI-assisted educational guidance.
-- Support independent experimentation and problem-solving.
-- Connect learning activities with measurable progress.
-- Encourage learners to turn ideas into programming projects.
+Language| Environment
+Python| Python coding experience
+JavaScript| Browser-based JavaScript environment
+C++| C++ execution integration
 
-3. Educational Approach
+Playground Capabilities
 
-CodeQuest follows a learn-by-doing educational approach.
-
-The learning experience is organized around four complementary stages:
-
-Stage| Learning Objective
-Understand| Learn programming concepts through explanations and examples.
-Practice| Apply knowledge through exercises and educational activities.
-Experiment| Write, modify, and execute code in a programming workspace.
-Progress| Review completed lessons and track learning achievements.
-
-The goal is to help learners develop both conceptual understanding and practical programming skills.
-
-4. Core Features
-
-4.1. Structured Programming Curricula
-
-CodeQuest organizes programming content into structured curriculum files.
-
-The current curriculum files include:
-
-- "json/python_curriculum.json"
-- "json/js_curriculum.json"
-- "json/cpp_curriculum.json"
-
-The curriculum architecture separates educational content from the frontend interface.
-
-Depending on the lesson, structured content can include:
-
-- Lesson identifiers and titles.
-- Chapter organization.
-- Explanations and examples.
-- Practical activities.
-- Quiz questions and answer options.
-- Feedback messages.
-- Learning objectives.
-
-The curriculum module is responsible for loading, validating, and navigating supported learning content.
-
-4.2. Interactive Code Playground
-
-The platform includes a dedicated coding workspace built around CodeMirror 5.
-
-The playground is designed to let learners write and experiment with source code.
-
-Supported languages include:
-
-- Python
-- JavaScript
-- C++
-
-The workspace includes editor operations such as:
-
-- Writing and editing code.
-- Selecting a programming language.
-- Loading example code.
-- Running code through configured execution services.
+- Code editing with CodeMirror.
+- Language selection.
+- Code execution integration.
+- Output and feedback areas.
+- Saving and managing coding projects.
 - Resetting and clearing the editor.
-- Saving supported drafts and project information.
 
-Code execution is handled through backend integrations rather than being treated as a frontend-only feature.
+The execution process depends on the configured backend and external execution services.
 
-4.3. Cody — AI-Assisted Learning Companion
+---
 
-Cody is the AI-assisted educational component of CodeQuest.
+🤖 Cody — AI Learning Assistant
 
-It is designed to help learners understand concepts and approach programming problems through guided explanations.
+Cody is the educational assistant concept at the center of the learning experience.
 
-The backend includes:
+Its purpose is to help learners understand programming instead of simply providing ready-made answers.
 
-- A dedicated FastAPI router.
-- A question-classification component.
-- Gemini API integration.
-- Conversation-history handling.
-- Optional page context.
-- Request validation.
+Intended Learning Experience
 
-The question-classification component is located in:
+Capability| Purpose
+Concept Explanation| Explain programming topics in accessible language.
+Learning Guidance| Help learners understand what to study next.
+Contextual Hints| Provide guidance while solving exercises.
+Quiz Support| Assist with understanding questions and feedback.
+Problem Solving| Encourage step-by-step reasoning.
 
-"cody-ml-engine/src/question_classifier.py"
+AI Integration
 
-The AI model is configurable through the backend environment.
+The backend includes an AI assistant integration designed around the Gemini API.
 
-Configuration note: Cody's AI responses require a valid Gemini API key, a supported model configuration, and a functioning backend deployment. The presence of integration code does not guarantee that the service is available in every environment.
+Configuration required:
 
-4.4. Authentication and Learner Accounts
+- Gemini API key.
+- Configured model.
+- Backend service availability.
 
-Firebase Authentication provides the authentication foundation for supported account workflows.
+AI responses depend on API availability, configuration, and implementation.
 
-The application includes account-related functionality such as:
+---
 
-- Registration.
-- Sign-in.
-- Password recovery.
-- Sign-out.
-- Authentication-state monitoring.
-- Learner profile initialization.
+🎮 Gamification System
 
-Authenticated user identifiers are used to associate learner-specific information with the corresponding account.
+CodeQuest uses gamification to make learning more engaging.
 
-4.5. Progress Tracking and Gamification
+Element| Description
+⭐ Stars| Reward indicators.
+⚡ XP| Experience points earned through supported activities.
+🎯 Levels| Progression based on accumulated XP.
+🏆 Achievements| Recognition of learning milestones.
+🥇 Leaderboard| Public learning rankings.
 
-CodeQuest includes a progress and reward system designed to make learning achievements measurable.
+XP Level Calculation
 
-Metric| Purpose
-XP| Experience points earned through supported activities.
-Stars| Lesson-completion reward indicator.
-Coins| Virtual currency used by supported store functionality.
-Level| Learner level calculated from experience points.
-Completed Lessons| Number of recorded completed lessons.
-Language Progress| Progress information for supported programming tracks.
+The current level calculation is based on accumulated experience points:
 
-The current lesson reward implementation is handled by Firebase Cloud Functions.
+const level = Math.floor(xp / 100) + 1;
 
-A valid lesson-completion event can award:
+This means that every 100 XP increases the learner's level by one.
 
-- 10 XP
-- 1 Star
+Reward Integrity
 
-The backend uses Firestore transactions and reward records to prevent duplicate lesson rewards.
+Reward-related operations use Firebase Cloud Functions where implemented.
 
-The level calculation implemented by the application follows:
+Duplicate lesson rewards are handled through transaction-based processing. Game reward claims require trusted server-side result verification before they can be safely enabled.
 
-level = Math.floor(xp / 100) + 1;
+---
 
-Important reward calculations are handled by backend services where implemented, rather than relying entirely on frontend-submitted values.
+🏗️ System Architecture
 
-4.6. Learner Profile and Avatar System
-
-The platform includes learner profile and avatar experiences.
-
-Supported functionality includes:
-
-- Profile information.
-- Avatar selection.
-- Avatar rendering.
-- Default avatar options.
-- Inventory-aware avatar selection for supported store items.
-
-Avatar and profile-related data are associated with the authenticated learner account.
-
-4.7. Educational Games
-
-The repository includes educational game interfaces and activities designed to reinforce learning through interaction.
-
-Examples include:
-
-- Bug-finding activities.
-- Matching activities.
-- Memory games.
-- Quiz-based experiences.
-- Building-oriented challenges.
-
-Reward limitation: Game interfaces and game reward processing are separate components. The current "claimGameReward" Firebase function rejects reward claims until reliable server-side game-result verification is implemented.
-
-Therefore, the presence of a game does not mean that its reward workflow is fully enabled.
-
-4.8. Projects and Coding Activities
-
-CodeQuest includes project-oriented experiences that encourage learners to apply programming concepts.
-
-Project data is associated with authenticated users through Firestore.
-
-The database security rules validate important project properties, including ownership, project name, programming language, and source-code size.
-
-4.9. Leaderboard
-
-The platform includes a leaderboard interface supported by a separate public-data collection.
-
-A Firebase Cloud Function synchronizes selected learner information into:
-
-"leaderboardPublic/{uid}"
-
-The synchronization process is designed to publish selected display information and experience points without publishing learner email addresses.
-
-4.10. Progressive Web Application Support
-
-The repository includes:
-
-- A Web App Manifest.
-- A Service Worker.
-- A basic application caching strategy.
-
-The Service Worker handles selected same-origin GET requests.
-
-External service responses, including Firebase and other external requests, are not cached by the current Service Worker implementation.
-
-5. Technology Stack
-
-CodeQuest combines browser technologies, cloud infrastructure, backend services, and AI integration.
-
-Layer| Technologies
-Frontend| HTML5, CSS3, JavaScript
-Interface Styling| Custom CSS, responsive layouts
-Typography| Cairo
-Icons| Remix Icon
-Code Editor| CodeMirror 5
-Authentication| Firebase Authentication
-Database| Cloud Firestore
-Serverless Backend| Firebase Cloud Functions
-Backend Framework| Python, FastAPI
-Data Validation| Pydantic
-AI Integration| Google Gemini API
-ML Component| Python, scikit-learn, joblib
-Code Execution| Judge0 integration
-Edge Computing| Cloudflare Workers
-Educational Content| JSON
-PWA Support| Web App Manifest, Service Worker
-Version Control| Git and GitHub
-Frontend Hosting| GitHub Pages
-
-Dependency Management
-
-Component| Dependency File
-Python Backend| "backend/requirements.txt"
-Firebase Functions| "functions/package.json"
-Firebase Project Configuration| "firebase.json"
-Firestore Security Rules| "firestore.rules"
-Cloudflare Worker| "cloudflare-worker/wrangler.toml"
-
-6. System Architecture
-
-CodeQuest uses a multi-component architecture that separates the frontend, authentication, persistent data, backend APIs, and AI-related services.
+CodeQuest combines a browser-based frontend with backend services and cloud integrations.
 
 flowchart TD
-    A["Learner"] --> B["CodeQuest Web Application"]
+    A["Learner"] --> B["CodeQuest Frontend"]
+    B --> C["Authentication"]
+    B --> D["Learning Modules"]
+    B --> E["Coding Playground"]
+    B --> F["Cody AI Assistant"]
+    B --> G["Progress and Rewards"]
 
-    B --> C["HTML / CSS / JavaScript"]
+    C --> H["Firebase Authentication"]
+    D --> I["Curriculum Data"]
+    E --> J["Backend / Code Execution"]
+    F --> K["FastAPI + Gemini"]
+    G --> L["Cloud Firestore"]
+    G --> M["Firebase Cloud Functions"]
 
-    C --> D["Firebase Authentication"]
-    C --> E["Cloud Firestore"]
-    C --> F["Python FastAPI Backend"]
-    C --> G["Firebase Cloud Functions"]
-    C --> H["Cloudflare Worker"]
-
-    F --> I["Cody AI Router"]
-    I --> J["Question Classifier"]
-    I --> K["Google Gemini API"]
-
-    F --> L["Judge0 Code Execution"]
-    F --> M["Curriculum and Quiz Services"]
-
-    G --> N["Lesson Reward Processing"]
-    G --> O["Store Purchase Processing"]
-    G --> P["Leaderboard Synchronization"]
-    G --> Q["Code Execution"]
-
-    E --> R["Learner Profiles"]
-    E --> S["Lesson Progress"]
-    E --> T["Projects and Drafts"]
-    E --> U["Public Leaderboard Data"]
+    J --> N["Judge0 Integration"]
+    B --> O["Cloudflare Worker"]
 
 Architecture Components
 
-Component| Responsibility
-Frontend| User interface, navigation, and learner interactions.
-Firebase Authentication| Account authentication and identity.
-Cloud Firestore| Persistent learner and application data.
-FastAPI Backend| Quiz checking, code execution, and Cody-related APIs.
-Firebase Functions| Selected trusted server-side operations.
-Cloudflare Worker| Edge-side session verification and quiz checking.
-Gemini API| AI-assisted educational responses.
-Judge0| Remote execution of supported programming languages.
+Layer| Technology| Responsibility
+Frontend| HTML, CSS, JavaScript| User interface and interactions
+Code Editor| CodeMirror 5| Interactive code editing
+Authentication| Firebase Authentication| User identity and access
+Database| Cloud Firestore| User and application data
+Backend API| FastAPI| Backend endpoints
+AI Integration| Gemini API| AI-assisted learning
+Code Execution| Judge0 integration| Code execution service
+Serverless Functions| Firebase Cloud Functions| Trusted backend operations
+Edge Layer| Cloudflare Workers| Edge API functionality
+PWA| Service Worker| Selected caching and offline-related support
 
-7. Repository Structure
+---
 
-The following tree highlights the principal application components and selected verified paths.
+🛠️ Technology Stack
+
+Frontend
+
+<p>
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white" alt="HTML5">
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/CodeMirror-2E3440?style=flat-square" alt="CodeMirror">
+</p>Backend and Cloud
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase">
+  <img src="https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white" alt="Cloudflare">
+</p>AI and Integrations
+
+<p>
+  <img src="https://img.shields.io/badge/Google%20Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white" alt="Gemini">
+  <img src="https://img.shields.io/badge/Judge0-34495E?style=flat-square" alt="Judge0">
+</p>---
+
+📂 Project Structure
+
+The following is a representative overview of the repository structure.
 
 CodeQuest/
+│
+├── index.html
+├── dashboard.html
+├── login.html
+├── signup.html
+│
+├── languages.html
+├── lecture.html
+├── playground.html
+│
+├── profile.html
+├── progress.html
+├── achievements.html
+├── leaderboard.html
+│
+├── games.html
+├── projects.html
+├── store.html
+│
+├── css/
+│   └── style.css
+│
+├── js/
+│   ├── app.js
+│   ├── auth.js
+│   ├── auth-page.js
+│   ├── curriculum.js
+│   ├── firebase-config.js
+│   ├── lecture.js
+│   └── route-guard.js
+│
+├── json/
+│   ├── python_curriculum.json
+│   ├── js_curriculum.json
+│   └── cpp_curriculum.json
 │
 ├── backend/
 │   ├── main.py
@@ -373,522 +289,321 @@ CodeQuest/
 │   ├── index.js
 │   └── package.json
 │
-├── json/
-│   ├── python_curriculum.json
-│   ├── js_curriculum.json
-│   └── cpp_curriculum.json
-│
-├── js/
-│   ├── app.js
-│   ├── auth.js
-│   ├── auth-page.js
-│   ├── curriculum.js
-│   ├── firebase-config.js
-│   ├── lecture.js
-│   └── route-guard.js
-│
-├── css/
-│   └── Application stylesheets
-│
-├── index.html
-├── dashboard.html
-├── login.html
-├── signup.html
-├── languages.html
-├── lecture.html
-├── playground.html
-├── profile.html
-├── progress.html
-├── achievements.html
-├── leaderboard.html
-├── games.html
-├── projects.html
-├── store.html
-│
 ├── firebase.json
 ├── firestore.rules
 ├── manifest.json
 ├── sw.js
 └── README.md
 
-This is a representative structure, not an exhaustive list of every file in the repository.
+---
 
-8. Backend and API Services
+🔥 Firebase Integration
 
-CodeQuest contains multiple backend components with separate responsibilities.
+Firebase is used for authentication, database operations, and selected trusted backend processes.
 
-8.1. Python FastAPI Backend
+Firestore Data Structure
 
-Main file:
+users/
+  {uid}/
+    lessonProgress/
+      {lessonId}
 
-"backend/main.py"
+    quizResults/
+      {resultId}
 
-The FastAPI application provides the following routes:
+    gameRewards/
+      {gameId}
 
-Method| Endpoint| Description
-"GET"| "/"| Backend information and status.
-"GET"| "/health"| Backend health check.
-"POST"| "/api/quiz/check"| Validate a learner's quiz answer.
-"POST"| "/api/code/run"| Submit source code for execution.
+    drafts/
+      {draftId}
 
-The quiz endpoint loads the relevant curriculum, locates the requested lesson, and evaluates the submitted answer.
+projects/
+  {projectId}
 
-The code-execution endpoint uses the configured Judge0 service.
+leaderboardPublic/
+  {uid}
 
-Protected endpoints use Firebase ID-token verification.
+Cloud Functions
 
-8.2. Cody AI API
+The Firebase Functions code includes the following exported operations:
 
-Main file:
+Function| Responsibility
+"runCode"| Code execution operation
+"purchaseStoreItem"| Store purchase processing
+"awardLessonReward"| Lesson reward processing
+"syncExistingLessonRewards"| Existing lesson reward synchronization
+"claimGameReward"| Game reward claim validation
+"syncLeaderboard"| Public leaderboard synchronization
 
-"backend/cody_chat.py"
+Security considerations:
 
-The Cody router uses the prefix:
+- Sensitive operations should be performed on trusted backend services.
+- Firestore security rules should restrict unauthorized access.
+- API keys and service credentials must not be committed to the repository.
+- Public leaderboard data should contain only the information intended for public display.
 
-"/api/cody"
+---
 
-Method| Endpoint| Description
-"GET"| "/api/cody/health"| Cody service health and configuration status.
-"POST"| "/api/cody/chat"| AI-assisted educational conversation.
+⚙️ Backend API
 
-The chat endpoint validates incoming requests, processes conversation context, and communicates with the configured Gemini model.
+The FastAPI backend contains the following documented application routes.
 
-It requires authenticated access and valid provider configuration.
+Main API
 
-8.3. Cloudflare Worker
+Method| Endpoint| Purpose
+GET| "/"| Backend root
+GET| "/health"| Health check
+POST| "/api/quiz/check"| Quiz checking
+POST| "/api/code/run"| Code execution
 
-Main file:
+Cody API
 
-"cloudflare-worker/worker.js"
+Method| Endpoint| Purpose
+GET| "/api/cody/health"| Cody service health check
+POST| "/api/cody/chat"| AI assistant interaction
 
-The Worker implements the following routes:
+Cloudflare Worker
 
-Method| Endpoint| Description
-"GET"| "/health"| Worker health check.
-"GET"| "/api/session"| Verify the Firebase session.
-"POST"| "/api/quiz/check"| Validate a curriculum quiz answer.
-"OPTIONS"| Supported routes| Handle CORS preflight requests.
+Method| Endpoint| Purpose
+GET| "/health"| Worker health check
+GET| "/api/session"| Session-related endpoint
+POST| "/api/quiz/check"| Quiz checking
+OPTIONS| Supported routes| CORS preflight handling
 
-The Worker verifies Firebase ID tokens and applies its configured origin restrictions.
+---
 
-8.4. Firebase Cloud Functions
+🚀 Getting Started
 
-Main file:
+Prerequisites
 
-"functions/index.js"
+Before setting up the project, make sure you have:
 
-The repository includes these server-side functions:
+- Git.
+- A modern web browser.
+- Python installed for backend development.
+- Node.js for Firebase Functions.
+- A Firebase project.
+- Gemini API credentials if using Cody AI.
+- Judge0 configuration if using the external code execution service.
 
-Function| Trigger| Responsibility
-"runCode"| Callable| Execute supported programming code.
-"purchaseStoreItem"| Callable| Process supported virtual-store purchases.
-"awardLessonReward"| Firestore document trigger| Award valid lesson-completion rewards.
-"syncExistingLessonRewards"| Callable| Synchronize eligible historical lesson rewards.
-"claimGameReward"| Callable| Currently rejects claims pending trusted game-result verification.
-"syncLeaderboard"| Firestore document trigger| Synchronize selected public leaderboard information.
-
-The Cloud Functions are configured for the "europe-west1" region where specified in the implementation.
-
-The functions use Firebase Authentication context for protected callable operations and Firestore transactions for selected operations.
-
-9. Database Design
-
-Cloud Firestore provides persistent storage for supported application functionality.
-
-Main Collections
-
-Collection / Path| Purpose
-"users/{uid}"| Learner profile and account-related data.
-"users/{uid}/lessonProgress/{lessonId}"| Lesson completion records.
-"users/{uid}/quizResults/{resultId}"| Quiz-related records.
-"users/{uid}/gameRewards/{gameId}"| Reward records and duplicate-prevention data.
-"users/{uid}/drafts/{draftId}"| Saved coding drafts.
-"projects/{projectId}"| User-owned programming projects.
-"leaderboardPublic/{uid}"| Selected public leaderboard information.
-
-Data Ownership
-
-Learner-specific information is associated with the authenticated Firebase user ID.
-
-Firestore security rules restrict access to supported records according to ownership and validation conditions.
-
-Lesson Progress
-
-Lesson progress records use fields such as:
-
-{
-  "language": "python",
-  "chapter": 0,
-  "lesson": 0,
-  "completed": true,
-  "updatedAt": "Firestore Timestamp"
-}
-
-Supported programming-language identifiers include:
-
-- "python"
-- "javascript"
-- "cpp"
-
-Reward Records
-
-Lesson reward processing uses separate reward records to prevent duplicate rewards when a completion event is retried or processed more than once.
-
-Public Leaderboard Data
-
-Public leaderboard information is maintained separately from private learner profile data.
-
-The synchronization function publishes selected display information rather than the learner's email address.
-
-10. Security
-
-Security is important because CodeQuest handles learner accounts, saved code, and educational progress.
-
-The repository includes several security-related mechanisms:
-
-- Firebase Authentication.
-- Firebase ID-token verification in backend services.
-- Firestore ownership checks.
-- Field-level validation in Firestore rules.
-- Server-side reward calculations.
-- Transaction-based store purchase processing.
-- Server-side code-execution request validation.
-- Input-length limits for supported API requests.
-- Restricted Cloudflare Worker origins.
-- Separate public leaderboard data.
-- Backend environment configuration for private credentials.
-
-Security Considerations
-
-Firebase client configuration is required by browser applications and should not be treated as a private server credential.
-
-Private service credentials and AI provider keys must never be committed to public source files.
-
-Backend services should use appropriately configured environment variables or platform-managed secrets.
-
-Code execution, authentication, and reward processing should be reviewed before production use at scale.
-
-The presence of security rules does not replace a complete security audit.
-
-11. Local Development
-
-CodeQuest consists of frontend files and separately configured backend services.
-
-Some features require external Firebase, Gemini, Judge0, or Cloudflare configuration.
-
-11.1. Prerequisites
-
-Recommended development tools include:
-
-- Git
-- Python 3
-- Node.js 22
-- npm
-- Firebase CLI
-- A code editor
-- A configured Firebase project
-
-11.2. Clone the Repository
+1. Clone the Repository
 
 git clone https://github.com/mariam2009m44-lab/CodeQuest.git
 
+2. Enter the Project Directory
+
 cd CodeQuest
 
-11.3. Run the Frontend
+3. Configure the Frontend
 
-The frontend is composed primarily of HTML, CSS, and JavaScript modules.
+Configure Firebase using the project's Firebase configuration file.
 
-Start a local HTTP server from the repository root:
+Do not expose private credentials in publicly accessible frontend code.
 
-python -m http.server 8000
+4. Install Backend Dependencies
 
-Open the application:
+cd backend
+pip install -r requirements.txt
 
-http://localhost:8000
+5. Run the Backend
 
-A local HTTP server is recommended because the application loads JavaScript modules and JSON curriculum files.
+uvicorn main:app --reload
 
-Some features require valid Firebase configuration and their corresponding backend services.
+6. Access the Application
 
-11.4. Configure the Python Backend
+Open the frontend through a local development server or the configured hosting environment.
 
-Install the declared dependencies:
-
-python -m venv .venv
-
-Activate the virtual environment, then install the requirements:
-
-pip install -r backend/requirements.txt
-
-Configure the required backend environment and Firebase Admin credentials.
-
-Relevant configuration values include:
-
-Variable| Purpose
-"GEMINI_API_KEY"| Gemini API authentication.
-"GEMINI_MODEL"| Configured Gemini model.
-"JUDGE0_URL"| Judge0 service endpoint.
-"CORS_ORIGINS" | Allowed backend origins.
-"GOOGLE_APPLICATION_CREDENTIALS" | Firebase Admin service-account credential location, when using a service-account file.
-
-Start the FastAPI application from the repository root:
-
-uvicorn main:app --app-dir backend --reload
-
-The local backend is available at:
-
-http://127.0.0.1:8000
-
-FastAPI's interactive API documentation is available at:
-
-http://127.0.0.1:8000/docs
-
-11.5. Configure Firebase Cloud Functions
-
-The Cloud Functions source directory is:
-
-"functions/"
-
-Install dependencies:
-
-cd functions
-npm install
-
-The package includes scripts for local emulation, deployment, and function logs.
-
-The Firebase project configuration specifies Node.js 22 as the Functions runtime.
-
-Before deployment, configure the appropriate Firebase project and required service settings.
-
-11.6. Configure the Cloudflare Worker
-
-The Worker source file is:
-
-"cloudflare-worker/worker.js"
-
-Its Wrangler configuration is:
-
-"cloudflare-worker/wrangler.toml"
-
-Configure the required Cloudflare and Firebase settings before deploying the Worker.
-
-Never place private credentials in publicly accessible frontend files.
+«Some application features require additional Firebase, AI, and code execution configuration before they can operate.»
 
 ---
 
-12. Deployment
+🔐 Environment Configuration
 
-The public frontend is hosted through GitHub Pages.
+Backend credentials should be stored in environment variables or an appropriate secrets manager.
 
-<p align="center">
-  <a href="https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html">
-    <img src="https://img.shields.io/badge/Open-CodeQuest-7955E8?style=for-the-badge" alt="Open CodeQuest">
-  </a>
-</p>Live Application:
-https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html
+Example configuration:
 
-Source Repository:
-https://github.com/mariam2009m44-lab/CodeQuest
+GEMINI_API_KEY=your_api_key
+GEMINI_MODEL=your_configured_model
+JUDGE0_URL=your_judge0_endpoint
+CORS_ORIGINS=your_allowed_origins
+GOOGLE_APPLICATION_CREDENTIALS=path_to_service_account
 
-The frontend, Python backend, Firebase Cloud Functions, and Cloudflare Worker are separate deployment components.
+Important: This is an example configuration. Replace the placeholder values with valid settings. Never publish actual API keys, private keys, or service-account credentials.
 
-Deploying the frontend alone does not automatically deploy the backend services.
+---
 
-Component| Deployment Responsibility
-Frontend| GitHub Pages
-Authentication and Database| Firebase
-Serverless Functions| Firebase Cloud Functions
-Python API| Configured Python hosting environment
-Edge API| Cloudflare Workers
-AI Provider| Configured Gemini API access
+🌍 Deployment
+
+The project uses separate deployment considerations for its frontend and backend components.
+
+Component| Deployment Consideration
+Frontend| GitHub Pages or another static hosting provider
+FastAPI Backend| A compatible Python hosting environment
+Firebase| Firebase project configuration
+Cloud Functions| Firebase Functions deployment
+Cloudflare Worker| Cloudflare Worker deployment
+AI Integration| Configured Gemini API access
 Code Execution| Configured Judge0 service
 
-Each service must be configured and deployed independently.
+The live frontend is available at:
 
-13. Testing and Quality Assurance
+"CodeQuest — Live Platform" (https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html)
 
-Testing should cover individual modules and their integration.
+A working frontend deployment does not automatically mean that every backend integration is deployed or configured.
 
-Authentication
+---
 
-- Account registration.
-- Sign-in and sign-out.
-- Password recovery.
-- Authentication-state handling.
-- Protected-page access.
+🧪 Testing and Quality Assurance
 
-Curriculum
+Testing should cover both individual features and complete learner journeys.
 
-- JSON file loading.
-- Curriculum structure validation.
-- Lesson navigation.
-- Invalid lesson selections.
-- Quiz data validation.
+Area| What to Verify
+Authentication| Registration, login, logout, and protected pages
+Learning| Lesson navigation and progress updates
+Playground| Editor interactions and execution responses
+AI Assistant| API availability and response handling
+XP System| Correct calculations and duplicate prevention
+Profile| Accurate user information and statistics
+Leaderboard| Correct synchronization and public data
+Mobile UI| Navigation, layout, and responsive behavior
+Security| Access control and backend validation
 
-Code Execution
+---
 
-- Supported language selection.
-- Valid source-code submission.
-- Execution output handling.
-- Compilation and runtime error handling.
-- Backend availability.
+📍 Implementation Status
 
-Progress and Rewards
+CodeQuest is under active development. The following distinctions are important when evaluating the project.
 
-- Lesson completion persistence.
-- XP and star calculations.
-- Duplicate reward prevention.
-- Profile synchronization.
-- Leaderboard synchronization.
+Component| Implementation Context
+Frontend Pages| Project interface and page structure
+Learning Curricula| JSON-based curriculum files
+Code Playground| CodeMirror-based editing environment
+Firebase Authentication| Firebase integration
+Firestore| Application data storage
+FastAPI| Backend API implementation
+Cody AI| Gemini-based integration
+Judge0| External code execution integration
+XP and Lesson Rewards| Cloud Function-based reward processing
+Game Rewards| Requires trusted server-side result verification
+PWA| Selected caching through the service worker
 
-AI Functionality
+The implementation status of each component should be verified against its deployment configuration and runtime behavior.
 
-- Authentication requirements.
-- Missing API-key handling.
-- Question classification.
-- Conversation-history validation.
-- Provider error handling.
+---
 
-Interface
+🗺️ Development Roadmap
 
-- Mobile responsiveness.
-- Arabic right-to-left layout.
-- Keyboard accessibility.
-- Navigation behavior.
-- Theme consistency.
+The project roadmap focuses on improving the learning experience, reliability, and educational value.
 
-Testing status: This documentation describes the implementation and recommended verification areas. It does not claim that every integration has passed a complete automated or production test suite.
+- [ ] Expand the programming curricula.
+- [ ] Add more structured lessons and chapters.
+- [ ] Expand HTML and CSS learning paths.
+- [ ] Develop more practical web development projects.
+- [ ] Improve Cody's contextual educational guidance.
+- [ ] Enhance the coding playground.
+- [ ] Improve game-based learning activities.
+- [ ] Strengthen progress synchronization.
+- [ ] Complete trusted game reward verification.
+- [ ] Improve automated testing and error handling.
+- [ ] Continue improving mobile accessibility.
 
-14. Implementation Status
+---
 
-CodeQuest is an evolving software project. The following table distinguishes implemented code from functionality that requires additional configuration or integration.
+🛡️ Privacy and Responsible AI
 
-Component| Current Status
-HTML/CSS/JavaScript frontend| Implemented
-Firebase Authentication integration| Implemented
-Firestore integration| Implemented
-Python, JavaScript, and C++ curriculum files| Present
-Curriculum validation and navigation| Implemented
-CodeMirror programming workspace| Present
-FastAPI backend| Implemented
-Judge0 code-execution integration| Implemented in backend components
-Firebase Cloud Functions| Implemented
-Lesson XP and star reward trigger| Implemented
-Duplicate lesson-reward prevention| Implemented
-Cody AI backend integration| Implemented; requires provider configuration
-Question-classification component| Present; requires backend dependencies
-Cloudflare Worker| Implemented
-Profile and avatar interfaces| Present
-Progress and leaderboard interfaces| Present
-Educational game interfaces| Present
-Server-verified game rewards| Not enabled
-PWA manifest and Service Worker| Present
-Full production-readiness verification| Requires further testing
+CodeQuest is designed with educational use in mind.
 
-The status of a feature should be evaluated through its actual integration and deployment configuration, not only through the presence of a page or source file.
+Important development principles include:
 
-15. Development Roadmap
+- Protecting user authentication credentials.
+- Restricting access to personal learning data.
+- Keeping private API credentials on trusted services.
+- Validating backend operations.
+- Avoiding unnecessary exposure of personal information.
+- Using AI as a learning aid rather than a replacement for understanding.
+- Reviewing AI-generated explanations and code before relying on them.
 
-Future development can focus on improving reliability, educational depth, and integration quality.
+---
 
-Learning Experience
+🤝 Contributing
 
-- Expand and refine programming curricula.
-- Improve practical coding exercises.
-- Add more structured projects.
-- Strengthen lesson assessment and feedback.
-- Improve learning-path progression.
+Suggestions, bug reports, and improvements are welcome.
 
-AI-Assisted Education
-
-- Improve Cody's contextual understanding.
-- Expand educational explanations.
-- Improve debugging guidance.
-- Strengthen the integration between lessons and AI assistance.
-
-Gamification
-
-- Complete secure game-result verification.
-- Improve achievement tracking.
-- Expand reward-related experiences.
-- Strengthen synchronization between progress and profile data.
-
-Platform Engineering
-
-- Improve automated testing.
-- Strengthen backend monitoring.
-- Review API security and rate limiting.
-- Improve error handling and service reliability.
-- Expand accessibility support.
-- Improve deployment and configuration documentation.
-
-16. Privacy and Responsible AI
-
-CodeQuest is designed around educational use.
-
-Its development principles include:
-
-- Keeping private learner information separate from public leaderboard information.
-- Associating personal progress with authenticated accounts.
-- Restricting access to supported user-owned records.
-- Avoiding unnecessary exposure of account information.
-- Keeping private AI provider credentials on the backend.
-- Encouraging AI-assisted understanding rather than uncritical dependence on generated answers.
-
-AI-generated responses should be treated as educational assistance and reviewed for accuracy.
-
-17. Contributing
-
-Contributions and constructive feedback are welcome.
-
-Suggested contribution areas include:
-
-- Educational content improvements.
-- Frontend usability.
-- Backend reliability.
-- Accessibility.
-- Testing.
-- Documentation.
-- Bug reports and feature suggestions.
-
-Contribution Workflow
+If you would like to contribute:
 
 1. Fork the repository.
-2. Create a dedicated feature branch.
-3. Make focused changes.
-4. Test the affected functionality.
-5. Commit your changes with a descriptive message.
-6. Open a pull request explaining the changes.
+2. Create a feature branch.
+3. Make your changes.
+4. Test the relevant functionality.
+5. Submit a pull request describing your improvements.
 
-Please avoid submitting changes that introduce unverified functionality claims or expose private credentials.
+git checkout -b feature/your-feature
+git add .
+git commit -m "Add: your feature description"
+git push origin feature/your-feature
 
-18. Project Information
+Please keep contributions consistent with the existing project architecture and preserve established user-interface behavior unless a redesign is specifically intended.
 
-Field| Information
-Project Name| CodeQuest
-Platform Name| Cody Academy
-Project Category| Educational Technology
-Primary Focus| Programming Education
-Supported Learning Languages| Python, JavaScript, C++
-Interface| Arabic-first
-Frontend Hosting| GitHub Pages
-Repository| GitHub
+---
 
-Project Links
+👩‍💻 Project Information
 
-- Live Application: "Open CodeQuest" (https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html)
-- GitHub Repository: "View Source Code" (https://github.com/mariam2009m44-lab/CodeQuest)
+Detail| Information
+Project| CodeQuest — Cody Academy
+Developer| Mariam Fouad Moustafa Mowina
+Repository| "GitHub" (https://github.com/mariam2009m44-lab/CodeQuest)
+Live Platform| "Open CodeQuest" (https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html)
+Primary Focus| AI-Assisted Programming Education
+Interface Language| Arabic
+Development| Active
 
-19. License
+---
 
-No specific open-source license is declared in this documentation.
+📄 License
 
-Unless a license file is added to the repository, reuse and redistribution should not be assumed to be permitted.
+No specific open-source license is currently declared in this repository.
+
+Until a license is added, the project should not be assumed to grant permission for redistribution, modification, or commercial reuse.
 
 ---
 
 <p align="center">
-  <strong>CodeQuest — Cody Academy</strong>
+  <b>CodeQuest — Cody Academy</b>
+  <br>
+  Learn. Create. Experiment. Grow.
+  <br><br>
+  <i>Making programming more accessible, one step at a time.</i>
+</p>
+---
+
+🌟 Vision
+
+CodeQuest aims to make programming education more accessible by combining technology, creativity, and interactive learning.
+
+The long-term vision is to build an educational ecosystem where learners can:
+
+- Understand programming through structured learning experiences.
+- Develop practical problem-solving skills.
+- Experiment with real coding projects.
+- Receive guided support while learning.
+- Track their progress and celebrate achievements.
+- Build confidence through consistent practice.
+
+💜 Acknowledgements
+
+CodeQuest builds upon technologies and services developed by the open-source and developer communities.
+
+Special recognition goes to the developers, educators, and technology communities whose tools and resources make projects like this possible.
+
+---
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Built%20with-Curiosity%20%26%20Creativity-7955E8?style=for-the-badge" alt="Built with curiosity and creativity">
 </p><p align="center">
-  Learn through exploration. Build through practice. Grow through progress.
+  <strong>CodeQuest — Cody Academy</strong>
+  <br>
+  <i>Learn. Create. Experiment. Grow.</i>
+  <br><br>
+  Made with dedication by Mariam Fouad Moustafa Mowina.
 </p>
