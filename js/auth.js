@@ -1,3 +1,4 @@
+
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -41,7 +42,7 @@ function normalizeName(name) {
 
 function validateEmail(email) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("اكتبي بريدًا إلكترونيًا صحيحًا.");
+    throw new Error("البريد الإلكتروني غير صحيح.");
   }
 }
 
@@ -50,13 +51,13 @@ function validatePassword(password) {
     typeof password !== "string" ||
     password.length < MIN_PASSWORD_LENGTH
   ) {
-    throw new Error("كلمة المرور لازم تكون 6 أحرف على الأقل.");
+    throw new Error("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");
   }
 }
 
 function validateName(name) {
   if (name.length < 2) {
-    throw new Error("اكتبي اسمًا مكوّنًا من حرفين على الأقل.");
+    throw new Error("الاسم يجب أن يتكون من حرفين على الأقل.");
   }
 }
 
@@ -80,34 +81,34 @@ function validateLessonPosition(chapter, lesson) {
 export function authError(error) {
   const messages = {
     "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
-    "auth/missing-email": "اكتبي البريد الإلكتروني.",
-    "auth/missing-password": "اكتبي كلمة المرور.",
+    "auth/missing-email": "أدخل البريد الإلكتروني.",
+    "auth/missing-password": "أدخل كلمة المرور.",
     "auth/invalid-credential":
       "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
     "auth/user-not-found": "لا يوجد حساب بهذه البيانات.",
     "auth/wrong-password": "كلمة المرور غير صحيحة.",
     "auth/email-already-in-use":
       "البريد الإلكتروني مسجل بالفعل.",
-    "auth/weak-password": "اختاري كلمة مرور أقوى.",
+    "auth/weak-password": "اختر كلمة مرور أقوى.",
     "auth/too-many-requests":
-      "محاولات كثيرة. حاولي مرة أخرى لاحقًا.",
+      "محاولات كثيرة. حاول مرة أخرى لاحقًا.",
     "auth/network-request-failed":
-      "تحققي من اتصال الإنترنت.",
+      "تحقق من اتصال الإنترنت.",
     "auth/operation-not-allowed":
       "طريقة تسجيل الحساب غير مفعّلة في Firebase.",
     "auth/user-disabled": "هذا الحساب غير مفعّل.",
     "auth/invalid-action-code":
       "الرابط غير صالح أو انتهت صلاحيته.",
     "auth/expired-action-code":
-      "انتهت صلاحية الرابط. اطلبي رابطًا جديدًا.",
+      "انتهت صلاحية الرابط. اطلب رابطًا جديدًا.",
     "permission-denied":
-      "ليست لديك صلاحية الوصول إلى هذه البيانات.",
+      "لا توجد صلاحية للوصول إلى هذه البيانات.",
     "unavailable": "الخدمة غير متاحة حاليًا."
   };
 
   return messages[error?.code] ||
     error?.message ||
-    "حدث خطأ غير متوقع. حاولي مرة أخرى.";
+    "حدث خطأ غير متوقع. حاول مرة أخرى.";
 }
 
 function normalizeError(error) {
@@ -119,7 +120,7 @@ function normalizeError(error) {
 }
 
 /**
- * إنشاء الملف الشخصي إذا لم يكن موجودًا.
+ * إنشاء ملف الحساب إذا لم يكن موجودًا.
  */
 export async function ensureUserProfile(user) {
   if (!user?.uid) {
@@ -154,24 +155,34 @@ export async function ensureUserProfile(user) {
       uid: user.uid,
       displayName,
       email: normalizeEmail(user.email),
+
+      // أرصدة الحساب.
       xp: 0,
+      stars: 0,
       coins: 0,
       level: 1,
+
+      // إحصائيات التعلم.
       completedLessons: 0,
       completedProjects: 0,
       streak: 0,
+
       languageProgress: {
         python: 0,
         javascript: 0,
         cpp: 0
       },
+
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
 
     await setDoc(profileRef, profile);
 
-    return profile;
+    return {
+      ...profile,
+      uid: user.uid
+    };
   } catch (error) {
     throw normalizeError(error);
   }
@@ -236,6 +247,7 @@ export async function loginUser(email, password) {
  */
 export async function resetPassword(email) {
   const cleanEmail = normalizeEmail(email);
+
   validateEmail(cleanEmail);
 
   try {
@@ -296,7 +308,7 @@ export function requireUser() {
 
     unsubscribe = onAuthStateChanged(
       auth,
-      (user) => {
+      user => {
         if (user) {
           finish(resolve, user);
         } else {
@@ -306,7 +318,7 @@ export function requireUser() {
           );
         }
       },
-      (error) => {
+      error => {
         finish(reject, normalizeError(error));
       }
     );
@@ -318,7 +330,7 @@ export function requireUser() {
 }
 
 /**
- * إرجاع المستخدم الحالي إن كان متاحًا.
+ * إرجاع المستخدم الحالي.
  */
 export function getCurrentUser() {
   return auth.currentUser;
@@ -345,11 +357,10 @@ export async function saveLessonProgress({
     throw new Error("حالة إكمال الدرس غير صحيحة.");
   }
 
-  // انتظري تأكيد حالة الحساب بدل الاعتماد على currentUser وحده.
   const user = await requireUser();
 
   if (!user?.uid) {
-    throw new Error("سجّلي الدخول أولًا لحفظ تقدمك.");
+    throw new Error("سجّل الدخول أولًا لحفظ التقدم.");
   }
 
   try {
@@ -397,11 +408,10 @@ export async function saveLessonProgress({
 export async function getLessonProgress(language) {
   validateLanguage(language);
 
-  // انتظري تأكيد حالة الحساب قبل قراءة سجلات التقدم.
   const user = await requireUser();
 
   if (!user?.uid) {
-    throw new Error("سجّلي الدخول أولًا لعرض تقدمك.");
+    throw new Error("سجّل الدخول أولًا لعرض التقدم.");
   }
 
   try {
@@ -415,12 +425,12 @@ export async function getLessonProgress(language) {
     const snapshot = await getDocs(progressCollection);
 
     return snapshot.docs
-      .map((item) => ({
+      .map(item => ({
         id: item.id,
         ...item.data()
       }))
-      .filter((item) => item.language === language)
-      .filter((item) =>
+      .filter(item => item.language === language)
+      .filter(item =>
         Number.isSafeInteger(item.chapter) &&
         item.chapter >= 0 &&
         Number.isSafeInteger(item.lesson) &&
