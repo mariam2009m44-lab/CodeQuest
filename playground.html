@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -314,7 +315,7 @@
       </h1>
 
       <p class="subtitle">
-        اكتبي الكود، جرّبيه، واحفظي مشروعك علشان ترجعي تكملي من مكان ما وقفتي.
+        اكتب الكود، جرّبه، واحفظ مشروعك للعودة إليه لاحقًا.
       </p>
 
       <div class="project-name" id="projectName">جاري تحميل المشروع...</div>
@@ -342,7 +343,7 @@
       </div>
 
       <div class="editor-footer">
-        <span>اكتبي الكود ثم اضغطي «تشغيل الكود».</span>
+        <span>اكتب الكود ثم اضغط «تشغيل الكود».</span>
         <span class="save-status" id="saveStatus">
           <span class="status-dot"></span>
           <span>جاهز</span>
@@ -359,7 +360,7 @@
         <button class="btn" id="clearOutputBtn" type="button">مسح النتيجة</button>
       </div>
 
-      <pre class="output-body output-placeholder" id="output" aria-live="polite">نتيجة الكود هتظهر هنا بعد التشغيل...</pre>
+      <pre class="output-body output-placeholder" id="output" aria-live="polite">نتيجة الكود ستظهر هنا بعد التشغيل...</pre>
     </section>
 
     <p class="helper">
@@ -401,7 +402,9 @@
     let currentUser = null;
     let currentProjectId = sessionStorage.getItem("currentProjectId") || "";
     let currentProjectName = sessionStorage.getItem("currentProjectName") || "";
+
     let isSaving = false;
+    let hasPendingSave = false;
     let isRunning = false;
     let autoSaveTimer = null;
     let toastTimer = null;
@@ -515,17 +518,17 @@ int main() {
 
     function validateProjectData(data) {
       if (!data.name.trim()) {
-        showToast("اكتبي اسم المشروع الأول.", "error");
+        showToast("اسم المشروع مطلوب.", "error");
         return false;
       }
 
       if (data.name.length > 80) {
-        showToast("اسم المشروع طويل جدًا؛ اختاري اسمًا أقصر.", "error");
+        showToast("اسم المشروع طويل جدًا.", "error");
         return false;
       }
 
       if (!Object.hasOwn(languageModes, data.language)) {
-        showToast("اختاري لغة برمجة صحيحة.", "error");
+        showToast("لغة البرمجة غير صحيحة.", "error");
         return false;
       }
 
@@ -570,7 +573,7 @@ int main() {
             const data = snapshot.data();
 
             if (data.userId !== currentUser.uid) {
-              showToast("المشروع ده مش تابع لحسابك.", "error");
+              showToast("هذا المشروع لا يتبع الحساب الحالي.", "error");
 
               currentProjectId = "";
               sessionStorage.removeItem("currentProjectId");
@@ -630,78 +633,104 @@ int main() {
 
     async function saveProject(showMessage = true) {
       if (!currentUser?.uid) {
-        showToast("سجّلي الدخول الأول علشان تحفظي المشروع.", "error");
+        showToast("يجب تسجيل الدخول أولًا لحفظ المشروع.", "error");
         return false;
       }
 
-      if (isSaving) return false;
-
-      const data = getProjectData();
-
-      if (!validateProjectData(data)) return false;
+      if (isSaving) {
+        hasPendingSave = true;
+        return false;
+      }
 
       isSaving = true;
       saveBtn.disabled = true;
       setSaveStatus("جاري الحفظ...", true);
 
-      try {
-        if (currentProjectId) {
-          const projectRef = doc(db, "projects", currentProjectId);
-          const snapshot = await getDoc(projectRef);
+      let savedSuccessfully = false;
 
-          if (!snapshot.exists()) {
-            currentProjectId = "";
-            sessionStorage.removeItem("currentProjectId");
-          } else if (snapshot.data().userId !== currentUser.uid) {
-            throw new Error("لا يمكنك تعديل مشروع لا يخص حسابك.");
+      try {
+        do {
+          hasPendingSave = false;
+
+          const data = getProjectData();
+
+          if (!validateProjectData(data)) {
+            break;
+          }
+
+          if (currentProjectId) {
+            const projectRef = doc(db, "projects", currentProjectId);
+            const snapshot = await getDoc(projectRef);
+
+            if (!snapshot.exists()) {
+              currentProjectId = "";
+              sessionStorage.removeItem("currentProjectId");
+            } else if (snapshot.data().userId !== currentUser.uid) {
+              throw new Error("لا يمكن تعديل مشروع لا يخص هذا الحساب.");
+            }
+          }
+
+          if (currentProjectId) {
+            await updateDoc(doc(db, "projects", currentProjectId), {
+              name: data.name,
+              language: data.language,
+              code: data.code,
+              date: new Date().toLocaleDateString("ar-EG"),
+              updatedAt: serverTimestamp()
+            });
+          } else {
+            const newProject = await addDoc(collection(db, "projects"), {
+              ...data,
+              date: new Date().toLocaleDateString("ar-EG"),
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+
+            currentProjectId = newProject.id;
+            sessionStorage.setItem("currentProjectId", currentProjectId);
+          }
+
+          currentProjectName = data.name;
+
+          sessionStorage.setItem("currentProjectName", currentProjectName);
+          sessionStorage.setItem("playgroundCode", data.code);
+          sessionStorage.setItem("playgroundLang", data.language);
+
+          updateProjectLabel();
+          savedSuccessfully = true;
+
+        } while (hasPendingSave);
+
+        if (savedSuccessfully) {
+          setSaveStatus("تم حفظ آخر التعديلات");
+
+          if (showMessage) {
+            showToast("تم حفظ المشروع بنجاح ✓");
           }
         }
 
-        if (currentProjectId) {
-          await updateDoc(doc(db, "projects", currentProjectId), {
-            name: data.name,
-            language: data.language,
-            code: data.code,
-            updatedAt: serverTimestamp()
-          });
-        } else {
-          const newProject = await addDoc(collection(db, "projects"), {
-            ...data,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
+        return savedSuccessfully;
 
-          currentProjectId = newProject.id;
-          sessionStorage.setItem("currentProjectId", currentProjectId);
-        }
-
-        currentProjectName = data.name;
-
-        sessionStorage.setItem("currentProjectName", currentProjectName);
-        sessionStorage.setItem("playgroundCode", data.code);
-        sessionStorage.setItem("playgroundLang", data.language);
-
-        updateProjectLabel();
-        setSaveStatus("تم الحفظ");
-
-        if (showMessage) {
-          showToast("اتحفظ المشروع بنجاح ✓");
-        }
-
-        return true;
       } catch (error) {
         console.error("Project save error:", error);
+
         setSaveStatus("لم يتم الحفظ");
 
         showToast(
-          error.message || "حصلت مشكلة أثناء حفظ المشروع.",
+          error.message || "حدثت مشكلة أثناء حفظ المشروع.",
           "error"
         );
 
         return false;
+
       } finally {
         isSaving = false;
         saveBtn.disabled = false;
+
+        if (hasPendingSave) {
+          hasPendingSave = false;
+          saveProject(false);
+        }
       }
     }
 
@@ -709,12 +738,13 @@ int main() {
       sessionStorage.setItem("playgroundCode", editor.getValue());
       sessionStorage.setItem("playgroundLang", getLanguage());
 
-      if (!currentProjectId || !currentUser?.uid) {
+      if (!currentUser?.uid) {
         setSaveStatus("التعديلات محفوظة في المتصفح فقط");
         return;
       }
 
       clearTimeout(autoSaveTimer);
+
       setSaveStatus("تعديلات جديدة...", true);
 
       autoSaveTimer = setTimeout(() => {
@@ -723,6 +753,7 @@ int main() {
     }
 
     function encodeBase64Utf8(value) {
+    
       const bytes = new TextEncoder().encode(value);
       let binary = "";
 
@@ -757,7 +788,7 @@ int main() {
       const language = getLanguage();
 
       if (!code.trim()) {
-        showToast("اكتبي الكود الأول علشان نشغّله.", "error");
+        showToast("اكتب الكود أولًا لتشغيله.", "error");
         return;
       }
 
@@ -767,13 +798,11 @@ int main() {
       setOutput("جاري تجهيز الكود للتشغيل...");
 
       try {
-        // JavaScript runs locally in a restricted Worker.
         if (language === "javascript") {
           await runJavaScript(code);
           return;
         }
 
-        // Python and C++ use the public Judge0 API.
         const response = await fetch(
           "https://ce.judge0.com/submissions?base64_encoded=true&wait=false",
           {
@@ -825,7 +854,7 @@ int main() {
 
         if (!result || !result.status || [1, 2].includes(result.status.id)) {
           setOutput(
-            "التشغيل أخذ وقتًا أطول من المتوقع. جرّبي مرة أخرى.",
+            "استغرق التشغيل وقتًا أطول من المتوقع. حاول مرة أخرى.",
             "error"
           );
           return;
@@ -854,8 +883,9 @@ int main() {
 
       } catch (error) {
         console.error("Code execution error:", error);
+
         setOutput(
-          error.message || "حصل خطأ أثناء تشغيل الكود.",
+          error.message || "حدث خطأ أثناء تشغيل الكود.",
           "error"
         );
       } finally {
@@ -874,6 +904,7 @@ int main() {
 
             const safeString = value => {
               if (typeof value === "string") return value;
+
               try {
                 return JSON.stringify(value);
               } catch {
@@ -882,20 +913,38 @@ int main() {
             };
 
             const console = {
-              log: (...args) => logs.push(args.map(safeString).join(" ")),
-              info: (...args) => logs.push(args.map(safeString).join(" ")),
-              warn: (...args) => logs.push("[تحذير] " + args.map(safeString).join(" ")),
-              error: (...args) => logs.push("[خطأ] " + args.map(safeString).join(" "))
+              log: (...args) =>
+                logs.push(args.map(safeString).join(" ")),
+
+              info: (...args) =>
+                logs.push(args.map(safeString).join(" ")),
+
+              warn: (...args) =>
+                logs.push("[تحذير] " + args.map(safeString).join(" ")),
+
+              error: (...args) =>
+                logs.push("[خطأ] " + args.map(safeString).join(" "))
             };
 
             try {
-              const execute = new Function("console", '"use strict";\\n' + code);
+              const execute = new Function(
+                "console",
+                '"use strict";\\n' + code
+              );
+
               execute(console);
-              self.postMessage({ ok: true, output: logs.join("\\\\n") });
+
+              self.postMessage({
+                ok: true,
+                output: logs.join("\\\\n")
+              });
+
             } catch (error) {
               self.postMessage({
                 ok: false,
-                output: error && error.stack ? error.stack : String(error)
+                output: error && error.stack
+                  ? error.stack
+                  : String(error)
               });
             }
           };
@@ -911,7 +960,12 @@ int main() {
         const timeout = setTimeout(() => {
           worker.terminate();
           URL.revokeObjectURL(workerUrl);
-          setOutput("انتهى وقت التشغيل. راجعي الكود وحاولي مرة أخرى.", "error");
+
+          setOutput(
+            "انتهى وقت التشغيل. راجع الكود وحاول مرة أخرى.",
+            "error"
+          );
+
           resolve();
         }, 5000);
 
@@ -937,7 +991,12 @@ int main() {
           clearTimeout(timeout);
           worker.terminate();
           URL.revokeObjectURL(workerUrl);
-          setOutput("حدث خطأ أثناء تشغيل JavaScript.", "error");
+
+          setOutput(
+            "حدث خطأ أثناء تشغيل JavaScript.",
+            "error"
+          );
+
           resolve();
         };
 
@@ -957,20 +1016,30 @@ int main() {
       }
 
       sessionStorage.setItem("playgroundLang", language);
-      setOutput("اختاري «تشغيل الكود» لعرض النتيجة.", "placeholder");
+
+      setOutput(
+        "اختر «تشغيل الكود» لعرض النتيجة.",
+        "placeholder"
+      );
+
       scheduleAutoSave();
       editor.refresh();
     }
 
     function resetExample() {
       const confirmed = window.confirm(
-        "هل تريدين استبدال الكود الحالي بالمثال الافتراضي؟"
+        "هل تريد استبدال الكود الحالي بالمثال الافتراضي؟"
       );
 
       if (!confirmed) return;
 
       editor.setValue(examples[getLanguage()]);
-      setOutput("تمت استعادة المثال. شغّلي الكود لمشاهدة النتيجة.", "placeholder");
+
+      setOutput(
+        "تمت استعادة المثال. شغّل الكود لمشاهدة النتيجة.",
+        "placeholder"
+      );
+
       scheduleAutoSave();
       showToast("تمت استعادة المثال.");
     }
@@ -986,12 +1055,25 @@ int main() {
     });
 
     resetBtn.addEventListener("click", resetExample);
-    $("clearOutputBtn").addEventListener("click", clearOutput);
-    languageSelect.addEventListener("change", changeLanguage);
+
+    $("clearOutputBtn").addEventListener(
+      "click",
+      clearOutput
+    );
+
+    languageSelect.addEventListener(
+      "change",
+      changeLanguage
+    );
 
     editor.on("change", () => {
+      sessionStorage.setItem(
+        "playgroundCode",
+        editor.getValue()
+      );
+
       if (!currentUser) {
-        sessionStorage.setItem("playgroundCode", editor.getValue());
+        setSaveStatus("التعديلات محفوظة في المتصفح فقط");
         return;
       }
 
