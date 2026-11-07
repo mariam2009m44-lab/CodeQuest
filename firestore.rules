@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -51,6 +52,7 @@ service cloud.firestore {
           'displayName',
           'email',
           'xp',
+          'stars',
           'coins',
           'level',
           'completedLessons',
@@ -65,6 +67,7 @@ service cloud.firestore {
           'displayName',
           'email',
           'xp',
+          'stars',
           'coins',
           'level',
           'completedLessons',
@@ -80,6 +83,7 @@ service cloud.firestore {
         && data.displayName.size() <= 50
         && data.email is string
         && data.xp == 0
+        && data.stars == 0
         && data.coins == 0
         && data.level == 1
         && data.completedLessons == 0
@@ -88,8 +92,16 @@ service cloud.firestore {
         && data.createdAt is timestamp
         && data.updatedAt is timestamp
         && progress is map
-        && progress.keys().hasAll(['python', 'javascript', 'cpp'])
-        && progress.keys().hasOnly(['python', 'javascript', 'cpp'])
+        && progress.keys().hasAll([
+          'python',
+          'javascript',
+          'cpp'
+        ])
+        && progress.keys().hasOnly([
+          'python',
+          'javascript',
+          'cpp'
+        ])
         && progress.python is number
         && progress.python >= 0
         && progress.python <= 100
@@ -147,11 +159,20 @@ service cloud.firestore {
       match /lessonProgress/{lessonId} {
         function validLessonProgress() {
           let data = request.resource.data;
+
           return data.keys().hasAll([
-              'language', 'chapter', 'lesson', 'completed', 'updatedAt'
+              'language',
+              'chapter',
+              'lesson',
+              'completed',
+              'updatedAt'
             ])
             && data.keys().hasOnly([
-              'language', 'chapter', 'lesson', 'completed', 'updatedAt'
+              'language',
+              'chapter',
+              'lesson',
+              'completed',
+              'updatedAt'
             ])
             && validLanguage(data.language)
             && data.chapter is int
@@ -163,7 +184,8 @@ service cloud.firestore {
         }
 
         allow get, list: if owns(uid);
-        allow create, update: if owns(uid) && validLessonProgress();
+        allow create, update: if owns(uid)
+          && validLessonProgress();
         allow delete: if owns(uid);
       }
 
@@ -179,11 +201,17 @@ service cloud.firestore {
 
       match /drafts/{draftId} {
         allow read, delete: if owns(uid);
+
         allow create, update: if owns(uid)
           && request.resource.data.keys().hasOnly([
-            'code', 'language', 'updatedAt'
+            'code',
+            'language',
+            'updatedAt'
           ])
-          && request.resource.data.keys().hasAll(['code', 'updatedAt'])
+          && request.resource.data.keys().hasAll([
+            'code',
+            'updatedAt'
+          ])
           && request.resource.data.code is string
           && request.resource.data.code.size() <= 50000
           && request.resource.data.updatedAt is timestamp
@@ -211,8 +239,13 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid
         && request.resource.data.userId == resource.data.userId
         && request.resource.data.diff(resource.data)
-          .affectedKeys().hasOnly([
-            'name', 'language', 'code', 'date', 'updatedAt'
+          .affectedKeys()
+          .hasOnly([
+            'name',
+            'language',
+            'code',
+            'date',
+            'updatedAt'
           ])
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 1
