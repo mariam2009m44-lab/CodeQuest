@@ -1,5 +1,5 @@
 
-import { auth, db } from "./firebase-config.js";
+import { db } from "./firebase-config.js";
 
 import {
   logoutUser,
@@ -22,7 +22,7 @@ import {
 /*
  * Cody Academy — Application Controller
  * Authentication, Firestore synchronization,
- * user progress and selected avatar rendering.
+ * user progress, XP, coins, stars and avatars.
  */
 
 const PUBLIC_PAGES = new Set([
@@ -306,14 +306,12 @@ function isValidCompletedLesson(item, totals) {
 }
 
 /*
- * Corrected progress calculation:
- *
- * Legacy Python:
+ * Python legacy curriculum:
  * 12 chapters × 4 lessons = 48 lessons.
- * lesson === 104 means the entire chapter exam was passed.
+ * lesson === 104 means the chapter exam was passed.
  *
  * JavaScript and C++:
- * Continue using their JSON curriculum lesson counts.
+ * Use their JSON curriculum lesson counts.
  */
 
 function calculateLessonStats(documents, totals) {
@@ -433,6 +431,7 @@ export const App = {
   user: "متعلم",
 
   xp: 0,
+  stars: 0,
   coins: 0,
 
   currentUid: null,
@@ -519,6 +518,7 @@ export const App = {
             "متعلم";
 
           this.xp = safeNumber(data.xp);
+          this.stars = safeNumber(data.stars);
           this.coins = safeNumber(data.coins);
 
           this.updateUI(data);
@@ -600,7 +600,11 @@ export const App = {
 
     setText(".js-user-name", this.user);
     setText(".js-user-xp", totalXP);
+
+    // Separate balances: stars are not coins.
+    setText(".js-user-stars", this.stars);
     setText(".js-user-coins", this.coins);
+
     setText(".js-user-level", level);
 
     setText("#userLevel", level);
@@ -700,6 +704,10 @@ export const App = {
 
   bindProtectedLinks() {
     document.querySelectorAll("[data-protected]").forEach(link => {
+      if (!PUBLIC_PAGES.has(currentPage())) {
+        return;
+      }
+
       if (link.dataset.protectionBound === "true") {
         return;
       }
@@ -707,10 +715,6 @@ export const App = {
       link.dataset.protectionBound = "true";
 
       link.addEventListener("click", async event => {
-        if (!PUBLIC_PAGES.has(currentPage())) {
-          return;
-        }
-
         event.preventDefault();
 
         const destination = link.getAttribute("href");
@@ -845,6 +849,10 @@ export const App = {
     this.unsubscribeLessonProgress = null;
 
     this.currentUid = null;
+
+    this.xp = 0;
+    this.stars = 0;
+    this.coins = 0;
 
     this.lessonStats = null;
     this.curriculumTotals = null;
