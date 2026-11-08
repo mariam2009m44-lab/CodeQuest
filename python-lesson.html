@@ -3276,12 +3276,11 @@
       true
     );
 
-    awardLessonReward(
-      currentChapterId,
-      currentLessonIndex
-    );
-
-    await saveProgressToFirebase();
+    // الامتحان له سجل مستقل حتى لا يُحسب كدرس عادي.
+    await saveProgressToFirebase({
+      chapter: Number(currentChapterId) - 1,
+      lesson: 104
+    });
   }
 }
 
@@ -3318,7 +3317,7 @@ function returnToLesson() {
 // 29) حفظ التقدم
 // ==========================================
 
-async function saveProgressToFirebase() {
+async function saveProgressToFirebase(position = {}) {
   try {
     const authModule = await import("./js/auth.js");
 
@@ -3326,10 +3325,18 @@ async function saveProgressToFirebase() {
       throw new Error("دالة حفظ تقدم الدروس غير متاحة في js/auth.js");
     }
 
+    const chapter = Number.isInteger(position.chapter)
+      ? position.chapter
+      : Number(currentChapterId) - 1;
+
+    const lesson = Number.isInteger(position.lesson)
+      ? position.lesson
+      : Number(currentLessonIndex);
+
     await authModule.saveLessonProgress({
       language: "python",
-      chapter: Number(currentChapterId),
-      lesson: Number(currentLessonIndex),
+      chapter,
+      lesson,
       completed: true
     });
 
