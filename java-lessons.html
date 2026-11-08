@@ -1557,6 +1557,29 @@
       }
     }
 
+    async function refreshAccountStats(previousXP, previousStars) {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        if (attempt > 0) {
+          await new Promise(resolve => setTimeout(resolve, 700));
+        }
+
+        try {
+          const profile = await getUserProfile();
+          accountXP = Number.isSafeInteger(profile.xp) ? profile.xp : 0;
+          accountStars = Number.isSafeInteger(profile.stars) ? profile.stars : 0;
+          updateStats();
+
+          if (accountXP > previousXP || accountStars > previousStars) {
+            return true;
+          }
+        } catch (error) {
+          console.warn("تعذر تحديث أرصدة Java:", error);
+        }
+      }
+
+      return false;
+    }
+
     async function completeCurrentLesson() {
       const lesson = findLesson(currentLessonId);
       if (!lesson) return;
@@ -1579,6 +1602,8 @@
       const lessonIndex = Number(position[2]) - 1;
       const progress = readProgress();
       const alreadyCompleted = progress[lesson.id]?.completed === true;
+      const previousXP = getXP();
+      const previousStars = accountStars;
 
       try {
         // احفظ التقدم في حساب المستخدم أولًا؛ لا تمنح XP إذا فشل الحفظ.
@@ -1612,8 +1637,12 @@
       updateStats();
       updateNavigationButtons();
 
+      const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
+
       showNotice(
-        "تم حفظ إكمال الدرس والتحقق من الحل على الخادم. يجري تحديث نقاط الخبرة والنجوم في حسابك.",
+        rewardsUpdated
+          ? "تم حفظ الدرس وإضافة مكافآته إلى حسابك بنجاح!"
+          : "تم حفظ الدرس. قد يستغرق تحديث نقاط الخبرة والنجوم بضع لحظات؛ أعد فتح الصفحة إذا لم تظهر بعد.",
         "success"
       );
     }
