@@ -1181,7 +1181,7 @@ function wait(milliseconds) {
 }
 
 async function runCpp(code) {
-  const result = await runCodeOnServer("cpp", code);
+  const result = await runCodeOnServer("cpp", code, byId("stdinInput")?.value || "");
 
   const diagnostics = [
     result.compileOutput,
