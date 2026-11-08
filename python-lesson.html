@@ -974,8 +974,6 @@
             <span id="xpDisplay">0</span>
           </div>
 
-        </button>
-
       </div>
 
       <div>
@@ -1168,13 +1166,23 @@
     }
   }
 
+  const storedCompletedLessons = readStorage(
+    "cody_python_completed_lessons",
+    []
+  );
+
+  const storedCompletedChapters = readStorage(
+    "cody_python_progress",
+    []
+  );
+
   const completedLessonKeys = new Set(
-    readStorage("cody_python_completed_lessons", [])
+    (Array.isArray(storedCompletedLessons) ? storedCompletedLessons : [])
       .map(String)
   );
 
   const completedChapters = new Set(
-    readStorage("cody_python_progress", [])
+    (Array.isArray(storedCompletedChapters) ? storedCompletedChapters : [])
       .map(Number)
       .filter(Number.isInteger)
   );
@@ -1211,6 +1219,21 @@
         '"': "&quot;",
         "'": "&#39;"
       })[character]
+    );
+  }
+
+  function renderLessonMarkup(value) {
+    const safe = escapeHTML(value);
+
+    return safe.replace(
+      /&lt;(\/?)(code|b|strong|br|em|i|ul|ol|li)(\s*\/?)&gt;/gi,
+      (match, closing, tag, selfClosing) => {
+        const name = tag.toLowerCase();
+        if (name === "br") return "<br>";
+        return closing
+          ? "</" + name + ">"
+          : "<" + name + (selfClosing ? " /" : "") + ">";
+      }
     );
   }
 
@@ -1646,7 +1669,7 @@
     if (typeof step === "string") {
       addBubble(
         "cody",
-        escapeHTML(step)
+        renderLessonMarkup(step)
       );
 
       showBottomAction(true);
@@ -1666,7 +1689,7 @@
     ) {
       addBubble(
         "cody",
-        escapeHTML(text || "حان وقت التطبيق العملي!")
+        renderLessonMarkup(text || "حان وقت التطبيق العملي!")
       );
 
       showEditor(step);
@@ -1700,7 +1723,7 @@
 
     addBubble(
       "cody",
-      escapeHTML(question || "اختار الإجابة الصحيحة:")
+      renderLessonMarkup(question || "اختار الإجابة الصحيحة:")
     );
 
     const choices = Array.isArray(step.options)
@@ -1737,6 +1760,11 @@
           step.correctAnswer ??
           step.correct;
 
+        const hasCorrectAnswer =
+          correctAnswer !== undefined &&
+          correctAnswer !== null &&
+          correctAnswer !== "";
+
         const selectedValue =
           typeof choice === "object"
             ? (
@@ -1747,9 +1775,18 @@
               )
             : choice;
 
-        const correct =
+        const numericAnswer =
+          typeof correctAnswer === "number" ||
+          (typeof correctAnswer === "string" && correctAnswer.trim() !== "");
+
+        const correct = hasCorrectAnswer && (
           String(selectedValue) === String(correctAnswer) ||
-          Number(correctAnswer) === index;
+          (
+            numericAnswer &&
+            Number.isInteger(Number(correctAnswer)) &&
+            Number(correctAnswer) === index
+          )
+        );
 
         stepCompleted = true;
 
@@ -1764,24 +1801,36 @@
           escapeHTML(choiceText)
         );
 
-        if (correct) {
+        const reply = Array.isArray(step.replies)
+          ? step.replies[index]
+          : "";
+
+        if (!hasCorrectAnswer) {
           addBubble(
             "cody",
-            "ممتاز! إجابتك صحيحة 👏"
+            renderLessonMarkup(
+              reply || "تمام! نكمل مع بعض الخطوة التالية."
+            )
           );
-
-          showBottomAction(true);
+        } else if (correct) {
+          addBubble(
+            "cody",
+            renderLessonMarkup(
+              reply || "ممتاز! إجابتك صحيحة 👏"
+            )
+          );
         } else {
           addBubble(
             "cody",
-            escapeHTML(
+            renderLessonMarkup(
+              reply ||
               step.explanation ||
               "مش مشكلة، راجع الشرح وحاول تفهم الفكرة."
             )
           );
-
-          showBottomAction(true);
         }
+
+        showBottomAction(true);
       });
 
       wrapper.appendChild(button);
@@ -2540,17 +2589,18 @@
     }
 
     if (!currentExamQuestions.length) {
-      const questionText = $("examQuestionText");
-      const optionsContainer = $("examOptionsContainer");
-      const feedback = $("examFeedback");
+      const questionBox = $("examQuestionBox");
+      const resultBox = $("examResultBox");
 
-      if (questionText) {
-        questionText.textContent = "لا توجد أسئلة امتحان صالحة في بيانات هذا الدرس.";
-      }
-      if (optionsContainer) optionsContainer.replaceChildren();
-      if (feedback) feedback.textContent = "";
+      if (questionBox) questionBox.style.display = "none";
+      if (resultBox) resultBox.classList.add("show");
 
-      showToast("راجع بيانات أسئلة الامتحان في هذا الدرس.");
+      $("resultTitle").textContent = "الامتحان غير متاح";
+      $("resultMsg").textContent =
+        "لا توجد أسئلة صالحة لهذا الامتحان حاليًا. يمكنك العودة إلى الدرس ومتابعة التعلم.";
+
+      $("finalScore").textContent = "0/0";
+      showToast("لا توجد أسئلة امتحان صالحة في بيانات هذا الدرس.");
       return;
     }
 
@@ -2675,12 +2725,23 @@
           )
         : selectedOption;
 
-    const isCorrect =
+    const hasCorrectAnswer =
+      correctAnswer !== undefined &&
+      correctAnswer !== null &&
+      correctAnswer !== "";
+
+    const isIndexAnswer =
+      typeof correctAnswer === "number" ||
+      (typeof correctAnswer === "string" && correctAnswer.trim() !== "");
+
+    const isCorrect = hasCorrectAnswer && (
       String(selectedValue) === String(correctAnswer) ||
       (
+        isIndexAnswer &&
         Number.isInteger(Number(correctAnswer)) &&
         Number(correctAnswer) === selectedIndex
-      );
+      )
+    );
 
     if (isCorrect) {
       examScore++;
@@ -2933,7 +2994,7 @@ function bindPageEvents() {
     (event) => {
       if (event.key === "Escape") {
         closeSidebar();
-        closeEditor({ discardChallenge: true });
+        closeEditor();
       }
     }
   );
