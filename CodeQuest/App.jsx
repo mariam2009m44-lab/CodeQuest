@@ -924,6 +924,7 @@ function ProfilePage() {
   );
 
   const xp = safeNumber(profile?.xp);
+  const stars = safeNumber(profile?.stars);
   const coins = safeNumber(profile?.coins);
 
   return (
@@ -967,6 +968,11 @@ function ProfilePage() {
             <div className="profile-detail-item">
               <span>نقاط الخبرة XP</span>
               <strong>{xp}</strong>
+            </div>
+
+            <div className="profile-detail-item">
+              <span>النجوم</span>
+              <strong>{stars}</strong>
             </div>
 
             <div className="profile-detail-item">
