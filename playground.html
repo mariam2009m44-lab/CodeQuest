@@ -180,6 +180,41 @@
 
     .editor-area { background: #0b1020; }
 
+    .stdin-panel {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      background: rgba(9,13,25,.72);
+    }
+
+    .stdin-panel label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .stdin-panel textarea {
+      display: block;
+      width: 100%;
+      min-height: 76px;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      outline: none;
+      resize: vertical;
+      background: #090e1b;
+      color: var(--text);
+      direction: ltr;
+      text-align: left;
+      font: 14px/1.7 Consolas, Monaco, monospace;
+    }
+
+    .stdin-panel textarea:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(34,211,238,.12);
+    }
+
     .CodeMirror {
       height: 360px;
       padding-top: 12px;
@@ -301,6 +336,7 @@
     }
   </style>
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/code-editor.css">
 </head>
 
 <body>
@@ -344,6 +380,11 @@
         <textarea id="editor" aria-label="محرر الكود"></textarea>
       </div>
 
+      <div class="stdin-panel">
+        <label for="stdin">مدخلات البرنامج (اختياري) — اكتب كل قيمة في سطر</label>
+        <textarea id="stdin" rows="3" spellcheck="false" placeholder="مثال:&#10;Mariam&#10;17"></textarea>
+      </div>
+
       <div class="editor-footer">
         <span>اكتب الكود ثم اضغط «تشغيل الكود».</span>
         <span class="save-status" id="saveStatus">
@@ -379,6 +420,7 @@
 
   <script type="module">
     import { requireUser } from "./js/auth.js";
+    import { runCodeOnServer } from "./js/code-runner.js";
     import { db } from "./js/firebase-config.js";
 
     import {
@@ -451,18 +493,16 @@ int main() {
       cpp: "text/x-c++src"
     };
 
-    const judge0LanguageIds = {
-      javascript: 63,
-      python: 71,
-      cpp: 54
-    };
-
     const editor = CodeMirror.fromTextArea($("editor"), {
       mode: languageModes.javascript,
       theme: "material-darker",
       lineNumbers: true,
-      lineWrapping: true,
+      lineWrapping: false,
+      viewportMargin: 20,
       indentUnit: 4,
+      extraKeys: {
+        Tab: cm => cm.replaceSelection("    ")
+      },
       tabSize: 4,
       indentWithTabs: false,
       autoCloseBrackets: true,
@@ -779,15 +819,12 @@ int main() {
       return new TextDecoder().decode(bytes);
     }
 
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     async function runCode() {
       if (isRunning) return;
 
       const code = editor.getValue();
       const language = getLanguage();
+      const stdin = $("stdin").value || "";
 
       if (!code.trim()) {
         showToast("اكتب الكود أولًا لتشغيله.", "error");
@@ -797,97 +834,31 @@ int main() {
       isRunning = true;
       runBtn.disabled = true;
       runBtn.textContent = "جاري التشغيل...";
-      setOutput("جاري تجهيز الكود للتشغيل...");
+      setOutput("جارٍ إرسال الكود إلى بيئة التشغيل الآمنة...");
 
       try {
-        if (language === "javascript") {
-          await runJavaScript(code);
-          return;
-        }
+        const result = await runCodeOnServer(language, code, stdin);
+        const diagnostics = [
+          result.compileOutput,
+          result.stderr,
+          result.message,
+          result.status && !result.ok ? result.status : ""
+        ].filter(Boolean).join("\n").trim();
 
-        const response = await fetch(
-          "https://ce.judge0.com/submissions?base64_encoded=true&wait=false",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              source_code: encodeBase64Utf8(code),
-              language_id: judge0LanguageIds[language],
-              stdin: encodeBase64Utf8("")
-            })
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("خدمة تشغيل الكود غير متاحة حاليًا.");
-        }
-
-        const submission = await response.json();
-
-        if (!submission.token) {
-          throw new Error("لم يتم استلام رقم تشغيل من الخدمة.");
-        }
-
-        let result = null;
-
-        for (let attempt = 0; attempt < 20; attempt++) {
-          await sleep(1000);
-
-          const resultResponse = await fetch(
-            `https://ce.judge0.com/submissions/${encodeURIComponent(submission.token)}?base64_encoded=true&fields=stdout,stderr,compile_output,message,status`,
-            { method: "GET" }
+        if (!result.ok) {
+          throw new Error(
+            diagnostics || "لم ينجح تشغيل البرنامج. راجع الكود وحاول مرة أخرى."
           );
-
-          if (!resultResponse.ok) {
-            throw new Error("تعذّر الحصول على نتيجة التشغيل.");
-          }
-
-          result = await resultResponse.json();
-
-          if (
-            result.status &&
-            ![1, 2].includes(result.status.id)
-          ) {
-            break;
-          }
         }
-
-        if (!result || !result.status || [1, 2].includes(result.status.id)) {
-          setOutput(
-            "استغرق التشغيل وقتًا أطول من المتوقع. حاول مرة أخرى.",
-            "error"
-          );
-          return;
-        }
-
-        const outputText = [
-          result.stdout ? decodeBase64Utf8(result.stdout) : "",
-          result.stderr ? decodeBase64Utf8(result.stderr) : "",
-          result.compile_output
-            ? decodeBase64Utf8(result.compile_output)
-            : "",
-          result.message || ""
-        ]
-          .filter(Boolean)
-          .join("\n");
-
-        const successful = result.status.id === 3;
 
         setOutput(
-          outputText ||
-            (successful
-              ? "تم التشغيل بنجاح، لكن الكود لم يُنتج أي مخرجات."
-              : `انتهى التشغيل: ${result.status.description || "حدث خطأ"}`),
-          successful ? "normal" : "error"
+          result.stdout || "تم تشغيل البرنامج بنجاح، لكن لم تظهر مخرجات.",
+          "normal"
         );
-
       } catch (error) {
         console.error("Code execution error:", error);
-
         setOutput(
-          error.message || "حدث خطأ أثناء تشغيل الكود.",
+          error?.message || "حدث خطأ أثناء تشغيل الكود.",
           "error"
         );
       } finally {
@@ -895,115 +866,6 @@ int main() {
         runBtn.disabled = false;
         runBtn.textContent = "تشغيل الكود";
       }
-    }
-
-    function runJavaScript(code) {
-      return new Promise(resolve => {
-        const workerCode = `
-          self.onmessage = function(event) {
-            const code = event.data;
-            const logs = [];
-
-            const safeString = value => {
-              if (typeof value === "string") return value;
-
-              try {
-                return JSON.stringify(value);
-              } catch {
-                return String(value);
-              }
-            };
-
-            const console = {
-              log: (...args) =>
-                logs.push(args.map(safeString).join(" ")),
-
-              info: (...args) =>
-                logs.push(args.map(safeString).join(" ")),
-
-              warn: (...args) =>
-                logs.push("[تحذير] " + args.map(safeString).join(" ")),
-
-              error: (...args) =>
-                logs.push("[خطأ] " + args.map(safeString).join(" "))
-            };
-
-            try {
-              const execute = new Function(
-                "console",
-                '"use strict";\\n' + code
-              );
-
-              execute(console);
-
-              self.postMessage({
-                ok: true,
-                output: logs.join("\\\\n")
-              });
-
-            } catch (error) {
-              self.postMessage({
-                ok: false,
-                output: error && error.stack
-                  ? error.stack
-                  : String(error)
-              });
-            }
-          };
-        `;
-
-        const blob = new Blob([workerCode], {
-          type: "application/javascript"
-        });
-
-        const workerUrl = URL.createObjectURL(blob);
-        const worker = new Worker(workerUrl);
-
-        const timeout = setTimeout(() => {
-          worker.terminate();
-          URL.revokeObjectURL(workerUrl);
-
-          setOutput(
-            "انتهى وقت التشغيل. راجع الكود وحاول مرة أخرى.",
-            "error"
-          );
-
-          resolve();
-        }, 5000);
-
-        worker.onmessage = event => {
-          clearTimeout(timeout);
-          worker.terminate();
-          URL.revokeObjectURL(workerUrl);
-
-          const result = event.data;
-
-          setOutput(
-            result.output ||
-              (result.ok
-                ? "تم التشغيل بنجاح، لكن الكود لم يُنتج أي مخرجات."
-                : "حدث خطأ أثناء تشغيل الكود."),
-            result.ok ? "normal" : "error"
-          );
-
-          resolve();
-        };
-
-        worker.onerror = () => {
-          clearTimeout(timeout);
-          worker.terminate();
-          URL.revokeObjectURL(workerUrl);
-
-          setOutput(
-            "حدث خطأ أثناء تشغيل JavaScript.",
-            "error"
-          );
-
-          resolve();
-        };
-
-        worker.postMessage(code);
-      });
     }
 
     function changeLanguage() {
