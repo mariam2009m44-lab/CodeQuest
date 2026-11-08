@@ -18,7 +18,7 @@ const ALLOWED_LANGUAGES = new Set([
   "java"
 ]);
 
-export async function runCodeOnServer(language, code) {
+export async function runCodeOnServer(language, code, stdin = "") {
   if (!ALLOWED_LANGUAGES.has(language)) {
     throw new Error("لغة البرمجة غير مدعومة.");
   }
@@ -31,10 +31,15 @@ export async function runCodeOnServer(language, code) {
     throw new Error("حجم الكود أكبر من الحد المسموح.");
   }
 
+  if (typeof stdin !== "string" || stdin.length > 10000) {
+    throw new Error("بيانات الإدخال طويلة جدًا أو غير صالحة.");
+  }
+
   try {
     const response = await runCodeCallable({
       language,
-      code
+      code,
+      stdin
     });
 
     if (!response || !response.data) {
