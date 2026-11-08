@@ -285,6 +285,30 @@
         <div id="weeklyActivity" class="weekly-empty">
           جارٍ تحميل النشاط...
         </div>
+
+        <!-- Java -->
+        <div class="language-card">
+          <div class="language-heading">
+            <h3 class="language-title">
+              <img
+                class="language-logo"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg"
+                alt="Java Logo"
+                loading="eager"
+                onerror="this.style.display='none'"
+              >
+              <span class="language-name">Java</span>
+            </h3>
+            <span class="language-percent" id="javaPercent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="javaFill"></div>
+          </div>
+          <div class="language-details">
+            <span id="javaLessons">جارٍ التحميل...</span>
+            <span>8 فصول متاحة · 16 درسًا</span>
+          </div>
+        </div>
       </article>
 
       <article class="card" style="grid-column: 1 / -1;">
@@ -434,10 +458,16 @@
       cpp: "./json/cpp_curriculum.json"
     };
 
+    const JAVA_CHAPTERS = Array.from(
+      { length: 8 },
+      () => ({ lessons: [{}, {}] })
+    );
+
     const LANGUAGE_NAMES = {
       python: "Python",
       javascript: "JavaScript",
-      cpp: "C++"
+      cpp: "C++",
+      java: "Java"
     };
 
     // في صفحة Python، الرقم 104 مخصص لتسجيل اجتياز امتحان الفصل.
@@ -797,7 +827,8 @@
         cppChapters,
         pythonRawRecords,
         javascriptRawRecords,
-        cppRawRecords
+        cppRawRecords,
+        javaRawRecords
       ] = await Promise.all([
         readCurriculum(CURRICULUM_FILES.python),
         readCurriculum(CURRICULUM_FILES.javascript),
@@ -805,7 +836,8 @@
 
         getLessonProgress("python"),
         getLessonProgress("javascript"),
-        getLessonProgress("cpp")
+        getLessonProgress("cpp"),
+        getLessonProgress("java")
       ]);
 
       const pythonRecords = validateLanguageRecords(
@@ -821,6 +853,11 @@
       const cppRecords = validateLanguageRecords(
         cppRawRecords,
         "cpp"
+      );
+
+      const javaRecords = validateLanguageRecords(
+        javaRawRecords,
+        "java"
       );
 
       // حساب الدروس العادية فقط.
@@ -840,6 +877,11 @@
         cppRecords
       );
 
+      const javaResult = calculateCurriculumProgress(
+        JAVA_CHAPTERS,
+        javaRecords
+      );
+
       setLanguageProgress(
         "python",
         pythonResult
@@ -855,6 +897,11 @@
         cppResult
       );
 
+      setLanguageProgress(
+        "java",
+        javaResult
+      );
+
       // عرض امتحانات الفصول المجتازة بشكل منفصل.
       const pythonExamResult =
         renderPythonExamProgress(pythonRecords);
@@ -862,12 +909,14 @@
       const totalCompleted =
         pythonResult.completed +
         javascriptResult.completed +
-        cppResult.completed;
+        cppResult.completed +
+        javaResult.completed;
 
       const totalLessons =
         pythonResult.total +
         javascriptResult.total +
-        cppResult.total;
+        cppResult.total +
+        javaResult.total;
 
       const overallPercent = totalLessons > 0
         ? (totalCompleted / totalLessons) * 100
@@ -885,7 +934,8 @@
       renderWeeklyActivity([
         ...pythonRecords,
         ...javascriptRecords,
-        ...cppRecords
+        ...cppRecords,
+        ...javaRecords
       ]);
 
       let xpLoaded = false;
@@ -926,6 +976,7 @@
         python: pythonResult,
         javascript: javascriptResult,
         cpp: cppResult,
+        java: javaResult,
 
         pythonExams: pythonExamResult,
 
