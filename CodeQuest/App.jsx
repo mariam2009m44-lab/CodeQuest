@@ -67,21 +67,21 @@ const languageData = [
     id: "python",
     name: "Python",
     description: "ابدأ رحلة تعلم لغة Python.",
-    logo: "/assets/logos/python.svg",
+    mark: "Py",
     className: "python"
   },
   {
     id: "javascript",
     name: "JavaScript",
     description: "تعلم بناء مواقع وتطبيقات تفاعلية.",
-    logo: "/assets/logos/javascript.svg",
+    mark: "JS",
     className: "javascript"
   },
   {
     id: "cpp",
     name: "C++",
     description: "اكتشف أساسيات البرمجة المتقدمة.",
-    logo: "/assets/logos/cpp.svg",
+    mark: "C++",
     className: "cpp"
   }
 ];
@@ -816,14 +816,25 @@ function LanguageCard({ language, progress }) {
       className={`language-card language-${language.className}`}
     >
       <div className="language-card-top">
-        <div className="language-logo">
-          <img
-            src={language.logo}
-            alt={`${language.name} logo`}
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
+        <div
+          className={`language-logo language-logo-${language.className}`}
+          role="img"
+          aria-label={`رمز لغة ${language.name}`}
+        >
+          <span
+            style={{
+              display: "grid",
+              placeItems: "center",
+              width: "100%",
+              height: "100%",
+              fontWeight: 900,
+              fontSize: language.className === "cpp" ? "0.9rem" : "1.05rem",
+              color: "#F4F6FF",
+              letterSpacing: "-0.03em"
             }}
-          />
+          >
+            {language.mark}
+          </span>
         </div>
 
         <span className="language-progress-badge">
