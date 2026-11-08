@@ -2320,6 +2320,9 @@
         ></textarea>
       </div>
 
+      <label for="pythonStdin" style="display:block;margin:12px 0 6px;font-weight:800;color:var(--muted)">مدخلات البرنامج (اختياري) — اكتب كل قيمة في سطر</label>
+      <textarea id="pythonStdin" rows="3" dir="ltr" spellcheck="false" placeholder="مثال:&#10;Mariam&#10;17" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-family:'Fira Code',monospace;resize:vertical"></textarea>
+
       <div class="inline-code-hint" id="lessonHintText" hidden aria-live="polite">
         <div class="inline-code-hint-heading">
           <span><i class="ri-lightbulb-flash-line"></i> تلميح كودي</span>
@@ -2595,92 +2598,60 @@
 
     const runButton = $("runPythonBtn");
     const output = $("pythonOutput");
-
     if (!output) return;
 
     const code = getEditorCode();
+    const stdin = $("pythonStdin")?.value || "";
 
     if (!code.trim()) {
       output.textContent = "اكتب الكود أولًا.";
-      return;
-    }
-
-    if (
-      typeof Sk === "undefined" ||
-      typeof Sk.configure !== "function"
-    ) {
-      output.textContent =
-        "محرك تشغيل بايثون لم يتم تحميله. تأكد من اتصال الإنترنت.";
+      output.hidden = false;
       return;
     }
 
     if (runButton) {
       runButton.disabled = true;
-      runButton.innerHTML =
-        '<i class="ri-loader-4-line"></i> جاري التشغيل...';
+      runButton.innerHTML = '<i class="ri-loader-4-line"></i> جاري التشغيل...';
     }
 
-    output.textContent = "جاري تشغيل الكود...";
-
-    let programOutput = "";
+    output.hidden = false;
+    output.textContent = "جارٍ تجميع وتشغيل Python...";
+    output.classList.remove("output-error", "output-success");
 
     try {
-      Sk.configure({
-        output: (text) => {
-          programOutput += text;
-        },
+      const { runCodeOnServer } = await import("./js/code-runner.js");
+      const result = await runCodeOnServer("python", code, stdin);
 
-        read: (file) => {
-          if (
-            Sk.builtinFiles &&
-            Sk.builtinFiles.files &&
-            Sk.builtinFiles.files[file] !== undefined
-          ) {
-            return Sk.builtinFiles.files[file];
-          }
+      if (!result.ok) {
+        const diagnostics = [
+          result.compileOutput,
+          result.stderr,
+          result.message,
+          result.status
+        ].filter(Boolean).join("\n");
 
-          throw new Error(
-            "الملف المطلوب غير موجود: " + file
-          );
-        },
+        output.textContent = diagnostics || "لم ينجح تشغيل البرنامج. راجع الكود وحاول مرة أخرى.";
+        output.classList.add("output-error");
+        return;
+      }
 
-        inputfun: () => {
-          return Promise.resolve("");
-        },
-
-        __future__: Sk.python3
-      });
-
-      await Sk.misceval.asyncToPromise(
-        () => Sk.importMainWithBody(
-          "<stdin>",
-          false,
-          code,
-          true
-        )
-      );
-
-      output.textContent =
-        programOutput || "تم تشغيل الكود بدون مخرجات.";
-
-      output.hidden = false;
+      const programOutput = String(result.stdout || "");
+      output.textContent = programOutput || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
+      output.classList.add("output-success");
       output.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
       checkChallengeResult(programOutput, code);
-
     } catch (error) {
-      output.textContent =
-        "حدث خطأ أثناء تشغيل الكود:\n" +
-        String(error?.toString?.() || error);
-
+      console.error("Python execution failed:", error);
+      output.textContent = error?.message || "تعذر تشغيل Python حاليًا.";
+      output.classList.add("output-error");
     } finally {
       if (runButton) {
         runButton.disabled = false;
-        runButton.innerHTML =
-          '<i class="ri-play-fill"></i> تشغيل';
+        runButton.innerHTML = '<i class="ri-play-fill"></i> تشغيل';
       }
     }
   }
-
 
   // ==========================================
   // 17) التحقق من نتيجة التحدي
