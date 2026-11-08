@@ -948,6 +948,365 @@
     .exam-question-box,.exam-result { border:1px solid rgba(148,163,184,.18); border-radius:22px; background:linear-gradient(145deg,rgba(18,29,49,.98),rgba(12,20,35,.98)); box-shadow:0 18px 48px rgba(0,0,0,.2); }
     @media(max-width:900px) { .chat-container { padding:18px 13px 135px; gap:18px; } .bubble { max-width:calc(100% - 4px); padding:13px 15px; font-size:.94rem; } .avatar { width:40px; height:40px; } .choices-container { width:100%; margin-inline:0; } .bottom-action { padding-inline:13px; } .btn-next { width:100%; } }
     @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; } }
+  
+    /* Responsive editor hints and exam layout */
+    .editor-wrapper,
+    .exam-view,
+    .exam-question-box,
+    .exam-result,
+    .code-area,
+    .lesson-help-panel,
+    .inline-code-hint {
+      min-width: 0;
+    }
+
+    .editor-wrapper.show {
+      display: flex;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .editor-header {
+      flex-wrap: wrap;
+    }
+
+    .editor-header-actions {
+      flex-wrap: wrap;
+    }
+
+    .code-area {
+      width: 100%;
+      min-height: clamp(190px, 34vh, 360px);
+      flex: 1 1 auto;
+    }
+
+    .CodeMirror,
+    .code-fallback {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      min-height: clamp(190px, 34vh, 360px);
+      font-size: clamp(.82rem, 1.6vw, .98rem);
+    }
+
+    .CodeMirror-scroll {
+      min-height: clamp(190px, 34vh, 360px);
+    }
+
+    .inline-code-hint {
+      margin: 0;
+      padding: 13px 16px;
+      border-block: 1px solid rgba(75,213,242,.2);
+      background: linear-gradient(110deg,rgba(75,213,242,.09),rgba(139,108,255,.09));
+      color: var(--text);
+    }
+
+    .inline-code-hint[hidden] {
+      display: none !important;
+    }
+
+    .inline-code-hint-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-bottom: 9px;
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .inline-code-hint-heading small {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 600;
+    }
+
+    .inline-code-hint pre {
+      max-width: 100%;
+      margin: 0;
+      padding: 12px 14px;
+      overflow-x: auto;
+      border: 1px solid rgba(75,213,242,.18);
+      border-radius: 12px;
+      background: #070d18;
+      color: #b9f2ff;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      unicode-bidi: plaintext;
+      font: 500 .88rem/1.8 "Fira Code",monospace;
+      tab-size: 4;
+    }
+
+    .lesson-help-panel {
+      overflow-wrap: anywhere;
+    }
+
+    #lessonSolutionText pre {
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .output-area {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .exam-view {
+      width: min(100%, 980px);
+      max-width: 980px;
+      min-height: 0;
+      flex: 1 1 auto;
+      align-self: center;
+      gap: clamp(14px, 2.4vw, 24px);
+      padding: clamp(16px, 3vw, 32px);
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .exam-header {
+      width: 100%;
+      padding: clamp(14px, 2.5vw, 22px);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 18px;
+      background: rgba(16,26,44,.72);
+    }
+
+    .exam-header h2 {
+      margin: 0 0 14px;
+      font-size: clamp(1.15rem, 2.8vw, 1.65rem);
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .exam-progress-label,
+    #examProgress {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .exam-question-box {
+      width: 100%;
+      padding: clamp(16px, 3vw, 30px);
+      overflow: hidden;
+    }
+
+    .exam-q-text {
+      margin: 0 0 22px;
+      padding: 0 0 18px;
+      border-bottom: 1px solid rgba(148,163,184,.15);
+      font-size: clamp(1rem, 2.2vw, 1.22rem);
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    .exam-options {
+      width: 100%;
+      gap: 12px;
+    }
+
+    .exam-option {
+      width: 100%;
+      min-width: 0;
+      min-height: 56px;
+      align-items: flex-start;
+      padding: 13px 15px;
+      text-align: right;
+      line-height: 1.75;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .exam-option > span:last-child {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .exam-option:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+    }
+
+    .option-letter {
+      margin-top: 1px;
+    }
+
+    .exam-feedback {
+      min-height: 0;
+      margin: 16px 0 0;
+      padding: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .exam-next-btn {
+      min-height: 52px;
+      margin-top: 18px;
+    }
+
+    .exam-result {
+      width: 100%;
+      min-width: 0;
+      padding: clamp(22px, 4vw, 40px);
+      overflow-wrap: anywhere;
+    }
+
+    .exam-result-actions {
+      width: min(100%, 440px);
+    }
+
+    .exam-result-actions .btn-next {
+      min-height: 52px;
+    }
+
+    @media (min-width: 901px) {
+      .main-area {
+        min-width: 0;
+      }
+
+      .exam-view {
+        max-height: calc(100dvh - 150px);
+      }
+
+      .editor-wrapper.show {
+        position: relative;
+        inset: auto;
+        height: auto;
+        min-height: 420px;
+        margin: 18px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .content-wrapper {
+        min-height: 0;
+      }
+
+      .editor-wrapper.show {
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: min(88dvh, 820px);
+        max-height: 88dvh;
+        min-height: 0;
+        margin: 0;
+        border-radius: 20px 20px 0 0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      .editor-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 11px 13px;
+      }
+
+      .editor-header-actions button {
+        min-height: 42px;
+      }
+
+      .exam-view {
+        width: 100%;
+        max-height: none;
+        padding: 14px clamp(12px, 3vw, 22px) calc(22px + env(safe-area-inset-bottom, 0px));
+      }
+
+      .exam-header {
+        padding: 15px;
+      }
+
+      .exam-question-box {
+        border-radius: 17px;
+      }
+
+      .exam-option {
+        min-height: 54px;
+        padding: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .editor-header {
+        align-items: flex-start;
+      }
+
+      .editor-title {
+        font-size: .8rem;
+      }
+
+      .editor-header-actions {
+        gap: 6px;
+      }
+
+      .btn-run,
+      .editor-close-btn {
+        min-height: 40px;
+        padding: 8px 11px;
+        font-size: .86rem;
+      }
+
+      .inline-code-hint {
+        padding: 11px 12px;
+      }
+
+      .inline-code-hint pre {
+        font-size: .8rem;
+      }
+
+      .exam-view {
+        gap: 12px;
+        padding-inline: 10px;
+      }
+
+      .exam-question-box {
+        padding: 15px 13px;
+      }
+
+      .exam-q-text {
+        margin-bottom: 16px;
+        padding-bottom: 14px;
+        font-size: 1rem;
+      }
+
+      .exam-option {
+        gap: 9px;
+        font-size: .9rem;
+      }
+
+      .option-letter {
+        width: 28px;
+        height: 28px;
+      }
+
+      .exam-result-actions {
+        max-width: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hint-reveal {
+        animation: none !important;
+      }
+    }
+
+    @keyframes hintReveal {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hint-reveal {
+      animation: hintReveal .22s ease-out;
+    }
+
   </style>
 </head>
 
@@ -1931,6 +2290,14 @@
         ></textarea>
       </div>
 
+      <div class="inline-code-hint" id="lessonHintText" hidden aria-live="polite">
+        <div class="inline-code-hint-heading">
+          <span><i class="ri-lightbulb-flash-line"></i> تلميح كودي</span>
+          <small>تلميح يساعدك على التفكير</small>
+        </div>
+        <pre><code id="lessonHintCode"></code></pre>
+      </div>
+
       <div class="lesson-help-panel">
         <strong>
           <i class="ri-lightbulb-flash-line"></i>
@@ -2114,9 +2481,7 @@
   function showPythonHint() {
     if (!currentChallenge) return;
 
-    const hints = Array.isArray(
-      currentChallenge.hints
-    )
+    const hints = Array.isArray(currentChallenge.hints)
       ? currentChallenge.hints
       : currentChallenge.hint
         ? [currentChallenge.hint]
@@ -2127,16 +2492,27 @@
       return;
     }
 
-    const hint = hints[
-      Math.min(currentHintIndex, hints.length - 1)
-    ];
+    const hintBox = $("lessonHintText");
+    const hintCode = $("lessonHintCode");
 
+    if (!hintBox || !hintCode) {
+      showToast("مساحة التلميح غير متاحة حاليًا.");
+      return;
+    }
+
+    const hint = hints[Math.min(currentHintIndex, hints.length - 1)];
     currentHintIndex++;
 
-    addBubble(
-      "cody",
-      `<strong>تلميح كودي:</strong> ${escapeHTML(hint)}`
-    );
+    hintCode.textContent = String(hint);
+    hintBox.hidden = false;
+    hintBox.classList.remove("hint-reveal");
+    void hintBox.offsetWidth;
+    hintBox.classList.add("hint-reveal");
+
+    hintBox.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
   }
 
 
