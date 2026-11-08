@@ -417,6 +417,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
 
   <script type="module">
     import { requireUser } from "./js/auth.js";
@@ -506,8 +508,7 @@ int main() {
       tabSize: 4,
       indentWithTabs: false,
       autoCloseBrackets: true,
-      matchBrackets: true,
-      viewportMargin: 20
+      matchBrackets: true
     });
 
     const refreshEditorLayout = () => {
@@ -798,31 +799,6 @@ int main() {
       autoSaveTimer = setTimeout(() => {
         saveProject(false);
       }, 1500);
-    }
-
-    function encodeBase64Utf8(value) {
-    
-      const bytes = new TextEncoder().encode(value);
-      let binary = "";
-
-      for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-
-      return btoa(binary);
-    }
-
-    function decodeBase64Utf8(value) {
-      if (typeof value !== "string" || !value) return "";
-
-      const binary = atob(value.trim());
-
-      const bytes = Uint8Array.from(
-        binary,
-        character => character.charCodeAt(0)
-      );
-
-      return new TextDecoder().decode(bytes);
     }
 
     async function runCode() {
