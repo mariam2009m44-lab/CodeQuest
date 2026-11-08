@@ -764,7 +764,7 @@
     /*
       منهج Java من الصفر.
       تُجمع البرامج وتُشغّل عبر خدمة التنفيذ الآمنة على الخادم.
-      وتُستخدم فحوصات التمرين كملاحظات تعليمية إضافية فقط.
+      ويتحقق الخادم من الكود والناتج قبل السماح بإكمال الدرس.
     */
     const CURRICULUM = [
       {
@@ -1516,10 +1516,10 @@
 
         if (!result.correct) {
           const actual = result.stdout
-            ? "\\n\\nالناتج الحالي:\\n" + result.stdout
+            ? "\n\nالناتج الحالي:\n" + result.stdout
             : "";
           const expected = result.expectedOutput
-            ? "\\n\\nالناتج المتوقع:\\n" + result.expectedOutput
+            ? "\n\nالناتج المتوقع:\n" + result.expectedOutput
             : "";
           setOutput(
             (result.message || "الحل غير مكتمل. راجع المطلوب وحاول مرة أخرى.") +
@@ -1532,7 +1532,7 @@
         challengeVerified = true;
         const output = String(result.stdout || "").trim();
         setOutput(
-          "ممتاز! تم التحقق من الحل على الخادم بنجاح.\\n\\nالناتج:\\n" +
+          "ممتاز! تم التحقق من الحل على الخادم بنجاح.\n\nالناتج:\n" +
           (output || "(لا يوجد ناتج)"),
           "success"
         );
