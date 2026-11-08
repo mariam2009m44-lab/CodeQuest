@@ -35,7 +35,8 @@ const CALL_OPTIONS = {
 const LANGUAGES = Object.freeze({
   javascript: 63,
   python: 71,
-  cpp: 54
+  cpp: 54,
+  java: 62
 });
 
 const CURRICULUM_URLS = Object.freeze({
@@ -59,6 +60,25 @@ const STORE_ITEMS = Object.freeze({
 const LESSON_REWARD = Object.freeze({
   xp: 10,
   stars: 1
+});
+
+const JAVA_CHALLENGES = Object.freeze({
+  "0_0": { required: [/public\s+class\s+Main/, /public\s+static\s+void\s+main\s*\(\s*String\s*\[\s*\]\s+\w+\s*\)/, /System\.out\.println\s*\(\s*"Hello!"\s*\)\s*;/], output: "Hello!" },
+  "0_1": { required: [/System\.out\.println\s*\(\s*"Java"\s*\)\s*;/, /\/\//], output: "Java" },
+  "1_0": { required: [/\bint\s+age\s*=\s*16\s*;/, /\bString\s+name\s*=\s*"Cody"\s*;/, /System\.out\.println\s*\(\s*age\s*\)\s*;/, /System\.out\.println\s*\(\s*name\s*\)\s*;/], output: "16\nCody" },
+  "1_1": { required: [/\bint\s+score\s*=\s*10\s*;/, /\bscore\s*=\s*20\s*;/, /System\.out\.println\s*\(\s*score\s*\)\s*;/], output: "20" },
+  "2_0": { required: [/System\.out\.println\s*\(\s*a\s*\+\s*b\s*\)\s*;/, /System\.out\.println\s*\(\s*a\s*\*\s*b\s*\)\s*;/], output: "13\n30" },
+  "2_1": { required: [/\bint\s+result\s*=\s*17\s*%\s*5\s*;/, /System\.out\.println\s*\(\s*result\s*\)\s*;/], output: "2" },
+  "3_0": { required: [/if\s*\(\s*age\s*>=\s*18\s*\)/, /System\.out\.println\s*\(\s*"Adult"\s*\)\s*;/], output: "Adult" },
+  "3_1": { required: [/if\s*\(\s*number\s*>\s*0\s*\)/, /else\s*\{/, /System\.out\.println\s*\(\s*"Not positive"\s*\)\s*;/], output: "Positive" },
+  "4_0": { required: [/for\s*\(\s*int\s+i\s*=\s*1\s*;\s*i\s*<=\s*5\s*;\s*i\+\+\s*\)/, /System\.out\.println\s*\(\s*i\s*\)\s*;/], output: "1\n2\n3\n4\n5" },
+  "4_1": { required: [/while\s*\(\s*count\s*<=\s*3\s*\)/, /System\.out\.println\s*\(\s*count\s*\)\s*;/, /count\+\+/], output: "1\n2\n3" },
+  "5_0": { required: [/int\s*\[\s*\]\s*numbers\s*=\s*\{\s*10\s*,\s*20\s*,\s*30\s*\}/, /System\.out\.println\s*\(\s*numbers\s*\[\s*1\s*\]\s*\)\s*;/], output: "20" },
+  "5_1": { required: [/for\s*\(\s*int\s+i\s*=\s*0\s*;\s*i\s*<\s*numbers\.length\s*;\s*i\+\+\s*\)/, /System\.out\.println\s*\(\s*numbers\s*\[\s*i\s*\]\s*\)\s*;/], output: "10\n20\n30" },
+  "6_0": { required: [/public\s+static\s+void\s+greet\s*\(\s*\)/, /System\.out\.println\s*\(\s*"Hello!"\s*\)\s*;/, /\bgreet\s*\(\s*\)\s*;/], output: "Hello!" },
+  "6_1": { required: [/public\s+static\s+int\s+add\s*\(\s*int\s+a\s*,\s*int\s+b\s*\)/, /return\s+a\s*\+\s*b\s*;/, /System\.out\.println\s*\(\s*add\s*\(\s*3\s*,\s*4\s*\)\s*\)\s*;/], output: "7" },
+  "7_0": { required: [/class\s+Student/, /Student\s+student\s*=\s*new\s+Student\s*\(\s*\)\s*;/, /System\.out\.println\s*\(\s*student\.name\s*\)\s*;/], output: "Ali" },
+  "7_1": { required: [/class\s+Student/, /Student\s*\(\s*String\s+studentName\s*\)/, /\bname\s*=\s*studentName\s*;/, /System\.out\.println\s*\(\s*student\.name\s*\)\s*;/], output: "Cody" }
 });
 
 function requireAuth(request) {
@@ -95,6 +115,16 @@ function validateCodeInput(data) {
     throw new HttpsError(
       "invalid-argument",
       "يجب إدخال كود صالح لا يتجاوز 50000 حرف."
+    );
+  }
+
+  if (
+    data.stdin !== undefined &&
+    (typeof data.stdin !== "string" || data.stdin.length > 10000)
+  ) {
+    throw new HttpsError(
+      "invalid-argument",
+      "بيانات الإدخال غير صالحة أو أطول من الحد المسموح."
     );
   }
 }
@@ -159,7 +189,7 @@ exports.runCode = onCall(
           body: JSON.stringify({
             source_code: data.code,
             language_id: LANGUAGES[data.language],
-            stdin: ""
+            stdin: data.stdin || ""
           }),
           signal: AbortSignal.timeout(15000)
         }
@@ -254,6 +284,150 @@ exports.runCode = onCall(
       status: result.status.description || "Unknown",
       time: result.time || null,
       memory: result.memory || null
+    };
+  }
+);
+
+/*
+ * التحقق الخادمي من تحديات Java.
+ * لا يُنشأ إثبات المكافأة إلا بعد فحص الكود وتشغيله ومطابقة الناتج على Judge0.
+ */
+exports.verifyJavaChallenge = onCall(
+  {
+    region: "europe-west1",
+    timeoutSeconds: 45,
+    memory: "256MiB",
+    maxInstances: 5
+  },
+  async request => {
+    const uid = requireAuth(request);
+    const data = request.data || {};
+    const chapter = data.chapter;
+    const lesson = data.lesson;
+    const code = data.code;
+
+    if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8) {
+      throw new HttpsError("invalid-argument", "رقم فصل Java غير صالح.");
+    }
+    if (!Number.isInteger(lesson) || lesson < 0 || lesson >= 2) {
+      throw new HttpsError("invalid-argument", "رقم درس Java غير صالح.");
+    }
+    validateCodeInput({ language: "java", code });
+
+    const challenge = JAVA_CHALLENGES[chapter + "_" + lesson];
+    if (!challenge || !challenge.required.every(pattern => pattern.test(code))) {
+      return {
+        success: true,
+        correct: false,
+        message: "الكود لا يحتوي على جميع الأجزاء المطلوبة في التحدي."
+      };
+    }
+
+    const baseUrl = JUDGE0_URL.value().replace(/\/+$/, "");
+    let submission;
+
+    try {
+      const response = await fetch(
+        baseUrl + "/submissions?base64_encoded=false&wait=false",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source_code: code,
+            language_id: LANGUAGES.java,
+            stdin: ""
+          }),
+          signal: AbortSignal.timeout(15000)
+        }
+      );
+      submission = await readJudge0Response(response);
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+      console.error("Java challenge submission failed:", error);
+      throw new HttpsError("unavailable", "تعذر إرسال تحدي Java إلى خدمة التشغيل.");
+    }
+
+    if (!submission.token) {
+      throw new HttpsError("internal", "خدمة Java لم تُرجع رقم التنفيذ.");
+    }
+
+    let execution = null;
+    for (let attempt = 0; attempt < 12; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      try {
+        const response = await fetch(
+          baseUrl + "/submissions/" + encodeURIComponent(submission.token) + "?base64_encoded=false",
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            signal: AbortSignal.timeout(10000)
+          }
+        );
+        execution = await readJudge0Response(response);
+      } catch (error) {
+        if (error instanceof HttpsError) throw error;
+        console.error("Java challenge polling failed:", error);
+        throw new HttpsError("unavailable", "تعذر الحصول على نتيجة تشغيل Java.");
+      }
+      if (execution.status && execution.status.id > 2) break;
+    }
+
+    if (!execution || !execution.status || execution.status.id <= 2) {
+      throw new HttpsError("deadline-exceeded", "استغرق تشغيل Java وقتًا طويلًا.");
+    }
+
+    if (execution.status.id !== 3) {
+      return {
+        success: true,
+        correct: false,
+        message: safeOutput(
+          execution.compile_output ||
+          execution.stderr ||
+          execution.message ||
+          execution.status.description
+        )
+      };
+    }
+
+    const normalize = value => String(value || "")
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .map(line => line.trim())
+      .join("\n")
+      .trim();
+
+    if (normalize(execution.stdout) !== normalize(challenge.output)) {
+      return {
+        success: true,
+        correct: false,
+        message: "تم تشغيل البرنامج، لكن الناتج لا يطابق المطلوب.",
+        stdout: safeOutput(execution.stdout),
+        expectedOutput: challenge.output
+      };
+    }
+
+    const lessonId = "java_" + chapter + "_" + lesson;
+    const resultRef = db.collection("users").doc(uid)
+      .collection("quizResults").doc("lesson_" + lessonId);
+
+    await resultRef.set({
+      verificationVersion: 1,
+      serverVerified: true,
+      passed: true,
+      uid,
+      lessonId,
+      language: "java",
+      chapter,
+      lesson,
+      verificationType: "java-challenge",
+      verifiedAt: FieldValue.serverTimestamp()
+    });
+
+    return {
+      success: true,
+      correct: true,
+      message: "تم التحقق من الحل والناتج على الخادم.",
+      stdout: safeOutput(execution.stdout)
     };
   }
 );
@@ -629,7 +803,7 @@ function getRewardableLesson(lessonId, data) {
     return null;
   }
 
-  const match = /^(python|javascript|cpp)_(\d+)_(\d+)$/.exec(
+  const match = /^(python|javascript|cpp|java)_(\d+)_(\d+)$/.exec(
     String(lessonId)
   );
 
@@ -1051,10 +1225,9 @@ exports.syncLeaderboard = onDocumentWritten(
     const user = after.data() || {};
 
     await publicRef.set({
-      displayName:
-        typeof user.displayName === "string"
-          ? user.displayName.slice(0, 50)
-          : "متعلم",
+      // لا ننشر الاسم الذي أدخله المستخدم عند التسجيل.
+      // نستخدم معرفًا مستعارًا ثابتًا بدلًا منه في لوحة المتصدرين.
+      displayName: `مستكشف-${uid.slice(-6)}`,
 
       xp:
         Number.isFinite(user.xp) && user.xp >= 0

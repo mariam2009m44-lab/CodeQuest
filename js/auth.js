@@ -26,7 +26,8 @@ const MAX_NAME_LENGTH = 50;
 const SUPPORTED_LANGUAGES = [
   "python",
   "javascript",
-  "cpp"
+  "cpp",
+  "java"
 ];
 
 function normalizeEmail(email) {
@@ -103,6 +104,10 @@ export function authError(error) {
       "انتهت صلاحية الرابط. اطلب رابطًا جديدًا.",
     "permission-denied":
       "لا توجد صلاحية للوصول إلى هذه البيانات.",
+    "firestore/permission-denied":
+      "لا توجد صلاحية للوصول إلى بيانات الحساب. راجع قواعد Firestore.",
+    "firestore/unavailable":
+      "خدمة قاعدة البيانات غير متاحة حاليًا.",
     "unavailable": "الخدمة غير متاحة حاليًا."
   };
 
@@ -116,7 +121,15 @@ function normalizeError(error) {
     return error;
   }
 
-  return new Error(authError(error));
+  const normalized = new Error(authError(error), {
+    cause: error instanceof Error ? error : undefined
+  });
+
+  if (typeof error?.code === "string") {
+    normalized.code = error.code;
+  }
+
+  return normalized;
 }
 
 /**
@@ -334,6 +347,24 @@ export function requireUser() {
  */
 export function getCurrentUser() {
   return auth.currentUser;
+}
+
+/**
+ * Read the authenticated user's cloud profile, including trusted XP and stars.
+ */
+export async function getUserProfile() {
+  const user = await requireUser();
+  const profileRef = doc(db, USERS_COLLECTION, user.uid);
+  const snapshot = await getDoc(profileRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("لم يتم العثور على ملف الحساب.");
+  }
+
+  return {
+    uid: user.uid,
+    ...snapshot.data()
+  };
 }
 
 function getLessonDocumentId(language, chapter, lesson) {

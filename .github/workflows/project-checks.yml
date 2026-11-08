@@ -41,6 +41,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check Firebase Functions syntax
+        run: node --check functions/index.js
+
+      - name: Check frontend module syntax
+        run: |
+          node --input-type=module --check < js/auth.js
+          node --input-type=module --check < js/code-runner.js
+
+      - name: Validate Java lesson page
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; const html = fs.readFileSync("java-lessons.html", "utf8"); const open = "<script type=\"module\">"; const close = "</script>"; const start = html.indexOf(open); const end = html.indexOf(close, start); if (start < 0 || end < 0) throw new Error("Java lesson module script missing"); fs.writeFileSync("/tmp/java-lessons.mjs", html.slice(start + open.length, end)); const ids = html.match(/id: "java-[0-9]+-[0-9]+"/g) || []; if (ids.length !== 16) throw new Error("Expected 16 implemented Java lessons"); if ((html.match(/id="quizFeedback"/g) || []).length !== 1) throw new Error("Quiz feedback element must be unique");'
+          node --check /tmp/java-lessons.mjs
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:

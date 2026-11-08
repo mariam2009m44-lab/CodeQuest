@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+  <script src="js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080b16">
   <meta name="description" content="إنجازاتك وتقدمك في Cody Academy">
@@ -355,6 +356,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="css/theme.css">
 </head>
 
 <body>
@@ -439,6 +441,14 @@
       cpp: {
         name: "C++",
         file: "./json/cpp_curriculum.json"
+      },
+      java: {
+        name: "Java",
+        chapters: Array.from(
+          { length: 8 },
+          () => ({ lessons: [{}, {}] })
+        ),
+        total: 16
       }
     };
 
@@ -511,13 +521,52 @@
         throw new Error("تنسيق ملف المنهج غير صحيح.");
       }
 
-      return data.chapters.reduce((sum, chapter) => {
+      const chapters = data.chapters;
+      const total = chapters.reduce((sum, chapter) => {
         return sum + (
           Array.isArray(chapter?.lessons)
             ? chapter.lessons.length
             : 0
         );
       }, 0);
+
+      return { chapters, total };
+    }
+
+    function getValidCompletedRecords(records, chapters) {
+      if (!Array.isArray(records) || !Array.isArray(chapters)) {
+        return [];
+      }
+
+      const unique = new Map();
+
+      for (const record of records) {
+        if (
+          !record ||
+          record.completed !== true ||
+          !Number.isSafeInteger(record.chapter) ||
+          !Number.isSafeInteger(record.lesson) ||
+          record.chapter < 0 ||
+          record.lesson < 0
+        ) {
+          continue;
+        }
+
+        const chapter = chapters[record.chapter];
+        if (
+          !Array.isArray(chapter?.lessons) ||
+          record.lesson >= chapter.lessons.length
+        ) {
+          continue;
+        }
+
+        unique.set(
+          `${record.chapter}:${record.lesson}`,
+          record
+        );
+      }
+
+      return [...unique.values()];
     }
 
     function renderLanguageCards(progress, totals) {
@@ -618,12 +667,27 @@
 
         const results = await Promise.all(
           languages.map(async (key) => {
-            const [items, total] = await Promise.all([
+            const language = LANGUAGES[key];
+            const [items, curriculum] = await Promise.all([
               getLessonProgress(key),
-              loadCurriculumTotal(LANGUAGES[key].file)
+              language.chapters
+                ? Promise.resolve({
+                    chapters: language.chapters,
+                    total: language.total
+                  })
+                : loadCurriculumTotal(language.file)
             ]);
 
-            return { key, items, total };
+            const validItems = getValidCompletedRecords(
+              items,
+              curriculum.chapters
+            );
+
+            return {
+              key,
+              items: validItems,
+              total: curriculum.total
+            };
           })
         );
 

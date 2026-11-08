@@ -67,21 +67,21 @@ const languageData = [
     id: "python",
     name: "Python",
     description: "ابدأ رحلة تعلم لغة Python.",
-    logo: "/assets/logos/python.svg",
+    mark: "Py",
     className: "python"
   },
   {
     id: "javascript",
     name: "JavaScript",
     description: "تعلم بناء مواقع وتطبيقات تفاعلية.",
-    logo: "/assets/logos/javascript.svg",
+    mark: "JS",
     className: "javascript"
   },
   {
     id: "cpp",
     name: "C++",
     description: "اكتشف أساسيات البرمجة المتقدمة.",
-    logo: "/assets/logos/cpp.svg",
+    mark: "C++",
     className: "cpp"
   }
 ];
@@ -259,16 +259,36 @@ export default function App() {
           db,
           "users",
           currentUser.uid,
-          "progress"
+          "lessonProgress"
         );
 
         progressUnsubscribe = onSnapshot(
           progressRef,
           (snapshot) => {
-            const nextProgress = {};
+            const nextProgress = {
+              python: { completedLessons: 0 },
+              javascript: { completedLessons: 0 },
+              cpp: { completedLessons: 0 }
+            };
 
             snapshot.forEach((item) => {
-              nextProgress[item.id] = item.data();
+              const lesson = item.data();
+              const language = lesson?.language;
+
+              // Python chapter exams use lesson: 104 as a separate
+              // completion marker; they must not inflate lesson totals.
+              if (
+                lesson?.completed === true &&
+                Number.isInteger(lesson?.chapter) &&
+                Number.isInteger(lesson?.lesson) &&
+                !(language === "python" && lesson.lesson === 104) &&
+                Object.prototype.hasOwnProperty.call(
+                  nextProgress,
+                  language
+                )
+              ) {
+                nextProgress[language].completedLessons += 1;
+              }
             });
 
             setProgress(nextProgress);
@@ -816,14 +836,25 @@ function LanguageCard({ language, progress }) {
       className={`language-card language-${language.className}`}
     >
       <div className="language-card-top">
-        <div className="language-logo">
-          <img
-            src={language.logo}
-            alt={`${language.name} logo`}
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
+        <div
+          className={`language-logo language-logo-${language.className}`}
+          role="img"
+          aria-label={`رمز لغة ${language.name}`}
+        >
+          <span
+            style={{
+              display: "grid",
+              placeItems: "center",
+              width: "100%",
+              height: "100%",
+              fontWeight: 900,
+              fontSize: language.className === "cpp" ? "0.9rem" : "1.05rem",
+              color: "#F4F6FF",
+              letterSpacing: "-0.03em"
             }}
-          />
+          >
+            {language.mark}
+          </span>
         </div>
 
         <span className="language-progress-badge">
@@ -893,6 +924,7 @@ function ProfilePage() {
   );
 
   const xp = safeNumber(profile?.xp);
+  const stars = safeNumber(profile?.stars);
   const coins = safeNumber(profile?.coins);
 
   return (
@@ -936,6 +968,11 @@ function ProfilePage() {
             <div className="profile-detail-item">
               <span>نقاط الخبرة XP</span>
               <strong>{xp}</strong>
+            </div>
+
+            <div className="profile-detail-item">
+              <span>النجوم</span>
+              <strong>{stars}</strong>
             </div>
 
             <div className="profile-detail-item">

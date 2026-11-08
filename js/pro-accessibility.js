@@ -1,11 +1,7 @@
-
 (() => {
   "use strict";
 
-  if (window.__codeQuestAccessibilityLoaded) {
-    return;
-  }
-
+  if (window.__codeQuestAccessibilityLoaded) return;
   window.__codeQuestAccessibilityLoaded = true;
 
   document.querySelectorAll("button, a").forEach((element) => {
@@ -21,25 +17,17 @@
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener("click", (event) => {
       const targetId = link.getAttribute("href");
-
-      if (!targetId || targetId === "#") {
-        return;
-      }
+      if (!targetId || targetId === "#") return;
 
       let target;
-
       try {
         target = document.querySelector(targetId);
       } catch {
         return;
       }
-
-      if (!target) {
-        return;
-      }
+      if (!target) return;
 
       event.preventDefault();
-
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches;
@@ -52,20 +40,15 @@
       if (!target.hasAttribute("tabindex")) {
         target.setAttribute("tabindex", "-1");
       }
-
       target.focus({ preventScroll: true });
     });
   });
 
-  document.querySelectorAll(
-    '[role="status"], [role="alert"]'
-  ).forEach((element) => {
+  document.querySelectorAll('[role="status"], [role="alert"]').forEach((element) => {
     if (!element.hasAttribute("aria-live")) {
       element.setAttribute(
         "aria-live",
-        element.getAttribute("role") === "alert"
-          ? "assertive"
-          : "polite"
+        element.getAttribute("role") === "alert" ? "assertive" : "polite"
       );
     }
   });
@@ -84,10 +67,7 @@
   updateMotionPreference();
 
   if (typeof reducedMotion.addEventListener === "function") {
-    reducedMotion.addEventListener(
-      "change",
-      updateMotionPreference
-    );
+    reducedMotion.addEventListener("change", updateMotionPreference);
   } else if (typeof reducedMotion.addListener === "function") {
     reducedMotion.addListener(updateMotionPreference);
   }

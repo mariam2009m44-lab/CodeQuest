@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+  <script src="js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
   <title>رحلة بايثون التفاعلية | Cody Academy</title>
@@ -1308,6 +1309,7 @@
     }
 
   </style>
+  <link rel="stylesheet" href="css/theme.css">
 </head>
 
 <body>
@@ -1435,6 +1437,16 @@
             id="retryExamBtn"
           >
             إعادة الامتحان
+          </button>
+
+          <button
+            type="button"
+            class="btn-next"
+            id="nextExamLessonBtn"
+            hidden
+          >
+            متابعة إلى الفصل التالي
+            <i class="ri-arrow-left-line"></i>
           </button>
 
           <button
@@ -1576,8 +1588,15 @@
       .map(String)
   );
 
+  // يدعم التنسيق القديم (مصفوفة) والجديد (كائن) دون فقدان تقدم المستخدم.
+  const normalizedCompletedChapters = Array.isArray(storedCompletedChapters)
+    ? storedCompletedChapters
+    : Array.isArray(storedCompletedChapters?.completed)
+      ? storedCompletedChapters.completed
+      : [];
+
   const completedChapters = new Set(
-    (Array.isArray(storedCompletedChapters) ? storedCompletedChapters : [])
+    normalizedCompletedChapters
       .map(Number)
       .filter(Number.isInteger)
   );
@@ -1593,9 +1612,23 @@
   }
 
   function saveLocalProgress() {
+    const existingProgress = readStorage(
+      "cody_python_progress",
+      {}
+    );
+
     writeStorage(
       "cody_python_progress",
-      [...completedChapters]
+      {
+        completed: [...completedChapters],
+        stars: (
+          existingProgress &&
+          !Array.isArray(existingProgress) &&
+          typeof existingProgress.stars === "object"
+        )
+          ? existingProgress.stars
+          : {}
+      }
     );
 
     writeStorage(
@@ -1951,7 +1984,7 @@
 
     if (xpDisplay) {
       xpDisplay.textContent = String(
-        readStorage("cody_python_xp", 0)
+        readStorage("cody_xp", 0)
       );
     }
   }
@@ -1970,12 +2003,19 @@
 
     completedLessonKeys.add(key);
 
-    const oldXP = Number(
+    const legacyXP = Number(
       readStorage("cody_python_xp", 0)
     ) || 0;
 
+    const sharedXP = Number(
+      readStorage("cody_xp", 0)
+    ) || 0;
+
+    const oldXP = Math.max(legacyXP, sharedXP);
     const newXP = oldXP + 10;
 
+    // مفتاح موحد مع صفحة خريطة الفصول، مع ترحيل المفتاح القديم.
+    writeStorage("cody_xp", newXP);
     writeStorage("cody_python_xp", newXP);
 
     saveLocalProgress();
@@ -2290,6 +2330,9 @@
         ></textarea>
       </div>
 
+      <label for="pythonStdin" style="display:block;margin:12px 0 6px;font-weight:800;color:var(--muted)">مدخلات البرنامج (اختياري) — اكتب كل قيمة في سطر</label>
+      <textarea id="pythonStdin" rows="3" dir="ltr" spellcheck="false" placeholder="مثال:&#10;Mariam&#10;17" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-family:'Fira Code',monospace;resize:vertical"></textarea>
+
       <div class="inline-code-hint" id="lessonHintText" hidden aria-live="polite">
         <div class="inline-code-hint-heading">
           <span><i class="ri-lightbulb-flash-line"></i> تلميح كودي</span>
@@ -2408,11 +2451,12 @@
         }
       );
 
-      editor.setSize("100%", "100%");
+      editor.setSize("100%", "360px");
 
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         editor?.refresh();
-      }, 100);
+        editor?.focus();
+      });
 
     } catch (error) {
       console.error(
@@ -2513,6 +2557,10 @@
       behavior: "smooth",
       block: "nearest"
     });
+
+    // Keep the latest execution result visible after revealing a hint.
+    const output = $("pythonOutput");
+    if (output) output.hidden = false;
   }
 
 
@@ -2523,10 +2571,20 @@
   function showPythonSolution() {
     if (!currentChallenge) return;
 
+    const hintSolutions = Array.isArray(currentChallenge.hints)
+      ? currentChallenge.hints
+      : currentChallenge.hint
+        ? [currentChallenge.hint]
+        : [];
+
     const solution =
       currentChallenge.solution ||
       currentChallenge.expectedCode ||
       currentChallenge.answerCode ||
+      currentChallenge.solutionCode ||
+      hintSolutions.find(value =>
+        typeof value === "string" && value.trim()
+      ) ||
       "";
 
     if (!solution) {
@@ -2541,8 +2599,9 @@
     solutionBox.hidden = false;
 
     solutionBox.innerHTML = `
-      <strong>الحل النموذجي:</strong>
+      <strong>نموذج حل مقترح:</strong>
       <pre>${escapeHTML(solution)}</pre>
+      <small>قد توجد طرق صحيحة أخرى لحل التحدي.</small>
     `;
 
     solutionBox.scrollIntoView({
@@ -2561,102 +2620,124 @@
 
     const runButton = $("runPythonBtn");
     const output = $("pythonOutput");
-
     if (!output) return;
 
     const code = getEditorCode();
+    const stdin = $("pythonStdin")?.value || "";
 
     if (!code.trim()) {
       output.textContent = "اكتب الكود أولًا.";
-      return;
-    }
-
-    if (
-      typeof Sk === "undefined" ||
-      typeof Sk.configure !== "function"
-    ) {
-      output.textContent =
-        "محرك تشغيل بايثون لم يتم تحميله. تأكد من اتصال الإنترنت.";
+      output.hidden = false;
       return;
     }
 
     if (runButton) {
       runButton.disabled = true;
-      runButton.innerHTML =
-        '<i class="ri-loader-4-line"></i> جاري التشغيل...';
+      runButton.innerHTML = '<i class="ri-loader-4-line"></i> جاري التشغيل...';
     }
 
-    output.textContent = "جاري تشغيل الكود...";
-
-    let programOutput = "";
+    output.hidden = false;
+    output.textContent = "جارٍ تجميع وتشغيل Python...";
+    output.classList.remove("output-error", "output-success");
 
     try {
-      Sk.configure({
-        output: (text) => {
-          programOutput += text;
-        },
+      const { runCodeOnServer } = await import("./js/code-runner.js");
+      const result = await runCodeOnServer("python", code, stdin);
 
-        read: (file) => {
-          if (
-            Sk.builtinFiles &&
-            Sk.builtinFiles.files &&
-            Sk.builtinFiles.files[file] !== undefined
-          ) {
-            return Sk.builtinFiles.files[file];
-          }
+      if (!result.ok) {
+        const diagnostics = [
+          result.compileOutput,
+          result.stderr,
+          result.message,
+          result.status
+        ].filter(Boolean).join("\n");
 
-          throw new Error(
-            "الملف المطلوب غير موجود: " + file
-          );
-        },
+        output.textContent = diagnostics || "لم ينجح تشغيل البرنامج. راجع الكود وحاول مرة أخرى.";
+        output.classList.add("output-error");
+        return;
+      }
 
-        inputfun: () => {
-          return Promise.resolve("");
-        },
+      const programOutput = String(result.stdout || "");
+      output.textContent = programOutput || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
+      output.classList.add("output-success");
+      output.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-        __future__: Sk.python3
-      });
-
-      await Sk.misceval.asyncToPromise(
-        () => Sk.importMainWithBody(
-          "<stdin>",
-          false,
-          code,
-          true
-        )
-      );
-
-      output.textContent =
-        programOutput || "تم تشغيل الكود بدون أخطاء.";
-
-      checkChallengeResult(programOutput, code);
-
+      await checkChallengeResult(programOutput, code);
     } catch (error) {
-      output.textContent =
-        "حدث خطأ أثناء تشغيل الكود:\n" +
-        String(error?.toString?.() || error);
-
+      console.error("Python execution failed:", error);
+      output.textContent = error?.message || "تعذر تشغيل Python حاليًا.";
+      output.classList.add("output-error");
     } finally {
       if (runButton) {
         runButton.disabled = false;
-        runButton.innerHTML =
-          '<i class="ri-play-fill"></i> تشغيل';
+        runButton.innerHTML = '<i class="ri-play-fill"></i> تشغيل';
       }
     }
   }
-
 
   // ==========================================
   // 17) التحقق من نتيجة التحدي
   // ==========================================
 
-  function checkChallengeResult(programOutput, sourceCode = "") {
-    if (!currentChallenge || challengeSolved) {
-      return;
+  async function checkChallengeResult(programOutput, sourceCode = "") {
+    if (!currentChallenge || challengeSolved) return;
+
+    /*
+     * اختبارات الفصل النهائي فقط تستخدم فحص الواجهة؛
+     * أما تحديات الدروس العادية فيجب اعتمادها من الخادم.
+     */
+    if (!isExamLesson(currentLesson)) {
+      try {
+        const [
+          { httpsCallable },
+          { functions }
+        ] = await Promise.all([
+          import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js"),
+          import("./js/firebase-config.js")
+        ]);
+
+        const verifyChallenge = httpsCallable(
+          functions,
+          "verifyPythonChallenge"
+        );
+
+        const response = await verifyChallenge({
+          chapter: Number(currentChapterId) - 1,
+          lesson: Number(currentLessonIndex),
+          code: String(sourceCode)
+        });
+
+        const verification = response?.data || {};
+
+        if (verification.correct !== true) {
+          addBubble(
+            "cody",
+            verification.message ||
+              "لم يجتز الكود التحقق النهائي. راجع الحل وحاول مرة أخرى."
+          );
+          return;
+        }
+
+        challengeSolved = true;
+        addBubble(
+          "cody",
+          "تم التحقق من التحدي على الخادم بنجاح! أحسنت 🎉"
+        );
+        showBottomAction(true);
+        return;
+      } catch (error) {
+        console.error("Python challenge verification failed:", error);
+        addBubble(
+          "cody",
+          "تم تشغيل الكود، لكن تعذر التحقق من إجابتك وحفظ إثبات النجاح. تحقق من الاتصال وحاول تشغيل التحدي مرة أخرى."
+        );
+        showToast("لم يكتمل التحقق من التحدي. لم يتم اعتماد النجاح.");
+        return;
+      }
     }
 
+    // اختبار الفصل: لا يمنح مكافأة درس عادية، ويُستخدم فحصه المحلي للتقدم داخل الاختبار فقط.
     const challenge = currentChallenge;
-
     const expectedOutput =
       challenge.expectedOutput ??
       challenge.expected_output ??
@@ -2667,15 +2748,11 @@
         ? challenge.check
         : null;
 
-    if (
-      expectedOutput === undefined &&
-      !customCheck
-    ) {
+    if (expectedOutput === undefined && !customCheck) {
       addBubble(
         "cody",
-        "الكود اشتغل بنجاح! راجع الناتج وتأكد إنه بيحقق المطلوب. مش هاعتبر التحدي مكتمل تلقائيًا من غير اختبار محدد."
+        "الكود اشتغل بنجاح! راجع الناتج وتأكد إنه بيحقق المطلوب."
       );
-
       return;
     }
 
@@ -2683,38 +2760,24 @@
 
     if (customCheck) {
       try {
-        passed = Boolean(
-          customCheck(sourceCode, programOutput)
-        );
+        passed = Boolean(customCheck(sourceCode, programOutput));
       } catch (error) {
-        console.warn(
-          "تعذر تنفيذ اختبار التحدي:",
-          error
-        );
+        console.warn("تعذر تنفيذ اختبار التحدي:", error);
       }
-
     } else {
       const actual = String(programOutput)
         .replace(/\r\n/g, "\n")
         .trim();
-
       const expected = String(expectedOutput)
-        .replace(/\r\n/g, "\n")
+        .replace(/\\r\\n/g, "\\n")
         .trim();
-
       passed = actual === expected;
     }
 
     if (passed) {
       challengeSolved = true;
-
-      addBubble(
-        "cody",
-        "ممتاز! الناتج صحيح، وقد نجحت في التحدي! 🎉"
-      );
-
+      addBubble("cody", "ممتاز! اجتزت تحدي الاختبار بنجاح! 🎉");
       showBottomAction(true);
-
     } else {
       addBubble(
         "cody",
@@ -2769,13 +2832,26 @@
       currentLessonIndex
     );
 
+    let cloudSaved = true;
+
     if (!wasCompleted) {
+      cloudSaved = await saveProgressToFirebase();
+
+      if (!cloudSaved) {
+        clearChat();
+        addBubble(
+          "cody",
+          "لم نتمكن من حفظ إكمال الدرس في حسابك الآن. لم نضف نقاطًا أو نعلن اكتمال الدرس. تحقق من اتصال الإنترنت ثم اضغط إعادة المحاولة."
+        );
+        showBottomAction(true, "إعادة المحاولة");
+        return;
+      }
+
+      // لا نضيف المكافأة المحلية إلا بعد نجاح حفظ سجل التقدم.
       awardLessonReward(
         currentChapterId,
         currentLessonIndex
       );
-
-      await saveProgressToFirebase();
     }
 
     clearChat();
@@ -2784,14 +2860,10 @@
       "cody",
       wasCompleted
         ? "أهلًا بعودتك! الدرس ده مكتمل بالفعل. تقدر تراجع محتواه أو تنتقل للدرس التالي."
-        : "رائع! أنهيت الدرس بنجاح وحصلت على 10 نقاط خبرة ⭐"
+        : "رائع! تم حفظ إكمال الدرس بنجاح، وستتم مزامنة المكافأة مع حسابك ⭐"
     );
 
-    showBottomAction(
-      true,
-      "الدرس التالي"
-    );
-
+    showBottomAction(true, "الدرس التالي");
     updateProgressDisplay();
     renderChapters();
   }
@@ -2971,6 +3043,11 @@
     currentExamIndex = 0;
     examScore = 0;
     examAnswered = false;
+
+    const nextExamLessonButton = $("nextExamLessonBtn");
+    if (nextExamLessonButton) {
+      nextExamLessonButton.hidden = true;
+    }
 
     $("examView")?.classList.add("show");
     $("chatContainer")?.style.setProperty(
@@ -3268,18 +3345,22 @@
       : `حصلت على ${percentage}%. تحتاج إلى 80% على الأقل للنجاح.`;
   }
 
+  const nextExamLessonButton = $("nextExamLessonBtn");
+  if (nextExamLessonButton) {
+    nextExamLessonButton.hidden = !passed;
+  }
+
   if (passed) {
     writeStorage(
       `cody_python_exam_passed_${currentChapterId}`,
       true
     );
 
-    awardLessonReward(
-      currentChapterId,
-      currentLessonIndex
-    );
-
-    await saveProgressToFirebase();
+    // الامتحان له سجل مستقل حتى لا يُحسب كدرس عادي.
+    await saveProgressToFirebase({
+      chapter: Number(currentChapterId) - 1,
+      lesson: 104
+    });
   }
 }
 
@@ -3316,7 +3397,7 @@ function returnToLesson() {
 // 29) حفظ التقدم
 // ==========================================
 
-async function saveProgressToFirebase() {
+async function saveProgressToFirebase(position = {}) {
   try {
     const authModule = await import("./js/auth.js");
 
@@ -3324,10 +3405,18 @@ async function saveProgressToFirebase() {
       throw new Error("دالة حفظ تقدم الدروس غير متاحة في js/auth.js");
     }
 
+    const chapter = Number.isInteger(position.chapter)
+      ? position.chapter
+      : Number(currentChapterId) - 1;
+
+    const lesson = Number.isInteger(position.lesson)
+      ? position.lesson
+      : Number(currentLessonIndex);
+
     await authModule.saveLessonProgress({
       language: "python",
-      chapter: Number(currentChapterId),
-      lesson: Number(currentLessonIndex),
+      chapter,
+      lesson,
       completed: true
     });
 
@@ -3396,6 +3485,26 @@ function bindPageEvents() {
     returnToLesson
   );
 
+  $("nextExamLessonBtn")?.addEventListener(
+    "click",
+    () => {
+      if (
+        readStorage(
+          `cody_python_exam_passed_${currentChapterId}`,
+          false
+        ) !== true
+      ) {
+        showToast("اجتز الامتحان أولًا للانتقال إلى الفصل التالي.");
+        return;
+      }
+
+      $("examView")?.classList.remove("show");
+      $("chatContainer")?.style.removeProperty("display");
+      $("editorContainer")?.style.removeProperty("display");
+      goToNextLesson();
+    }
+  );
+
   $("editorBackdrop")?.addEventListener(
     "click",
     closeEditor
@@ -3419,7 +3528,16 @@ function bindPageEvents() {
 
 async function loadStudentData() {
   const xpDisplay = $("xpDisplay");
-  const savedXP = Number(readStorage("cody_python_xp", 0)) || 0;
+  const savedXP = Math.max(
+    Number(readStorage("cody_xp", 0)) || 0,
+    Number(readStorage("cody_python_xp", 0)) || 0
+  );
+
+  if (savedXP > 0) {
+    writeStorage("cody_xp", savedXP);
+    writeStorage("cody_python_xp", savedXP);
+  }
+
   if (xpDisplay) xpDisplay.textContent = String(savedXP);
 
   try {
@@ -3580,5 +3698,6 @@ if (document.readyState === "loading") {
 
 </script>
 
+<script type="module" src="js/reminders.js"></script>
 </body>
 </html>

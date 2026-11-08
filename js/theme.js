@@ -128,6 +128,15 @@
   // تطبيق الإعدادات قبل عرض الصفحة قدر الإمكان.
   applySavedPreferences();
 
+  // بعض الصفحات تحمّل هذا الملف قبل وسم theme-color؛ حدّثه بعد اكتمال head.
+  document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+      updateThemeMeta(root.dataset.theme || getSavedTheme());
+    },
+    { once: true }
+  );
+
   // مزامنة الإعدادات بين تبويبات المتصفح.
   window.addEventListener("storage", function (event) {
     if (event.key === THEME_KEY) {
