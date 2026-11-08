@@ -281,24 +281,6 @@
       font-weight: 900;
     }
 
-    .cody-voice-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-right: auto;
-      padding: 9px 13px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    .cody-voice-btn.active {
-      border-color: var(--cyan);
-      color: var(--cyan);
-    }
-
     .progress-text {
       display: flex;
       justify-content: space-between;
@@ -867,10 +849,6 @@
         padding: 8px 10px;
       }
 
-      .cody-voice-btn {
-        padding: 8px 10px;
-      }
-
       .chat-container {
         padding: 15px 12px 130px;
       }
@@ -996,17 +974,6 @@
             <span id="xpDisplay">0</span>
           </div>
 
-          <button
-            type="button"
-                 <button
-          type="button"
-          class="cody-voice-btn"
-          id="codyVoiceToggle"
-          aria-pressed="false"
-          title="تشغيل أو إيقاف صوت كودي"
-        >
-          <i class="ri-volume-up-line"></i>
-          <span>صوت كودي</span>
         </button>
 
       </div>
@@ -1143,9 +1110,6 @@
   let challengeSolved = false;
 
   let editor = null;
-
-  let codyVoiceEnabled = false;
-  let codySpeechVoice = null;
 
   let profileAvatarHTML = "";
 
@@ -1338,10 +1302,6 @@
 
     chatContainer.appendChild(row);
 
-    if (type === "cody") {
-      speakCody(bubble.textContent || "");
-    }
-
     scrollChatToBottom();
 
     return row;
@@ -1352,7 +1312,6 @@
       chatContainer.innerHTML = "";
     }
 
-    stopCodyVoice();
   }
 
   function showBottomAction(show, label = "متابعة") {
@@ -1369,97 +1328,6 @@
     `;
   }
     // ==========================================
-  // 3) صوت كودي
-  // ==========================================
-
-  function getAvailableSpeechVoice() {
-    if (!("speechSynthesis" in window)) return null;
-
-    const voices = window.speechSynthesis.getVoices();
-
-    return (
-      voices.find((voice) =>
-        /^ar/i.test(voice.lang)
-      ) ||
-      voices.find((voice) =>
-        /arabic/i.test(voice.name)
-      ) ||
-      null
-    );
-  }
-
-  function stopCodyVoice() {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-  }
-
-  function speakCody(message) {
-    if (!codyVoiceEnabled) return;
-    if (!("speechSynthesis" in window)) return;
-
-    const cleanMessage = String(message || "")
-      .replace(/<[^>]*>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    if (!cleanMessage) return;
-
-    stopCodyVoice();
-
-    const utterance = new SpeechSynthesisUtterance(
-      cleanMessage
-    );
-
-    codySpeechVoice = getAvailableSpeechVoice();
-
-    if (codySpeechVoice) {
-      utterance.voice = codySpeechVoice;
-    }
-
-    utterance.lang = "ar-EG";
-    utterance.rate = 0.92;
-    utterance.pitch = 1.05;
-
-    window.speechSynthesis.speak(utterance);
-  }
-
-  function toggleCodyVoice() {
-    if (!("speechSynthesis" in window)) {
-      showToast("الصوت غير مدعوم في هذا المتصفح");
-      return;
-    }
-
-    codyVoiceEnabled = !codyVoiceEnabled;
-
-    const voiceButton = $("codyVoiceToggle");
-
-    if (voiceButton) {
-      voiceButton.classList.toggle(
-        "active",
-        codyVoiceEnabled
-      );
-
-      voiceButton.setAttribute(
-        "aria-pressed",
-        String(codyVoiceEnabled)
-      );
-
-      voiceButton.innerHTML = codyVoiceEnabled
-        ? '<i class="ri-volume-up-fill"></i><span>إيقاف الصوت</span>'
-        : '<i class="ri-volume-up-line"></i><span>صوت كودي</span>';
-    }
-
-    if (!codyVoiceEnabled) {
-      stopCodyVoice();
-      showToast("تم إيقاف صوت كودي");
-    } else {
-      showToast("تم تشغيل صوت كودي");
-    }
-  }
-
-
-  // ==========================================
   // 4) القائمة الجانبية
   // ==========================================
 
@@ -1922,7 +1790,6 @@
     chatContainer.appendChild(wrapper);
     scrollChatToBottom();
   }
-<script>
   // ==========================================
   // 10) إنشاء محرر بايثون
   // ==========================================
@@ -2020,6 +1887,7 @@
     const textarea = $("pythonCodeInput");
 
     textarea.value =
+      step.defaultCode ||
       step.starterCode ||
       step.initialCode ||
       step.code ||
@@ -2122,19 +1990,35 @@
   // 13) إغلاق المحرر
   // ==========================================
 
-  function closeEditor() {
-    const container = $("editorContainer");
+  function closeEditor(options = {}) {
+    const discardChallenge = options?.discardChallenge === true;
+    const wrapper = $("pythonEditorWrapper");
 
-    if (container) {
-      container.innerHTML = "";
+    if (discardChallenge) {
+      $("editorContainer")?.replaceChildren();
+      editor = null;
+      currentChallenge = null;
+      currentHintIndex = 0;
+      challengeSolved = false;
+    } else if (wrapper) {
+      wrapper.classList.remove("show");
+      wrapper.style.display = "none";
     }
 
     $("editorBackdrop")?.classList.remove("show");
-
-    editor = null;
-    currentChallenge = null;
-
     showBottomAction(true);
+  }
+
+  function reopenCurrentChallenge() {
+    const wrapper = $("pythonEditorWrapper");
+
+    if (!wrapper || !currentChallenge || challengeSolved) return false;
+
+    wrapper.style.display = "";
+    wrapper.classList.add("show");
+    $("editorBackdrop")?.classList.add("show");
+    showBottomAction(false);
+    return true;
   }
 
 
@@ -2284,7 +2168,7 @@
       output.textContent =
         programOutput || "تم تشغيل الكود بدون أخطاء.";
 
-      checkChallengeResult(programOutput);
+      checkChallengeResult(programOutput, code);
 
     } catch (error) {
       output.textContent =
@@ -2305,7 +2189,7 @@
   // 17) التحقق من نتيجة التحدي
   // ==========================================
 
-  function checkChallengeResult(programOutput) {
+  function checkChallengeResult(programOutput, sourceCode = "") {
     if (!currentChallenge || challengeSolved) {
       return;
     }
@@ -2339,7 +2223,7 @@
     if (customCheck) {
       try {
         passed = Boolean(
-          customCheck(programOutput)
+          customCheck(sourceCode, programOutput)
         );
       } catch (error) {
         console.warn(
@@ -2398,7 +2282,7 @@
         return;
       }
 
-      closeEditor();
+      closeEditor({ discardChallenge: true });
     }
 
     currentStepIndex++;
@@ -2656,12 +2540,17 @@
     }
 
     if (!currentExamQuestions.length) {
-      if (questionBox) {
-        questionBox.innerHTML = `
-          <p>لا توجد أسئلة امتحان صالحة في بيانات هذا الدرس.</p>
-        `;
-      }
+      const questionText = $("examQuestionText");
+      const optionsContainer = $("examOptionsContainer");
+      const feedback = $("examFeedback");
 
+      if (questionText) {
+        questionText.textContent = "لا توجد أسئلة امتحان صالحة في بيانات هذا الدرس.";
+      }
+      if (optionsContainer) optionsContainer.replaceChildren();
+      if (feedback) feedback.textContent = "";
+
+      showToast("راجع بيانات أسئلة الامتحان في هذا الدرس.");
       return;
     }
 
@@ -2955,30 +2844,24 @@ function returnToLesson() {
 // ==========================================
 
 async function saveProgressToFirebase() {
-  /*
-    الحفظ المحلي يتم داخل awardLessonReward.
+  try {
+    const authModule = await import("./js/auth.js");
 
-    ربط Firebase يحتاج إلى مطابقة دالة الحفظ
-    الموجودة فعليًا في js/auth.js.
-  */
-
-  if (typeof window.savePythonProgress === "function") {
-    try {
-      await window.savePythonProgress({
-        chapter: Number(currentChapterId),
-        lesson: Number(currentLessonIndex),
-        completed: true,
-        xp: Number(
-          readStorage("cody_python_xp", 0)
-        )
-      });
-
-    } catch (error) {
-      console.error(
-        "تعذر حفظ التقدم على الخادم:",
-        error
-      );
+    if (typeof authModule.saveLessonProgress !== "function") {
+      throw new Error("دالة حفظ تقدم الدروس غير متاحة في js/auth.js");
     }
+
+    await authModule.saveLessonProgress({
+      language: "python",
+      chapter: Number(currentChapterId),
+      lesson: Number(currentLessonIndex),
+      completed: true
+    });
+
+    return true;
+  } catch (error) {
+    console.error("تعذر حفظ تقدم درس بايثون في Firebase:", error);
+    return false;
   }
 }
 
@@ -3003,17 +2886,18 @@ function bindPageEvents() {
     closeSidebar
   );
 
-  $("codyVoiceToggle")?.addEventListener(
-    "click",
-    toggleCodyVoice
-  );
-
   nextBtn?.addEventListener(
     "click",
     () => {
+      if ($("examView")?.classList.contains("show")) return;
+
       if (
-        $("examView")?.classList.contains("show")
+        currentStep &&
+        ["challenge", "code", "coding"].includes(currentStep.type) &&
+        !challengeSolved &&
+        $("pythonEditorWrapper")?.style.display === "none"
       ) {
+        reopenCurrentChallenge();
         return;
       }
 
@@ -3049,7 +2933,7 @@ function bindPageEvents() {
     (event) => {
       if (event.key === "Escape") {
         closeSidebar();
-        closeEditor();
+        closeEditor({ discardChallenge: true });
       }
     }
   );
@@ -3160,12 +3044,6 @@ function initializePythonLesson() {
   }
 
   loadCurrentLesson();
-
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.onvoiceschanged = () => {
-      codySpeechVoice = getAvailableSpeechVoice();
-    };
-  }
 
   console.info(
     "Python Lesson initialized."
