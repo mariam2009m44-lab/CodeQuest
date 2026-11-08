@@ -1559,6 +1559,13 @@
 
   let editor = null;
 
+  function refreshPythonEditorLayout() {
+    window.requestAnimationFrame(() => editor?.refresh());
+  }
+
+  window.addEventListener("resize", refreshPythonEditorLayout, { passive: true });
+  window.visualViewport?.addEventListener("resize", refreshPythonEditorLayout, { passive: true });
+
   let profileAvatarHTML = "";
 
   let currentExamQuestions = [];
@@ -2326,6 +2333,15 @@
 
     if (!container) return;
 
+    if (editor) {
+      try {
+        editor.toTextArea();
+      } catch (error) {
+        console.warn("تعذر التخلص من محرر التحدي السابق:", error);
+      }
+      editor = null;
+    }
+
     currentChallenge = step;
     currentHintIndex = 0;
     challengeSolved = false;
@@ -2511,13 +2527,7 @@
 
       // The shared responsive stylesheet controls the editor's height.
       // Do not autofocus on phones: that opens the keyboard and hides the lesson.
-      const refreshEditor = () => {
-        requestAnimationFrame(() => editor?.refresh());
-      };
-      window.addEventListener("resize", refreshEditor, { passive: true });
-      window.visualViewport?.addEventListener("resize", refreshEditor, { passive: true });
-
-      requestAnimationFrame(refreshEditor);
+      requestAnimationFrame(refreshPythonEditorLayout);
 
     } catch (error) {
       console.error(
@@ -2552,6 +2562,13 @@
     const wrapper = $("pythonEditorWrapper");
 
     if (discardChallenge) {
+      if (editor) {
+        try {
+          editor.toTextArea();
+        } catch (error) {
+          console.warn("تعذر إغلاق محرر Python:", error);
+        }
+      }
       $("editorContainer")?.replaceChildren();
       editor = null;
       currentChallenge = null;
