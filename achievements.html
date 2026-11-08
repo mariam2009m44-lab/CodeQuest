@@ -441,6 +441,14 @@
       cpp: {
         name: "C++",
         file: "./json/cpp_curriculum.json"
+      },
+      java: {
+        name: "Java",
+        chapters: Array.from(
+          { length: 8 },
+          () => ({ lessons: [{}, {}] })
+        ),
+        total: 16
       }
     };
 
@@ -659,9 +667,15 @@
 
         const results = await Promise.all(
           languages.map(async (key) => {
+            const language = LANGUAGES[key];
             const [items, curriculum] = await Promise.all([
               getLessonProgress(key),
-              loadCurriculumTotal(LANGUAGES[key].file)
+              language.chapters
+                ? Promise.resolve({
+                    chapters: language.chapters,
+                    total: language.total
+                  })
+                : loadCurriculumTotal(language.file)
             ]);
 
             const validItems = getValidCompletedRecords(
