@@ -715,6 +715,9 @@
               <textarea id="codeEditor" spellcheck="false"></textarea>
             </div>
 
+            <label for="javaStdin" style="display:block;margin:12px 0 6px;font-weight:800;color:var(--muted)">مدخلات البرنامج (اختياري) — كل قيمة في سطر</label>
+            <textarea id="javaStdin" rows="3" dir="ltr" spellcheck="false" placeholder="اكتب القيم التي يقرأها Scanner هنا" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text);font-family:monospace;resize:vertical"></textarea>
+
             <div class="editor-actions">
               <button class="btn btn-primary" id="checkCode" type="button">
                 تحقق من الحل
@@ -1195,7 +1198,7 @@ e}`;
     }
 
     function updateStats() {
-      const xpElement = document.getElementById("xp-count");
+      const xpElement = document.getElementById("xpCount");
       if (xpElement) xpElement.textContent = getXP();
 
       const progress = readProgress();
@@ -1203,7 +1206,7 @@ e}`;
         lesson => progress[lesson.id]?.completed
       ).length;
 
-      const completedElement = document.getElementById("completed-count");
+      const completedElement = document.getElementById("progressCount");
       if (completedElement) {
         completedElement.textContent = `${completedCount}/${allLessons.length}`;
       }
@@ -1216,13 +1219,13 @@ e}`;
     }
 
     function renderSidebar() {
-      const sidebar = document.getElementById("lesson-list");
+      const sidebar = document.getElementById("lessonList");
       if (!sidebar) return;
 
       const progress = readProgress();
       sidebar.replaceChildren();
 
-      curriculum.forEach(chapter => {
+      CURRICULUM.forEach(chapter => {
         const chapterElement = document.createElement("section");
         chapterElement.className = "chapter-group";
 
@@ -1256,11 +1259,11 @@ e}`;
     }
 
     function setOutput(message, type = "info") {
-      const output = document.getElementById("code-output");
+      const output = document.getElementById("codeOutput");
       if (!output) return;
 
       output.textContent = message;
-      output.className = `code-output output-${type}`;
+      output.className = `output output-${type}`;
     }
 
     function disposeEditor() {
@@ -1278,7 +1281,7 @@ e}`;
     function setupEditor(starter) {
       disposeEditor();
 
-      const textarea = document.getElementById("code-editor");
+      const textarea = document.getElementById("codeEditor");
       if (!textarea) {
         console.error("لم يتم العثور على عنصر code-editor.");
         return;
@@ -1315,12 +1318,12 @@ e}`;
     }
 
     function getEditorCode() {
-      const textarea = document.getElementById("code-editor");
+      const textarea = document.getElementById("codeEditor");
       return editor ? editor.getValue() : (textarea?.value || "");
     }
 
     function setEditorCode(code) {
-      const textarea = document.getElementById("code-editor");
+      const textarea = document.getElementById("codeEditor");
 
       if (editor) {
         editor.setValue(code || "");
@@ -1330,7 +1333,7 @@ e}`;
     }
 
     function renderQuiz(quiz) {
-      const container = document.getElementById("quiz-container");
+      const container = document.getElementById("lessonQuiz");
       if (!container) return;
 
       container.replaceChildren();
@@ -1383,15 +1386,15 @@ e}`;
       container.appendChild(checkButton);
 
       const feedback = document.createElement("p");
-      feedback.id = "quiz-feedback";
-      feedback.className = "quiz-feedback";
+      feedback.id = "quizFeedback";
+      feedback.className = "quizFeedback";
       feedback.setAttribute("aria-live", "polite");
       container.appendChild(feedback);
     }
 
     function checkQuizAnswer() {
       const lesson = findLesson(currentLessonId);
-      const feedback = document.getElementById("quiz-feedback");
+      const feedback = document.getElementById("quizFeedback");
 
       if (!lesson?.quiz || !feedback) return;
 
@@ -1425,13 +1428,16 @@ e}`;
 
       currentLessonId = lesson.id;
 
+      const lessonIndex = allLessons.findIndex(item => item.id === lesson.id);
+      const chapter = CURRICULUM.find(item => item.lessons.some(entry => entry.id === lesson.id));
       const elements = {
-        "lesson-title": lesson.title,
-        "lesson-intro": lesson.intro,
-        "lesson-explanation": lesson.explanation,
-        "lesson-example": lesson.example,
-        "lesson-task": lesson.task,
-        "lesson-hint": lesson.hint
+        "lessonTitle": lesson.title,
+        "lessonIntro": lesson.intro,
+        "lessonExplanation": lesson.explanation,
+        "lessonExample": lesson.example,
+        "lessonTask": lesson.task,
+        "lessonHint": lesson.hint,
+        "lessonChapter": chapter?.title || "مسار Java"
       };
 
       Object.entries(elements).forEach(([id, value]) => {
@@ -1461,7 +1467,7 @@ e}`;
         return;
       }
 
-      const checkButton = document.getElementById("check-challenge");
+      const checkButton = document.getElementById("checkCode");
       if (checkButton) {
         checkButton.disabled = true;
         checkButton.textContent = "جارٍ تجميع وتشغيل Java...";
@@ -1470,7 +1476,7 @@ e}`;
       setOutput("جارٍ إرسال البرنامج إلى بيئة Java...", "info");
 
       try {
-        const result = await runCodeOnServer("java", code);
+        const result = await runCodeOnServer("java", code, document.getElementById("javaStdin")?.value || "");
         const diagnostics = [
           result.compileOutput,
           result.stderr,
@@ -1548,10 +1554,10 @@ e}`;
         lesson => lesson.id === currentLessonId
       );
 
-      const previous = document.getElementById("previous-lesson");
-      const next = document.getElementById("next-lesson");
-      const complete = document.getElementById("complete-lesson");
-      const counter = document.getElementById("lesson-counter");
+      const previous = document.getElementById("previousLesson");
+      const next = document.getElementById("nextLesson");
+      const complete = document.getElementById("completeLesson");
+      const counter = document.getElementById("lessonChapter");
 
       if (previous) previous.disabled = index <= 0;
       if (next) next.disabled = index < 0 || index >= allLessons.length - 1;
@@ -1563,7 +1569,7 @@ e}`;
       }
 
       if (counter && index >= 0) {
-        counter.textContent = `الدرس ${index + 1} من ${allLessons.length}`;
+        counter.textContent = `الفصل ${Math.floor(index / 2) + 1} · الدرس ${index + 1} من ${allLessons.length}`;
       }
     }
 
@@ -1582,32 +1588,32 @@ e}`;
     }
 
     function attachLessonEvents() {
-      document.getElementById("check-challenge")
+      document.getElementById("checkCode")
         ?.addEventListener("click", checkChallenge);
 
-      document.getElementById("complete-lesson")
+      document.getElementById("completeLesson")
         ?.addEventListener("click", completeCurrentLesson);
 
-      document.getElementById("previous-lesson")
+      document.getElementById("previousLesson")
         ?.addEventListener("click", () => moveLesson(-1));
 
-      document.getElementById("next-lesson")
+      document.getElementById("nextLesson")
         ?.addEventListener("click", () => moveLesson(1));
 
-      document.getElementById("show-hint")
+      document.getElementById("showHint")
         ?.addEventListener("click", () => {
-          const hint = document.getElementById("lesson-hint");
+          const hint = document.getElementById("lessonHint");
           if (!hint) return;
 
           hint.hidden = !hint.hidden;
 
-          const button = document.getElementById("show-hint");
+          const button = document.getElementById("showHint");
           if (button) {
-            button.textContent = hint.hidden ? "عرض التلميح" : "إخفاء التلميح";
+            button.textContent = hint.hidden ? "إظهار التلميح" : "إخفاء التلميح";
           }
         });
 
-      document.getElementById("reset-code")
+      document.getElementById("resetCode")
         ?.addEventListener("click", () => {
           const lesson = findLesson(currentLessonId);
           if (!lesson) return;
@@ -1633,7 +1639,7 @@ e}`;
 
     function startApp() {
       try {
-        allLessons = curriculum.flatMap(chapter => chapter.lessons);
+        allLessons = CURRICULUM.flatMap(chapter => chapter.lessons);
 
         if (!allLessons.length) {
           showNotice("المنهج فارغ؛ راجع بيانات الدروس.", "error");
