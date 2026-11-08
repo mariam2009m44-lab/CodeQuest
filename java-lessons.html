@@ -755,7 +755,7 @@
     "use strict";
 
     import { runCodeOnServer } from "./js/code-runner.js";
-    import { saveLessonProgress } from "./js/auth.js";
+    import { saveLessonProgress, getLessonProgress } from "./js/auth.js";
 
     const PROGRESS_KEY = "cody_java_progress";
     const XP_KEY = "cody_java_xp";
@@ -1754,13 +1754,43 @@
       return incomplete?.id || allLessons[0]?.id || null;
     }
 
-    function startApp() {
+    async function startApp() {
       try {
         allLessons = CURRICULUM.flatMap(chapter => chapter.lessons);
 
         if (!allLessons.length) {
           showNotice("المنهج فارغ؛ راجع بيانات الدروس.", "error");
           return;
+        }
+
+        // استعادة التقدم المحفوظ في الحساب حتى يعمل المسار على أكثر من جهاز.
+        try {
+          const cloudRecords = await getLessonProgress("java");
+          const progress = readProgress();
+
+          cloudRecords.forEach(record => {
+            if (
+              record?.completed !== true ||
+              !Number.isSafeInteger(record.chapter) ||
+              !Number.isSafeInteger(record.lesson) ||
+              record.chapter < 0 ||
+              record.chapter >= CURRICULUM.length ||
+              record.lesson < 0 ||
+              record.lesson >= 2
+            ) {
+              return;
+            }
+
+            const lessonId = `java-${record.chapter + 1}-${record.lesson + 1}`;
+            progress[lessonId] = {
+              ...(progress[lessonId] || {}),
+              completed: true
+            };
+          });
+
+          saveProgress(progress);
+        } catch (syncError) {
+          console.warn("تعذر استعادة تقدم Java من الحساب؛ سيتم عرض التقدم المحلي:", syncError);
         }
 
         attachLessonEvents();
