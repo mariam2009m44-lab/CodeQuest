@@ -98,6 +98,16 @@ function validateCodeInput(data) {
       "يجب إدخال كود صالح لا يتجاوز 50000 حرف."
     );
   }
+
+  if (
+    data.stdin !== undefined &&
+    (typeof data.stdin !== "string" || data.stdin.length > 10000)
+  ) {
+    throw new HttpsError(
+      "invalid-argument",
+      "بيانات الإدخال غير صالحة أو أطول من الحد المسموح."
+    );
+  }
 }
 
 function safeOutput(value) {
@@ -160,7 +170,7 @@ exports.runCode = onCall(
           body: JSON.stringify({
             source_code: data.code,
             language_id: LANGUAGES[data.language],
-            stdin: ""
+            stdin: data.stdin || ""
           }),
           signal: AbortSignal.timeout(15000)
         }
