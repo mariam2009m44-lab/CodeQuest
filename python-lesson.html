@@ -1,1841 +1,1832 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>رحلة بايثون التفاعلية | Cody</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
-
-  <style>
-    :root {
-      --bg: #05080f;
-      --surface: #0f172a;
-      --border: #1e293b;
-      --text: #ffffff;
-      --text-muted: #94a3b8;
-      --cyan: #06b6d4;
-      --green: #10b981;
-      --gold: #fbbf24;
-      --red: #f43f5e;
-      --safe: env(safe-area-inset-bottom, 20px);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Cairo', sans-serif;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      height: 100dvh;
-      overflow: hidden;
-    }
-
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      z-index: 999;
-    }
-
-    .overlay.open {
-      display: block;
-    }
-
-    .sidebar {
-      width: 320px;
-      min-width: 0;
-      background: #0b1120;
-      border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      height: 100dvh;
-      z-index: 1000;
-      transition: 0.3s;
-    }
-
-    .sidebar-header {
-      padding: 20px 15px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .sidebar-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .sidebar-brand img {
-      width: 36px;
-    }
-
-    .sidebar-brand h2 {
-      color: var(--text);
-      font-size: 1.3rem;
-      font-weight: 900;
-    }
-
-    .close-btn {
-      display: none;
-      background: var(--border);
-      border: none;
-      border-radius: 8px;
-      width: 36px;
-      height: 36px;
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    .chapters-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px 15px;
-      padding-bottom: 150px;
-    }
-
-    .chapter-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 12px;
-      overflow: hidden;
-    }
-
-    .chapter-title {
-      padding: 18px 15px;
-      position: relative;
-      cursor: pointer;
-      background: rgba(255,255,255,0.02);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .chap-name {
-      color: #ffffff !important;
-      font-size: 1.1rem;
-      font-weight: 700;
-      display: block;
-      padding-left: 35px;
-      margin-bottom: 8px;
-    }
-
-    .chap-icon {
-      position: absolute;
-      left: 15px;
-      top: 18px;
-      font-size: 1.3rem;
-      color: var(--text-muted);
-    }
-
-    .chapter-item.locked .chap-name {
-      color: var(--text-muted) !important;
-    }
-
-    .chapter-item.locked .chap-icon {
-      color: var(--text-muted);
-    }
-
-    .chap-mini-prog {
-      width: 100%;
-      height: 6px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .chap-mini-fill {
-      height: 100%;
-      background: var(--cyan);
-      width: 0%;
-    }
-
-    .lessons-list {
-      display: none;
-      background: #0a0f1a;
-    }
-
-    .lessons-list.open {
-      display: block;
-    }
-
-    .lesson-link {
-      display: block;
-      padding: 15px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
-
-    .lesson-link:hover:not(.locked-lesson),
-    .lesson-link.active {
-      color: var(--cyan);
-      background: #1a2332;
-      font-weight: 700;
-    }
-
-    .lesson-link.active {
-      border-right: 4px solid var(--cyan);
-    }
-
-    .lesson-link.locked-lesson {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .main-area {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100dvh;
-      position: relative;
-    }
-
-    .top-bar {
-      padding: 15px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      z-index: 10;
-    }
-
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .menu-btn {
-      display: none;
-      background: var(--border);
-      border: none;
-      border-radius: 10px;
-      width: 44px;
-      height: 44px;
-      color: var(--text);
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    .back-btn {
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 800;
-      font-size: 1rem;
-      background: var(--border);
-      padding: 10px 15px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .stats-badge {
-      background: rgba(251, 191, 36, 0.1);
-      color: var(--gold);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 900;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .progress-container {
-      width: 100%;
-    }
-
-    .progress-text {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-
-    .progress-text span:last-child {
-      color: var(--cyan);
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 10px;
-      background: var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--cyan);
-      width: 0%;
-      transition: 0.3s;
-      border-radius: 10px;
-    }
-
-    .content-wrapper {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .chat-container {
-      flex: 1;
-      min-height: 0;
-      padding: 20px;
-      padding-bottom: 120px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .message-row {
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-    }
-
-    .message-row.cody {
-      flex-direction: row;
-    }
-
-    .message-row.cody .avatar {
-      background: #0ea5e9;
-    }
-
-    .message-row.cody .bubble {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px 20px 0 20px;
-    }
-
-    .message-row.student {
-      flex-direction: row-reverse;
-    }
-
-    .message-row.student .avatar {
-      background: #4f46e5;
-    }
-
-    .message-row.student .bubble {
-      background: #4f46e5;
-      border-radius: 20px 20px 20px 0;
-    }
-
-    .avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-size: 1.3rem;
-      flex-shrink: 0;
-    }
-
-    .bubble {
-      padding: 16px 20px;
-      font-size: 1.1rem;
-      line-height: 1.8;
-      max-width: 85%;
-      color: #fff;
-    }
-
-    .bubble code {
-      background: #000;
-      color: var(--cyan);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-family: 'Fira Code', monospace;
-      direction: ltr;
-      display: inline-block;
-      font-size: 1rem;
-    }
-
-    .typing-indicator {
-      display: flex;
-      gap: 6px;
-      padding: 15px 18px;
-      background: var(--surface);
-      border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-
-    .typing-indicator span {
-      width: 8px;
-      height: 8px;
-      background: var(--text-muted);
-      border-radius: 50%;
-      animation: bounce 1.4s infinite ease-in-out both;
-    }
-
-    .typing-indicator span:nth-child(1) {
-      animation-delay: -0.32s;
-    }
-
-    .typing-indicator span:nth-child(2) {
-      animation-delay: -0.16s;
-    }
-
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); }
-      40% { transform: scale(1); }
-    }
-
-    .choices-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      width: 100%;
-      max-width: 500px;
-      margin-right: 56px;
-      margin-top: 10px;
-    }
-
-    .choice-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 18px;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 700;
-      text-align: right;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .choice-btn:hover {
-      border-color: var(--cyan);
-      transform: translateX(-4px);
-    }
-
-    .open-editor-btn {
-      background: var(--cyan);
-      color: #000;
-      border: none;
-      padding: 20px;
-      border-radius: 14px;
-      font-weight: 900;
-      font-size: 1.2rem;
-      width: 100%;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 15px;
-      transition: 0.2s;
-      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
-    }
-
-    .open-editor-btn:hover {
-      transform: scale(1.02);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
-    }
-
-    .editor-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(3px);
-      z-index: 1999;
-    }
-
-    .editor-backdrop.show {
-      display: block;
-    }
-
-    .editor-wrapper {
-      display: none;
-      flex-direction: column;
-      background: #0d1117;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      z-index: 2000;
-    }
-
-    .editor-wrapper.show {
-      display: flex;
-    }
-
-    .editor-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background: #161b22;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .editor-title {
-      color: var(--text-muted);
-      font-family: 'Fira Code', monospace;
-      font-size: 1rem;
-    }
-
-    .btn-run {
-      background: var(--green);
-      color: #000;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      border: none;
-    }
-
-    .code-area {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    .CodeMirror {
-      flex: 1;
-      width: 100% !important;
-      height: 100% !important;
-      font-family: 'Fira Code', monospace;
-      font-size: 1.1rem;
-      direction: ltr;
-      text-align: left;
-      background: #0d1117 !important;
-    }
-
-    .output-area {
-      height: 120px;
-      background: #000;
-      padding: 15px;
-      font-family: 'Fira Code', monospace;
-      color: #ccc;
-      direction: ltr;
-      text-align: left;
-      overflow-y: auto;
-      font-size: 1rem;
-      white-space: pre-wrap;
-      border-top: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .exam-view {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-      padding: 30px;
-      overflow-y: auto;
-    }
-
-    .exam-view.show {
-      display: flex;
-    }
-
-    .exam-header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .exam-header h2 {
-      color: var(--cyan);
-      font-size: 2rem;
-      font-weight: 900;
-      margin-bottom: 15px;
-    }
-
-    .exam-progress-bar {
-      width: 100%;
-      height: 10px;
-      background: var(--border);
-      border-radius: 10px;
-      margin-bottom: 15px;
-      overflow: hidden;
-    }
-
-    .exam-progress-fill {
-      height: 100%;
-      background: var(--gold);
-      width: 0%;
-      transition: 0.3s;
-    }
-
-    .exam-progress-text {
-      color: var(--text-muted);
-      font-size: 1rem;
-      font-weight: 700;
-    }
-
-    .exam-question-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 30px;
-    }
-
-    .exam-q-text {
-      font-size: 1.4rem;
-      font-weight: 700;
-      margin-bottom: 25px;
-      color: #fff;
-    }
-
-    .exam-options {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .exam-opt-btn {
-      background: #0b1120;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 20px;
-      border-radius: 12px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      text-align: right;
-      cursor: pointer;
-    }
-
-    .exam-opt-btn.correct {
-      background: rgba(16, 185, 129, 0.2);
-      border-color: var(--green);
-      color: var(--green);
-    }
-
-    .exam-opt-btn.wrong {
-      background: rgba(244, 63, 94, 0.2);
-      border-color: var(--red);
-      color: var(--red);
-    }
-
-    .exam-result {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      min-height: 0;
-      text-align: center;
-    }
-
-    .exam-result.show {
-      display: flex;
-    }
-
-    .score-ring {
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      background: conic-gradient(var(--green) 0%, var(--border) 0%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 30px;
-      position: relative;
-    }
-
-    .score-ring::before {
-      content: '';
-      position: absolute;
-      inset: 10px;
-      background: var(--surface);
-      border-radius: 50%;
-    }
-
-    .score-ring span {
-      position: relative;
-      z-index: 1;
-      font-size: 3rem;
-      font-weight: 900;
-      color: var(--gold);
-    }
-
-    .exam-result h2 {
-      font-size: 2rem;
-      color: #fff;
-      margin-bottom: 15px;
-    }
-
-    .exam-result p {
-      color: var(--text-muted);
-      font-size: 1.2rem;
-      margin-bottom: 30px;
-    }
-
-    .bottom-action {
-      position: fixed;
-      bottom: calc(var(--safe) + 15px);
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      z-index: 900;
-      width: 90%;
-      max-width: 400px;
-    }
-
-    .bottom-action.show {
-      display: block;
-    }
-
-    .btn-next {
-      background: var(--cyan);
-      color: #000;
-      padding: 18px;
-      width: 100%;
-      border-radius: 14px;
-      font-weight: 900;
-      font-size: 1.2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
-    }
-
-    @media (max-width: 900px) {
-      .sidebar {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        height: 100dvh;
-        width: 100%;
-      }
-
-      .sidebar.open {
-        right: 0;
-      }
-
-      .close-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .menu-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .back-btn span {
-        display: none;
-      }
-
-      .back-btn {
-        width: 44px;
-        height: 44px;
-        padding: 0;
-        justify-content: center;
-      }
-
-      .chat-container {
-        padding: 15px;
-        padding-bottom: 140px;
-      }
-
-      .choices-container {
-        margin-right: 0;
-        width: 100%;
-      }
-
-      .bubble {
-        max-width: 90%;
-        font-size: 1rem;
-        padding: 14px 18px;
-      }
-
-      .editor-wrapper.show {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 80vh;
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
-      }
-    }
-
-    @media (min-width: 901px) {
-      .content-wrapper {
-        flex-direction: row;
-      }
-
-      .chat-container {
-        max-width: 50%;
-        padding-bottom: 40px;
-      }
-
-      .editor-wrapper {
-        flex: 1;
-        height: 100%;
-        border-radius: 0;
-        border-left: 1px solid var(--border);
-        border-top: none;
-        border-bottom: none;
-        border-right: none;
-      }
-
-      .editor-backdrop {
-        display: none !important;
-      }
-
-      .bottom-action {
-        position: relative;
-        bottom: auto;
-        left: auto;
-        transform: none;
-        width: 100%;
-        max-width: 100%;
-        padding: 20px;
-        background: var(--surface);
-        border-top: 1px solid var(--border);
-      }
-
-      .btn-next {
-        max-width: 400px;
-        margin: 0 auto;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>رحلة بايثون التفاعلية | Cody</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+:root {
+  --bg:#05080f;
+  --surface:#0f172a;
+  --border:#1e293b;
+  --text:#fff;
+  --muted:#94a3b8;
+  --cyan:#06b6d4;
+  --green:#10b981;
+  --gold:#fbbf24;
+  --red:#f43f5e;
+  --safe:env(safe-area-inset-bottom,20px);
+}
+
+* {
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:'Cairo',sans-serif;
+}
+
+body {
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  height:100dvh;
+  overflow:hidden;
+}
+
+button { font-family:inherit; }
+
+.overlay,.editor-backdrop {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  z-index:999;
+}
+
+.overlay.open,.editor-backdrop.show { display:block; }
+
+.sidebar {
+  width:320px;
+  min-width:0;
+  background:#0b1120;
+  border-left:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+  z-index:1000;
+  transition:.3s;
+}
+
+.sidebar-header {
+  padding:20px 15px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.sidebar-brand {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.sidebar-brand img { width:36px; }
+
+.sidebar-brand h2 {
+  font-size:1.3rem;
+  font-weight:900;
+}
+
+.close-btn,.menu-btn {
+  background:var(--border);
+  border:0;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+}
+
+.close-btn {
+  display:none;
+  width:36px;
+  height:36px;
+}
+
+.chapters-list {
+  flex:1;
+  overflow-y:auto;
+  padding:20px 15px 150px;
+}
+
+.chapter-item {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
+
+.chapter-title {
+  padding:18px 15px;
+  cursor:pointer;
+  position:relative;
+  border-bottom:1px solid var(--border);
+}
+
+.chap-name {
+  display:block;
+  font-size:1.05rem;
+  font-weight:700;
+  padding-left:35px;
+  margin-bottom:8px;
+}
+
+.chap-icon {
+  position:absolute;
+  left:15px;
+  top:18px;
+  font-size:1.3rem;
+}
+
+.chap-mini-prog {
+  width:100%;
+  height:6px;
+  background:rgba(255,255,255,.1);
+  border-radius:5px;
+  overflow:hidden;
+}
+
+.chap-mini-fill {
+  height:100%;
+  background:var(--cyan);
+}
+
+.lessons-list {
+  display:none;
+  background:#0a0f1a;
+}
+
+.lessons-list.open { display:block; }
+
+.lesson-link {
+  display:block;
+  padding:14px;
+  color:var(--muted);
+  text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+
+.lesson-link.active,.lesson-link:hover {
+  color:var(--cyan);
+  background:#1a2332;
+}
+
+.lesson-link.locked-lesson {
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.main-area {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+  position:relative;
+}
+
+.top-bar {
+  padding:15px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  z-index:10;
+}
+
+.top-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.menu-btn {
+  display:none;
+  width:44px;
+  height:44px;
+  font-size:1.5rem;
+}
+
+.back-btn {
+  color:white;
+  text-decoration:none;
+  font-weight:800;
+  background:var(--border);
+  padding:10px 15px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.stats-badge {
+  background:rgba(251,191,36,.1);
+  color:var(--gold);
+  padding:8px 16px;
+  border-radius:20px;
+  font-weight:900;
+  display:flex;
+  gap:8px;
+}
+
+.progress-text {
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.progress-text span:last-child { color:var(--cyan); }
+
+.progress-bar {
+  height:10px;
+  background:var(--border);
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.progress-fill {
+  height:100%;
+  background:var(--cyan);
+  width:0;
+  transition:.3s;
+}
+
+.content-wrapper {
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.chat-container {
+  flex:1;
+  min-height:0;
+  padding:20px 20px 120px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.message-row {
+  display:flex;
+  gap:12px;
+  align-items:flex-end;
+}
+
+.message-row.cody { flex-direction:row; }
+.message-row.student { flex-direction:row-reverse; }
+
+.avatar {
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  overflow:hidden;
+  background:#0ea5e9;
+}
+
+.message-row.student .avatar { background:#4f46e5; }
+
+.avatar img,.avatar svg {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.bubble {
+  padding:16px 20px;
+  font-size:1.05rem;
+  line-height:1.8;
+  max-width:85%;
+  color:white;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px 20px 0 20px;
+  overflow-wrap:anywhere;
+}
+
+.message-row.student .bubble {
+  background:#4f46e5;
+  border:0;
+  border-radius:20px 20px 20px 0;
+}
+
+.bubble code {
+  background:#000;
+  color:var(--cyan);
+  padding:4px 8px;
+  border-radius:6px;
+  font-family:'Fira Code',monospace;
+  direction:ltr;
+  display:inline-block;
+}
+
+.choices-container {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  width:100%;
+  max-width:500px;
+  margin-right:56px;
+  margin-top:10px;
+}
+
+.choice-btn {
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:white;
+  padding:17px;
+  border-radius:12px;
+  font-size:1rem;
+  font-weight:700;
+  text-align:right;
+  cursor:pointer;
+}
+
+.choice-btn:hover { border-color:var(--cyan); }
+
+.open-editor-btn,.btn-next {
+  background:var(--cyan);
+  color:#000;
+  border:0;
+  padding:18px;
+  border-radius:14px;
+  font-weight:900;
+  font-size:1.1rem;
+  width:100%;
+  cursor:pointer;
+}
+
+.open-editor-btn { margin-top:15px; }
+
+.editor-wrapper {
+  display:none;
+  flex-direction:column;
+  background:#0d1117;
+  border:1px solid var(--border);
+  overflow:hidden;
+  z-index:2000;
+}
+
+.editor-wrapper.show { display:flex; }
+
+.editor-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:#161b22;
+  border-bottom:1px solid var(--border);
+  gap:10px;
+}
+
+.editor-title {
+  color:var(--muted);
+  font-family:'Fira Code',monospace;
+}
+
+.btn-run {
+  background:var(--green);
+  color:#000;
+  padding:10px 18px;
+  border-radius:8px;
+  font-weight:900;
+  border:0;
+  cursor:pointer;
+}
+
+.code-area {
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.CodeMirror {
+  flex:1;
+  width:100%;
+  height:100%;
+  font-family:'Fira Code',monospace;
+  font-size:1rem;
+  direction:ltr;
+  text-align:left;
+  background:#0d1117!important;
+}
+
+.output-area {
+  height:120px;
+  background:#000;
+  padding:15px;
+  color:#ccc;
+  direction:ltr;
+  text-align:left;
+  overflow:auto;
+  font-family:'Fira Code',monospace;
+  white-space:pre-wrap;
+  border-top:1px solid var(--border);
+}
+
+.bottom-action {
+  position:fixed;
+  bottom:calc(var(--safe) + 15px);
+  left:50%;
+  transform:translateX(-50%);
+  display:none;
+  z-index:900;
+  width:90%;
+  max-width:400px;
+}
+
+.bottom-action.show { display:block; }
+
+.exam-view {
+  display:none;
+  flex-direction:column;
+  flex:1;
+  min-height:0;
+  padding:25px;
+  overflow-y:auto;
+}
+
+.exam-view.show { display:flex; }
+
+.exam-header {
+  text-align:center;
+  margin-bottom:25px;
+}
+
+.exam-header h2 {
+  color:var(--cyan);
+  font-size:1.8rem;
+  margin-bottom:15px;
+}
+
+.exam-progress-bar {
+  height:10px;
+  background:var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+
+.exam-progress-fill {
+  height:100%;
+  background:var(--gold);
+  width:0;
+}
+
+.exam-question-box {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:25px;
+  margin-bottom:25px;
+}
+
+.exam-q-text {
+  font-size:1.25rem;
+  margin-bottom:20px;
+}
+
+.exam-options {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.exam-opt-btn {
+  background:#0b1120;
+  border:1px solid var(--border);
+  color:white;
+  padding:17px;
+  border-radius:12px;
+  text-align:right;
+  cursor:pointer;
+  font-size:1rem;
+}
+
+.exam-opt-btn.correct {
+  border-color:var(--green);
+  color:var(--green);
+}
+
+.exam-opt-btn.wrong {
+  border-color:var(--red);
+  color:var(--red);
+}
+
+.exam-result {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  justify-content:center;
+  flex:1;
+}
+
+.exam-result.show { display:flex; }
+
+.score-ring {
+  width:170px;
+  height:170px;
+  border-radius:50%;
+  background:conic-gradient(var(--green) 0%,var(--border) 0%);
+  display:grid;
+  place-items:center;
+  position:relative;
+  margin-bottom:25px;
+}
+
+.score-ring::before {
+  content:"";
+  position:absolute;
+  inset:10px;
+  background:var(--surface);
+  border-radius:50%;
+}
+
+.score-ring span {
+  position:relative;
+  font-size:2.5rem;
+  font-weight:900;
+  color:var(--gold);
+}
+
+.exam-result h2 { margin-bottom:12px; }
+.exam-result p { color:var(--muted); margin-bottom:20px; }
+
+@media(max-width:900px) {
+  .sidebar {
+    position:fixed;
+    top:0;
+    right:-100%;
+    height:100dvh;
+    width:100%;
+  }
+
+  .sidebar.open { right:0; }
+
+  .close-btn,.menu-btn {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .back-btn span { display:none; }
+
+  .back-btn {
+    width:44px;
+    height:44px;
+    padding:0;
+    justify-content:center;
+  }
+
+  .chat-container { padding:15px 15px 140px; }
+  .choices-container { margin-right:0; }
+  .bubble { max-width:90%; }
+
+  .editor-wrapper.show {
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:80vh;
+    border-radius:20px 20px 0 0;
+    box-shadow:0 -10px 30px rgba(0,0,0,.8);
+  }
+}
+
+@media(min-width:901px) {
+  .content-wrapper { flex-direction:row; }
+  .chat-container { max-width:50%; padding-bottom:40px; }
+
+  .editor-wrapper {
+    flex:1;
+    height:100%;
+    border-radius:0;
+    border-left:1px solid var(--border);
+  }
+
+  .editor-backdrop { display:none!important; }
+
+  .bottom-action {
+    position:relative;
+    bottom:auto;
+    left:auto;
+    transform:none;
+    width:100%;
+    max-width:100%;
+    padding:20px;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+  }
+
+  .btn-next { max-width:400px; margin:auto; }
+}
+</style>
 </head>
-
 <body>
-  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-  <div class="editor-backdrop" id="editorBackdrop" onclick="closeEditor()"></div>
 
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python">
-        <h2>رحلة بايثون</h2>
-      </div>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<div class="editor-backdrop" id="editorBackdrop" onclick="closeEditor()"></div>
 
-      <button class="close-btn" onclick="toggleSidebar()" aria-label="إغلاق القائمة">
-        <i class="ri-close-line"></i>
-      </button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python">
+      <h2>رحلة بايثون</h2>
     </div>
-
-    <div class="chapters-list" id="chaptersList"></div>
+    <button class="close-btn" onclick="toggleSidebar()" aria-label="إغلاق القائمة">
+      <i class="ri-close-line"></i>
+    </button>
   </div>
+  <div class="chapters-list" id="chaptersList"></div>
+</aside>
 
-  <div class="main-area">
-    <div class="top-bar">
-      <div class="top-row">
-        <button class="menu-btn" onclick="toggleSidebar()" aria-label="فتح القائمة">
-          <i class="ri-menu-line"></i>
-        </button>
-
-        <a href="python-chapters.html" class="back-btn">
-          <i class="ri-map-2-line"></i>
-          <span>الخريطة</span>
-        </a>
-
-        <div class="stats-badge">
-          <i class="ri-star-fill"></i>
-          <span id="xpDisplay">0</span>
-        </div>
-      </div>
-
-      <div class="progress-container">
-        <div class="progress-text">
-          <span>تقدمك</span>
-          <span id="progressPercent">0%</span>
-        </div>
-
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="content-wrapper">
-      <div class="chat-container" id="chatContainer"></div>
-      <div id="editorContainer" style="display: contents;"></div>
-    </div>
-
-    <div class="exam-view" id="examView">
-      <div class="exam-header">
-        <h2 id="examTitle">امتحان الفصل</h2>
-
-        <div class="exam-progress-bar">
-          <div class="exam-progress-fill" id="examProgFill"></div>
-        </div>
-
-        <p class="exam-progress-text" id="examProgress">سؤال 1 من 5</p>
-      </div>
-
-      <div class="exam-question-box" id="examQuestionBox">
-        <div class="exam-q-text" id="examQuestionText">جاري التحميل...</div>
-        <div class="exam-options" id="examOptionsContainer"></div>
-      </div>
-
-      <div class="exam-result" id="examResultBox">
-        <div class="score-ring" id="scoreRing">
-          <span id="finalScore">0/5</span>
-        </div>
-
-        <h2 id="resultTitle">نتيجتك النهائية</h2>
-        <p id="resultMsg">لقد أتممت الامتحان!</p>
-      </div>
-    </div>
-
-    <div class="bottom-action" id="bottomAction">
-      <button class="btn-next" id="nextBtn" onclick="advanceChat()">
-        متابعة <i class="ri-arrow-left-line"></i>
+<main class="main-area">
+  <header class="top-bar">
+    <div class="top-row">
+      <button class="menu-btn" onclick="toggleSidebar()" aria-label="القائمة">
+        <i class="ri-menu-line"></i>
       </button>
+
+      <a href="python-chapters.html" class="back-btn">
+        <i class="ri-map-2-line"></i><span>الخريطة</span>
+      </a>
+
+      <div class="stats-badge">
+        <i class="ri-star-fill"></i>
+        <span id="xpDisplay">0</span>
+      </div>
     </div>
+
+    <div>
+      <div class="progress-text">
+        <span>تقدمك</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="content-wrapper">
+    <div class="chat-container" id="chatContainer"></div>
+    <div id="editorContainer" style="display:contents"></div>
+  </section>
+
+  <section class="exam-view" id="examView">
+    <div class="exam-header">
+      <h2 id="examTitle">امتحان الفصل</h2>
+      <div class="exam-progress-bar">
+        <div class="exam-progress-fill" id="examProgFill"></div>
+      </div>
+      <p id="examProgress">سؤال 1</p>
+    </div>
+
+    <div class="exam-question-box" id="examQuestionBox">
+      <div class="exam-q-text" id="examQuestionText"></div>
+      <div class="exam-options" id="examOptionsContainer"></div>
+    </div>
+
+    <div class="exam-result" id="examResultBox">
+      <div class="score-ring" id="scoreRing">
+        <span id="finalScore">0/0</span>
+      </div>
+      <h2 id="resultTitle">النتيجة</h2>
+      <p id="resultMsg"></p>
+    </div>
+  </section>
+
+  <div class="bottom-action" id="bottomAction">
+    <button class="btn-next" id="nextBtn" onclick="advanceChat()">
+      متابعة <i class="ri-arrow-left-line"></i>
+    </button>
   </div>
+</main>
 
-  <script src="js/chapters/ch1.js"></script>
-  <script src="js/chapters/ch2.js"></script>
-  <script src="js/chapters/ch3.js"></script>
-  <script src="js/chapters/ch4.js"></script>
-  <script src="js/chapters/ch5.js"></script>
-  <script src="js/chapters/ch6.js"></script>
-  <script src="js/chapters/ch7.js"></script>
-  <script src="js/chapters/ch8.js"></script>
-    <script src="js/chapters/ch9.js"></script>
-  <script src="js/chapters/ch10.js"></script>
-  <script src="js/chapters/ch11.js"></script>
-  <script src="js/chapters/ch12.js"></script>
+<script src="js/chapters/ch1.js"></script>
+<script src="js/chapters/ch2.js"></script>
+<script src="js/chapters/ch3.js"></script>
+<script src="js/chapters/ch4.js"></script>
+<script src="js/chapters/ch5.js"></script>
+<script src="js/chapters/ch6.js"></script>
+<script src="js/chapters/ch7.js"></script>
+<script src="js/chapters/ch8.js"></script>
+<script src="js/chapters/ch9.js"></script>
+<script src="js/chapters/ch10.js"></script>
+<script src="js/chapters/ch11.js"></script>
+<script src="js/chapters/ch12.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script>
+"use strict";
 
-  <script>
-    "use strict";
+const chapterList = [
+  {id:1,title:"الطباعة"},
+  {id:2,title:"المتغيرات"},
+  {id:3,title:"العمليات الحسابية"},
+  {id:4,title:"الشروط"},
+  {id:5,title:"التكرار"},
+  {id:6,title:"القوائم"},
+  {id:7,title:"الدوال"},
+  {id:8,title:"النصوص"},
+  {id:9,title:"الأخطاء"},
+  {id:10,title:"القواميس"},
+  {id:11,title:"المكتبات"},
+  {id:12,title:"مشروع التخرج"}
+];
 
-    const chapterList = [
-      { id: 1, title: "الطباعة" },
-      { id: 2, title: "المتغيرات" },
-      { id: 3, title: "العمليات الحسابية" },
-      { id: 4, title: "الشروط" },
-      { id: 5, title: "التكرار" },
-      { id: 6, title: "القوائم" },
-      { id: 7, title: "الدوال" },
-      { id: 8, title: "النصوص" },
-      { id: 9, title: "الأخطاء" },
-      { id: 10, title: "القواميس" },
-      { id: 11, title: "المكتبات" },
-      { id: 12, title: "المشروع النهائي" }
-    ];
+const PROGRESS_KEY = "cody_python_progress";
 
-    const PROGRESS_KEY = "cody_python_progress";
-    const XP_KEY = "cody_xp";
+const params = new URLSearchParams(location.search);
 
-    const urlParams = new URLSearchParams(window.location.search);
+let chapterId = Number(params.get("ch")) || 1;
+let lessonId = Number(params.get("lesson")) || 1;
 
-    let chapterId = parseInt(urlParams.get("ch"), 10);
-    let lessonId = parseInt(urlParams.get("lesson"), 10);
+if (chapterId < 1 || chapterId > 12) chapterId = 1;
 
-    if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > 12) {
-      chapterId = 1;
-    }
+let currentLesson = null;
+let currentStepIndex = 0;
+let editorInstance = null;
+let challengeSolved = false;
+let verifiedChallenge = false;
+let isExamMode = false;
 
-    if (!Number.isInteger(lessonId) || lessonId < 1) {
-      lessonId = 1;
-    }
+let examQuestions = [];
+let currentExamIndex = 0;
+let examScore = 0;
+let examAnswered = false;
+let profileAvatarHTML = "";
 
-    let currentLesson = null;
-    let currentStepIndex = 0;
-    let editorInstance = null;
-    let challengeSolved = false;
-    let isExamMode = false;
-    let examQuestions = [];
-    let currentExamIndex = 0;
-    let examScore = 0;
+const chatContainer = document.getElementById("chatContainer");
 
-    function readPythonLocalProgress() {
-      try {
-        const saved = JSON.parse(
-          localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}'
-        );
+function readPythonLocalProgress() {
+  try {
+    const data = JSON.parse(
+      localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}'
+    );
 
-        if (!Array.isArray(saved.completed)) {
-          saved.completed = [];
-        }
+    if (!Array.isArray(data.completed)) data.completed = [];
+    if (!Array.isArray(data.lessons)) data.lessons = [];
 
-        return saved;
-      } catch (error) {
-        console.warn("تعذر قراءة تقدم بايثون:", error);
-        return { completed: [] };
+    return data;
+  } catch {
+    return {completed:[],lessons:[]};
+  }
+}
+
+function savePythonLocalProgress(data) {
+  try {
+    localStorage.setItem(PROGRESS_KEY,JSON.stringify(data));
+    return true;
+  } catch(error) {
+    console.error("تعذر حفظ التقدم محليًا:",error);
+    return false;
+  }
+}
+
+function markLocalLesson(chapter,lesson) {
+  const data = readPythonLocalProgress();
+  const key = `${chapter}_${lesson}`;
+
+  if (!data.lessons.includes(key)) data.lessons.push(key);
+
+  savePythonLocalProgress(data);
+}
+
+function markLocalChapter(chapter) {
+  const data = readPythonLocalProgress();
+
+  if (!data.completed.includes(chapter)) {
+    data.completed.push(chapter);
+  }
+
+  savePythonLocalProgress(data);
+}
+
+async function savePythonCloudProgress(lessonNumber) {
+  try {
+    const {saveLessonProgress} = await import("./js/auth.js");
+
+    await saveLessonProgress({
+      language:"python",
+      chapter:chapterId-1,
+      lesson:lessonNumber,
+      completed:true
+    });
+
+    return true;
+  } catch(error) {
+    console.error("تعذر حفظ تقدم الدرس في Firebase:",error);
+    return false;
+  }
+}
+
+async function syncPythonProgressFromCloud() {
+  try {
+    const {getLessonProgress} = await import("./js/auth.js");
+    const cloudProgress = await getLessonProgress("python");
+
+    if (!Array.isArray(cloudProgress)) return;
+
+    const local = readPythonLocalProgress();
+
+    for (const chapter of chapterList) {
+      const lessons = cloudProgress.filter(item =>
+        Number(item.chapter) === chapter.id-1 &&
+        item.completed === true
+      );
+
+      for (const item of lessons) {
+        const key = `${chapter.id}_${Number(item.lesson)+1}`;
+        if (!local.lessons.includes(key)) local.lessons.push(key);
+      }
+
+      const allFive = [0,1,2,3,4].every(number =>
+        cloudProgress.some(item =>
+          Number(item.chapter) === chapter.id-1 &&
+          Number(item.lesson) === number &&
+          item.completed === true
+        )
+      );
+
+      if (allFive && !local.completed.includes(chapter.id)) {
+        local.completed.push(chapter.id);
       }
     }
 
-    function savePythonLocalProgress(progress) {
-      try {
-        localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-        return true;
-      } catch (error) {
-        console.warn("تعذر حفظ تقدم بايثون:", error);
-        return false;
-      }
+    savePythonLocalProgress(local);
+    renderSidebar();
+    updateProgressBar();
+
+  } catch(error) {
+    console.warn("تعذرت مزامنة تقدم بايثون:",error);
+  }
+}
+
+async function syncAccountRewards() {
+  try {
+    const [{functions},{httpsCallable}] = await Promise.all([
+      import("./js/firebase-config.js"),
+      import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js")
+    ]);
+
+    const sync = httpsCallable(functions,"syncExistingLessonRewards");
+    const result = await sync();
+    const data = result.data || {};
+
+    if (data.success) {
+      document.getElementById("xpDisplay").textContent =
+        String(Number(data.xp)||0);
     }
+  } catch(error) {
+    console.warn("تعذرت مزامنة مكافآت الحساب:",error);
+  }
+}
 
-    function savePythonLocalChapter(chapter) {
-      const progress = readPythonLocalProgress();
+async function verifyChallengeOnServer(code) {
+  if (lessonId < 1 || lessonId > 4) {
+    return {
+      success:false,
+      message:"هذا التحدي ليس ضمن الدروس العادية المدعومة للتحقق الخادمي."
+    };
+  }
 
-      if (!progress.completed.includes(chapter)) {
-        progress.completed.push(chapter);
-      }
+  try {
+    const [{functions},{httpsCallable}] = await Promise.all([
+      import("./js/firebase-config.js"),
+      import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js")
+    ]);
 
-      return savePythonLocalProgress(progress);
-    }
+    const verify = httpsCallable(functions,"verifyPythonChallenge");
 
-    async function savePythonCloudProgress(lessonNumber) {
-      try {
-        const { saveLessonProgress } = await import("./js/auth.js");
+    const response = await verify({
+      chapter:chapterId-1,
+      lesson:lessonId-1,
+      code
+    });
 
-        await saveLessonProgress({
-          language: "python",
-          chapter: chapterId - 1,
-          lesson: lessonNumber,
-          completed: true
+    return response.data || {
+      success:false,
+      correct:false,
+      message:"لم يصل رد صالح من الخادم."
+    };
+
+  } catch(error) {
+    console.error("Server verification failed:",error);
+
+    return {
+      success:false,
+      correct:false,
+      message:error.message || "تعذر الاتصال بخادم التحقق."
+    };
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("open");
+}
+
+function scrollToBottom() {
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function showTypingIndicator() {
+  removeTypingIndicator();
+
+  const row = document.createElement("div");
+  row.id = "typingIndicator";
+  row.className = "message-row cody";
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = "🤖";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = "كودي يكتب...";
+
+  row.append(avatar,bubble);
+  chatContainer.appendChild(row);
+  scrollToBottom();
+}
+
+function removeTypingIndicator() {
+  document.getElementById("typingIndicator")?.remove();
+}
+
+function addBubble(type,message) {
+  const row = document.createElement("div");
+  row.className = `message-row ${type}`;
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+
+  if (type === "cody") {
+    avatar.textContent = "🤖";
+  } else if (profileAvatarHTML) {
+    avatar.innerHTML = profileAvatarHTML;
+  } else {
+    avatar.textContent = "👤";
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  // رسائل الفصول التعليمية الحالية تحتوي على HTML مقصود مثل code.
+  bubble.innerHTML = String(message || "");
+
+  row.append(avatar,bubble);
+  chatContainer.appendChild(row);
+  scrollToBottom();
+}
+
+async function initializeChatAvatar() {
+  try {
+    const {requireUser} = await import("./js/auth.js");
+    const {db} = await import("./js/firebase-config.js");
+
+    const {doc,onSnapshot} = await import(
+      "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"
+    );
+
+    const {renderAvatar,installAvatarStyles} =
+      await import("./js/avatars.js");
+
+    installAvatarStyles();
+
+    const user = await requireUser();
+
+    if (!user?.uid) return;
+
+    onSnapshot(doc(db,"users",user.uid),snapshot => {
+      const data = snapshot.exists() ? snapshot.data() : {};
+      const id = data.activeAvatar || "cody";
+
+      profileAvatarHTML = renderAvatar(id);
+
+      document.querySelectorAll(".message-row.student .avatar")
+        .forEach(element => {
+          element.innerHTML = profileAvatarHTML;
         });
 
-        return true;
-      } catch (error) {
-        console.error("فشل حفظ تقدم بايثون في الحساب:", error);
-        return false;
-      }
-    }
+    },error => {
+      console.error("تعذر تحديث شخصية المستخدم:",error);
+    });
 
-    async function syncPythonProgressFromCloud() {
-      try {
-        const { getLessonProgress } = await import("./js/auth.js");
-        const cloudProgress = await getLessonProgress("python");
+  } catch(error) {
+    console.warn("تعذر تحميل شخصية الحساب:",error);
+  }
+}
 
-        if (!Array.isArray(cloudProgress)) return;
+function renderSidebar() {
+  const list = document.getElementById("chaptersList");
+  list.innerHTML = "";
 
-        const localProgress = readPythonLocalProgress();
+  const progress = readPythonLocalProgress();
 
-        for (const chapter of chapterList) {
-          const completedLessons = [0, 1, 2, 3].every(lessonNumber =>
-            cloudProgress.some(item =>
-              Number(item.chapter) === chapter.id - 1 &&
-              Number(item.lesson) === lessonNumber &&
-              item.completed === true
-            )
-          );
+  chapterList.forEach((chapter,index) => {
+    const data = window.CHAPTERS?.[chapter.id];
+    const completed = progress.completed.includes(chapter.id);
 
-          if (
-            completedLessons &&
-            !localProgress.completed.includes(chapter.id)
-          ) {
-            localProgress.completed.push(chapter.id);
-          }
-        }
+    const unlocked =
+      index === 0 ||
+      progress.completed.includes(chapterList[index-1].id);
 
-        savePythonLocalProgress(localProgress);
-        renderSidebar();
-        updateProgressBar();
-      } catch (error) {
-        console.warn("تعذرت مزامنة تقدم بايثون:", error);
-      }
-    }
+    const total = data?.lessons?.length || 5;
 
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("open");
-      document.getElementById("overlay").classList.toggle("open");
-    }
+    const completedCount = progress.lessons.filter(key =>
+      key.startsWith(`${chapter.id}_`)
+    ).length;
 
-    function showTypingIndicator() {
-      removeTypingIndicator();
+    const percent = completed
+      ? 100
+      : Math.min(100,Math.round(completedCount/total*100));
 
-      const container = document.getElementById("chatContainer");
-      const indicator = document.createElement("div");
+    const item = document.createElement("div");
+    item.className = `chapter-item ${unlocked?"":"locked"}`;
 
-      indicator.id = "typingIndicator";
-      indicator.className = "message-row cody";
-      indicator.innerHTML = `
-        <div class="avatar">🤖</div>
-        <div class="typing-indicator">
-          <span></span><span></span><span></span>
-        </div>
-      `;
+    const heading = document.createElement("div");
+    heading.className = "chapter-title";
 
-      container.appendChild(indicator);
-      scrollToBottom();
-    }
+    const icon = !unlocked
+      ? '<i class="ri-lock-fill"></i>'
+      : completed
+        ? '<i class="ri-checkbox-circle-fill" style="color:var(--green)"></i>'
+        : '<i class="ri-arrow-down-s-line"></i>';
 
-    function removeTypingIndicator() {
-      const indicator = document.getElementById("typingIndicator");
-      if (indicator) indicator.remove();
-    }
+    const name = document.createElement("span");
+    name.className = "chap-name";
+    name.textContent = `${chapter.id}. ${chapter.title}`;
 
-    function closeEditor() {
-      const wrapper = document.getElementById("editorWrapper");
-      const backdrop = document.getElementById("editorBackdrop");
+    const iconBox = document.createElement("span");
+    iconBox.className = "chap-icon";
+    iconBox.innerHTML = icon;
 
-      if (wrapper) {
-        if (editorInstance) {
-          editorInstance.toTextArea();
-          editorInstance = null;
-        }
+    const bar = document.createElement("div");
+    bar.className = "chap-mini-prog";
 
-        wrapper.remove();
-      }
+    const fill = document.createElement("div");
+    fill.className = "chap-mini-fill";
+    fill.style.width = percent+"%";
 
-      if (backdrop) {
-        backdrop.classList.remove("show");
-      }
-    }
-    function renderSidebar() {
-      const list = document.getElementById("chaptersList");
-      list.innerHTML = "";
+    bar.appendChild(fill);
+    heading.append(name,iconBox,bar);
 
-      const progress = readPythonLocalProgress();
+    const lessons = document.createElement("div");
+    lessons.className = "lessons-list";
 
-      chapterList.forEach((chap, index) => {
-        const chapData = window.CHAPTERS && window.CHAPTERS[chap.id];
-        const isCompleted = progress.completed.includes(chap.id);
+    if (chapter.id === chapterId) lessons.classList.add("open");
 
-        const isUnlocked =
-          index === 0 ||
-          progress.completed.includes(chapterList[index - 1].id);
+    (data?.lessons || []).forEach((lesson,lessonIndex) => {
+      const link = document.createElement("a");
+      const number = lessonIndex+1;
+      const key = `${chapter.id}_${number}`;
+      const done = progress.lessons.includes(key);
 
-        const totalLessons =
-          chapData && Array.isArray(chapData.lessons)
-            ? chapData.lessons.length
-            : 0;
+      link.className =
+        `lesson-link ${chapter.id===chapterId && number===lessonId?"active":""}`;
 
-        let chapProgressPercent = isCompleted ? 100 : 0;
+      link.textContent =
+        `${done?"✓ ":""}${lesson.title || "الدرس "+number}`;
 
-        if (
-          String(chapterId) === String(chap.id) &&
-          totalLessons > 0 &&
-          !isCompleted
-        ) {
-          chapProgressPercent = Math.min(
-            100,
-            Math.round(((lessonId - 1) / totalLessons) * 100)
-          );
-        }
+      if (unlocked) {
+        link.href = `python-lesson.html?ch=${chapter.id}&lesson=${number}`;
 
-        const chapEl = document.createElement("div");
-        chapEl.className = `chapter-item ${isUnlocked ? "" : "locked"}`;
-
-        const titleEl = document.createElement("div");
-        titleEl.className = "chapter-title";
-
-        const icon = !isUnlocked
-          ? '<i class="ri-lock-fill"></i>'
-          : isCompleted
-            ? '<i class="ri-checkbox-circle-fill" style="color:var(--green);"></i>'
-            : '<i class="ri-arrow-down-s-line"></i>';
-
-        titleEl.innerHTML = `
-          <span class="chap-name">${chap.id}. ${chap.title}</span>
-          <span class="chap-icon">${icon}</span>
-          <div class="chap-mini-prog">
-            <div class="chap-mini-fill" style="width:${chapProgressPercent}%"></div>
-          </div>
-        `;
-
-        const lessonsEl = document.createElement("div");
-        lessonsEl.className = "lessons-list";
-
-        if (String(chapterId) === String(chap.id)) {
-          lessonsEl.classList.add("open");
-        }
-
-        if (chapData && Array.isArray(chapData.lessons)) {
-          chapData.lessons.forEach((lesson, lessonIndex) => {
-            const lessonEl = document.createElement("a");
-
-            const isLessonUnlocked = isUnlocked;
-
-            const isActive =
-              String(chapterId) === String(chap.id) &&
-              lessonIndex + 1 === lessonId;
-
-            lessonEl.className =
-              `lesson-link ${!isLessonUnlocked ? "locked-lesson" : ""} ` +
-              `${isActive ? "active" : ""}`;
-
-            if (isLessonUnlocked) {
-              lessonEl.innerHTML =
-                `<i class="ri-play-circle-line"></i> ${lesson.title}`;
-
-              lessonEl.href =
-                `python-lesson.html?ch=${chap.id}&lesson=${lessonIndex + 1}`;
-
-              lessonEl.addEventListener("click", () => {
-                if (window.innerWidth <= 900) {
-                  toggleSidebar();
-                }
-              });
-            } else {
-              lessonEl.innerHTML =
-                `<i class="ri-lock-line"></i> ${lesson.title}`;
-
-              lessonEl.href = "javascript:void(0)";
-            }
-
-            lessonsEl.appendChild(lessonEl);
-          });
-
-          titleEl.addEventListener("click", () => {
-            lessonsEl.classList.toggle("open");
-          });
-        }
-
-        chapEl.appendChild(titleEl);
-        chapEl.appendChild(lessonsEl);
-        list.appendChild(chapEl);
-      });
-    }
-
-    function updateProgressBar() {
-      const progress = readPythonLocalProgress();
-
-      const percent = Math.min(
-        100,
-        Math.round((progress.completed.length / 12) * 100)
-      );
-
-      const progressFill = document.getElementById("progressFill");
-      const progressPercent = document.getElementById("progressPercent");
-
-      if (progressFill) {
-        progressFill.style.width = percent + "%";
-      }
-
-      if (progressPercent) {
-        progressPercent.textContent = percent + "%";
-      }
-    }
-
-    async function syncAccountRewards() {
-      try {
-        const [{ functions }, { httpsCallable }] = await Promise.all([
-          import("./js/firebase-config.js"),
-          import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js")
-        ]);
-
-        const syncRewards = httpsCallable(
-          functions,
-          "syncExistingLessonRewards"
-        );
-
-        const result = await syncRewards();
-        const data = result.data || {};
-
-        if (
-          data.success &&
-          document.getElementById("xpDisplay")
-        ) {
-          document.getElementById("xpDisplay").textContent =
-            String(Number(data.xp) || 0);
-        }
-      } catch (error) {
-        console.warn("تعذرت مزامنة نقاط الحساب:", error);
-      }
-    }
-
-    function loadLesson() {
-      const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
-
-      if (
-        !chapter ||
-        !Array.isArray(chapter.lessons) ||
-        !chapter.lessons[lessonId - 1]
-      ) {
-        document.getElementById("chatContainer").innerHTML = `
-          <div style="text-align:center;padding:50px;">
-            <h2>هذا الدرس غير متاح حالياً 🚧</h2>
-            <p style="color:var(--text-muted);margin-top:15px;">
-              تأكد من رقم الفصل والدرس أو ارجع إلى خريطة بايثون.
-            </p>
-            <a href="python-chapters.html" class="back-btn"
-               style="display:inline-flex;margin:20px auto;">
-              العودة للخريطة
-            </a>
-          </div>
-        `;
-
-        renderSidebar();
-        updateProgressBar();
-        return;
-      }
-
-      localStorage.setItem(
-        "cody_last_lesson",
-        JSON.stringify({
-          ch: chapterId,
-          lesson: lessonId
-        })
-      );
-
-      currentLesson = chapter.lessons[lessonId - 1];
-
-      if (
-        !currentLesson ||
-        !Array.isArray(currentLesson.steps)
-      ) {
-        document.getElementById("chatContainer").textContent =
-          "تعذر تحميل محتوى هذا الدرس.";
-
-        return;
-      }
-
-      isExamMode =
-        currentLesson.title.includes("امتحان") ||
-        currentLesson.title.includes("الامتحان");
-
-      if (isExamMode) {
-        startExam();
+        link.addEventListener("click",() => {
+          if (innerWidth <= 900) toggleSidebar();
+        });
       } else {
-        document.getElementById("examView").classList.remove("show");
-
-        document.querySelector(".content-wrapper").style.display = "flex";
-
-        document.getElementById("chatContainer").innerHTML = "";
-
-        currentStepIndex = 0;
-        challengeSolved = false;
-
-        processStep();
+        link.href = "#";
+        link.classList.add("locked-lesson");
+        link.addEventListener("click",event => event.preventDefault());
       }
 
-      renderSidebar();
-      updateProgressBar();
-    }
+      lessons.appendChild(link);
+    });
 
-    function processStep() {
-      if (!currentLesson || !Array.isArray(currentLesson.steps)) {
-        return;
-      }
+    heading.addEventListener("click",() => {
+      lessons.classList.toggle("open");
+    });
 
-      if (currentStepIndex >= currentLesson.steps.length) {
-        endLesson();
-        return;
-      }
+    item.append(heading,lessons);
+    list.appendChild(item);
+  });
+}
 
-      const step = currentLesson.steps[currentStepIndex];
+function updateProgressBar() {
+  const progress = readPythonLocalProgress();
 
-      document.getElementById("bottomAction").classList.remove("show");
+  const percent = Math.round(
+    progress.completed.length/12*100
+  );
 
-      closeEditor();
+  document.getElementById("progressFill").style.width =
+    percent+"%";
 
-      if (step.type === "cody") {
+  document.getElementById("progressPercent").textContent =
+    percent+"%";
+}
+
+function closeEditor() {
+  if (editorInstance) {
+    editorInstance.toTextArea();
+    editorInstance = null;
+  }
+
+  document.getElementById("editorWrapper")?.remove();
+  document.getElementById("editorBackdrop").classList.remove("show");
+}
+
+function showNextButton() {
+  document.getElementById("bottomAction").classList.add("show");
+}
+
+function advanceChat() {
+  document.getElementById("bottomAction").classList.remove("show");
+  processStep();
+}
+function loadLesson() {
+  const chapter = window.CHAPTERS?.[chapterId];
+
+  if (
+    !chapter ||
+    !Array.isArray(chapter.lessons) ||
+    !chapter.lessons[lessonId-1]
+  ) {
+    chatContainer.textContent = "هذا الدرس غير متاح حاليًا.";
+    renderSidebar();
+    updateProgressBar();
+    return;
+  }
+
+  currentLesson = chapter.lessons[lessonId-1];
+
+  localStorage.setItem(
+    "cody_last_lesson",
+    JSON.stringify({ch:chapterId,lesson:lessonId})
+  );
+
+  isExamMode =
+    currentLesson.title.includes("امتحان") ||
+    currentLesson.title.includes("الامتحان");
+
+  challengeSolved = false;
+  verifiedChallenge = false;
+
+  renderSidebar();
+  updateProgressBar();
+
+  if (isExamMode) {
+    startExam();
+    return;
+  }
+
+  document.getElementById("examView").classList.remove("show");
+  document.querySelector(".content-wrapper").style.display = "flex";
+
+  chatContainer.innerHTML = "";
+  currentStepIndex = 0;
+
+  processStep();
+}
+
+function processStep() {
+  if (!currentLesson?.steps) return;
+
+  if (currentStepIndex >= currentLesson.steps.length) {
+    endLesson();
+    return;
+  }
+
+  const step = currentLesson.steps[currentStepIndex];
+
+  document.getElementById("bottomAction").classList.remove("show");
+  closeEditor();
+
+  if (step.type === "cody") {
+    showTypingIndicator();
+
+    setTimeout(() => {
+      removeTypingIndicator();
+      addBubble("cody",step.text || "");
+      currentStepIndex++;
+      showNextButton();
+    },500);
+
+    return;
+  }
+
+  if (step.type === "choice") {
+    addBubble("cody",step.question || "");
+
+    renderChoices(step.options || [],step.replies || []);
+
+    currentStepIndex++;
+    return;
+  }
+
+  if (step.type === "quiz") {
+    addBubble("cody",step.question || "");
+
+    renderQuiz(
+      step.options || [],
+      step.correct,
+      step.explanation || ""
+    );
+
+    currentStepIndex++;
+    return;
+  }
+
+  if (step.type === "challenge") {
+    addBubble(
+      "cody",
+      "تحدي برمجي! افتح المحرر واكتب الحل المطلوب 👇"
+    );
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "choices-container";
+
+    const button = document.createElement("button");
+    button.className = "open-editor-btn";
+    button.innerHTML =
+      '<i class="ri-code-s-slash-line"></i> فتح محرر Python';
+
+    button.addEventListener("click",() => showEditor(step));
+
+    wrapper.appendChild(button);
+    chatContainer.appendChild(wrapper);
+
+    scrollToBottom();
+    return;
+  }
+
+  addBubble("cody","هذا النوع من الخطوات غير مدعوم.");
+  currentStepIndex++;
+  showNextButton();
+}
+
+function renderChoices(options,replies) {
+  const container = document.createElement("div");
+  container.className = "choices-container";
+
+  options.forEach((option,index) => {
+    const button = document.createElement("button");
+    button.className = "choice-btn";
+    button.textContent = option;
+
+    button.addEventListener("click",() => {
+      container.remove();
+
+      addBubble("student",option);
+
+      const reply = replies[index];
+
+      if (reply) {
         showTypingIndicator();
 
         setTimeout(() => {
           removeTypingIndicator();
-
-          addBubble("cody", step.text || "");
-
+          addBubble("cody",reply);
           showNextButton();
-
-          currentStepIndex++;
-        }, 600);
-
-      } else if (step.type === "choice") {
-        addBubble("cody", step.question || "");
-
-        renderChoices(
-          Array.isArray(step.options) ? step.options : [],
-          step.replies || []
-        );
-
-        currentStepIndex++;
-
-      } else if (step.type === "challenge") {
-        addBubble(
-          "cody",
-          "تحدي برمجي! اضغط على الزر بالأسفل لفتح المحرر 👇"
-        );
-
-        const btnWrapper = document.createElement("div");
-        btnWrapper.className = "choices-container";
-
-        const openBtn = document.createElement("button");
-        openBtn.className = "open-editor-btn";
-
-        openBtn.innerHTML =
-          '<i class="ri-code-s-slash-line"></i> فتح المحرر وكتابة الكود';
-
-        openBtn.addEventListener("click", () => {
-          showEditor(step);
-        });
-
-        btnWrapper.appendChild(openBtn);
-
-        document.getElementById("chatContainer").appendChild(btnWrapper);
-
-        scrollToBottom();
-
-      } else if (step.type === "quiz") {
-        addBubble("cody", step.question || "");
-
-        renderQuiz(
-          Array.isArray(step.options) ? step.options : [],
-          step.correct,
-          step.explanation || ""
-        );
-
-        currentStepIndex++;
-
+        },500);
       } else {
-        addBubble(
-          "cody",
-          "هذا الجزء من الدرس غير مدعوم حالياً."
-        );
-
         showNextButton();
-        currentStepIndex++;
       }
-    }
+    });
 
-    function startExam() {
-      document.querySelector(".content-wrapper").style.display = "none";
+    container.appendChild(button);
+  });
 
-      document.getElementById("bottomAction").classList.remove("show");
+  chatContainer.appendChild(container);
+  scrollToBottom();
+}
 
-      document.getElementById("examView").classList.add("show");
+function renderQuiz(options,correctIndex,explanation) {
+  const container = document.createElement("div");
+  container.className = "choices-container";
 
-      document.getElementById("examResultBox").classList.remove("show");
+  let answered = false;
 
-      document.getElementById("examQuestionBox").style.display = "block";
+  options.forEach((option,index) => {
+    const button = document.createElement("button");
+    button.className = "choice-btn";
+    button.textContent = option;
 
-      document.getElementById("examTitle").textContent =
-        currentLesson.title || "امتحان الفصل";
+    button.addEventListener("click",() => {
+      if (answered) return;
+      answered = true;
 
-      examQuestions = currentLesson.steps.filter(
-        step => step.type === "quiz"
-      );
+      container.remove();
+      addBubble("student",option);
 
-      currentExamIndex = 0;
-      examScore = 0;
-
-      if (examQuestions.length === 0) {
-        document.getElementById("examQuestionBox").style.display = "none";
-
-        document.getElementById("examResultBox").classList.add("show");
-
-        document.getElementById("resultTitle").textContent =
-          "لا توجد أسئلة متاحة";
-
-        document.getElementById("resultMsg").textContent =
-          "لم يتم اجتياز الامتحان؛ لأن هذا الفصل لا يحتوي على أسئلة بعد.";
-
-        document.getElementById("finalScore").textContent = "0/0";
-
-        document.getElementById("scoreRing").style.background =
-          "conic-gradient(var(--border) 100%, var(--border) 100%)";
-
-        const btn = document.getElementById("nextBtn");
-
-        btn.innerHTML =
-          'العودة للدروس <i class="ri-arrow-left-line"></i>';
-
-        btn.onclick = () => {
-          window.location.href =
-            `python-lesson.html?ch=${chapterId}&lesson=1`;
-        };
-
-        document.getElementById("bottomAction").classList.add("show");
-
-        return;
-      }
-
-      showExamQuestion();
-    }
-
-    function showExamQuestion() {
-      if (currentExamIndex >= examQuestions.length) {
-        endExam();
-        return;
-      }
-
-      const question = examQuestions[currentExamIndex];
-
-      document.getElementById("examProgress").textContent =
-        `سؤال ${currentExamIndex + 1} من ${examQuestions.length}`;
-
-      document.getElementById("examProgFill").style.width =
-        `${(currentExamIndex / examQuestions.length) * 100}%`;
-
-      document.getElementById("examQuestionText").textContent =
-        question.question || "السؤال غير متاح";
-
-      const optionsContainer =
-        document.getElementById("examOptionsContainer");
-
-      optionsContainer.innerHTML = "";
-
-      if (
-        !Array.isArray(question.options) ||
-        question.options.length === 0 ||
-        !Number.isInteger(question.correct) ||
-        question.correct < 0 ||
-        question.correct >= question.options.length
-      ) {
-        document.getElementById("examQuestionText").textContent =
-          "يوجد خطأ في إعداد هذا السؤال.";
-
-        return;
-      }
-
-      let answered = false;
-
-      question.options.forEach((option, index) => {
-        const button = document.createElement("button");
-
-        button.className = "exam-opt-btn";
-        button.textContent = option;
-
-        button.addEventListener("click", () => {
-          if (answered) return;
-
-          answered = true;
-
-          Array.from(optionsContainer.children).forEach(item => {
-            item.disabled = true;
-          });
-
-          if (index === question.correct) {
-            button.classList.add("correct");
-            examScore++;
-          } else {
-            button.classList.add("wrong");
-
-            const correctButton =
-              optionsContainer.children[question.correct];
-
-            if (correctButton) {
-              correctButton.classList.add("correct");
-            }
-          }
-
-          setTimeout(() => {
-            currentExamIndex++;
-            showExamQuestion();
-          }, 1000);
-        });
-
-        optionsContainer.appendChild(button);
-      });
-    }
-
-    async function endExam() {
-      document.getElementById("examProgFill").style.width = "100%";
-
-      document.getElementById("examQuestionBox").style.display = "none";
-
-      document.getElementById("examResultBox").classList.add("show");
-
-      const scorePercent = examQuestions.length
-        ? Math.round((examScore / examQuestions.length) * 100)
-        : 0;
-
-      document.getElementById("finalScore").textContent =
-        `${examScore}/${examQuestions.length}`;
-
-      const scoreRing = document.getElementById("scoreRing");
-
-      scoreRing.style.background =
-        `conic-gradient(var(--green) ${scorePercent}%, var(--border) ${scorePercent}%)`;
-
-      const passed =
-        examQuestions.length > 0 && scorePercent >= 50;
-
-      const btn = document.getElementById("nextBtn");
-
-      if (passed) {
-        if (typeof window.confetti === "function") {
-          window.confetti({
-            particleCount: 150,
-            spread: 90,
-            origin: { y: 0.6 }
-          });
-        }
-
-        document.getElementById("resultTitle").textContent =
-          "عمل رائع! 🎉";
-
-        document.getElementById("resultMsg").textContent =
-          "لقد اجتزت الامتحان بنجاح.";
-
-        savePythonLocalChapter(chapterId);
-
-        document.getElementById("resultMsg").textContent +=
-          " تم حفظ إنجاز الفصل على هذا الجهاز.";
-
-        btn.innerHTML =
-          chapterId < 12
-            ? 'الفصل التالي <i class="ri-arrow-left-line"></i>'
-            : 'العودة للخريطة <i class="ri-map-pin-line"></i>';
-
-        btn.onclick = () => {
-          window.location.href =
-            chapterId < 12
-              ? `python-lesson.html?ch=${chapterId + 1}&lesson=1`
-              : "python-chapters.html";
-        };
-
-      } else {
-        document.getElementById("resultTitle").textContent =
-          "تحتاج للمزيد من التدريب";
-
-        document.getElementById("resultMsg").textContent =
-          "لم تجتز الامتحان هذه المرة. راجع الدروس وحاول مرة أخرى.";
-
-        btn.innerHTML =
-          'إعادة المحاولة <i class="ri-refresh-line"></i>';
-
-        btn.onclick = () => window.location.reload();
-      }
-
-      document.getElementById("bottomAction").classList.add("show");
-
-      renderSidebar();
-      updateProgressBar();
-    }
-
-    function addBubble(type, message) {
-      const row = document.createElement("div");
-
-      row.className = `message-row ${type}`;
-
-      const avatar = document.createElement("div");
-      avatar.className = "avatar";
-      avatar.textContent = type === "cody" ? "🤖" : "👦";
-
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-
-      // محتوى Cody التعليمي قد يحتوي على تنسيق HTML موجود في ملفات الفصول.
-      bubble.innerHTML = String(message || "");
-
-      row.appendChild(avatar);
-      row.appendChild(bubble);
-
-      document.getElementById("chatContainer").appendChild(row);
-
-      scrollToBottom();
-    }
-
-    function renderChoices(options, replies) {
-      const container = document.createElement("div");
-
-      container.className = "choices-container";
-
-      options.forEach((option, index) => {
-        const button = document.createElement("button");
-
-        button.className = "choice-btn";
-        button.textContent = option;
-
-        button.addEventListener("click", () => {
-          container.remove();
-
-          addBubble("student", option);
-
-          if (replies && replies[index]) {
-            showTypingIndicator();
-
-            setTimeout(() => {
-              removeTypingIndicator();
-
-              addBubble("cody", replies[index]);
-
-              document.getElementById("bottomAction")
-                .classList.add("show");
-            }, 600);
-
-          } else {
-            document.getElementById("bottomAction")
-              .classList.add("show");
-          }
-        });
-
-        container.appendChild(button);
-      });
-
-      document.getElementById("chatContainer").appendChild(container);
-
-      scrollToBottom();
-    }
-
-    function renderQuiz(options, correctIndex, explanation) {
-      const container = document.createElement("div");
-
-      container.className = "choices-container";
-
-      let answered = false;
-
-      options.forEach((option, index) => {
-        const button = document.createElement("button");
-
-        button.className = "choice-btn";
-        button.textContent = option;
-
-        button.addEventListener("click", () => {
-          if (answered) return;
-
-          answered = true;
-
-          container.remove();
-
-          addBubble("student", option);
-
-          showTypingIndicator();
-
-          setTimeout(() => {
-            removeTypingIndicator();
-
-            if (index === correctIndex) {
-              addBubble(
-                "cody",
-                "✅ إجابة صحيحة! " + (explanation || "")
-              );
-
-              addXp(5);
-
-            } else {
-              addBubble(
-                "cody",
-                "❌ ليست صحيحة. حاول مراجعة الشرح ثم أكمل."
-              );
-            }
-
-            document.getElementById("bottomAction")
-              .classList.add("show");
-
-          }, 600);
-        });
-
-        container.appendChild(button);
-      });
-
-      document.getElementById("chatContainer").appendChild(container);
-
-      scrollToBottom();
-    }
-
-    function showNextButton() {
-      document.getElementById("bottomAction")
-        .classList.add("show");
-    }
-
-    function advanceChat() {
-      document.getElementById("bottomAction")
-        .classList.remove("show");
-
-      processStep();
-    }
-
-    function showEditor(step) {
-      if (!step || typeof step.defaultCode !== "string") {
-        addBubble("cody", "تعذر فتح المحرر بسبب نقص بيانات التحدي.");
-        return;
-      }
-
-      closeEditor();
-
-      const backdrop = document.getElementById("editorBackdrop");
-
-      backdrop.classList.add("show");
-
-      const wrapper = document.createElement("div");
-
-      wrapper.id = "editorWrapper";
-      wrapper.className = "editor-wrapper show";
-
-      wrapper.innerHTML = `
-        <div class="editor-header">
-          <span class="editor-title">main.py</span>
-
-          <div style="display:flex;gap:10px;">
-            <button class="btn-run" onclick="runCode()">
-              <i class="ri-play-circle-fill"></i> تشغيل
-            </button>
-
-            <button
-              onclick="closeEditor()"
-              style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:0 15px;font-weight:bold;cursor:pointer;"
-            >
-              إغلاق
-            </button>
-          </div>
-        </div>
-
-        <div class="code-area">
-          <textarea id="dynamicCodeEditor"></textarea>
-          <div class="output-area" id="outputArea">&gt; Output...</div>
-        </div>
-      `;
-
-      document.getElementById("editorContainer")
-        .appendChild(wrapper);
-
-      window.currentChallenge = step;
-      challengeSolved = false;
+      showTypingIndicator();
 
       setTimeout(() => {
-        const textarea =
-          document.getElementById("dynamicCodeEditor");
+        removeTypingIndicator();
 
-        if (!textarea || typeof CodeMirror === "undefined") {
-          document.getElementById("outputArea").textContent =
-            "تعذر تحميل محرر الأكواد. تحقق من اتصال الإنترنت.";
-          return;
+        if (index === correctIndex) {
+          addBubble("cody","✅ إجابة صحيحة! "+explanation);
+        } else {
+          addBubble("cody","❌ إجابة غير صحيحة. راجع الشرح وحاول مرة أخرى.");
         }
 
-        editorInstance = CodeMirror.fromTextArea(textarea, {
-          lineNumbers: true,
-          mode: "python",
-          theme: "dracula",
-          indentUnit: 4,
-          lineWrapping: true
-        });
+        showNextButton();
+      },500);
+    });
 
-        editorInstance.setValue(step.defaultCode);
+    container.appendChild(button);
+  });
 
-        setTimeout(() => {
-          if (editorInstance) {
-            editorInstance.refresh();
-          }
-        }, 100);
+  chatContainer.appendChild(container);
+  scrollToBottom();
+}
 
-      }, 50);
+function showEditor(step) {
+  if (!step || typeof step.defaultCode !== "string") {
+    addBubble("cody","تعذر فتح المحرر بسبب نقص بيانات التحدي.");
+    return;
+  }
 
-      if (window.innerWidth > 900) {
-        document.querySelector(".chat-container").style.maxWidth =
-          "50%";
+  closeEditor();
+
+  document.getElementById("editorBackdrop").classList.add("show");
+
+  const wrapper = document.createElement("div");
+  wrapper.id = "editorWrapper";
+  wrapper.className = "editor-wrapper show";
+
+  wrapper.innerHTML = `
+    <div class="editor-header">
+      <span class="editor-title">main.py</span>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn-run" id="runCodeButton">
+          <i class="ri-play-circle-fill"></i> تشغيل والتحقق
+        </button>
+
+        <button id="closeEditorButton"
+          style="background:var(--red);color:white;border:0;border-radius:8px;padding:8px 12px">
+          إغلاق
+        </button>
+      </div>
+    </div>
+
+    <div class="code-area">
+      <textarea id="dynamicCodeEditor"></textarea>
+      <div class="output-area" id="outputArea">&gt; Output...</div>
+    </div>
+  `;
+
+  document.getElementById("editorContainer").appendChild(wrapper);
+
+  window.currentChallenge = step;
+  challengeSolved = false;
+  verifiedChallenge = false;
+
+  document.getElementById("runCodeButton").addEventListener(
+    "click",runCode
+  );
+
+  document.getElementById("closeEditorButton").addEventListener(
+    "click",closeEditor
+  );
+
+  setTimeout(() => {
+    const textarea = document.getElementById("dynamicCodeEditor");
+
+    if (!textarea || typeof CodeMirror === "undefined") {
+      document.getElementById("outputArea").textContent =
+        "تعذر تحميل محرر الأكواد. تحقق من اتصال الإنترنت.";
+      return;
+    }
+
+    editorInstance = CodeMirror.fromTextArea(textarea,{
+      lineNumbers:true,
+      mode:"python",
+      theme:"dracula",
+      indentUnit:4,
+      lineWrapping:true,
+      tabSize:4
+    });
+
+    editorInstance.setValue(step.defaultCode);
+    editorInstance.refresh();
+
+  },100);
+}
+
+function skulptOutput(text) {
+  const output = document.getElementById("outputArea");
+  output.textContent += text;
+}
+
+function normalizeOutput(value) {
+  return String(value ?? "")
+    .replace(/\r\n/g,"\n")
+    .trim();
+}
+
+function runPythonLocally(code) {
+  return new Promise((resolve,reject) => {
+    let output = "";
+
+    if (typeof Sk === "undefined") {
+      reject(new Error("مكتبة تشغيل Python غير متاحة."));
+      return;
+    }
+
+    Sk.configure({
+      output:text => { output += text; },
+      read:name => {
+        if (
+          Sk.builtinFiles === undefined ||
+          Sk.builtinFiles.files[name] === undefined
+        ) {
+          throw new Error("المكتبة غير متاحة: "+name);
+        }
+        return Sk.builtinFiles.files[name];
+      },
+      __future__:Sk.python3
+    });
+
+    Sk.misceval.asyncToPromise(() =>
+      Sk.importMainWithBody("<stdin>",false,code,true)
+    ).then(() => resolve(output))
+      .catch(reject);
+  });
+}
+
+async function runCode() {
+  if (!editorInstance || !window.currentChallenge) {
+    alert("المحرر غير جاهز.");
+    return;
+  }
+
+  if (challengeSolved) {
+    alert("تم اجتياز هذا التحدي بالفعل.");
+    return;
+  }
+
+  const code = editorInstance.getValue();
+
+  const outputArea = document.getElementById("outputArea");
+  const runButton = document.getElementById("runCodeButton");
+
+  if (!code.trim()) {
+    outputArea.textContent = "اكتب الكود أولًا.";
+    return;
+  }
+
+  runButton.disabled = true;
+  runButton.textContent = "جارٍ التشغيل...";
+
+  outputArea.textContent = "> Running...\n";
+
+  try {
+    const output = await runPythonLocally(code);
+
+    outputArea.textContent =
+      "> Output:\n"+(output || "(لا يوجد ناتج)");
+
+    const expected = window.currentChallenge.expected;
+
+    if (
+      expected !== undefined &&
+      normalizeOutput(output) !== normalizeOutput(expected)
+    ) {
+      outputArea.textContent +=
+        "\n\n❌ الناتج غير مطابق. راجع الكود وحاول مرة أخرى.";
+
+      return;
+    }
+
+    if (
+      typeof window.currentChallenge.check === "function" &&
+      !window.currentChallenge.check(code)
+    ) {
+      outputArea.textContent +=
+        "\n\n❌ لم يتم استيفاء جميع متطلبات التحدي.";
+
+      return;
+    }
+
+    outputArea.textContent +=
+      "\n\n⏳ جارٍ التحقق من الحل على الخادم...";
+
+    const result = await verifyChallengeOnServer(code);
+
+    if (!result.success || !result.correct) {
+      outputArea.textContent +=
+        "\n\n❌ لم ينجح التحقق الخادمي: "+
+        (result.message || "الحل غير مقبول.");
+
+      return;
+    }
+
+    challengeSolved = true;
+    verifiedChallenge = true;
+
+    outputArea.textContent +=
+      "\n\n✅ تم التحقق من الحل بنجاح على الخادم!";
+
+    addBubble(
+      "cody",
+      window.currentChallenge.successMsg ||
+      "رائع! تم اجتياز التحدي بنجاح."
+    );
+
+    showNextButton();
+
+  } catch(error) {
+    console.error("Python execution error:",error);
+
+    outputArea.textContent +=
+      "\n\n❌ خطأ أثناء التشغيل:\n"+
+      (error.message || String(error));
+
+  } finally {
+    runButton.disabled = false;
+    runButton.innerHTML =
+      '<i class="ri-play-circle-fill"></i> تشغيل والتحقق';
+  }
+}
+async function endLesson() {
+  closeEditor();
+
+  const lessonNumber = lessonId-1;
+
+  if (!verifiedChallenge) {
+    addBubble(
+      "cody",
+      "لم يتم تسجيل اجتياز التحدي على الخادم. ارجع إلى التحدي وأكمله أولًا."
+    );
+    return;
+  }
+
+  addBubble("cody","🎉 أحسنت! تم إكمال الدرس بنجاح.");
+
+  markLocalLesson(chapterId,lessonId);
+
+  const saved = await savePythonCloudProgress(lessonNumber);
+
+  if (saved) {
+    addBubble(
+      "cody",
+      "تم حفظ تقدم الدرس في حسابك."
+    );
+
+    await syncAccountRewards();
+  } else {
+    addBubble(
+      "cody",
+      "تعذر حفظ التقدم في الحساب حاليًا. إنجازك المحلي محفوظ على هذا الجهاز."
+    );
+  }
+
+  renderSidebar();
+  updateProgressBar();
+
+  const button = document.getElementById("nextBtn");
+
+  button.innerHTML =
+    lessonId < 4
+      ? 'الدرس التالي <i class="ri-arrow-left-line"></i>'
+      : 'الانتقال إلى امتحان الفصل <i class="ri-arrow-left-line"></i>';
+
+  button.onclick = () => {
+    if (lessonId < 4) {
+      location.href =
+        `python-lesson.html?ch=${chapterId}&lesson=${lessonId+1}`;
+    } else {
+      location.href =
+        `python-lesson.html?ch=${chapterId}&lesson=5`;
+    }
+  };
+
+  document.getElementById("bottomAction").classList.add("show");
+}
+
+function startExam() {
+  document.querySelector(".content-wrapper").style.display = "none";
+
+  document.getElementById("bottomAction").classList.remove("show");
+  document.getElementById("examView").classList.add("show");
+  document.getElementById("examResultBox").classList.remove("show");
+  document.getElementById("examQuestionBox").style.display = "block";
+
+  document.getElementById("examTitle").textContent =
+    currentLesson.title || "امتحان الفصل";
+
+  examQuestions = currentLesson.steps.filter(
+    step => step.type === "quiz"
+  );
+
+  currentExamIndex = 0;
+  examScore = 0;
+
+  if (!examQuestions.length) {
+    showExamResult(false);
+    return;
+  }
+
+  showExamQuestion();
+}
+
+function showExamQuestion() {
+  if (currentExamIndex >= examQuestions.length) {
+    endExam();
+    return;
+  }
+
+  const question = examQuestions[currentExamIndex];
+
+  examAnswered = false;
+
+  document.getElementById("examProgress").textContent =
+    `السؤال ${currentExamIndex+1} من ${examQuestions.length}`;
+
+  document.getElementById("examProgFill").style.width =
+    `${currentExamIndex/examQuestions.length*100}%`;
+
+  document.getElementById("examQuestionText").textContent =
+    question.question || "السؤال غير متاح";
+
+  const container = document.getElementById("examOptionsContainer");
+  container.innerHTML = "";
+
+  if (
+    !Array.isArray(question.options) ||
+    !Number.isInteger(question.correct) ||
+    question.correct < 0 ||
+    question.correct >= question.options.length
+  ) {
+    document.getElementById("examQuestionText").textContent =
+      "هناك خطأ في إعداد السؤال.";
+
+    return;
+  }
+
+  question.options.forEach((option,index) => {
+    const button = document.createElement("button");
+    button.className = "exam-opt-btn";
+    button.textContent = option;
+
+    button.addEventListener("click",() => {
+      if (examAnswered) return;
+      examAnswered = true;
+
+      Array.from(container.children).forEach(item => {
+        item.disabled = true;
+      });
+
+      if (index === question.correct) {
+        button.classList.add("correct");
+        examScore++;
       } else {
-        setTimeout(() => {
+        button.classList.add("wrong");
+
+        container.children[question.correct]
+          ?.classList.add("correct");
+      }
+
+      setTimeout(() => {
+        currentExamIndex++;
+        showExamQuestion();
+      },900);
+    });
+
+    container.appendChild(button);
+  });
+}
+
+async function endExam() {
+  const percentage = examQuestions.length
+    ? Math.round(examScore/examQuestions.length*100)
+    : 0;
+
+  const passed =
+    examQuestions.length > 0 && percentage >= 50;
+
+  document.getElementById("examProgFill").style.width = "100%";
+  document.getElementById("examQuestionBox").style.display = "none";
+  document.getElementById("examResultBox").classList.add("show");
+
+  document.getElementById("finalScore").textContent =
+    `${examScore}/${examQuestions.length}`;
+
+  document.getElementById("scoreRing").style.background =
+    `conic-gradient(var(--green) ${percentage}%,var(--border) ${percentage}%)`;
+
+  const button = document.getElementById("nextBtn");
+
+  if (passed) {
+    if (typeof window.confetti === "function") {
+      window.confetti({
+        particleCount:120,
+        spread:80,
+        origin:{y:.6}
+      });
+    }
+
+    document.getElementById("resultTitle").textContent =
+      "مبروك! 🎉";
+
+    document.getElementById("resultMsg").textContent =
+      `اجتزت الامتحان بنسبة ${percentage}%.`;
+
+    markLocalChapter(chapterId);
+    markLocalLesson(chapterId,5);
+
+    /*
+     * يسجل الامتحان كعنصر تقدم مستقل.
+     * لا يرسل إثبات تحدي الدروس العادية ولا يمنح مكافأة تلقائيًا.
+     */
+    const examSaved = await savePythonCloudProgress(4);
+
+    if (examSaved) {
+      document.getElementById("resultMsg").textContent +=
+        " وتم حفظ نتيجة إكمال الامتحان في الحساب.";
+    } else {
+      document.getElementById("resultMsg").textContent +=
+        " وتم حفظ الإنجاز محليًا، لكن تعذر حفظه في الحساب.";
+    }
+
+    button.innerHTML =
+      chapterId < 12
+        ? 'الفصل التالي <i class="ri-arrow-left-line"></i>'
+        : 'العودة للخريطة <i class="ri-map-pin-line"></i>';
+
+    button.onclick = () => {
+      location.href = chapterId < 12
+        ? `python-lesson.html?ch=${chapterId+1}&lesson=1`
+        : "python-chapters.html";
+    };
+
+  } else {
+    document.getElementById("resultTitle").textContent =
+      "تحتاج إلى المزيد من التدريب";
+
+    document.getElementById("resultMsg").textContent =
+      `حصلت على ${percentage}%. راجع الدروس وحاول مرة أخرى.`;
+
+    button.innerHTML =
+      'إعادة الامتحان <i class="ri-refresh-line"></i>';
+
+    button.onclick = () => location.reload();
+  }
+
+  document.getElementById("bottomAction").classList.add("show");
+
+  renderSidebar();
+  updateProgressBar();
+
+  if (passed) {
+    await syncAccountRewards();
+  }
+}
+
+function showExamResult(passed) {
+  document.getElementById("examQuestionBox").style.display = "none";
+  document.getElementById("examResultBox").classList.add("show");
+
+  document.getElementById("resultTitle").textContent =
+    passed ? "مبروك!" : "لا توجد أسئلة متاحة";
+
+  document.getElementById("resultMsg").textContent =
+    "تعذر عرض أسئلة الامتحان.";
+
+  document.getElementById("bottomAction").classList.add("show");
+
+  document.getElementById("nextBtn").onclick = () => {
+    location.href = `python-lesson.html?ch=${chapterId}&lesson=1`;
+  };
+}
+
+async function initializePage() {
+  renderSidebar();
+  updateProgressBar();
+
+  await initializeChatAvatar();
+  await syncPythonProgressFromCloud();
+  await syncAccountRewards();
+
+  loadLesson();
+}
+
+document.addEventListener("DOMContentLoaded",initializePage);
+
+</script>
+</body>
+</html>
