@@ -69,11 +69,34 @@
     function readProgress() {
       try {
         const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
-        return { completed: Array.isArray(saved.completed) ? saved.completed : [], stars: saved.stars || {} };
-      } catch { return { completed: [], stars: {} }; }
+        const completed = Array.isArray(saved.completed)
+          ? saved.completed.map(Number)
+          : [];
+
+        // Java lessons store completion by lesson ID. Derive chapter completion
+        // from both lessons instead of expecting a separate chapter array.
+        if (saved && !Array.isArray(saved)) {
+          chapters.forEach(chapter => {
+            const first = saved[`java-${chapter.id}-1`]?.completed === true;
+            const second = saved[`java-${chapter.id}-2`]?.completed === true;
+            if (first && second && !completed.includes(chapter.id)) {
+              completed.push(chapter.id);
+            }
+          });
+        }
+
+        return { completed, stars: saved.stars || {} };
+      } catch {
+        return { completed: [], stars: {} };
+      }
     }
-    function renderXp() { document.getElementById("xpDisplay").textContent = localStorage.getItem(XP_KEY) || "0"; }
-    function buildChapterUrl(chapterId) { return `java-lessons.html?ch=${chapterId}&lesson=1`; }
+    function renderXp() {
+      document.getElementById("xpDisplay").textContent =
+        localStorage.getItem(XP_KEY) || "0";
+    }
+    function buildChapterUrl(chapterId) {
+      return `java-lessons.html?lesson=java-${chapterId}-1`;
+    }
     function renderMap() {
       const progress = readProgress(); const container = document.getElementById("mapContainer"); const fragment = document.createDocumentFragment();
       chapters.forEach((chapter, index) => {
@@ -89,7 +112,7 @@
       const allDone = chapters.every(c => progress.completed.includes(c.id));
       const examNode = document.createElement("div"); examNode.className = `exam-node ${allDone ? "" : "locked"}`;
       examNode.innerHTML = `<div><h2>الامتحان النهائي والمشروع</h2><p style="color:var(--muted);">أكمل الـ 12 فصل!</p></div>`;
-      if (allDone) { const link = document.createElement("a"); link.href = "java-exam.html"; link.className = "btn-exam"; link.textContent = "ابدأ الامتحان"; examNode.appendChild(link); }
+      if (allDone) { const link = document.createElement("a"); link.href = "java-lessons.html?lesson=java-12-2"; link.className = "btn-exam"; link.textContent = "افتح المشروع الختامي"; examNode.appendChild(link); }
       fragment.appendChild(examNode); container.replaceChildren(fragment);
     }
     renderXp(); renderMap();
