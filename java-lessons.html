@@ -1129,7 +1129,7 @@
             example: 'class Student {\n    String name;\n    Student(String studentName) {\n        name = studentName;\n    }\n}',
             task: "أنشئ منشئًا للفئة Student يستقبل اسمًا ويخزنه في المتغير name.",
             hint: "يجب أن يكون اسم المنشئ Student وألا تكتب void قبله.",
-            starter: 'class Student {\n    String name;\n    // اكتب المنشئ هنا\n}',
+            starter: 'class Student {\n    String name;\n    Student(String studentName) {\n        name = studentName;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Student student = new Student("Cody");\n        System.out.println(student.name);\n    }\n}',
             checks: [
               { pattern: /Student\s*\(\s*String\s+studentName\s*\)/, message: "أنشئ Constructor يستقبل String باسم studentName." },
               { pattern: /\bname\s*=\s*studentName\s*;/, message: "خزّن studentName في name." }
@@ -1150,6 +1150,7 @@
     let editor = null;
     let selectedQuizAnswer = null;
     let quizAnswered = false;
+    let challengeVerified = false;
 
     function escapeHTML(value) {
       return String(value ?? "").replace(/[&<>"']/g, character => ({
@@ -1167,12 +1168,12 @@
 
       notice.textContent = message;
       notice.className = `notice notice-${type}`;
+      notice.hidden = false;
       clearTimeout(notice._hideTimer);
-      notice.classList.add("visible");
 
       notice._hideTimer = setTimeout(() => {
-        notice.classList.remove("visible");
-      }, 3200);
+        notice.hidden = true;
+      }, 3600);
     }
 
     function readProgress() {
@@ -1207,9 +1208,17 @@
       ).length;
 
       const completedElement = document.getElementById("progressCount");
+      const percentage = allLessons.length
+        ? Math.round((completedCount / allLessons.length) * 100)
+        : 0;
       if (completedElement) {
         completedElement.textContent = `${completedCount}/${allLessons.length}`;
       }
+
+      const progressBar = document.getElementById("progressBar");
+      const progressTrack = document.getElementById("progressTrack");
+      if (progressBar) progressBar.style.width = `${percentage}%`;
+      if (progressTrack) progressTrack.setAttribute("aria-valuenow", String(percentage));
 
       renderSidebar();
     }
@@ -1385,11 +1394,11 @@
       checkButton.addEventListener("click", checkQuizAnswer);
       container.appendChild(checkButton);
 
-      const feedback = document.createElement("p");
-      feedback.id = "quizFeedback";
-      feedback.className = "quizFeedback";
-      feedback.setAttribute("aria-live", "polite");
-      container.appendChild(feedback);
+      const feedback = document.getElementById("quizFeedback");
+      if (feedback) {
+        feedback.textContent = "";
+        feedback.className = "quiz-feedback";
+      }
     }
 
     function checkQuizAnswer() {
@@ -1410,16 +1419,18 @@
         quizAnswered = true;
         feedback.textContent = `إجابة صحيحة! ${lesson.quiz.explanation}`;
         feedback.className = "quiz-feedback correct";
-
-        const key = `cody_java_quiz_${lesson.id}`;
-
-        if (localStorage.getItem(key) !== "earned") {
-          localStorage.setItem(key, "earned");
-          addXP(5);
-        }
+        const selectedOption = document.querySelector(
+          `input[name="lesson-quiz"][value="${selectedQuizAnswer}"]`
+        )?.closest(".quiz-option");
+        selectedOption?.classList.add("correct");
+        updateNavigationButtons();
       } else {
-        feedback.textContent = "الإجابة غير صحيحة، حاول مرة أخرى.";
+        feedback.textContent = "الإجابة غير صحيحة. راجع الشرح أو التلميح ثم حاول مرة أخرى.";
         feedback.className = "quiz-feedback incorrect";
+        const selectedOption = document.querySelector(
+          `input[name="lesson-quiz"][value="${selectedQuizAnswer}"]`
+        )?.closest(".quiz-option");
+        selectedOption?.classList.add("wrong");
       }
     }
 
@@ -1427,6 +1438,12 @@
       if (!lesson) return;
 
       currentLessonId = lesson.id;
+      challengeVerified = false;
+
+      const hint = document.getElementById("lessonHint");
+      if (hint) hint.hidden = true;
+      const hintButton = document.getElementById("showHint");
+      if (hintButton) hintButton.textContent = "إظهار التلميح";
 
       const lessonIndex = allLessons.findIndex(item => item.id === lesson.id);
       const chapter = CURRICULUM.find(item => item.lessons.some(entry => entry.id === lesson.id));
@@ -1449,11 +1466,39 @@
       renderQuiz(lesson.quiz);
       renderSidebar();
       updateNavigationButtons();
-      setOutput("اكتب الحل ثم اضغط «تحقق من الحل».", "info");
+      setOutput("ابدأ بقراءة المطلوب، ثم اكتب الحل وشغّله للتحقق من الناتج.", "info");
 
       const url = new URL(window.location.href);
       url.searchParams.set("lesson", lesson.id);
       window.history.replaceState({}, "", url);
+    }
+
+    const EXPECTED_OUTPUTS = {
+      "java-1-1": "Hello!",
+      "java-1-2": "Java",
+      "java-2-1": "16\\nCody",
+      "java-2-2": "20",
+      "java-3-1": "13\\n30",
+      "java-3-2": "2",
+      "java-4-1": "Adult",
+      "java-4-2": "Positive",
+      "java-5-1": "1\\n2\\n3\\n4\\n5",
+      "java-5-2": "1\\n2\\n3",
+      "java-6-1": "20",
+      "java-6-2": "10\\n20\\n30",
+      "java-7-1": "Hello!",
+      "java-7-2": "7",
+      "java-8-1": "Ali",
+      "java-8-2": "Cody"
+    };
+
+    function normalizeProgramOutput(value) {
+      return String(value ?? "")
+        .replace(/\\r\\n/g, "\\n")
+        .split("\\n")
+        .map(line => line.trim())
+        .join("\\n")
+        .trim();
     }
 
     async function checkChallenge() {
@@ -1461,9 +1506,11 @@
       if (!lesson) return;
 
       const code = getEditorCode();
+      challengeVerified = false;
+      updateNavigationButtons();
 
       if (!code.trim()) {
-        setOutput("اكتب الكود أولًا.", "error");
+        setOutput("اكتب الكود أولًا، ثم اضغط «تحقق من الحل».", "error");
         return;
       }
 
@@ -1473,15 +1520,20 @@
         checkButton.textContent = "جارٍ تجميع وتشغيل Java...";
       }
 
-      setOutput("جارٍ إرسال البرنامج إلى بيئة Java...", "info");
+      setOutput("جارٍ تجميع الكود وتشغيله والتحقق من المطلوب...", "info");
 
       try {
-        const result = await runCodeOnServer("java", code, document.getElementById("javaStdin")?.value || "");
+        const result = await runCodeOnServer(
+          "java",
+          code,
+          document.getElementById("javaStdin")?.value || ""
+        );
+
         const diagnostics = [
           result.compileOutput,
           result.stderr,
           result.message
-        ].filter(Boolean).join("\n").trim();
+        ].filter(Boolean).join("\\n").trim();
 
         if (!result.ok) {
           setOutput(
@@ -1491,25 +1543,45 @@
           return;
         }
 
-        const programOutput = String(result.stdout || "").trimEnd();
-        const outputText = programOutput
-          ? `تم تجميع وتشغيل برنامج Java بنجاح.\n\nالناتج:\n${programOutput}`
-          : "تم تجميع وتشغيل البرنامج بنجاح، لكنه لم يطبع أي ناتج.";
-
-        setOutput(outputText, "success");
-
-        const checks = lesson.checks || [];
-        const missingCheck = checks.find(check => {
+        const missingCheck = (lesson.checks || []).find(check => {
           check.pattern.lastIndex = 0;
           return !check.pattern.test(code);
         });
 
         if (missingCheck) {
-          showNotice(
-            "البرنامج اشتغل، لكن راجع المطلوب في التمرين: " + missingCheck.message,
-            "info"
+          setOutput(
+            "الكود اشتغل، لكن الحل لا يحقق كل أجزاء المطلوب بعد.\\n\\n" + missingCheck.message,
+            "error"
           );
+          return;
         }
+
+        const actualOutput = normalizeProgramOutput(result.stdout);
+        const expectedOutput = normalizeProgramOutput(EXPECTED_OUTPUTS[lesson.id]);
+
+        if (actualOutput !== expectedOutput) {
+          setOutput(
+            "الكود اشتغل، لكن الناتج غير مطابق للمطلوب.\\n\\nالناتج الحالي:\\n" +
+            (actualOutput || "(لا يوجد ناتج)") +
+            "\\n\\nالناتج المتوقع:\\n" + expectedOutput,
+            "error"
+          );
+          return;
+        }
+
+        challengeVerified = true;
+        setOutput(
+          "ممتاز! تم تجميع الكود وتشغيله، وكل أجزاء الحل صحيحة.\\n\\nالناتج:\\n" +
+          actualOutput,
+          "success"
+        );
+        showNotice(
+          quizAnswered
+            ? "اجتزت التحدي والسؤال! يمكنك الآن إكمال الدرس."
+            : "اجتزت تحدي الكود. أجب عن سؤال الفهم لإكمال الدرس.",
+          "success"
+        );
+        updateNavigationButtons();
       } catch (error) {
         console.error("Java execution failed:", error);
         setOutput(
@@ -1519,7 +1591,7 @@
       } finally {
         if (checkButton) {
           checkButton.disabled = false;
-          checkButton.textContent = "تحقق من الحل";
+          checkButton.textContent = challengeVerified ? "تم التحقق ✓" : "تحقق من الحل";
         }
       }
     }
@@ -1527,6 +1599,14 @@
     async function completeCurrentLesson() {
       const lesson = findLesson(currentLessonId);
       if (!lesson) return;
+
+      if (!challengeVerified || !quizAnswered) {
+        showNotice(
+          "لإكمال الدرس، شغّل حلًا صحيحًا ثم أجب عن سؤال الفهم إجابة صحيحة.",
+          "info"
+        );
+        return;
+      }
 
       const position = /^java-(\d+)-(\d+)$/.exec(lesson.id);
       if (!position) {
@@ -1568,11 +1648,13 @@
       };
 
       saveProgress(progress);
-      addXP(10);
       updateStats();
       updateNavigationButtons();
 
-      showNotice("تم حفظ إكمال الدرس في حسابك! حصلت على 10 نقاط خبرة.", "success");
+      showNotice(
+        "تم حفظ إكمال الدرس في حسابك. ستظهر المكافآت المركزية بعد تفعيل التحقق الخادمي لمكافآت Java.",
+        "success"
+      );
     }
 
     function updateNavigationButtons() {
@@ -1585,13 +1667,22 @@
       const complete = document.getElementById("completeLesson");
       const counter = document.getElementById("lessonChapter");
 
+      const done = Boolean(readProgress()[currentLessonId]?.completed);
       if (previous) previous.disabled = index <= 0;
-      if (next) next.disabled = index < 0 || index >= allLessons.length - 1;
+      if (next) {
+        next.disabled = index < 0 || index >= allLessons.length - 1 || !done;
+        next.textContent = index >= allLessons.length - 1
+          ? "وصلت لنهاية الدروس"
+          : "الدرس التالي ←";
+      }
 
       if (complete) {
-        const done = Boolean(readProgress()[currentLessonId]?.completed);
-        complete.disabled = done;
-        complete.textContent = done ? "تم إكمال الدرس ✓" : "إكمال الدرس";
+        complete.disabled = done || !challengeVerified || !quizAnswered;
+        complete.textContent = done
+          ? "تم إكمال الدرس ✓"
+          : (!challengeVerified || !quizAnswered)
+            ? "أكمل التحدي والسؤال أولًا"
+            : "إكمال الدرس";
       }
 
       if (counter && index >= 0) {
