@@ -323,7 +323,6 @@
     }
   </style>
 </head>
-
 <body>
   <main class="page-container">
     <header class="header">
@@ -408,7 +407,11 @@
   </nav>
 
   <script type="module">
+    import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
+    import { functions } from "./js/firebase-config.js";
     import { requireUser } from "./js/auth.js";
+
+    const GAME_ID = "code-puzzle-hello-world";
 
     const correctCode = [
       "console.log",
@@ -417,6 +420,11 @@
       ")",
       ";"
     ];
+
+    const claimGameReward = httpsCallable(
+      functions,
+      "claimGameReward"
+    );
 
     const piecesContainer = document.getElementById("piecesContainer");
     const targetZone = document.getElementById("targetZone");
@@ -429,7 +437,10 @@
 
     let availablePieces = [];
     let userBuild = [];
-    let completed = false;
+
+    let solved = false;
+    let claimingReward = false;
+    let rewardClaimed = false;
 
     function shufflePieces() {
       const pieces = correctCode.map((value, index) => ({
@@ -462,10 +473,11 @@
         button.type = "button";
         button.className = "piece";
         button.textContent = piece.value;
+        button.disabled = solved || claimingReward || rewardClaimed;
         button.setAttribute("aria-label", `إضافة ${piece.value}`);
 
         button.addEventListener("click", () => {
-          if (completed) return;
+          if (solved || claimingReward || rewardClaimed) return;
 
           userBuild.push(piece);
           targetZone.classList.remove("correct", "incorrect");
@@ -477,7 +489,7 @@
         piecesContainer.appendChild(button);
       });
 
-      if (!piecesContainer.children.length && !completed) {
+      if (!piecesContainer.children.length && !solved) {
         const message = document.createElement("span");
         message.className = "empty-message";
         message.textContent = "أضفت كل القطع إلى الكود.";
@@ -501,11 +513,11 @@
         button.type = "button";
         button.className = "piece placed";
         button.textContent = piece.value;
-        button.disabled = completed;
+        button.disabled = solved || claimingReward || rewardClaimed;
         button.setAttribute("aria-label", `إزالة ${piece.value}`);
 
         button.addEventListener("click", () => {
-          if (completed) return;
+          if (solved || claimingReward || rewardClaimed) return;
 
           userBuild.splice(index, 1);
           targetZone.classList.remove("correct", "incorrect");
@@ -521,42 +533,141 @@
       renderTarget();
       renderPieces();
 
-      undoButton.disabled = userBuild.length === 0 || completed;
-      checkButton.disabled = completed;
-      resetButton.disabled = false;
+      undoButton.disabled =
+        userBuild.length === 0 ||
+        solved ||
+        claimingReward ||
+        rewardClaimed;
+
+      checkButton.disabled =
+        claimingReward ||
+        rewardClaimed;
+
+      resetButton.disabled = claimingReward;
+
+      if (claimingReward) {
+        checkButton.textContent = "جارٍ تسجيل المكافأة...";
+      } else if (solved && !rewardClaimed) {
+        checkButton.textContent = "إعادة محاولة تسجيل المكافأة";
+      } else {
+        checkButton.textContent = "تحقق من الحل";
+      }
     }
 
+    async function submitRewardClaim() {
+      if (claimingReward || rewardClaimed) return;
+
+      claimingReward = true;
+      setFeedback("جارٍ التحقق من إنجازك وتسجيل المكافأة...", "info");
+      renderAll();
+
+      try {
+        const response = await claimGameReward({
+          gameId: GAME_ID,
+          solution: userBuild.map(piece => piece.value)
+        });
+
+        const data = response.data || {};
+
+        if (!data.success) {
+          throw new Error("لم يتم تأكيد تسجيل المكافأة.");
+        }
+
+        rewardClaimed = true;
+
+        rewardPanel.classList.add("visible");
+        targetZone.classList.remove("incorrect");
+        targetZone.classList.add("correct");
+
+        if (data.awarded) {
+          rewardMessage.textContent =
+            "تمت إضافة 10 نقاط خبرة (XP) ونجمة واحدة إلى حسابك بنجاح!";
+        } else {
+          rewardMessage.textContent =
+            "لقد حصلت على مكافأة هذه اللعبة من قبل. لن يتم تكرار إضافة النقاط أو النجوم.";
+        }
+
+        setFeedback(
+          data.awarded
+            ? "تم تسجيل إنجازك وإضافة المكافأة إلى حسابك بنجاح!"
+            : "هذا التحدي مكتمل بالفعل، والمكافأة مسجلة في حسابك.",
+          "success"
+        );
+
+      } catch (error) {
+        console.error("Game reward claim failed:", error);
+
+        let message =
+          "تم حل التحدي، لكن تعذر تسجيل المكافأة. تحقق من اتصال الإنترنت واضغط على إعادة محاولة تسجيل المكافأة.";
+
+        if (error.code === "functions/unauthenticated") {
+          message = "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى ثم حاول.";
+        } else if (error.code === "functions/failed-precondition") {
+          message = "لم يتم قبول الحل من الخادم. أعد المحاولة وتأكد من ترتيب القطع.";
+          solved = false;
+        }
+
+        setFeedback(message, "error");
+
+      } finally {
+        claimingReward = false;
+        renderAll();
+      }
+    }
     function resetGame() {
+      if (claimingReward) return;
+
       availablePieces = shufflePieces();
       userBuild = [];
-      completed = false;
+
+      solved = false;
+      claimingReward = false;
+      rewardClaimed = false;
 
       targetZone.classList.remove("correct", "incorrect");
       rewardPanel.classList.remove("visible");
-      rewardMessage.textContent =
-        "أكملت التحدي بنجاح. لم تتم إضافة نقاط أو عملات؛ نظام المكافآت يحتاج إلى ربط آمن قبل تفعيله.";
+
+      rewardMessage.textContent = "أكملت التحدي بنجاح.";
 
       setFeedback("رتّب القطع لتكوين الكود الصحيح.");
       renderAll();
     }
 
     function undoLastPiece() {
-      if (completed || userBuild.length === 0) {
+      if (
+        solved ||
+        claimingReward ||
+        rewardClaimed ||
+        userBuild.length === 0
+      ) {
         return;
       }
 
       userBuild.pop();
+
       targetZone.classList.remove("correct", "incorrect");
       setFeedback("");
       renderAll();
     }
 
-    function checkSolution() {
-      if (completed) return;
+    async function checkSolution() {
+      if (claimingReward || rewardClaimed) return;
+
+      // إذا كان الحل صحيحًا سابقًا وفشل تسجيل المكافأة،
+      // نعيد طلب المكافأة دون مطالبة المستخدم بحل اللغز مجددًا.
+      if (solved) {
+        await submitRewardClaim();
+        return;
+      }
 
       if (userBuild.length !== correctCode.length) {
         targetZone.classList.add("incorrect");
-        setFeedback("أكمل كل القطع أولًا، ثم تحقّق من الحل.", "error");
+
+        setFeedback(
+          "أكمل كل القطع أولًا، ثم تحقّق من الحل.",
+          "error"
+        );
+
         return;
       }
 
@@ -567,22 +678,26 @@
       if (!isCorrect) {
         targetZone.classList.remove("correct");
         targetZone.classList.add("incorrect");
+
         setFeedback(
           "الترتيب غير صحيح. اضغط على قطعة داخل منطقة الكود لإزالتها، ثم حاول مرة أخرى.",
           "error"
         );
+
         return;
       }
 
-      completed = true;
+      solved = true;
+
       targetZone.classList.remove("incorrect");
       targetZone.classList.add("correct");
+
       rewardPanel.classList.add("visible");
-
       rewardMessage.textContent =
-        "أكملت التحدي بنجاح. لم تتم إضافة نقاط أو عملات؛ نظام المكافآت يحتاج إلى ربط آمن قبل تفعيله.";
+        "إجابة صحيحة! جارٍ التحقق من إنجازك وتسجيل مكافأتك.";
 
-      setFeedback("إجابة صحيحة! أكملت التحدي بنجاح.", "success");
+      setFeedback("إجابة صحيحة! أحسنت، جارٍ تسجيل المكافأة.", "success");
+
       renderAll();
 
       if (typeof window.confetti === "function") {
@@ -592,6 +707,8 @@
           origin: { y: 0.7 }
         });
       }
+
+      await submitRewardClaim();
     }
 
     checkButton.addEventListener("click", checkSolution);
@@ -610,6 +727,7 @@
       }
 
       resetGame();
+
     } catch (error) {
       console.error("تعذر تهيئة اللعبة:", error);
 
