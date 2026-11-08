@@ -1062,10 +1062,9 @@ exports.syncLeaderboard = onDocumentWritten(
     const user = after.data() || {};
 
     await publicRef.set({
-      displayName:
-        typeof user.displayName === "string"
-          ? user.displayName.slice(0, 50)
-          : "متعلم",
+      // لا ننشر الاسم الذي أدخله المستخدم عند التسجيل.
+      // نستخدم معرفًا مستعارًا ثابتًا بدلًا منه في لوحة المتصدرين.
+      displayName: `مستكشف-${uid.slice(-6)}`,
 
       xp:
         Number.isFinite(user.xp) && user.xp >= 0
