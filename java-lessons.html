@@ -1476,16 +1476,16 @@
     const EXPECTED_OUTPUTS = {
       "java-1-1": "Hello!",
       "java-1-2": "Java",
-      "java-2-1": "16\\nCody",
+      "java-2-1": "16\nCody",
       "java-2-2": "20",
-      "java-3-1": "13\\n30",
+      "java-3-1": "13\n30",
       "java-3-2": "2",
       "java-4-1": "Adult",
       "java-4-2": "Positive",
-      "java-5-1": "1\\n2\\n3\\n4\\n5",
-      "java-5-2": "1\\n2\\n3",
+      "java-5-1": "1\n2\n3\n4\n5",
+      "java-5-2": "1\n2\n3",
       "java-6-1": "20",
-      "java-6-2": "10\\n20\\n30",
+      "java-6-2": "10\n20\n30",
       "java-7-1": "Hello!",
       "java-7-2": "7",
       "java-8-1": "Ali",
@@ -1494,10 +1494,10 @@
 
     function normalizeProgramOutput(value) {
       return String(value ?? "")
-        .replace(/\\r\\n/g, "\\n")
-        .split("\\n")
+        .replace(/\r\n/g, "\n")
+        .split("\n")
         .map(line => line.trim())
-        .join("\\n")
+        .join("\n")
         .trim();
     }
 
@@ -1533,7 +1533,7 @@
           result.compileOutput,
           result.stderr,
           result.message
-        ].filter(Boolean).join("\\n").trim();
+        ].filter(Boolean).join("\n").trim();
 
         if (!result.ok) {
           setOutput(
@@ -1550,7 +1550,7 @@
 
         if (missingCheck) {
           setOutput(
-            "الكود اشتغل، لكن الحل لا يحقق كل أجزاء المطلوب بعد.\\n\\n" + missingCheck.message,
+            "الكود اشتغل، لكن الحل لا يحقق كل أجزاء المطلوب بعد.\n\n" + missingCheck.message,
             "error"
           );
           return;
@@ -1561,9 +1561,9 @@
 
         if (actualOutput !== expectedOutput) {
           setOutput(
-            "الكود اشتغل، لكن الناتج غير مطابق للمطلوب.\\n\\nالناتج الحالي:\\n" +
+            "الكود اشتغل، لكن الناتج غير مطابق للمطلوب.\n\nالناتج الحالي:\n" +
             (actualOutput || "(لا يوجد ناتج)") +
-            "\\n\\nالناتج المتوقع:\\n" + expectedOutput,
+            "\n\nالناتج المتوقع:\n" + expectedOutput,
             "error"
           );
           return;
@@ -1571,7 +1571,7 @@
 
         challengeVerified = true;
         setOutput(
-          "ممتاز! تم تجميع الكود وتشغيله، وكل أجزاء الحل صحيحة.\\n\\nالناتج:\\n" +
+          "ممتاز! تم تجميع الكود وتشغيله، وكل أجزاء الحل صحيحة.\n\nالناتج:\n" +
           actualOutput,
           "success"
         );
