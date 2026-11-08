@@ -1,4 +1,3 @@
-
 const { initializeApp } = require("firebase-admin/app");
 
 const {
@@ -247,7 +246,6 @@ exports.runCode = onCall(
     };
   }
 );
-
 /*
  * شراء عناصر المتجر من الخادم فقط.
  */
@@ -413,8 +411,24 @@ function getRewardableLesson(lessonId, data) {
 }
 
 /*
- * منح مكافأة الدرس مرة واحدة فقط.
- * gameRewards هو سجل منع التكرار.
+ * هذا الإثبات يُقرأ من quizResults المحمي من كتابة العميل.
+ * لا تُعد حالة completed القادمة من المتصفح دليل اجتياز.
+ */
+function hasVerifiedLessonResult(uid, lessonId, lesson, result) {
+  if (!result || typeof result !== "object") return false;
+
+  return result.verificationVersion === 1
+    && result.serverVerified === true
+    && result.passed === true
+    && result.uid === uid
+    && result.lessonId === lessonId
+    && result.language === lesson.language
+    && result.chapter === lesson.chapter
+    && result.lesson === lesson.lesson;
+}
+/*
+ * منح مكافأة الدرس مرة واحدة فقط بعد إثبات الاجتياز خادميًا.
+ * gameRewards هو سجل منع التكرار، وليس دليل الاجتياز.
  */
 async function awardCompletedLesson(
   uid,
@@ -450,6 +464,29 @@ async function awardCompletedLesson(
       return {
         awarded: false,
         reason: "already-awarded"
+      };
+    }
+
+    // يجب أن يكتب خادم التصحيح هذا السجل بعد التحقق الفعلي.
+    // لا تُنشئ إثباتات من سجلات التقدم القديمة أو من مدخلات العميل.
+    const resultRef = userRef
+      .collection("quizResults")
+      .doc(`lesson_${lessonId}`);
+
+    const resultSnapshot = await transaction.get(resultRef);
+
+    if (
+      !resultSnapshot.exists ||
+      !hasVerifiedLessonResult(
+        uid,
+        lessonId,
+        lesson,
+        resultSnapshot.data()
+      )
+    ) {
+      return {
+        awarded: false,
+        reason: "unverified-result"
       };
     }
 
@@ -568,6 +605,7 @@ exports.syncExistingLessonRewards = onCall(
       .get();
 
     let awardedCount = 0;
+    let pendingVerificationCount = 0;
 
     for (const lessonDocument of progressSnapshot.docs) {
       const result = await awardCompletedLesson(
@@ -578,6 +616,8 @@ exports.syncExistingLessonRewards = onCall(
 
       if (result.awarded) {
         awardedCount++;
+      } else if (result.reason === "unverified-result") {
+        pendingVerificationCount++;
       }
     }
 
@@ -591,6 +631,10 @@ exports.syncExistingLessonRewards = onCall(
     return {
       success: true,
       awardedCount,
+      pendingVerificationCount,
+      message: pendingVerificationCount > 0
+        ? "توجد دروس محفوظة تنتظر التحقق الخادمي قبل منح المكافآت."
+        : "اكتملت مراجعة مكافآت الدروس.",
       xp: Number(profile.xp) || 0,
       stars: Number(profile.stars) || 0
     };
