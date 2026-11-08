@@ -26,7 +26,8 @@ const MAX_NAME_LENGTH = 50;
 const SUPPORTED_LANGUAGES = [
   "python",
   "javascript",
-  "cpp"
+  "cpp",
+  "java"
 ];
 
 function normalizeEmail(email) {
