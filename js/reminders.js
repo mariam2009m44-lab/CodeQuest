@@ -47,7 +47,7 @@ function scheduleReminder() {
   ) return;
 
   const rawTime = localStorage.getItem(TIME_KEY) || "18:00";
-  const match = /^(?:[01]\\d|2[0-3]):[0-5]\\d$/.exec(rawTime);
+  const match = /^(?:[01]\d|2[0-3]):[0-5]\d$/.exec(rawTime);
   const [hour, minute] = (match ? rawTime : "18:00").split(":").map(Number);
 
   const now = new Date();
