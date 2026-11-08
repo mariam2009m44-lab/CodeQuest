@@ -183,8 +183,7 @@ export async function ensureUserProfile(user) {
       languageProgress: {
         python: 0,
         javascript: 0,
-        cpp: 0,
-        java: 0
+        cpp: 0
       },
 
       createdAt: serverTimestamp(),
