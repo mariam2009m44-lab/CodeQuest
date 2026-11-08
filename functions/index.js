@@ -904,18 +904,124 @@ exports.syncExistingLessonRewards = onCall(
 );
 
 /*
- * مكافآت الألعاب لا تزال محمية.
- * لن نمنح مكافآت لعبة قبل ربط نتيجة اللعبة بالخادم.
+ * منح مكافأة بازل الأكواد بعد التحقق من الحل على الخادم.
+ * المكافأة تُمنح مرة واحدة فقط لكل مستخدم.
  */
 exports.claimGameReward = onCall(
   CALL_OPTIONS,
   async request => {
-    requireAuth(request);
+    const uid = requireAuth(request);
+    const data = request.data || {};
 
-    throw new HttpsError(
-      "failed-precondition",
-      "مكافآت الألعاب غير مفعلة حتى يتم ربط التحقق من نتيجة اللعبة بالخادم."
-    );
+    const GAME_ID = "code-puzzle-hello-world";
+
+    const CORRECT_SOLUTION = [
+      "console.log",
+      "(",
+      '"Hello World"',
+      ")",
+      ";"
+    ];
+
+    const REWARD = {
+      xp: 10,
+      stars: 1
+    };
+
+    if (data.gameId !== GAME_ID) {
+      throw new HttpsError(
+        "invalid-argument",
+        "معرّف اللعبة غير صحيح."
+      );
+    }
+
+    if (
+      !Array.isArray(data.solution) ||
+      data.solution.length !== CORRECT_SOLUTION.length ||
+      !data.solution.every(
+        (piece, index) =>
+          typeof piece === "string" &&
+          piece === CORRECT_SOLUTION[index]
+      )
+    ) {
+      throw new HttpsError(
+        "failed-precondition",
+        "لم يتم اجتياز التحدي. راجع ترتيب قطع الكود."
+      );
+    }
+
+    const userRef = db.collection("users").doc(uid);
+
+    const rewardRef = userRef
+      .collection("gameRewards")
+      .doc(`game_${GAME_ID}`);
+
+    return db.runTransaction(async transaction => {
+      const rewardSnapshot = await transaction.get(rewardRef);
+
+      if (rewardSnapshot.exists) {
+        const userSnapshot = await transaction.get(userRef);
+        const userData = userSnapshot.exists
+          ? userSnapshot.data() || {}
+          : {};
+
+        return {
+          success: true,
+          awarded: false,
+          reason: "already-awarded",
+          xp: Number(userData.xp) || 0,
+          stars: Number(userData.stars) || 0,
+          message: "حصلت على مكافأة هذه اللعبة من قبل."
+        };
+      }
+
+      const userSnapshot = await transaction.get(userRef);
+
+      if (!userSnapshot.exists) {
+        throw new HttpsError(
+          "not-found",
+          "ملف الحساب غير موجود."
+        );
+      }
+
+      const userData = userSnapshot.data() || {};
+
+      const currentXP =
+        Number.isSafeInteger(userData.xp) && userData.xp >= 0
+          ? userData.xp
+          : 0;
+
+      const currentStars =
+        Number.isSafeInteger(userData.stars) && userData.stars >= 0
+          ? userData.stars
+          : 0;
+
+      const newXP = currentXP + REWARD.xp;
+      const newStars = currentStars + REWARD.stars;
+
+      transaction.update(userRef, {
+        xp: newXP,
+        stars: newStars,
+        level: Math.floor(newXP / 100) + 1,
+        updatedAt: FieldValue.serverTimestamp()
+      });
+
+      transaction.create(rewardRef, {
+        type: "game",
+        gameId: GAME_ID,
+        xp: REWARD.xp,
+        stars: REWARD.stars,
+        createdAt: FieldValue.serverTimestamp()
+      });
+
+      return {
+        success: true,
+        awarded: true,
+        xp: newXP,
+        stars: newStars,
+        message: "تمت إضافة مكافأة اللعبة إلى حسابك."
+      };
+    });
   }
 );
 
