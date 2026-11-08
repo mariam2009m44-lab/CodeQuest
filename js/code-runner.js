@@ -14,7 +14,8 @@ const runCodeCallable = httpsCallable(
 const ALLOWED_LANGUAGES = new Set([
   "javascript",
   "python",
-  "cpp"
+  "cpp",
+  "java"
 ]);
 
 export async function runCodeOnServer(language, code) {
