@@ -1578,8 +1578,15 @@
       .map(String)
   );
 
+  // يدعم التنسيق القديم (مصفوفة) والجديد (كائن) دون فقدان تقدم المستخدم.
+  const normalizedCompletedChapters = Array.isArray(storedCompletedChapters)
+    ? storedCompletedChapters
+    : Array.isArray(storedCompletedChapters?.completed)
+      ? storedCompletedChapters.completed
+      : [];
+
   const completedChapters = new Set(
-    (Array.isArray(storedCompletedChapters) ? storedCompletedChapters : [])
+    normalizedCompletedChapters
       .map(Number)
       .filter(Number.isInteger)
   );
@@ -1595,9 +1602,23 @@
   }
 
   function saveLocalProgress() {
+    const existingProgress = readStorage(
+      "cody_python_progress",
+      {}
+    );
+
     writeStorage(
       "cody_python_progress",
-      [...completedChapters]
+      {
+        completed: [...completedChapters],
+        stars: (
+          existingProgress &&
+          !Array.isArray(existingProgress) &&
+          typeof existingProgress.stars === "object"
+        )
+          ? existingProgress.stars
+          : {}
+      }
     );
 
     writeStorage(
@@ -1953,7 +1974,7 @@
 
     if (xpDisplay) {
       xpDisplay.textContent = String(
-        readStorage("cody_python_xp", 0)
+        readStorage("cody_xp", 0)
       );
     }
   }
@@ -1972,12 +1993,19 @@
 
     completedLessonKeys.add(key);
 
-    const oldXP = Number(
+    const legacyXP = Number(
       readStorage("cody_python_xp", 0)
     ) || 0;
 
+    const sharedXP = Number(
+      readStorage("cody_xp", 0)
+    ) || 0;
+
+    const oldXP = Math.max(legacyXP, sharedXP);
     const newXP = oldXP + 10;
 
+    // مفتاح موحد مع صفحة خريطة الفصول، مع ترحيل المفتاح القديم.
+    writeStorage("cody_xp", newXP);
     writeStorage("cody_python_xp", newXP);
 
     saveLocalProgress();
