@@ -2662,7 +2662,7 @@
       output.classList.add("output-success");
       output.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-      checkChallengeResult(programOutput, code);
+      await checkChallengeResult(programOutput, code);
     } catch (error) {
       console.error("Python execution failed:", error);
       output.textContent = error?.message || "تعذر تشغيل Python حاليًا.";
@@ -2766,7 +2766,7 @@
       }
     } else {
       const actual = String(programOutput)
-        .replace(/\\r\\n/g, "\\n")
+        .replace(/\r\n/g, "\n")
         .trim();
       const expected = String(expectedOutput)
         .replace(/\\r\\n/g, "\\n")
