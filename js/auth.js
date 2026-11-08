@@ -103,6 +103,10 @@ export function authError(error) {
       "انتهت صلاحية الرابط. اطلب رابطًا جديدًا.",
     "permission-denied":
       "لا توجد صلاحية للوصول إلى هذه البيانات.",
+    "firestore/permission-denied":
+      "لا توجد صلاحية للوصول إلى بيانات الحساب. راجع قواعد Firestore.",
+    "firestore/unavailable":
+      "خدمة قاعدة البيانات غير متاحة حاليًا.",
     "unavailable": "الخدمة غير متاحة حاليًا."
   };
 
@@ -116,7 +120,15 @@ function normalizeError(error) {
     return error;
   }
 
-  return new Error(authError(error));
+  const normalized = new Error(authError(error), {
+    cause: error instanceof Error ? error : undefined
+  });
+
+  if (typeof error?.code === "string") {
+    normalized.code = error.code;
+  }
+
+  return normalized;
 }
 
 /**
