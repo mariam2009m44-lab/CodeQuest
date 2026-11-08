@@ -38,6 +38,17 @@ const LANGUAGES = Object.freeze({
   cpp: 54
 });
 
+const CURRICULUM_URLS = Object.freeze({
+  javascript:
+    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/js_curriculum.json",
+
+  python:
+    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/python_curriculum.json",
+
+  cpp:
+    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/cpp_curriculum.json"
+});
+
 const STORE_ITEMS = Object.freeze({
   astronaut: 150,
   fox: 200,
@@ -358,6 +369,265 @@ exports.purchaseStoreItem = onCall(
 );
 
 /*
+ * البحث عن سؤال الدرس في ملف المنهج الرسمي.
+ * يتم تحديد الفصل والدرس من ترتيب المنهج،
+ * وليس من بيانات يرسلها المتصفح.
+ */
+async function findCurriculumQuiz(language, curriculumLessonId) {
+  const curriculumUrl = CURRICULUM_URLS[language];
+
+  if (!curriculumUrl) {
+    throw new HttpsError(
+      "invalid-argument",
+      "لغة الاختبار غير مدعومة."
+    );
+  }
+
+  let response;
+
+  try {
+    response = await fetch(curriculumUrl, {
+      headers: {
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(15000)
+    });
+  } catch (error) {
+    console.error("Curriculum fetch failed:", error);
+
+    throw new HttpsError(
+      "unavailable",
+      "تعذر الاتصال بملف المنهج حاليًا."
+    );
+  }
+
+  if (!response.ok) {
+    throw new HttpsError(
+      "unavailable",
+      "تعذر تحميل المنهج للتحقق من الإجابة."
+    );
+  }
+
+  let curriculum;
+
+  try {
+    curriculum = await response.json();
+  } catch {
+    throw new HttpsError(
+      "internal",
+      "ملف المنهج لا يحتوي على بيانات صالحة."
+    );
+  }
+
+  if (!Array.isArray(curriculum?.chapters)) {
+    throw new HttpsError(
+      "internal",
+      "تركيب ملف المنهج غير صحيح."
+    );
+  }
+
+  for (
+    let chapterIndex = 0;
+    chapterIndex < curriculum.chapters.length;
+    chapterIndex++
+  ) {
+    const chapter = curriculum.chapters[chapterIndex];
+
+    if (!Array.isArray(chapter?.lessons)) {
+      continue;
+    }
+
+    for (
+      let lessonIndex = 0;
+      lessonIndex < chapter.lessons.length;
+      lessonIndex++
+    ) {
+      const lesson = chapter.lessons[lessonIndex];
+
+      if (lesson?.id !== curriculumLessonId) {
+        continue;
+      }
+
+      const quiz = Array.isArray(lesson.quiz)
+        ? lesson.quiz[0]
+        : lesson.quiz;
+
+      if (
+        !quiz ||
+        !Array.isArray(quiz.options) ||
+        !Number.isInteger(quiz.correct_index) ||
+        quiz.correct_index < 0 ||
+        quiz.correct_index >= quiz.options.length
+      ) {
+        throw new HttpsError(
+          "failed-precondition",
+          "بيانات سؤال هذا الدرس غير مكتملة."
+        );
+      }
+
+      return {
+        quiz,
+        chapterIndex,
+        lessonIndex,
+        curriculumLessonId: lesson.id
+      };
+    }
+  }
+
+  throw new HttpsError(
+    "not-found",
+    "لم يتم العثور على الدرس داخل المنهج."
+  );
+}
+
+/*
+ * التحقق من إجابة الاختبار من الخادم.
+ *
+ * عند الإجابة الصحيحة:
+ * 1. نحدد موقع الدرس الحقيقي في المنهج.
+ * 2. ننشئ معرّف التقدم الداخلي المتوافق مع النظام الحالي.
+ * 3. نحفظ إثباتًا خادميًا في quizResults.
+ *
+ * المتصفح لا يستطيع إنشاء هذا الإثبات بنفسه.
+ */
+exports.checkQuizAnswer = onCall(
+  {
+    region: "europe-west1",
+    timeoutSeconds: 30,
+    memory: "256MiB",
+    maxInstances: 5
+  },
+  async request => {
+    const uid = requireAuth(request);
+    const data = request.data || {};
+
+    const {
+      language,
+      lessonId,
+      selectedIndex
+    } = data;
+
+    if (
+      typeof language !== "string" ||
+      !Object.prototype.hasOwnProperty.call(
+        CURRICULUM_URLS,
+        language
+      )
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "لغة البرمجة غير مدعومة."
+      );
+    }
+
+    if (
+      typeof lessonId !== "string" ||
+      !/^[a-zA-Z0-9_-]{1,100}$/.test(lessonId)
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "معرّف الدرس غير صالح."
+      );
+    }
+
+    if (
+      !Number.isInteger(selectedIndex) ||
+      selectedIndex < 0 ||
+      selectedIndex > 20
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "رقم الاختيار غير صالح."
+      );
+    }
+
+    const lessonInfo = await findCurriculumQuiz(
+      language,
+      lessonId
+    );
+
+    const {
+      quiz,
+      chapterIndex,
+      lessonIndex
+    } = lessonInfo;
+
+    if (selectedIndex >= quiz.options.length) {
+      throw new HttpsError(
+        "invalid-argument",
+        "رقم الاختيار غير موجود في هذا السؤال."
+      );
+    }
+
+    const correct =
+      selectedIndex === quiz.correct_index;
+
+    const explanation = correct
+      ? (
+          quiz.explanation ||
+          quiz.success_msg ||
+          "إجابة صحيحة! أحسنت."
+        )
+      : (
+          quiz.fail_msg ||
+          "الإجابة غير صحيحة. راجع شرح الدرس وحاول مرة أخرى."
+        );
+
+    if (!correct) {
+      return {
+        success: true,
+        correct: false,
+        explanation: String(explanation).slice(0, 500)
+      };
+    }
+
+    /*
+     * هذا هو المعرّف الذي يستخدمه saveLessonProgress
+     * في js/auth.js، وليس معرّف المنهج مثل py-1-1.
+     */
+    const progressLessonId =
+      `${language}_${chapterIndex}_${lessonIndex}`;
+
+    const resultRef = db
+      .collection("users")
+      .doc(uid)
+      .collection("quizResults")
+      .doc(`lesson_${progressLessonId}`);
+
+    /*
+     * الكتابة تتم باستخدام Firebase Admin SDK من الخادم.
+     * لا نعتمد على أي قيمة serverVerified يرسلها المتصفح.
+     */
+    await resultRef.set({
+      verificationVersion: 1,
+      serverVerified: true,
+      passed: true,
+
+      uid,
+      lessonId: progressLessonId,
+
+      curriculumLessonId: lessonId,
+
+      language,
+      chapter: chapterIndex,
+      lesson: lessonIndex,
+
+      selectedIndex,
+
+      verifiedAt: FieldValue.serverTimestamp()
+    });
+
+    return {
+      success: true,
+      correct: true,
+      explanation: String(explanation).slice(0, 500),
+
+      chapter: chapterIndex,
+      lesson: lessonIndex
+    };
+  }
+);
+/*
  * التحقق من سجل الدرس الذي يستحق المكافأة.
  * لا نكافئ علامات الامتحانات أو السجلات الخاصة.
  */
@@ -411,8 +681,7 @@ function getRewardableLesson(lessonId, data) {
 }
 
 /*
- * هذا الإثبات يُقرأ من quizResults المحمي من كتابة العميل.
- * لا تُعد حالة completed القادمة من المتصفح دليل اجتياز.
+ * التحقق من إثبات اجتياز الاختبار.
  */
 function hasVerifiedLessonResult(uid, lessonId, lesson, result) {
   if (!result || typeof result !== "object") return false;
@@ -426,6 +695,7 @@ function hasVerifiedLessonResult(uid, lessonId, lesson, result) {
     && result.chapter === lesson.chapter
     && result.lesson === lesson.lesson;
 }
+
 /*
  * منح مكافأة الدرس مرة واحدة فقط بعد إثبات الاجتياز خادميًا.
  * gameRewards هو سجل منع التكرار، وليس دليل الاجتياز.
@@ -467,8 +737,10 @@ async function awardCompletedLesson(
       };
     }
 
-    // يجب أن يكتب خادم التصحيح هذا السجل بعد التحقق الفعلي.
-    // لا تُنشئ إثباتات من سجلات التقدم القديمة أو من مدخلات العميل.
+    /*
+     * يجب أن يكتب خادم التصحيح هذا السجل بعد التحقق الفعلي.
+     * لا تُنشئ إثباتات من سجلات التقدم القديمة أو من مدخلات العميل.
+     */
     const resultRef = userRef
       .collection("quizResults")
       .doc(`lesson_${lessonId}`);
@@ -519,6 +791,7 @@ async function awardCompletedLesson(
         : 0;
 
     const newXP = currentXP + LESSON_REWARD.xp;
+
     const newStars =
       currentStars + LESSON_REWARD.stars;
 
@@ -643,7 +916,7 @@ exports.syncExistingLessonRewards = onCall(
 
 /*
  * مكافآت الألعاب لا تزال محمية.
- * لن نمنح مكافآت لعبة قبل ربط نتيجة موثوقة بالخادم.
+ * لن نمنح مكافآت لعبة قبل ربط نتيجة اللعبة بالخادم.
  */
 exports.claimGameReward = onCall(
   CALL_OPTIONS,
