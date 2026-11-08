@@ -632,6 +632,7 @@
 
     <div class="top-actions">
       <span class="xp-pill">⭐ XP: <span id="xpCount">0</span></span>
+      <span class="xp-pill">🌟 النجوم: <span id="starCount">0</span></span>
       <a class="back-link" href="java-chapters.html">← فصول Java</a>
     </div>
   </header>
@@ -755,7 +756,7 @@
     "use strict";
 
     import { verifyJavaChallenge } from "./js/code-runner.js";
-    import { saveLessonProgress, getLessonProgress } from "./js/auth.js";
+    import { saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
     const PROGRESS_KEY = "cody_java_progress";
     const XP_KEY = "cody_java_xp";
@@ -1151,6 +1152,8 @@
     let selectedQuizAnswer = null;
     let quizAnswered = false;
     let challengeVerified = false;
+    let accountXP = null;
+    let accountStars = 0;
 
     function escapeHTML(value) {
       return String(value ?? "").replace(/[&<>"']/g, character => ({
@@ -1186,7 +1189,9 @@
     }
 
     function getXP() {
-      return Number(localStorage.getItem(XP_KEY) || 0);
+      return accountXP === null
+        ? Number(localStorage.getItem(XP_KEY) || 0)
+        : accountXP;
     }
 
     function addXP(amount) {
@@ -1201,6 +1206,8 @@
     function updateStats() {
       const xpElement = document.getElementById("xpCount");
       if (xpElement) xpElement.textContent = getXP();
+      const starsElement = document.getElementById("starCount");
+      if (starsElement) starsElement.textContent = String(accountStars);
 
       const progress = readProgress();
       const completedCount = allLessons.filter(
@@ -1606,7 +1613,7 @@
       updateNavigationButtons();
 
       showNotice(
-        "تم حفظ إكمال الدرس في حسابك. ستظهر المكافآت المركزية بعد تفعيل التحقق الخادمي لمكافآت Java.",
+        "تم حفظ إكمال الدرس والتحقق من الحل على الخادم. يجري تحديث نقاط الخبرة والنجوم في حسابك.",
         "success"
       );
     }
@@ -1715,6 +1722,15 @@
         if (!allLessons.length) {
           showNotice("المنهج فارغ؛ راجع بيانات الدروس.", "error");
           return;
+        }
+
+        // تحميل أرصدة الحساب الموثوقة من Firestore.
+        try {
+          const profile = await getUserProfile();
+          accountXP = Number.isSafeInteger(profile.xp) ? profile.xp : 0;
+          accountStars = Number.isSafeInteger(profile.stars) ? profile.stars : 0;
+        } catch (profileError) {
+          console.warn("تعذر تحميل أرصدة الحساب:", profileError);
         }
 
         // استعادة التقدم المحفوظ في الحساب حتى يعمل المسار على أكثر من جهاز.
