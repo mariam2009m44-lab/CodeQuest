@@ -1,4 +1,3 @@
-
 import { db } from "./firebase-config.js";
 
 import {
@@ -10,6 +9,8 @@ import {
 import {
   doc,
   collection,
+  query,
+  where,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
@@ -422,7 +423,6 @@ function calculateLessonStats(documents, totals) {
     percentages
   };
 }
-
 /* =========================================
    Main application controller
 ========================================= */
@@ -438,6 +438,7 @@ export const App = {
 
   unsubscribeProfile: null,
   unsubscribeLessonProgress: null,
+  unsubscribeProjects: null,
 
   initPromise: null,
 
@@ -496,6 +497,7 @@ export const App = {
       // Prevent duplicate listeners if initialization is repeated.
       this.unsubscribeProfile?.();
       this.unsubscribeLessonProgress?.();
+      this.unsubscribeProjects?.();
 
       /* -------------------------------------
          User profile listener
@@ -532,6 +534,40 @@ export const App = {
 
           showToast(
             "تعذر تحديث بيانات الحساب.",
+            "error"
+          );
+        }
+      );
+
+      /* -------------------------------------
+         Saved projects listener
+      ------------------------------------- */
+
+      // Count the signed-in user's saved projects directly
+      // from Firestore. This listener updates automatically
+      // after project creation, editing, or deletion.
+
+      this.unsubscribeProjects = onSnapshot(
+        query(
+          collection(db, "projects"),
+          where("userId", "==", user.uid)
+        ),
+
+        snapshot => {
+          setText(
+            ".js-completed-projects",
+            snapshot.size
+          );
+        },
+
+        error => {
+          console.error(
+            "Saved projects subscription error:",
+            error
+          );
+
+          showToast(
+            "تعذر تحديث عدد المشروعات المحفوظة.",
             "error"
           );
         }
@@ -642,10 +678,8 @@ export const App = {
       );
     }
 
-    setText(
-      ".js-completed-projects",
-      safeNumber(data.completedProjects)
-    );
+    // Saved projects are counted by the dedicated
+    // Firestore listener, not by the user profile document.
 
     setText(
       ".js-learning-streak",
@@ -697,7 +731,6 @@ export const App = {
       );
     }
   },
-
   /* =====================================
      Protected navigation
   ===================================== */
@@ -847,6 +880,9 @@ export const App = {
 
     this.unsubscribeLessonProgress?.();
     this.unsubscribeLessonProgress = null;
+
+    this.unsubscribeProjects?.();
+    this.unsubscribeProjects = null;
 
     this.currentUid = null;
 
