@@ -419,6 +419,41 @@ button { font-family:inherit; }
   background:#0d1117!important;
 }
 
+.lesson-help-panel {
+  flex-shrink:0;
+  padding:12px 15px;
+  background:#111b2b;
+  border-top:1px solid var(--border);
+  color:#dbeafe;
+  line-height:1.7;
+  max-height:150px;
+  overflow:auto;
+}
+
+.lesson-help-panel strong {
+  display:block;
+  color:var(--gold);
+  margin-bottom:5px;
+}
+
+.lesson-help-panel p { margin:0 0 5px; }
+
+#lessonSolutionText {
+  margin-top:8px;
+  padding:9px 11px;
+  background:rgba(16,185,129,.10);
+  border-right:3px solid var(--green);
+  border-radius:8px;
+}
+
+.exam-feedback {
+  min-height:28px;
+  margin-top:12px;
+  color:var(--gold);
+  font-weight:700;
+  line-height:1.7;
+}
+
 .output-area {
   height:120px;
   background:#000;
@@ -694,6 +729,7 @@ button { font-family:inherit; }
     <div class="exam-question-box" id="examQuestionBox">
       <div class="exam-q-text" id="examQuestionText"></div>
       <div class="exam-options" id="examOptionsContainer"></div>
+      <p id="examFeedback" class="exam-feedback" aria-live="polite"></p>
     </div>
 
     <div class="exam-result" id="examResultBox">
@@ -728,1105 +764,2249 @@ button { font-family:inherit; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
 <script>
-"use strict";
+// ==========================================
+// 1) المتغيرات الأساسية
+// ==========================================
 
-const chapterList = [
-  {id:1,title:"الطباعة"},
-  {id:2,title:"المتغيرات"},
-  {id:3,title:"العمليات الحسابية"},
-  {id:4,title:"الشروط"},
-  {id:5,title:"التكرار"},
-  {id:6,title:"القوائم"},
-  {id:7,title:"الدوال"},
-  {id:8,title:"النصوص"},
-  {id:9,title:"الأخطاء"},
-  {id:10,title:"القواميس"},
-  {id:11,title:"المكتبات"},
-  {id:12,title:"مشروع التخرج"}
-];
+const chapterList = window.CHAPTERS || {};
 
-const PROGRESS_KEY = "cody_python_progress";
-
-const params = new URLSearchParams(location.search);
-
-let chapterId = Number(params.get("ch")) || 1;
-let lessonId = Number(params.get("lesson")) || 1;
-
-if (chapterId < 1 || chapterId > 12) chapterId = 1;
-
+let currentChapterId = 1;
+let currentLessonIndex = 0;
 let currentLesson = null;
 let currentStepIndex = 0;
-let editorInstance = null;
-let challengeSolved = false;
-let verifiedChallenge = false;
-let isExamMode = false;
 
-let examQuestions = [];
+let currentExamQuestions = [];
 let currentExamIndex = 0;
 let examScore = 0;
 let examAnswered = false;
+
+let editor = null;
+let currentChallenge = null;
+let challengeSolved = false;
+
 let profileAvatarHTML = "";
+let studentAvatarId = "cody";
 
 const chatContainer = document.getElementById("chatContainer");
+const chaptersListElement = document.getElementById("chaptersList");
+const bottomAction = document.getElementById("bottomAction");
+const nextBtn = document.getElementById("nextBtn");
 
-function readPythonLocalProgress() {
+const completedChapters = new Set(
+  JSON.parse(localStorage.getItem("cody_python_progress") || "[]")
+);
+
+const escapeHTML = (value) => {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+};
+
+function saveLocalProgress() {
+  localStorage.setItem(
+    "cody_python_progress",
+    JSON.stringify([...completedChapters])
+  );
+}
+
+function getChapter(chapterId) {
+  return chapterList[chapterId] || null;
+}
+
+function getChapterLessons(chapterId) {
+  const chapter = getChapter(chapterId);
+  return Array.isArray(chapter?.lessons) ? chapter.lessons : [];
+}
+
+function getLessonTitle(lesson) {
+  return lesson?.title || "درس جديد";
+}
+
+function isExamLesson(lesson) {
+  return /امتحان|اختبار/i.test(getLessonTitle(lesson));
+}
+
+function getCurrentChapterNumber() {
+  return Number(currentChapterId) || 1;
+}
+
+
+// ==========================================
+// 2) صورة الطالب من الحساب نفسه
+// ==========================================
+
+async function initializeStudentAvatar() {
   try {
-    const data = JSON.parse(
-      localStorage.getItem(PROGRESS_KEY) || '{"completed":[]}'
+    const avatarModule = await import("./js/avatars.js");
+
+    const {
+      renderAvatar,
+      installAvatarStyles
+    } = avatarModule;
+
+    installAvatarStyles();
+
+    const avatarStyle = document.createElement("style");
+    avatarStyle.id = "python-chat-avatar-style";
+
+    avatarStyle.textContent = `
+      .message-row .avatar {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #17243b;
+        border: 1px solid rgba(255,255,255,.12);
+      }
+
+      .message-row.student .avatar {
+        background: #17243b;
+      }
+
+      .message-row .avatar .anime-avatar {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .message-row .avatar .anime-character {
+        width: 100%;
+        height: 100%;
+      }
+
+      .message-row .avatar .anime-avatar-svg {
+        width: 100%;
+        height: 100%;
+        max-width: 44px;
+        object-fit: contain;
+      }
+    `;
+
+    if (!document.getElementById("python-chat-avatar-style")) {
+      document.head.appendChild(avatarStyle);
+    }
+
+    const { requireUser } = await import("./js/auth.js");
+    const { db } = await import("./js/firebase-config.js");
+
+    const {
+      doc,
+      onSnapshot
+    } = await import(
+      "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"
     );
 
-    if (!Array.isArray(data.completed)) data.completed = [];
-    if (!Array.isArray(data.lessons)) data.lessons = [];
+    const user = await requireUser();
 
-    return data;
-  } catch {
-    return {completed:[],lessons:[]};
+    if (!user?.uid) {
+      profileAvatarHTML = renderAvatar("cody");
+      return;
+    }
+
+    const userRef = doc(db, "users", user.uid);
+
+    onSnapshot(
+      userRef,
+      (snapshot) => {
+        if (!snapshot.exists()) {
+          studentAvatarId = "cody";
+          profileAvatarHTML = renderAvatar("cody");
+          return;
+        }
+
+        const userData = snapshot.data() || {};
+        const requestedAvatar = userData.activeAvatar || "cody";
+
+        const inventory = Array.isArray(userData.inventory)
+          ? userData.inventory
+          : [];
+
+        const avatars = avatarModule.getAllAvatars();
+
+        const selectedAvatar = avatars.find((avatar) => {
+          if (avatar.id !== requestedAvatar) return false;
+
+          return !avatar.storeItem ||
+            inventory.includes(avatar.id);
+        });
+
+        studentAvatarId = selectedAvatar?.id || "cody";
+        profileAvatarHTML = renderAvatar(studentAvatarId);
+
+        // تحديث صورة الطالب في الرسائل الموجودة بالفعل.
+        document.querySelectorAll(
+          ".message-row.student .avatar"
+        ).forEach((avatarElement) => {
+          avatarElement.innerHTML = profileAvatarHTML;
+        });
+      },
+      (error) => {
+        console.error("تعذر تحديث صورة الطالب:", error);
+        studentAvatarId = "cody";
+        profileAvatarHTML = renderAvatar("cody");
+      }
+    );
+
+  } catch (error) {
+    console.error("تعذر تحميل صورة الحساب:", error);
+    profileAvatarHTML = "";
   }
 }
 
-function savePythonLocalProgress(data) {
+function getStudentAvatarHTML() {
+  if (profileAvatarHTML) {
+    return profileAvatarHTML;
+  }
+
+  return '<span aria-label="صورة الطالب">👦</span>';
+}
+
+function getCodyAvatarHTML() {
+  return '<span aria-label="Cody">🤖</span>';
+}
+
+
+// ==========================================
+// 3) تحديث نقاط XP والتقدم
+// ==========================================
+
+function updateXPDisplay(value) {
+  const xpElement = document.getElementById("xpDisplay");
+
+  if (xpElement) {
+    xpElement.textContent = Math.max(0, Number(value) || 0);
+  }
+}
+
+async function syncAccountRewards() {
   try {
-    localStorage.setItem(PROGRESS_KEY,JSON.stringify(data));
-    return true;
-  } catch(error) {
-    console.error("تعذر حفظ التقدم محليًا:",error);
-    return false;
+    const { requireUser } = await import("./js/auth.js");
+    const { db } = await import("./js/firebase-config.js");
+
+    const {
+      doc,
+      getDoc
+    } = await import(
+      "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"
+    );
+
+    const user = await requireUser();
+
+    if (!user?.uid) return;
+
+    const userRef = doc(db, "users", user.uid);
+    const snapshot = await getDoc(userRef);
+
+    if (!snapshot.exists()) return;
+
+    const userData = snapshot.data() || {};
+
+    // نقاط الحساب مصدرها Firestore، ولا نكتب XP محلياً إلى الحساب.
+    updateXPDisplay(userData.xp || 0);
+
+  } catch (error) {
+    console.warn("تعذر مزامنة نقاط الحساب:", error);
   }
-}
-
-function markLocalLesson(chapter,lesson) {
-  const data = readPythonLocalProgress();
-  const key = `${chapter}_${lesson}`;
-
-  if (!data.lessons.includes(key)) data.lessons.push(key);
-
-  savePythonLocalProgress(data);
-}
-
-function markLocalChapter(chapter) {
-  const data = readPythonLocalProgress();
-
-  if (!data.completed.includes(chapter)) {
-    data.completed.push(chapter);
-  }
-
-  savePythonLocalProgress(data);
 }
 
 async function savePythonCloudProgress(lessonNumber) {
   try {
-    const {saveLessonProgress} = await import("./js/auth.js");
+    const { saveLessonProgress } = await import("./js/auth.js");
 
     await saveLessonProgress({
-      language:"python",
-      chapter:chapterId-1,
-      lesson:lessonNumber,
-      completed:true
+      language: "python",
+      chapter: Number(currentChapterId) - 1,
+      lesson: Number(lessonNumber),
+      completed: true
     });
 
     return true;
-  } catch(error) {
-    console.error("تعذر حفظ تقدم الدرس في Firebase:",error);
+
+  } catch (error) {
+    console.error("تعذر حفظ تقدم الدرس:", error);
     return false;
   }
 }
 
 async function syncPythonProgressFromCloud() {
   try {
-    const {getLessonProgress} = await import("./js/auth.js");
+    const {
+      getLessonProgress
+    } = await import("./js/auth.js");
+
     const cloudProgress = await getLessonProgress("python");
 
     if (!Array.isArray(cloudProgress)) return;
 
-    const local = readPythonLocalProgress();
+    const completedByChapter = {};
 
-    for (const chapter of chapterList) {
-      const lessons = cloudProgress.filter(item =>
-        Number(item.chapter) === chapter.id-1 &&
-        item.completed === true
-      );
+    cloudProgress.forEach((item) => {
+      const chapterIndex = Number(item.chapter);
+      const lessonIndex = Number(item.lesson);
 
-      for (const item of lessons) {
-        const key = `${chapter.id}_${Number(item.lesson)+1}`;
-        if (!local.lessons.includes(key)) local.lessons.push(key);
+      if (!Number.isInteger(chapterIndex) ||
+          !Number.isInteger(lessonIndex)) {
+        return;
       }
 
-      const allFive = [0,1,2,3,4].every(number =>
-        cloudProgress.some(item =>
-          Number(item.chapter) === chapter.id-1 &&
-          Number(item.lesson) === number &&
-          item.completed === true
-        )
-      );
-
-      if (allFive && !local.completed.includes(chapter.id)) {
-        local.completed.push(chapter.id);
+      if (!completedByChapter[chapterIndex]) {
+        completedByChapter[chapterIndex] = new Set();
       }
-    }
 
-    savePythonLocalProgress(local);
+      completedByChapter[chapterIndex].add(lessonIndex);
+    });
+
+    Object.entries(completedByChapter).forEach(
+      ([chapterIndex, lessons]) => {
+        // الفصل يحتوي على أربعة دروس تعليمية عادية.
+        if ([0, 1, 2, 3].every((lessonIndex) =>
+          lessons.has(lessonIndex)
+        )) {
+          completedChapters.add(Number(chapterIndex) + 1);
+        }
+      }
+    );
+
+    saveLocalProgress();
     renderSidebar();
     updateProgressBar();
 
-  } catch(error) {
-    console.warn("تعذرت مزامنة تقدم بايثون:",error);
+  } catch (error) {
+    console.warn("تعذر جلب تقدم بايثون من الحساب:", error);
   }
 }
 
-async function syncAccountRewards() {
-  try {
-    const [{functions},{httpsCallable}] = await Promise.all([
-      import("./js/firebase-config.js"),
-      import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js")
-    ]);
 
-    const sync = httpsCallable(functions,"syncExistingLessonRewards");
-    const result = await sync();
-    const data = result.data || {};
+// ==========================================
+// 4) القائمة الجانبية للفصول والدروس
+// ==========================================
 
-    if (data.success) {
-      document.getElementById("xpDisplay").textContent =
-        String(Number(data.xp)||0);
+function renderSidebar() {
+  if (!chaptersListElement) return;
+
+  chaptersListElement.innerHTML = "";
+
+  const chapterIds = Object.keys(chapterList)
+    .map(Number)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+
+  chapterIds.forEach((chapterId, index) => {
+    const chapter = getChapter(chapterId);
+    if (!chapter) return;
+
+    const lessons = getChapterLessons(chapterId);
+
+    const isUnlocked =
+      index === 0 || completedChapters.has(chapterId - 1);
+
+    const isCompleted = completedChapters.has(chapterId);
+
+    const completedLessonsCount = isCompleted
+      ? lessons.length
+      : 0;
+
+    const progress = lessons.length
+      ? Math.round(
+          (completedLessonsCount / lessons.length) * 100
+        )
+      : 0;
+
+    const chapterElement = document.createElement("div");
+    chapterElement.className = "chapter-item";
+
+    const titleElement = document.createElement("div");
+    titleElement.className = "chapter-title";
+
+    titleElement.innerHTML = `
+      <span class="chap-name">
+        ${escapeHTML(chapter.title || `الفصل ${chapterId}`)}
+      </span>
+
+      <i class="chap-icon ri-${
+        isCompleted
+          ? "checkbox-circle-fill"
+          : isUnlocked
+            ? "arrow-down-s-line"
+            : "lock-line"
+      }"></i>
+
+      <div class="chap-mini-prog">
+        <div
+          class="chap-mini-fill"
+          style="width:${progress}%"
+        ></div>
+      </div>
+    `;
+
+    const lessonsElement = document.createElement("div");
+    lessonsElement.className = "lessons-list";
+
+    if (chapterId === currentChapterId) {
+      lessonsElement.classList.add("open");
     }
-  } catch(error) {
-    console.warn("تعذرت مزامنة مكافآت الحساب:",error);
-  }
-}
 
-async function verifyChallengeOnServer(code) {
-  if (lessonId < 1 || lessonId > 4) {
-    return {
-      success:false,
-      message:"هذا التحدي ليس ضمن الدروس العادية المدعومة للتحقق الخادمي."
-    };
-  }
+    lessons.forEach((lesson, lessonIndex) => {
+      const lessonLink = document.createElement("a");
 
-  try {
-    const [{functions},{httpsCallable}] = await Promise.all([
-      import("./js/firebase-config.js"),
-      import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js")
-    ]);
+      lessonLink.href = "#";
+      lessonLink.className = "lesson-link";
 
-    const verify = httpsCallable(functions,"verifyPythonChallenge");
+      const active =
+        chapterId === currentChapterId &&
+        lessonIndex === currentLessonIndex;
 
-    const response = await verify({
-      chapter:chapterId-1,
-      lesson:lessonId-1,
-      code
+      if (active) {
+        lessonLink.classList.add("active");
+      }
+
+      if (!isUnlocked) {
+        lessonLink.classList.add("locked-lesson");
+      }
+
+      const examIcon = isExamLesson(lesson)
+        ? '<i class="ri-graduation-cap-line"></i> '
+        : '<i class="ri-book-open-line"></i> ';
+
+      lessonLink.innerHTML =
+        examIcon + escapeHTML(getLessonTitle(lesson));
+
+      lessonLink.addEventListener("click", (event) => {
+        event.preventDefault();
+
+        if (!isUnlocked) {
+          showToast("أكمل الفصل السابق أولاً لفتح هذا الفصل.");
+          return;
+        }
+
+        loadLesson(chapterId, lessonIndex);
+
+        if (window.innerWidth <= 900) {
+          toggleSidebar();
+        }
+      });
+
+      lessonsElement.appendChild(lessonLink);
     });
 
-    return response.data || {
-      success:false,
-      correct:false,
-      message:"لم يصل رد صالح من الخادم."
-    };
+    titleElement.addEventListener("click", () => {
+      if (!isUnlocked) {
+        showToast("هذا الفصل لم يُفتح بعد. أكمل الفصل السابق أولاً.");
+        return;
+      }
 
-  } catch(error) {
-    console.error("Server verification failed:",error);
+      const wasOpen = lessonsElement.classList.contains("open");
 
-    return {
-      success:false,
-      correct:false,
-      message:error.message || "تعذر الاتصال بخادم التحقق."
-    };
+      document.querySelectorAll(".lessons-list.open").forEach((list) => {
+        list.classList.remove("open");
+      });
+
+      if (!wasOpen) {
+        lessonsElement.classList.add("open");
+      }
+    });
+
+    chapterElement.appendChild(titleElement);
+    chapterElement.appendChild(lessonsElement);
+    chaptersListElement.appendChild(chapterElement);
+  });
+}
+
+function updateProgressBar() {
+  const totalChapters = Object.keys(chapterList).length || 12;
+  const completedCount = completedChapters.size;
+
+  const percent = Math.min(
+    100,
+    Math.round((completedCount / totalChapters) * 100)
+  );
+
+  const percentElement = document.getElementById("progressPercent");
+  const fillElement = document.getElementById("progressFill");
+
+  if (percentElement) {
+    percentElement.textContent = `${percent}%`;
+  }
+
+  if (fillElement) {
+    fillElement.style.width = `${percent}%`;
   }
 }
 
-function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("open");
-  document.getElementById("overlay").classList.toggle("open");
+
+// ==========================================
+// 5) أدوات الواجهة والرسائل
+// ==========================================
+
+function showToast(message) {
+  let toast = document.getElementById("pythonToast");
+
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "pythonToast";
+
+    toast.style.cssText = `
+      position:fixed;
+      bottom:25px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:5000;
+      max-width:90%;
+      padding:12px 18px;
+      border-radius:12px;
+      background:#17243b;
+      border:1px solid #06b6d4;
+      color:#fff;
+      font-weight:700;
+      text-align:center;
+      box-shadow:0 8px 25px rgba(0,0,0,.35);
+    `;
+
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.style.display = "block";
+
+  clearTimeout(toast.hideTimer);
+
+  toast.hideTimer = setTimeout(() => {
+    toast.style.display = "none";
+  }, 2800);
 }
 
-function scrollToBottom() {
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+function scrollChatToBottom() {
+  if (!chatContainer) return;
+
+  requestAnimationFrame(() => {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  });
 }
 
-function showTypingIndicator() {
-  removeTypingIndicator();
+function addBubble(type, message) {
+  if (!chatContainer) return null;
 
-  const row = document.createElement("div");
-  row.id = "typingIndicator";
-  row.className = "message-row cody";
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = "🤖";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  bubble.textContent = "كودي يكتب...";
-
-  row.append(avatar,bubble);
-  chatContainer.appendChild(row);
-  scrollToBottom();
-}
-
-function removeTypingIndicator() {
-  document.getElementById("typingIndicator")?.remove();
-}
-
-function addBubble(type,message) {
   const row = document.createElement("div");
   row.className = `message-row ${type}`;
 
   const avatar = document.createElement("div");
   avatar.className = "avatar";
 
-  if (type === "cody") {
-    avatar.textContent = "🤖";
-  } else if (profileAvatarHTML) {
-    avatar.innerHTML = profileAvatarHTML;
-  } else {
-    avatar.textContent = "👤";
-  }
+  avatar.innerHTML = type === "cody"
+    ? getCodyAvatarHTML()
+    : getStudentAvatarHTML();
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
 
-  // رسائل الفصول التعليمية الحالية تحتوي على HTML مقصود مثل code.
-  bubble.innerHTML = String(message || "");
+  // النصوص التعليمية داخل ملفات الفصول هي محتوى المنصة.
+  bubble.innerHTML = String(message ?? "");
 
-  row.append(avatar,bubble);
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+
   chatContainer.appendChild(row);
-  scrollToBottom();
+
+  scrollChatToBottom();
+
+  return row;
 }
 
-async function initializeChatAvatar() {
-  try {
-    const {requireUser} = await import("./js/auth.js");
-    const {db} = await import("./js/firebase-config.js");
+function addStudentMessage(message) {
+  return addBubble("student", escapeHTML(message));
+}
 
-    const {doc,onSnapshot} = await import(
-      "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"
-    );
-
-    const {renderAvatar,installAvatarStyles} =
-      await import("./js/avatars.js");
-
-    installAvatarStyles();
-
-    const user = await requireUser();
-
-    if (!user?.uid) return;
-
-    onSnapshot(doc(db,"users",user.uid),snapshot => {
-      const data = snapshot.exists() ? snapshot.data() : {};
-      const id = data.activeAvatar || "cody";
-
-      profileAvatarHTML = renderAvatar(id);
-
-      document.querySelectorAll(".message-row.student .avatar")
-        .forEach(element => {
-          element.innerHTML = profileAvatarHTML;
-        });
-
-    },error => {
-      console.error("تعذر تحديث شخصية المستخدم:",error);
-    });
-
-  } catch(error) {
-    console.warn("تعذر تحميل شخصية الحساب:",error);
+function clearChat() {
+  if (chatContainer) {
+    chatContainer.innerHTML = "";
   }
 }
 
-function renderSidebar() {
-  const list = document.getElementById("chaptersList");
-  list.innerHTML = "";
+function showBottomAction(show = true, label = "متابعة") {
+  if (!bottomAction || !nextBtn) return;
 
-  const progress = readPythonLocalProgress();
+  bottomAction.classList.toggle("show", Boolean(show));
 
-  chapterList.forEach((chapter,index) => {
-    const data = window.CHAPTERS?.[chapter.id];
-    const completed = progress.completed.includes(chapter.id);
-
-    const unlocked =
-      index === 0 ||
-      progress.completed.includes(chapterList[index-1].id);
-
-    const total = data?.lessons?.length || 5;
-
-    const completedCount = progress.lessons.filter(key =>
-      key.startsWith(`${chapter.id}_`)
-    ).length;
-
-    const percent = completed
-      ? 100
-      : Math.min(100,Math.round(completedCount/total*100));
-
-    const item = document.createElement("div");
-    item.className = `chapter-item ${unlocked?"":"locked"}`;
-
-    const heading = document.createElement("div");
-    heading.className = "chapter-title";
-
-    const icon = !unlocked
-      ? '<i class="ri-lock-fill"></i>'
-      : completed
-        ? '<i class="ri-checkbox-circle-fill" style="color:var(--green)"></i>'
-        : '<i class="ri-arrow-down-s-line"></i>';
-
-    const name = document.createElement("span");
-    name.className = "chap-name";
-    name.textContent = `${chapter.id}. ${chapter.title}`;
-
-    const iconBox = document.createElement("span");
-    iconBox.className = "chap-icon";
-    iconBox.innerHTML = icon;
-
-    const bar = document.createElement("div");
-    bar.className = "chap-mini-prog";
-
-    const fill = document.createElement("div");
-    fill.className = "chap-mini-fill";
-    fill.style.width = percent+"%";
-
-    bar.appendChild(fill);
-    heading.append(name,iconBox,bar);
-
-    const lessons = document.createElement("div");
-    lessons.className = "lessons-list";
-
-    if (chapter.id === chapterId) lessons.classList.add("open");
-
-    (data?.lessons || []).forEach((lesson,lessonIndex) => {
-      const link = document.createElement("a");
-      const number = lessonIndex+1;
-      const key = `${chapter.id}_${number}`;
-      const done = progress.lessons.includes(key);
-
-      link.className =
-        `lesson-link ${chapter.id===chapterId && number===lessonId?"active":""}`;
-
-      link.textContent =
-        `${done?"✓ ":""}${lesson.title || "الدرس "+number}`;
-
-      if (unlocked) {
-        link.href = `python-lesson.html?ch=${chapter.id}&lesson=${number}`;
-
-        link.addEventListener("click",() => {
-          if (innerWidth <= 900) toggleSidebar();
-        });
-      } else {
-        link.href = "#";
-        link.classList.add("locked-lesson");
-        link.addEventListener("click",event => event.preventDefault());
-      }
-
-      lessons.appendChild(link);
-    });
-
-    heading.addEventListener("click",() => {
-      lessons.classList.toggle("open");
-    });
-
-    item.append(heading,lessons);
-    list.appendChild(item);
-  });
+  nextBtn.innerHTML = `
+    ${escapeHTML(label)}
+    <i class="ri-arrow-left-line"></i>
+  `;
 }
 
-function updateProgressBar() {
-  const progress = readPythonLocalProgress();
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
 
-  const percent = Math.round(
-    progress.completed.length/12*100
-  );
+  if (!sidebar || !overlay) return;
 
-  document.getElementById("progressFill").style.width =
-    percent+"%";
-
-  document.getElementById("progressPercent").textContent =
-    percent+"%";
+  sidebar.classList.toggle("open");
+  overlay.classList.toggle("open");
 }
 
 function closeEditor() {
-  if (editorInstance) {
-    editorInstance.toTextArea();
-    editorInstance = null;
+  const editorContainer = document.getElementById("editorContainer");
+  const backdrop = document.getElementById("editorBackdrop");
+
+  if (editorContainer) {
+    const wrapper = editorContainer.querySelector(".editor-wrapper");
+    wrapper?.classList.remove("show");
   }
 
-  document.getElementById("editorWrapper")?.remove();
-  document.getElementById("editorBackdrop").classList.remove("show");
-}
+  backdrop?.classList.remove("show");
 
-function showNextButton() {
-  document.getElementById("bottomAction").classList.add("show");
-}
-
-function advanceChat() {
-  document.getElementById("bottomAction").classList.remove("show");
-  processStep();
-}
-function loadLesson() {
-  const chapter = window.CHAPTERS?.[chapterId];
-
-  if (
-    !chapter ||
-    !Array.isArray(chapter.lessons) ||
-    !chapter.lessons[lessonId-1]
-  ) {
-    chatContainer.textContent = "هذا الدرس غير متاح حاليًا.";
-    renderSidebar();
-    updateProgressBar();
-    return;
+  if (editor) {
+    setTimeout(() => editor.refresh(), 100);
   }
+}
+// ==========================================
+// 6) إدارة الدروس وعرض خطواتها
+// ==========================================
 
-  currentLesson = chapter.lessons[lessonId-1];
+let stepCompleted = true;
+let currentStep = null;
+let currentHintIndex = 0;
+let challengeHelpVisible = false;
 
+const completedLessonKeys = new Set(
+  JSON.parse(
+    localStorage.getItem("cody_python_completed_lessons") || "[]"
+  )
+);
+
+function saveCompletedLessonKeys() {
   localStorage.setItem(
-    "cody_last_lesson",
-    JSON.stringify({ch:chapterId,lesson:lessonId})
+    "cody_python_completed_lessons",
+    JSON.stringify([...completedLessonKeys])
+  );
+}
+
+function getLessonKey(chapterId, lessonIndex) {
+  return `${chapterId}_${lessonIndex}`;
+}
+
+function isLessonCompleted(chapterId, lessonIndex) {
+  return completedLessonKeys.has(
+    getLessonKey(chapterId, lessonIndex)
+  );
+}
+
+function markLessonCompleted(chapterId, lessonIndex) {
+  completedLessonKeys.add(
+    getLessonKey(chapterId, lessonIndex)
   );
 
-  isExamMode =
-    currentLesson.title.includes("امتحان") ||
-    currentLesson.title.includes("الامتحان");
+  saveCompletedLessonKeys();
 
-  challengeSolved = false;
-  verifiedChallenge = false;
+  const regularLessons = getChapterLessons(chapterId)
+    .filter((lesson) => !isExamLesson(lesson));
+
+  const allRegularLessonsCompleted = regularLessons.every(
+    (lesson) => {
+      const index = getChapterLessons(chapterId).indexOf(lesson);
+      return isLessonCompleted(chapterId, index);
+    }
+  );
+
+  if (allRegularLessonsCompleted && regularLessons.length >= 4) {
+    completedChapters.add(Number(chapterId));
+    saveLocalProgress();
+  }
 
   renderSidebar();
   updateProgressBar();
+}
 
-  if (isExamMode) {
-    startExam();
+function loadLesson(chapterId, lessonIndex) {
+  const chapter = getChapter(chapterId);
+  const lessons = getChapterLessons(chapterId);
+
+  if (!chapter || !lessons[lessonIndex]) {
+    showToast("لم يتم العثور على هذا الدرس.");
     return;
   }
 
-  document.getElementById("examView").classList.remove("show");
-  document.querySelector(".content-wrapper").style.display = "flex";
+  currentChapterId = Number(chapterId);
+  currentLessonIndex = Number(lessonIndex);
+  currentLesson = lessons[currentLessonIndex];
 
-  chatContainer.innerHTML = "";
   currentStepIndex = 0;
+  currentStep = null;
+  stepCompleted = true;
+  currentHintIndex = 0;
+  challengeHelpVisible = false;
+
+  const examView = document.getElementById("examView");
+  const contentWrapper = document.querySelector(".content-wrapper");
+
+  examView?.classList.remove("show");
+
+  if (contentWrapper) {
+    contentWrapper.style.display = "flex";
+  }
+
+  const examResult = document.getElementById("examResultBox");
+  examResult?.classList.remove("show");
+
+  const questionBox = document.getElementById("examQuestionBox");
+  if (questionBox) questionBox.style.display = "block";
+
+  const editorContainer = document.getElementById("editorContainer");
+  if (editorContainer) editorContainer.innerHTML = "";
+
+  editor = null;
+
+  clearChat();
+  showBottomAction(false);
+
+  renderSidebar();
+
+  if (isExamLesson(currentLesson)) {
+    if (typeof startExam === "function") {
+      startExam();
+    } else {
+      addBubble("cody", "الامتحان بيتم تجهيزه...");
+    }
+    return;
+  }
+
+  localStorage.setItem(
+    "cody_last_lesson",
+    JSON.stringify({
+      chapter: currentChapterId,
+      lesson: currentLessonIndex
+    })
+  );
+
+  addBubble(
+    "cody",
+    `<strong>${escapeHTML(getLessonTitle(currentLesson))}</strong><br>
+    أهلاً بك! جاهز نبدأ الدرس خطوة بخطوة؟`
+  );
 
   processStep();
 }
 
 function processStep() {
-  if (!currentLesson?.steps) return;
-
-  if (currentStepIndex >= currentLesson.steps.length) {
-    endLesson();
+  if (!currentLesson ||
+      !Array.isArray(currentLesson.steps)) {
+    showToast("محتوى الدرس غير متاح حالياً.");
     return;
   }
 
-  const step = currentLesson.steps[currentStepIndex];
+  const steps = currentLesson.steps;
 
-  document.getElementById("bottomAction").classList.remove("show");
-  closeEditor();
-
-  if (step.type === "cody") {
-    showTypingIndicator();
-
-    setTimeout(() => {
-      removeTypingIndicator();
-      addBubble("cody",step.text || "");
-      currentStepIndex++;
-      showNextButton();
-    },500);
-
+  if (currentStepIndex >= steps.length) {
+    completeCurrentLesson();
     return;
   }
 
-  if (step.type === "choice") {
-    addBubble("cody",step.question || "");
+  currentStep = steps[currentStepIndex];
+  stepCompleted = false;
 
-    renderChoices(step.options || [],step.replies || []);
+  currentHintIndex = 0;
+  challengeHelpVisible = false;
 
-    currentStepIndex++;
+  showBottomAction(false);
+
+  if (!currentStep || typeof currentStep !== "object") {
+    stepCompleted = true;
+    showBottomAction(true);
     return;
   }
 
-  if (step.type === "quiz") {
-    addBubble("cody",step.question || "");
+  switch (currentStep.type) {
+    case "cody":
+      addBubble("cody", currentStep.text || "");
+      stepCompleted = true;
+      showBottomAction(true);
+      break;
 
-    renderQuiz(
-      step.options || [],
-      step.correct,
-      step.explanation || ""
-    );
+    case "choice":
+      renderChoices(currentStep);
+      break;
 
-    currentStepIndex++;
-    return;
+    case "challenge":
+      addBubble(
+        "cody",
+        currentStep.text ||
+        "دلوقتي دورك تطبق اللي اتعلمته في محرر بايثون."
+      );
+
+      showEditor(currentStep);
+      break;
+
+    case "quiz":
+      renderInlineQuiz(currentStep);
+      break;
+
+    default:
+      addBubble(
+        "cody",
+        currentStep.text || "نكمل الدرس مع بعض!"
+      );
+      stepCompleted = true;
+      showBottomAction(true);
+      break;
   }
-
-  if (step.type === "challenge") {
-    addBubble(
-      "cody",
-      "تحدي برمجي! افتح المحرر واكتب الحل المطلوب 👇"
-    );
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "choices-container";
-
-    const button = document.createElement("button");
-    button.className = "open-editor-btn";
-    button.innerHTML =
-      '<i class="ri-code-s-slash-line"></i> فتح محرر Python';
-
-    button.addEventListener("click",() => showEditor(step));
-
-    wrapper.appendChild(button);
-    chatContainer.appendChild(wrapper);
-
-    scrollToBottom();
-    return;
-  }
-
-  addBubble("cody","هذا النوع من الخطوات غير مدعوم.");
-  currentStepIndex++;
-  showNextButton();
 }
 
-function renderChoices(options,replies) {
-  const container = document.createElement("div");
-  container.className = "choices-container";
 
-  options.forEach((option,index) => {
+// ==========================================
+// 7) الاختيارات التفاعلية
+// ==========================================
+
+function renderChoices(step) {
+  addBubble("cody", step.question || "اختار الإجابة المناسبة:");
+
+  const choicesWrapper = document.createElement("div");
+  choicesWrapper.className = "choices-container";
+
+  (step.options || []).forEach((option, index) => {
     const button = document.createElement("button");
+
+    button.type = "button";
     button.className = "choice-btn";
     button.textContent = option;
 
-    button.addEventListener("click",() => {
-      container.remove();
+    button.addEventListener("click", () => {
+      if (stepCompleted) return;
 
-      addBubble("student",option);
+      stepCompleted = true;
 
-      const reply = replies[index];
+      choicesWrapper.querySelectorAll("button").forEach((item) => {
+        item.disabled = true;
+        item.style.opacity = ".55";
+      });
+
+      button.style.opacity = "1";
+      button.style.borderColor = "var(--cyan)";
+
+      addStudentMessage(option);
+
+      const reply = Array.isArray(step.replies)
+        ? step.replies[index]
+        : "";
 
       if (reply) {
-        showTypingIndicator();
-
-        setTimeout(() => {
-          removeTypingIndicator();
-          addBubble("cody",reply);
-          showNextButton();
-        },500);
-      } else {
-        showNextButton();
+        addBubble("cody", reply);
       }
+
+      showBottomAction(true);
     });
 
-    container.appendChild(button);
+    choicesWrapper.appendChild(button);
   });
 
-  chatContainer.appendChild(container);
-  scrollToBottom();
+  chatContainer?.appendChild(choicesWrapper);
+  scrollChatToBottom();
 }
 
-function renderQuiz(options,correctIndex,explanation) {
-  const container = document.createElement("div");
-  container.className = "choices-container";
 
-  let answered = false;
+// ==========================================
+// 8) أسئلة قصيرة داخل الدرس
+// ==========================================
 
-  options.forEach((option,index) => {
+function renderInlineQuiz(step) {
+  addBubble("cody", step.question || "اختار الإجابة الصحيحة:");
+
+  const optionsWrapper = document.createElement("div");
+  optionsWrapper.className = "choices-container";
+
+  const feedback = document.createElement("div");
+  feedback.className = "exam-feedback";
+  feedback.setAttribute("aria-live", "polite");
+
+  (step.options || []).forEach((option, index) => {
     const button = document.createElement("button");
+
+    button.type = "button";
     button.className = "choice-btn";
     button.textContent = option;
 
-    button.addEventListener("click",() => {
-      if (answered) return;
-      answered = true;
+    button.addEventListener("click", () => {
+      if (stepCompleted) return;
 
-      container.remove();
-      addBubble("student",option);
+      stepCompleted = true;
 
-      showTypingIndicator();
+      optionsWrapper.querySelectorAll("button").forEach((item) => {
+        item.disabled = true;
+      });
 
-      setTimeout(() => {
-        removeTypingIndicator();
+      const isCorrect = index === Number(step.correct);
 
-        if (index === correctIndex) {
-          addBubble("cody","✅ إجابة صحيحة! "+explanation);
-        } else {
-          addBubble("cody","❌ إجابة غير صحيحة. راجع الشرح وحاول مرة أخرى.");
-        }
+      button.style.borderColor = isCorrect
+        ? "var(--green)"
+        : "var(--red)";
 
-        showNextButton();
-      },500);
+      button.style.color = isCorrect
+        ? "var(--green)"
+        : "var(--red)";
+
+      addStudentMessage(option);
+
+      if (isCorrect) {
+        feedback.textContent = "إجابة صحيحة! أحسنت! 🎉";
+      } else {
+        const correctAnswer = step.options?.[step.correct];
+
+        feedback.textContent =
+          `الإجابة الصحيحة هي: ${correctAnswer || "الإجابة الموضحة في الشرح"}`;
+      }
+
+      const explanation = step.explanation
+        ? `<br><br><strong>خلينا نفهم السبب:</strong> ${step.explanation}`
+        : "";
+
+      addBubble(
+        "cody",
+        `${isCorrect ? "ممتاز!" : "ولا يهمك، بنتعلم من المحاولة."}${explanation}`
+      );
+
+      if (!isCorrect && step.options?.[step.correct]) {
+        feedback.textContent += " — راجع الشرح قبل المتابعة.";
+      }
+
+      showBottomAction(true);
+      scrollChatToBottom();
     });
 
-    container.appendChild(button);
+    optionsWrapper.appendChild(button);
   });
 
-  chatContainer.appendChild(container);
-  scrollToBottom();
+  chatContainer?.appendChild(optionsWrapper);
+  chatContainer?.appendChild(feedback);
+
+  scrollChatToBottom();
 }
 
+
+// ==========================================
+// 9) إنشاء محرر بايثون للتحديات
+// ==========================================
+
 function showEditor(step) {
-  if (!step || typeof step.defaultCode !== "string") {
-    addBubble("cody","تعذر فتح المحرر بسبب نقص بيانات التحدي.");
+  const container = document.getElementById("editorContainer");
+
+  if (!container) return;
+
+  currentChallenge = step;
+  challengeSolved = false;
+  currentHintIndex = 0;
+  challengeHelpVisible = false;
+
+  container.innerHTML = `
+    <section class="editor-wrapper show" id="pythonEditorWrapper">
+
+      <div class="editor-header">
+        <div class="editor-title">
+          <i class="ri-code-s-slash-line"></i>
+          محرر Python
+        </div>
+
+        <button
+          type="button"
+          class="btn-run"
+          id="runPythonBtn"
+        >
+          <i class="ri-play-fill"></i>
+          تشغيل الكود
+        </button>
+      </div>
+
+      <div class="code-area">
+        <textarea id="pythonCodeEditor"></textarea>
+      </div>
+
+      <div class="lesson-help-panel" id="lessonHelpPanel">
+        <strong>
+          <i class="ri-lightbulb-flash-line"></i>
+          مساعد كودي
+        </strong>
+
+        <p id="lessonHelpText">
+          جرّب كتابة الحل بنفسك. ولو احتجت مساعدة، اطلب تلميحاً.
+        </p>
+
+        <div style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+          margin-top:10px;
+        ">
+          <button
+            type="button"
+            class="choice-btn"
+            id="showHintBtn"
+            style="padding:8px 12px;font-size:.9rem;width:auto"
+          >
+            <i class="ri-lightbulb-line"></i>
+            تلميح
+          </button>
+
+          <button
+            type="button"
+            class="choice-btn"
+            id="showSolutionBtn"
+            style="padding:8px 12px;font-size:.9rem;width:auto"
+          >
+            <i class="ri-book-open-line"></i>
+            عرض الحل والشرح
+          </button>
+        </div>
+
+        <div id="lessonSolutionText" hidden></div>
+      </div>
+
+      <div class="output-area" id="pythonOutput">
+        جاهز لتشغيل الكود...
+      </div>
+
+    </section>
+  `;
+
+  const editorElement = document.getElementById("pythonCodeEditor");
+
+  if (typeof CodeMirror !== "undefined" && editorElement) {
+    editor = CodeMirror.fromTextArea(editorElement, {
+      mode: "python",
+      theme: "dracula",
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      lineWrapping: true,
+      autofocus: false
+    });
+
+    editor.setValue(step.defaultCode || "");
+    setTimeout(() => editor.refresh(), 100);
+
+  } else {
+    editor = null;
+    editorElement.value = step.defaultCode || "";
+  }
+
+  document.getElementById("runPythonBtn")
+    ?.addEventListener("click", runPythonChallenge);
+
+  document.getElementById("showHintBtn")
+    ?.addEventListener("click", showNextHint);
+
+  document.getElementById("showSolutionBtn")
+    ?.addEventListener("click", revealChallengeSolution);
+
+  if (window.innerWidth <= 900) {
+    document.getElementById("editorBackdrop")
+      ?.classList.add("show");
+  }
+}
+
+function getEditorCode() {
+  if (editor) {
+    return editor.getValue();
+  }
+
+  return document.getElementById("pythonCodeEditor")?.value || "";
+}
+
+function setEditorCode(code) {
+  if (editor) {
+    editor.setValue(code);
+    editor.refresh();
     return;
   }
 
-  closeEditor();
+  const textarea = document.getElementById("pythonCodeEditor");
 
-  document.getElementById("editorBackdrop").classList.add("show");
+  if (textarea) {
+    textarea.value = code;
+  }
+}
 
-  const wrapper = document.createElement("div");
-  wrapper.id = "editorWrapper";
-  wrapper.className = "editor-wrapper show";
 
-  wrapper.innerHTML = `
-    <div class="editor-header">
-      <span class="editor-title">main.py</span>
+// ==========================================
+// 10) التلميحات المتدرجة
+// ==========================================
 
-      <div style="display:flex;gap:8px">
-        <button class="btn-run" id="runCodeButton">
-          <i class="ri-play-circle-fill"></i> تشغيل والتحقق
-        </button>
+function getChallengeHints(step) {
+  if (Array.isArray(step.hints) && step.hints.length) {
+    return step.hints;
+  }
 
-        <button id="closeEditorButton"
-          style="background:var(--red);color:white;border:0;border-radius:8px;padding:8px 12px">
-          إغلاق
-        </button>
-      </div>
-    </div>
+  return [
+    "اقرأ المطلوب مرة تانية، وحدد إيه اللي المفروض يظهر على الشاشة.",
+    "فكر في الأمر أو الفكرة البرمجية اللي اتعلمناها في الدرس.",
+    "قسّم المطلوب لخطوات صغيرة، واكتب كل خطوة لوحدها."
+  ];
+}
 
-    <div class="code-area">
-      <textarea id="dynamicCodeEditor"></textarea>
-      <div class="output-area" id="outputArea">&gt; Output...</div>
-    </div>
+function showNextHint() {
+  if (!currentChallenge || challengeSolved) return;
+
+  const hints = getChallengeHints(currentChallenge);
+
+  const helpText = document.getElementById("lessonHelpText");
+
+  if (!helpText) return;
+
+  if (currentHintIndex < hints.length) {
+    helpText.textContent =
+      `التلميح ${currentHintIndex + 1}: ${hints[currentHintIndex]}`;
+
+    currentHintIndex++;
+  } else {
+    helpText.textContent =
+      "استخدم زر عرض الحل والشرح لو ما زلت محتاج مساعدة.";
+  }
+}
+
+function revealChallengeSolution() {
+  if (!currentChallenge) return;
+
+  const solutionBox = document.getElementById("lessonSolutionText");
+
+  if (!solutionBox) return;
+
+  const solution =
+    currentChallenge.solution ||
+    currentChallenge.hint ||
+    "";
+
+  const explanation =
+    currentChallenge.solutionExplanation ||
+    currentChallenge.explanation ||
+    "راجع الحل خطوة بخطوة، وحاول تفهم وظيفة كل سطر قبل ما تجربه بنفسك.";
+
+  if (!solution) {
+    solutionBox.hidden = false;
+    solutionBox.textContent =
+      "الحل النموذجي غير مضاف لهذا التحدي حتى الآن.";
+    return;
+  }
+
+  solutionBox.hidden = false;
+
+  solutionBox.innerHTML = `
+    <strong>الحل النموذجي:</strong>
+
+    <pre style="
+      direction:ltr;
+      text-align:left;
+      white-space:pre-wrap;
+      font-family:'Fira Code',monospace;
+      background:#05080f;
+      padding:10px;
+      border-radius:8px;
+      overflow:auto;
+    "></pre>
+
+    <p style="margin-top:10px">
+      <strong>الشرح:</strong>
+      ${escapeHTML(explanation)}
+    </p>
+
+    <button
+      type="button"
+      class="choice-btn"
+      id="useChallengeSolution"
+      style="margin-top:10px;padding:9px 13px"
+    >
+      تجربة الحل في المحرر
+    </button>
   `;
 
-  document.getElementById("editorContainer").appendChild(wrapper);
+  solutionBox.querySelector("pre").textContent = solution;
 
-  window.currentChallenge = step;
-  challengeSolved = false;
-  verifiedChallenge = false;
-
-  document.getElementById("runCodeButton").addEventListener(
-    "click",runCode
-  );
-
-  document.getElementById("closeEditorButton").addEventListener(
-    "click",closeEditor
-  );
-
-  setTimeout(() => {
-    const textarea = document.getElementById("dynamicCodeEditor");
-
-    if (!textarea || typeof CodeMirror === "undefined") {
-      document.getElementById("outputArea").textContent =
-        "تعذر تحميل محرر الأكواد. تحقق من اتصال الإنترنت.";
-      return;
-    }
-
-    editorInstance = CodeMirror.fromTextArea(textarea,{
-      lineNumbers:true,
-      mode:"python",
-      theme:"dracula",
-      indentUnit:4,
-      lineWrapping:true,
-      tabSize:4
+  document.getElementById("useChallengeSolution")
+    ?.addEventListener("click", () => {
+      setEditorCode(solution);
+      showToast("تم وضع الحل في المحرر. شغّله وشاهد النتيجة.");
     });
-
-    editorInstance.setValue(step.defaultCode);
-    editorInstance.refresh();
-
-  },100);
 }
 
-function skulptOutput(text) {
-  const output = document.getElementById("outputArea");
-  output.textContent += text;
-}
+
+// ==========================================
+// 11) تشغيل كود بايثون باستخدام Skulpt
+// ==========================================
 
 function normalizeOutput(value) {
   return String(value ?? "")
-    .replace(/\r\n/g,"\n")
+    .replace(/\r/g, "")
     .trim();
 }
 
-function runPythonLocally(code) {
-  return new Promise((resolve,reject) => {
-    let output = "";
+async function runPythonChallenge() {
+  if (!currentChallenge || challengeSolved) return;
 
-    if (typeof Sk === "undefined") {
-      reject(new Error("مكتبة تشغيل Python غير متاحة."));
-      return;
-    }
+  const outputElement = document.getElementById("pythonOutput");
+  const runButton = document.getElementById("runPythonBtn");
 
-    Sk.configure({
-      output:text => { output += text; },
-      read:name => {
-        if (
-          Sk.builtinFiles === undefined ||
-          Sk.builtinFiles.files[name] === undefined
-        ) {
-          throw new Error("المكتبة غير متاحة: "+name);
-        }
-        return Sk.builtinFiles.files[name];
-      },
-      __future__:Sk.python3
-    });
+  if (!outputElement) return;
 
-    Sk.misceval.asyncToPromise(() =>
-      Sk.importMainWithBody("<stdin>",false,code,true)
-    ).then(() => resolve(output))
-      .catch(reject);
-  });
-}
-
-async function runCode() {
-  if (!editorInstance || !window.currentChallenge) {
-    alert("المحرر غير جاهز.");
-    return;
-  }
-
-  if (challengeSolved) {
-    alert("تم اجتياز هذا التحدي بالفعل.");
-    return;
-  }
-
-  const code = editorInstance.getValue();
-
-  const outputArea = document.getElementById("outputArea");
-  const runButton = document.getElementById("runCodeButton");
+  const code = getEditorCode();
 
   if (!code.trim()) {
-    outputArea.textContent = "اكتب الكود أولًا.";
+    outputElement.textContent =
+      "اكتب الكود الأول، وبعدها اضغط تشغيل.";
+    return;
+  }
+
+  if (typeof Sk === "undefined") {
+    outputElement.textContent =
+      "مشغل بايثون غير متاح حالياً. تأكد من تحميل مكتبة Skulpt.";
     return;
   }
 
   runButton.disabled = true;
-  runButton.textContent = "جارٍ التشغيل...";
+  runButton.textContent = "جاري التشغيل...";
 
-  outputArea.textContent = "> Running...\n";
+  outputElement.textContent = "جاري تنفيذ الكود...";
+
+  let programOutput = "";
 
   try {
-    const output = await runPythonLocally(code);
+    Sk.configure({
+      output: (text) => {
+        programOutput += text;
+      },
 
-    outputArea.textContent =
-      "> Output:\n"+(output || "(لا يوجد ناتج)");
+      read: (filename) => {
+        if (
+          Sk.builtinFiles === undefined ||
+          Sk.builtinFiles.files[filename] === undefined
+        ) {
+          throw new Error(`الملف غير موجود: ${filename}`);
+        }
 
-    const expected = window.currentChallenge.expected;
+        return Sk.builtinFiles.files[filename];
+      },
 
-    if (
-      expected !== undefined &&
-      normalizeOutput(output) !== normalizeOutput(expected)
-    ) {
-      outputArea.textContent +=
-        "\n\n❌ الناتج غير مطابق. راجع الكود وحاول مرة أخرى.";
+      __future__: Sk.python3
+    });
 
-      return;
+    await Sk.misceval.asyncToPromise(() => {
+      return Sk.importMainWithBody(
+        "<stdin>",
+        false,
+        code,
+        true
+      );
+    });
+
+    outputElement.textContent = programOutput || "تم تشغيل الكود بدون مخرجات.";
+
+    let passed = false;
+
+    if (typeof currentChallenge.check === "function") {
+      passed = Boolean(currentChallenge.check(code));
+    } else if (currentChallenge.expected !== undefined) {
+      passed =
+        normalizeOutput(programOutput) ===
+        normalizeOutput(currentChallenge.expected);
     }
 
-    if (
-      typeof window.currentChallenge.check === "function" &&
-      !window.currentChallenge.check(code)
-    ) {
-      outputArea.textContent +=
-        "\n\n❌ لم يتم استيفاء جميع متطلبات التحدي.";
+    if (passed) {
+      challengeSolved = true;
+      stepCompleted = true;
 
-      return;
+      outputElement.textContent +=
+        "\n\n✓ أحسنت! الحل صحيح، نجحت في التحدي.";
+
+      outputElement.style.color = "var(--green)";
+
+      if (typeof confetti === "function") {
+        confetti({
+          particleCount: 70,
+          spread: 65,
+          origin: { y: 0.7 }
+        });
+      }
+
+      addBubble(
+        "cody",
+        currentChallenge.successMsg ||
+        "ممتاز! 🎉 نفذت التحدي بنجاح."
+      );
+
+      showBottomAction(true);
+
+      document.getElementById("lessonHelpText").textContent =
+        "أحسنت! أنهيت التحدي بنجاح. اضغط متابعة للخطوة التالية.";
+
+      closeEditor();
+
+    } else {
+      outputElement.style.color = "var(--gold)";
+
+      outputElement.textContent +=
+        "\n\nالكود اشتغل، لكن الناتج أو طريقة الحل لسه مش مطابقة للمطلوب. راجع المطلوب وحاول مرة تانية.";
+
+      addBubble(
+        "cody",
+        "الكود اشتغل، ودي خطوة كويسة! راجع النتيجة المطلوبة وحاول تعدّل الكود. تقدر تطلب تلميح لو احتجت."
+      );
     }
 
-    outputArea.textContent +=
-      "\n\n⏳ جارٍ التحقق من الحل على الخادم...";
+  } catch (error) {
+    outputElement.style.color = "var(--red)";
 
-    const result = await verifyChallengeOnServer(code);
-
-    if (!result.success || !result.correct) {
-      outputArea.textContent +=
-        "\n\n❌ لم ينجح التحقق الخادمي: "+
-        (result.message || "الحل غير مقبول.");
-
-      return;
-    }
-
-    challengeSolved = true;
-    verifiedChallenge = true;
-
-    outputArea.textContent +=
-      "\n\n✅ تم التحقق من الحل بنجاح على الخادم!";
+    outputElement.textContent =
+      "حصل خطأ أثناء تشغيل الكود:\n" +
+      (error?.toString?.() || "خطأ غير معروف") +
+      "\n\nراجع الأقواس وعلامات التنصيص وجرّب تاني.";
 
     addBubble(
       "cody",
-      window.currentChallenge.successMsg ||
-      "رائع! تم اجتياز التحدي بنجاح."
+      "ولا يهمك! الأخطاء جزء طبيعي من البرمجة. اقرأ رسالة الخطأ وحاول تصلح الكود."
     );
-
-    showNextButton();
-
-  } catch(error) {
-    console.error("Python execution error:",error);
-
-    outputArea.textContent +=
-      "\n\n❌ خطأ أثناء التشغيل:\n"+
-      (error.message || String(error));
 
   } finally {
     runButton.disabled = false;
-    runButton.innerHTML =
-      '<i class="ri-play-circle-fill"></i> تشغيل والتحقق';
+
+    runButton.innerHTML = `
+      <i class="ri-play-fill"></i>
+      تشغيل الكود
+    `;
   }
 }
-async function endLesson() {
-  closeEditor();
 
-  const lessonNumber = lessonId-1;
 
-  if (!verifiedChallenge) {
-    addBubble(
-      "cody",
-      "لم يتم تسجيل اجتياز التحدي على الخادم. ارجع إلى التحدي وأكمله أولًا."
-    );
+// ==========================================
+// 12) الانتقال بين خطوات الدرس
+// ==========================================
+
+function advanceChat() {
+  if (!currentLesson) return;
+
+  if (!stepCompleted) {
+    showToast("كمّل الخطوة الحالية الأول.");
     return;
   }
 
-  addBubble("cody","🎉 أحسنت! تم إكمال الدرس بنجاح.");
+  currentStepIndex++;
 
-  markLocalLesson(chapterId,lessonId);
+  const editorContainer = document.getElementById("editorContainer");
 
-  const saved = await savePythonCloudProgress(lessonNumber);
+  if (editorContainer) {
+    editorContainer.innerHTML = "";
+  }
 
-  if (saved) {
-    addBubble(
-      "cody",
-      "تم حفظ تقدم الدرس في حسابك."
+  editor = null;
+  currentChallenge = null;
+
+  document.getElementById("editorBackdrop")
+    ?.classList.remove("show");
+
+  showBottomAction(false);
+
+  processStep();
+}
+
+async function completeCurrentLesson() {
+  if (!currentLesson) return;
+
+  showBottomAction(false);
+
+  addBubble(
+    "cody",
+    "🎉 رائع! خلصت الدرس ده بنجاح. استمر، كل خطوة بتقربك من إنك تبقى مبرمج شاطر."
+  );
+
+  const isExam = isExamLesson(currentLesson);
+
+  if (!isExam) {
+    markLessonCompleted(
+      currentChapterId,
+      currentLessonIndex
     );
 
+    // الفصول العادية الأربعة تُحفظ بمؤشرات 0 إلى 3.
+    if (currentLessonIndex >= 0 && currentLessonIndex <= 3) {
+      await savePythonCloudProgress(currentLessonIndex);
+    }
+
     await syncAccountRewards();
+  }
+
+  const lessons = getChapterLessons(currentChapterId);
+  const nextLessonIndex = currentLessonIndex + 1;
+
+  if (nextLessonIndex < lessons.length) {
+    const nextLesson = lessons[nextLessonIndex];
+
+    const nextButton = document.createElement("button");
+    nextButton.type = "button";
+    nextButton.className = "open-editor-btn";
+    nextButton.textContent =
+      `الانتقال إلى: ${getLessonTitle(nextLesson)}`;
+
+    nextButton.addEventListener("click", () => {
+      loadLesson(currentChapterId, nextLessonIndex);
+    });
+
+    chatContainer?.appendChild(nextButton);
+
   } else {
-    addBubble(
-      "cody",
-      "تعذر حفظ التقدم في الحساب حاليًا. إنجازك المحلي محفوظ على هذا الجهاز."
+    const nextChapterId = currentChapterId + 1;
+
+    if (getChapter(nextChapterId)) {
+      const nextChapterButton = document.createElement("button");
+
+      nextChapterButton.type = "button";
+      nextChapterButton.className = "open-editor-btn";
+      nextChapterButton.textContent = "الانتقال إلى الفصل التالي";
+
+      nextChapterButton.addEventListener("click", () => {
+        if (!completedChapters.has(currentChapterId)) {
+          showToast("أكمل الدروس التعليمية في الفصل قبل الانتقال.");
+          return;
+        }
+
+        loadLesson(nextChapterId, 0);
+      });
+
+      chatContainer?.appendChild(nextChapterButton);
+    }
+  }
+
+  scrollChatToBottom();
+}
+// ==========================================
+// 13) بنك الأسئلة الإضافية
+// ==========================================
+
+const PYTHON_EXTRA_QUESTIONS = {
+  1: [
+    {
+      question: "أي أمر نستخدمه لعرض رسالة على الشاشة؟",
+      options: ["input()", "print()", "save()", "show()"],
+      correct: 1,
+      explanation: "الأمر print() مسؤول عن عرض النصوص والقيم على الشاشة."
+    },
+    {
+      question: "ما ناتج الكود print(10 + 5)؟",
+      options: ["105", "10 + 5", "15", "خطأ"],
+      correct: 2,
+      explanation: "بايثون تنفذ عملية الجمع ثم تعرض الناتج."
+    },
+    {
+      question: "أي كتابة صحيحة لطباعة كلمة Cody؟",
+      options: [
+        "print(Cody)",
+        "Print('Cody')",
+        "print('Cody')",
+        "PRINT('Cody')"
+      ],
+      correct: 2,
+      explanation: "نكتب print بحروف صغيرة، ونضع النص بين علامات تنصيص."
+    },
+    {
+      question: "ما وظيفة علامات التنصيص حول النص؟",
+      options: [
+        "تحويل النص إلى رقم",
+        "توضيح أن القيمة نص",
+        "إيقاف البرنامج",
+        "حذف النص"
+      ],
+      correct: 1,
+      explanation: "علامات التنصيص تخبر بايثون أن ما بداخلها نص."
+    }
+  ],
+
+  2: [
+    {
+      question: "أي اسم يصلح أن يكون متغيراً في بايثون؟",
+      options: ["my_name", "2name", "my-name", "class"],
+      correct: 0,
+      explanation: "يمكن استخدام الحروف والأرقام والشرطة السفلية، لكن لا يبدأ الاسم برقم."
+    },
+    {
+      question: "ما ناتج الكود x = 5 ثم print(x)؟",
+      options: ["x", "5", "خطأ", "0"],
+      correct: 1,
+      explanation: "المتغير x يخزن القيمة 5."
+    },
+    {
+      question: "أي علامة نستخدم لإسناد قيمة إلى متغير؟",
+      options: ["==", "=", "!=", "+"],
+      correct: 1,
+      explanation: "علامة = تُستخدم لإسناد قيمة إلى المتغير."
+    },
+    {
+      question: "ما نوع القيمة 'Hello'؟",
+      options: ["عدد صحيح", "نص", "قائمة", "قيمة منطقية"],
+      correct: 1,
+      explanation: "النص المكتوب بين علامات التنصيص نوعه String."
+    }
+  ],
+
+  3: [
+    {
+      question: "ما ناتج 12 - 4؟",
+      options: ["16", "8", "124", "6"],
+      correct: 1,
+      explanation: "عملية الطرح تعطي الناتج 8."
+    },
+    {
+      question: "أي رمز يُستخدم لعملية الضرب؟",
+      options: ["/", "+", "*", "-"],
+      correct: 2,
+      explanation: "نستخدم النجمة * لعملية الضرب في بايثون."
+    },
+    {
+      question: "ما ناتج 10 / 2؟",
+      options: ["5", "5.0", "12", "102"],
+      correct: 1,
+      explanation: "القسمة العادية في بايثون تنتج قيمة عشرية في هذه الحالة."
+    },
+    {
+      question: "ما ناتج 2 ** 3؟",
+      options: ["6", "8", "9", "5"],
+      correct: 1,
+      explanation: "الرمز ** يعني الأس، أي 2 × 2 × 2."
+    }
+  ],
+
+  4: [
+    {
+      question: "أي كلمة نستخدمها لبدء شرط في بايثون؟",
+      options: ["for", "if", "print", "def"],
+      correct: 1,
+      explanation: "نستخدم if لتنفيذ كود عند تحقق شرط."
+    },
+    {
+      question: "ما وظيفة else؟",
+      options: [
+        "تكرار الكود",
+        "تنفيذ بديل عندما لا يتحقق الشرط",
+        "طباعة النص",
+        "إنشاء قائمة"
+      ],
+      correct: 1,
+      explanation: "else تنفذ عندما لا يتحقق الشرط السابق."
+    },
+    {
+      question: "أي رمز يعني يساوي في المقارنة؟",
+      options: ["=", "==", "=>", "!="],
+      correct: 1,
+      explanation: "نستخدم == لمقارنة قيمتين."
+    },
+    {
+      question: "ماذا تعني True؟",
+      options: ["خطأ", "صحيح", "نص", "صفر"],
+      correct: 1,
+      explanation: "True قيمة منطقية تعني أن الشرط صحيح."
+    }
+  ],
+
+  5: [
+    {
+      question: "أي حلقة تُستخدم لتكرار مجموعة أوامر؟",
+      options: ["if", "for", "print", "input"],
+      correct: 1,
+      explanation: "حلقة for تُستخدم لتكرار الأوامر على عناصر مجموعة أو نطاق."
+    },
+    {
+      question: "كم مرة تتكرر range(3)؟",
+      options: ["مرتين", "3 مرات", "4 مرات", "مرة واحدة"],
+      correct: 1,
+      explanation: "range(3) تنتج الأرقام 0 و1 و2."
+    },
+    {
+      question: "ما وظيفة break داخل الحلقة؟",
+      options: [
+        "تكرار الحلقة للأبد",
+        "إيقاف الحلقة",
+        "طباعة قيمة",
+        "إنشاء متغير"
+      ],
+      correct: 1,
+      explanation: "break تنهي الحلقة مباشرة."
+    },
+    {
+      question: "ما وظيفة continue؟",
+      options: [
+        "إنهاء البرنامج",
+        "تخطي التكرار الحالي والانتقال للتالي",
+        "حذف المتغير",
+        "إنشاء دالة"
+      ],
+      correct: 1,
+      explanation: "continue تتخطى بقية أوامر التكرار الحالي."
+    }
+  ],
+
+  6: [
+    {
+      question: "أي أقواس نستخدم لإنشاء قائمة؟",
+      options: ["{}", "[]", "()", "<>"],
+      correct: 1,
+      explanation: "القائمة في بايثون تُكتب باستخدام الأقواس المربعة."
+    },
+    {
+      question: "ما أول فهرس في القائمة؟",
+      options: ["1", "0", "-1", "2"],
+      correct: 1,
+      explanation: "الفهرسة في بايثون تبدأ من الصفر."
+    },
+    {
+      question: "أي دالة تضيف عنصراً إلى نهاية القائمة؟",
+      options: ["remove()", "append()", "clear()", "sort()"],
+      correct: 1,
+      explanation: "append() تضيف عنصراً إلى نهاية القائمة."
+    },
+    {
+      question: "ما وظيفة len()؟",
+      options: [
+        "حذف القائمة",
+        "حساب عدد العناصر",
+        "ترتيب العناصر",
+        "إضافة عنصر"
+      ],
+      correct: 1,
+      explanation: "len() تعيد عدد العناصر الموجودة في القائمة."
+    }
+  ],
+
+  7: [
+    {
+      question: "أي كلمة نستخدم لتعريف دالة؟",
+      options: ["function", "def", "make", "new"],
+      correct: 1,
+      explanation: "نستخدم def لتعريف دالة في بايثون."
+    },
+    {
+      question: "ما وظيفة return؟",
+      options: [
+        "إرجاع نتيجة من الدالة",
+        "إيقاف الكمبيوتر",
+        "طباعة نص فقط",
+        "إنشاء قائمة"
+      ],
+      correct: 0,
+      explanation: "return تعيد قيمة من الدالة إلى المكان الذي استدعاها."
+    },
+    {
+      question: "ما فائدة الدوال؟",
+      options: [
+        "تكرار كتابة الكود دائماً",
+        "تنظيم الكود وإعادة استخدامه",
+        "حذف المتغيرات",
+        "إلغاء الشروط"
+      ],
+      correct: 1,
+      explanation: "الدوال تساعدنا على تنظيم البرنامج وإعادة استخدام الأوامر."
+    },
+    {
+      question: "ماذا يحدث عند استدعاء دالة؟",
+      options: [
+        "يتم تنفيذ الأوامر الموجودة بداخلها",
+        "يتم حذفها",
+        "يتم إغلاق البرنامج دائماً",
+        "لا يحدث شيء"
+      ],
+      correct: 0,
+      explanation: "استدعاء الدالة يجعل بايثون تنفذ الأوامر الموجودة بداخلها."
+    }
+  ],
+
+  8: [
+    {
+      question: "ما نوع القيمة 'Python'؟",
+      options: ["Integer", "String", "Boolean", "List"],
+      correct: 1,
+      explanation: "النصوص في بايثون تُسمى String."
+    },
+    {
+      question: "أي دالة تحول النص إلى أحرف كبيرة؟",
+      options: ["lower()", "upper()", "split()", "strip()"],
+      correct: 1,
+      explanation: "upper() تحول الحروف إلى أحرف كبيرة."
+    },
+    {
+      question: "ما وظيفة strip()؟",
+      options: [
+        "حذف المسافات الزائدة من الأطراف",
+        "تحويل النص إلى رقم",
+        "تكرار النص",
+        "حذف البرنامج"
+      ],
+      correct: 0,
+      explanation: "strip() تزيل المسافات البيضاء من بداية النص ونهايته."
+    },
+    {
+      question: "ما وظيفة len('Code')؟",
+      options: ["3", "4", "5", "خطأ"],
+      correct: 1,
+      explanation: "كلمة Code تحتوي على أربعة أحرف."
+    }
+  ],
+
+  9: [
+    {
+      question: "ماذا يعني SyntaxError؟",
+      options: [
+        "خطأ في كتابة قواعد اللغة",
+        "نجاح البرنامج",
+        "قائمة فارغة",
+        "متغير جديد"
+      ],
+      correct: 0,
+      explanation: "يظهر هذا الخطأ عندما تكون صياغة الكود غير صحيحة."
+    },
+    {
+      question: "أي كلمة تُستخدم لمعالجة الاستثناءات؟",
+      options: ["try", "print", "for", "class"],
+      correct: 0,
+      explanation: "نستخدم try مع except للتعامل مع الأخطاء المتوقعة."
+    },
+    {
+      question: "ما وظيفة except؟",
+      options: [
+        "التعامل مع الخطأ عند حدوثه",
+        "إنشاء حلقة",
+        "طباعة كل المتغيرات",
+        "تعريف قائمة"
+      ],
+      correct: 0,
+      explanation: "except تحدد الأوامر التي تُنفذ عند حدوث استثناء."
+    },
+    {
+      question: "هل الأخطاء جزء طبيعي من تعلم البرمجة؟",
+      options: ["لا", "نعم، ونتعلم منها", "تحدث للمبتدئين فقط", "تعني أن الكمبيوتر تالف"],
+      correct: 1,
+      explanation: "اكتشاف الأخطاء وإصلاحها مهارة أساسية لكل مبرمج."
+    }
+  ],
+
+  10: [
+    {
+      question: "أي أقواس نستخدم لإنشاء قاموس؟",
+      options: ["[]", "{}", "()", "<>"],
+      correct: 1,
+      explanation: "القواميس تُكتب باستخدام الأقواس المعقوفة."
+    },
+    {
+      question: "كيف نخزن البيانات في القاموس؟",
+      options: [
+        "مفتاح وقيمة",
+        "أرقام فقط",
+        "نصوص فقط",
+        "من دون تنظيم"
+      ],
+      correct: 0,
+      explanation: "كل عنصر في القاموس يتكون من مفتاح وقيمة."
+    },
+    {
+      question: "كيف نصل إلى قيمة باستخدام المفتاح؟",
+      options: [
+        "dictionary[key]",
+        "dictionary.add",
+        "dictionary.print",
+        "dictionary.value()"
+      ],
+      correct: 0,
+      explanation: "نستخدم اسم القاموس ثم المفتاح بين الأقواس المربعة."
+    },
+    {
+      question: "هل يمكن أن يحتوي القاموس على قيم مختلفة الأنواع؟",
+      options: ["لا", "نعم", "الأرقام فقط", "النصوص فقط"],
+      correct: 1,
+      explanation: "يمكن للقاموس تخزين نصوص وأرقام وقوائم وأنواع أخرى."
+    }
+  ],
+
+  11: [
+    {
+      question: "ما المقصود بالمكتبة في البرمجة؟",
+      options: [
+        "مجموعة أدوات وأكواد جاهزة",
+        "نوع من الشاشات",
+        "ملف صور فقط",
+        "لغة برمجة جديدة"
+      ],
+      correct: 0,
+      explanation: "المكتبات توفر وظائف جاهزة تساعدنا في بناء البرامج."
+    },
+    {
+      question: "أي كلمة نستخدم لاستيراد مكتبة؟",
+      options: ["include", "import", "using", "open"],
+      correct: 1,
+      explanation: "كلمة import تستورد المكتبات والوحدات في بايثون."
+    },
+    {
+      question: "ما فائدة استخدام المكتبات؟",
+      options: [
+        "توفير الوقت والاستفادة من أدوات جاهزة",
+        "إبطاء البرنامج دائماً",
+        "منع كتابة الكود",
+        "حذف المتغيرات"
+      ],
+      correct: 0,
+      explanation: "المكتبات تساعدنا على إنجاز مهام كثيرة دون كتابة كل شيء من البداية."
+    },
+    {
+      question: "أي أمر يستورد مكتبة math؟",
+      options: [
+        "load math",
+        "import math",
+        "math start",
+        "print math"
+      ],
+      correct: 1,
+      explanation: "نستخدم import math لاستيراد مكتبة الرياضيات."
+    }
+  ],
+
+  12: [
+    {
+      question: "ما أول خطوة جيدة عند بناء مشروع برمجي؟",
+      options: [
+        "كتابة الكود عشوائياً",
+        "تحديد المشكلة والهدف",
+        "حذف الملفات",
+        "اختيار الألوان فقط"
+      ],
+      correct: 1,
+      explanation: "فهم المشكلة والهدف يساعدنا على التخطيط للمشروع."
+    },
+    {
+      question: "لماذا نقسم المشروع إلى دوال؟",
+      options: [
+        "لتنظيم المهام وإعادة استخدام الكود",
+        "لزيادة الأخطاء",
+        "لإلغاء المتغيرات",
+        "لمنع تشغيل البرنامج"
+      ],
+      correct: 0,
+      explanation: "تقسيم المشروع إلى دوال يجعل الكود أسهل في الفهم والصيانة."
+    },
+    {
+      question: "ما أهمية اختبار المشروع؟",
+      options: [
+        "التأكد من أن الوظائف تعمل كما هو متوقع",
+        "تغيير اسم المشروع فقط",
+        "حذف الكود",
+        "زيادة عدد الأسطر"
+      ],
+      correct: 0,
+      explanation: "الاختبار يساعدنا على اكتشاف الأخطاء قبل استخدام المشروع."
+    },
+    {
+      question: "ما الذي يجعل المشروع البرمجي جيداً؟",
+      options: [
+        "أن يكون منظماً ويحل المشكلة المطلوبة",
+        "أن يكون طويلاً فقط",
+        "أن يحتوي على ألوان كثيرة",
+        "أن لا يتم اختباره"
+      ],
+      correct: 0,
+      explanation: "المشروع الجيد يحقق هدفه ويكون واضحاً وقابلاً للتطوير."
+    }
+  ]
+};
+
+
+// ==========================================
+// 14) خلط الأسئلة عشوائياً
+// ==========================================
+
+function shuffleArray(items) {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+
+    [shuffled[index], shuffled[randomIndex]] =
+      [shuffled[randomIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
+
+function prepareExamQuestions(lesson) {
+  const originalQuestions = Array.isArray(lesson?.steps)
+    ? lesson.steps.filter((step) => step.type === "quiz")
+    : [];
+
+  const extraQuestions =
+    PYTHON_EXTRA_QUESTIONS[currentChapterId] || [];
+
+  const shuffledExtra = shuffleArray(extraQuestions);
+
+  const combined = [
+    ...originalQuestions,
+    ...shuffledExtra.slice(0, 4)
+  ];
+
+  // ضمان وجود خمسة أسئلة على الأقل.
+  while (combined.length < 5 && shuffledExtra.length) {
+    combined.push(
+      shuffledExtra[combined.length % shuffledExtra.length]
     );
   }
 
-  renderSidebar();
-  updateProgressBar();
-
-  const button = document.getElementById("nextBtn");
-
-  button.innerHTML =
-    lessonId < 4
-      ? 'الدرس التالي <i class="ri-arrow-left-line"></i>'
-      : 'الانتقال إلى امتحان الفصل <i class="ri-arrow-left-line"></i>';
-
-  button.onclick = () => {
-    if (lessonId < 4) {
-      location.href =
-        `python-lesson.html?ch=${chapterId}&lesson=${lessonId+1}`;
-    } else {
-      location.href =
-        `python-lesson.html?ch=${chapterId}&lesson=5`;
-    }
-  };
-
-  document.getElementById("bottomAction").classList.add("show");
+  return shuffleArray(combined);
 }
 
+
+// ==========================================
+// 15) بدء الامتحان
+// ==========================================
+
 function startExam() {
-  document.querySelector(".content-wrapper").style.display = "none";
+  if (!currentLesson) return;
 
-  document.getElementById("bottomAction").classList.remove("show");
-  document.getElementById("examView").classList.add("show");
-  document.getElementById("examResultBox").classList.remove("show");
-  document.getElementById("examQuestionBox").style.display = "block";
-
-  document.getElementById("examTitle").textContent =
-    currentLesson.title || "امتحان الفصل";
-
-  examQuestions = currentLesson.steps.filter(
-    step => step.type === "quiz"
-  );
-
+  currentExamQuestions = prepareExamQuestions(currentLesson);
   currentExamIndex = 0;
   examScore = 0;
+  examAnswered = false;
 
-  if (!examQuestions.length) {
-    showExamResult(false);
+  clearChat();
+  showBottomAction(false);
+
+  const contentWrapper = document.querySelector(".content-wrapper");
+  const examView = document.getElementById("examView");
+
+  if (contentWrapper) {
+    contentWrapper.style.display = "none";
+  }
+
+  examView?.classList.add("show");
+
+  const title = document.getElementById("examTitle");
+
+  if (title) {
+    title.textContent = getLessonTitle(currentLesson);
+  }
+
+  const resultBox = document.getElementById("examResultBox");
+  const questionBox = document.getElementById("examQuestionBox");
+
+  resultBox?.classList.remove("show");
+
+  if (questionBox) {
+    questionBox.style.display = "block";
+  }
+
+  if (!currentExamQuestions.length) {
+    const questionText = document.getElementById("examQuestionText");
+
+    if (questionText) {
+      questionText.textContent =
+        "لا توجد أسئلة متاحة لهذا الامتحان حالياً.";
+    }
+
+    document.getElementById("examOptionsContainer").innerHTML = "";
     return;
   }
 
   showExamQuestion();
 }
 
+
+// ==========================================
+// 16) عرض سؤال الامتحان
+// ==========================================
+
 function showExamQuestion() {
-  if (currentExamIndex >= examQuestions.length) {
+  if (currentExamIndex >= currentExamQuestions.length) {
     endExam();
     return;
   }
 
-  const question = examQuestions[currentExamIndex];
-
   examAnswered = false;
 
-  document.getElementById("examProgress").textContent =
-    `السؤال ${currentExamIndex+1} من ${examQuestions.length}`;
+  const question = currentExamQuestions[currentExamIndex];
 
-  document.getElementById("examProgFill").style.width =
-    `${currentExamIndex/examQuestions.length*100}%`;
+  const questionText = document.getElementById("examQuestionText");
+  const optionsContainer = document.getElementById("examOptionsContainer");
+  const progressText = document.getElementById("examProgress");
+  const progressFill = document.getElementById("examProgFill");
+  const feedback = document.getElementById("examFeedback");
 
-  document.getElementById("examQuestionText").textContent =
-    question.question || "السؤال غير متاح";
+  if (!questionText || !optionsContainer) return;
 
-  const container = document.getElementById("examOptionsContainer");
-  container.innerHTML = "";
+  questionText.textContent = question.question || "اختر الإجابة الصحيحة";
 
-  if (
-    !Array.isArray(question.options) ||
-    !Number.isInteger(question.correct) ||
-    question.correct < 0 ||
-    question.correct >= question.options.length
-  ) {
-    document.getElementById("examQuestionText").textContent =
-      "هناك خطأ في إعداد السؤال.";
+  optionsContainer.innerHTML = "";
 
-    return;
+  if (feedback) {
+    feedback.textContent = "";
   }
 
-  question.options.forEach((option,index) => {
+  const total = currentExamQuestions.length;
+  const currentNumber = currentExamIndex + 1;
+
+  if (progressText) {
+    progressText.textContent =
+      `السؤال ${currentNumber} من ${total}`;
+  }
+
+  if (progressFill) {
+    progressFill.style.width =
+      `${(currentNumber / total) * 100}%`;
+  }
+
+  (question.options || []).forEach((option, index) => {
     const button = document.createElement("button");
+
+    button.type = "button";
     button.className = "exam-opt-btn";
     button.textContent = option;
 
-    button.addEventListener("click",() => {
-      if (examAnswered) return;
-      examAnswered = true;
-
-      Array.from(container.children).forEach(item => {
-        item.disabled = true;
-      });
-
-      if (index === question.correct) {
-        button.classList.add("correct");
-        examScore++;
-      } else {
-        button.classList.add("wrong");
-
-        container.children[question.correct]
-          ?.classList.add("correct");
-      }
-
-      setTimeout(() => {
-        currentExamIndex++;
-        showExamQuestion();
-      },900);
+    button.addEventListener("click", () => {
+      answerExamQuestion(index, question, button);
     });
 
-    container.appendChild(button);
+    optionsContainer.appendChild(button);
   });
 }
 
-async function endExam() {
-  const percentage = examQuestions.length
-    ? Math.round(examScore/examQuestions.length*100)
+
+// ==========================================
+// 17) تصحيح إجابة الامتحان
+// ==========================================
+
+function answerExamQuestion(selectedIndex, question, selectedButton) {
+  if (examAnswered) return;
+
+  examAnswered = true;
+
+  const optionsContainer = document.getElementById("examOptionsContainer");
+  const feedback = document.getElementById("examFeedback");
+
+  const correctIndex = Number(question.correct);
+  const isCorrect = selectedIndex === correctIndex;
+
+  if (isCorrect) {
+    examScore++;
+    selectedButton.classList.add("correct");
+
+    if (feedback) {
+      feedback.textContent = "إجابة صحيحة! ممتاز! 🎉";
+      feedback.style.color = "var(--green)";
+    }
+  } else {
+    selectedButton.classList.add("wrong");
+
+    if (feedback) {
+      feedback.textContent =
+        `الإجابة الصحيحة: ${question.options?.[correctIndex] || ""}`;
+
+      feedback.style.color = "var(--red)";
+    }
+  }
+
+  optionsContainer?.querySelectorAll("button").forEach((button, index) => {
+    button.disabled = true;
+
+    if (index === correctIndex) {
+      button.classList.add("correct");
+    }
+  });
+
+  if (question.explanation && feedback) {
+    feedback.textContent += ` — ${question.explanation}`;
+  }
+
+  const nextQuestionButton = document.createElement("button");
+
+  nextQuestionButton.type = "button";
+  nextQuestionButton.className = "open-editor-btn";
+  nextQuestionButton.style.marginTop = "18px";
+
+  nextQuestionButton.textContent =
+    currentExamIndex + 1 < currentExamQuestions.length
+      ? "السؤال التالي"
+      : "عرض النتيجة";
+
+  nextQuestionButton.addEventListener("click", () => {
+    currentExamIndex++;
+    showExamQuestion();
+  });
+
+  optionsContainer?.appendChild(nextQuestionButton);
+}
+
+
+// ==========================================
+// 18) نتيجة الامتحان
+// ==========================================
+
+function endExam() {
+  const total = currentExamQuestions.length;
+  const percentage = total
+    ? Math.round((examScore / total) * 100)
     : 0;
 
-  const passed =
-    examQuestions.length > 0 && percentage >= 50;
+  const passed = percentage >= 50;
 
-  document.getElementById("examProgFill").style.width = "100%";
-  document.getElementById("examQuestionBox").style.display = "none";
-  document.getElementById("examResultBox").classList.add("show");
+  const questionBox = document.getElementById("examQuestionBox");
+  const resultBox = document.getElementById("examResultBox");
 
-  document.getElementById("finalScore").textContent =
-    `${examScore}/${examQuestions.length}`;
+  questionBox.style.display = "none";
+  resultBox.classList.add("show");
 
-  document.getElementById("scoreRing").style.background =
-    `conic-gradient(var(--green) ${percentage}%,var(--border) ${percentage}%)`;
+  const scoreElement = document.getElementById("finalScore");
+  const ring = document.getElementById("scoreRing");
+  const title = document.getElementById("resultTitle");
+  const message = document.getElementById("resultMsg");
 
-  const button = document.getElementById("nextBtn");
+  if (scoreElement) {
+    scoreElement.textContent = `${examScore}/${total}`;
+  }
+
+  if (ring) {
+    ring.style.background =
+      `conic-gradient(var(--green) ${percentage}%, var(--border) ${percentage}%)`;
+  }
+
+  if (title) {
+    title.textContent = passed
+      ? "أحسنت! نجحت في الامتحان 🎉"
+      : "محاولة جيدة! تقدر تتحسن 💪";
+  }
+
+  if (message) {
+    message.textContent =
+      `حصلت على ${percentage}% — ${examScore} إجابات صحيحة من ${total} أسئلة. ` +
+      (passed
+        ? "راجع الدروس واستعد للفصل التالي."
+        : "راجع الإجابات وحاول مرة أخرى.");
+  }
+
+  const oldActions = resultBox.querySelector(".exam-result-actions");
+  oldActions?.remove();
+
+  const actions = document.createElement("div");
+  actions.className = "exam-result-actions";
+
+  actions.style.cssText = `
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    width:100%;
+    max-width:360px;
+    margin-top:20px;
+  `;
+
+  const retryButton = document.createElement("button");
+  retryButton.type = "button";
+  retryButton.className = "open-editor-btn";
+  retryButton.textContent = "إعادة الامتحان";
+
+  retryButton.addEventListener("click", () => {
+    startExam();
+  });
+
+  actions.appendChild(retryButton);
+
+  const backButton = document.createElement("button");
+  backButton.type = "button";
+  backButton.className = "choice-btn";
+  backButton.textContent = "العودة إلى الدروس";
+
+  backButton.addEventListener("click", () => {
+    const contentWrapper = document.querySelector(".content-wrapper");
+
+    resultBox.classList.remove("show");
+    questionBox.style.display = "block";
+
+    document.getElementById("examView")
+      ?.classList.remove("show");
+
+    if (contentWrapper) {
+      contentWrapper.style.display = "flex";
+    }
+
+    loadLesson(currentChapterId, 0);
+  });
+
+  actions.appendChild(backButton);
 
   if (passed) {
-    if (typeof window.confetti === "function") {
-      window.confetti({
-        particleCount:120,
-        spread:80,
-        origin:{y:.6}
+    const nextChapterId = currentChapterId + 1;
+
+    if (getChapter(nextChapterId)) {
+      const nextChapterButton = document.createElement("button");
+
+      nextChapterButton.type = "button";
+      nextChapterButton.className = "btn-next";
+      nextChapterButton.textContent = "ابدأ الفصل التالي";
+
+      nextChapterButton.addEventListener("click", () => {
+                completedChapters.add(currentChapterId);
+
+        // حفظ تقدم الطالب محلياً
+        saveLocalProgress();
+
+        // تحديث قائمة الفصول وشريط التقدم
+        renderSidebar();
+        updateProgressBar();
+
+        // الانتقال إلى الفصل التالي
+        loadLesson(nextChapterId, 0);
       });
+
+      actions.appendChild(nextChapterButton);
     }
-
-    document.getElementById("resultTitle").textContent =
-      "مبروك! 🎉";
-
-    document.getElementById("resultMsg").textContent =
-      `اجتزت الامتحان بنسبة ${percentage}%.`;
-
-    markLocalChapter(chapterId);
-    markLocalLesson(chapterId,5);
-
-    /*
-     * يسجل الامتحان كعنصر تقدم مستقل.
-     * لا يرسل إثبات تحدي الدروس العادية ولا يمنح مكافأة تلقائيًا.
-     */
-    const examSaved = await savePythonCloudProgress(4);
-
-    if (examSaved) {
-      document.getElementById("resultMsg").textContent +=
-        " وتم حفظ نتيجة إكمال الامتحان في الحساب.";
-    } else {
-      document.getElementById("resultMsg").textContent +=
-        " وتم حفظ الإنجاز محليًا، لكن تعذر حفظه في الحساب.";
-    }
-
-    button.innerHTML =
-      chapterId < 12
-        ? 'الفصل التالي <i class="ri-arrow-left-line"></i>'
-        : 'العودة للخريطة <i class="ri-map-pin-line"></i>';
-
-    button.onclick = () => {
-      location.href = chapterId < 12
-        ? `python-lesson.html?ch=${chapterId+1}&lesson=1`
-        : "python-chapters.html";
-    };
-
-  } else {
-    document.getElementById("resultTitle").textContent =
-      "تحتاج إلى المزيد من التدريب";
-
-    document.getElementById("resultMsg").textContent =
-      `حصلت على ${percentage}%. راجع الدروس وحاول مرة أخرى.`;
-
-    button.innerHTML =
-      'إعادة الامتحان <i class="ri-refresh-line"></i>';
-
-    button.onclick = () => location.reload();
   }
 
-  document.getElementById("bottomAction").classList.add("show");
+  // إضافة أزرار النتيجة إلى صندوق النتيجة
+  resultBox.appendChild(actions);
+}
 
-  renderSidebar();
-  updateProgressBar();
 
-  if (passed) {
-    await syncAccountRewards();
+// ==========================================
+// 19) إغلاق وتشغيل الصفحة
+// ==========================================
+
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // مزامنة تقدم الطالب من السحابة إن كانت الدالة متاحة
+    if (typeof syncPythonProgressFromCloud === "function") {
+      await syncPythonProgressFromCloud();
+    }
+
+    // مزامنة المكافآت إن كانت الدالة متاحة
+    if (typeof syncAccountRewards === "function") {
+      await syncAccountRewards();
+    }
+
+    // تحديث واجهة الفصول والتقدم
+    if (typeof renderSidebar === "function") {
+      renderSidebar();
+    }
+
+    if (typeof updateProgressBar === "function") {
+      updateProgressBar();
+    }
+
+    // تحميل الفصل والدرس المحددين
+    const params = new URLSearchParams(window.location.search);
+
+    const chapterId = Number(params.get("ch")) || 1;
+    const lessonIndex = Number(params.get("lesson")) || 0;
+
+    loadLesson(chapterId, lessonIndex);
+
+  } catch (error) {
+    console.error("خطأ أثناء تشغيل صفحة تعلم بايثون:", error);
+
+    if (typeof showToast === "function") {
+      showToast("حدث خطأ أثناء تحميل الدروس. حاول تحديث الصفحة.");
+    }
   }
-}
-
-function showExamResult(passed) {
-  document.getElementById("examQuestionBox").style.display = "none";
-  document.getElementById("examResultBox").classList.add("show");
-
-  document.getElementById("resultTitle").textContent =
-    passed ? "مبروك!" : "لا توجد أسئلة متاحة";
-
-  document.getElementById("resultMsg").textContent =
-    "تعذر عرض أسئلة الامتحان.";
-
-  document.getElementById("bottomAction").classList.add("show");
-
-  document.getElementById("nextBtn").onclick = () => {
-    location.href = `python-lesson.html?ch=${chapterId}&lesson=1`;
-  };
-}
-
-async function initializePage() {
-  renderSidebar();
-  updateProgressBar();
-
-  await initializeChatAvatar();
-  await syncPythonProgressFromCloud();
-  await syncAccountRewards();
-
-  loadLesson();
-}
-
-document.addEventListener("DOMContentLoaded",initializePage);
-
+});
 </script>
 </body>
 </html>
