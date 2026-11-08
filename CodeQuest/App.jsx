@@ -259,16 +259,31 @@ export default function App() {
           db,
           "users",
           currentUser.uid,
-          "progress"
+          "lessonProgress"
         );
 
         progressUnsubscribe = onSnapshot(
           progressRef,
           (snapshot) => {
-            const nextProgress = {};
+            const nextProgress = {
+              python: { completedLessons: 0 },
+              javascript: { completedLessons: 0 },
+              cpp: { completedLessons: 0 }
+            };
 
             snapshot.forEach((item) => {
-              nextProgress[item.id] = item.data();
+              const lesson = item.data();
+              const language = lesson?.language;
+
+              if (
+                lesson?.completed === true &&
+                Object.prototype.hasOwnProperty.call(
+                  nextProgress,
+                  language
+                )
+              ) {
+                nextProgress[language].completedLessons += 1;
+              }
             });
 
             setProgress(nextProgress);
