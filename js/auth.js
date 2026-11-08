@@ -350,6 +350,24 @@ export function getCurrentUser() {
   return auth.currentUser;
 }
 
+/**
+ * Read the authenticated user's cloud profile, including trusted XP and stars.
+ */
+export async function getUserProfile() {
+  const user = await requireUser();
+  const profileRef = doc(db, USERS_COLLECTION, user.uid);
+  const snapshot = await getDoc(profileRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("لم يتم العثور على ملف الحساب.");
+  }
+
+  return {
+    uid: user.uid,
+    ...snapshot.data()
+  };
+}
+
 function getLessonDocumentId(language, chapter, lesson) {
   return `${language}_${chapter}_${lesson}`;
 }
