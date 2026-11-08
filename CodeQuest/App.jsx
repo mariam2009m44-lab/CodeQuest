@@ -275,8 +275,13 @@ export default function App() {
               const lesson = item.data();
               const language = lesson?.language;
 
+              // Python chapter exams use lesson: 104 as a separate
+              // completion marker; they must not inflate lesson totals.
               if (
                 lesson?.completed === true &&
+                Number.isInteger(lesson?.chapter) &&
+                Number.isInteger(lesson?.lesson) &&
+                !(language === "python" && lesson.lesson === 104) &&
                 Object.prototype.hasOwnProperty.call(
                   nextProgress,
                   language
