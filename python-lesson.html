@@ -1442,6 +1442,16 @@
           <button
             type="button"
             class="btn-next"
+            id="nextExamLessonBtn"
+            hidden
+          >
+            متابعة إلى الفصل التالي
+            <i class="ri-arrow-left-line"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn-next"
             id="returnLessonBtn"
           >
             العودة إلى الدرس
@@ -2441,11 +2451,12 @@
         }
       );
 
-      editor.setSize("100%", "100%");
+      editor.setSize("100%", "360px");
 
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         editor?.refresh();
-      }, 100);
+        editor?.focus();
+      });
 
     } catch (error) {
       console.error(
@@ -2560,10 +2571,20 @@
   function showPythonSolution() {
     if (!currentChallenge) return;
 
+    const hintSolutions = Array.isArray(currentChallenge.hints)
+      ? currentChallenge.hints
+      : currentChallenge.hint
+        ? [currentChallenge.hint]
+        : [];
+
     const solution =
       currentChallenge.solution ||
       currentChallenge.expectedCode ||
       currentChallenge.answerCode ||
+      currentChallenge.solutionCode ||
+      hintSolutions.find(value =>
+        typeof value === "string" && value.trim()
+      ) ||
       "";
 
     if (!solution) {
@@ -2578,8 +2599,9 @@
     solutionBox.hidden = false;
 
     solutionBox.innerHTML = `
-      <strong>الحل النموذجي:</strong>
+      <strong>نموذج حل مقترح:</strong>
       <pre>${escapeHTML(solution)}</pre>
+      <small>قد توجد طرق صحيحة أخرى لحل التحدي.</small>
     `;
 
     solutionBox.scrollIntoView({
@@ -3275,6 +3297,11 @@
       : `حصلت على ${percentage}%. تحتاج إلى 80% على الأقل للنجاح.`;
   }
 
+  const nextExamLessonButton = $("nextExamLessonBtn");
+  if (nextExamLessonButton) {
+    nextExamLessonButton.hidden = !passed;
+  }
+
   if (passed) {
     writeStorage(
       `cody_python_exam_passed_${currentChapterId}`,
@@ -3408,6 +3435,26 @@ function bindPageEvents() {
   $("returnLessonBtn")?.addEventListener(
     "click",
     returnToLesson
+  );
+
+  $("nextExamLessonBtn")?.addEventListener(
+    "click",
+    () => {
+      if (
+        readStorage(
+          `cody_python_exam_passed_${currentChapterId}`,
+          false
+        ) !== true
+      ) {
+        showToast("اجتز الامتحان أولًا للانتقال إلى الفصل التالي.");
+        return;
+      }
+
+      $("examView")?.classList.remove("show");
+      $("chatContainer")?.style.removeProperty("display");
+      $("editorContainer")?.style.removeProperty("display");
+      goToNextLesson();
+    }
   );
 
   $("editorBackdrop")?.addEventListener(
