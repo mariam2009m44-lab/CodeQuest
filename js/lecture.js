@@ -35,7 +35,7 @@ const LANGUAGE_CONFIG = {
   cpp: {
     label: "C++",
     curriculumUrl: "./json/cpp_curriculum.json",
-    editorLanguage: "cpp",
+    editorLanguage: "text/x-c++src",
     starter: `#include <iostream>
 using namespace std;
 
@@ -184,11 +184,21 @@ function initializeEditor() {
         theme: "dracula",
         indentUnit: 4,
         tabSize: 4,
-        lineWrapping: true,
-        autofocus: false
+        lineWrapping: false,
+        viewportMargin: 20,
+        autofocus: false,
+        extraKeys: {
+          Tab: cm => cm.replaceSelection("    ")
+        }
       });
 
-      editor.setSize("100%", "auto");
+      // The shared CSS controls editor height at every breakpoint.
+      // Refresh after layout changes so the editor never keeps a stale width.
+      const refreshEditor = () => {
+        window.requestAnimationFrame(() => editor?.refresh());
+      };
+      window.addEventListener("resize", refreshEditor, { passive: true });
+      window.visualViewport?.addEventListener("resize", refreshEditor, { passive: true });
 
     } catch (error) {
       console.warn(
