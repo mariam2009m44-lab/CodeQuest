@@ -1,12 +1,21 @@
-
 import {
   requireUser,
   saveLessonProgress,
   getLessonProgress
 } from "./auth.js";
 
-const BACKEND_URL =
-  "https://codequest.mariam2009m44.workers.dev";
+import {
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
+
+import {
+  functions
+} from "./firebase-config.js";
+
+const verifyLessonAnswer = httpsCallable(
+  functions,
+  "checkQuizAnswer"
+);
 
 const LANGUAGE_CONFIG = {
   javascript: {
@@ -204,10 +213,6 @@ function updateEditorLanguage() {
   }
 }
 
-/*
- * لا نقرأ الإجابة الصحيحة من ملف المنهج الموجود
- * في المتصفح. التحقق يتم على الخادم.
- */
 function normalizeQuiz(rawQuiz) {
   if (!rawQuiz) return null;
 
@@ -606,7 +611,6 @@ async function loadCurriculum() {
     );
   }
 }
-
 async function loadProgress() {
   try {
     const progress = await getLessonProgress(languageKey);
@@ -663,7 +667,6 @@ async function completeCurrentLesson() {
       completed: true
     });
 
-    // لا نعلن إكمال الدرس قبل نجاح الحفظ.
     lessonCompleted = true;
     quizPassed = true;
 
@@ -801,47 +804,15 @@ async function checkQuizAnswer() {
       );
     }
 
-    const token = await currentUser.getIdToken();
+    const response = await verifyLessonAnswer({
+      language: languageKey,
+      lessonId: currentLesson.id,
+      selectedIndex: selectedQuizOption
+    });
 
-    const response = await fetch(
-      `${BACKEND_URL}/api/quiz/check`,
-      {
-        method: "POST",
+    const result = response.data;
 
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-
-        body: JSON.stringify({
-          language: languageKey,
-          lessonId: currentLesson.id,
-          selectedIndex: selectedQuizOption
-        })
-      }
-    );
-
-    let result;
-
-    try {
-      result = await response.json();
-
-    } catch {
-      throw new Error(
-        "استجابة الخادم غير مفهومة. حاول مرة أخرى."
-      );
-    }
-
-    if (
-      !response.ok ||
-      result?.success !== true
-    ) {
-      if (response.status === 401) {
-        throw new Error(
-          "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى."
-        );
-      }
-
+    if (result?.success !== true) {
       throw new Error(
         result?.message ||
         "تعذر التحقق من الإجابة حاليًا."
@@ -872,23 +843,47 @@ async function checkQuizAnswer() {
       error
     );
 
+    let message =
+      error?.message ||
+      "حدث خطأ أثناء التحقق من الإجابة.";
+
+    if (error?.code === "functions/unauthenticated") {
+      message =
+        "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى.";
+
+    } else if (
+      error?.code === "functions/not-found"
+    ) {
+      message =
+        "دالة التحقق غير منشورة أو غير موجودة في Firebase.";
+
+    } else if (
+      error?.code === "functions/permission-denied"
+    ) {
+      message =
+        "ليس لديك صلاحية لتنفيذ عملية التحقق.";
+
+    } else if (
+      error?.code === "functions/unavailable"
+    ) {
+      message =
+        "خدمة التحقق غير متاحة حاليًا. حاول مرة أخرى.";
+    }
+
     setFeedback(
       feedback,
-      error?.message ||
-        "حدث خطأ أثناء التحقق من الإجابة.",
+      message,
       "error"
     );
 
     setStatus(
-      error?.message ||
-        "تعذر التحقق من الإجابة.",
+      message,
       "error"
     );
 
   } finally {
     quizRequestInProgress = false;
 
-    // يسمح بإعادة المحاولة بعد فشل التحقق أو الحفظ.
     if (checkButton && !quizPassed) {
       checkButton.disabled =
         selectedQuizOption === null;
@@ -934,10 +929,6 @@ function runPython(code) {
   return runInSandbox("python", code);
 }
 
-/*
- * تشغيل الكود داخل iframe منفصل.
- * هذا عزل مبدئي وليس بيئة تنفيذ آمنة بالكامل.
- */
 function runInSandbox(language, code) {
   return new Promise((resolve, reject) => {
     const frame = document.createElement("iframe");
@@ -1156,7 +1147,6 @@ function runInSandbox(language, code) {
     document.body.append(frame);
   });
 }
-
 function encodeBase64Utf8(value) {
   const bytes = new TextEncoder().encode(value);
 
