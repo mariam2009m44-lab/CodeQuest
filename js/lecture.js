@@ -1,3 +1,5 @@
+import { runCodeOnServer } from "./code-runner.js";
+
 import {
   requireUser,
   saveLessonProgress,
@@ -1179,115 +1181,23 @@ function wait(milliseconds) {
 }
 
 async function runCpp(code) {
-  const endpoint = "https://ce.judge0.com";
+  const result = await runCodeOnServer("cpp", code);
 
-  setStatus(
-    "جاري إرسال كود C++ إلى خدمة التشغيل...",
-    "info"
-  );
+  const diagnostics = [
+    result.compileOutput,
+    result.stderr,
+    result.message
+  ].filter(Boolean).join("\n").trim();
 
-  const submitResponse = await fetch(
-    `${endpoint}/submissions?base64_encoded=true&wait=false`,
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-        language_id: 54,
-        source_code: encodeBase64Utf8(code),
-        stdin: ""
-      })
-    }
-  );
-
-  if (!submitResponse.ok) {
+  if (!result.ok) {
     throw new Error(
-      `خدمة تشغيل C++ غير متاحة حاليًا (HTTP ${submitResponse.status}).`
+      diagnostics ||
+      result.status ||
+      "لم ينجح تجميع وتشغيل برنامج C++."
     );
   }
 
-  const submission = await submitResponse.json();
-
-  if (!submission.token) {
-    throw new Error(
-      "لم تُرجع خدمة التشغيل رمز التنفيذ."
-    );
-  }
-
-  for (let attempt = 0; attempt < 20; attempt++) {
-    await wait(1000);
-
-    const response = await fetch(
-      `${endpoint}/submissions/${encodeURIComponent(submission.token)}?base64_encoded=true`,
-      {
-        headers: {
-          Accept: "application/json"
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `تعذر جلب نتيجة C++ (HTTP ${response.status}).`
-      );
-    }
-
-    const result = await response.json();
-    const statusId = result.status?.id;
-
-    if (statusId === 1 || statusId === 2) {
-      continue;
-    }
-
-    const stdout = decodeBase64Utf8(result.stdout);
-    const stderr = decodeBase64Utf8(result.stderr);
-
-    const compileOutput = decodeBase64Utf8(
-      result.compile_output
-    );
-
-    const message = decodeBase64Utf8(result.message);
-
-    if (statusId === 3) {
-      return stdout || "تم تشغيل الكود بدون مخرجات.";
-    }
-
-    if (compileOutput) {
-      throw new Error(compileOutput);
-    }
-
-    if (stderr) {
-      throw new Error(stderr);
-    }
-
-    if (message) {
-      throw new Error(message);
-    }
-
-    if (statusId === 5) {
-      throw new Error(
-        "انتهى الوقت المسموح لتشغيل البرنامج."
-      );
-    }
-
-    if (statusId === 6) {
-      throw new Error(
-        "حدث خطأ أثناء تجميع كود C++."
-      );
-    }
-
-    throw new Error(
-      result.status?.description ||
-      "تعذر تشغيل كود C++."
-    );
-  }
-
-  throw new Error(
-    "استغرق تشغيل C++ وقتًا أطول من المتوقع. حاول مرة أخرى."
-  );
+  return result.stdout || "تم تشغيل الكود بدون مخرجات.";
 }
 
 async function runCode() {
