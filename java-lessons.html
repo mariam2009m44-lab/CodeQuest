@@ -755,7 +755,7 @@
   <script type="module">
     "use strict";
 
-    import { verifyJavaChallenge } from "./js/code-runner.js";
+    import { verifyJavaChallenge, runCodeOnServer } from "./js/code-runner.js";
     import { saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
     const PROGRESS_KEY = "cody_java_progress";
@@ -1152,6 +1152,7 @@
     let selectedQuizAnswer = null;
     let quizAnswered = false;
     let challengeVerified = false;
+    let challengeVerifiedOnServer = false;
     let accountXP = null;
     let accountStars = 0;
 
@@ -1446,6 +1447,7 @@
 
       currentLessonId = lesson.id;
       challengeVerified = false;
+      challengeVerifiedOnServer = false;
 
       const hint = document.getElementById("lessonHint");
       if (hint) hint.hidden = true;
@@ -1480,6 +1482,34 @@
       window.history.replaceState({}, "", url);
     }
 
+    const EXPECTED_OUTPUTS = {
+      "java-1-1": "Hello!",
+      "java-1-2": "Java",
+      "java-2-1": "16\nCody",
+      "java-2-2": "20",
+      "java-3-1": "13\n30",
+      "java-3-2": "2",
+      "java-4-1": "Adult",
+      "java-4-2": "Positive",
+      "java-5-1": "1\n2\n3\n4\n5",
+      "java-5-2": "1\n2\n3",
+      "java-6-1": "20",
+      "java-6-2": "10\n20\n30",
+      "java-7-1": "Hello!",
+      "java-7-2": "7",
+      "java-8-1": "Ali",
+      "java-8-2": "Cody"
+    };
+
+    function normalizeProgramOutput(value) {
+      return String(value ?? "")
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .map(line => line.trim())
+        .join("\n")
+        .trim();
+    }
+
     async function checkChallenge() {
       const lesson = findLesson(currentLessonId);
       if (!lesson) return;
@@ -1508,11 +1538,64 @@
       setOutput("يراجع Cody الكود، ويشغّله على الخادم، ثم يطابق الناتج مع المطلوب...", "info");
 
       try {
-        const result = await verifyJavaChallenge(
-          Number(position[1]) - 1,
-          Number(position[2]) - 1,
-          code
-        );
+        let result;
+        try {
+          result = await verifyJavaChallenge(
+            Number(position[1]) - 1,
+            Number(position[2]) - 1,
+            code
+          );
+          challengeVerifiedOnServer = true;
+        } catch (verificationError) {
+          const errorCode = String(verificationError?.code || "");
+          if (!/not-found|unimplemented/.test(errorCode)) {
+            throw verificationError;
+          }
+
+          // توافق مؤقت مع مشروع Firebase قبل نشر الدالة الجديدة.
+          const fallback = await runCodeOnServer("java", code);
+          if (!fallback.ok) {
+            const diagnostic = [
+              fallback.compileOutput,
+              fallback.stderr,
+              fallback.message,
+              fallback.status
+            ].filter(Boolean).join("\n");
+            setOutput(diagnostic || "تعذر تشغيل برنامج Java.", "error");
+            return;
+          }
+
+          const missingCheck = (lesson.checks || []).find(check => {
+            check.pattern.lastIndex = 0;
+            return !check.pattern.test(code);
+          });
+          if (missingCheck) {
+            setOutput(
+              "البرنامج اشتغل، لكن أجزاء الحل المطلوبة غير مكتملة.\n\n" + missingCheck.message,
+              "error"
+            );
+            return;
+          }
+
+          const actualOutput = normalizeProgramOutput(fallback.stdout);
+          const expectedOutput = normalizeProgramOutput(EXPECTED_OUTPUTS[lesson.id]);
+          if (actualOutput !== expectedOutput) {
+            setOutput(
+              "الناتج غير مطابق للمطلوب.\n\nالناتج الحالي:\n" +
+              (actualOutput || "(لا يوجد ناتج)") +
+              "\n\nالناتج المتوقع:\n" + expectedOutput,
+              "error"
+            );
+            return;
+          }
+
+          result = {
+            correct: true,
+            stdout: fallback.stdout,
+            message: "تم تشغيل الحل والتحقق منه محليًا مؤقتًا."
+          };
+          challengeVerifiedOnServer = false;
+        }
 
         if (!result.correct) {
           const actual = result.stdout
@@ -1532,8 +1615,10 @@
         challengeVerified = true;
         const output = String(result.stdout || "").trim();
         setOutput(
-          "ممتاز! تم التحقق من الحل على الخادم بنجاح.\n\nالناتج:\n" +
-          (output || "(لا يوجد ناتج)"),
+          (challengeVerifiedOnServer
+            ? "ممتاز! تم التحقق من الحل على الخادم بنجاح."
+            : "ممتاز! تم تشغيل الحل والتحقق من الناتج.") +
+          "\n\nالناتج:\n" + (output || "(لا يوجد ناتج)"),
           "success"
         );
         showNotice(
@@ -1637,14 +1722,20 @@
       updateStats();
       updateNavigationButtons();
 
-      const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
-
-      showNotice(
-        rewardsUpdated
-          ? "تم حفظ الدرس وإضافة مكافآته إلى حسابك بنجاح!"
-          : "تم حفظ الدرس. قد يستغرق تحديث نقاط الخبرة والنجوم بضع لحظات؛ أعد فتح الصفحة إذا لم تظهر بعد.",
-        "success"
-      );
+      if (challengeVerifiedOnServer) {
+        const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
+        showNotice(
+          rewardsUpdated
+            ? "تم حفظ الدرس وإضافة مكافآته إلى حسابك بنجاح!"
+            : "تم حفظ الدرس بنجاح. قد يستغرق تحديث نقاط الخبرة والنجوم بضع لحظات.",
+          "success"
+        );
+      } else {
+        showNotice(
+          "تم حفظ تقدم الدرس. المكافآت المركزية ستُضاف بعد نشر دالة التحقق الخادمي على Firebase.",
+          "info"
+        );
+      }
     }
 
     function updateNavigationButtons() {
