@@ -536,6 +536,12 @@ function renderLessonContent(lesson) {
 
   setCodeEditorValue(getLessonCode(lesson));
 
+  const codeFeedback = byId("codeFeedback");
+  if (codeFeedback) {
+    codeFeedback.hidden = typeof lesson.expected_output !== "string";
+    setFeedback(codeFeedback, "");
+  }
+
   const nextButton = byId("nextLessonBtn");
 
   if (nextButton) {
@@ -936,6 +942,8 @@ function checkExpectedOutput(actualOutput) {
   const expected = currentLesson?.expected_output;
 
   if (!feedback || typeof expected !== "string") return;
+
+  feedback.hidden = false;
 
   const actual = String(actualOutput ?? "").trim();
   const target = expected.trim();
