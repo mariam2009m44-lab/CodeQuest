@@ -1702,7 +1702,7 @@
         });
       } catch (error) {
         console.error("Java progress cloud save failed:", error);
-        const errorCode = String(error?.code || "").replace(/^firestore\\//, "");
+        const errorCode = String(error?.code || "").split("/").pop();
 
         if (errorCode !== "permission-denied") {
           showNotice(
