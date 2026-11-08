@@ -510,6 +510,12 @@ int main() {
       viewportMargin: 20
     });
 
+    const refreshEditorLayout = () => {
+      window.requestAnimationFrame(() => editor.refresh());
+    };
+    window.addEventListener("resize", refreshEditorLayout, { passive: true });
+    window.visualViewport?.addEventListener("resize", refreshEditorLayout, { passive: true });
+
     function showToast(message, type = "success") {
       toastElement.textContent = message;
       toastElement.className = `toast show ${type}`;
