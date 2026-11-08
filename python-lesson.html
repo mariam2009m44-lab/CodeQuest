@@ -2679,13 +2679,65 @@
   // 17) التحقق من نتيجة التحدي
   // ==========================================
 
-  function checkChallengeResult(programOutput, sourceCode = "") {
-    if (!currentChallenge || challengeSolved) {
-      return;
+  async function checkChallengeResult(programOutput, sourceCode = "") {
+    if (!currentChallenge || challengeSolved) return;
+
+    /*
+     * اختبارات الفصل النهائي فقط تستخدم فحص الواجهة؛
+     * أما تحديات الدروس العادية فيجب اعتمادها من الخادم.
+     */
+    if (!isExamLesson(currentLesson)) {
+      try {
+        const [
+          { httpsCallable },
+          { functions }
+        ] = await Promise.all([
+          import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js"),
+          import("./js/firebase-config.js")
+        ]);
+
+        const verifyChallenge = httpsCallable(
+          functions,
+          "verifyPythonChallenge"
+        );
+
+        const response = await verifyChallenge({
+          chapter: Number(currentChapterId) - 1,
+          lesson: Number(currentLessonIndex),
+          code: String(sourceCode)
+        });
+
+        const verification = response?.data || {};
+
+        if (verification.correct !== true) {
+          addBubble(
+            "cody",
+            verification.message ||
+              "لم يجتز الكود التحقق النهائي. راجع الحل وحاول مرة أخرى."
+          );
+          return;
+        }
+
+        challengeSolved = true;
+        addBubble(
+          "cody",
+          "تم التحقق من التحدي على الخادم بنجاح! أحسنت 🎉"
+        );
+        showBottomAction(true);
+        return;
+      } catch (error) {
+        console.error("Python challenge verification failed:", error);
+        addBubble(
+          "cody",
+          "تم تشغيل الكود، لكن تعذر التحقق من إجابتك وحفظ إثبات النجاح. تحقق من الاتصال وحاول تشغيل التحدي مرة أخرى."
+        );
+        showToast("لم يكتمل التحقق من التحدي. لم يتم اعتماد النجاح.");
+        return;
+      }
     }
 
+    // اختبار الفصل: لا يمنح مكافأة درس عادية، ويُستخدم فحصه المحلي للتقدم داخل الاختبار فقط.
     const challenge = currentChallenge;
-
     const expectedOutput =
       challenge.expectedOutput ??
       challenge.expected_output ??
@@ -2696,15 +2748,11 @@
         ? challenge.check
         : null;
 
-    if (
-      expectedOutput === undefined &&
-      !customCheck
-    ) {
+    if (expectedOutput === undefined && !customCheck) {
       addBubble(
         "cody",
-        "الكود اشتغل بنجاح! راجع الناتج وتأكد إنه بيحقق المطلوب. مش هاعتبر التحدي مكتمل تلقائيًا من غير اختبار محدد."
+        "الكود اشتغل بنجاح! راجع الناتج وتأكد إنه بيحقق المطلوب."
       );
-
       return;
     }
 
@@ -2712,38 +2760,24 @@
 
     if (customCheck) {
       try {
-        passed = Boolean(
-          customCheck(sourceCode, programOutput)
-        );
+        passed = Boolean(customCheck(sourceCode, programOutput));
       } catch (error) {
-        console.warn(
-          "تعذر تنفيذ اختبار التحدي:",
-          error
-        );
+        console.warn("تعذر تنفيذ اختبار التحدي:", error);
       }
-
     } else {
       const actual = String(programOutput)
-        .replace(/\r\n/g, "\n")
+        .replace(/\\r\\n/g, "\\n")
         .trim();
-
       const expected = String(expectedOutput)
-        .replace(/\r\n/g, "\n")
+        .replace(/\\r\\n/g, "\\n")
         .trim();
-
       passed = actual === expected;
     }
 
     if (passed) {
       challengeSolved = true;
-
-      addBubble(
-        "cody",
-        "ممتاز! الناتج صحيح، وقد نجحت في التحدي! 🎉"
-      );
-
+      addBubble("cody", "ممتاز! اجتزت تحدي الاختبار بنجاح! 🎉");
       showBottomAction(true);
-
     } else {
       addBubble(
         "cody",
@@ -2798,13 +2832,26 @@
       currentLessonIndex
     );
 
+    let cloudSaved = true;
+
     if (!wasCompleted) {
+      cloudSaved = await saveProgressToFirebase();
+
+      if (!cloudSaved) {
+        clearChat();
+        addBubble(
+          "cody",
+          "لم نتمكن من حفظ إكمال الدرس في حسابك الآن. لم نضف نقاطًا أو نعلن اكتمال الدرس. تحقق من اتصال الإنترنت ثم اضغط إعادة المحاولة."
+        );
+        showBottomAction(true, "إعادة المحاولة");
+        return;
+      }
+
+      // لا نضيف المكافأة المحلية إلا بعد نجاح حفظ سجل التقدم.
       awardLessonReward(
         currentChapterId,
         currentLessonIndex
       );
-
-      await saveProgressToFirebase();
     }
 
     clearChat();
@@ -2813,14 +2860,10 @@
       "cody",
       wasCompleted
         ? "أهلًا بعودتك! الدرس ده مكتمل بالفعل. تقدر تراجع محتواه أو تنتقل للدرس التالي."
-        : "رائع! أنهيت الدرس بنجاح وحصلت على 10 نقاط خبرة ⭐"
+        : "رائع! تم حفظ إكمال الدرس بنجاح، وستتم مزامنة المكافأة مع حسابك ⭐"
     );
 
-    showBottomAction(
-      true,
-      "الدرس التالي"
-    );
-
+    showBottomAction(true, "الدرس التالي");
     updateProgressDisplay();
     renderChapters();
   }
