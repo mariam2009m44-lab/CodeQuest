@@ -73,6 +73,18 @@ export async function runCodeOnServer(language, code, stdin = "") {
       );
     }
 
+    if (errorCode === "not-found" || errorCode === "unimplemented") {
+      throw new Error(
+        "خدمة تشغيل الأكواد (runCode) غير منشورة في Firebase حتى الآن. يلزم نشر Firebase Functions لتشغيل JavaScript وPython وC++."
+      );
+    }
+
+    if (errorCode === "permission-denied") {
+      throw new Error(
+        "Firebase رفض تشغيل الكود. راجع صلاحيات الحساب وإعدادات الدالة."
+      );
+    }
+
     if (error instanceof Error && error.message) {
       throw error;
     }
