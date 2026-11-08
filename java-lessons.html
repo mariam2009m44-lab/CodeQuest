@@ -748,8 +748,10 @@
 
   <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
 
-  <script>
+  <script type="module">
     "use strict";
+
+    import { runCodeOnServer } from "./js/code-runner.js";
 
     const PROGRESS_KEY = "cody_java_progress";
     const XP_KEY = "cody_java_xp";
@@ -1448,7 +1450,7 @@ e}`;
       window.history.replaceState({}, "", url);
     }
 
-    function checkChallenge() {
+    async function checkChallenge() {
       const lesson = findLesson(currentLessonId);
       if (!lesson) return;
 
@@ -1459,19 +1461,61 @@ e}`;
         return;
       }
 
-      for (const check of lesson.checks || []) {
-        check.pattern.lastIndex = 0;
-
-        if (!check.pattern.test(code)) {
-          setOutput(`الحل غير مكتمل: ${check.message}`, "error");
-          return;
-        }
+      const checkButton = document.getElementById("check-challenge");
+      if (checkButton) {
+        checkButton.disabled = true;
+        checkButton.textContent = "جارٍ تجميع وتشغيل Java...";
       }
 
-      setOutput(
-        "اجتزت فحوصات التمرين! تنبيه: هذا الفحص يتحقق من وجود أجزاء الكود المطلوبة، ولا يشغّل برنامج Java فعليًا.",
-        "success"
-      );
+      setOutput("جارٍ إرسال البرنامج إلى بيئة Java...", "info");
+
+      try {
+        const result = await runCodeOnServer("java", code);
+        const diagnostics = [
+          result.compileOutput,
+          result.stderr,
+          result.message
+        ].filter(Boolean).join("\n").trim();
+
+        if (!result.ok) {
+          setOutput(
+            diagnostics || result.status || "لم ينجح تشغيل البرنامج. راجع الكود وحاول مرة أخرى.",
+            "error"
+          );
+          return;
+        }
+
+        const programOutput = String(result.stdout || "").trimEnd();
+        const outputText = programOutput
+          ? `تم تجميع وتشغيل برنامج Java بنجاح.\n\nالناتج:\n${programOutput}`
+          : "تم تجميع وتشغيل البرنامج بنجاح، لكنه لم يطبع أي ناتج.";
+
+        setOutput(outputText, "success");
+
+        const checks = lesson.checks || [];
+        const missingCheck = checks.find(check => {
+          check.pattern.lastIndex = 0;
+          return !check.pattern.test(code);
+        });
+
+        if (missingCheck) {
+          showNotice(
+            "البرنامج اشتغل، لكن راجع المطلوب في التمرين: " + missingCheck.message,
+            "info"
+          );
+        }
+      } catch (error) {
+        console.error("Java execution failed:", error);
+        setOutput(
+          error?.message || "تعذر تشغيل Java حاليًا. تحقق من الاتصال وحاول مرة أخرى.",
+          "error"
+        );
+      } finally {
+        if (checkButton) {
+          checkButton.disabled = false;
+          checkButton.textContent = "تحقق من الحل";
+        }
+      }
     }
 
     function completeCurrentLesson() {
