@@ -1112,3 +1112,730 @@
         backdrop.classList.remove("show");
       }
     }
+    function renderSidebar() {
+      const list = document.getElementById("chaptersList");
+      list.innerHTML = "";
+
+      const progress = readPythonLocalProgress();
+
+      chapterList.forEach((chap, index) => {
+        const chapData = window.CHAPTERS && window.CHAPTERS[chap.id];
+        const isCompleted = progress.completed.includes(chap.id);
+
+        const isUnlocked =
+          index === 0 ||
+          progress.completed.includes(chapterList[index - 1].id);
+
+        const totalLessons =
+          chapData && Array.isArray(chapData.lessons)
+            ? chapData.lessons.length
+            : 0;
+
+        let chapProgressPercent = isCompleted ? 100 : 0;
+
+        if (
+          String(chapterId) === String(chap.id) &&
+          totalLessons > 0 &&
+          !isCompleted
+        ) {
+          chapProgressPercent = Math.min(
+            100,
+            Math.round(((lessonId - 1) / totalLessons) * 100)
+          );
+        }
+
+        const chapEl = document.createElement("div");
+        chapEl.className = `chapter-item ${isUnlocked ? "" : "locked"}`;
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "chapter-title";
+
+        const icon = !isUnlocked
+          ? '<i class="ri-lock-fill"></i>'
+          : isCompleted
+            ? '<i class="ri-checkbox-circle-fill" style="color:var(--green);"></i>'
+            : '<i class="ri-arrow-down-s-line"></i>';
+
+        titleEl.innerHTML = `
+          <span class="chap-name">${chap.id}. ${chap.title}</span>
+          <span class="chap-icon">${icon}</span>
+          <div class="chap-mini-prog">
+            <div class="chap-mini-fill" style="width:${chapProgressPercent}%"></div>
+          </div>
+        `;
+
+        const lessonsEl = document.createElement("div");
+        lessonsEl.className = "lessons-list";
+
+        if (String(chapterId) === String(chap.id)) {
+          lessonsEl.classList.add("open");
+        }
+
+        if (chapData && Array.isArray(chapData.lessons)) {
+          chapData.lessons.forEach((lesson, lessonIndex) => {
+            const lessonEl = document.createElement("a");
+
+            const isLessonUnlocked = isUnlocked;
+
+            const isActive =
+              String(chapterId) === String(chap.id) &&
+              lessonIndex + 1 === lessonId;
+
+            lessonEl.className =
+              `lesson-link ${!isLessonUnlocked ? "locked-lesson" : ""} ` +
+              `${isActive ? "active" : ""}`;
+
+            if (isLessonUnlocked) {
+              lessonEl.innerHTML =
+                `<i class="ri-play-circle-line"></i> ${lesson.title}`;
+
+              lessonEl.href =
+                `python-lesson.html?ch=${chap.id}&lesson=${lessonIndex + 1}`;
+
+              lessonEl.addEventListener("click", () => {
+                if (window.innerWidth <= 900) {
+                  toggleSidebar();
+                }
+              });
+            } else {
+              lessonEl.innerHTML =
+                `<i class="ri-lock-line"></i> ${lesson.title}`;
+
+              lessonEl.href = "javascript:void(0)";
+            }
+
+            lessonsEl.appendChild(lessonEl);
+          });
+
+          titleEl.addEventListener("click", () => {
+            lessonsEl.classList.toggle("open");
+          });
+        }
+
+        chapEl.appendChild(titleEl);
+        chapEl.appendChild(lessonsEl);
+        list.appendChild(chapEl);
+      });
+    }
+
+    function updateProgressBar() {
+      const progress = readPythonLocalProgress();
+
+      const percent = Math.min(
+        100,
+        Math.round((progress.completed.length / 12) * 100)
+      );
+
+      const progressFill = document.getElementById("progressFill");
+      const progressPercent = document.getElementById("progressPercent");
+
+      if (progressFill) {
+        progressFill.style.width = percent + "%";
+      }
+
+      if (progressPercent) {
+        progressPercent.textContent = percent + "%";
+      }
+    }
+
+    async function syncAccountRewards() {
+      try {
+        const [{ functions }, { httpsCallable }] = await Promise.all([
+          import("./js/firebase-config.js"),
+          import("https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js")
+        ]);
+
+        const syncRewards = httpsCallable(
+          functions,
+          "syncExistingLessonRewards"
+        );
+
+        const result = await syncRewards();
+        const data = result.data || {};
+
+        if (
+          data.success &&
+          document.getElementById("xpDisplay")
+        ) {
+          document.getElementById("xpDisplay").textContent =
+            String(Number(data.xp) || 0);
+        }
+      } catch (error) {
+        console.warn("تعذرت مزامنة نقاط الحساب:", error);
+      }
+    }
+
+    function loadLesson() {
+      const chapter = window.CHAPTERS && window.CHAPTERS[chapterId];
+
+      if (
+        !chapter ||
+        !Array.isArray(chapter.lessons) ||
+        !chapter.lessons[lessonId - 1]
+      ) {
+        document.getElementById("chatContainer").innerHTML = `
+          <div style="text-align:center;padding:50px;">
+            <h2>هذا الدرس غير متاح حالياً 🚧</h2>
+            <p style="color:var(--text-muted);margin-top:15px;">
+              تأكد من رقم الفصل والدرس أو ارجع إلى خريطة بايثون.
+            </p>
+            <a href="python-chapters.html" class="back-btn"
+               style="display:inline-flex;margin:20px auto;">
+              العودة للخريطة
+            </a>
+          </div>
+        `;
+
+        renderSidebar();
+        updateProgressBar();
+        return;
+      }
+
+      localStorage.setItem(
+        "cody_last_lesson",
+        JSON.stringify({
+          ch: chapterId,
+          lesson: lessonId
+        })
+      );
+
+      currentLesson = chapter.lessons[lessonId - 1];
+
+      if (
+        !currentLesson ||
+        !Array.isArray(currentLesson.steps)
+      ) {
+        document.getElementById("chatContainer").textContent =
+          "تعذر تحميل محتوى هذا الدرس.";
+
+        return;
+      }
+
+      isExamMode =
+        currentLesson.title.includes("امتحان") ||
+        currentLesson.title.includes("الامتحان");
+
+      if (isExamMode) {
+        startExam();
+      } else {
+        document.getElementById("examView").classList.remove("show");
+
+        document.querySelector(".content-wrapper").style.display = "flex";
+
+        document.getElementById("chatContainer").innerHTML = "";
+
+        currentStepIndex = 0;
+        challengeSolved = false;
+
+        processStep();
+      }
+
+      renderSidebar();
+      updateProgressBar();
+    }
+
+    function processStep() {
+      if (!currentLesson || !Array.isArray(currentLesson.steps)) {
+        return;
+      }
+
+      if (currentStepIndex >= currentLesson.steps.length) {
+        endLesson();
+        return;
+      }
+
+      const step = currentLesson.steps[currentStepIndex];
+
+      document.getElementById("bottomAction").classList.remove("show");
+
+      closeEditor();
+
+      if (step.type === "cody") {
+        showTypingIndicator();
+
+        setTimeout(() => {
+          removeTypingIndicator();
+
+          addBubble("cody", step.text || "");
+
+          showNextButton();
+
+          currentStepIndex++;
+        }, 600);
+
+      } else if (step.type === "choice") {
+        addBubble("cody", step.question || "");
+
+        renderChoices(
+          Array.isArray(step.options) ? step.options : [],
+          step.replies || []
+        );
+
+        currentStepIndex++;
+
+      } else if (step.type === "challenge") {
+        addBubble(
+          "cody",
+          "تحدي برمجي! اضغط على الزر بالأسفل لفتح المحرر 👇"
+        );
+
+        const btnWrapper = document.createElement("div");
+        btnWrapper.className = "choices-container";
+
+        const openBtn = document.createElement("button");
+        openBtn.className = "open-editor-btn";
+
+        openBtn.innerHTML =
+          '<i class="ri-code-s-slash-line"></i> فتح المحرر وكتابة الكود';
+
+        openBtn.addEventListener("click", () => {
+          showEditor(step);
+        });
+
+        btnWrapper.appendChild(openBtn);
+
+        document.getElementById("chatContainer").appendChild(btnWrapper);
+
+        scrollToBottom();
+
+      } else if (step.type === "quiz") {
+        addBubble("cody", step.question || "");
+
+        renderQuiz(
+          Array.isArray(step.options) ? step.options : [],
+          step.correct,
+          step.explanation || ""
+        );
+
+        currentStepIndex++;
+
+      } else {
+        addBubble(
+          "cody",
+          "هذا الجزء من الدرس غير مدعوم حالياً."
+        );
+
+        showNextButton();
+        currentStepIndex++;
+      }
+    }
+
+    function startExam() {
+      document.querySelector(".content-wrapper").style.display = "none";
+
+      document.getElementById("bottomAction").classList.remove("show");
+
+      document.getElementById("examView").classList.add("show");
+
+      document.getElementById("examResultBox").classList.remove("show");
+
+      document.getElementById("examQuestionBox").style.display = "block";
+
+      document.getElementById("examTitle").textContent =
+        currentLesson.title || "امتحان الفصل";
+
+      examQuestions = currentLesson.steps.filter(
+        step => step.type === "quiz"
+      );
+
+      currentExamIndex = 0;
+      examScore = 0;
+
+      if (examQuestions.length === 0) {
+        document.getElementById("examQuestionBox").style.display = "none";
+
+        document.getElementById("examResultBox").classList.add("show");
+
+        document.getElementById("resultTitle").textContent =
+          "لا توجد أسئلة متاحة";
+
+        document.getElementById("resultMsg").textContent =
+          "لم يتم اجتياز الامتحان؛ لأن هذا الفصل لا يحتوي على أسئلة بعد.";
+
+        document.getElementById("finalScore").textContent = "0/0";
+
+        document.getElementById("scoreRing").style.background =
+          "conic-gradient(var(--border) 100%, var(--border) 100%)";
+
+        const btn = document.getElementById("nextBtn");
+
+        btn.innerHTML =
+          'العودة للدروس <i class="ri-arrow-left-line"></i>';
+
+        btn.onclick = () => {
+          window.location.href =
+            `python-lesson.html?ch=${chapterId}&lesson=1`;
+        };
+
+        document.getElementById("bottomAction").classList.add("show");
+
+        return;
+      }
+
+      showExamQuestion();
+    }
+
+    function showExamQuestion() {
+      if (currentExamIndex >= examQuestions.length) {
+        endExam();
+        return;
+      }
+
+      const question = examQuestions[currentExamIndex];
+
+      document.getElementById("examProgress").textContent =
+        `سؤال ${currentExamIndex + 1} من ${examQuestions.length}`;
+
+      document.getElementById("examProgFill").style.width =
+        `${(currentExamIndex / examQuestions.length) * 100}%`;
+
+      document.getElementById("examQuestionText").textContent =
+        question.question || "السؤال غير متاح";
+
+      const optionsContainer =
+        document.getElementById("examOptionsContainer");
+
+      optionsContainer.innerHTML = "";
+
+      if (
+        !Array.isArray(question.options) ||
+        question.options.length === 0 ||
+        !Number.isInteger(question.correct) ||
+        question.correct < 0 ||
+        question.correct >= question.options.length
+      ) {
+        document.getElementById("examQuestionText").textContent =
+          "يوجد خطأ في إعداد هذا السؤال.";
+
+        return;
+      }
+
+      let answered = false;
+
+      question.options.forEach((option, index) => {
+        const button = document.createElement("button");
+
+        button.className = "exam-opt-btn";
+        button.textContent = option;
+
+        button.addEventListener("click", () => {
+          if (answered) return;
+
+          answered = true;
+
+          Array.from(optionsContainer.children).forEach(item => {
+            item.disabled = true;
+          });
+
+          if (index === question.correct) {
+            button.classList.add("correct");
+            examScore++;
+          } else {
+            button.classList.add("wrong");
+
+            const correctButton =
+              optionsContainer.children[question.correct];
+
+            if (correctButton) {
+              correctButton.classList.add("correct");
+            }
+          }
+
+          setTimeout(() => {
+            currentExamIndex++;
+            showExamQuestion();
+          }, 1000);
+        });
+
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    async function endExam() {
+      document.getElementById("examProgFill").style.width = "100%";
+
+      document.getElementById("examQuestionBox").style.display = "none";
+
+      document.getElementById("examResultBox").classList.add("show");
+
+      const scorePercent = examQuestions.length
+        ? Math.round((examScore / examQuestions.length) * 100)
+        : 0;
+
+      document.getElementById("finalScore").textContent =
+        `${examScore}/${examQuestions.length}`;
+
+      const scoreRing = document.getElementById("scoreRing");
+
+      scoreRing.style.background =
+        `conic-gradient(var(--green) ${scorePercent}%, var(--border) ${scorePercent}%)`;
+
+      const passed =
+        examQuestions.length > 0 && scorePercent >= 50;
+
+      const btn = document.getElementById("nextBtn");
+
+      if (passed) {
+        if (typeof window.confetti === "function") {
+          window.confetti({
+            particleCount: 150,
+            spread: 90,
+            origin: { y: 0.6 }
+          });
+        }
+
+        document.getElementById("resultTitle").textContent =
+          "عمل رائع! 🎉";
+
+        document.getElementById("resultMsg").textContent =
+          "لقد اجتزت الامتحان بنجاح.";
+
+        savePythonLocalChapter(chapterId);
+
+        document.getElementById("resultMsg").textContent +=
+          " تم حفظ إنجاز الفصل على هذا الجهاز.";
+
+        btn.innerHTML =
+          chapterId < 12
+            ? 'الفصل التالي <i class="ri-arrow-left-line"></i>'
+            : 'العودة للخريطة <i class="ri-map-pin-line"></i>';
+
+        btn.onclick = () => {
+          window.location.href =
+            chapterId < 12
+              ? `python-lesson.html?ch=${chapterId + 1}&lesson=1`
+              : "python-chapters.html";
+        };
+
+      } else {
+        document.getElementById("resultTitle").textContent =
+          "تحتاج للمزيد من التدريب";
+
+        document.getElementById("resultMsg").textContent =
+          "لم تجتز الامتحان هذه المرة. راجع الدروس وحاول مرة أخرى.";
+
+        btn.innerHTML =
+          'إعادة المحاولة <i class="ri-refresh-line"></i>';
+
+        btn.onclick = () => window.location.reload();
+      }
+
+      document.getElementById("bottomAction").classList.add("show");
+
+      renderSidebar();
+      updateProgressBar();
+    }
+
+    function addBubble(type, message) {
+      const row = document.createElement("div");
+
+      row.className = `message-row ${type}`;
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.textContent = type === "cody" ? "🤖" : "👦";
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      // محتوى Cody التعليمي قد يحتوي على تنسيق HTML موجود في ملفات الفصول.
+      bubble.innerHTML = String(message || "");
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+
+      document.getElementById("chatContainer").appendChild(row);
+
+      scrollToBottom();
+    }
+
+    function renderChoices(options, replies) {
+      const container = document.createElement("div");
+
+      container.className = "choices-container";
+
+      options.forEach((option, index) => {
+        const button = document.createElement("button");
+
+        button.className = "choice-btn";
+        button.textContent = option;
+
+        button.addEventListener("click", () => {
+          container.remove();
+
+          addBubble("student", option);
+
+          if (replies && replies[index]) {
+            showTypingIndicator();
+
+            setTimeout(() => {
+              removeTypingIndicator();
+
+              addBubble("cody", replies[index]);
+
+              document.getElementById("bottomAction")
+                .classList.add("show");
+            }, 600);
+
+          } else {
+            document.getElementById("bottomAction")
+              .classList.add("show");
+          }
+        });
+
+        container.appendChild(button);
+      });
+
+      document.getElementById("chatContainer").appendChild(container);
+
+      scrollToBottom();
+    }
+
+    function renderQuiz(options, correctIndex, explanation) {
+      const container = document.createElement("div");
+
+      container.className = "choices-container";
+
+      let answered = false;
+
+      options.forEach((option, index) => {
+        const button = document.createElement("button");
+
+        button.className = "choice-btn";
+        button.textContent = option;
+
+        button.addEventListener("click", () => {
+          if (answered) return;
+
+          answered = true;
+
+          container.remove();
+
+          addBubble("student", option);
+
+          showTypingIndicator();
+
+          setTimeout(() => {
+            removeTypingIndicator();
+
+            if (index === correctIndex) {
+              addBubble(
+                "cody",
+                "✅ إجابة صحيحة! " + (explanation || "")
+              );
+
+              addXp(5);
+
+            } else {
+              addBubble(
+                "cody",
+                "❌ ليست صحيحة. حاول مراجعة الشرح ثم أكمل."
+              );
+            }
+
+            document.getElementById("bottomAction")
+              .classList.add("show");
+
+          }, 600);
+        });
+
+        container.appendChild(button);
+      });
+
+      document.getElementById("chatContainer").appendChild(container);
+
+      scrollToBottom();
+    }
+
+    function showNextButton() {
+      document.getElementById("bottomAction")
+        .classList.add("show");
+    }
+
+    function advanceChat() {
+      document.getElementById("bottomAction")
+        .classList.remove("show");
+
+      processStep();
+    }
+
+    function showEditor(step) {
+      if (!step || typeof step.defaultCode !== "string") {
+        addBubble("cody", "تعذر فتح المحرر بسبب نقص بيانات التحدي.");
+        return;
+      }
+
+      closeEditor();
+
+      const backdrop = document.getElementById("editorBackdrop");
+
+      backdrop.classList.add("show");
+
+      const wrapper = document.createElement("div");
+
+      wrapper.id = "editorWrapper";
+      wrapper.className = "editor-wrapper show";
+
+      wrapper.innerHTML = `
+        <div class="editor-header">
+          <span class="editor-title">main.py</span>
+
+          <div style="display:flex;gap:10px;">
+            <button class="btn-run" onclick="runCode()">
+              <i class="ri-play-circle-fill"></i> تشغيل
+            </button>
+
+            <button
+              onclick="closeEditor()"
+              style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:0 15px;font-weight:bold;cursor:pointer;"
+            >
+              إغلاق
+            </button>
+          </div>
+        </div>
+
+        <div class="code-area">
+          <textarea id="dynamicCodeEditor"></textarea>
+          <div class="output-area" id="outputArea">&gt; Output...</div>
+        </div>
+      `;
+
+      document.getElementById("editorContainer")
+        .appendChild(wrapper);
+
+      window.currentChallenge = step;
+      challengeSolved = false;
+
+      setTimeout(() => {
+        const textarea =
+          document.getElementById("dynamicCodeEditor");
+
+        if (!textarea || typeof CodeMirror === "undefined") {
+          document.getElementById("outputArea").textContent =
+            "تعذر تحميل محرر الأكواد. تحقق من اتصال الإنترنت.";
+          return;
+        }
+
+        editorInstance = CodeMirror.fromTextArea(textarea, {
+          lineNumbers: true,
+          mode: "python",
+          theme: "dracula",
+          indentUnit: 4,
+          lineWrapping: true
+        });
+
+        editorInstance.setValue(step.defaultCode);
+
+        setTimeout(() => {
+          if (editorInstance) {
+            editorInstance.refresh();
+          }
+        }, 100);
+
+      }, 50);
+
+      if (window.innerWidth > 900) {
+        document.querySelector(".chat-container").style.maxWidth =
+          "50%";
+      } else {
+        setTimeout(() => {
