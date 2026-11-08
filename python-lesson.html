@@ -2543,6 +2543,10 @@
       behavior: "smooth",
       block: "nearest"
     });
+
+    // Keep the latest execution result visible after revealing a hint.
+    const output = $("pythonOutput");
+    if (output) output.hidden = false;
   }
 
 
@@ -2657,8 +2661,10 @@
       );
 
       output.textContent =
-        programOutput || "تم تشغيل الكود بدون أخطاء.";
+        programOutput || "تم تشغيل الكود بدون مخرجات.";
 
+      output.hidden = false;
+      output.scrollIntoView({ behavior: "smooth", block: "nearest" });
       checkChallengeResult(programOutput, code);
 
     } catch (error) {
@@ -3454,7 +3460,7 @@ function bindPageEvents() {
 // 31) تحميل بيانات الطالب
 // ==========================================
 
-async function loadStudentData() {
+async async function loadStudentData() {
   const xpDisplay = $("xpDisplay");
   const savedXP = Math.max(
     Number(readStorage("cody_xp", 0)) || 0,
