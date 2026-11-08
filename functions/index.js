@@ -257,6 +257,7 @@ exports.runCode = onCall(
     };
   }
 );
+
 /*
  * شراء عناصر المتجر من الخادم فقط.
  */
@@ -581,10 +582,6 @@ exports.checkQuizAnswer = onCall(
       };
     }
 
-    /*
-     * هذا هو المعرّف الذي يستخدمه saveLessonProgress
-     * في js/auth.js، وليس معرّف المنهج مثل py-1-1.
-     */
     const progressLessonId =
       `${language}_${chapterIndex}_${lessonIndex}`;
 
@@ -594,10 +591,6 @@ exports.checkQuizAnswer = onCall(
       .collection("quizResults")
       .doc(`lesson_${progressLessonId}`);
 
-    /*
-     * الكتابة تتم باستخدام Firebase Admin SDK من الخادم.
-     * لا نعتمد على أي قيمة serverVerified يرسلها المتصفح.
-     */
     await resultRef.set({
       verificationVersion: 1,
       serverVerified: true,
@@ -737,10 +730,6 @@ async function awardCompletedLesson(
       };
     }
 
-    /*
-     * يجب أن يكتب خادم التصحيح هذا السجل بعد التحقق الفعلي.
-     * لا تُنشئ إثباتات من سجلات التقدم القديمة أو من مدخلات العميل.
-     */
     const resultRef = userRef
       .collection("quizResults")
       .doc(`lesson_${lessonId}`);
@@ -968,5 +957,748 @@ exports.syncLeaderboard = onDocumentWritten(
 
       updatedAt: FieldValue.serverTimestamp()
     });
+  }
+);
+/*
+ * تحديات Python الفعلية الموجودة في:
+ * js/chapters/ch1.js إلى js/chapters/ch12.js
+ *
+ * chapter و lesson هنا يبدأان من صفر.
+ *
+ * expected:
+ * الناتج المتوقع من تشغيل الكود.
+ *
+ * required:
+ * أجزاء أساسية يجب وجودها في الكود.
+ *
+ * randomRange:
+ * يستخدم في التحديات التي يكون ناتجها عشوائيًا.
+ */
+const PYTHON_CHALLENGES = Object.freeze({
+
+  "0_0": {
+    expected: "Hello, World!",
+    required: [
+      "print(",
+      "Hello, World!"
+    ]
+  },
+
+  "0_1": {
+    expected: "25\n8",
+    required: [
+      "print(25)",
+      "print(5 + 3)"
+    ]
+  },
+
+  "0_2": {
+    expected: "مرحبا\nبك",
+    required: [
+      'print("مرحبا")',
+      'print("بك")'
+    ]
+  },
+
+  "0_3": {
+    expected: "Hello",
+    required: [
+      "print(",
+      "Hello"
+    ]
+  },
+
+  "1_0": {
+    expected: "10",
+    required: [
+      "age",
+      "10",
+      "print(age)"
+    ]
+  },
+
+  "1_1": {
+    expected: "20",
+    required: [
+      "points = 5",
+      "points = 20",
+      "print(points)"
+    ]
+  },
+
+  "1_2": {
+    expected: "Hello World",
+    required: [
+      "word1",
+      "Hello",
+      "word2",
+      "World",
+      "print("
+    ]
+  },
+
+  "1_3": {
+    expected: "Ali",
+    required: [
+      "student_name",
+      "Ali",
+      "print(student_name)"
+    ]
+  },
+
+  "2_0": {
+    expected: "60\n60",
+    required: [
+      "print(25 + 35)",
+      "print(100 - 40)"
+    ]
+  },
+
+  "2_1": {
+    expected: "56\n25.0",
+    required: [
+      "print(8 * 7)",
+      "print(50 / 2)"
+    ]
+  },
+
+  "2_2": {
+    expected: "3",
+    required: [
+      "print(15 % 4)"
+    ]
+  },
+
+  "2_3": {
+    expected: "30\n20",
+    required: [
+      "print((10 + 5) * 2)",
+      "print(10 + (5 * 2))"
+    ]
+  },
+
+  "3_0": {
+    expected: "Correct",
+    required: [
+      "if 20 > 15:",
+      'print("Correct")'
+    ]
+  },
+
+  "3_1": {
+    expected: "Small",
+    required: [
+      "if 3 > 5:",
+      "else:",
+      'print("Small")'
+    ]
+  },
+
+  "3_2": {
+    expected: "Pass",
+    required: [
+      "score = 60",
+      "if score >= 60:",
+      'print("Pass")'
+    ]
+  },
+
+  "3_3": {
+    expected: "Teen",
+    required: [
+      "15 > 10 and 15 < 20",
+      'print("Teen")'
+    ]
+  },
+
+  "4_0": {
+    expected: "مرحبا\nمرحبا\nمرحبا\nمرحبا\nمرحبا",
+    required: [
+      "for",
+      "range(5)",
+      'print("مرحبا")'
+    ]
+  },
+
+  "4_1": {
+    expected: "Loop\nLoop\nLoop",
+    required: [
+      "while count <= 3:",
+      "count += 1",
+      'print("Loop")'
+    ]
+  },
+
+  "4_2": {
+    expected: "Stop",
+    required: [
+      "for i in range(10):",
+      "if i == 4:",
+      "break"
+    ]
+  },
+
+  "4_3": {
+    expected: "1\n2\n4\n5",
+    required: [
+      "for i in range(1, 6):",
+      "if i == 3:",
+      "continue"
+    ]
+  },
+
+  "5_0": {
+    expected: "['Red', 'Green', 'Blue']",
+    required: [
+      'colors = ["Red", "Green", "Blue"]'
+    ]
+  },
+
+  "5_1": {
+    expected: "BMW",
+    required: [
+      'cars = ["BMW", "Audi"]',
+      "print(cars[0])"
+    ]
+  },
+
+  "5_2": {
+    expected: "['Apple', 'Banana']",
+    required: [
+      'fruits = ["Apple"]',
+      'fruits.append("Banana")'
+    ]
+  },
+
+  "5_3": {
+    expected: "3",
+    required: [
+      "grades = [80, 90, 85]",
+      "len(grades)"
+    ]
+  },
+
+  "6_0": {
+    expected: "Welcome",
+    required: [
+      "def greet():",
+      'print("Welcome")',
+      "greet()"
+    ]
+  },
+
+  "6_1": {
+    expected: "15",
+    required: [
+      "def add(a, b):",
+      "print(a + b)",
+      "add(5, 10)"
+    ]
+  },
+
+  "6_2": {
+    expected: "16",
+    required: [
+      "def square(x):",
+      "return x * x",
+      "print(square(4))"
+    ]
+  },
+
+  "6_3": {
+    expected: "Hello Ali",
+    required: [
+      "def welcome(name):",
+      'print("Hello", name)',
+      "welcome("
+    ]
+  },
+
+  "7_0": {
+    expected: "11",
+    required: [
+      'len("Programming")'
+    ]
+  },
+
+  "7_1": {
+    expected: "PYTHON",
+    required: [
+      ".upper()"
+    ]
+  },
+
+  "7_2": {
+    expected: "I love dogs",
+    required: [
+      'sentence = "I love cats"',
+      '.replace("cats", "dogs")'
+    ]
+  },
+
+  "7_3": {
+    expected: "['Hello', 'World']",
+    required: [
+      ".split()"
+    ]
+  },
+
+  "8_0": {
+    expected: "Error",
+    required: [
+      "try:",
+      "except:",
+      'print("Error")'
+    ]
+  },
+
+  "8_1": {
+    expected: "Cannot divide by zero",
+    required: [
+      "except ZeroDivisionError:",
+      'print("Cannot divide by zero")'
+    ]
+  },
+
+  "8_2": {
+    expected: "Invalid input",
+    required: [
+      "except ValueError:",
+      'print("Invalid input")'
+    ]
+  },
+
+  "8_3": {
+    expected: "Error handled",
+    required: [
+      "try:",
+      "except:",
+      'print("Error handled")'
+    ]
+  },
+
+  "9_0": {
+    expected: "{'name': 'Ali'}",
+    required: [
+      'student = {"name": "Ali"}'
+    ]
+  },
+
+  "9_1": {
+    expected: "15",
+    required: [
+      'student["age"]'
+    ]
+  },
+
+  "9_2": {
+    expected: "{'brand': 'BMW', 'color': 'Red'}",
+    required: [
+      'car["color"] = "Red"'
+    ]
+  },
+
+  "9_3": {
+    expected: "dict_keys(['name'])",
+    required: [
+      ".keys()"
+    ]
+  },
+
+  "10_0": {
+    expected: "5.0",
+    required: [
+      "import math",
+      "math.sqrt(25)"
+    ]
+  },
+
+  "10_1": {
+    expected: "3.141592653589793",
+    required: [
+      "math.pi"
+    ]
+  },
+
+  "10_2": {
+    expected: null,
+    randomRange: {
+      min: 1,
+      max: 10
+    },
+    required: [
+      "import random",
+      "random.randint(1, 10)"
+    ]
+  },
+
+  "10_3": {
+    expected: "6.0",
+    required: [
+      "from math import sqrt",
+      "sqrt(36)"
+    ]
+  },
+
+  "11_0": {
+    expected: "Game Started\nPlayer Ready",
+    required: [
+      'print("Game Started")',
+      'name = "Hero"',
+      "health = 100",
+      'print("Player Ready")'
+    ]
+  },
+
+  "11_1": {
+    expected: "Data Ready",
+    required: [
+      'inventory = ["Sword", "Shield"]',
+      'stats = {"name": "Hero", "level": 1}',
+      "xp = 50 * 2",
+      'print("Data Ready")'
+    ]
+  },
+
+  "11_2": {
+    expected: "Turn\nHealed\nTurn\nHealed",
+    required: [
+      "def heal():",
+      "for i in range(2):",
+      "if health > 0:",
+      "heal()"
+    ]
+  },
+
+  "11_3": {
+    expected: null,
+    randomRange: {
+      min: 1,
+      max: 6
+    },
+    required: [
+      "import random",
+      "try:",
+      "random.randint(1, 6)",
+      "except:"
+    ]
+  }
+
+});
+
+/*
+ * تطبيع ناتج Python قبل المقارنة.
+ */
+function normalizePythonOutput(value) {
+  return String(value || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim();
+}
+
+/*
+ * فحص وجود الأجزاء المطلوبة في الكود.
+ */
+function validatePythonChallengeSource(code, challenge) {
+  if (
+    !Array.isArray(challenge.required) ||
+    challenge.required.length === 0
+  ) {
+    return false;
+  }
+
+  return challenge.required.every(part =>
+    code.includes(part)
+  );
+}
+
+/*
+ * تشغيل كود التحدي على Judge0 من الخادم.
+ * لا نثق في ناتج يرسله المتصفح.
+ */
+async function executePythonChallenge(code) {
+  const baseUrl = JUDGE0_URL.value().replace(/\/+$/, "");
+
+  let submission;
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/submissions?base64_encoded=false&wait=false`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          source_code: code,
+          language_id: LANGUAGES.python,
+          stdin: "",
+          cpu_time_limit: 5,
+          wall_time_limit: 10,
+          memory_limit: 128000
+        }),
+        signal: AbortSignal.timeout(15000)
+      }
+    );
+
+    submission = await readJudge0Response(response);
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+
+    console.error(
+      "Python challenge submission failed:",
+      error
+    );
+
+    throw new HttpsError(
+      "unavailable",
+      "تعذر إرسال التحدي للتحقق منه."
+    );
+  }
+
+  if (!submission?.token) {
+    throw new HttpsError(
+      "internal",
+      "لم تُرجع خدمة التشغيل رقم التنفيذ."
+    );
+  }
+
+  let result = null;
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    await new Promise(resolve =>
+      setTimeout(resolve, 1200)
+    );
+
+    try {
+      const response = await fetch(
+        `${baseUrl}/submissions/${encodeURIComponent(
+          submission.token
+        )}?base64_encoded=false`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json"
+          },
+          signal: AbortSignal.timeout(10000)
+        }
+      );
+
+      result = await readJudge0Response(response);
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+
+      console.error(
+        "Python challenge polling failed:",
+        error
+      );
+
+      throw new HttpsError(
+        "unavailable",
+        "تعذر الحصول على نتيجة التحدي."
+      );
+    }
+
+    if (
+      result?.status?.id &&
+      result.status.id > 2
+    ) {
+      break;
+    }
+  }
+
+  if (
+    !result?.status ||
+    result.status.id <= 2
+  ) {
+    throw new HttpsError(
+      "deadline-exceeded",
+      "انتهى وقت انتظار تنفيذ التحدي."
+    );
+  }
+
+  return {
+    accepted: result.status.id === 3,
+    stdout: safeOutput(result.stdout),
+    stderr: safeOutput(result.stderr),
+    status: result.status.description || "Unknown"
+  };
+}
+
+/*
+ * التحقق من ناتج التحدي.
+ */
+function validatePythonChallengeOutput(output, challenge) {
+  const actual = normalizePythonOutput(output);
+
+  if (challenge.randomRange) {
+    const numericOutput = Number(actual);
+
+    return Number.isFinite(numericOutput)
+      && Number.isInteger(numericOutput)
+      && numericOutput >= challenge.randomRange.min
+      && numericOutput <= challenge.randomRange.max;
+  }
+
+  return actual === normalizePythonOutput(
+    challenge.expected
+  );
+}
+
+/*
+ * Callable:
+ * يتحقق من تحدي Python الحالي من جهة الخادم.
+ *
+ * لا يتم إنشاء إثبات المكافأة إلا بعد:
+ * 1. التأكد من تسجيل الدخول.
+ * 2. التأكد من وجود التحدي في المنهج المعتمد.
+ * 3. التأكد من أجزاء الكود المطلوبة.
+ * 4. تشغيل الكود على Judge0.
+ * 5. مطابقة الناتج المتوقع.
+ *
+ * chapter و lesson يبدأان من صفر.
+ */
+exports.verifyPythonChallenge = onCall(
+  {
+    region: "europe-west1",
+    timeoutSeconds: 45,
+    memory: "256MiB",
+    maxInstances: 5
+  },
+  async request => {
+    const uid = requireAuth(request);
+
+    const data = request.data || {};
+
+    const {
+      chapter,
+      lesson,
+      code
+    } = data;
+
+    if (
+      !Number.isInteger(chapter) ||
+      chapter < 0 ||
+      chapter >= 12
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "رقم الفصل غير صالح."
+      );
+    }
+
+    if (
+      !Number.isInteger(lesson) ||
+      lesson < 0 ||
+      lesson >= 4
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "رقم الدرس غير صالح."
+      );
+    }
+
+    if (
+      typeof code !== "string" ||
+      !code.trim() ||
+      code.length > 50000
+    ) {
+      throw new HttpsError(
+        "invalid-argument",
+        "الكود غير صالح أو يتجاوز الحد المسموح."
+      );
+    }
+
+    const challengeKey = `${chapter}_${lesson}`;
+
+    const challenge = PYTHON_CHALLENGES[challengeKey];
+
+    if (!challenge) {
+      throw new HttpsError(
+        "not-found",
+        "لم يتم العثور على هذا التحدي في المنهج."
+      );
+    }
+
+    if (
+      !validatePythonChallengeSource(
+        code,
+        challenge
+      )
+    ) {
+      return {
+        success: true,
+        correct: false,
+        message: "الكود لا يحتوي على جميع الأجزاء المطلوبة."
+      };
+    }
+
+    const execution = await executePythonChallenge(code);
+
+    if (!execution.accepted) {
+      return {
+        success: true,
+        correct: false,
+        message: "لم يتم تنفيذ الكود بنجاح.",
+        status: execution.status
+      };
+    }
+
+    const outputCorrect =
+      validatePythonChallengeOutput(
+        execution.stdout,
+        challenge
+      );
+
+    if (!outputCorrect) {
+      return {
+        success: true,
+        correct: false,
+        message: "ناتج الكود غير مطابق للناتج المطلوب.",
+        stdout: execution.stdout
+      };
+    }
+
+    const progressLessonId =
+      `python_${chapter}_${lesson}`;
+
+    const resultRef = db
+      .collection("users")
+      .doc(uid)
+      .collection("quizResults")
+      .doc(`lesson_${progressLessonId}`);
+
+    /*
+     * هذا الإثبات يُنشأ من الخادم فقط.
+     * Firestore Rules تمنع المتصفح من كتابة quizResults.
+     */
+    await resultRef.set({
+      verificationVersion: 1,
+      serverVerified: true,
+      passed: true,
+
+      uid,
+      lessonId: progressLessonId,
+
+      curriculumLessonId:
+        `python-${chapter + 1}-${lesson + 1}`,
+
+      language: "python",
+      chapter,
+      lesson,
+
+      verificationType: "python-challenge",
+
+      verifiedAt: FieldValue.serverTimestamp()
+    });
+
+    return {
+      success: true,
+      correct: true,
+      message: "تم التحقق من التحدي بنجاح.",
+      stdout: execution.stdout,
+      chapter,
+      lesson
+    };
   }
 );
