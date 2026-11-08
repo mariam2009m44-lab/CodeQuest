@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -152,10 +151,18 @@
     }
 
     .language-logo {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       object-fit: contain;
       flex-shrink: 0;
+      display: block;
+    }
+
+    .language-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.4;
     }
 
     .language-percent {
@@ -226,6 +233,11 @@
       .card {
         padding: 18px;
       }
+
+      .language-logo {
+        width: 34px;
+        height: 34px;
+      }
     }
   </style>
 </head>
@@ -281,12 +293,13 @@
           <div class="language-heading">
             <h3 class="language-title">
               <img
-                id="pythonLogo"
                 class="language-logo"
                 src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"
-                alt="Python"
+                alt="Python Logo"
+                loading="eager"
+                onerror="this.style.display='none'"
               >
-              Python
+              <span class="language-name">Python</span>
             </h3>
 
             <span class="language-percent" id="pythonPercent">0%</span>
@@ -297,8 +310,8 @@
           </div>
 
           <div class="language-details">
-            <span id="pythonLessons">0 من 48 درسًا</span>
-            <span id="pythonExam">الامتحان النهائي: غير مجتاز</span>
+            <span id="pythonLessons">0 من 24 درسًا</span>
+            <span id="pythonExam">الامتحان النهائي: غير متاح حاليًا</span>
           </div>
         </div>
 
@@ -306,8 +319,14 @@
         <div class="language-card">
           <div class="language-heading">
             <h3 class="language-title">
-              <span style="font-size:28px">🟨</span>
-              JavaScript
+              <img
+                class="language-logo"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
+                alt="JavaScript Logo"
+                loading="eager"
+                onerror="this.style.display='none'"
+              >
+              <span class="language-name">JavaScript</span>
             </h3>
 
             <span class="language-percent" id="javascriptPercent">0%</span>
@@ -327,8 +346,14 @@
         <div class="language-card">
           <div class="language-heading">
             <h3 class="language-title">
-              <span style="font-size:28px">⚙️</span>
-              C++
+              <img
+                class="language-logo"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg"
+                alt="C++ Logo"
+                loading="eager"
+                onerror="this.style.display='none'"
+              >
+              <span class="language-name">C++</span>
             </h3>
 
             <span class="language-percent" id="cppPercent">0%</span>
@@ -350,29 +375,42 @@
 
         <div class="stats-list">
           <div class="stat-row">
-            <span><i class="ri-book-open-line"></i> الدروس المكتملة</span>
+            <span>
+              <i class="ri-book-open-line"></i>
+              الدروس المكتملة
+            </span>
             <span id="lessonsStat">—</span>
           </div>
 
           <div class="stat-row">
-            <span><i class="ri-flashlight-line"></i> نقاط الخبرة</span>
+            <span>
+              <i class="ri-flashlight-line"></i>
+              نقاط الخبرة
+            </span>
             <span id="xpStat">—</span>
           </div>
 
           <div class="stat-row">
-            <span><i class="ri-award-line"></i> الامتحان النهائي لبايثون</span>
-            <span id="finalExamStat">غير مجتاز</span>
+            <span>
+              <i class="ri-award-line"></i>
+              الامتحان النهائي لبايثون
+            </span>
+            <span id="finalExamStat">غير متاح حاليًا</span>
           </div>
         </div>
 
-        <p id="statusMessage" class="status-message" role="status" aria-live="polite">
+        <p
+          id="statusMessage"
+          class="status-message"
+          role="status"
+          aria-live="polite"
+        >
           جارٍ تحميل بيانات الحساب...
         </p>
       </article>
 
     </section>
   </main>
-
   <script type="module">
     import {
       requireUser,
@@ -388,25 +426,22 @@
 
     const $ = (id) => document.getElementById(id);
 
-    // نظام Python القديم:
-    // 12 فصلًا، وفي كل فصل 4 دروس تدريبية.
-    const PYTHON_CHAPTERS = 12;
-    const PYTHON_LESSONS_PER_CHAPTER = 4;
-    const PYTHON_TOTAL =
-      PYTHON_CHAPTERS * PYTHON_LESSONS_PER_CHAPTER;
-
-    // العلامات الخاصة بنظام Python القديم.
-    const PYTHON_CHAPTER_EXAM_MARKER = 104;
-    const PYTHON_FINAL_EXAM_CHAPTER = 12;
-    const PYTHON_FINAL_EXAM_MARKER = 105;
-
     const CURRICULUM_FILES = {
+      python: "./json/python_curriculum.json",
       javascript: "./json/js_curriculum.json",
       cpp: "./json/cpp_curriculum.json"
     };
 
+    const LANGUAGE_NAMES = {
+      python: "Python",
+      javascript: "JavaScript",
+      cpp: "C++"
+    };
+
     function showStatus(message, type = "") {
       const element = $("statusMessage");
+
+      if (!element) return;
 
       element.textContent = message;
       element.className = `status-message ${type}`;
@@ -418,126 +453,14 @@
         Math.min(100, Math.round(percent))
       );
 
-      $("overallProgress").textContent = `${safePercent}%`;
+      $("overallProgress").textContent =
+        `${safePercent}%`;
 
       $("progressGauge").style.background =
         `conic-gradient(
           var(--primary) ${safePercent}%,
           var(--border-soft) ${safePercent}%
         )`;
-    }
-
-    function setLanguageProgress(language, completed, total) {
-      const safeTotal = Math.max(0, Number(total) || 0);
-
-      const safeCompleted = Math.max(
-        0,
-        Math.min(
-          safeTotal,
-          Number(completed) || 0
-        )
-      );
-
-      const percent = safeTotal
-        ? Math.round((safeCompleted / safeTotal) * 100)
-        : 0;
-
-      $(`${language}Percent`).textContent = `${percent}%`;
-
-      $(`${language}Fill`).style.width = `${percent}%`;
-
-      $(`${language}Lessons`).textContent =
-        `${safeCompleted} من ${safeTotal} درسًا`;
-
-      return {
-        completed: safeCompleted,
-        total: safeTotal,
-        percent
-      };
-    }
-
-    function readPythonLocalProgress() {
-      try {
-        const saved = JSON.parse(
-          localStorage.getItem("cody_python_progress") || "{}"
-        );
-
-        return {
-          completed: Array.isArray(saved.completed)
-            ? saved.completed
-                .map(Number)
-                .filter(Number.isInteger)
-                .filter(chapter =>
-                  chapter >= 1 &&
-                  chapter <= PYTHON_CHAPTERS
-                )
-            : []
-        };
-      } catch (error) {
-        console.warn(
-          "تعذر قراءة تقدم Python المحلي:",
-          error
-        );
-
-        return { completed: [] };
-      }
-    }
-
-    function readLocalFinalExam(uid) {
-      try {
-        const saved = localStorage.getItem(
-          `codequest_python_exam_passed_${uid}`
-        );
-
-        if (!saved) return false;
-
-        const result = JSON.parse(saved);
-
-        return result?.passed === true;
-      } catch (error) {
-        console.warn(
-          "تعذر قراءة نتيجة الامتحان النهائي:",
-          error
-        );
-
-        return false;
-      }
-    }
-
-    function isRecentRecord(record) {
-      if (!record?.updatedAt) return false;
-
-      let date = null;
-
-      if (
-        typeof record.updatedAt.toDate === "function"
-      ) {
-        date = record.updatedAt.toDate();
-      } else if (
-        record.updatedAt instanceof Date
-      ) {
-        date = record.updatedAt;
-      } else if (
-        typeof record.updatedAt === "string"
-      ) {
-        date = new Date(record.updatedAt);
-      } else if (
-        typeof record.updatedAt.seconds === "number"
-      ) {
-        date = new Date(record.updatedAt.seconds * 1000);
-      }
-
-      if (
-        !date ||
-        Number.isNaN(date.getTime())
-      ) {
-        return false;
-      }
-
-      const sevenDaysAgo =
-        Date.now() - 7 * 24 * 60 * 60 * 1000;
-
-      return date.getTime() >= sevenDaysAgo;
     }
 
     async function readCurriculum(file) {
@@ -547,133 +470,248 @@
 
       if (!response.ok) {
         throw new Error(
-          `تعذر تحميل ملف المنهج: ${file}`
+          `تعذر تحميل ملف المنهج: ${file} (HTTP ${response.status})`
         );
       }
 
       const data = await response.json();
 
-      if (!Array.isArray(data.chapters)) {
+      if (
+        !data ||
+        !Array.isArray(data.chapters)
+      ) {
         throw new Error(
-          `تنسيق ملف المنهج غير صحيح: ${file}`
+          `بنية ملف المنهج غير صحيحة: ${file}`
         );
       }
 
       return data.chapters;
     }
 
-    // حساب تقدم Python وفق نظام الفصول القديم.
-    function calculatePython(records, localCompleted) {
-      const byChapter = new Map();
-
-      for (const record of records) {
-        if (record.completed !== true) continue;
-
-        const chapter = Number(record.chapter);
-        const lesson = Number(record.lesson);
-
-        if (
-          !Number.isInteger(chapter) ||
-          chapter < 0 ||
-          chapter >= PYTHON_CHAPTERS ||
-          !Number.isInteger(lesson)
-        ) {
-          continue;
+    function getCurriculumTotal(chapters) {
+      return chapters.reduce((total, chapter) => {
+        if (!Array.isArray(chapter?.lessons)) {
+          return total;
         }
 
-        if (!byChapter.has(chapter)) {
-          byChapter.set(chapter, new Set());
-        }
-
-        byChapter.get(chapter).add(lesson);
-      }
-
-      let completed = 0;
-
-      for (
-        let chapter = 0;
-        chapter < PYTHON_CHAPTERS;
-        chapter++
-      ) {
-        const savedLessons =
-          byChapter.get(chapter) || new Set();
-
-        const localChapterDone =
-          localCompleted.includes(chapter + 1);
-
-        // اجتياز امتحان الفصل يعني إكمال دروس الفصل الأربعة.
-        if (
-          savedLessons.has(PYTHON_CHAPTER_EXAM_MARKER) ||
-          localChapterDone
-        ) {
-          completed += PYTHON_LESSONS_PER_CHAPTER;
-          continue;
-        }
-
-        // احتساب الدروس التدريبية المسجلة فقط.
-        for (
-          let lesson = 0;
-          lesson < PYTHON_LESSONS_PER_CHAPTER;
-          lesson++
-        ) {
-          if (savedLessons.has(lesson)) {
-            completed++;
-          }
-        }
-      }
-
-      return Math.min(completed, PYTHON_TOTAL);
+        return total + chapter.lessons.length;
+      }, 0);
     }
 
-    // حساب تقدم JavaScript و C++ من ملفات المنهج.
-    function calculateCurriculumProgress(chapters, records) {
-      let total = 0;
-      let completed = 0;
-
+    function getCompletedLessonKeys(records, chapters) {
       const completedKeys = new Set();
 
-      for (const record of records) {
-        if (record.completed !== true) continue;
-
-        const chapter = Number(record.chapter);
-        const lesson = Number(record.lesson);
-
-        if (
-          Number.isInteger(chapter) &&
-          Number.isInteger(lesson) &&
-          chapter >= 0 &&
-          lesson >= 0
-        ) {
-          completedKeys.add(
-            `${chapter}:${lesson}`
-          );
-        }
+      if (!Array.isArray(records)) {
+        return completedKeys;
       }
 
-      chapters.forEach((chapter, chapterIndex) => {
-        const lessons = Array.isArray(chapter.lessons)
-          ? chapter.lessons
-          : [];
+      for (const record of records) {
+        if (
+          !record ||
+          record.completed !== true
+        ) {
+          continue;
+        }
 
-        total += lessons.length;
+        const chapterIndex = record.chapter;
+        const lessonIndex = record.lesson;
 
-        lessons.forEach((_, lessonIndex) => {
-          if (
-            completedKeys.has(
-              `${chapterIndex}:${lessonIndex}`
-            )
-          ) {
-            completed++;
-          }
-        });
-      });
+        if (
+          !Number.isSafeInteger(chapterIndex) ||
+          !Number.isSafeInteger(lessonIndex) ||
+          chapterIndex < 0 ||
+          lessonIndex < 0
+        ) {
+          continue;
+        }
+
+        const chapter = chapters[chapterIndex];
+
+        if (
+          !chapter ||
+          !Array.isArray(chapter.lessons) ||
+          lessonIndex >= chapter.lessons.length
+        ) {
+          continue;
+        }
+
+        completedKeys.add(
+          `${chapterIndex}:${lessonIndex}`
+        );
+      }
+
+      return completedKeys;
+    }
+
+    function calculateCurriculumProgress(
+      chapters,
+      records
+    ) {
+      const total = getCurriculumTotal(chapters);
+
+      const completedKeys = getCompletedLessonKeys(
+        records,
+        chapters
+      );
+
+      const completed = Math.min(
+        completedKeys.size,
+        total
+      );
+
+      const percent = total > 0
+        ? Math.round((completed / total) * 100)
+        : 0;
 
       return {
         completed,
-        total
+        total,
+        percent
       };
     }
 
+    function setLanguageProgress(language, result) {
+      const percentElement = $(`${language}Percent`);
+      const fillElement = $(`${language}Fill`);
+      const lessonsElement = $(`${language}Lessons`);
+
+      if (
+        !percentElement ||
+        !fillElement ||
+        !lessonsElement
+      ) {
+        throw new Error(
+          `عناصر واجهة ${LANGUAGE_NAMES[language]} غير مكتملة.`
+        );
+      }
+
+      percentElement.textContent =
+        `${result.percent}%`;
+
+      fillElement.style.width =
+        `${result.percent}%`;
+
+      lessonsElement.textContent =
+        `${result.completed} من ${result.total} درسًا`;
+    }
+
+    function getRecordDate(record) {
+      const value = record?.updatedAt;
+
+      if (!value) return null;
+
+      let date = null;
+
+      if (typeof value.toDate === "function") {
+        date = value.toDate();
+      } else if (value instanceof Date) {
+        date = value;
+      } else if (typeof value === "string") {
+        date = new Date(value);
+      } else if (
+        typeof value.seconds === "number"
+      ) {
+        date = new Date(value.seconds * 1000);
+      } else if (
+        typeof value._seconds === "number"
+      ) {
+        date = new Date(value._seconds * 1000);
+      }
+
+      if (
+        !(date instanceof Date) ||
+        Number.isNaN(date.getTime())
+      ) {
+        return null;
+      }
+
+      return date;
+    }
+
+    function countRecentActivity(records) {
+      const now = Date.now();
+
+      const sevenDaysAgo =
+        now - (7 * 24 * 60 * 60 * 1000);
+
+      return records.filter(record => {
+        if (record?.completed !== true) {
+          return false;
+        }
+
+        const date = getRecordDate(record);
+
+        if (!date) return false;
+
+        const timestamp = date.getTime();
+
+        return (
+          timestamp >= sevenDaysAgo &&
+          timestamp <= now
+        );
+      }).length;
+    }
+
+    function renderWeeklyActivity(records) {
+      const count = countRecentActivity(records);
+
+      $("weeklyActivity").textContent = count > 0
+        ? `تم تسجيل ${count} درسًا مكتملًا خلال آخر 7 أيام.`
+        : "لا توجد دروس مكتملة مسجلة خلال آخر 7 أيام.";
+    }
+
+    async function loadAccountXP(uid) {
+      const profileRef = doc(
+        db,
+        "users",
+        uid
+      );
+
+      const profileSnapshot = await getDoc(profileRef);
+
+      if (!profileSnapshot.exists()) {
+        throw new Error(
+          "ملف الحساب غير موجود في Firestore."
+        );
+      }
+
+      const profile = profileSnapshot.data();
+
+      const xp = Number(profile.xp);
+
+      if (
+        !Number.isFinite(xp) ||
+        xp < 0
+      ) {
+        throw new Error(
+          "قيمة نقاط الخبرة في الحساب غير صالحة."
+        );
+      }
+
+      return Math.floor(xp);
+    }
+
+    function renderPythonFinalExam() {
+      $("pythonExam").textContent =
+        "الامتحان النهائي: غير متاح حاليًا";
+
+      $("finalExamStat").textContent =
+        "غير متاح حاليًا";
+    }
+
+    function validateLanguageRecords(records, language) {
+      if (!Array.isArray(records)) {
+        throw new Error(
+          `بيانات تقدم ${LANGUAGE_NAMES[language]} غير صحيحة.`
+        );
+      }
+
+      return records.filter(record =>
+        record &&
+        record.language === language &&
+        record.completed === true
+      );
+    }
     async function loadProgress() {
       showStatus("جارٍ التحقق من تسجيل الدخول...");
 
@@ -686,67 +724,71 @@
       }
 
       showStatus(
-        "جارٍ قراءة تقدم المسارات من حسابك..."
+        "جارٍ تحميل ملفات المناهج والتقدم المحفوظ..."
       );
 
-      // قراءة التقدم من Firestore.
       const [
-        pythonRecords,
-        javascriptRecords,
-        cppRecords
+        pythonChapters,
+        javascriptChapters,
+        cppChapters,
+        pythonRawRecords,
+        javascriptRawRecords,
+        cppRawRecords
       ] = await Promise.all([
+        readCurriculum(CURRICULUM_FILES.python),
+        readCurriculum(CURRICULUM_FILES.javascript),
+        readCurriculum(CURRICULUM_FILES.cpp),
+
         getLessonProgress("python"),
         getLessonProgress("javascript"),
         getLessonProgress("cpp")
       ]);
 
-      // Python.
-      const localPython = readPythonLocalProgress();
-
-      const pythonCompleted = calculatePython(
-        pythonRecords,
-        localPython.completed
+      const pythonRecords = validateLanguageRecords(
+        pythonRawRecords,
+        "python"
       );
 
-      const pythonResult = setLanguageProgress(
-        "python",
-        pythonCompleted,
-        PYTHON_TOTAL
+      const javascriptRecords = validateLanguageRecords(
+        javascriptRawRecords,
+        "javascript"
       );
 
-      // JavaScript.
-      const javascriptChapters = await readCurriculum(
-        CURRICULUM_FILES.javascript
+      const cppRecords = validateLanguageRecords(
+        cppRawRecords,
+        "cpp"
       );
 
-      const javascriptData = calculateCurriculumProgress(
+      const pythonResult = calculateCurriculumProgress(
+        pythonChapters,
+        pythonRecords
+      );
+
+      const javascriptResult = calculateCurriculumProgress(
         javascriptChapters,
         javascriptRecords
       );
 
-      const javascriptResult = setLanguageProgress(
-        "javascript",
-        javascriptData.completed,
-        javascriptData.total
-      );
-
-      // C++.
-      const cppChapters = await readCurriculum(
-        CURRICULUM_FILES.cpp
-      );
-
-      const cppData = calculateCurriculumProgress(
+      const cppResult = calculateCurriculumProgress(
         cppChapters,
         cppRecords
       );
 
-      const cppResult = setLanguageProgress(
-        "cpp",
-        cppData.completed,
-        cppData.total
+      setLanguageProgress(
+        "python",
+        pythonResult
       );
 
-      // التقدم الكلي.
+      setLanguageProgress(
+        "javascript",
+        javascriptResult
+      );
+
+      setLanguageProgress(
+        "cpp",
+        cppResult
+      );
+
       const totalCompleted =
         pythonResult.completed +
         javascriptResult.completed +
@@ -757,7 +799,7 @@
         javascriptResult.total +
         cppResult.total;
 
-      const overallPercent = totalLessons
+      const overallPercent = totalLessons > 0
         ? (totalCompleted / totalLessons) * 100
         : 0;
 
@@ -769,97 +811,64 @@
       $("lessonsStat").textContent =
         `${totalCompleted} من ${totalLessons}`;
 
-      // نتيجة امتحان Python النهائي.
-      const finalExamRecord = pythonRecords.some(record =>
-        Number(record.chapter) === PYTHON_FINAL_EXAM_CHAPTER &&
-        Number(record.lesson) === PYTHON_FINAL_EXAM_MARKER &&
-        record.completed === true
-      );
-
-      const localFinalExam = readLocalFinalExam(user.uid);
-
-      const finalExamPassed =
-        finalExamRecord || localFinalExam;
-
-      $("pythonExam").textContent = finalExamPassed
-        ? "الامتحان النهائي: تم الاجتياز"
-        : "الامتحان النهائي: غير مجتاز";
-
-      $("finalExamStat").textContent = finalExamPassed
-        ? "تم الاجتياز"
-        : "غير مجتاز";
-
-      // نشاط آخر سبعة أيام.
-      const allRecords = [
+      renderWeeklyActivity([
         ...pythonRecords,
         ...javascriptRecords,
         ...cppRecords
-      ];
+      ]);
 
-      const recentCount = allRecords.filter(
-        isRecentRecord
-      ).length;
+      renderPythonFinalExam();
 
-      $("weeklyActivity").textContent = recentCount
-        ? `تم تسجيل ${recentCount} عملية إكمال خلال آخر 7 أيام.`
-        : "لا توجد عمليات إكمال مسجلة خلال آخر 7 أيام.";
-
-      // نقاط الخبرة.
-      let xp = Number(
-        localStorage.getItem("cody_xp") || 0
-      );
-
-      if (!Number.isFinite(xp) || xp < 0) {
-        xp = 0;
-      }
+      let xpLoaded = false;
 
       try {
-        const profileSnapshot = await getDoc(
-          doc(db, "users", user.uid)
+        const xp = await loadAccountXP(user.uid);
+
+        $("xpStat").textContent =
+          xp.toLocaleString("en-US");
+
+        xpLoaded = true;
+
+      } catch (error) {
+        console.error(
+          "تعذر تحميل نقاط الخبرة:",
+          error
         );
 
-        if (profileSnapshot.exists()) {
-          const profile = profileSnapshot.data();
+        $("xpStat").textContent =
+          "تعذر التحميل";
+      }
 
-          const cloudXP = Number(profile.xp);
-
-          if (
-            Number.isFinite(cloudXP) &&
-            cloudXP >= 0
-          ) {
-            xp = Math.max(xp, cloudXP);
-          }
-        }
-      } catch (error) {
-        console.warn(
-          "تعذر قراءة نقاط الخبرة من الحساب:",
-          error
+      if (xpLoaded) {
+        showStatus(
+          "تم تحميل تقدم Python وJavaScript وC++ ونقاط الخبرة من حسابك.",
+          "success"
+        );
+      } else {
+        showStatus(
+          "تم تحميل تقدم المسارات، لكن تعذر قراءة نقاط الخبرة من الحساب.",
+          "error"
         );
       }
 
-      $("xpStat").textContent =
-        String(Math.floor(xp));
-
-      showStatus(
-             "تم تحميل تقدم Python وJavaScript وC++ من حسابك.",
-        "success"
-      );
-
-      console.log("CodeQuest progress:", {
+      console.log("CodeQuest Progress:", {
         userId: user.uid,
+
         python: pythonResult,
         javascript: javascriptResult,
         cpp: cppResult,
+
         totalCompleted,
         totalLessons,
-        finalExamPassed
+
+        overallPercent: Math.round(overallPercent),
+        xpLoaded
       });
     }
 
-    // بدء تحميل البيانات.
     loadProgress().catch(error => {
       console.error(
-        "Progress page error:",
+        "CodeQuest Progress Error:",
         error
       );
 
@@ -867,9 +876,10 @@
         error?.code === "permission-denied"
       ) {
         showStatus(
-          "لا توجد صلاحية لقراءة تقدم الحساب. راجع قواعد Firestore.",
+          "لا توجد صلاحية لقراءة بيانات الحساب. راجع قواعد Firestore.",
           "error"
         );
+
       } else if (
         error?.code === "unauthenticated"
       ) {
@@ -877,6 +887,7 @@
           "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى.",
           "error"
         );
+
       } else {
         showStatus(
           error?.message ||
