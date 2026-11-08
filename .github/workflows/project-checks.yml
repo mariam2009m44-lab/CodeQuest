@@ -48,6 +48,13 @@ jobs:
         run: |
           node --input-type=module --check < js/auth.js
           node --input-type=module --check < js/code-runner.js
+          node --input-type=module --check < js/lecture.js
+
+      - name: Validate embedded editor modules
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; for (const file of ["playground.html", "java-lessons.html"]) { const html = fs.readFileSync(file, "utf8"); const open = "<script type=\"module\">"; const close = "</script>"; const start = html.indexOf(open); const end = html.indexOf(close, start); if (start < 0 || end < 0) throw new Error("Module script missing in " + file); fs.writeFileSync("/tmp/" + file.replace(".html", ".mjs"), html.slice(start + open.length, end)); }'
+          node --check /tmp/playground.mjs
+          node --check /tmp/java-lessons.mjs
 
       - name: Validate Java lesson page
         run: |
