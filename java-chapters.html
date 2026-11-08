@@ -56,8 +56,14 @@
     <p style="color: var(--muted);">ابدأ بالفصول الثمانية المتاحة حاليًا، وسيظهر الاختبار النهائي بعد استكمال المنهج.</p>
   </div>
   <div class="map-container" id="mapContainer"></div>
-  <script>
+  <script type="module">
     "use strict";
+
+    import {
+      requireUser,
+      getLessonProgress
+    } from "./js/auth.js";
+
     // الفصول المتاحة حاليًا هي الفصول التي لها دروس فعلية في java-lessons.html.
     const chapters = [
       { id: 1, title: "الطباعة" },
@@ -123,7 +129,50 @@
       fragment.appendChild(examNode);
       container.replaceChildren(fragment);
     }
-    renderXp(); renderMap();
+    async function initializeChapterMap() {
+      try {
+        await requireUser();
+        const records = await getLessonProgress("java");
+        const saved = JSON.parse(
+          localStorage.getItem(PROGRESS_KEY) || "{}"
+        );
+
+        for (const record of records) {
+          if (
+            record?.completed !== true ||
+            !Number.isSafeInteger(record.chapter) ||
+            !Number.isSafeInteger(record.lesson) ||
+            record.chapter < 0 ||
+            record.chapter >= chapters.length ||
+            record.lesson < 0 ||
+            record.lesson > 1
+          ) {
+            continue;
+          }
+
+          const lessonId =
+            `java-${record.chapter + 1}-${record.lesson + 1}`;
+
+          saved[lessonId] = {
+            ...(saved[lessonId] || {}),
+            completed: true
+          };
+        }
+
+        localStorage.setItem(
+          PROGRESS_KEY,
+          JSON.stringify(saved)
+        );
+      } catch (error) {
+        // Keep the locally saved map usable if the cloud is temporarily unavailable.
+        console.warn("تعذر مزامنة خريطة Java من الحساب:", error);
+      }
+
+      renderXp();
+      renderMap();
+    }
+
+    initializeChapterMap();
   </script>
 <script type="module" src="js/route-guard.js"></script>
 <script type="module" src="js/reminders.js"></script>
