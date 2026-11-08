@@ -870,6 +870,13 @@ async function checkQuizAnswer() {
     ) {
       message =
         "خدمة التحقق غير متاحة حاليًا. حاول مرة أخرى.";
+
+    } else if (
+      error?.code === "functions/internal" ||
+      message.trim().toLowerCase() === "internal"
+    ) {
+      message =
+        "حدث خطأ داخلي أثناء التحقق من الإجابة. لم يتم تسجيل الدرس؛ حاول مرة أخرى بعد قليل.";
     }
 
     setFeedback(
@@ -895,10 +902,19 @@ async function checkQuizAnswer() {
 
 function showHint() {
   const hintBox = byId("hintBox");
+  const hintButton = byId("hintBtn");
 
-  if (hintBox) {
-    hintBox.hidden = !hintBox.hidden;
+  if (!hintBox) return;
+
+  hintBox.hidden = !hintBox.hidden;
+
+  if (hintButton) {
+    hintButton.innerHTML = hintBox.hidden
+      ? '<i class="ri-lightbulb-line"></i> أظهر التلميح'
+      : '<i class="ri-eye-off-line"></i> إخفاء التلميح';
   }
+
+  // لا نمسح نتيجة تشغيل الكود عند إظهار التلميح أو إخفائه.
 }
 
 function appendOutput(text, type = "normal") {
@@ -915,16 +931,62 @@ function appendOutput(text, type = "normal") {
   output.scrollTop = output.scrollHeight;
 }
 
+function checkExpectedOutput(actualOutput) {
+  const feedback = byId("codeFeedback");
+  const expected = currentLesson?.expected_output;
+
+  if (!feedback || typeof expected !== "string") return;
+
+  const actual = String(actualOutput ?? "").trim();
+  const target = expected.trim();
+
+  if (actual === target) {
+    setFeedback(
+      feedback,
+      "ممتاز! الناتج صحيح تمامًا. فهمت المقارنة بشكل صحيح ⭐",
+      "success"
+    );
+  } else {
+    setFeedback(
+      feedback,
+      `الكود اشتغل، لكن الناتج مختلف عن المطلوب. المتوقع: ${target}. راجع علامة المقارنة وحاول مرة أخرى.`,
+      "info"
+    );
+  }
+}
+
 function clearOutput() {
   const output = byId("terminalOutput");
 
   if (output) {
     output.replaceChildren();
   }
+
+  setFeedback(byId("codeFeedback"), "");
 }
 
-function runJavaScript(code) {
-  return runInSandbox("javascript", code);
+async function runJavaScript(code) {
+  const result = await runCodeOnServer(
+    "javascript",
+    code,
+    byId("stdinInput")?.value || ""
+  );
+
+  const diagnostics = [
+    result.compileOutput,
+    result.stderr,
+    result.message
+  ].filter(Boolean).join("\n").trim();
+
+  if (!result.ok) {
+    throw new Error(
+      diagnostics ||
+      result.status ||
+      "لم ينجح تشغيل JavaScript. راجع الكود وحاول مرة أخرى."
+    );
+  }
+
+  return result.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
 }
 
 function runPython(code) {
@@ -1241,6 +1303,10 @@ async function runCode() {
     }
 
     appendOutput(result, "success");
+
+    if (languageKey === "javascript") {
+      checkExpectedOutput(result);
+    }
 
     setStatus(
       "تم تشغيل الكود.",
