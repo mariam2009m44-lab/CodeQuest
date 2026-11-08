@@ -41,6 +41,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check Firebase Functions syntax
+        run: node --check functions/index.js
+
+      - name: Check frontend module syntax
+        run: |
+          node --input-type=module --check < js/auth.js
+          node --input-type=module --check < js/code-runner.js
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
