@@ -286,8 +286,15 @@
     }
 
     function renderXp() {
-      document.getElementById("xpDisplay").textContent =
-        localStorage.getItem(XP_KEY) || "0";
+      const sharedXP = localStorage.getItem(XP_KEY);
+      const legacyXP = localStorage.getItem("cody_python_xp");
+      const value = sharedXP ?? legacyXP ?? "0";
+
+      if (sharedXP === null && legacyXP !== null) {
+        localStorage.setItem(XP_KEY, legacyXP);
+      }
+
+      document.getElementById("xpDisplay").textContent = value;
     }
 
     function buildChapterUrl(chapterId) {
