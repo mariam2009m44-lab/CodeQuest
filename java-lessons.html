@@ -1690,8 +1690,10 @@
       const previousXP = getXP();
       const previousStars = accountStars;
 
+      let cloudSaved = true;
+
       try {
-        // احفظ التقدم في حساب المستخدم أولًا؛ لا تمنح XP إذا فشل الحفظ.
+        // احفظ التقدم في حساب المستخدم أولًا.
         await saveLessonProgress({
           language: "java",
           chapter,
@@ -1699,10 +1701,34 @@
           completed: true
         });
       } catch (error) {
-        console.error("Java progress save failed:", error);
+        console.error("Java progress cloud save failed:", error);
+        const errorCode = String(error?.code || "").replace(/^firestore\\//, "");
+
+        if (errorCode !== "permission-denied") {
+          showNotice(
+            "تعذر حفظ تقدم Java في حسابك. تحقق من الاتصال وحاول مرة أخرى.",
+            "error"
+          );
+          return;
+        }
+
+        // توافق مؤقت: قواعد Firestore المنشورة قديمة ولا تسمح بلغة Java بعد.
+        cloudSaved = false;
+      }
+
+      if (!cloudSaved) {
+        progress[lesson.id] = {
+          ...(progress[lesson.id] || {}),
+          completed: true,
+          completedAt: new Date().toISOString(),
+          localOnly: true
+        };
+        saveProgress(progress);
+        updateStats();
+        updateNavigationButtons();
         showNotice(
-          "تعذر حفظ تقدم Java في حسابك. تحقق من الاتصال وحاول مرة أخرى؛ لم نضف نقاطًا.",
-          "error"
+          "تم حفظ الدرس على هذا الجهاز. مزامنة الحساب ومكافآت XP والنجوم ستعمل بعد نشر تحديثات Firebase.",
+          "info"
         );
         return;
       }
