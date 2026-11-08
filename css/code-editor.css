@@ -1,0 +1,166 @@
+/*
+ * Shared responsive code-editor layer for Cody Academy.
+ * Keeps source code LTR while the surrounding learning UI remains RTL.
+ */
+
+.CodeMirror,
+.cm-s-material-darker.CodeMirror,
+.cm-s-dracula.CodeMirror {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: clamp(280px, 48dvh, 540px) !important;
+  direction: ltr;
+  text-align: left;
+  font-family: "Fira Code", "Cascadia Code", Consolas, Monaco, monospace;
+  font-size: clamp(13px, 1.15vw, 15px);
+  line-height: 1.7;
+  font-variant-ligatures: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+.CodeMirror-scroll {
+  min-height: 0;
+  max-width: 100%;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  touch-action: pan-x pan-y;
+}
+
+.CodeMirror-gutters {
+  min-width: 38px;
+}
+
+.CodeMirror-linenumber {
+  min-width: 28px;
+  padding: 0 8px 0 5px;
+}
+
+.CodeMirror pre,
+.CodeMirror-line,
+.CodeMirror-line-like {
+  font-family: inherit;
+  line-height: inherit;
+}
+
+.CodeMirror textarea,
+.CodeMirror input {
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+textarea.code-fallback,
+textarea.editor,
+#codeEditor {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 280px;
+  direction: ltr;
+  text-align: left;
+  tab-size: 4;
+  white-space: pre;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  font-family: "Fira Code", "Cascadia Code", Consolas, Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.editor-toolbar,
+.editor-header-actions,
+.editor-actions,
+.toolbar {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.editor-toolbar button,
+.editor-header-actions button,
+.editor-actions button,
+.toolbar button,
+.toolbar select {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.output-area,
+.output-body,
+.terminal,
+.output {
+  min-width: 0;
+  max-width: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 800px) {
+  .CodeMirror,
+  .cm-s-material-darker.CodeMirror,
+  .cm-s-dracula.CodeMirror {
+    height: clamp(250px, 43dvh, 430px) !important;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  textarea.code-fallback,
+  textarea.editor,
+  #codeEditor {
+    min-height: 250px;
+    font-size: 16px;
+  }
+
+  .CodeMirror textarea,
+  .CodeMirror input {
+    font-size: 16px !important;
+  }
+
+  .CodeMirror-gutters {
+    min-width: 34px;
+  }
+
+  .CodeMirror-linenumber {
+    min-width: 24px;
+    padding-inline: 5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .CodeMirror,
+  .cm-s-material-darker.CodeMirror,
+  .cm-s-dracula.CodeMirror {
+    height: clamp(230px, 40dvh, 360px) !important;
+    font-size: 13px;
+  }
+
+  .editor-toolbar button,
+  .editor-header-actions button,
+  .editor-actions button,
+  .toolbar button {
+    min-height: 44px;
+    padding-inline: 10px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .CodeMirror,
+  .cm-s-material-darker.CodeMirror,
+  .cm-s-dracula.CodeMirror {
+    height: 58dvh !important;
+    min-height: 190px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .CodeMirror,
+  .CodeMirror-scroll {
+    scroll-behavior: auto !important;
+  }
+}
