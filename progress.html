@@ -249,7 +249,7 @@
       <div>
         <p class="muted">مساحة التعلم · Cody Academy</p>
         <h1>تقدمك في التعلم</h1>
-        <p class="muted">تابع الدروس التي أنجزتها في كل مسار.</p>
+        <p class="muted">تابع الدروس والامتحانات التي أنجزتها في كل مسار.</p>
       </div>
 
       <a href="dashboard.html" class="btn-secondary">
@@ -310,8 +310,8 @@
           </div>
 
           <div class="language-details">
-            <span id="pythonLessons">0 من 24 درسًا</span>
-            <span id="pythonExam">الامتحان النهائي: غير متاح حاليًا</span>
+            <span id="pythonLessons">جارٍ التحميل...</span>
+            <span id="pythonExam">امتحانات الفصول: جارٍ التحميل...</span>
           </div>
         </div>
 
@@ -393,9 +393,9 @@
           <div class="stat-row">
             <span>
               <i class="ri-award-line"></i>
-              الامتحان النهائي لبايثون
+              امتحانات فصول بايثون المجتازة
             </span>
-            <span id="finalExamStat">غير متاح حاليًا</span>
+            <span id="finalExamStat">جارٍ التحميل...</span>
           </div>
         </div>
 
@@ -437,6 +437,11 @@
       javascript: "JavaScript",
       cpp: "C++"
     };
+
+    // في صفحة Python، الرقم 104 مخصص لتسجيل اجتياز امتحان الفصل.
+    // لا يُحسب هذا الرقم ضمن الدروس العادية.
+    const PYTHON_EXAM_MARKER = 104;
+    const PYTHON_CHAPTERS_COUNT = 12;
 
     function showStatus(message, type = "") {
       const element = $("statusMessage");
@@ -595,6 +600,63 @@
         `${result.completed} من ${result.total} درسًا`;
     }
 
+    /*
+     * استخراج امتحانات الفصول المجتازة من سجلات Firestore.
+     * chapter يبدأ من صفر في قاعدة البيانات:
+     * 0 = الفصل الأول، و11 = الفصل الثاني عشر.
+     */
+    function getPassedPythonExamChapters(records) {
+      const passedChapters = new Set();
+
+      if (!Array.isArray(records)) {
+        return passedChapters;
+      }
+
+      for (const record of records) {
+        if (
+          !record ||
+          record.language !== "python" ||
+          record.completed !== true ||
+          record.lesson !== PYTHON_EXAM_MARKER
+        ) {
+          continue;
+        }
+
+        const chapterIndex = record.chapter;
+
+        if (
+          !Number.isSafeInteger(chapterIndex) ||
+          chapterIndex < 0 ||
+          chapterIndex >= PYTHON_CHAPTERS_COUNT
+        ) {
+          continue;
+        }
+
+        passedChapters.add(chapterIndex);
+      }
+
+      return passedChapters;
+    }
+
+    function renderPythonExamProgress(records) {
+      const passedChapters =
+        getPassedPythonExamChapters(records);
+
+      const passedCount = passedChapters.size;
+
+      $("pythonExam").textContent =
+        `امتحانات الفصول المجتازة: ${passedCount} من ${PYTHON_CHAPTERS_COUNT}`;
+
+      $("finalExamStat").textContent =
+        `${passedCount} من ${PYTHON_CHAPTERS_COUNT}`;
+
+      return {
+        passed: passedCount,
+        total: PYTHON_CHAPTERS_COUNT,
+        chapters: [...passedChapters].sort((a, b) => a - b)
+      };
+    }
+
     function getRecordDate(record) {
       const value = record?.updatedAt;
 
@@ -628,6 +690,10 @@
       return date;
     }
 
+    /*
+     * نستبعد سجل الامتحان 104 من نشاط الدروس.
+     * لأن اجتياز الامتحان ليس درسًا عاديًا.
+     */
     function countRecentActivity(records) {
       const now = Date.now();
 
@@ -635,7 +701,11 @@
         now - (7 * 24 * 60 * 60 * 1000);
 
       return records.filter(record => {
-        if (record?.completed !== true) {
+        if (
+          !record ||
+          record.completed !== true ||
+          record.lesson === PYTHON_EXAM_MARKER
+        ) {
           return false;
         }
 
@@ -689,14 +759,6 @@
       }
 
       return Math.floor(xp);
-    }
-
-    function renderPythonFinalExam() {
-      $("pythonExam").textContent =
-        "الامتحان النهائي: غير متاح حاليًا";
-
-      $("finalExamStat").textContent =
-        "غير متاح حاليًا";
     }
 
     function validateLanguageRecords(records, language) {
@@ -759,6 +821,8 @@
         "cpp"
       );
 
+      // حساب الدروس العادية فقط.
+      // سجل الامتحان 104 لن يدخل في عدد الدروس لأنه خارج نطاق المنهج.
       const pythonResult = calculateCurriculumProgress(
         pythonChapters,
         pythonRecords
@@ -789,6 +853,10 @@
         cppResult
       );
 
+      // عرض امتحانات الفصول المجتازة بشكل منفصل.
+      const pythonExamResult =
+        renderPythonExamProgress(pythonRecords);
+
       const totalCompleted =
         pythonResult.completed +
         javascriptResult.completed +
@@ -811,13 +879,12 @@
       $("lessonsStat").textContent =
         `${totalCompleted} من ${totalLessons}`;
 
+      // الامتحانات لا تُحسب كدروس في النشاط الأسبوعي.
       renderWeeklyActivity([
         ...pythonRecords,
         ...javascriptRecords,
         ...cppRecords
       ]);
-
-      renderPythonFinalExam();
 
       let xpLoaded = false;
 
@@ -841,12 +908,12 @@
 
       if (xpLoaded) {
         showStatus(
-          "تم تحميل تقدم Python وJavaScript وC++ ونقاط الخبرة من حسابك.",
+          "تم تحميل تقدم المسارات وامتحانات بايثون ونقاط الخبرة من حسابك.",
           "success"
         );
       } else {
         showStatus(
-          "تم تحميل تقدم المسارات، لكن تعذر قراءة نقاط الخبرة من الحساب.",
+          "تم تحميل تقدم المسارات والامتحانات، لكن تعذر قراءة نقاط الخبرة من الحساب.",
           "error"
         );
       }
@@ -857,6 +924,8 @@
         python: pythonResult,
         javascript: javascriptResult,
         cpp: cppResult,
+
+        pythonExams: pythonExamResult,
 
         totalCompleted,
         totalLessons,
