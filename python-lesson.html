@@ -912,6 +912,42 @@
         margin: auto;
       }
     }
+
+    /* Premium learning experience */
+    :root { --bg:#070b16; --surface:#101a2c; --surface-2:#17253d; --border:rgba(148,163,184,.19); --text:#f5f7ff; --muted:#a8b5cc; --purple:#8b6cff; --cyan:#4bd5f2; }
+    body { background:radial-gradient(ellipse at 8% 0%,rgba(139,108,255,.17),transparent 34%),radial-gradient(ellipse at 92% 22%,rgba(75,213,242,.10),transparent 30%),#070b16; letter-spacing:.05px; }
+    .sidebar { background:linear-gradient(180deg,rgba(16,26,44,.99),rgba(9,15,28,.99)); border-left-color:rgba(139,108,255,.22); box-shadow:-16px 0 48px rgba(0,0,0,.16); }
+    .chapter-item { border-radius:16px; background:rgba(17,28,47,.88); transition:border-color .2s,transform .2s,background .2s; }
+    .chapter-item:hover { border-color:rgba(75,213,242,.45); transform:translateY(-1px); }
+    .chapter-title { padding:15px; }
+    .chat-container { gap:22px; padding:clamp(18px,3vw,34px); scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:rgba(139,108,255,.55) transparent; }
+    .message-row { gap:12px; align-items:flex-end; }
+    .avatar { width:46px; height:46px; border:2px solid rgba(255,255,255,.14); box-shadow:0 5px 18px rgba(0,0,0,.22); background:linear-gradient(145deg,#8b6cff,#4bd5f2); }
+    .message-row.cody .avatar { background:linear-gradient(145deg,#233e60,#12617a); border-color:rgba(75,213,242,.45); }
+    .avatar img,.avatar svg { display:block; width:100%; height:100%; object-fit:contain; }
+    .avatar-fallback { display:grid; width:100%; height:100%; place-items:center; color:white; font-size:1.2rem; }
+    .bubble { max-width:min(820px,88%); padding:17px 20px; border:1px solid rgba(148,163,184,.17); border-radius:20px 20px 5px 20px; background:linear-gradient(145deg,rgba(19,31,52,.98),rgba(14,23,40,.98)); box-shadow:0 10px 28px rgba(0,0,0,.12); font-size:1rem; line-height:2; }
+    .message-row.student .bubble { border:1px solid rgba(139,108,255,.3); border-radius:20px 20px 20px 5px; background:linear-gradient(135deg,#5140a0,#3b347a); }
+    .bubble code { margin:2px 3px; padding:4px 9px; border:1px solid rgba(75,213,242,.16); border-radius:8px; background:#080e1b; color:#72e1f6; direction:ltr; unicode-bidi:isolate; }
+    .bubble pre { max-width:100%; margin:14px 0; padding:15px; overflow-x:auto; border:1px solid rgba(75,213,242,.22); border-radius:13px; background:#070d18; color:#d7f5ff; direction:ltr; text-align:left; font:500 .9rem/1.75 "Fira Code",monospace; white-space:pre; }
+    .bubble ul,.bubble ol { padding-inline-start:1.5rem; margin:10px 0; }
+    .bubble li { margin:5px 0; }
+    .choices-container { width:min(100% - 58px,620px); gap:11px; }
+    .choice-btn,.exam-option { min-height:52px; padding:13px 17px; border:1px solid rgba(148,163,184,.2); border-radius:14px; background:linear-gradient(145deg,#142139,#101a2c); transition:transform .18s,border-color .18s,box-shadow .18s; }
+    .choice-btn:hover,.exam-option:hover { transform:translateY(-2px); border-color:var(--cyan); box-shadow:0 8px 22px rgba(54,191,229,.1); }
+    header { border-bottom:1px solid rgba(148,163,184,.16); background:rgba(9,15,28,.88); backdrop-filter:blur(16px); }
+    .stats-badge { border:1px solid rgba(255,214,107,.25); border-radius:13px; background:rgba(255,214,107,.08); }
+    .bottom-action { background:linear-gradient(180deg,rgba(9,15,28,.2),rgba(9,15,28,.97)); backdrop-filter:blur(12px); }
+    .btn-next { min-height:52px; border-radius:15px; background:linear-gradient(110deg,#7955e8,#5368df 55%,#36bfe5); box-shadow:0 9px 24px rgba(95,93,225,.25); font-weight:900; transition:transform .18s,filter .18s,box-shadow .18s; }
+    .btn-next:hover { transform:translateY(-2px); filter:brightness(1.08); }
+    .btn-next:active { transform:translateY(0); }
+    .progress-bar,.exam-progress-bar { height:9px; background:rgba(148,163,184,.17); border-radius:99px; }
+    .progress-fill,.exam-progress-fill { background:linear-gradient(90deg,#8b6cff,#4bd5f2); box-shadow:0 0 14px rgba(75,213,242,.28); }
+    .editor-wrapper { border-radius:18px; border-color:rgba(75,213,242,.24); box-shadow:0 18px 44px rgba(0,0,0,.22); }
+    .exam-view { max-width:1040px; margin-inline:auto; }
+    .exam-question-box,.exam-result { border:1px solid rgba(148,163,184,.18); border-radius:22px; background:linear-gradient(145deg,rgba(18,29,49,.98),rgba(12,20,35,.98)); box-shadow:0 18px 48px rgba(0,0,0,.2); }
+    @media(max-width:900px) { .chat-container { padding:18px 13px 135px; gap:18px; } .bubble { max-width:calc(100% - 4px); padding:13px 15px; font-size:.94rem; } .avatar { width:40px; height:40px; } .choices-container { width:100%; margin-inline:0; } .bottom-action { padding-inline:13px; } .btn-next { width:100%; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; } }
   </style>
 </head>
 
@@ -1707,7 +1743,7 @@
 
     addBubble(
       "cody",
-      escapeHTML(text)
+      renderLessonMarkup(text)
     );
 
     showBottomAction(true);
@@ -3005,28 +3041,50 @@ function bindPageEvents() {
 // 31) تحميل بيانات الطالب
 // ==========================================
 
-function loadStudentData() {
-  const savedXP = Number(
-    readStorage("cody_python_xp", 0)
-  ) || 0;
-
+async function loadStudentData() {
   const xpDisplay = $("xpDisplay");
+  const savedXP = Number(readStorage("cody_python_xp", 0)) || 0;
+  if (xpDisplay) xpDisplay.textContent = String(savedXP);
 
-  if (xpDisplay) {
-    xpDisplay.textContent = String(savedXP);
-  }
+  try {
+    const [authModule, firebaseModule, firestoreModule, avatarModule] =
+      await Promise.all([
+        import("./js/auth.js"),
+        import("./js/firebase-config.js"),
+        import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"),
+        import("./js/avatars.js")
+      ]);
 
-  const savedAvatar = readStorage(
-    "cody_python_avatar",
-    ""
-  );
+    const user = await authModule.requireUser();
+    const userRef = firestoreModule.doc(firebaseModule.db, "users", user.uid);
+    const snapshot = await firestoreModule.getDoc(userRef);
+    const userData = snapshot.exists() ? snapshot.data() : {};
+    const avatars = avatarModule.getAllAvatars();
+    const inventory = Array.isArray(userData.inventory) ? userData.inventory : [];
+    const activeAvatar = typeof userData.activeAvatar === "string"
+      ? userData.activeAvatar
+      : "cody";
 
-  if (
-    typeof savedAvatar === "string" &&
-    savedAvatar.trim()
-  ) {
-    profileAvatarHTML =
-      `<img src="${escapeHTML(savedAvatar)}" alt="صورة الطالب">`;
+    const selected = avatars.find(avatar =>
+      avatar.id === activeAvatar &&
+      (!avatar.storeItem || inventory.includes(avatar.id))
+    );
+
+    avatarModule.installAvatarStyles();
+    profileAvatarHTML = avatarModule.renderAvatar(selected?.id || "cody");
+
+    const nameElement = $("studentName");
+    if (nameElement) {
+      nameElement.textContent = userData.displayName || user.displayName || "المتعلم";
+    }
+    return true;
+  } catch (error) {
+    console.error("تعذر تحميل صورة الملف الشخصي:", error);
+    const cached = readStorage("cody_python_avatar", "");
+    profileAvatarHTML = typeof cached === "string" && cached.trim()
+      ? `<img src="${escapeHTML(cached)}" alt="صورة الملف الشخصي">`
+      : '<span class="avatar-fallback" aria-label="صورة الملف الشخصي"><i class="ri-user-3-fill"></i></span>';
+    return false;
   }
 }
 
@@ -3060,10 +3118,10 @@ function validateChapterData() {
 // 33) تشغيل الصفحة
 // ==========================================
 
-function initializePythonLesson() {
+async function initializePythonLesson() {
   bindPageEvents();
 
-  loadStudentData();
+  await loadStudentData();
 
   if (!validateChapterData()) {
     return;
