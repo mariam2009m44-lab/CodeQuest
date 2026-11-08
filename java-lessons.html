@@ -755,6 +755,7 @@
     "use strict";
 
     import { runCodeOnServer } from "./js/code-runner.js";
+    import { saveLessonProgress } from "./js/auth.js";
 
     const PROGRESS_KEY = "cody_java_progress";
     const XP_KEY = "cody_java_xp";
@@ -1523,14 +1524,40 @@
       }
     }
 
-    function completeCurrentLesson() {
+    async function completeCurrentLesson() {
       const lesson = findLesson(currentLessonId);
       if (!lesson) return;
 
-      const progress = readProgress();
+      const position = /^java-(\\d+)-(\\d+)$/.exec(lesson.id);
+      if (!position) {
+        showNotice("تعذر تحديد موضع الدرس. لم يتم حفظ التقدم.", "error");
+        return;
+      }
 
-      if (progress[lesson.id]?.completed) {
-        showNotice("هذا الدرس مكتمل بالفعل.", "info");
+      const chapter = Number(position[1]) - 1;
+      const lessonIndex = Number(position[2]) - 1;
+      const progress = readProgress();
+      const alreadyCompleted = progress[lesson.id]?.completed === true;
+
+      try {
+        // احفظ التقدم في حساب المستخدم أولًا؛ لا تمنح XP إذا فشل الحفظ.
+        await saveLessonProgress({
+          language: "java",
+          chapter,
+          lesson: lessonIndex,
+          completed: true
+        });
+      } catch (error) {
+        console.error("Java progress save failed:", error);
+        showNotice(
+          "تعذر حفظ تقدم Java في حسابك. تحقق من الاتصال وحاول مرة أخرى؛ لم نضف نقاطًا.",
+          "error"
+        );
+        return;
+      }
+
+      if (alreadyCompleted) {
+        showNotice("تمت مزامنة إكمال هذا الدرس مع حسابك.", "success");
         return;
       }
 
@@ -1545,7 +1572,7 @@
       updateStats();
       updateNavigationButtons();
 
-      showNotice("تم إكمال الدرس! حصلت على 10 نقاط خبرة.", "success");
+      showNotice("تم حفظ إكمال الدرس في حسابك! حصلت على 10 نقاط خبرة.", "success");
     }
 
     function updateNavigationButtons() {
