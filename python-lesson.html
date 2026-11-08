@@ -3456,7 +3456,16 @@ function bindPageEvents() {
 
 async function loadStudentData() {
   const xpDisplay = $("xpDisplay");
-  const savedXP = Number(readStorage("cody_python_xp", 0)) || 0;
+  const savedXP = Math.max(
+    Number(readStorage("cody_xp", 0)) || 0,
+    Number(readStorage("cody_python_xp", 0)) || 0
+  );
+
+  if (savedXP > 0) {
+    writeStorage("cody_xp", savedXP);
+    writeStorage("cody_python_xp", savedXP);
+  }
+
   if (xpDisplay) xpDisplay.textContent = String(savedXP);
 
   try {
