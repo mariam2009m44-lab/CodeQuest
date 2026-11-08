@@ -240,6 +240,14 @@ function normalizeQuiz(rawQuiz) {
     options = Object.values(options);
   }
 
+  const correctIndex = Number.isInteger(rawQuiz.correct_index)
+    ? rawQuiz.correct_index
+    : Number.isInteger(rawQuiz.correctIndex)
+      ? rawQuiz.correctIndex
+      : Number.isInteger(rawQuiz.correct)
+        ? rawQuiz.correct
+        : null;
+
   return {
     question: String(question),
 
@@ -249,10 +257,25 @@ function normalizeQuiz(rawQuiz) {
         (option && typeof option === "object")
     ),
 
+    correctIndex,
+
     explanation: String(
       rawQuiz.explanation ||
       rawQuiz.feedback ||
       ""
+    ),
+
+    successMessage: String(
+      rawQuiz.success_msg ||
+      rawQuiz.successMessage ||
+      rawQuiz.explanation ||
+      ""
+    ),
+
+    failMessage: String(
+      rawQuiz.fail_msg ||
+      rawQuiz.failMessage ||
+      "الإجابة غير صحيحة. راجع شرح الدرس وحاول مرة أخرى."
     )
   };
 }
@@ -883,6 +906,47 @@ async function checkQuizAnswer() {
     ) {
       message =
         "حدث خطأ داخلي أثناء التحقق من الإجابة. لم يتم تسجيل الدرس؛ حاول مرة أخرى بعد قليل.";
+    }
+
+    /*
+     * عرض تغذية راجعة محلية عند تعذر الوصول إلى Firebase.
+     * لا نسجل الدرس ولا نمنح مكافأة إلا بعد نجاح التحقق الخادمي.
+     */
+    if (Number.isInteger(quiz?.correctIndex)) {
+      const locallyCorrect =
+        selectedQuizOption === quiz.correctIndex;
+
+      if (locallyCorrect) {
+        const localMessage =
+          quiz.successMessage ||
+          quiz.explanation ||
+          "إجابة صحيحة!";
+
+        setFeedback(
+          feedback,
+          `${localMessage} الإجابة صحيحة، لكن تعذر الاتصال بخدمة الحفظ؛ تقدمك لم يُسجل بعد. أعد المحاولة عند عودة الاتصال.`,
+          "info"
+        );
+
+        setStatus(
+          "تم التعرف على الإجابة، لكن لم يتم حفظ الدرس على الحساب.",
+          "error"
+        );
+      } else {
+        setFeedback(
+          feedback,
+          quiz.failMessage ||
+            "الإجابة غير صحيحة. حاول مرة أخرى.",
+          "error"
+        );
+
+        setStatus(
+          "الإجابة غير صحيحة. يمكنك المحاولة مرة أخرى.",
+          "error"
+        );
+      }
+
+      return;
     }
 
     setFeedback(
