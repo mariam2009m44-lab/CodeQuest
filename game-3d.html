@@ -223,7 +223,9 @@
       LEVELS.forEach((level,index)=>{
         const button=document.createElement("button");
         button.type="button";button.className="level-pill"+(index===levelIndex?" active":"");
-        button.textContent=String(index+1);button.setAttribute("aria-label","المرحلة "+(index+1));
+        button.textContent=String(index+1);
+        button.setAttribute("aria-label","المرحلة "+(index+1));
+        button.setAttribute("aria-pressed",String(index===levelIndex));
         button.disabled=index>0&&!completed.has(index-1);
         button.addEventListener("click",()=>selectLevel(index));
         $("levelPills").append(button);
