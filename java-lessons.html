@@ -760,6 +760,7 @@
 
     const PROGRESS_KEY = "cody_java_progress";
     const XP_KEY = "cody_java_xp";
+    const cloudCompletedLessonKeys = new Set();
 
     /*
       منهج Java من الصفر.
@@ -1686,7 +1687,9 @@
       const chapter = Number(position[1]) - 1;
       const lessonIndex = Number(position[2]) - 1;
       const progress = readProgress();
-      const alreadyCompleted = progress[lesson.id]?.completed === true;
+      const cloudLessonKey = `${chapter}:${lessonIndex}`;
+      const alreadyCompletedInCloud =
+        cloudCompletedLessonKeys.has(cloudLessonKey);
       const previousXP = getXP();
       const previousStars = accountStars;
 
@@ -1733,20 +1736,24 @@
         return;
       }
 
-      if (alreadyCompleted) {
-        showNotice("تمت مزامنة إكمال هذا الدرس مع حسابك.", "success");
-        return;
-      }
+      cloudCompletedLessonKeys.add(cloudLessonKey);
 
       progress[lesson.id] = {
         ...(progress[lesson.id] || {}),
         completed: true,
-        completedAt: new Date().toISOString()
+        completedAt:
+          progress[lesson.id]?.completedAt || new Date().toISOString()
       };
+      delete progress[lesson.id].localOnly;
 
       saveProgress(progress);
       updateStats();
       updateNavigationButtons();
+
+      if (alreadyCompletedInCloud) {
+        showNotice("تمت مزامنة إكمال هذا الدرس مع حسابك.", "success");
+        return;
+      }
 
       if (challengeVerifiedOnServer) {
         const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
@@ -1898,10 +1905,15 @@
             }
 
             const lessonId = `java-${record.chapter + 1}-${record.lesson + 1}`;
-            progress[lessonId] = {
+            const localRecord = {
               ...(progress[lessonId] || {}),
               completed: true
             };
+            delete localRecord.localOnly;
+            progress[lessonId] = localRecord;
+            cloudCompletedLessonKeys.add(
+              `${record.chapter}:${record.lesson}`
+            );
           });
 
           saveProgress(progress);
