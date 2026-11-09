@@ -187,7 +187,13 @@ export async function verifyJavaQuizAnswer(chapter, lesson, selectedIndex) {
       throw new Error(error?.message || "اجتز تحدي الكود أولًا.");
     }
     if (code === "unavailable" || code === "deadline-exceeded") {
-      throw new Error("تعذر التحقق من سؤال Java على الخادم حاليًا.");
+      const mappedError = new Error(
+        code === "deadline-exceeded"
+          ? "استغرق التحقق من سؤال Java وقتًا طويلًا. حاول مرة أخرى."
+          : "خدمة التحقق من سؤال Java غير متاحة حاليًا."
+      );
+      mappedError.code = error?.code;
+      throw mappedError;
     }
     throw error instanceof Error && error.message
       ? error
