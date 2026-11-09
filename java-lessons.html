@@ -2123,24 +2123,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           const cloudRecords = await getLessonProgress("java");
           const progress = readProgress();
 
-          // Retry local-only completions for this account when Firestore is available.
-          for (const [lessonId, record] of Object.entries(progress)) {
-            if (record?.completed !== true || record.localOnly !== true) continue;
-            const position = /^java-(\d+)-(\d+)$/.exec(lessonId);
-            if (!position) continue;
-            try {
-              await saveLessonProgress({
-                language: "java",
-                chapter: Number(position[1]) - 1,
-                lesson: Number(position[2]) - 1,
-                completed: true
-              });
-              delete record.localOnly;
-            } catch (syncError) {
-              console.warn("تعذرت مزامنة إنجاز Java محلي:", lessonId, syncError);
-            }
-          }
-
+          // لا تتم مزامنة الإنجازات المحلية غير الموثقة تلقائيًا.
+          // يعيد المتعلم فتح الدرس ويجتاز التحققين الخادميين قبل اعتماد الإنجاز.
           cloudRecords.forEach(record => {
             if (
               record?.completed !== true ||
