@@ -1623,15 +1623,17 @@
         setOutput(
           (challengeVerifiedOnServer
             ? "ممتاز! تم التحقق من الحل على الخادم بنجاح."
-            : "ممتاز! تم تشغيل الحل والتحقق من الناتج.") +
+            : "تم تشغيل الكود، لكن لم يتم اعتماد نجاح التحدي من خادم Firebase.") +
           "\n\nالناتج:\n" + (output || "(لا يوجد ناتج)"),
-          "success"
+          challengeVerifiedOnServer ? "success" : "info"
         );
         showNotice(
-          quizAnswered
-            ? "اجتزت التحدي والسؤال! يمكنك الآن إكمال الدرس."
-            : "اجتزت تحدي الكود. أجب عن سؤال الفهم لإكمال الدرس.",
-          "success"
+          !challengeVerifiedOnServer
+            ? "التشغيل نجح، لكن إكمال الدرس والمكافآت متوقفان حتى يتاح التحقق الخادمي."
+            : quizAnswered
+              ? "اجتزت التحدي والسؤال! يمكنك الآن إكمال الدرس."
+              : "اجتزت تحدي الكود. أجب عن سؤال الفهم لإكمال الدرس.",
+          challengeVerifiedOnServer ? "success" : "info"
         );
         updateNavigationButtons();
       } catch (error) {
