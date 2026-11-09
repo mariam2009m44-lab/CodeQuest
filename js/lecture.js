@@ -1,4 +1,4 @@
-import { runCodeOnServer } from "./code-runner.js";
+import { runCodeOnServer, checkQuizAnswerOnServer } from "./code-runner.js";
 
 import {
   requireUser,
@@ -6,18 +6,6 @@ import {
   getLessonProgress
 } from "./auth.js";
 
-import {
-  httpsCallable
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
-
-import {
-  functions
-} from "./firebase-config.js";
-
-const verifyLessonAnswer = httpsCallable(
-  functions,
-  "checkQuizAnswer"
-);
 
 const LANGUAGE_CONFIG = {
   javascript: {
@@ -835,13 +823,11 @@ async function checkQuizAnswer() {
       );
     }
 
-    const response = await verifyLessonAnswer({
+    const result = await checkQuizAnswerOnServer({
       language: languageKey,
       lessonId: currentLesson.id,
       selectedIndex: selectedQuizOption
     });
-
-    const result = response.data;
 
     if (result?.success !== true) {
       throw new Error(
