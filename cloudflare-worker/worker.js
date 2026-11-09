@@ -269,7 +269,7 @@ async function loadQuiz(language, lessonId, env) {
   const curriculumBase = (
     env.CURRICULUM_BASE_URL ||
     "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main"
-  ).replace(/\\/+$/, "");
+  ).replace(/\/+$/, "");
 
   const curriculumUrl = `${curriculumBase}${curriculumPath}`;
   const response = await fetch(curriculumUrl, {
