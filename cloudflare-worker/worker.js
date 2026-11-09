@@ -167,8 +167,9 @@ async function readJudge0Response(response) {
 }
 
 async function handleCodeRun(request, env, origin) {
+  let authenticatedUser;
   try {
-    await verifyFirebaseUser(request, env);
+    authenticatedUser = await verifyFirebaseUser(request, env);
   } catch {
     return jsonResponse({
       success: false,
@@ -206,6 +207,39 @@ async function handleCodeRun(request, env, origin) {
       success: false,
       message: "لغة البرمجة أو الكود أو بيانات الإدخال غير صالحة."
     }, 400, origin);
+  }
+
+  // Atomic per-account quota is checked before creating an external Judge0 job.
+  if (!env.CODE_EXECUTION_LIMITER) {
+    return jsonResponse({
+      success: false,
+      message: "حماية خدمة التشغيل غير مفعّلة حاليًا. حاول مرة أخرى لاحقًا."
+    }, 503, origin);
+  }
+
+  try {
+    const limiterId = env.CODE_EXECUTION_LIMITER.idFromName("global-code-run-quota");
+    const limiter = env.CODE_EXECUTION_LIMITER.get(limiterId);
+    const quotaResponse = await limiter.fetch("https://quota.internal/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid: authenticatedUser.uid })
+    });
+    const quota = await quotaResponse.json();
+
+    if (!quotaResponse.ok || quota?.allowed !== true) {
+      return jsonResponse({
+        success: false,
+        errorCode: "CODE_RUN_DAILY_LIMIT",
+        message: quota?.message || "وصلت إلى الحد اليومي لتشغيل الأكواد. حاول غدًا."
+      }, quotaResponse.status === 429 ? 429 : 503, origin);
+    }
+  } catch (error) {
+    console.error("Code execution quota check failed:", error);
+    return jsonResponse({
+      success: false,
+      message: "تعذر التحقق من حد تشغيل الأكواد. حاول مرة أخرى لاحقًا."
+    }, 503, origin);
   }
 
   const baseUrl = (env.JUDGE0_URL || "https://ce.judge0.com")
@@ -585,3 +619,61 @@ export default {
     }, 404, origin);
   }
 };
+
+
+// Atomic per-account quota for the shared Judge0 service.
+// Durable Object storage serializes checks and avoids KV update races.
+export class CodeExecutionLimiter {
+  constructor(state) {
+    this.state = state;
+  }
+
+  async fetch(request) {
+    if (request.method !== "POST") {
+      return new Response("Method not allowed", { status: 405 });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json({ allowed: false, message: "Invalid quota request." }, { status: 400 });
+    }
+
+    const uid = typeof body?.uid === "string" ? body.uid : "";
+    if (!uid || uid.length > 128) {
+      return Response.json({ allowed: false, message: "Invalid user." }, { status: 400 });
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `user:${uid}`;
+
+    const result = await this.state.storage.transaction(async transaction => {
+      const current = await transaction.get(key);
+      const record = current?.day === today
+        ? current
+        : { day: today, count: 0 };
+
+      if (record.count >= 30) {
+        return { allowed: false, count: record.count };
+      }
+
+      record.count += 1;
+      await transaction.put(key, record);
+      return { allowed: true, count: record.count };
+    });
+
+    if (!result.allowed) {
+      return Response.json({
+        allowed: false,
+        count: result.count,
+        message: "وصلت إلى الحد اليومي المسموح به (30 تشغيلًا). حاول غدًا."
+      }, { status: 429 });
+    }
+
+    return Response.json({
+      allowed: true,
+      remaining: 30 - result.count
+    });
+  }
+}
