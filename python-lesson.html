@@ -1162,8 +1162,10 @@
 
     .code-area {
       width: 100%;
-      min-height: clamp(190px, 34vh, 360px);
-      flex: 1 1 auto;
+      min-height: 210px;
+      max-height: 70vh;
+      flex: 0 0 auto;
+      resize: none;
     }
 
     .CodeMirror,
@@ -1171,12 +1173,12 @@
       width: 100%;
       max-width: 100%;
       min-width: 0;
-      min-height: clamp(190px, 34vh, 360px);
+      min-height: 210px;
       font-size: clamp(.82rem, 1.6vw, .98rem);
     }
 
     .CodeMirror-scroll {
-      min-height: clamp(190px, 34vh, 360px);
+      min-height: 210px;
     }
 
     .inline-code-hint {
@@ -2958,7 +2960,7 @@ html[data-theme="light"] .bottom-action {
 
   function setPythonEditorHeight(height) {
     const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
-    const maxHeight = Math.min(720, Math.max(320, Math.floor(window.innerHeight * 0.72)));
+    const maxHeight = Math.min(720, Math.max(320, Math.floor(window.innerHeight * 0.7)));
     const requestedHeight = Number(height);
     const nextHeight = Math.round(Math.max(220, Math.min(
       maxHeight,
