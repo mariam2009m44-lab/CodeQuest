@@ -1308,7 +1308,59 @@
       animation: hintReveal .22s ease-out;
     }
 
-  </style>
+  
+    /* Mobile editor: keep the full editor usable without clipping its controls. */
+    @media (max-width: 900px) {
+      .editor-wrapper.show {
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        height: min(82dvh, 760px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 12px);
+        padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+      }
+
+      .editor-wrapper.show .editor-header {
+        position: sticky;
+        top: 0;
+        flex: 0 0 auto;
+      }
+
+      .editor-wrapper.show .code-area {
+        flex: 0 0 auto;
+        min-height: 0;
+      }
+
+      .editor-wrapper.show .CodeMirror,
+      .editor-wrapper.show .CodeMirror-scroll {
+        height: clamp(190px, 34dvh, 270px) !important;
+        min-height: 190px;
+      }
+
+      .editor-wrapper.show #pythonStdin {
+        width: calc(100% - 24px);
+        max-width: calc(100% - 24px);
+        margin-inline: 12px;
+        flex: 0 0 auto;
+      }
+
+      .editor-wrapper.show .lesson-help-panel,
+      .editor-wrapper.show .output-area,
+      .editor-wrapper.show .inline-code-hint {
+        flex: 0 0 auto;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .editor-wrapper.show .output-area {
+        max-height: 140px;
+      }
+    }
+
+</style>
   <link rel="stylesheet" href="css/theme.css">
 </head>
 
