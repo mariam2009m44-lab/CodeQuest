@@ -158,8 +158,8 @@ export async function checkQuizAnswerOnServer({
 
 
 /**
- * Verify a Java learning challenge on the server.
- * The server checks required code, executes it, and compares the expected output.
+ * Verify a Java lesson comprehension answer on the server.
+ * The server checks the selected option after the coding challenge is verified.
  */
 export async function verifyJavaQuizAnswer(chapter, lesson, selectedIndex) {
   if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8 ||
@@ -190,6 +190,10 @@ export async function verifyJavaQuizAnswer(chapter, lesson, selectedIndex) {
 }
 
 
+/**
+ * Verify a Java coding challenge on the server.
+ * The server checks required code, executes it, and compares the expected output.
+ */
 export async function verifyJavaChallenge(chapter, lesson, code) {
   if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8) {
     throw new Error("رقم فصل Java غير صالح.");
