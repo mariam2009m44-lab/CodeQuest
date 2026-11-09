@@ -1980,6 +1980,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const previousXP = getXP();
       const previousStars = accountStars;
       let cloudSaved = false;
+      let cloudSaveError = null;
 
       // لا نكتب إنجازًا موثوقًا في Firestore إلا بعد اعتماد التحدي والسؤال معًا.
       if (hasTrustedProof) {
@@ -1993,7 +1994,26 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           });
           cloudSaved = true;
         } catch (error) {
+          cloudSaveError = error;
           console.error("Java progress cloud save failed:", error);
+        }
+      }
+
+      if (hasTrustedProof && !cloudSaved) {
+        const errorCode = String(cloudSaveError?.code || "")
+          .replace(/^firestore\\//, "")
+          .replace(/^functions\\//, "");
+        const recoverableCloudError =
+          /^(unavailable|deadline-exceeded|network-request-failed|cancelled)$/.test(errorCode) ||
+          cloudSaveError?.name === "TypeError";
+
+        if (!recoverableCloudError) {
+          showNotice(
+            "تعذر حفظ الإنجاز في حسابك بسبب مشكلة في صلاحية الحساب أو التحقق. لم نضع علامة إكمال محلية حتى لا يظهر تقدم غير محفوظ. راجع تسجيل الدخول وحاول مرة أخرى.",
+            "error"
+          );
+          updateNavigationButtons();
+          return;
         }
       }
 
