@@ -3210,20 +3210,22 @@ html[data-theme="light"] .bottom-action {
 
     let passed = false;
 
-    if (customCheck) {
+    if (expectedOutput !== undefined && expectedOutput !== null) {
+      const actual = String(programOutput)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+      const expected = String(expectedOutput)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+      passed = actual === expected;
+    } else if (customCheck) {
       try {
         passed = Boolean(customCheck(sourceCode, programOutput));
       } catch (error) {
         console.warn("تعذر تنفيذ اختبار التحدي:", error);
       }
-    } else {
-      const actual = String(programOutput)
-        .replace(/\r\n/g, "\n")
-        .trim();
-      const expected = String(expectedOutput)
-        .replace(/\\r\\n/g, "\\n")
-        .trim();
-      passed = actual === expected;
     }
 
     if (passed) {
