@@ -493,6 +493,27 @@
       resize: none;
     }
 
+    .editor-resize-grip {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:28px;
+      width:100%;
+      cursor:ns-resize;
+      touch-action:none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .editor-resize-grip::after {
+      content:"";
+      width:64px;
+      height:5px;
+      border-radius:999px;
+      background:var(--muted);
+      opacity:.65;
+    }
+    .editor-wrapper.show.is-expanded .editor-resize-grip { display:none; }
+
     .editor-wrapper.show.is-expanded .CodeMirror,
     .editor-wrapper.show.is-expanded .CodeMirror-scroll,
     .editor-wrapper.show.is-expanded .code-fallback {
@@ -2697,6 +2718,10 @@ html[data-theme="light"] .bottom-action {
           dir="ltr"
         ></textarea>
       </div>
+      <div id="pythonEditorResizeGrip" class="editor-resize-grip"
+        role="separator" aria-orientation="horizontal"
+        aria-label="اسحب لتغيير ارتفاع محرر Python"
+        aria-valuemin="220" aria-valuemax="720" aria-valuenow="300" tabindex="0"></div>
 
       <label for="pythonStdin" style="display:block;margin:12px 0 6px;font-weight:800;color:var(--muted)">مدخلات البرنامج (اختياري) — اكتب كل قيمة في سطر</label>
       <textarea id="pythonStdin" rows="3" dir="ltr" spellcheck="false" placeholder="مثال:&#10;Mariam&#10;17" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-family:'Fira Code',monospace;resize:vertical"></textarea>
@@ -2763,6 +2788,39 @@ html[data-theme="light"] .bottom-action {
       button.addEventListener("click", () => {
         setPythonEditorHeight(Number(button.dataset.editorHeight));
       });
+    });
+
+    const resizeGrip = $("pythonEditorResizeGrip");
+    const codeArea = wrapper.querySelector(".code-area");
+    let activeResizePointer = null;
+    let resizeStartY = 0;
+    let resizeStartHeight = 300;
+
+    resizeGrip?.addEventListener("pointerdown", event => {
+      if (wrapper.classList.contains("is-expanded")) return;
+      activeResizePointer = event.pointerId;
+      resizeStartY = event.clientY;
+      resizeStartHeight = codeArea?.getBoundingClientRect().height || 300;
+      resizeGrip.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+
+    resizeGrip?.addEventListener("pointermove", event => {
+      if (activeResizePointer !== event.pointerId) return;
+      setPythonEditorHeight(resizeStartHeight + event.clientY - resizeStartY);
+    });
+
+    const endResize = event => {
+      if (activeResizePointer === event.pointerId) activeResizePointer = null;
+    };
+    resizeGrip?.addEventListener("pointerup", endResize);
+    resizeGrip?.addEventListener("pointercancel", endResize);
+
+    resizeGrip?.addEventListener("keydown", event => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      event.preventDefault();
+      const currentHeight = codeArea?.getBoundingClientRect().height || 300;
+      setPythonEditorHeight(currentHeight + (event.key === "ArrowDown" ? 24 : -24));
     });
 
     $("runPythonBtn")?.addEventListener(
@@ -2897,9 +2955,13 @@ html[data-theme="light"] .bottom-action {
 
 
   function setPythonEditorHeight(height) {
-    const allowedHeights = [220, 300, 420];
-    const nextHeight = allowedHeights.includes(height) ? height : 300;
     const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
+    const maxHeight = Math.min(720, Math.max(320, Math.floor(window.innerHeight * 0.72)));
+    const requestedHeight = Number(height);
+    const nextHeight = Math.round(Math.max(220, Math.min(
+      maxHeight,
+      Number.isFinite(requestedHeight) ? requestedHeight : 300
+    )));
     const textarea = $("pythonCodeInput");
 
     if (codeArea) {
@@ -2919,6 +2981,7 @@ html[data-theme="light"] .bottom-action {
       const active = Number(button.dataset.editorHeight) === nextHeight;
       button.setAttribute("aria-pressed", String(active));
     });
+    $("pythonEditorResizeGrip")?.setAttribute("aria-valuenow", String(nextHeight));
   }
 
 
