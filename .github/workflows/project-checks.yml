@@ -54,6 +54,11 @@ jobs:
           node --input-type=module -e 'import fs from "node:fs"; const html = fs.readFileSync("java-lessons.html", "utf8"); const open = "<script type=\"module\">"; const close = "</script>"; const start = html.indexOf(open); const end = html.indexOf(close, start); if (start < 0 || end < 0) throw new Error("Java lesson module script missing"); fs.writeFileSync("/tmp/java-lessons.mjs", html.slice(start + open.length, end)); const ids = html.match(/id: "java-[0-9]+-[0-9]+"/g) || []; if (ids.length !== 16) throw new Error("Expected 16 implemented Java lessons"); if ((html.match(/id="quizFeedback"/g) || []).length !== 1) throw new Error("Quiz feedback element must be unique");'
           node --check /tmp/java-lessons.mjs
 
+      - name: Validate Python lesson page
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; const html = fs.readFileSync("python-lesson.html", "utf8"); const scripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)].filter(([, attributes, body]) => !/\\bsrc\\s*=/.test(attributes) && body.trim()); if (scripts.length !== 1) throw new Error("Expected exactly one inline Python lesson script"); fs.writeFileSync("/tmp/python-lesson.mjs", scripts[0][2]);'
+          node --check /tmp/python-lesson.mjs
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
