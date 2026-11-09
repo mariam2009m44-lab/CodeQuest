@@ -802,7 +802,7 @@
           const raw = localStorage.getItem(`cody_java_progress_${uid}`);
           const parsed = raw ? JSON.parse(raw) : {};
           return Object.entries(parsed).flatMap(([id, value]) => {
-            const match = /^java-(\\d+)-(\\d+)$/.exec(id);
+            const match = /^java-(\d+)-(\d+)$/.exec(id);
             if (!match || value?.completed !== true) return [];
             return [{
               language: "java",
