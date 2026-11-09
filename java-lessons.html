@@ -1955,15 +1955,17 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       updateStats();
       updateNavigationButtons();
 
-      const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
       showNotice(
-        rewardsUpdated
-          ? alreadyCompleted
-            ? "تم التحقق من الدرس المحفوظ سابقًا وتحديث مكافآته."
-            : "تم حفظ الدرس والتحقق منه وتحديث مكافآته بنجاح!"
-          : "تم حفظ الدرس والتحقق منه. قد يستغرق تحديث نقاط الخبرة والنجوم بضع لحظات.",
+        alreadyCompleted
+          ? "تم التحقق من الدرس المحفوظ سابقًا. يجري تحديث المكافآت."
+          : "تم حفظ الدرس والتحقق منه بنجاح. يجري تحديث المكافآت.",
         "success"
       );
+      void refreshAccountStats(previousXP, previousStars).then(rewardsUpdated => {
+        if (rewardsUpdated) {
+          showNotice("تم تحديث XP والنجوم من حسابك.", "success");
+        }
+      });
     }
 
     function updateNavigationButtons() {
@@ -2066,9 +2068,10 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       if (requested && findLesson(requested)) return requested;
 
       const progress = readProgress();
-      const incomplete = allLessons.find(
-        lesson => !progress[lesson.id]?.completed
-      );
+      const incomplete = allLessons.find(lesson => {
+        const record = progress[lesson.id];
+        return !record?.completed || record.localOnly === true;
+      });
 
       return incomplete?.id || allLessons[0]?.id || null;
     }
