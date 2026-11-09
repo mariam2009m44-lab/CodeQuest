@@ -62,6 +62,7 @@ let quizPassed = false;
 let lessonNeedsServerVerification = false;
 
 let editor = null;
+let editorResizeObserver = null;
 let quizRequestInProgress = false;
 let codeRunning = false;
 
@@ -168,6 +169,7 @@ function initializeEditor() {
     typeof window.CodeMirror.fromTextArea === "function"
   ) {
     try {
+      editorResizeObserver?.disconnect();
       editor = window.CodeMirror.fromTextArea(textarea, {
         lineNumbers: true,
         mode: LANGUAGE_CONFIG[languageKey].editorLanguage,
@@ -175,10 +177,24 @@ function initializeEditor() {
         indentUnit: 4,
         tabSize: 4,
         lineWrapping: true,
-        autofocus: false
+        autofocus: false,
+        inputStyle: "contenteditable",
+        screenReaderLabel: "محرر الكود",
+        extraKeys: {
+          Tab: cm => {
+            if (cm.somethingSelected()) cm.indentSelection("add");
+            else cm.replaceSelection(" ".repeat(cm.getOption("indentUnit") || 4), "end");
+          },
+          "Shift-Tab": cm => cm.indentSelection("subtract")
+        }
       });
 
-      editor.setSize("100%", "auto");
+      editor.setSize("100%", null);
+      if (typeof ResizeObserver !== "undefined") {
+        editorResizeObserver = new ResizeObserver(() => editor?.refresh());
+        editorResizeObserver.observe(editor.getWrapperElement());
+      }
+      requestAnimationFrame(() => editor?.refresh());
 
     } catch (error) {
       console.warn(
@@ -1581,7 +1597,40 @@ function navigateNextLesson() {
     nextUrl || getLevelsUrl();
 }
 
+function setEditorPanelExpanded(expanded) {
+  const panel = byId("editorPanel");
+  const button = byId("editorExpandBtn");
+  if (!panel || !button) return;
+
+  panel.classList.toggle("is-expanded", expanded);
+  document.body.classList.toggle("editor-panel-open", expanded);
+  button.setAttribute("aria-expanded", String(expanded));
+  button.textContent = expanded ? "تصغير المحرر" : "تكبير المحرر";
+
+  requestAnimationFrame(() => {
+    editor?.refresh();
+    if (expanded) {
+      editor?.focus();
+    } else {
+      button.focus();
+    }
+  });
+}
+
 function attachEvents() {
+  byId("editorExpandBtn")?.addEventListener("click", () => {
+    setEditorPanelExpanded(!byId("editorPanel")?.classList.contains("is-expanded"));
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && byId("editorPanel")?.classList.contains("is-expanded")) {
+      setEditorPanelExpanded(false);
+    }
+  });
+
+  window.addEventListener("resize", () => requestAnimationFrame(() => editor?.refresh()));
+  window.visualViewport?.addEventListener("resize", () => requestAnimationFrame(() => editor?.refresh()));
+
   byId("hintBtn")?.addEventListener(
     "click",
     showHint
