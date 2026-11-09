@@ -83,7 +83,26 @@ function getAllowedOrigin(request, env) {
   const origin = request.headers.get("Origin");
   const allowedOrigin = env.ALLOWED_ORIGIN || ALLOWED_ORIGIN;
 
-  return origin === allowedOrigin ? origin : null;
+  if (origin === allowedOrigin) return origin;
+
+  // Hash-prefixed Cloudflare Pages previews are separate origins. Allow them
+  // only on preview deployments; never widen the production allow-list.
+  if (
+    env.ENVIRONMENT === "preview" &&
+    /^https:\/\/[a-f0-9]{8}\.codequest-preview\.pages\.dev$/i.test(origin || "")
+  ) {
+    return origin;
+  }
+
+  // Local development is routed to the preview Worker only.
+  if (
+    env.ENVIRONMENT === "preview" &&
+    /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin || "")
+  ) {
+    return origin;
+  }
+
+  return null;
 }
 
 async function verifyFirebaseUser(request, env) {
