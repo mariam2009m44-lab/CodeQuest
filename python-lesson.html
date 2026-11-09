@@ -3852,6 +3852,10 @@ async function loadStudentData() {
     profileAvatarHTML = typeof cached === "string" && cached.trim()
       ? `<img src="${escapeHTML(cached)}" alt="صورة الملف الشخصي">`
       : '<span class="avatar-fallback" aria-label="صورة الملف الشخصي"><i class="ri-user-3-fill"></i></span>';
+    const lessonAvatar = $("lessonUserAvatar");
+    if (lessonAvatar) {
+      lessonAvatar.innerHTML = profileAvatarHTML;
+    }
     return false;
   }
 }
