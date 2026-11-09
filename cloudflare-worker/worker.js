@@ -15,6 +15,18 @@ const CURRICULUM_PATHS = {
   cpp: "/json/cpp_curriculum.json"
 };
 
+async function readBoundedJson(request, maxBytes = 262144) {
+  const declaredLength = Number(request.headers.get("Content-Length") || 0);
+  if (declaredLength > maxBytes) throw new Error("REQUEST_BODY_TOO_LARGE");
+  const bytes = await request.arrayBuffer();
+  if (bytes.byteLength > maxBytes) throw new Error("REQUEST_BODY_TOO_LARGE");
+  try {
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw new Error("INVALID_JSON");
+  }
+}
+
 function jsonResponse(data, status, origin = null) {
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
@@ -136,12 +148,13 @@ async function handleCodeRun(request, env, origin) {
   let body;
 
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request);
+  } catch (error) {
+    const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
     return jsonResponse({
       success: false,
-      message: "بيانات طلب التشغيل غير صالحة."
-    }, 400, origin);
+      message: tooLarge ? "حجم طلب التشغيل أكبر من الحد المسموح." : "بيانات طلب التشغيل غير صالحة."
+    }, tooLarge ? 413 : 400, origin);
   }
 
   if (
@@ -334,12 +347,13 @@ async function handleQuizCheck(request, env, origin) {
   let body;
 
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request, 32768);
+  } catch (error) {
+    const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
     return jsonResponse({
       success: false,
-      message: "بيانات الطلب غير صالحة."
-    }, 400, origin);
+      message: tooLarge ? "حجم طلب السؤال أكبر من الحد المسموح." : "بيانات الطلب غير صالحة."
+    }, tooLarge ? 413 : 400, origin);
   }
 
   if (
