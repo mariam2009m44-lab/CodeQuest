@@ -170,7 +170,7 @@ for (let chapterId = 1; chapterId <= 12; chapterId += 1) {
     }
 
     for (const type of types) {
-      if (!["cody", "choice", "challenge", "code", "coding", "quiz", "question", "game", "text"].includes(type)) {
+      if (!["cody", "choice", "challenge", "code", "coding", "quiz", "question", "game", "example", "text"].includes(type)) {
         fail(`${label}: unsupported step type "${type}"`);
       }
     }
