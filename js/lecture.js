@@ -743,7 +743,7 @@ async function loadCurrentCompletion() {
   );
 }
 
-async function completeCurrentLesson() {
+async function completeCurrentLesson({ serverVerified = true } = {}) {
   if (lessonCompleted) {
     quizPassed = true;
     return true;
@@ -762,16 +762,20 @@ async function completeCurrentLesson() {
     quizPassed = true;
 
     setStatus(
-      "ممتاز! تم حفظ تقدم الدرس في حسابك.",
-      "success"
+      serverVerified
+        ? "ممتاز! تم حفظ تقدم الدرس في حسابك."
+        : "إجابة صحيحة! تم حفظ التقدم دون مكافأة؛ التحقق الخادمي غير متاح الآن.",
+      serverVerified ? "success" : "info"
     );
 
     const feedback = byId("quizFeedback");
 
     setFeedback(
       feedback,
-      "إجابة صحيحة! تم تسجيل إكمال الدرس.",
-      "success"
+      serverVerified
+        ? "إجابة صحيحة! تم تسجيل إكمال الدرس."
+        : "إجابة صحيحة! يمكنك متابعة الدرس التالي. ستظل XP والنجوم متوقفة حتى ينجح التحقق الخادمي.",
+      serverVerified ? "success" : "info"
     );
 
     const options = byId("quizOptions");
@@ -1013,16 +1017,23 @@ async function checkQuizAnswer() {
           quiz.explanation ||
           "إجابة صحيحة!";
 
-        setFeedback(
-          feedback,
-          `${localMessage} الإجابة صحيحة، لكن تعذر الاتصال بخدمة الحفظ؛ تقدمك لم يُسجل بعد. أعد المحاولة عند عودة الاتصال.`,
-          "info"
-        );
+        const completed = await completeCurrentLesson({
+          serverVerified: false
+        });
 
-        setStatus(
-          "تم التعرف على الإجابة، لكن لم يتم حفظ الدرس على الحساب.",
-          "error"
-        );
+        if (completed) {
+          setFeedback(
+            feedback,
+            `${localMessage} يمكنك متابعة الدرس التالي. لم تُمنح مكافآت لأن التحقق الخادمي لم يكتمل.`,
+            "info"
+          );
+        } else {
+          setFeedback(
+            feedback,
+            `${localMessage} تعذر حفظ التقدم حتى على هذا الجهاز. تحقق من مساحة التخزين وحاول مرة أخرى.`,
+            "error"
+          );
+        }
       } else {
         setFeedback(
           feedback,
