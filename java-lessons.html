@@ -869,7 +869,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     "use strict";
 
     import { verifyJavaChallenge, verifyJavaQuizAnswer, runCodeOnServer } from "./js/code-runner.js";
-    import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile, syncTrustedLessonRewards } from "./js/auth.js";
+    import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
     let currentUserId = "anonymous";
     function progressStorageKey() {
@@ -2091,11 +2091,19 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     }
 
     async function loadLessonAvatar() {
+      let profile = null;
+      try {
+        profile = await getUserProfile();
+      } catch (error) {
+        console.warn("تعذر تحميل ملف حساب Java:", error);
+        return null;
+      }
+
       const container = document.getElementById("lessonUserAvatar");
-      if (!container) return;
+      if (!container) return profile;
+
       try {
         const avatarModule = await import("./js/avatars.js");
-        const profile = await getUserProfile();
         const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
         const activeAvatar = typeof profile.activeAvatar === "string" ? profile.activeAvatar : "cody";
         const selected = avatarModule.getAllAvatars().find(avatar =>
@@ -2106,13 +2114,15 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       } catch (error) {
         console.warn("تعذر تحميل صورة حساب Java:", error);
       }
+
+      return profile;
     }
 
     async function startApp() {
       try {
         const signedInUser = await requireUser();
         currentUserId = signedInUser.uid;
-        await loadLessonAvatar();
+        const profile = await loadLessonAvatar();
 
         allLessons = CURRICULUM.flatMap(chapter => chapter.lessons);
 
@@ -2121,14 +2131,9 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           return;
         }
 
-        // تحميل أرصدة الحساب الموثوقة من Firestore.
-        try {
-          const profile = await getUserProfile();
-          accountXP = Number.isSafeInteger(profile.xp) ? profile.xp : 0;
-          accountStars = Number.isSafeInteger(profile.stars) ? profile.stars : 0;
-        } catch (profileError) {
-          console.warn("تعذر تحميل أرصدة الحساب:", profileError);
-        }
+        // استُخدم ملف الحساب نفسه الذي جُلب لتحميل الصورة لتقليل قراءات Firestore.
+        accountXP = Number.isSafeInteger(profile?.xp) ? profile.xp : 0;
+        accountStars = Number.isSafeInteger(profile?.stars) ? profile.stars : 0;
 
         // استعادة التقدم المحفوظ في الحساب حتى يعمل المسار على أكثر من جهاز.
         try {
