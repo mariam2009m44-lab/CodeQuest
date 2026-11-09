@@ -98,6 +98,73 @@ export async function runCodeOnServer(language, code, stdin = "") {
 
 
 /**
+ * Verify a lesson quiz through the preview Worker.
+ * The Worker loads the published curriculum and checks the selected answer
+ * on the server, so lesson completion does not depend on a Firebase callable.
+ */
+export async function checkQuizAnswerOnServer({
+  language,
+  lessonId,
+  selectedIndex
+}) {
+  if (!ALLOWED_LANGUAGES.has(language) || language === "java") {
+    throw new Error("لغة المنهج غير مدعومة للتحقق من هذا السؤال.");
+  }
+
+  if (
+    typeof lessonId !== "string" ||
+    !/^[a-zA-Z0-9_-]{1,100}$/.test(lessonId) ||
+    !Number.isInteger(selectedIndex) ||
+    selectedIndex < 0 ||
+    selectedIndex > 20
+  ) {
+    throw new Error("بيانات السؤال أو الاختيار غير صحيحة.");
+  }
+
+  try {
+    const user = auth.currentUser || await requireUser();
+    const idToken = await user.getIdToken();
+
+    const response = await fetch(`${CODE_RUNNER_URL}/api/quiz/check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
+      },
+      body: JSON.stringify({
+        language,
+        lessonId,
+        selectedIndex
+      })
+    });
+
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error("وصل رد غير مفهوم من خدمة التحقق من السؤال.");
+    }
+
+    if (!response.ok || result?.success !== true) {
+      if (response.status === 401) {
+        throw new Error("انتهت جلسة تسجيل الدخول. سجّلي الدخول مرة أخرى.");
+      }
+
+      throw new Error(
+        result?.message || "تعذر التحقق من إجابة السؤال حاليًا."
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Lesson quiz verification error:", error);
+    if (error instanceof Error && error.message) throw error;
+    throw new Error("تعذر الاتصال بخدمة التحقق من السؤال.");
+  }
+}
+
+
+/**
  * Verify a Java learning challenge on the server.
  * The server checks required code, executes it, and compares the expected output.
  */
