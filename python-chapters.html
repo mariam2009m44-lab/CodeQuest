@@ -280,6 +280,8 @@
     }
 
     function readLocalProgress() {
+      if (!activeUserUid) return { completed: [], stars: {} };
+
       try {
         const saved = JSON.parse(
           localStorage.getItem(getProgressStorageKey()) || "{}"
@@ -319,10 +321,12 @@
     function saveMergedProgress() {
       const progress = getMergedProgress();
 
-      localStorage.setItem(
-        getProgressStorageKey(),
-        JSON.stringify(progress)
-      );
+      if (activeUserUid) {
+        localStorage.setItem(
+          getProgressStorageKey(),
+          JSON.stringify(progress)
+        );
+      }
 
       return progress;
     }
@@ -464,7 +468,6 @@
     }
 
     renderXp();
-    renderMap();
     loadCloudProgress();
   </script>
 
