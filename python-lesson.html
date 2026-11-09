@@ -629,7 +629,7 @@
       max-height: 70vh;
       flex: 0 0 auto;
       overflow: auto;
-      resize: vertical;
+      resize: none;
     }
 
     .CodeMirror {
@@ -2960,7 +2960,7 @@ html[data-theme="light"] .bottom-action {
 
   function setPythonEditorHeight(height) {
     const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
-    const maxHeight = Math.min(720, Math.max(320, Math.floor(window.innerHeight * 0.7)));
+    const maxHeight = Math.min(720, Math.max(220, Math.floor(window.innerHeight * 0.7)));
     const requestedHeight = Number(height);
     const nextHeight = Math.round(Math.max(220, Math.min(
       maxHeight,
@@ -2982,10 +2982,14 @@ html[data-theme="light"] .bottom-action {
     }
 
     document.querySelectorAll("#pythonEditorWrapper [data-editor-height]").forEach(button => {
-      const active = Number(button.dataset.editorHeight) === nextHeight;
-      button.setAttribute("aria-pressed", String(active));
+      const presetHeight = Number(button.dataset.editorHeight);
+      const available = presetHeight <= maxHeight;
+      button.disabled = !available;
+      button.setAttribute("aria-pressed", String(available && presetHeight === nextHeight));
     });
-    $("pythonEditorResizeGrip")?.setAttribute("aria-valuenow", String(nextHeight));
+    const grip = $("pythonEditorResizeGrip");
+    grip?.setAttribute("aria-valuenow", String(nextHeight));
+    grip?.setAttribute("aria-valuemax", String(maxHeight));
   }
 
 
