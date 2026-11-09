@@ -176,7 +176,7 @@ export async function verifyJavaQuizAnswer(chapter, lesson, selectedIndex) {
     return response.data;
   } catch (error) {
     console.error("Java quiz verification failed:", error);
-    const code = String(error?.code || "").replace(/^functions\\//, "");
+    const code = String(error?.code || "").replace(/^functions\//, "");
     if (code === "failed-precondition") {
       throw new Error(error?.message || "اجتز تحدي الكود أولًا.");
     }
