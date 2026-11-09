@@ -20,8 +20,10 @@ const currentHost = window.location.hostname.toLowerCase();
 const isPagesPreview =
   currentHost === "codequest-preview.pages.dev" ||
   currentHost.endsWith(".codequest-preview.pages.dev");
+const isLocalDevelopment =
+  currentHost === "localhost" || currentHost === "127.0.0.1";
 
-const CODE_RUNNER_URL = isPagesPreview
+const CODE_RUNNER_URL = isPagesPreview || isLocalDevelopment
   ? PREVIEW_CODE_RUNNER_URL
   : PRODUCTION_CODE_RUNNER_URL;
 
