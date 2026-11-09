@@ -1718,6 +1718,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     async function checkChallenge() {
       const lesson = findLesson(currentLessonId);
       if (!lesson) return;
+      const requestedLessonId = lesson.id;
 
       const code = getEditorCode();
       challengeVerified = false;
@@ -1750,6 +1751,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             Number(position[2]) - 1,
             code
           );
+          if (currentLessonId !== requestedLessonId) return;
           challengeVerifiedOnServer = true;
         } catch (verificationError) {
           const errorCode = String(verificationError?.code || "")
@@ -1762,6 +1764,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           }
 
           const fallback = await runCodeOnServer("java", code);
+          if (currentLessonId !== requestedLessonId) return;
           if (!fallback.ok) {
             const diagnostic = [
               fallback.compileOutput,
@@ -1820,6 +1823,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           return;
         }
 
+        if (currentLessonId !== requestedLessonId) return;
         challengeVerified = true;
         if (challengeVerifiedOnServer && quizAnswered) {
           await verifySelectedQuizOnServer();
