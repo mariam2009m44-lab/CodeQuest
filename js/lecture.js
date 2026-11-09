@@ -59,6 +59,7 @@ let currentLesson = null;
 let lessonCompleted = false;
 let selectedQuizOption = null;
 let quizPassed = false;
+let lessonNeedsServerVerification = false;
 
 let editor = null;
 let quizRequestInProgress = false;
@@ -368,7 +369,7 @@ function getLocalProgress() {
   }
 }
 
-function saveLocalLessonCompletion() {
+function saveLocalLessonCompletion({ serverVerified = true } = {}) {
   try {
     const records = getLocalProgress();
     const key = `${chapterIndex}:${lessonIndex}`;
@@ -379,7 +380,8 @@ function saveLocalLessonCompletion() {
       language: languageKey,
       chapter: chapterIndex,
       lesson: lessonIndex,
-      completed: true
+      completed: true,
+      serverVerified
     });
     localStorage.setItem(
       getLocalProgressStorageKey(),
@@ -742,10 +744,22 @@ async function loadCurrentCompletion() {
       item.lesson === lessonIndex &&
       item.completed === true
   );
+
+  const localRecord = getLocalProgress().find(
+    item =>
+      item.chapter === chapterIndex &&
+      item.lesson === lessonIndex &&
+      item.completed === true
+  );
+  lessonNeedsServerVerification = localRecord?.serverVerified === false;
+  if (lessonNeedsServerVerification) {
+    // Keep navigation available while allowing a fresh server verification attempt.
+    quizPassed = false;
+  }
 }
 
 async function completeCurrentLesson({ serverVerified = true } = {}) {
-  if (lessonCompleted) {
+  if (lessonCompleted && !lessonNeedsServerVerification) {
     quizPassed = true;
     return true;
   }
@@ -758,8 +772,9 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
       completed: true
     });
 
-    saveLocalLessonCompletion();
+    saveLocalLessonCompletion({ serverVerified });
     lessonCompleted = true;
+    lessonNeedsServerVerification = !serverVerified;
     quizPassed = true;
 
     setStatus(
@@ -824,8 +839,9 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
       error
     );
 
-    const localSaved = saveLocalLessonCompletion();
+    const localSaved = saveLocalLessonCompletion({ serverVerified: false });
     lessonCompleted = localSaved;
+    lessonNeedsServerVerification = localSaved;
     quizPassed = localSaved;
 
     if (localSaved) {
@@ -1025,7 +1041,7 @@ async function checkQuizAnswer() {
         if (completed) {
           setFeedback(
             feedback,
-            `${localMessage} يمكنك متابعة الدرس التالي. لم تُمنح مكافآت لأن التحقق الخادمي لم يكتمل.`,
+            `${localMessage} يمكنك متابعة الدرس التالي. تعذّر تأكيد التحقق والمكافآت الآن؛ أعِد المحاولة عند استقرار الاتصال.`,
             "info"
           );
         } else {
