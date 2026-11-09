@@ -23,7 +23,7 @@ const LANGUAGE_CONFIG = {
   cpp: {
     label: "C++",
     curriculumUrl: "./json/cpp_curriculum.json",
-    editorLanguage: "cpp",
+    editorLanguage: "text/x-c++src",
     starter: `#include <iostream>
 using namespace std;
 
@@ -344,10 +344,14 @@ function getLevelsUrl() {
   return `levels.html?lang=${encodeURIComponent(languageKey)}`;
 }
 
+function getLocalProgressStorageKey() {
+  return `codequest_lesson_progress_${currentUser?.uid || "anonymous"}_${languageKey}`;
+}
+
 function getLocalProgress() {
   try {
     const value = JSON.parse(
-      localStorage.getItem(`codequest_lesson_progress_${languageKey}`) || "[]"
+      localStorage.getItem(getLocalProgressStorageKey()) || "[]"
     );
     return Array.isArray(value)
       ? value.filter(item =>
@@ -377,13 +381,39 @@ function saveLocalLessonCompletion() {
       completed: true
     });
     localStorage.setItem(
-      `codequest_lesson_progress_${languageKey}`,
+      getLocalProgressStorageKey(),
       JSON.stringify(next)
     );
     return true;
   } catch (error) {
     console.warn("تعذر حفظ التقدم محليًا:", error);
     return false;
+  }
+}
+
+async function syncLocalProgressToCloud() {
+  const pending = getLocalProgress();
+  if (!pending.length || !currentUser?.uid) return;
+
+  const unsynced = [];
+  for (const item of pending) {
+    try {
+      await saveLessonProgress({
+        language: languageKey,
+        chapter: item.chapter,
+        lesson: item.lesson,
+        completed: true
+      });
+    } catch (error) {
+      console.warn("تعذرت مزامنة إنجاز محلي:", item, error);
+      unsynced.push(item);
+    }
+  }
+
+  try {
+    localStorage.setItem(getLocalProgressStorageKey(), JSON.stringify(unsynced));
+  } catch (error) {
+    console.warn("تعذر تحديث سجل المزامنة المحلية:", error);
   }
 }
 
@@ -1563,6 +1593,7 @@ async function initializeLecture() {
 
     if (!currentUser) return;
 
+    await syncLocalProgressToCloud();
     await loadCurriculum();
 
     initializeEditor();
