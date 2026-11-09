@@ -15,6 +15,18 @@ const CURRICULUM_PATHS = {
   cpp: "/json/cpp_curriculum.json"
 };
 
+async function readBoundedJson(request, maxBytes = 262144) {
+  const declaredLength = Number(request.headers.get("Content-Length") || 0);
+  if (declaredLength > maxBytes) throw new Error("REQUEST_BODY_TOO_LARGE");
+  const bytes = await request.arrayBuffer();
+  if (bytes.byteLength > maxBytes) throw new Error("REQUEST_BODY_TOO_LARGE");
+  try {
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw new Error("INVALID_JSON");
+  }
+}
+
 function jsonResponse(data, status, origin = null) {
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
@@ -136,12 +148,13 @@ async function handleCodeRun(request, env, origin) {
   let body;
 
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request);
+  } catch (error) {
+    const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
     return jsonResponse({
       success: false,
-      message: "بيانات طلب التشغيل غير صالحة."
-    }, 400, origin);
+      message: tooLarge ? "حجم طلب التشغيل أكبر من الحد المسموح." : "بيانات طلب التشغيل غير صالحة."
+    }, tooLarge ? 413 : 400, origin);
   }
 
   if (
@@ -206,8 +219,8 @@ async function handleCodeRun(request, env, origin) {
 
   // Public Judge0 instances may briefly queue requests or rate-limit polling.
   // Retry transient polling failures instead of failing on the first response.
-  for (let attempt = 0; attempt < 20; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+  for (let attempt = 0; attempt < 12; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
       const response = await fetch(
@@ -215,13 +228,26 @@ async function handleCodeRun(request, env, origin) {
         {
           method: "GET",
           headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(10000)
+          signal: AbortSignal.timeout(5000)
         }
       );
 
       if (response.status === 429 || response.status >= 500) {
         lastPollingError = `HTTP_${response.status}`;
+        const retryAfter = Number(response.headers.get("Retry-After"));
+        const retryDelay = Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(retryAfter * 1000, 2500)
+          : Math.min(500 * (attempt + 1), 2000);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
         continue;
+      }
+
+      if (!response.ok) {
+        console.error("Judge0 rejected polling request:", response.status);
+        return jsonResponse({
+          success: false,
+          message: "رفضت خدمة التشغيل طلب الحصول على النتيجة."
+        }, 502, origin);
       }
 
       result = await readJudge0Response(response);
@@ -334,12 +360,13 @@ async function handleQuizCheck(request, env, origin) {
   let body;
 
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request, 32768);
+  } catch (error) {
+    const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
     return jsonResponse({
       success: false,
-      message: "بيانات الطلب غير صالحة."
-    }, 400, origin);
+      message: tooLarge ? "حجم طلب السؤال أكبر من الحد المسموح." : "بيانات الطلب غير صالحة."
+    }, tooLarge ? 413 : 400, origin);
   }
 
   if (
