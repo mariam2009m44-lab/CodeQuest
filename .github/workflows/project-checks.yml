@@ -44,6 +44,9 @@ jobs:
       - name: Check Firebase Functions syntax
         run: node --check functions/index.js
 
+      - name: Validate curriculum structure and lesson content
+        run: node scripts/validate-curricula.mjs
+
       - name: Check frontend module syntax
         run: |
           node --input-type=module --check < js/auth.js
