@@ -756,9 +756,12 @@
     "use strict";
 
     import { verifyJavaChallenge, runCodeOnServer } from "./js/code-runner.js";
-    import { saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
+    import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
-    const PROGRESS_KEY = "cody_java_progress";
+    let currentUserId = "anonymous";
+    function progressStorageKey() {
+      return `cody_java_progress_${currentUserId}`;
+    }
     const XP_KEY = "cody_java_xp";
 
     /*
@@ -1182,7 +1185,7 @@
 
     function readProgress() {
       try {
-        return JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
+        return JSON.parse(localStorage.getItem(progressStorageKey()) || "{}");
       } catch (error) {
         console.error("تعذر قراءة التقدم:", error);
         return {};
@@ -1201,7 +1204,7 @@
     }
 
     function saveProgress(progress) {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+      localStorage.setItem(progressStorageKey(), JSON.stringify(progress));
     }
 
     function updateStats() {
@@ -1859,6 +1862,9 @@
 
     async function startApp() {
       try {
+        const signedInUser = await requireUser();
+        currentUserId = signedInUser.uid;
+
         allLessons = CURRICULUM.flatMap(chapter => chapter.lessons);
 
         if (!allLessons.length) {
@@ -1879,6 +1885,24 @@
         try {
           const cloudRecords = await getLessonProgress("java");
           const progress = readProgress();
+
+          // Retry local-only completions for this account when Firestore is available.
+          for (const [lessonId, record] of Object.entries(progress)) {
+            if (record?.completed !== true || record.localOnly !== true) continue;
+            const position = /^java-(\\d+)-(\\d+)$/.exec(lessonId);
+            if (!position) continue;
+            try {
+              await saveLessonProgress({
+                language: "java",
+                chapter: Number(position[1]) - 1,
+                lesson: Number(position[2]) - 1,
+                completed: true
+              });
+              delete record.localOnly;
+            } catch (syncError) {
+              console.warn("تعذرت مزامنة إنجاز Java محلي:", lessonId, syncError);
+            }
+          }
 
           cloudRecords.forEach(record => {
             if (
