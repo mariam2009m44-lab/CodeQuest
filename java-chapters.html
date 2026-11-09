@@ -196,8 +196,10 @@
 
           saved[lessonId] = {
             ...(saved[lessonId] || {}),
-            completed: true
+            completed: true,
+            serverVerified: true
           };
+          delete saved[lessonId].localOnly;
         }
 
         localStorage.setItem(
