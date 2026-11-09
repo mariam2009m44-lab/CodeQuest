@@ -98,6 +98,12 @@
         if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
           localStorage.setItem(scopedKey, legacyValue);
         }
+
+        const legacyXP = localStorage.getItem(XP_KEY);
+        const scopedXP = `cody_java_xp_${uid}`;
+        if (legacyXP !== null && localStorage.getItem(scopedXP) === null) {
+          localStorage.setItem(scopedXP, legacyXP);
+        }
         localStorage.setItem(markerKey, uid);
       } catch (error) {
         console.warn("تعذرت ترقية بيانات Java القديمة:", error);
@@ -131,9 +137,9 @@
     }
     function renderXp() {
       const fallback = Number(
-        localStorage.getItem("cody_xp") ||
-        localStorage.getItem(XP_KEY) ||
-        0
+        activeUserUid
+          ? localStorage.getItem(`cody_java_xp_${activeUserUid}`) || 0
+          : 0
       ) || 0;
       document.getElementById("xpDisplay").textContent =
         String(accountXP ?? fallback);
