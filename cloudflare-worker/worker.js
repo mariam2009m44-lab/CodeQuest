@@ -179,6 +179,8 @@ async function handleCodeRun(request, env, origin) {
 
   const baseUrl = (env.JUDGE0_URL || "https://ce.judge0.com")
     .replace(/\/+$/, "");
+  // Bound the entire submission + polling lifecycle, not each request independently.
+  const executionDeadline = Date.now() + 40000;
 
   let submission;
 
@@ -193,7 +195,7 @@ async function handleCodeRun(request, env, origin) {
           language_id: EXECUTABLE_LANGUAGES[body.language],
           stdin: body.stdin || ""
         }),
-        signal: AbortSignal.timeout(15000)
+        signal: AbortSignal.timeout(Math.min(15000, Math.max(1, executionDeadline - Date.now())))
       }
     );
 
@@ -219,8 +221,8 @@ async function handleCodeRun(request, env, origin) {
 
   // Public Judge0 instances may briefly queue requests or rate-limit polling.
   // Retry transient polling failures instead of failing on the first response.
-  for (let attempt = 0; attempt < 12; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  for (let attempt = 0; attempt < 12 && Date.now() < executionDeadline; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, Math.min(1000, Math.max(0, executionDeadline - Date.now()))));
 
     try {
       const response = await fetch(
@@ -228,7 +230,7 @@ async function handleCodeRun(request, env, origin) {
         {
           method: "GET",
           headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(5000)
+          signal: AbortSignal.timeout(Math.min(5000, Math.max(1, executionDeadline - Date.now())))
         }
       );
 
@@ -238,7 +240,7 @@ async function handleCodeRun(request, env, origin) {
         const retryDelay = Number.isFinite(retryAfter) && retryAfter > 0
           ? Math.min(retryAfter * 1000, 2500)
           : Math.min(500 * (attempt + 1), 2000);
-        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        await new Promise(resolve => setTimeout(resolve, Math.min(retryDelay, Math.max(0, executionDeadline - Date.now()))));
         continue;
       }
 
