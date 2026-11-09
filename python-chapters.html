@@ -260,6 +260,8 @@
         const legacyKeys = [
           "cody_python_progress",
           "cody_python_completed_lessons",
+          "cody_xp",
+          "cody_python_xp",
           ...Array.from({ length: 12 }, (_, index) =>
             `cody_python_exam_passed_${index + 1}`
           )
@@ -332,8 +334,12 @@
     }
 
     function renderXp() {
-      const sharedXP = localStorage.getItem(XP_KEY);
-      const legacyXP = localStorage.getItem("cody_python_xp");
+      const sharedXP = activeUserUid
+        ? localStorage.getItem(getScopedStorageKey(XP_KEY))
+        : null;
+      const legacyXP = activeUserUid
+        ? localStorage.getItem(getScopedStorageKey("cody_python_xp"))
+        : null;
       const value = accountXP ?? (Number(sharedXP ?? legacyXP ?? 0) || 0);
       document.getElementById("xpDisplay").textContent = String(value);
     }
@@ -463,6 +469,7 @@
         status.textContent =
           "تعذر تحميل التقدم من الحساب. يتم عرض التقدم المحفوظ على هذا الجهاز.";
 
+        renderXp();
         renderMap();
       }
     }
