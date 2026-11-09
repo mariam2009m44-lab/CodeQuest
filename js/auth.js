@@ -444,7 +444,12 @@ export async function saveLessonProgress({
  * العملية آمنة عند تكرارها لأن الخادم يمنع منح المكافأة أكثر من مرة.
  */
 export async function syncTrustedLessonRewards() {
-  await requireUser();
+  const user = await requireUser();
+  if (!user?.uid) {
+    throw new Error("سجّل الدخول أولًا لمزامنة المكافآت.");
+  }
+
+  const expectedUid = user.uid;
   const syncRewards = httpsCallable(
     functions,
     "syncExistingLessonRewards",
@@ -452,15 +457,20 @@ export async function syncTrustedLessonRewards() {
   );
   const response = await syncRewards({});
   const data = response?.data;
+
+  if (auth.currentUser?.uid !== expectedUid) {
+    throw new Error("تغيّر الحساب أثناء مزامنة المكافآت؛ لم نعرض رصيد حساب آخر.");
+  }
   if (data?.success !== true) {
     throw new Error(data?.message || "تعذرت مزامنة مكافآت الحساب.");
   }
-  const profile = await getUserProfile();
-  return {
-    ...data,
-    xp: Number.isSafeInteger(profile.xp) ? profile.xp : 0,
-    stars: Number.isSafeInteger(profile.stars) ? profile.stars : 0
-  };
+  if (!Number.isSafeInteger(data.xp) || data.xp < 0 ||
+      !Number.isSafeInteger(data.stars) || data.stars < 0) {
+    throw new Error("أعاد الخادم أرصدة مكافآت غير صالحة.");
+  }
+
+  // Callable returns the trusted profile balances; avoid a second Firestore read.
+  return data;
 }
 
 /**
