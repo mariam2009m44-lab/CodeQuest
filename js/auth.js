@@ -17,7 +17,8 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-import { auth, db } from "./firebase-config.js";
+import { auth, db, functions } from "./firebase-config.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 
 const USERS_COLLECTION = "users";
 const MIN_PASSWORD_LENGTH = 6;
@@ -431,6 +432,30 @@ export async function saveLessonProgress({
   } catch (error) {
     throw normalizeError(error);
   }
+}
+
+/**
+ * مزامنة المكافآت التي ثبت اجتيازها على الخادم، ثم إعادة أرصدة الحساب الموثوقة.
+ * العملية آمنة عند تكرارها لأن الخادم يمنع منح المكافأة أكثر من مرة.
+ */
+export async function syncTrustedLessonRewards() {
+  await requireUser();
+  const syncRewards = httpsCallable(
+    functions,
+    "syncExistingLessonRewards",
+    { timeout: 120000 }
+  );
+  const response = await syncRewards({});
+  const data = response?.data;
+  if (data?.success !== true) {
+    throw new Error(data?.message || "تعذرت مزامنة مكافآت الحساب.");
+  }
+  const profile = await getUserProfile();
+  return {
+    ...data,
+    xp: Number.isSafeInteger(profile.xp) ? profile.xp : 0,
+    stars: Number.isSafeInteger(profile.stars) ? profile.stars : 0
+  };
 }
 
 /**
