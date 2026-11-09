@@ -2433,6 +2433,15 @@ html[data-theme="light"] .bottom-action {
 
     const text = getStepText(step);
 
+    if (type === "example") {
+      addBubble(
+        "cody",
+        renderLessonMarkup(text || "شغّل المثال الجاهز ولاحظ الناتج قبل تعديل الكود.")
+      );
+      showEditor(step);
+      return;
+    }
+
     if (type === "game") {
       addBubble(
         "cody",
@@ -3128,6 +3137,28 @@ html[data-theme="light"] .bottom-action {
   async function checkChallengeResult(programOutput, sourceCode = "") {
     if (!currentChallenge || challengeSolved) return;
 
+    if (currentChallenge.runOnly === true) {
+      const expected = String(
+        currentChallenge.expectedOutput ?? currentChallenge.expected ?? ""
+      ).replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      const actual = String(programOutput)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+
+      if (expected && actual === expected) {
+        challengeSolved = true;
+        addBubble(
+          "cody",
+          renderLessonMarkup(currentChallenge.successMsg || "ممتاز! شغّلت المثال وفهمت ناتجه.")
+        );
+        showBottomAction(true);
+      } else {
+        addBubble("cody", "شغّل المثال مرة أخرى، وقارن الناتج بما توقعته.");
+      }
+      return;
+    }
+
     /*
      * اختبارات الفصل النهائي فقط تستخدم فحص الواجهة؛
      * أما تحديات الدروس العادية فيجب اعتمادها من الخادم.
@@ -3262,7 +3293,8 @@ html[data-theme="light"] .bottom-action {
     if (currentStep && (
       currentStep.type === "challenge" ||
       currentStep.type === "code" ||
-      currentStep.type === "coding"
+      currentStep.type === "coding" ||
+      currentStep.type === "example"
     )) {
       if (!challengeSolved) {
         showToast("أكمل التحدي الأول.");
