@@ -841,12 +841,17 @@
       return [...merged.values()];
     }
 
-    async function syncPendingLocalProgress(uid) {
+    async function syncPendingLocalProgress(uid, cloudByLanguage) {
       const result = {};
       for (const language of Object.keys(LANGUAGE_NAMES)) {
         const localRecords = readLocalProgress(uid, language);
         result[language] = localRecords;
+        const cloudKeys = new Set((cloudByLanguage[language] || []).map(
+          record => `${record.chapter}:${record.lesson}`
+        ));
         for (const record of localRecords) {
+          const key = `${record.chapter}:${record.lesson}`;
+          if (cloudKeys.has(key)) continue;
           try {
             await saveLessonProgress({
               language,
@@ -854,6 +859,7 @@
               lesson: record.lesson,
               completed: true
             });
+            cloudKeys.add(key);
           } catch (error) {
             // Keep the local record visible; retry on the next visit.
             console.warn(`تعذرت مزامنة تقدم ${language}:`, error);
@@ -891,8 +897,6 @@
         "جارٍ تحميل ملفات المناهج والتقدم المحفوظ..."
       );
 
-      const localProgress = await syncPendingLocalProgress(user.uid);
-
       const [
         pythonChapters,
         javascriptChapters,
@@ -911,6 +915,13 @@
         getLessonProgress("cpp"),
         getLessonProgress("java")
       ]);
+
+      const localProgress = await syncPendingLocalProgress(user.uid, {
+        python: pythonRawRecords,
+        javascript: javascriptRawRecords,
+        cpp: cppRawRecords,
+        java: javaRawRecords
+      });
 
       const pythonRecords = validateLanguageRecords(
         mergeProgressRecords(pythonRawRecords, localProgress.python),
