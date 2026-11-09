@@ -35,7 +35,7 @@ const LANGUAGE_CONFIG = {
   cpp: {
     label: "C++",
     curriculumUrl: "./json/cpp_curriculum.json",
-    editorLanguage: "cpp",
+    editorLanguage: "text/x-c++src",
     starter: `#include <iostream>
 using namespace std;
 
@@ -184,11 +184,21 @@ function initializeEditor() {
         theme: "dracula",
         indentUnit: 4,
         tabSize: 4,
-        lineWrapping: true,
-        autofocus: false
+        lineWrapping: false,
+        viewportMargin: 20,
+        autofocus: false,
+        extraKeys: {
+          Tab: cm => cm.replaceSelection("    ")
+        }
       });
 
-      editor.setSize("100%", "auto");
+      // The shared CSS controls editor height at every breakpoint.
+      // Refresh after layout changes so the editor never keeps a stale width.
+      const refreshEditor = () => {
+        window.requestAnimationFrame(() => editor?.refresh());
+      };
+      window.addEventListener("resize", refreshEditor, { passive: true });
+      window.visualViewport?.addEventListener("resize", refreshEditor, { passive: true });
 
     } catch (error) {
       console.warn(
@@ -1061,257 +1071,28 @@ async function runJavaScript(code) {
   return result.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
 }
 
-function runPython(code) {
-  return runInSandbox("python", code);
-}
-
-function runInSandbox(language, code) {
-  return new Promise((resolve, reject) => {
-    const frame = document.createElement("iframe");
-
-    frame.setAttribute("sandbox", "allow-scripts");
-    frame.title = `${language} code execution sandbox`;
-    frame.style.display = "none";
-
-    let finished = false;
-    let timeoutId = null;
-
-    const output = [];
-
-    const finish = (error = null) => {
-      if (finished) return;
-
-      finished = true;
-
-      window.removeEventListener(
-        "message",
-        onMessage
-      );
-
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
-      }
-
-      frame.remove();
-
-      if (error) {
-        reject(error);
-      } else {
-        resolve(
-          output.join("\n") ||
-          "تم تشغيل الكود بدون مخرجات."
-        );
-      }
-    };
-
-    const onMessage = (event) => {
-      if (
-        event.source !== frame.contentWindow ||
-        !event.data ||
-        event.data.source !== "codequest-runner" ||
-        event.data.language !== language
-      ) {
-        return;
-      }
-
-      if (event.data.type === "output") {
-        output.push(String(event.data.value));
-      }
-
-      if (event.data.type === "done") {
-        finish();
-      }
-
-      if (event.data.type === "error") {
-        finish(
-          new Error(
-            event.data.value ||
-            "حدث خطأ أثناء تشغيل الكود."
-          )
-        );
-      }
-    };
-
-    window.addEventListener(
-      "message",
-      onMessage
-    );
-
-    timeoutId = window.setTimeout(
-      () => {
-        finish(
-          new Error(
-            "انتهى وقت التشغيل. قد يحتوي الكود على حلقة لا نهائية."
-          )
-        );
-      },
-      language === "python" ? 30000 : 5000
-    );
-
-    const safeCode = JSON.stringify(code)
-      .replace(/</g, "\\u003c");
-
-    const runner = language === "javascript"
-      ? `
-        const userCode = ${safeCode};
-
-        const format = (value) => {
-          if (typeof value === "string") return value;
-
-          if (typeof value === "undefined") {
-            return "undefined";
-          }
-
-          try {
-            const result = JSON.stringify(value);
-
-            return result === undefined
-              ? String(value)
-              : result;
-
-          } catch {
-            return String(value);
-          }
-        };
-
-        console.log = (...args) => {
-          send(
-            "output",
-            args.map(format).join(" ")
-          );
-        };
-
-        console.error = (...args) => {
-          send(
-            "output",
-            "خطأ: " + args.map(format).join(" ")
-          );
-        };
-
-        window.onerror = (message) => {
-          send("error", message);
-        };
-
-        try {
-          (new Function('"use strict";\\n' + userCode))();
-          send("done");
-
-        } catch (error) {
-          send(
-            "error",
-            error?.message || error
-          );
-        }
-      `
-      : `
-        const load = document.createElement("script");
-
-        load.src =
-          "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js";
-
-        load.onload = async () => {
-          try {
-            const pyodide = await loadPyodide();
-
-            const captured = [];
-
-            pyodide.setStdout({
-              batched: (value) => captured.push(value)
-            });
-
-            pyodide.setStderr({
-              batched: (value) => {
-                captured.push("خطأ: " + value);
-              }
-            });
-
-            await pyodide.runPythonAsync(${safeCode});
-
-            for (const line of captured) {
-              send("output", line);
-            }
-
-            send("done");
-
-          } catch (error) {
-            send(
-              "error",
-              error?.message || error
-            );
-          }
-        };
-
-        load.onerror = () => {
-          send(
-            "error",
-            "تعذر تحميل بيئة Python. تحقق من اتصال الإنترنت."
-          );
-        };
-
-        document.head.append(load);
-      `;
-
-    const srcdoc = `<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-</head>
-<body>
-<script>
-(() => {
-  const language = ${JSON.stringify(language)};
-
-  const send = (type, value = "") => {
-    parent.postMessage(
-      {
-        source: "codequest-runner",
-        language,
-        type,
-        value: String(value)
-      },
-      "*"
-    );
-  };
-
-  ${runner}
-})();
-</script>
-</body>
-</html>`;
-
-    frame.srcdoc = srcdoc;
-    document.body.append(frame);
-  });
-}
-function encodeBase64Utf8(value) {
-  const bytes = new TextEncoder().encode(value);
-
-  let binary = "";
-
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return btoa(binary);
-}
-
-function decodeBase64Utf8(value) {
-  if (!value) return "";
-
-  const binary = atob(value);
-
-  const bytes = Uint8Array.from(
-    binary,
-    (character) => character.charCodeAt(0)
+async function runPython(code) {
+  const result = await runCodeOnServer(
+    "python",
+    code,
+    byId("stdinInput")?.value || ""
   );
 
-  return new TextDecoder().decode(bytes);
-}
+  const diagnostics = [
+    result.compileOutput,
+    result.stderr,
+    result.message
+  ].filter(Boolean).join("\n").trim();
 
-function wait(milliseconds) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, milliseconds);
-  });
+  if (!result.ok) {
+    throw new Error(
+      diagnostics ||
+      result.status ||
+      "لم ينجح تشغيل Python. راجع الكود وحاول مرة أخرى."
+    );
+  }
+
+  return result.stdout || "تم تشغيل Python بنجاح، لكن لم تظهر مخرجات.";
 }
 
 async function runCpp(code) {

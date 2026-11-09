@@ -48,11 +48,23 @@ jobs:
         run: |
           node --input-type=module --check < js/auth.js
           node --input-type=module --check < js/code-runner.js
+          node --input-type=module --check < js/lecture.js
+
+      - name: Validate embedded editor modules
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; for (const file of ["playground.html", "java-lessons.html"]) { const html = fs.readFileSync(file, "utf8"); const open = "<script type=\"module\">"; const close = "</script>"; const start = html.indexOf(open); const end = html.indexOf(close, start); if (start < 0 || end < 0) throw new Error("Module script missing in " + file); fs.writeFileSync("/tmp/" + file.replace(".html", ".mjs"), html.slice(start + open.length, end)); }'
+          node --check /tmp/playground.mjs
+          node --check /tmp/java-lessons.mjs
 
       - name: Validate Java lesson page
         run: |
           node --input-type=module -e 'import fs from "node:fs"; const html = fs.readFileSync("java-lessons.html", "utf8"); const open = "<script type=\"module\">"; const close = "</script>"; const start = html.indexOf(open); const end = html.indexOf(close, start); if (start < 0 || end < 0) throw new Error("Java lesson module script missing"); fs.writeFileSync("/tmp/java-lessons.mjs", html.slice(start + open.length, end)); const ids = html.match(/id: "java-[0-9]+-[0-9]+"/g) || []; if (ids.length !== 16) throw new Error("Expected 16 implemented Java lessons"); if ((html.match(/id="quizFeedback"/g) || []).length !== 1) throw new Error("Quiz feedback element must be unique");'
           node --check /tmp/java-lessons.mjs
+
+      - name: Check responsive editor integration
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; const pages = ["lecture.html", "python-lesson.html", "java-lessons.html", "playground.html"]; for (const page of pages) { const html = fs.readFileSync(page, "utf8"); if (!html.includes("css/code-editor.css")) throw new Error("Shared editor CSS missing from " + page); } const lecture = fs.readFileSync("lecture.html", "utf8"); for (const asset of ["mode/clike/clike.min.js", "addon/edit/closebrackets.min.js", "addon/edit/matchbrackets.min.js"]) if (!lecture.includes(asset)) throw new Error("Missing CodeMirror asset: " + asset); const source = fs.readFileSync("js/lecture.js", "utf8"); if (!source.includes("editorLanguage: \"text/x-c++src\"")) throw new Error("C++ CodeMirror mode is not configured"); const python = fs.readFileSync("python-lesson.html", "utf8"); if (python.includes("viewportMargin: Infinity") || python.includes("editor?.focus()")) throw new Error("Python editor still forces excessive rendering or keyboard focus"); const playground = fs.readFileSync("playground.html", "utf8"); if (!playground.includes("runCodeOnServer(language, code, stdin)")) throw new Error("Playground does not use the shared code runner");'
+
 
       - name: Setup Python
         uses: actions/setup-python@v5
