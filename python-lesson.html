@@ -3338,6 +3338,27 @@ html[data-theme="light"] .bottom-action {
   // 20) تحميل الدرس الحالي
   // ==========================================
 
+  function updateCurrentLessonUrl() {
+    const params = new URLSearchParams(window.location.search);
+    params.set("ch", String(currentChapterId));
+    params.set("lesson", String(currentLessonIndex + 1));
+
+    const matchingGameReturn =
+      params.get("gameDone") === "1" &&
+      params.get("gameFor") === getLessonKey(currentChapterId, currentLessonIndex);
+
+    if (!matchingGameReturn) {
+      params.delete("gameDone");
+      params.delete("gameFor");
+    }
+
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
+  }
+
   function loadCurrentLesson() {
     const lessons = getChapterLessons(
       currentChapterId
@@ -3366,6 +3387,7 @@ html[data-theme="light"] .bottom-action {
 
     if (!currentLesson) return;
 
+    updateCurrentLessonUrl();
     currentStepIndex = 0;
     currentStep = null;
     stepCompleted = false;
