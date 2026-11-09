@@ -219,8 +219,8 @@ async function handleCodeRun(request, env, origin) {
 
   // Public Judge0 instances may briefly queue requests or rate-limit polling.
   // Retry transient polling failures instead of failing on the first response.
-  for (let attempt = 0; attempt < 20; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+  for (let attempt = 0; attempt < 12; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
       const response = await fetch(
@@ -228,13 +228,26 @@ async function handleCodeRun(request, env, origin) {
         {
           method: "GET",
           headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(10000)
+          signal: AbortSignal.timeout(5000)
         }
       );
 
       if (response.status === 429 || response.status >= 500) {
         lastPollingError = `HTTP_${response.status}`;
+        const retryAfter = Number(response.headers.get("Retry-After"));
+        const retryDelay = Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(retryAfter * 1000, 2500)
+          : Math.min(500 * (attempt + 1), 2000);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
         continue;
+      }
+
+      if (!response.ok) {
+        console.error("Judge0 rejected polling request:", response.status);
+        return jsonResponse({
+          success: false,
+          message: "رفضت خدمة التشغيل طلب الحصول على النتيجة."
+        }, 502, origin);
       }
 
       result = await readJudge0Response(response);
