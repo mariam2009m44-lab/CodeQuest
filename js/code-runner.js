@@ -5,11 +5,11 @@ import {
   httpsCallable
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 
-const runCodeCallable = httpsCallable(
-  functions,
-  "runCode",
-  { timeout: 40000 }
-);
+import { auth } from "./firebase-config.js";
+import { requireUser } from "./auth.js";
+
+const CODE_RUNNER_URL =
+  "https://codequest.mariam2009m44.workers.dev";
 
 const verifyJavaCallable = httpsCallable(
   functions,
@@ -42,36 +42,49 @@ export async function runCodeOnServer(language, code, stdin = "") {
   }
 
   try {
-    const response = await runCodeCallable({
-      language,
-      code,
-      stdin
+    const user = auth.currentUser || await requireUser();
+    const idToken = await user.getIdToken();
+
+    const response = await fetch(\`\${CODE_RUNNER_URL}/api/code/run\`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": \`Bearer \${idToken}\`
+      },
+      body: JSON.stringify({
+        language,
+        code,
+        stdin
+      })
     });
 
-    if (!response || !response.data) {
-      throw new Error("لم تصل نتيجة من خدمة تشغيل الأكواد.");
+    let result;
+
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error("وصل رد غير مفهوم من خدمة تشغيل الأكواد.");
     }
 
-    return response.data;
-  } catch (error) {
-    console.error("Code execution error:", error);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("انتهت جلسة تسجيل الدخول. سجّلي الدخول مرة أخرى.");
+      }
 
-    const errorCode = String(error?.code || "")
-      .replace(/^functions\//, "");
-
-    if (errorCode === "unauthenticated") {
-      throw new Error("سجّلي الدخول أولًا لتشغيل الأكواد.");
-    }
-
-    if (errorCode === "unavailable") {
-      throw new Error("خدمة تشغيل الأكواد غير متاحة حاليًا.");
-    }
-
-    if (errorCode === "deadline-exceeded") {
       throw new Error(
-        "استغرق تشغيل الكود وقتًا طويلًا. حاولي مرة أخرى."
+        result?.message || "خدمة تشغيل الأكواد غير متاحة حاليًا."
       );
     }
+
+    if (!result || typeof result.ok !== "boolean") {
+      throw new Error(
+        result?.message || "لم تصل نتيجة صحيحة من خدمة تشغيل الأكواد."
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Code execution error:", error);
 
     if (error instanceof Error && error.message) {
       throw error;
