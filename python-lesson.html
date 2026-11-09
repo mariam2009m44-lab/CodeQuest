@@ -1670,12 +1670,18 @@
 
 
   // ==========================================
-  // 2) التخزين المحلي
+  // 2) التخزين المحلي الخاص بكل حساب
   // ==========================================
+
+  let activeUserUid = "anonymous";
+
+  function getScopedStorageKey(key) {
+    return `codequest_${activeUserUid}_${key}`;
+  }
 
   function readStorage(key, fallback) {
     try {
-      const value = localStorage.getItem(key);
+      const value = localStorage.getItem(getScopedStorageKey(key));
 
       return value === null
         ? fallback
@@ -1690,7 +1696,7 @@
   function writeStorage(key, value) {
     try {
       localStorage.setItem(
-        key,
+        getScopedStorageKey(key),
         JSON.stringify(value)
       );
 
@@ -1702,33 +1708,39 @@
     }
   }
 
-  const storedCompletedLessons = readStorage(
-    "cody_python_completed_lessons",
-    []
-  );
+  let completedLessonKeys = new Set();
+  let completedChapters = new Set();
 
-  const storedCompletedChapters = readStorage(
-    "cody_python_progress",
-    []
-  );
+  function loadLocalProgressState() {
+    const storedCompletedLessons = readStorage(
+      "cody_python_completed_lessons",
+      []
+    );
+    const storedCompletedChapters = readStorage(
+      "cody_python_progress",
+      []
+    );
 
-  const completedLessonKeys = new Set(
-    (Array.isArray(storedCompletedLessons) ? storedCompletedLessons : [])
-      .map(String)
-  );
+    completedLessonKeys = new Set(
+      (Array.isArray(storedCompletedLessons) ? storedCompletedLessons : [])
+        .map(String)
+    );
 
-  // يدعم التنسيق القديم (مصفوفة) والجديد (كائن) دون فقدان تقدم المستخدم.
-  const normalizedCompletedChapters = Array.isArray(storedCompletedChapters)
-    ? storedCompletedChapters
-    : Array.isArray(storedCompletedChapters?.completed)
-      ? storedCompletedChapters.completed
-      : [];
+    // يدعم التنسيق القديم (مصفوفة) والجديد (كائن).
+    const normalizedCompletedChapters = Array.isArray(storedCompletedChapters)
+      ? storedCompletedChapters
+      : Array.isArray(storedCompletedChapters?.completed)
+        ? storedCompletedChapters.completed
+        : [];
 
-  const completedChapters = new Set(
-    normalizedCompletedChapters
-      .map(Number)
-      .filter(Number.isInteger)
-  );
+    completedChapters = new Set(
+      normalizedCompletedChapters
+        .map(Number)
+        .filter(Number.isInteger)
+    );
+  }
+
+  loadLocalProgressState();
 
   function getLessonKey(chapterId, lessonIndex) {
     return `${Number(chapterId)}_${Number(lessonIndex)}`;
@@ -3720,6 +3732,28 @@ async function loadStudentData() {
       ]);
 
     const user = await authModule.requireUser();
+    activeUserUid = user.uid;
+    loadLocalProgressState();
+
+    const cloudProgress = await authModule.getLessonProgress("python");
+    for (const record of cloudProgress) {
+      completedLessonKeys.add(
+        getLessonKey(Number(record.chapter) + 1, record.lesson)
+      );
+    }
+
+    for (const chapterId of getChapterIds()) {
+      const normalLessons = getChapterLessons(chapterId)
+        .map((lesson, index) => ({ lesson, index }))
+        .filter(({ lesson }) => !isExamLesson(lesson));
+      if (normalLessons.length && normalLessons.every(({ index }) =>
+        isLessonCompleted(chapterId, index)
+      )) {
+        completedChapters.add(Number(chapterId));
+      }
+    }
+    saveLocalProgress();
+
     const userRef = firestoreModule.doc(firebaseModule.db, "users", user.uid);
     const snapshot = await firestoreModule.getDoc(userRef);
     const userData = snapshot.exists() ? snapshot.data() : {};
