@@ -108,8 +108,8 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark"><i class="ri-robot-2-line" aria-hidden="true"></i></span><span>Cody Academy</span></div>
       <nav class="nav-actions" aria-label="التنقل">
-        <a class="nav-btn" href="games.html"><i class="ri-gamepad-line"></i><span>مركز الألعاب</span></a>
-        <a class="nav-btn" href="dashboard.html"><i class="ri-home-5-line"></i><span>الرئيسية</span></a>
+        <a class="nav-btn" href="games.html" aria-label="العودة إلى مركز الألعاب"><i class="ri-gamepad-line" aria-hidden="true"></i><span>مركز الألعاب</span></a>
+        <a class="nav-btn" href="dashboard.html" aria-label="العودة إلى الصفحة الرئيسية"><i class="ri-home-5-line" aria-hidden="true"></i><span>الرئيسية</span></a>
       </nav>
     </header>
 
@@ -184,19 +184,29 @@
       right:{label:"TURN RIGHT",icon:"↷"}
     };
     const $ = id => document.getElementById(id);
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let levelIndex=0,program=[],running=false,completed=new Set(),score=0,bestScore=Number(localStorage.getItem("cody3dBestScore")||0);
+    function safeStorageGet(key,fallback=null){
+      try{const value=window.localStorage.getItem(key);return value===null?fallback:value;}
+      catch(error){console.warn("Local storage unavailable:",error);return fallback;}
+    }
+    function safeStorageSet(key,value){
+      try{window.localStorage.setItem(key,String(value));return true;}
+      catch(error){console.warn("Could not persist game progress:",error);return false;}
+    }
+    const reducedMotion = Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)
+      || safeStorageGet("cq_motion","on")==="off";
+    let levelIndex=0,program=[],running=false,completed=new Set(),score=0,bestScore=Number(safeStorageGet("cody3dBestScore","0"))||0;
     let position=[0,0],direction=0,collected=new Set(),THREE=null,renderer=null,scene=null,camera=null,robot=null,world=null,goalRing=null,gemMeshes=[],clock=null,animationFrame=null;
     const vectors=[[0,-1],[1,0],[0,1],[-1,0]];
     $("bestScore").textContent=bestScore;
 
     function readCompleted(){
-      try{completed=new Set(JSON.parse(localStorage.getItem("cody3dCompleted")||"[]").filter(n=>Number.isInteger(n)&&n>=0&&n<LEVELS.length));}
+      try{completed=new Set(JSON.parse(safeStorageGet("cody3dCompleted","[]")).filter(n=>Number.isInteger(n)&&n>=0&&n<LEVELS.length));}
       catch{completed=new Set();}
     }
     readCompleted();
 
     function buildLevelButtons(){
+      const restoreFocus=document.activeElement?.classList.contains("level-pill");
       $("levelPills").innerHTML="";
       LEVELS.forEach((level,index)=>{
         const button=document.createElement("button");
@@ -206,6 +216,7 @@
         button.addEventListener("click",()=>selectLevel(index));
         $("levelPills").append(button);
       });
+      if(restoreFocus)$("levelPills").querySelector(".level-pill.active")?.focus();
     }
     function setFeedback(message,type=""){
       const box=$("feedback");box.className="feedback"+(type?" "+type:"");box.textContent=message;
@@ -340,7 +351,7 @@
     }
     function collectGem(){
       const key=position[0]+","+position[1];
-      if(collected.has(key))return;
+      if(collected.has(key)){renderFallbackBoard();return;}
       const level=LEVELS[levelIndex];
       if(level.gems.some(([x,z])=>x===position[0]&&z===position[1])){
         collected.add(key);score+=20;
@@ -394,8 +405,10 @@
       const allGems=collected.size===level.gems.length;
       if(reached&&allGems){
         score+=100;completed.add(levelIndex);
-        localStorage.setItem("cody3dCompleted",JSON.stringify([...completed]));
-        bestScore=Math.max(bestScore,score);localStorage.setItem("cody3dBestScore",String(bestScore));
+        safeStorageSet("cody3dCompleted",JSON.stringify([...completed]));
+        bestScore=Math.max(bestScore,score);safeStorageSet("cody3dBestScore",String(bestScore));
+        const totalScore=Number(safeStorageGet("codyTotalScore","0"))||0;
+        safeStorageSet("codyTotalScore",totalScore+score);
         $("bestScore").textContent=bestScore;
         $("winText").textContent="جمعت كل النجوم وأنهيت المهمة في "+program.length+" أمرًا. نقاط هذه الجولة: "+score+".";
         $("winBanner").classList.add("show");
@@ -437,9 +450,11 @@
         new ResizeObserver(resize).observe($("sceneWrap"));resize();
         $("sceneLoading").style.display="none";
         renderer.setAnimationLoop(time=>{
-          if(goalRing)goalRing.rotation.z=Math.sin(time*.0018)*.12;
-          gemMeshes.forEach((gem,index)=>{if(gem.visible){gem.rotation.y=time*.0015+index;gem.position.y=.48+Math.sin(time*.002+index)*.07;}});
-          if(robot&&!running)robot.position.y=.08+Math.sin(time*.0022)*.035;
+          if(!reducedMotion){
+            if(goalRing)goalRing.rotation.z=Math.sin(time*.0018)*.12;
+            gemMeshes.forEach((gem,index)=>{if(gem.visible){gem.rotation.y=time*.0015+index;gem.position.y=.48+Math.sin(time*.002+index)*.07;}});
+            if(robot&&!running)robot.position.y=.08+Math.sin(time*.0022)*.035;
+          }
           renderer.render(scene,camera);
         });
       }catch(error){
