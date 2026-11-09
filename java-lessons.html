@@ -1436,7 +1436,14 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             indentWithTabs: false,
             lineWrapping: true,
             inputStyle: "contenteditable",
-            screenReaderLabel: "محرر كود Java"
+            screenReaderLabel: "محرر كود Java",
+            extraKeys: {
+              Tab: cm => {
+                if (cm.somethingSelected()) cm.indentSelection("add");
+                else cm.replaceSelection(" ".repeat(cm.getOption("indentUnit") || 4), "end");
+              },
+              "Shift-Tab": cm => cm.indentSelection("subtract")
+            }
           });
 
           editor.setSize("100%", null);
