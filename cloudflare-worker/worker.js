@@ -266,29 +266,78 @@ async function handleCodeRun(request, env, origin) {
   // Bound the entire submission + polling lifecycle, not each request independently.
   const executionDeadline = Date.now() + 40000;
 
-  let submission;
+  let submission = null;
+  let submissionError = null;
 
-  try {
-    const response = await fetch(
-      `${baseUrl}/submissions?base64_encoded=false&wait=false`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source_code: body.code,
-          language_id: EXECUTABLE_LANGUAGES[body.language],
-          stdin: body.stdin || ""
-        }),
-        signal: AbortSignal.timeout(Math.min(15000, Math.max(1, executionDeadline - Date.now())))
+  // Retry only explicit rate-limit/early-rejection responses. A network
+  // timeout or an ambiguous 5xx may have created a job already, so do not
+  // blindly submit the same source twice.
+  for (let attempt = 0; attempt < 3 && Date.now() < executionDeadline; attempt++) {
+    let response;
+    try {
+      response = await fetch(
+        `${baseUrl}/submissions?base64_encoded=false&wait=false`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source_code: body.code,
+            language_id: EXECUTABLE_LANGUAGES[body.language],
+            stdin: body.stdin || ""
+          }),
+          signal: AbortSignal.timeout(Math.min(15000, Math.max(1, executionDeadline - Date.now())))
+        }
+      );
+    } catch (error) {
+      submissionError = error?.message || "SUBMISSION_NETWORK_ERROR";
+      console.error("Judge0 submission request failed:", submissionError);
+      break;
+    }
+
+    if ([425, 429].includes(response.status)) {
+      submissionError = `HTTP_${response.status}`;
+      const retryAfterHeader = response.headers.get("Retry-After");
+      const retryAfterSeconds = Number(retryAfterHeader);
+      const retryAfterDate = retryAfterHeader && !Number.isFinite(retryAfterSeconds)
+        ? Date.parse(retryAfterHeader)
+        : NaN;
+      const retryAfterMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+        ? retryAfterSeconds * 1000
+        : Number.isFinite(retryAfterDate)
+          ? Math.max(0, retryAfterDate - Date.now())
+          : Math.min(500 * (attempt + 1), 1800);
+
+      await response.body?.cancel().catch(() => {});
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(
+          resolve,
+          Math.min(retryAfterMs, 2500, Math.max(0, executionDeadline - Date.now()))
+        ));
+        continue;
       }
-    );
+      break;
+    }
 
-    submission = await readJudge0Response(response);
-  } catch (error) {
-    console.error("Judge0 submission error:", error);
+    if (!response.ok) {
+      submissionError = `HTTP_${response.status}`;
+      console.error("Judge0 rejected submission:", submissionError);
+      break;
+    }
+
+    try {
+      submission = await readJudge0Response(response);
+    } catch (error) {
+      submissionError = error?.message || "INVALID_SUBMISSION_RESPONSE";
+      console.error("Judge0 submission response failed:", submissionError);
+    }
+    break;
+  }
+
+  if (!submission?.token) {
     return jsonResponse({
       success: false,
-      message: "تعذر إرسال الكود إلى خدمة التشغيل حاليًا."
+      errorCode: submissionError || "SUBMISSION_FAILED",
+      message: "تعذر إرسال الكود إلى خدمة التشغيل حاليًا. انتظر قليلًا ثم حاول مرة أخرى."
     }, 503, origin);
   }
 
