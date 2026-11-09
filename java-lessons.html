@@ -755,7 +755,11 @@
   <script type="module">
     "use strict";
 
-    import { verifyJavaChallenge, runCodeOnServer } from "./js/code-runner.js";
+    import {
+      verifyJavaChallenge,
+      runCodeOnServer,
+      syncExistingLessonRewards
+    } from "./js/code-runner.js";
     import { saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
     const PROGRESS_KEY = "cody_java_progress";
@@ -1751,7 +1755,45 @@
       updateNavigationButtons();
 
       if (alreadyCompletedInCloud) {
-        showNotice("تمت مزامنة إكمال هذا الدرس مع حسابك.", "success");
+        if (challengeVerifiedOnServer) {
+          try {
+            // قد يكون الدرس محفوظًا من إصدار سابق قبل تفعيل المكافآت الخادمية.
+            const rewardSync = await syncExistingLessonRewards();
+
+            accountXP = Number.isSafeInteger(rewardSync.xp)
+              ? rewardSync.xp
+              : accountXP;
+            accountStars = Number.isSafeInteger(rewardSync.stars)
+              ? rewardSync.stars
+              : accountStars;
+
+            updateStats();
+            showNotice(
+              "تمت مزامنة الدرس ومراجعة رصيد XP والنجوم من حسابك.",
+              "success"
+            );
+          } catch (rewardError) {
+            console.warn("تعذر مزامنة مكافآت Java السابقة:", rewardError);
+
+            const rewardsUpdated = await refreshAccountStats(
+              previousXP,
+              previousStars
+            );
+
+            showNotice(
+              rewardsUpdated
+                ? "تمت مزامنة الدرس وتحديث رصيد حسابك."
+                : "تمت مزامنة إكمال الدرس، لكن تعذر تأكيد مكافآت XP والنجوم. تحقق من نشر وظائف Firebase.",
+              rewardsUpdated ? "success" : "info"
+            );
+          }
+        } else {
+          showNotice(
+            "تمت مزامنة إكمال هذا الدرس مع حسابك. المكافآت المركزية ستعمل بعد نشر دالة التحقق الخادمي على Firebase.",
+            "info"
+          );
+        }
+
         return;
       }
 
