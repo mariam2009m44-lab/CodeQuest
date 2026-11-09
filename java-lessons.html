@@ -1547,12 +1547,15 @@
           );
           challengeVerifiedOnServer = true;
         } catch (verificationError) {
-          const errorCode = String(verificationError?.code || "");
-          if (!/not-found|unimplemented/.test(errorCode)) {
+          const errorCode = String(verificationError?.code || "")
+            .replace(/^functions\//, "");
+
+          // عند تعذر الوصول إلى Callable، استخدم تنفيذ Worker كمسار احتياطي.
+          // لا يُنشأ إثبات مكافأة خادمي في هذا المسار؛ لذلك لا تُمنح XP أو نجوم.
+          if (!/not-found|unimplemented|unavailable|deadline-exceeded|internal|unknown/.test(errorCode)) {
             throw verificationError;
           }
 
-          // توافق مؤقت مع مشروع Firebase قبل نشر الدالة الجديدة.
           const fallback = await runCodeOnServer("java", code);
           if (!fallback.ok) {
             const diagnostic = [
