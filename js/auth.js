@@ -380,7 +380,8 @@ export async function saveLessonProgress({
   language,
   chapter,
   lesson,
-  completed = true
+  completed = true,
+  expectedUid = null
 }) {
   validateLanguage(language);
   validateLessonPosition(chapter, lesson);
@@ -393,6 +394,10 @@ export async function saveLessonProgress({
 
   if (!user?.uid) {
     throw new Error("سجّل الدخول أولًا لحفظ التقدم.");
+  }
+
+  if (expectedUid && user.uid !== expectedUid) {
+    throw new Error("تغيّر الحساب أثناء مزامنة التقدم؛ أُوقفت العملية لحماية بيانات الحساب.");
   }
 
   try {
