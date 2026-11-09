@@ -1806,6 +1806,38 @@ html[data-theme="light"] .bottom-action {
     return `codequest_${activeUserUid}_${key}`;
   }
 
+  function migrateLegacyPythonStorage(uid) {
+    if (!uid) return;
+
+    const markerKey = "cody_python_legacy_migrated_uid";
+    try {
+      const previousOwner = localStorage.getItem(markerKey);
+      if (previousOwner) return;
+
+      const legacyKeys = [
+        "cody_python_progress",
+        "cody_python_completed_lessons",
+        ...Array.from({ length: 12 }, (_, index) =>
+          `cody_python_exam_passed_${index + 1}`
+        )
+      ];
+
+      for (const legacyKey of legacyKeys) {
+        const legacyValue = localStorage.getItem(legacyKey);
+        const scopedKey = `codequest_${uid}_${legacyKey}`;
+        if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+          localStorage.setItem(scopedKey, legacyValue);
+        }
+      }
+
+      // The old keys had no account owner. Assign them once to the first
+      // authenticated account and never copy them to a different account.
+      localStorage.setItem(markerKey, uid);
+    } catch (error) {
+      console.warn("تعذرت ترقية بيانات Python القديمة:", error);
+    }
+  }
+
   function readStorage(key, fallback) {
     try {
       const value = localStorage.getItem(getScopedStorageKey(key));
@@ -3208,17 +3240,20 @@ html[data-theme="light"] .bottom-action {
         currentLessonIndex
       );
 
-      try {
-        const authModule = await import("./js/auth.js");
-        const rewards = await authModule.syncTrustedLessonRewards();
-        accountXP = rewards.xp;
-        accountStars = rewards.stars;
-        updateProgressDisplay();
-        showToast("تم حفظ الدرس وتحديث XP والنجوم من حسابك.");
-      } catch (rewardError) {
-        console.warn("تعذر تحديث مكافآت Python من الحساب:", rewardError);
-        showToast("تم حفظ الدرس. تحديث XP والنجوم ينتظر اتصال خدمة المكافآت.");
-      }
+      // لا نؤخر انتقال المتعلم بسبب طلب مزامنة المكافآت؛
+      // يتم تحديث الرصيد في الخلفية بعد حفظ الدرس.
+      void import("./js/auth.js")
+        .then(authModule => authModule.syncTrustedLessonRewards())
+        .then(rewards => {
+          accountXP = rewards.xp;
+          accountStars = rewards.stars;
+          updateProgressDisplay();
+          showToast("تم تحديث XP والنجوم من الحساب.");
+        })
+        .catch(rewardError => {
+          console.warn("تعذر تحديث مكافآت Python من الحساب:", rewardError);
+          showToast("تم حفظ الدرس. ستتحدث المكافآت عند عودة خدمة الحساب.");
+        });
     }
 
     clearChat();
@@ -3723,11 +3758,17 @@ html[data-theme="light"] .bottom-action {
       true
     );
 
+    completedChapters.add(Number(currentChapterId));
+    saveLocalProgress();
+
     // الامتحان له سجل مستقل حتى لا يُحسب كدرس عادي.
-    await saveProgressToFirebase({
+    const cloudSaved = await saveProgressToFirebase({
       chapter: Number(currentChapterId) - 1,
       lesson: 104
     });
+    if (!cloudSaved) {
+      showToast("تم حفظ نجاح الامتحان على هذا الجهاز، وستتم مزامنته عند عودة الاتصال.");
+    }
   }
 }
 
@@ -3907,6 +3948,7 @@ async function loadStudentData() {
 
     const user = await authModule.requireUser();
     activeUserUid = user.uid;
+    migrateLegacyPythonStorage(activeUserUid);
     loadLocalProgressState();
 
     try {
