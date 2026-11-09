@@ -458,6 +458,39 @@
       gap: 8px;
     }
 
+    .editor-size-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      background: #111827;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .editor-size-controls button {
+      min-height: 36px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .editor-size-controls button[aria-pressed="true"] {
+      border-color: var(--cyan);
+      background: rgba(75,213,242,.12);
+      color: var(--cyan);
+    }
+
+    .editor-size-controls button:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
     .btn-run,
     .editor-close-btn {
       display: inline-flex;
@@ -1336,8 +1369,22 @@
 
       .editor-wrapper.show .CodeMirror,
       .editor-wrapper.show .CodeMirror-scroll {
-        height: clamp(190px, 34dvh, 270px) !important;
-        min-height: 190px;
+        min-height: 0;
+      }
+
+      .editor-wrapper.show .code-area {
+        flex: 0 0 auto;
+        min-height: 0;
+      }
+
+      .editor-size-controls {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .editor-size-controls button {
+        min-height: 40px;
       }
 
       .editor-wrapper.show #pythonStdin {
@@ -2373,6 +2420,13 @@
         </div>
       </div>
 
+      <div class="editor-size-controls" role="group" aria-label="حجم محرر الأكواد">
+        <span>حجم المحرر</span>
+        <button type="button" data-editor-height="220" aria-pressed="false">صغير</button>
+        <button type="button" data-editor-height="300" aria-pressed="true">متوسط</button>
+        <button type="button" data-editor-height="420" aria-pressed="false">كبير</button>
+      </div>
+
       <div class="code-area">
         <textarea
           id="pythonCodeInput"
@@ -2443,6 +2497,12 @@
 
     initializePythonEditor();
 
+    wrapper.querySelectorAll("[data-editor-height]").forEach(button => {
+      button.addEventListener("click", () => {
+        setPythonEditorHeight(Number(button.dataset.editorHeight));
+      });
+    });
+
     $("runPythonBtn")?.addEventListener(
       "click",
       runPythonChallenge
@@ -2503,11 +2563,12 @@
         }
       );
 
-      editor.setSize("100%", "360px");
+      setPythonEditorHeight(
+        window.matchMedia("(max-width: 900px)").matches ? 260 : 320
+      );
 
       requestAnimationFrame(() => {
         editor?.refresh();
-        editor?.focus();
       });
 
     } catch (error) {
@@ -2518,6 +2579,32 @@
 
       editor = null;
     }
+  }
+
+
+  function setPythonEditorHeight(height) {
+    const allowedHeights = [220, 300, 420];
+    const nextHeight = allowedHeights.includes(height) ? height : 300;
+    const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
+    const textarea = $("pythonCodeInput");
+
+    if (codeArea) {
+      codeArea.style.height = `${nextHeight}px`;
+      codeArea.style.flex = "0 0 auto";
+    }
+
+    if (editor) {
+      editor.setSize("100%", `${nextHeight}px`);
+      editor.refresh();
+    } else if (textarea) {
+      textarea.style.height = `${nextHeight}px`;
+      textarea.style.minHeight = "0";
+    }
+
+    document.querySelectorAll("#pythonEditorWrapper [data-editor-height]").forEach(button => {
+      const active = Number(button.dataset.editorHeight) === nextHeight;
+      button.setAttribute("aria-pressed", String(active));
+    });
   }
 
 
