@@ -877,6 +877,26 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     function progressStorageKey() {
       return `cody_java_progress_${currentUserId}`;
     }
+
+    function migrateLegacyJavaProgress(uid) {
+      if (!uid) return;
+      try {
+        const markerKey = "cody_java_legacy_migrated_uid";
+        if (localStorage.getItem(markerKey)) return;
+
+        const legacyKey = "cody_java_progress";
+        const scopedKey = `cody_java_progress_${uid}`;
+        const legacyValue = localStorage.getItem(legacyKey);
+        if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+          localStorage.setItem(scopedKey, legacyValue);
+        }
+
+        // The previous key had no account owner; migrate it only once.
+        localStorage.setItem(markerKey, uid);
+      } catch (error) {
+        console.warn("تعذرت ترقية تقدم Java القديم:", error);
+      }
+    }
     const XP_KEY = "cody_java_xp";
 
     /*
@@ -2117,6 +2137,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       try {
         const signedInUser = await requireUser();
         currentUserId = signedInUser.uid;
+        migrateLegacyJavaProgress(currentUserId);
         const profile = await loadLessonAvatar();
 
         allLessons = CURRICULUM.flatMap(chapter => chapter.lessons);
