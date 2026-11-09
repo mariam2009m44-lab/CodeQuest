@@ -755,7 +755,7 @@
   <script type="module">
     "use strict";
 
-    import { verifyJavaChallenge, runCodeOnServer } from "./js/code-runner.js";
+    import { verifyJavaChallenge, verifyJavaQuizAnswer, runCodeOnServer } from "./js/code-runner.js";
     import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile, syncTrustedLessonRewards } from "./js/auth.js";
 
     let currentUserId = "anonymous";
@@ -1154,6 +1154,7 @@
     let editor = null;
     let selectedQuizAnswer = null;
     let quizAnswered = false;
+    let quizVerifiedOnServer = false;
     let challengeVerified = false;
     let challengeVerifiedOnServer = false;
     let accountXP = null;
@@ -1359,6 +1360,7 @@
       container.replaceChildren();
       selectedQuizAnswer = null;
       quizAnswered = false;
+      quizVerifiedOnServer = false;
 
       if (!quiz) return;
 
@@ -1412,7 +1414,31 @@
       }
     }
 
-    function checkQuizAnswer() {
+    async function verifySelectedQuizOnServer() {
+      if (!challengeVerifiedOnServer || !quizAnswered || quizVerifiedOnServer) return;
+      const position = /^java-(\\d+)-(\\d+)$/.exec(currentLessonId || "");
+      if (!position) return;
+
+      try {
+        const result = await verifyJavaQuizAnswer(
+          Number(position[1]) - 1,
+          Number(position[2]) - 1,
+          selectedQuizAnswer
+        );
+        if (result.correct === true) {
+          quizVerifiedOnServer = true;
+          showNotice("تم التحقق من سؤال الفهم على الخادم.", "success");
+        } else {
+          showNotice(result.message || "تعذر اعتماد إجابة سؤال الفهم.", "error");
+        }
+      } catch (error) {
+        console.warn("Java quiz server verification unavailable:", error);
+        showNotice("إجابتك صحيحة محليًا، لكن تعذر اعتمادها على الخادم. لن تُمنح مكافأة قبل التحقق.", "info");
+      }
+      updateNavigationButtons();
+    }
+
+    async function checkQuizAnswer() {
       const lesson = findLesson(currentLessonId);
       const feedback = document.getElementById("quizFeedback");
 
@@ -1434,6 +1460,7 @@
           `input[name="lesson-quiz"][value="${selectedQuizAnswer}"]`
         )?.closest(".quiz-option");
         selectedOption?.classList.add("correct");
+        await verifySelectedQuizOnServer();
         updateNavigationButtons();
       } else {
         feedback.textContent = "الإجابة غير صحيحة. راجع الشرح أو التلميح ثم حاول مرة أخرى.";
@@ -1451,6 +1478,7 @@
       currentLessonId = lesson.id;
       challengeVerified = false;
       challengeVerifiedOnServer = false;
+      quizVerifiedOnServer = false;
 
       const hint = document.getElementById("lessonHint");
       if (hint) hint.hidden = true;
@@ -1619,6 +1647,9 @@
         }
 
         challengeVerified = true;
+        if (challengeVerifiedOnServer && quizAnswered) {
+          await verifySelectedQuizOnServer();
+        }
         const output = String(result.stdout || "").trim();
         setOutput(
           (challengeVerifiedOnServer
@@ -1743,7 +1774,17 @@
       }
 
       if (alreadyCompleted) {
-        showNotice("تمت مزامنة إكمال هذا الدرس مع حسابك.", "success");
+        if (challengeVerifiedOnServer && quizVerifiedOnServer) {
+          const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
+          showNotice(
+            rewardsUpdated
+              ? "تم تحديث مكافآت الدرس المحفوظ مسبقًا."
+              : "تم حفظ الدرس. قد يستغرق تحديث المكافآت بضع لحظات.",
+            "success"
+          );
+        } else {
+          showNotice("الدرس محفوظ بالفعل. ستُضاف المكافأة فقط بعد التحقق الخادمي من الحل والسؤال.", "info");
+        }
         return;
       }
 
@@ -1757,7 +1798,7 @@
       updateStats();
       updateNavigationButtons();
 
-      if (challengeVerifiedOnServer) {
+      if (challengeVerifiedOnServer && quizVerifiedOnServer) {
         const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
         showNotice(
           rewardsUpdated
@@ -1767,7 +1808,9 @@
         );
       } else {
         showNotice(
-          "تم حفظ تقدم الدرس. المكافآت المركزية ستُضاف بعد نشر دالة التحقق الخادمي على Firebase.",
+          challengeVerifiedOnServer
+            ? "تم حفظ الدرس، لكن سؤال الفهم لم يُعتمد خادميًا؛ مكافآت الحساب متوقفة حتى يكتمل التحقق."
+            : "تم حفظ تقدم الدرس محليًا/سحابيًا. مكافآت الحساب تنتظر التحقق الخادمي من الحل والسؤال.",
           "info"
         );
       }
