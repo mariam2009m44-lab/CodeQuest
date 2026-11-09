@@ -176,7 +176,7 @@ async function handleCodeRun(request, env, origin) {
 
   try {
     const response = await fetch(
-      \`\${baseUrl}/submissions?base64_encoded=false&wait=false\`,
+      `${baseUrl}/submissions?base64_encoded=false&wait=false`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -213,7 +213,7 @@ async function handleCodeRun(request, env, origin) {
 
     try {
       const response = await fetch(
-        \`\${baseUrl}/submissions/\${encodeURIComponent(submission.token)}?base64_encoded=false\`,
+        `${baseUrl}/submissions/${encodeURIComponent(submission.token)}?base64_encoded=false`,
         {
           method: "GET",
           headers: { Accept: "application/json" },
