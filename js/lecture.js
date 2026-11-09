@@ -3,7 +3,8 @@ import { runCodeOnServer, checkQuizAnswerOnServer } from "./code-runner.js";
 import {
   requireUser,
   saveLessonProgress,
-  getLessonProgress
+  getLessonProgress,
+  getUserProfile
 } from "./auth.js";
 
 
@@ -1593,6 +1594,26 @@ function attachEvents() {
   );
 }
 
+async function loadLessonAvatar() {
+  const container = byId("lessonUserAvatar");
+  if (!container) return;
+  try {
+    const [profile, avatarModule] = await Promise.all([
+      getUserProfile(),
+      import("./avatars.js")
+    ]);
+    const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
+    const activeAvatar = typeof profile.activeAvatar === "string" ? profile.activeAvatar : "cody";
+    const selected = avatarModule.getAllAvatars().find(avatar =>
+      avatar.id === activeAvatar && (!avatar.storeItem || inventory.includes(avatar.id))
+    );
+    avatarModule.installAvatarStyles();
+    container.innerHTML = avatarModule.renderAvatar(selected?.id || "cody");
+  } catch (error) {
+    console.warn("تعذر تحميل صورة الحساب في الدرس:", error);
+  }
+}
+
 async function initializeLecture() {
   setStatus(
     "جاري تحميل الدرس...",
@@ -1604,6 +1625,7 @@ async function initializeLecture() {
 
     if (!currentUser) return;
 
+    await loadLessonAvatar();
     await syncLocalProgressToCloud();
     await loadCurriculum();
 
