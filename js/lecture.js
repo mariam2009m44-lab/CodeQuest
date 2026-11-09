@@ -557,7 +557,7 @@ function renderLessonContent(lesson) {
   const feedback = byId("quizFeedback");
 
   selectedQuizOption = null;
-  quizPassed = lessonCompleted;
+  quizPassed = lessonCompleted && !lessonNeedsServerVerification;
 
   if (questionElement) {
     questionElement.textContent =
@@ -626,10 +626,12 @@ function renderLessonContent(lesson) {
 
   setFeedback(
     feedback,
-    lessonCompleted
-      ? "تم إكمال هذا الدرس سابقًا."
-      : "",
-    lessonCompleted ? "success" : ""
+    lessonNeedsServerVerification
+      ? "تم حفظ تقدمك سابقًا، لكن يلزم إعادة التحقق لتأكيد المكافآت."
+      : lessonCompleted
+        ? "تم إكمال هذا الدرس سابقًا."
+        : "",
+    lessonNeedsServerVerification ? "info" : lessonCompleted ? "success" : ""
   );
 
   setCodeEditorValue(getLessonCode(lesson));
