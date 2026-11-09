@@ -207,8 +207,11 @@ async function handleCodeRun(request, env, origin) {
   }
 
   let result = null;
+  let lastPollingError = null;
 
-  for (let attempt = 0; attempt < 12; attempt++) {
+  // Public Judge0 instances may briefly queue requests or rate-limit polling.
+  // Retry transient polling failures instead of failing on the first response.
+  for (let attempt = 0; attempt < 20; attempt++) {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
@@ -221,13 +224,17 @@ async function handleCodeRun(request, env, origin) {
         }
       );
 
+      if (response.status === 429 || response.status >= 500) {
+        lastPollingError = `HTTP_${response.status}`;
+        continue;
+      }
+
       result = await readJudge0Response(response);
+      lastPollingError = null;
     } catch (error) {
-      console.error("Judge0 polling error:", error);
-      return jsonResponse({
-        success: false,
-        message: "تعذر الحصول على نتيجة تنفيذ الكود."
-      }, 503, origin);
+      lastPollingError = error?.message || "POLLING_FAILED";
+      console.warn("Judge0 polling attempt failed:", attempt + 1, lastPollingError);
+      continue;
     }
 
     if (result?.status?.id && result.status.id > 2) {
@@ -236,10 +243,13 @@ async function handleCodeRun(request, env, origin) {
   }
 
   if (!result?.status || result.status.id <= 2) {
+    console.error("Judge0 result polling exhausted:", lastPollingError);
     return jsonResponse({
       success: false,
-      message: "استغرق تنفيذ الكود وقتًا طويلًا. حاولي مرة أخرى."
-    }, 504, origin);
+      message: lastPollingError
+        ? "تعذر الاتصال بخدمة النتائج بعد عدة محاولات. حاولي مرة أخرى."
+        : "استغرق تنفيذ الكود وقتًا طويلًا. حاولي مرة أخرى."
+    }, lastPollingError ? 503 : 504, origin);
   }
 
   return jsonResponse({
