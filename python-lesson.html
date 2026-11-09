@@ -3219,41 +3219,30 @@ html[data-theme="light"] .bottom-action {
       currentLessonIndex
     );
 
-    let cloudSaved = true;
+    // أعد كتابة سجل الإنجاز حتى يستطيع الخادم إعادة فحص المكافأة
+    // إذا كان الإنجاز المحلي قديمًا ولم يُعتمد سابقًا.
+    const cloudSaved = await saveProgressToFirebase();
 
-    if (!wasCompleted) {
-      cloudSaved = await saveProgressToFirebase();
+    if (!cloudSaved && !wasCompleted) {
+      clearChat();
+      addBubble(
+        "cody",
+        "لم نتمكن من حفظ إكمال الدرس في حسابك الآن. لم نضف نقاطًا أو نعلن اكتمال الدرس. تحقق من اتصال الإنترنت ثم اضغط إعادة المحاولة."
+      );
+      showBottomAction(true, "إعادة المحاولة");
+      return;
+    }
 
-      if (!cloudSaved) {
-        clearChat();
-        addBubble(
-          "cody",
-          "لم نتمكن من حفظ إكمال الدرس في حسابك الآن. لم نضف نقاطًا أو نعلن اكتمال الدرس. تحقق من اتصال الإنترنت ثم اضغط إعادة المحاولة."
-        );
-        showBottomAction(true, "إعادة المحاولة");
-        return;
-      }
-
+    if (!wasCompleted && cloudSaved) {
       // لا نضيف المكافأة المحلية إلا بعد نجاح حفظ سجل التقدم.
       awardLessonReward(
         currentChapterId,
         currentLessonIndex
       );
+    }
 
-      // لا نؤخر انتقال المتعلم بسبب طلب مزامنة المكافآت؛
-      // يتم تحديث الرصيد في الخلفية بعد حفظ الدرس.
-      void import("./js/auth.js")
-        .then(authModule => authModule.syncTrustedLessonRewards())
-        .then(rewards => {
-          accountXP = rewards.xp;
-          accountStars = rewards.stars;
-          updateProgressDisplay();
-          showToast("تم تحديث XP والنجوم من الحساب.");
-        })
-        .catch(rewardError => {
-          console.warn("تعذر تحديث مكافآت Python من الحساب:", rewardError);
-          showToast("تم حفظ الدرس. ستتحدث المكافآت عند عودة خدمة الحساب.");
-        });
+    if (cloudSaved) {
+      showToast("تم حفظ الإنجاز في الحساب. سيُحدّث رصيد المكافآت بعد التحقق الخادمي.");
     }
 
     clearChat();
