@@ -891,13 +891,21 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           localStorage.setItem(scopedKey, legacyValue);
         }
 
+        const legacyXP = localStorage.getItem("cody_java_xp");
+        const scopedXP = `cody_java_xp_${uid}`;
+        if (legacyXP !== null && localStorage.getItem(scopedXP) === null) {
+          localStorage.setItem(scopedXP, legacyXP);
+        }
+
         // The previous key had no account owner; migrate it only once.
         localStorage.setItem(markerKey, uid);
       } catch (error) {
         console.warn("تعذرت ترقية تقدم Java القديم:", error);
       }
     }
-    const XP_KEY = "cody_java_xp";
+    function xpStorageKey() {
+      return `cody_java_xp_${currentUserId}`;
+    }
 
     /*
       منهج Java من الصفر.
@@ -1365,12 +1373,12 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
 
     function getXP() {
       return accountXP === null
-        ? Number(localStorage.getItem(XP_KEY) || 0)
+        ? Number(localStorage.getItem(xpStorageKey()) || 0)
         : accountXP;
     }
 
     function addXP(amount) {
-      localStorage.setItem(XP_KEY, String(getXP() + amount));
+      localStorage.setItem(xpStorageKey(), String(getXP() + amount));
       updateStats();
     }
 
