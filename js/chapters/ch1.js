@@ -10,8 +10,9 @@ window.CHAPTERS[1] = {
         { type: "cody", text: "مثال: <code>print(\"Hello\")</code> سيعرض كلمة Hello. الكلام بين علامات التنصيص هو ما سيظهر." },
         { type: "quiz", question: "قبل تشغيل <code>print(\"Hello\")</code>، ماذا تتوقع أن يظهر؟", options: ["Hello", "print(Hello)", "لن يظهر شيء"], correct: 0, explanation: "أحسنت! print تعرض النص الموجود داخل الأقواس، وعلامتا الاقتباس تحددان أنه نص." },
         { type: "cody", text: "خلّينا نستكشف الأمر: <code>print</code> هو اسم الأمر، والأقواس تحتوي القيمة التي نريد عرضها، وعلامتا الاقتباس تجعل الكلمة نصًا." },
-        { type: "cody", text: "الآن حان دورك! اكتب كوداً يطبع الجملة <code>Hello, World!</code> في المحرر بالأسفل." },
-        { type: "challenge", expected: "Hello, World!", defaultCode: '# اكتب الكود هنا\n', hint: 'print("Hello, World!")', check: (code) => /print\s*\(\s*(['"])Hello, World!\1\s*\)/m.test(code.trim()), successMsg: "عظيم جداً! 🎉 لقد كتبت أول أمر برمجي لك بنجاح!" },
+        { type: "example", text: "مرحلة التشغيل: شغّل المثال الجاهز أولًا، ولاحظ كيف يتحول الأمر إلى مخرجات على الشاشة.", defaultCode: 'print("Hello")\n', expectedOutput: "Hello", runOnly: true, successMsg: "ممتاز! توقّعك أصبح واضحًا بعد التشغيل. الآن عدّل المثال بنفسك." },
+        { type: "cody", text: "الآن حان دورك! غيّر المثال ليطبع الجملة <code>Hello, World!</code> بدلًا من Hello." },
+        { type: "challenge", expected: "Hello, World!", defaultCode: 'print("Hello")\n', hint: 'print("Hello, World!")', check: (code) => /print\s*\(\s*(['"])Hello, World!\1\s*\)/m.test(code.trim()), successMsg: "عظيم جداً! 🎉 لقد عدّلت برنامجك الأول بنجاح!" },
         { type: "cody", text: "أنت مبرمج رائع! اضغط على (متابعة) للانتقال للدرس القادم." }
       ]
     },
