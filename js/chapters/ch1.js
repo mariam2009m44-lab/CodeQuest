@@ -8,6 +8,8 @@ window.CHAPTERS[1] = {
         { type: "cody", text: "تخيل أن الكمبيوتر مساعدك، والأمر <code>print()</code> يطلب منه أن يعرض شيئاً على الشاشة." },
         { type: "choice", question: "هل فهمت الفكرة؟", options: ["نعم، فهمت!", "مش فاهم، ممكن توضيح؟"], replies: ["عظيم! سأعطيك مثالاً.", "بالتأكيد. كل ما تكتبه بين الأقواس سيظهر على الشاشة."] },
         { type: "cody", text: "مثال: <code>print(\"Hello\")</code> سيعرض كلمة Hello. الكلام بين علامات التنصيص هو ما سيظهر." },
+        { type: "quiz", question: "قبل تشغيل <code>print(\"Hello\")</code>، ماذا تتوقع أن يظهر؟", options: ["Hello", "print(Hello)", "لن يظهر شيء"], correct: 0, explanation: "أحسنت! print تعرض النص الموجود داخل الأقواس، وعلامتا الاقتباس تحددان أنه نص." },
+        { type: "cody", text: "خلّينا نستكشف الأمر: <code>print</code> هو اسم الأمر، والأقواس تحتوي القيمة التي نريد عرضها، وعلامتا الاقتباس تجعل الكلمة نصًا." },
         { type: "cody", text: "الآن حان دورك! اكتب كوداً يطبع الجملة <code>Hello, World!</code> في المحرر بالأسفل." },
         { type: "challenge", expected: "Hello, World!", defaultCode: '# اكتب الكود هنا\n', hint: 'print("Hello, World!")', check: (code) => /print\s*\(\s*(['"])Hello, World!\1\s*\)/m.test(code.trim()), successMsg: "عظيم جداً! 🎉 لقد كتبت أول أمر برمجي لك بنجاح!" },
         { type: "cody", text: "أنت مبرمج رائع! اضغط على (متابعة) للانتقال للدرس القادم." }
@@ -27,7 +29,8 @@ window.CHAPTERS[1] = {
       title: "الدرس 3: الطباعة المتعددة", steps: [
         { type: "cody", text: "مرحباً بك مجدداً! يمكنك كتابة عدة أوامر print في نفس الكود، وسيقوم الكمبيوتر بتنفيذها بالترتيب." },
         { type: "cody", text: "تحديك هو: اطبع كلمة <code>مرحبا</code>، ثم كلمة <code>بك</code>، كل واحدة في سطر منفصل." },
-        { type: "challenge", expected: "مرحبا\nبك", defaultCode: '# اكتب الكود هنا\n', hint: 'print("مرحبا")\nprint("بك")', check: (code) => code.includes('print("مرحبا")') && code.includes('print("بك")'), successMsg: "مذهل! 🌟 الكمبيوتر ينفذ الأوامر بالترتيب من فوق لتحت." }
+        { type: "challenge", expected: "مرحبا\nبك", defaultCode: '# اكتب الكود هنا\n', hint: 'print("مرحبا")\nprint("بك")', check: (code) => code.includes('print("مرحبا")') && code.includes('print("بك")'), successMsg: "مذهل! 🌟 الكمبيوتر ينفذ الأوامر بالترتيب من فوق لتحت." },
+        { type: "game", text: "ممتاز! فهمت إن ترتيب الأوامر مهم. دلوقتي ساعد كودي في مهمة فضائية قصيرة: خطّط للأوامر بالترتيب واجمع النجمة قبل الوصول للبوابة." }
       ]
     },
     {
