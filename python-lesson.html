@@ -2657,6 +2657,10 @@ html[data-theme="light"] .bottom-action {
           const height = Math.round(entries[0]?.contentRect?.height || 0);
           if (height >= 210 && editor) {
             editor.setSize("100%", `${height}px`);
+            document.querySelectorAll("#pythonEditorWrapper [data-editor-height]").forEach(button => {
+              const matchesPreset = Math.abs(Number(button.dataset.editorHeight) - height) <= 4;
+              button.setAttribute("aria-pressed", String(matchesPreset));
+            });
           }
         });
         editorResizeObserver.observe(codeArea);
