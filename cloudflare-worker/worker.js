@@ -232,7 +232,7 @@ async function handleCodeRun(request, env, origin) {
         }
       );
 
-      if (response.status === 429 || response.status >= 500) {
+      if ([408, 425, 429].includes(response.status) || response.status >= 500) {
         lastPollingError = `HTTP_${response.status}`;
         const retryAfter = Number(response.headers.get("Retry-After"));
         const retryDelay = Number.isFinite(retryAfter) && retryAfter > 0
@@ -243,10 +243,12 @@ async function handleCodeRun(request, env, origin) {
       }
 
       if (!response.ok) {
-        console.error("Judge0 rejected polling request:", response.status);
+        const diagnosticCode = `JUDGE0_HTTP_${response.status}`;
+        console.error("Judge0 rejected polling request:", diagnosticCode);
         return jsonResponse({
           success: false,
-          message: "رفضت خدمة التشغيل طلب الحصول على النتيجة."
+          errorCode: diagnosticCode,
+          message: `رفضت خدمة التشغيل طلب الحصول على النتيجة (HTTP ${response.status}).`
         }, 502, origin);
       }
 
