@@ -1704,15 +1704,8 @@
         console.error("Java progress cloud save failed:", error);
         const errorCode = String(error?.code || "").split("/").pop();
 
-        if (errorCode !== "permission-denied") {
-          showNotice(
-            "تعذر حفظ تقدم Java في حسابك. تحقق من الاتصال وحاول مرة أخرى.",
-            "error"
-          );
-          return;
-        }
-
-        // توافق مؤقت: قواعد Firestore المنشورة قديمة ولا تسمح بلغة Java بعد.
+        // لا نمنع متابعة المنهج بسبب انقطاع مؤقت في Firestore.
+        // يُحفظ الإنجاز محليًا فقط، ولا تُمنح مكافآت الحساب إلا بعد نجاح الحفظ السحابي.
         cloudSaved = false;
       }
 
