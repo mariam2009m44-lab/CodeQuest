@@ -45,11 +45,11 @@ export async function runCodeOnServer(language, code, stdin = "") {
     const user = auth.currentUser || await requireUser();
     const idToken = await user.getIdToken();
 
-    const response = await fetch(\`\${CODE_RUNNER_URL}/api/code/run\`, {
+    const response = await fetch(`${CODE_RUNNER_URL}/api/code/run`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": \`Bearer \${idToken}\`
+        "Authorization": `Bearer ${idToken}`
       },
       body: JSON.stringify({
         language,
