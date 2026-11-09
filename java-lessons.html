@@ -656,6 +656,10 @@ html[data-theme="light"] textarea {
   color: #E5EDF8;
 }
 html[data-theme="light"] .xp-pill { color: #805B00; }
+.lesson-user-avatar { width: 42px; height: 42px; flex: 0 0 42px; overflow: hidden; border-radius: 50%; border: 2px solid var(--cyan); background: var(--panel-light); }
+.lesson-user-avatar .anime-avatar { width: 100%; height: 100%; overflow: hidden; }
+.lesson-user-avatar .anime-character { width: 100%; height: 100%; }
+.lesson-user-avatar .anime-avatar-svg { width: 100%; height: 100%; max-width: none; }
 </style>
 </head>
 
@@ -669,6 +673,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     <div class="top-actions">
       <span class="xp-pill">⭐ XP: <span id="xpCount">0</span></span>
       <span class="xp-pill">🌟 النجوم: <span id="starCount">0</span></span>
+      <div class="lesson-user-avatar" id="lessonUserAvatar" aria-label="صورة الحساب"></div>
       <a class="back-link" href="java-chapters.html">← فصول Java</a>
     </div>
   </header>
@@ -1971,10 +1976,29 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       return incomplete?.id || allLessons[0]?.id || null;
     }
 
+    async function loadLessonAvatar() {
+      const container = document.getElementById("lessonUserAvatar");
+      if (!container) return;
+      try {
+        const avatarModule = await import("./js/avatars.js");
+        const profile = await getUserProfile();
+        const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
+        const activeAvatar = typeof profile.activeAvatar === "string" ? profile.activeAvatar : "cody";
+        const selected = avatarModule.getAllAvatars().find(avatar =>
+          avatar.id === activeAvatar && (!avatar.storeItem || inventory.includes(avatar.id))
+        );
+        avatarModule.installAvatarStyles();
+        container.innerHTML = avatarModule.renderAvatar(selected?.id || "cody");
+      } catch (error) {
+        console.warn("تعذر تحميل صورة حساب Java:", error);
+      }
+    }
+
     async function startApp() {
       try {
         const signedInUser = await requireUser();
         currentUserId = signedInUser.uid;
+        await loadLessonAvatar();
 
         allLessons = CURRICULUM.flatMap(chapter => chapter.lessons);
 
