@@ -1755,7 +1755,62 @@ function normalizePythonOutput(value) {
 }
 
 /*
- * فحص وجود الأجزاء المطلوبة في الكود.
+ * تطبيع كود Python للمقارنة دون حساسية غير ضرورية للمسافات
+ * أو لاختيار علامات الاقتباس المفردة/المزدوجة.
+ * نحذف التعليقات خارج النصوص فقط، ونحافظ على المسافات داخل النص.
+ */
+function normalizePythonSource(value) {
+  const source = String(value || "");
+  let normalized = "";
+  let quote = null;
+  let escaped = false;
+  let inComment = false;
+
+  for (const character of source) {
+    if (inComment) {
+      if (character === "\n") inComment = false;
+      continue;
+    }
+
+    if (quote) {
+      if (escaped) {
+        normalized += character;
+        escaped = false;
+        continue;
+      }
+      if (character === "\\") {
+        normalized += character;
+        escaped = true;
+        continue;
+      }
+      if (character === quote) {
+        normalized += '"';
+        quote = null;
+        continue;
+      }
+      normalized += character;
+      continue;
+    }
+
+    if (character === "#") {
+      inComment = true;
+      continue;
+    }
+    if (character === "'" || character === '"') {
+      quote = character;
+      normalized += '"';
+      continue;
+    }
+    if (/\s/.test(character)) continue;
+    normalized += character;
+  }
+
+  return normalized;
+}
+
+/*
+ * فحص وجود الأجزاء المطلوبة في الكود بعد تطبيع المسافات والاقتباسات.
+ * يبقى تشغيل الكود ومطابقة الناتج على الخادم شرطًا أساسيًا.
  */
 function validatePythonChallengeSource(code, challenge) {
   if (
@@ -1765,8 +1820,9 @@ function validatePythonChallengeSource(code, challenge) {
     return false;
   }
 
+  const normalizedCode = normalizePythonSource(code);
   return challenge.required.every(part =>
-    code.includes(part)
+    normalizedCode.includes(normalizePythonSource(part))
   );
 }
 
