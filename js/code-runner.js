@@ -27,6 +27,12 @@ const verifyJavaCallable = httpsCallable(
   { timeout: 45000 }
 );
 
+const checkQuizCallable = httpsCallable(
+  functions,
+  "checkQuizAnswer",
+  { timeout: 30000 }
+);
+
 const ALLOWED_LANGUAGES = new Set([
   "javascript",
   "python",
@@ -132,40 +138,11 @@ export async function checkQuizAnswerOnServer({
   }
 
   try {
-    const user = auth.currentUser || await requireUser();
-    const idToken = await user.getIdToken();
-
-    const response = await fetch(`${CODE_RUNNER_URL}/api/quiz/check`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${idToken}`
-      },
-      body: JSON.stringify({
-        language,
-        lessonId,
-        selectedIndex
-      })
-    });
-
-    let result;
-    try {
-      result = await response.json();
-    } catch {
-      throw new Error("وصل رد غير مفهوم من خدمة التحقق من السؤال.");
+    const response = await checkQuizCallable({ language, lessonId, selectedIndex });
+    if (!response?.data || response.data.success !== true) {
+      throw new Error("لم تصل نتيجة صحيحة من خادم التحقق.");
     }
-
-    if (!response.ok || result?.success !== true) {
-      if (response.status === 401) {
-        throw new Error("انتهت جلسة تسجيل الدخول. سجّلي الدخول مرة أخرى.");
-      }
-
-      throw new Error(
-        result?.message || "تعذر التحقق من إجابة السؤال حاليًا."
-      );
-    }
-
-    return result;
+    return response.data;
   } catch (error) {
     console.error("Lesson quiz verification error:", error);
     if (error instanceof Error && error.message) throw error;
@@ -207,10 +184,14 @@ export async function verifyJavaChallenge(chapter, lesson, code) {
       throw new Error("سجّل الدخول أولًا للتحقق من تحديات Java.");
     }
     if (code === "unavailable") {
-      throw new Error("خدمة التحقق من Java غير متاحة حاليًا.");
+      const mappedError = new Error("خدمة التحقق من Java غير متاحة حاليًا.");
+      mappedError.code = error?.code;
+      throw mappedError;
     }
     if (code === "deadline-exceeded") {
-      throw new Error("استغرق التحقق وقتًا طويلًا. حاول مرة أخرى.");
+      const mappedError = new Error("استغرق التحقق وقتًا طويلًا. حاول مرة أخرى.");
+      mappedError.code = error?.code;
+      throw mappedError;
     }
 
     throw error instanceof Error && error.message
