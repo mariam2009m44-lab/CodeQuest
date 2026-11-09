@@ -3612,6 +3612,21 @@ async function loadStudentData() {
     const userRef = firestoreModule.doc(firebaseModule.db, "users", user.uid);
     const snapshot = await firestoreModule.getDoc(userRef);
     const userData = snapshot.exists() ? snapshot.data() : {};
+
+    // اعرض XP الموثوق من ملف الحساب بدل الاعتماد على قيمة محلية قديمة.
+    if (
+      snapshot.exists() &&
+      Number.isSafeInteger(userData.xp) &&
+      userData.xp >= 0
+    ) {
+      writeStorage("cody_xp", userData.xp);
+      writeStorage("cody_python_xp", userData.xp);
+
+      if (xpDisplay) {
+        xpDisplay.textContent = String(userData.xp);
+      }
+    }
+
     const avatars = avatarModule.getAllAvatars();
     const inventory = Array.isArray(userData.inventory) ? userData.inventory : [];
     const activeAvatar = typeof userData.activeAvatar === "string"
