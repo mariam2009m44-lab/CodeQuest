@@ -522,8 +522,10 @@
     .code-area {
       display: flex;
       min-height: 210px;
-      flex: 1;
-      overflow: hidden;
+      max-height: 70vh;
+      flex: 0 0 auto;
+      overflow: auto;
+      resize: vertical;
     }
 
     .CodeMirror {
@@ -1614,6 +1616,7 @@
   let challengeSolved = false;
 
   let editor = null;
+  let editorResizeObserver = null;
 
   let profileAvatarHTML = "";
 
@@ -2574,6 +2577,18 @@
         300
       );
 
+      const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
+      editorResizeObserver?.disconnect();
+      if (codeArea && typeof ResizeObserver !== "undefined") {
+        editorResizeObserver = new ResizeObserver(entries => {
+          const height = Math.round(entries[0]?.contentRect?.height || 0);
+          if (height >= 210 && editor) {
+            editor.setSize("100%", `${height}px`);
+          }
+        });
+        editorResizeObserver.observe(codeArea);
+      }
+
       requestAnimationFrame(() => {
         editor?.refresh();
       });
@@ -2638,6 +2653,8 @@
 
     if (discardChallenge) {
       $("editorContainer")?.replaceChildren();
+      editorResizeObserver?.disconnect();
+      editorResizeObserver = null;
       editor = null;
       currentChallenge = null;
       currentHintIndex = 0;
