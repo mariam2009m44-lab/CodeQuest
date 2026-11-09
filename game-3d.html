@@ -46,7 +46,11 @@
     .level-pill.active{background:linear-gradient(135deg,var(--purple),#4b79d8);border-color:transparent;color:white}
     .level-pill:disabled{opacity:.35;cursor:not-allowed}
     .scene-wrap{position:relative;min-height:390px;height:min(58vh,610px);background:radial-gradient(ellipse at 50% 60%,#192d49,#080e1b 72%);overflow:hidden}
-    #gameCanvas{display:block;width:100%;height:100%;touch-action:pan-y}
+    #gameCanvas{display:block;width:100%;height:100%;touch-action:none}
+    .scene-tools{position:absolute;top:56px;left:12px;z-index:4;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px)}
+    .scene-tools button{min-height:40px;padding:7px 11px;border:1px solid var(--line);border-radius:11px;background:rgba(8,15,29,.88);color:var(--text);font:inherit;font-size:.78rem;font-weight:800;cursor:pointer;touch-action:manipulation}
+    .scene-tools span{padding:7px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(8,15,29,.72);color:var(--muted);font-size:.72rem}
+    @media(max-width:520px){.scene-tools span{display:none}.scene-tools button{min-height:44px}}
     .scene-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:800;pointer-events:none}
     .scene-hud{position:absolute;top:13px;right:13px;left:13px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
     .hud-chip{padding:7px 11px;border:1px solid #ffffff20;border-radius:12px;background:#08101dcc;backdrop-filter:blur(10px);font-size:.78rem;font-weight:900}
@@ -132,6 +136,10 @@
           <canvas id="gameCanvas" aria-label="مشهد ثلاثي الأبعاد لمتاهة كودي"></canvas>
           <div class="scene-loading" id="sceneLoading">جارٍ تجهيز عالم كودي ثلاثي الأبعاد…</div>
           <div class="scene-hud"><div class="hud-chip">⭐ النجوم: <strong id="gemCount">0 / 0</strong></div><div class="hud-chip">🏆 أفضل نتيجة: <strong id="bestScore">0</strong></div></div>
+          <div class="scene-tools">
+            <button id="resetCameraButton" type="button" aria-label="إعادة زاوية الكاميرا">إعادة زاوية العرض</button>
+            <span>اسحب لتدوير المشهد · إصبعان للتقريب</span>
+          </div>
           <div class="scene-caption"><div class="caption-chip" id="sceneCaption">اجمع النجوم ثم وصل كودي إلى البوابة</div></div>
           <div class="fallback-board" id="fallbackBoard" aria-label="خريطة بديلة ثنائية الأبعاد"></div>
         </div>
@@ -196,6 +204,8 @@
       || safeStorageGet("cq_motion","on")==="off";
     let levelIndex=0,program=[],running=false,completed=new Set(),score=0,bestScore=Number(safeStorageGet("cody3dBestScore","0"))||0;
     let position=[0,0],direction=0,collected=new Set(),THREE=null,renderer=null,scene=null,camera=null,robot=null,world=null,goalRing=null,gemMeshes=[],clock=null,animationFrame=null;
+    let cameraYaw=.703,cameraPitch=.637,cameraDistance=14.8,pinchDistance=0;
+    const cameraPointers=new Map();
     const vectors=[[0,-1],[1,0],[0,1],[-1,0]];
     $("bestScore").textContent=bestScore;
 
@@ -422,6 +432,63 @@
     }
     $("runButton").addEventListener("click",runProgram);
 
+    function updateCameraView(){
+      if(!camera)return;
+      const horizontal=cameraDistance*Math.cos(cameraPitch);
+      camera.position.set(
+        Math.sin(cameraYaw)*horizontal,
+        Math.sin(cameraPitch)*cameraDistance+.1,
+        Math.cos(cameraYaw)*horizontal
+      );
+      camera.lookAt(0,.1,0);
+    }
+    function pointerGap(){
+      const points=[...cameraPointers.values()];
+      if(points.length<2)return 0;
+      return Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);
+    }
+    function attachTouchCameraControls(canvas){
+      canvas.addEventListener("pointerdown",event=>{
+        if(event.pointerType==="mouse"&&event.button!==0)return;
+        cameraPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+        try{canvas.setPointerCapture(event.pointerId);}catch{}
+        if(cameraPointers.size===2)pinchDistance=pointerGap();
+      });
+      canvas.addEventListener("pointermove",event=>{
+        const previous=cameraPointers.get(event.pointerId);
+        if(!previous)return;
+        cameraPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+        if(cameraPointers.size===1){
+          const dx=event.clientX-previous.x,dy=event.clientY-previous.y;
+          cameraYaw-=dx*.008;
+          cameraPitch=Math.max(.24,Math.min(1.18,cameraPitch+dy*.006));
+          updateCameraView();
+        }else if(cameraPointers.size>=2){
+          const nextGap=pointerGap();
+          if(pinchDistance>0&&nextGap>0){
+            cameraDistance=Math.max(9,Math.min(22,cameraDistance*pinchDistance/nextGap));
+            updateCameraView();
+          }
+          pinchDistance=nextGap;
+        }
+      });
+      const releasePointer=event=>{
+        cameraPointers.delete(event.pointerId);
+        pinchDistance=cameraPointers.size===2?pointerGap():0;
+      };
+      canvas.addEventListener("pointerup",releasePointer);
+      canvas.addEventListener("pointercancel",releasePointer);
+      canvas.addEventListener("lostpointercapture",releasePointer);
+      canvas.addEventListener("wheel",event=>{
+        event.preventDefault();
+        cameraDistance=Math.max(9,Math.min(22,cameraDistance*Math.exp(event.deltaY*.001)));
+        updateCameraView();
+      },{passive:false});
+      $("resetCameraButton")?.addEventListener("click",()=>{
+        cameraYaw=.703;cameraPitch=.637;cameraDistance=14.8;updateCameraView();
+      });
+    }
+
     async function init3D(){
       try{
         THREE=await import(THREE_URL);
@@ -432,7 +499,7 @@
         renderer.toneMapping=THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure=1.15;
         scene=new THREE.Scene();scene.background=new THREE.Color(0x080f1e);scene.fog=new THREE.Fog(0x080f1e,12,24);
-        camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(7.8,8.8,9.2);camera.lookAt(0,.1,0);
+        camera=new THREE.PerspectiveCamera(42,1,.1,100);updateCameraView();attachTouchCameraControls(canvas);
         scene.add(new THREE.HemisphereLight(0xb8dcff,0x10182a,2.0));
         const keyLight=new THREE.DirectionalLight(0xffffff,2.4);keyLight.position.set(5,10,6);scene.add(keyLight);
         const rimLight=new THREE.PointLight(0x36bfe5,18,16);rimLight.position.set(-5,4,-4);scene.add(rimLight);
@@ -463,7 +530,10 @@
         $("sceneLoading").style.display="grid";
         $("gameCanvas").style.display="none";
         $("fallbackBoard").style.display="grid";
-        renderer=null;THREE=null;renderFallbackBoard();
+        renderer=null;THREE=null;
+        const resetCameraButton=$("resetCameraButton");
+        if(resetCameraButton)resetCameraButton.disabled=true;
+        renderFallbackBoard();
       }
     }
 
