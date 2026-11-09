@@ -815,7 +815,7 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
     setStatus(
       serverVerified
         ? "ممتاز! تم حفظ تقدم الدرس في حسابك."
-        : "إجابة صحيحة! تم حفظ التقدم دون مكافأة؛ التحقق الخادمي غير متاح الآن.",
+        : "إجابة صحيحة! تم حفظ التقدم على هذا الجهاز، لكن تعذر تأكيد حالة التحقق والمكافأة من الخادم الآن.",
       serverVerified ? "success" : "info"
     );
 
@@ -825,7 +825,7 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
       feedback,
       serverVerified
         ? "إجابة صحيحة! تم تسجيل إكمال الدرس."
-        : "إجابة صحيحة! يمكنك متابعة الدرس التالي. ستظل XP والنجوم متوقفة حتى ينجح التحقق الخادمي.",
+        : "إجابة صحيحة! يمكنك متابعة الدرس التالي. حالة التحقق والمكافآت غير مؤكدة حتى نتمكن من مراجعة الخادم.",
       serverVerified ? "success" : "info"
     );
 
