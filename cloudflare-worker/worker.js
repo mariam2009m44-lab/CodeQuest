@@ -15,11 +15,42 @@ const CURRICULUM_PATHS = {
   cpp: "/json/cpp_curriculum.json"
 };
 
-async function readBoundedJson(request, maxBytes = 262144) {
+async function readBoundedJson(request, maxBytes = 65536) {
   const declaredLength = Number(request.headers.get("Content-Length") || 0);
-  if (declaredLength > maxBytes) throw new Error("REQUEST_BODY_TOO_LARGE");
-  const bytes = await request.arrayBuffer();
-  if (bytes.byteLength > maxBytes) throw new Error("REQUEST_BODY_TOO_LARGE");
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new Error("REQUEST_BODY_TOO_LARGE");
+  }
+
+  if (!request.body) throw new Error("INVALID_JSON");
+
+  const reader = request.body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+
+      if (totalBytes > maxBytes) {
+        await reader.cancel("REQUEST_BODY_TOO_LARGE").catch(() => {});
+        throw new Error("REQUEST_BODY_TOO_LARGE");
+      }
+
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
   try {
     return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
