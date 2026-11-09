@@ -962,6 +962,25 @@
     .message-row.cody .avatar { background:linear-gradient(145deg,#233e60,#12617a); border-color:rgba(75,213,242,.45); }
     .avatar img,.avatar svg { display:block; width:100%; height:100%; object-fit:contain; }
     .avatar-fallback { display:grid; width:100%; height:100%; place-items:center; color:white; font-size:1.2rem; }
+    .lesson-user-avatar {
+      display:grid;
+      place-items:center;
+      width:42px;
+      height:42px;
+      flex:0 0 42px;
+      overflow:hidden;
+      border:2px solid rgba(139,108,255,.55);
+      border-radius:50%;
+      background:linear-gradient(145deg,#8b6cff,#4bd5f2);
+      box-shadow:0 4px 14px rgba(0,0,0,.18);
+    }
+    .lesson-user-avatar svg,
+    .lesson-user-avatar img {
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
     .bubble { max-width:min(820px,88%); padding:17px 20px; border:1px solid rgba(148,163,184,.17); border-radius:20px 20px 5px 20px; background:linear-gradient(145deg,rgba(19,31,52,.98),rgba(14,23,40,.98)); box-shadow:0 10px 28px rgba(0,0,0,.12); font-size:1rem; line-height:2; }
     .message-row.student .bubble { border:1px solid rgba(139,108,255,.3); border-radius:20px 20px 20px 5px; background:linear-gradient(135deg,#5140a0,#3b347a); }
     .bubble code { margin:2px 3px; padding:4px 9px; border:1px solid rgba(75,213,242,.16); border-radius:8px; background:#080e1b; color:#72e1f6; direction:ltr; unicode-bidi:isolate; }
@@ -1471,6 +1490,8 @@
             <i class="ri-star-fill"></i>
             <span id="xpDisplay">0</span>
           </div>
+
+          <div class="lesson-user-avatar" id="lessonUserAvatar" aria-label="صورة الحساب"></div>
 
       </div>
 
@@ -3729,6 +3750,13 @@ async function loadStudentData() {
 
     avatarModule.installAvatarStyles();
     profileAvatarHTML = avatarModule.renderAvatar(selected?.id || "cody");
+
+    // Keep the selected account avatar visible throughout the lesson, not only
+    // after the learner sends a chat response.
+    const lessonAvatar = $("lessonUserAvatar");
+    if (lessonAvatar) {
+      lessonAvatar.innerHTML = profileAvatarHTML;
+    }
 
     const nameElement = $("studentName");
     if (nameElement) {
