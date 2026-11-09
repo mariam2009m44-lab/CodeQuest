@@ -981,6 +981,30 @@
       height:100%;
       object-fit:contain;
     }
+
+    /* renderAvatar() returns nested wrappers; size every layer inside the 42px circle */
+    .lesson-user-avatar .anime-avatar,
+    .avatar .anime-avatar {
+      width:100%;
+      height:100%;
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .lesson-user-avatar .anime-character,
+    .avatar .anime-character {
+      width:100%;
+      height:100%;
+    }
+
+    .lesson-user-avatar .anime-avatar-svg,
+    .avatar .anime-avatar-svg {
+      display:block;
+      width:100%;
+      height:100%;
+      max-width:none;
+      object-fit:contain;
+    }
     .bubble { max-width:min(820px,88%); padding:17px 20px; border:1px solid rgba(148,163,184,.17); border-radius:20px 20px 5px 20px; background:linear-gradient(145deg,rgba(19,31,52,.98),rgba(14,23,40,.98)); box-shadow:0 10px 28px rgba(0,0,0,.12); font-size:1rem; line-height:2; }
     .message-row.student .bubble { border:1px solid rgba(139,108,255,.3); border-radius:20px 20px 20px 5px; background:linear-gradient(135deg,#5140a0,#3b347a); }
     .bubble code { margin:2px 3px; padding:4px 9px; border:1px solid rgba(75,213,242,.16); border-radius:8px; background:#080e1b; color:#72e1f6; direction:ltr; unicode-bidi:isolate; }
@@ -2967,11 +2991,17 @@ html[data-theme="light"] .bottom-action {
         return;
       } catch (error) {
         console.error("Python challenge verification failed:", error);
+        const verificationErrorCode = String(error?.code || "")
+          .replace(/^functions\\//, "") || "unknown";
+        const verificationErrorMessage = typeof error?.message === "string"
+          ? error.message.slice(0, 180)
+          : "";
+
         addBubble(
           "cody",
-          "تم تشغيل الكود، لكن تعذر التحقق من إجابتك وحفظ إثبات النجاح. تحقق من الاتصال وحاول تشغيل التحدي مرة أخرى."
+          `تم تشغيل الكود، لكن لم يكتمل التحقق وحفظ إثبات النجاح. رمز الخطأ: ${verificationErrorCode}.${verificationErrorMessage ? ` التفاصيل: ${verificationErrorMessage}` : ""} تأكد من الاتصال وحاول مرة أخرى.`
         );
-        showToast("لم يكتمل التحقق من التحدي. لم يتم اعتماد النجاح.");
+        showToast(`تعذر اعتماد النجاح (${verificationErrorCode}).`);
         return;
       }
     }
