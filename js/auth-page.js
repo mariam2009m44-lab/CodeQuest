@@ -44,6 +44,7 @@ if (!form) {
     "game-bug.html",
     "game-match.html",
     "game-speed.html",
+    "game-3d.html",
     "projects.html",
     "avatar.html",
     "progress.html",
