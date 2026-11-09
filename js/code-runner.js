@@ -33,6 +33,12 @@ const checkQuizCallable = httpsCallable(
   { timeout: 30000 }
 );
 
+const verifyJavaQuizCallable = httpsCallable(
+  functions,
+  "verifyJavaQuizAnswer",
+  { timeout: 30000 }
+);
+
 const ALLOWED_LANGUAGES = new Set([
   "javascript",
   "python",
@@ -155,6 +161,35 @@ export async function checkQuizAnswerOnServer({
  * Verify a Java learning challenge on the server.
  * The server checks required code, executes it, and compares the expected output.
  */
+export async function verifyJavaQuizAnswer(chapter, lesson, selectedIndex) {
+  if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8 ||
+      !Number.isInteger(lesson) || lesson < 0 || lesson >= 2 ||
+      !Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex > 2) {
+    throw new Error("بيانات سؤال Java غير صالحة.");
+  }
+
+  try {
+    const response = await verifyJavaQuizCallable({ chapter, lesson, selectedIndex });
+    if (response?.data?.success !== true) {
+      throw new Error("لم تصل نتيجة صحيحة من خادم التحقق.");
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Java quiz verification failed:", error);
+    const code = String(error?.code || "").replace(/^functions\\//, "");
+    if (code === "failed-precondition") {
+      throw new Error(error?.message || "اجتز تحدي الكود أولًا.");
+    }
+    if (code === "unavailable" || code === "deadline-exceeded") {
+      throw new Error("تعذر التحقق من سؤال Java على الخادم حاليًا.");
+    }
+    throw error instanceof Error && error.message
+      ? error
+      : new Error("تعذر التحقق من إجابة Java.");
+  }
+}
+
+
 export async function verifyJavaChallenge(chapter, lesson, code) {
   if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8) {
     throw new Error("رقم فصل Java غير صالح.");
