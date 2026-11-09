@@ -58,7 +58,7 @@ jobs:
 
       - name: Validate Python lesson, progress, and games scripts
         run: |
-          node --input-type=module -e 'import fs from "node:fs"; for (const file of ["python-lesson.html", "progress.html", "games.html"]) { const html = fs.readFileSync(file, "utf8"); const scripts = [...html.matchAll(/<script(?: type="module")?>([\\s\\S]*?)<\\/script>/g)]; if (!scripts.length) throw new Error("No inline script found in " + file); fs.writeFileSync("/tmp/" + file.replace(".html", ".mjs"), scripts.map(match => match[1]).join("\\n")); }'
+          node --input-type=module -e 'import fs from "node:fs"; for (const file of ["python-lesson.html", "progress.html", "games.html"]) { const html = fs.readFileSync(file, "utf8"); const scripts = [...html.matchAll(/<script(?: type="module")?>([\s\S]*?)<\/script>/g)]; if (!scripts.length) throw new Error("No inline script found in " + file); fs.writeFileSync("/tmp/" + file.replace(".html", ".mjs"), scripts.map(match => match[1]).join("\n")); }'
           node --check /tmp/python-lesson.mjs
           node --check /tmp/progress.mjs
           node --check /tmp/games.mjs
