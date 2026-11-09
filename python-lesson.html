@@ -1588,6 +1588,10 @@
       .map(String)
   );
 
+  // Tracks which completed Python lessons are already stored in Firestore.
+  // Local progress is kept separately so older device-only records can be synced.
+  const cloudCompletedLessonKeys = new Set();
+
   // يدعم التنسيق القديم (مصفوفة) والجديد (كائن) دون فقدان تقدم المستخدم.
   const normalizedCompletedChapters = Array.isArray(storedCompletedChapters)
     ? storedCompletedChapters
@@ -2832,10 +2836,18 @@
       currentLessonIndex
     );
 
-    let cloudSaved = true;
+    const lessonKey = getLessonKey(
+      currentChapterId,
+      currentLessonIndex
+    );
 
-    if (!wasCompleted) {
-      cloudSaved = await saveProgressToFirebase();
+    const wasAlreadySavedInCloud =
+      cloudCompletedLessonKeys.has(lessonKey);
+
+    // لا نعتمد على localStorage وحده؛ قد يكون الدرس مكتملًا على جهاز
+    // سابق لكنه لم يُحفظ في حساب Firebase بعد.
+    if (!wasAlreadySavedInCloud) {
+      const cloudSaved = await saveProgressToFirebase();
 
       if (!cloudSaved) {
         clearChat();
@@ -2847,6 +2859,10 @@
         return;
       }
 
+      cloudCompletedLessonKeys.add(lessonKey);
+    }
+
+    if (!wasCompleted) {
       // لا نضيف المكافأة المحلية إلا بعد نجاح حفظ سجل التقدم.
       awardLessonReward(
         currentChapterId,
@@ -2859,7 +2875,11 @@
     addBubble(
       "cody",
       wasCompleted
-        ? "أهلًا بعودتك! الدرس ده مكتمل بالفعل. تقدر تراجع محتواه أو تنتقل للدرس التالي."
+        ? (
+            wasAlreadySavedInCloud
+              ? "أهلًا بعودتك! الدرس ده مكتمل بالفعل. تقدر تراجع محتواه أو تنتقل للدرس التالي."
+              : "تمت مزامنة إكمال الدرس السابق مع حسابك بنجاح."
+          )
         : "رائع! تم حفظ إكمال الدرس بنجاح، وستتم مزامنة المكافأة مع حسابك ⭐"
     );
 
@@ -3550,6 +3570,45 @@ async function loadStudentData() {
       ]);
 
     const user = await authModule.requireUser();
+
+    // استعادة الدروس والامتحانات المحفوظة في الحساب إلى واجهة هذا الجهاز.
+    // يظل الفشل هنا غير مانع من تحميل صورة الحساب أو متابعة الدروس محليًا.
+    try {
+      const cloudRecords = await authModule.getLessonProgress("python");
+
+      cloudRecords.forEach(record => {
+        if (
+          !record ||
+          record.completed !== true ||
+          !Number.isSafeInteger(record.chapter) ||
+          record.chapter < 0 ||
+          record.chapter >= 12 ||
+          !Number.isSafeInteger(record.lesson) ||
+          record.lesson < 0
+        ) {
+          return;
+        }
+
+        const chapterId = record.chapter + 1;
+
+        // علامة 104 تمثل اجتياز امتحان الفصل وليست درسًا عاديًا.
+        if (record.lesson === 104) {
+          completedChapters.add(chapterId);
+          return;
+        }
+
+        if (record.lesson >= 4) return;
+
+        const lessonKey = getLessonKey(chapterId, record.lesson);
+        cloudCompletedLessonKeys.add(lessonKey);
+        completedLessonKeys.add(lessonKey);
+      });
+
+      saveLocalProgress();
+    } catch (progressError) {
+      console.warn("تعذر استعادة تقدم Python من الحساب:", progressError);
+    }
+
     const userRef = firestoreModule.doc(firebaseModule.db, "users", user.uid);
     const snapshot = await firestoreModule.getDoc(userRef);
     const userData = snapshot.exists() ? snapshot.data() : {};
