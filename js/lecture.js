@@ -1061,8 +1061,28 @@ async function runJavaScript(code) {
   return result.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
 }
 
-function runPython(code) {
-  return runInSandbox("python", code);
+async function runPython(code) {
+  const result = await runCodeOnServer(
+    "python",
+    code,
+    byId("stdinInput")?.value || ""
+  );
+
+  const diagnostics = [
+    result.compileOutput,
+    result.stderr,
+    result.message
+  ].filter(Boolean).join("\n").trim();
+
+  if (!result.ok) {
+    throw new Error(
+      diagnostics ||
+      result.status ||
+      "لم ينجح تشغيل Python. راجع الكود وحاول مرة أخرى."
+    );
+  }
+
+  return result.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
 }
 
 function runInSandbox(language, code) {
