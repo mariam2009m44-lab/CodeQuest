@@ -756,7 +756,7 @@
     "use strict";
 
     import { verifyJavaChallenge, runCodeOnServer } from "./js/code-runner.js";
-    import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
+    import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile, syncTrustedLessonRewards } from "./js/auth.js";
 
     let currentUserId = "anonymous";
     function progressStorageKey() {
@@ -1651,6 +1651,14 @@
     }
 
     async function refreshAccountStats(previousXP, previousStars) {
+      // Ask the idempotent server-side reconciler to award any verified lesson
+      // that was saved before its Firestore trigger finished.
+      try {
+        await syncTrustedLessonRewards();
+      } catch (error) {
+        console.warn("تعذرت مزامنة مكافآت Java:", error);
+      }
+
       for (let attempt = 0; attempt < 5; attempt++) {
         if (attempt > 0) {
           await new Promise(resolve => setTimeout(resolve, 700));
