@@ -14,12 +14,16 @@ const PRODUCTION_CODE_RUNNER_URL =
 const PREVIEW_CODE_RUNNER_URL =
   "https://fix-cloudflare-code-runner-codequest.mariam2009m44.workers.dev";
 
-// Keep Pages preview requests on the matching preview Worker so its CORS
-// allow-list and preview curriculum are used. Production remains unchanged.
-const CODE_RUNNER_URL =
-  window.location.hostname === "codequest-preview.pages.dev"
-    ? PREVIEW_CODE_RUNNER_URL
-    : PRODUCTION_CODE_RUNNER_URL;
+// Cloudflare Pages preview builds use a hash-prefixed hostname, for example
+// abc123.codequest-preview.pages.dev. Match the suffix, not one exact host.
+const currentHost = window.location.hostname.toLowerCase();
+const isPagesPreview =
+  currentHost === "codequest-preview.pages.dev" ||
+  currentHost.endsWith(".codequest-preview.pages.dev");
+
+const CODE_RUNNER_URL = isPagesPreview
+  ? PREVIEW_CODE_RUNNER_URL
+  : PRODUCTION_CODE_RUNNER_URL;
 
 const verifyJavaCallable = httpsCallable(
   functions,
