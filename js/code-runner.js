@@ -17,6 +17,12 @@ const verifyJavaCallable = httpsCallable(
   { timeout: 45000 }
 );
 
+const syncLessonRewardsCallable = httpsCallable(
+  functions,
+  "syncExistingLessonRewards",
+  { timeout: 120000 }
+);
+
 const ALLOWED_LANGUAGES = new Set([
   "javascript",
   "python",
@@ -127,4 +133,19 @@ export async function verifyJavaChallenge(chapter, lesson, code) {
       ? error
       : new Error("تعذر التحقق من تحدي Java.");
   }
+}
+
+
+/**
+ * Reconcile already-completed lessons with trusted server-side rewards.
+ * The server awards only lessons with a matching verification record.
+ */
+export async function syncExistingLessonRewards() {
+  const response = await syncLessonRewardsCallable({});
+
+  if (!response?.data || response.data.success !== true) {
+    throw new Error("تعذر تأكيد مزامنة مكافآت الدروس.");
+  }
+
+  return response.data;
 }
