@@ -241,19 +241,61 @@
     const PROGRESS_KEY = "cody_python_progress";
     const XP_KEY = "cody_xp";
 
+    let activeUserUid = null;
+    let accountXP = null;
     let cloudCompletedChapters = [];
+
+    function getProgressStorageKey() {
+      return activeUserUid
+        ? `codequest_${activeUserUid}_${PROGRESS_KEY}`
+        : PROGRESS_KEY;
+    }
+
+    function migrateLegacyPythonStorage(uid) {
+      if (!uid) return;
+      try {
+        const markerKey = "cody_python_legacy_migrated_uid";
+        if (localStorage.getItem(markerKey)) return;
+
+        const legacyKeys = [
+          "cody_python_progress",
+          "cody_python_completed_lessons",
+          ...Array.from({ length: 12 }, (_, index) =>
+            `cody_python_exam_passed_${index + 1}`
+          )
+        ];
+
+        for (const legacyKey of legacyKeys) {
+          const legacyValue = localStorage.getItem(legacyKey);
+          const scopedKey = `codequest_${uid}_${legacyKey}`;
+          if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+            localStorage.setItem(scopedKey, legacyValue);
+          }
+        }
+
+        localStorage.setItem(markerKey, uid);
+      } catch (error) {
+        console.warn("تعذرت ترقية بيانات Python القديمة:", error);
+      }
+    }
 
     function readLocalProgress() {
       try {
         const saved = JSON.parse(
-          localStorage.getItem(PROGRESS_KEY) || "{}"
+          localStorage.getItem(getProgressStorageKey()) || "{}"
         );
 
-        return {
-          completed: Array.isArray(saved.completed)
+        const completed = Array.isArray(saved)
+          ? saved.map(Number)
+          : Array.isArray(saved.completed)
             ? saved.completed.map(Number)
-            : [],
-          stars: saved.stars || {}
+            : [];
+
+        return {
+          completed: [...new Set(completed.filter(Number.isInteger))],
+          stars: !Array.isArray(saved) && saved.stars && typeof saved.stars === "object"
+            ? saved.stars
+            : {}
         };
       } catch {
         return { completed: [], stars: {} };
@@ -278,7 +320,7 @@
       const progress = getMergedProgress();
 
       localStorage.setItem(
-        PROGRESS_KEY,
+        getProgressStorageKey(),
         JSON.stringify(progress)
       );
 
@@ -288,13 +330,8 @@
     function renderXp() {
       const sharedXP = localStorage.getItem(XP_KEY);
       const legacyXP = localStorage.getItem("cody_python_xp");
-      const value = sharedXP ?? legacyXP ?? "0";
-
-      if (sharedXP === null && legacyXP !== null) {
-        localStorage.setItem(XP_KEY, legacyXP);
-      }
-
-      document.getElementById("xpDisplay").textContent = value;
+      const value = accountXP ?? Number(sharedXP ?? legacyXP ?? 0) || 0;
+      document.getElementById("xpDisplay").textContent = String(value);
     }
 
     function buildChapterUrl(chapterId) {
@@ -375,9 +412,19 @@
       const status = document.getElementById("syncStatus");
 
       try {
-        const { getLessonProgress } = await import("./js/auth.js");
+        const authModule = await import("./js/auth.js");
+        const user = await authModule.requireUser();
+        if (!user?.uid) throw new Error("تعذر تحديد حساب المستخدم.");
 
-        const records = await getLessonProgress("python");
+        activeUserUid = user.uid;
+        migrateLegacyPythonStorage(activeUserUid);
+
+        const [records, profile] = await Promise.all([
+          authModule.getLessonProgress("python"),
+          authModule.getUserProfile()
+        ]);
+        accountXP = Number.isSafeInteger(profile?.xp) ? profile.xp : 0;
+        renderXp();
 
         /*
           النظام القديم في Python:
