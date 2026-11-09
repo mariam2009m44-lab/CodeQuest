@@ -83,7 +83,10 @@
     .program-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;background:#ffffff08;color:#dbeafe;font-family:"Fira Code",monospace;font-size:.78rem;direction:ltr}
     .program-item.current{background:#7955e833;outline:1px solid #9b7bff}
     .program-item .step-no{color:var(--muted);font-size:.68rem;min-width:18px}
-    .program-item .remove-step{margin-right:auto;border:0;background:transparent;color:#ff9eaa;cursor:pointer;font-size:1rem}
+    .program-item .step-actions{display:flex;align-items:center;gap:4px;margin-left:auto}
+    .program-item .move-step,.program-item .remove-step{display:grid;place-items:center;min-width:36px;min-height:36px;padding:0;border:1px solid var(--line);border-radius:9px;background:#ffffff0a;color:var(--text);cursor:pointer;font:800 .9rem/1 sans-serif;touch-action:manipulation}
+    .program-item .move-step:disabled{opacity:.3;cursor:not-allowed}
+    .program-item .remove-step{color:#ff9eaa}
     .program-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .primary-action{background:linear-gradient(135deg,#7955e8,#4e7ee0);border:0;color:#fff}
     .primary-action:hover{filter:brightness(1.1);background:linear-gradient(135deg,#7955e8,#4e7ee0)}
@@ -279,18 +282,57 @@
       const list=$("programList");list.innerHTML="";
       if(!program.length){const empty=document.createElement("li");empty.className="program-empty";empty.textContent="لم تضف أوامر بعد. ابدأ من لوحة الأوامر!";list.append(empty);}
       program.forEach((command,index)=>{
-        const item=document.createElement("li");item.className="program-item"+(index===activeIndex?" current":"");
-        const number=document.createElement("span");number.className="step-no";number.textContent=String(index+1).padStart(2,"0");
-        const code=document.createElement("span");code.textContent=COMMANDS[command].label;
-        const remove=document.createElement("button");remove.type="button";remove.className="remove-step";remove.textContent="×";remove.setAttribute("aria-label","حذف الأمر "+(index+1));
-        remove.disabled=running;remove.addEventListener("click",()=>{program.splice(index,1);renderProgram();});
-        item.append(number,code,remove);list.append(item);
+        const item=document.createElement("li");
+        item.className="program-item"+(index===activeIndex?" current":"");
+        item.dataset.index=String(index);
+
+        const number=document.createElement("span");
+        number.className="step-no";
+        number.textContent=String(index+1).padStart(2,"0");
+
+        const code=document.createElement("span");
+        code.textContent=COMMANDS[command].label;
+
+        const actions=document.createElement("div");
+        actions.className="step-actions";
+
+        const up=document.createElement("button");
+        up.type="button";up.className="move-step";up.textContent="↑";
+        up.disabled=running||index===0;
+        up.setAttribute("aria-label","نقل الأمر "+(index+1)+" لأعلى");
+        up.addEventListener("click",()=>moveCommand(index,-1));
+
+        const down=document.createElement("button");
+        down.type="button";down.className="move-step";down.textContent="↓";
+        down.disabled=running||index===program.length-1;
+        down.setAttribute("aria-label","نقل الأمر "+(index+1)+" لأسفل");
+        down.addEventListener("click",()=>moveCommand(index,1));
+
+        const remove=document.createElement("button");
+        remove.type="button";remove.className="remove-step";remove.textContent="×";
+        remove.setAttribute("aria-label","حذف الأمر "+(index+1));
+        remove.disabled=running;
+        remove.addEventListener("click",()=>{program.splice(index,1);renderProgram();});
+
+        actions.append(up,down,remove);
+        item.append(number,code,actions);
+        list.append(item);
       });
       $("commandCount").textContent=program.length+" / 16";
       $("runButton").disabled=running||!program.length;
       $("clearButton").disabled=running||!program.length;
       document.querySelectorAll("[data-command]").forEach(button=>button.disabled=running||program.length>=16);
     }
+    function moveCommand(index,delta){
+      if(running)return;
+      const target=index+delta;
+      if(target<0||target>=program.length)return;
+      [program[index],program[target]]=[program[target],program[index]];
+      renderProgram();
+      setFeedback("تم تغيير ترتيب الأوامر. جرّب تنفيذ البرنامج بعد مراجعة التسلسل.");
+      document.querySelector(`.program-item[data-index="${target}"] .move-step`)?.focus();
+    }
+
     function addCommand(command){
       if(running||program.length>=16)return;
       program.push(command);renderProgram();setFeedback("تمت إضافة الأمر "+COMMANDS[command].label+". رتّب بقية الخطوات ثم نفّذ البرنامج.");
