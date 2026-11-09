@@ -41,10 +41,11 @@ function jsonResponse(data, status, origin = null) {
   });
 }
 
-function getAllowedOrigin(request) {
+function getAllowedOrigin(request, env) {
   const origin = request.headers.get("Origin");
+  const allowedOrigin = env.ALLOWED_ORIGIN || ALLOWED_ORIGIN;
 
-  return origin === ALLOWED_ORIGIN ? origin : null;
+  return origin === allowedOrigin ? origin : null;
 }
 
 async function verifyFirebaseUser(request, env) {
@@ -97,6 +98,160 @@ async function verifyFirebaseUser(request, env) {
         ? payload.email
         : null
   };
+}
+
+const EXECUTABLE_LANGUAGES = Object.freeze({
+  javascript: 63,
+  python: 71,
+  cpp: 54,
+  java: 62
+});
+
+function safeOutput(value) {
+  return typeof value === "string" ? value.slice(0, 20000) : "";
+}
+
+async function readJudge0Response(response) {
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("INVALID_JUDGE0_RESPONSE");
+  }
+
+  if (!response.ok) {
+    console.error("Judge0 HTTP error:", response.status, data);
+    throw new Error("JUDGE0_UNAVAILABLE");
+  }
+
+  return data;
+}
+
+async function handleCodeRun(request, env, origin) {
+  try {
+    await verifyFirebaseUser(request, env);
+  } catch {
+    return jsonResponse({
+      success: false,
+      message: "سجّلي الدخول أولًا لتشغيل الأكواد."
+    }, 401, origin);
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({
+      success: false,
+      message: "بيانات طلب التشغيل غير صالحة."
+    }, 400, origin);
+  }
+
+  if (
+    !body ||
+    typeof body !== "object" ||
+    Array.isArray(body) ||
+    !Object.prototype.hasOwnProperty.call(
+      EXECUTABLE_LANGUAGES,
+      body.language
+    ) ||
+    typeof body.code !== "string" ||
+    !body.code.trim() ||
+    body.code.length > 50000 ||
+    (body.stdin !== undefined &&
+      (typeof body.stdin !== "string" || body.stdin.length > 10000))
+  ) {
+    return jsonResponse({
+      success: false,
+      message: "لغة البرمجة أو الكود أو بيانات الإدخال غير صالحة."
+    }, 400, origin);
+  }
+
+  const baseUrl = (env.JUDGE0_URL || "https://ce.judge0.com")
+    .replace(/\/+$/, "");
+
+  let submission;
+
+  try {
+    const response = await fetch(
+      \`\${baseUrl}/submissions?base64_encoded=false&wait=false\`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source_code: body.code,
+          language_id: EXECUTABLE_LANGUAGES[body.language],
+          stdin: body.stdin || ""
+        }),
+        signal: AbortSignal.timeout(15000)
+      }
+    );
+
+    submission = await readJudge0Response(response);
+  } catch (error) {
+    console.error("Judge0 submission error:", error);
+    return jsonResponse({
+      success: false,
+      message: "تعذر إرسال الكود إلى خدمة التشغيل حاليًا."
+    }, 503, origin);
+  }
+
+  if (!submission?.token) {
+    console.error("Judge0 response did not include a token:", submission);
+    return jsonResponse({
+      success: false,
+      message: "خدمة التشغيل لم تُرجع رقم التنفيذ."
+    }, 502, origin);
+  }
+
+  let result = null;
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    try {
+      const response = await fetch(
+        \`\${baseUrl}/submissions/\${encodeURIComponent(submission.token)}?base64_encoded=false\`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(10000)
+        }
+      );
+
+      result = await readJudge0Response(response);
+    } catch (error) {
+      console.error("Judge0 polling error:", error);
+      return jsonResponse({
+        success: false,
+        message: "تعذر الحصول على نتيجة تنفيذ الكود."
+      }, 503, origin);
+    }
+
+    if (result?.status?.id && result.status.id > 2) {
+      break;
+    }
+  }
+
+  if (!result?.status || result.status.id <= 2) {
+    return jsonResponse({
+      success: false,
+      message: "استغرق تنفيذ الكود وقتًا طويلًا. حاولي مرة أخرى."
+    }, 504, origin);
+  }
+
+  return jsonResponse({
+    ok: result.status.id === 3,
+    stdout: safeOutput(result.stdout),
+    stderr: safeOutput(result.stderr),
+    compileOutput: safeOutput(result.compile_output),
+    message: safeOutput(result.message),
+    status: result.status.description || "Unknown",
+    time: result.time || null,
+    memory: result.memory || null
+  }, 200, origin);
 }
 
 async function loadQuiz(language, lessonId) {
@@ -261,7 +416,7 @@ async function handleQuizCheck(request, env, origin) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const origin = getAllowedOrigin(request);
+    const origin = getAllowedOrigin(request, env);
 
     if (
       url.pathname === "/health" &&
@@ -331,6 +486,13 @@ export default {
           message: "جلسة تسجيل الدخول غير صالحة."
         }, 401, origin);
       }
+    }
+
+    if (
+      url.pathname === "/api/code/run" &&
+      request.method === "POST"
+    ) {
+      return handleCodeRun(request, env, origin);
     }
 
     if (
