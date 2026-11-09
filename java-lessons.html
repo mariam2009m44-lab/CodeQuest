@@ -1889,10 +1889,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       if (!lesson) return;
 
       if (!challengeVerified || !quizAnswered) {
-        showNotice(
-          "لإكمال الدرس، شغّل حلًا صحيحًا ثم أجب عن سؤال الفهم إجابة صحيحة.",
-          "info"
-        );
+        showNotice("لإكمال الدرس، شغّل حلًا صحيحًا ثم أجب عن سؤال الفهم إجابة صحيحة.", "info");
         return;
       }
 
@@ -1905,88 +1902,68 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const chapter = Number(position[1]) - 1;
       const lessonIndex = Number(position[2]) - 1;
       const progress = readProgress();
-      const alreadyCompleted = progress[lesson.id]?.completed === true;
+      const previousRecord = progress[lesson.id] || {};
+      const alreadyCompleted = previousRecord.completed === true && previousRecord.localOnly !== true;
+      const hasTrustedProof = challengeVerifiedOnServer && quizVerifiedOnServer;
       const previousXP = getXP();
       const previousStars = accountStars;
+      let cloudSaved = false;
 
-      let cloudSaved = true;
-
-      try {
-        // احفظ التقدم في حساب المستخدم أولًا.
-        await saveLessonProgress({
-          language: "java",
-          chapter,
-          lesson: lessonIndex,
-          completed: true,
-          expectedUid: currentUserId
-        });
-      } catch (error) {
-        console.error("Java progress cloud save failed:", error);
-        const errorCode = String(error?.code || "").split("/").pop();
-
-        // لا نمنع متابعة المنهج بسبب انقطاع مؤقت في Firestore.
-        // يُحفظ الإنجاز محليًا فقط، ولا تُمنح مكافآت الحساب إلا بعد نجاح الحفظ السحابي.
-        cloudSaved = false;
+      // لا نكتب إنجازًا موثوقًا في Firestore إلا بعد اعتماد التحدي والسؤال معًا.
+      if (hasTrustedProof) {
+        try {
+          await saveLessonProgress({
+            language: "java",
+            chapter,
+            lesson: lessonIndex,
+            completed: true,
+            expectedUid: currentUserId
+          });
+          cloudSaved = true;
+        } catch (error) {
+          console.error("Java progress cloud save failed:", error);
+        }
       }
 
       if (!cloudSaved) {
         progress[lesson.id] = {
-          ...(progress[lesson.id] || {}),
+          ...previousRecord,
           completed: true,
-          completedAt: new Date().toISOString(),
+          completedAt: previousRecord.completedAt || new Date().toISOString(),
           localOnly: true
         };
         saveProgress(progress);
         updateStats();
         updateNavigationButtons();
         showNotice(
-          "تم حفظ الدرس على هذا الجهاز. مزامنة الحساب ومكافآت XP والنجوم ستعمل بعد نشر تحديثات Firebase.",
+          hasTrustedProof
+            ? "تعذر حفظ الإنجاز في الحساب الآن. احتفظنا به على هذا الجهاز فقط، وحاول إكماله مرة أخرى عند عودة الاتصال."
+            : "تم حفظ التقدم على هذا الجهاز فقط. لن يُعتمد في الحساب أو يمنح XP ونجومًا قبل التحقق الخادمي من التحدي والسؤال.",
           "info"
         );
         return;
       }
 
-      if (alreadyCompleted) {
-        if (challengeVerifiedOnServer && quizVerifiedOnServer) {
-          const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
-          showNotice(
-            rewardsUpdated
-              ? "تم تحديث مكافآت الدرس المحفوظ مسبقًا."
-              : "تم حفظ الدرس. قد يستغرق تحديث المكافآت بضع لحظات.",
-            "success"
-          );
-        } else {
-          showNotice("الدرس محفوظ بالفعل. ستُضاف المكافأة فقط بعد التحقق الخادمي من الحل والسؤال.", "info");
-        }
-        return;
-      }
-
-      progress[lesson.id] = {
-        ...(progress[lesson.id] || {}),
+      const savedRecord = {
+        ...previousRecord,
         completed: true,
-        completedAt: new Date().toISOString()
+        completedAt: previousRecord.completedAt || new Date().toISOString()
       };
-
+      delete savedRecord.localOnly;
+      progress[lesson.id] = savedRecord;
       saveProgress(progress);
       updateStats();
       updateNavigationButtons();
 
-      if (challengeVerifiedOnServer && quizVerifiedOnServer) {
-        const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
-        showNotice(
-          rewardsUpdated
-            ? "تم حفظ الدرس وإضافة مكافآته إلى حسابك بنجاح!"
-            : "تم حفظ الدرس بنجاح. قد يستغرق تحديث نقاط الخبرة والنجوم بضع لحظات.",
-          "success"
-        );
-      } else {
-        showNotice(
-          challengeVerifiedOnServer
-            ? "تم حفظ الدرس، لكن سؤال الفهم لم يُعتمد خادميًا؛ مكافآت الحساب متوقفة حتى يكتمل التحقق."
-            : "تم حفظ تقدم الدرس محليًا/سحابيًا. مكافآت الحساب تنتظر التحقق الخادمي من الحل والسؤال.",
-          "info"
-        );
-      }
+      const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
+      showNotice(
+        rewardsUpdated
+          ? alreadyCompleted
+            ? "تم التحقق من الدرس المحفوظ سابقًا وتحديث مكافآته."
+            : "تم حفظ الدرس والتحقق منه وتحديث مكافآته بنجاح!"
+          : "تم حفظ الدرس والتحقق منه. قد يستغرق تحديث نقاط الخبرة والنجوم بضع لحظات.",
+        "success"
+      );
     }
 
     function updateNavigationButtons() {
@@ -1999,7 +1976,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const complete = document.getElementById("completeLesson");
       const counter = document.getElementById("lessonChapter");
 
-      const done = Boolean(readProgress()[currentLessonId]?.completed);
+      const currentProgress = readProgress()[currentLessonId];
+      const done = currentProgress?.completed === true && currentProgress.localOnly !== true;
       if (previous) previous.disabled = index <= 0;
       if (next) {
         next.disabled = index < 0 || index >= allLessons.length - 1 || !done;
@@ -2021,8 +1999,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             ? "شغّل حلًا صحيحًا أولًا"
             : !quizAnswered
               ? "أجب عن سؤال الفهم أولًا"
-              : !challengeVerifiedOnServer
-                ? "إكمال الدرس دون مكافأة مؤقتًا"
+              : (!challengeVerifiedOnServer || !quizVerifiedOnServer)
+                ? "إكمال محلي مؤقتًا دون مكافأة"
                 : "إكمال الدرس";
       }
 
