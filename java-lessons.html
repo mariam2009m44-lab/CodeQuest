@@ -714,6 +714,10 @@ html[data-theme="light"] .card {
   color: var(--text);
   border-color: var(--border);
 }
+html[data-theme="light"] .card p,
+html[data-theme="light"] .card .muted {
+  color: #475569;
+}
 html[data-theme="light"] .CodeMirror,
 html[data-theme="light"] textarea {
   background: #111827;
@@ -1570,15 +1574,18 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
 
     async function verifySelectedQuizOnServer() {
       if (!challengeVerifiedOnServer || !quizAnswered || quizVerifiedOnServer) return;
-      const position = /^java-(\d+)-(\d+)$/.exec(currentLessonId || "");
+      const requestedLessonId = currentLessonId;
+      const requestedAnswer = selectedQuizAnswer;
+      const position = /^java-(\d+)-(\d+)$/.exec(requestedLessonId || "");
       if (!position) return;
 
       try {
         const result = await verifyJavaQuizAnswer(
           Number(position[1]) - 1,
           Number(position[2]) - 1,
-          selectedQuizAnswer
+          requestedAnswer
         );
+        if (currentLessonId !== requestedLessonId) return;
         if (result.correct === true) {
           quizVerifiedOnServer = true;
           showNotice("تم التحقق من سؤال الفهم على الخادم.", "success");
@@ -1849,14 +1856,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     }
 
     async function refreshAccountStats(previousXP, previousStars) {
-      // Ask the idempotent server-side reconciler to award any verified lesson
-      // that was saved before its Firestore trigger finished.
-      try {
-        await syncTrustedLessonRewards();
-      } catch (error) {
-        console.warn("تعذرت مزامنة مكافآت Java:", error);
-      }
-
+      // Reward reconciliation is handled by the idempotent Firestore trigger.
+      // Avoid scanning every completed lesson on every balance refresh.
       for (let attempt = 0; attempt < 5; attempt++) {
         if (attempt > 0) {
           await new Promise(resolve => setTimeout(resolve, 700));
