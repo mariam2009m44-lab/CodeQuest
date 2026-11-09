@@ -344,6 +344,60 @@ function getLevelsUrl() {
   return `levels.html?lang=${encodeURIComponent(languageKey)}`;
 }
 
+function getLocalProgress() {
+  try {
+    const value = JSON.parse(
+      localStorage.getItem(`codequest_lesson_progress_${languageKey}`) || "[]"
+    );
+    return Array.isArray(value)
+      ? value.filter(item =>
+          item &&
+          item.completed === true &&
+          Number.isSafeInteger(item.chapter) &&
+          Number.isSafeInteger(item.lesson)
+        )
+      : [];
+  } catch (error) {
+    console.warn("تعذر قراءة التقدم المحلي:", error);
+    return [];
+  }
+}
+
+function saveLocalLessonCompletion() {
+  try {
+    const records = getLocalProgress();
+    const key = `${chapterIndex}:${lessonIndex}`;
+    const next = records.filter(
+      item => `${item.chapter}:${item.lesson}` !== key
+    );
+    next.push({
+      language: languageKey,
+      chapter: chapterIndex,
+      lesson: lessonIndex,
+      completed: true
+    });
+    localStorage.setItem(
+      `codequest_lesson_progress_${languageKey}`,
+      JSON.stringify(next)
+    );
+    return true;
+  } catch (error) {
+    console.warn("تعذر حفظ التقدم محليًا:", error);
+    return false;
+  }
+}
+
+function mergeProgressRecords(cloudRecords = []) {
+  const records = new Map();
+  [...(Array.isArray(cloudRecords) ? cloudRecords : []), ...getLocalProgress()]
+    .forEach(item => {
+      if (item?.completed === true) {
+        records.set(`${item.chapter}:${item.lesson}`, item);
+      }
+    });
+  return [...records.values()];
+}
+
 function renderProgress(progressData) {
   const total = Math.max(getTotalLessons(), 1);
   const completed = new Set();
@@ -631,45 +685,32 @@ async function loadCurriculum() {
   }
 }
 async function loadProgress() {
+  let cloudProgress = [];
+
   try {
-    const progress = await getLessonProgress(languageKey);
-
-    renderProgress(progress);
-
+    cloudProgress = await getLessonProgress(languageKey);
   } catch (error) {
-    console.warn(
-      "تعذر تحميل تقدم الدروس:",
-      error
-    );
-
-    renderProgress([]);
+    console.warn("تعذر تحميل تقدم الدروس من الحساب:", error);
   }
+
+  renderProgress(mergeProgressRecords(cloudProgress));
 }
 
 async function loadCurrentCompletion() {
-  lessonCompleted = false;
+  let cloudProgress = [];
 
   try {
-    const progress = await getLessonProgress(languageKey);
-
-    if (!Array.isArray(progress)) {
-      return;
-    }
-
-    lessonCompleted = progress.some(
-      (item) =>
-        item &&
-        item.chapter === chapterIndex &&
-        item.lesson === lessonIndex &&
-        item.completed === true
-    );
-
+    cloudProgress = await getLessonProgress(languageKey);
   } catch (error) {
-    console.warn(
-      "تعذر قراءة حالة إكمال الدرس:",
-      error
-    );
+    console.warn("تعذر قراءة تقدم الدرس من الحساب:", error);
   }
+
+  lessonCompleted = mergeProgressRecords(cloudProgress).some(
+    item =>
+      item.chapter === chapterIndex &&
+      item.lesson === lessonIndex &&
+      item.completed === true
+  );
 }
 
 async function completeCurrentLesson() {
@@ -686,11 +727,12 @@ async function completeCurrentLesson() {
       completed: true
     });
 
+    saveLocalLessonCompletion();
     lessonCompleted = true;
     quizPassed = true;
 
     setStatus(
-      "ممتاز! تم حفظ تقدم الدرس.",
+      "ممتاز! تم حفظ تقدم الدرس في حسابك.",
       "success"
     );
 
@@ -747,20 +789,53 @@ async function completeCurrentLesson() {
       error
     );
 
+    const localSaved = saveLocalLessonCompletion();
+    lessonCompleted = localSaved;
+    quizPassed = localSaved;
+
+    if (localSaved) {
+      setStatus(
+        "تم إكمال الدرس على هذا الجهاز، لكن تعذر مزامنته مع حسابك الآن.",
+        "info"
+      );
+      setFeedback(
+        byId("quizFeedback"),
+        "إجابة صحيحة! تم حفظ تقدمك محليًا حتى لا يتوقف انتقالك للدرس التالي. ستحتاج المزامنة السحابية عند عودة الاتصال.",
+        "info"
+      );
+
+      const checkButton = byId("checkQuizBtn");
+      if (checkButton) checkButton.disabled = true;
+
+      const options = byId("quizOptions");
+      options?.querySelectorAll('input[type="radio"]').forEach(input => {
+        input.disabled = true;
+      });
+
+      const nextButton = byId("nextLessonBtn");
+      if (nextButton) {
+        nextButton.hidden = false;
+        nextButton.disabled = codeRunning;
+        nextButton.textContent = getNextLessonUrl()
+          ? "الدرس التالي ←"
+          : "العودة للمستويات";
+      }
+
+      await loadProgress();
+      return true;
+    }
+
     lessonCompleted = false;
     quizPassed = false;
-
     setStatus(
-      "إجابتك صحيحة، لكن لم نتمكن من حفظ التقدم. حاول مرة أخرى.",
+      "تعذر حفظ التقدم. تحقق من مساحة التخزين والاتصال ثم حاول مرة أخرى.",
       "error"
     );
-
     setFeedback(
       byId("quizFeedback"),
-      "الإجابة صحيحة، لكن الحفظ لم ينجح. اضغط تحقق مرة أخرى لإعادة المحاولة.",
+      "الإجابة صحيحة، لكن تعذر حفظ التقدم على هذا الجهاز أو في الحساب.",
       "error"
     );
-
     return false;
   }
 }
