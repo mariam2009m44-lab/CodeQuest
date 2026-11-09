@@ -322,7 +322,72 @@
         animation-duration: .01ms !important;
       }
     }
-  </style>
+  
+    /* Shared touch-first and reduced-motion refinements */
+    button,
+    a.back-btn,
+    a.btn-back,
+    a.btn-restart {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      min-height: 44px;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--cyan, #36bfe5);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 640px) {
+      .level-box {
+        width: 100%;
+        max-width: 100%;
+        padding: clamp(14px, 4vw, 22px) !important;
+        border-radius: 18px;
+      }
+
+      .lvl-btn {
+        width: 100%;
+        min-height: 64px;
+        gap: 10px;
+        justify-content: space-between;
+        touch-action: manipulation;
+      }
+
+      .back-btn,
+      .btn-back,
+      .btn-restart {
+        min-height: 48px;
+      }
+
+      .drop-zone {
+        min-height: 132px;
+        padding: 14px;
+        touch-action: pan-y;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .memory-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+</style>
   <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
