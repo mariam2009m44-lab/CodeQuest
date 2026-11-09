@@ -1,0 +1,161 @@
+/* CodeQuest shared responsive layer.
+   Layout-only safeguards: preserve page identity, colors and editor controls. */
+:root {
+  --cq-responsive-gutter: clamp(12px, 3.2vw, 32px);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  scroll-padding-top: 16px;
+}
+body {
+  width: 100%;
+  min-width: 320px;
+  max-width: 100%;
+  overflow-x: clip;
+}
+*, *::before, *::after { box-sizing: border-box; }
+:where(main, section, article, aside, header, footer, nav, form, fieldset,
+       .container, .page, .main, .main-area, .main-content, .content,
+       .content-wrapper, .app-shell, .space-main, .profile-main,
+       .projects-page, .studio-grid) {
+  min-width: 0;
+  max-width: 100%;
+}
+:where(img, video, canvas, svg, iframe) {
+  max-width: 100%;
+}
+:where(.grid, .grid-hero, .grid-quick, .stats-grid, .courses-grid,
+       .activities-grid, .wallet-row, .badges-grid, .games-grid,
+       .lang-cards-container, .projects-grid, .profile-details,
+       .studio-grid) > * {
+  min-width: 0;
+}
+:where(p, h1, h2, h3, h4, label, a, button, small, strong) {
+  overflow-wrap: anywhere;
+}
+:where(input, select, textarea) {
+  min-width: 0;
+  max-width: 100%;
+}
+:where(button, .btn, .button, .action-btn, a[role="button"]) {
+  max-width: 100%;
+  white-space: normal;
+  touch-action: manipulation;
+}
+:where(pre, .code-output, .terminal-output, .CodeMirror, .cm-editor) {
+  max-width: 100%;
+}
+pre, .code-output, .terminal-output, .CodeMirror-scroll, .cm-scroller {
+  overflow: auto;
+  overscroll-behavior-inline: contain;
+}
+.CodeMirror, .cm-editor { width: 100%; min-width: 0; }
+table {
+  max-width: 100%;
+}
+@media (max-width: 1100px) {
+  :where(.grid-hero, .studio-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :where(.stats-grid, .grid-quick, .courses-grid, .activities-grid,
+         .badges-grid, .profile-details) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  :where(.main-content, .main-area, .space-main, .profile-main,
+         .projects-page, main.page, main.container) {
+    width: 100%;
+    max-width: 100%;
+    padding-inline: var(--cq-responsive-gutter);
+  }
+  :where(.topbar, .profile-topbar, .section-heading, .toolbar,
+         .topbar-actions, .profile-top-actions, .form-actions) {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  :where(.stats-grid, .grid-quick, .courses-grid, .activities-grid,
+         .badges-grid, .profile-details, .lang-cards-container,
+         .projects-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :where(.hero, .grid-hero, .studio-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :where(.modal, .modal-content, .dialog, .popup, .dropdown-menu) {
+    max-width: calc(100vw - 24px);
+  }
+  :where(.table-wrap, .table-responsive) {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  table:not([role="presentation"]) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@media (max-width: 520px) {
+  :where(.container, .page, .main-content, .main-area, .space-main,
+         .profile-main, .projects-page) {
+    padding-inline: 12px;
+  }
+  :where(.stats-grid, .grid-quick, .courses-grid, .activities-grid,
+         .badges-grid, .profile-details, .lang-cards-container,
+         .projects-grid) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  :where(.topbar, .profile-topbar) {
+    gap: 10px;
+  }
+  :where(.hero-actions, .form-actions) {
+    flex-wrap: wrap;
+  }
+  :where(.hero-actions > *, .form-actions > *) {
+    min-width: min(100%, 140px);
+  }
+  :where(input:not([type="checkbox"]):not([type="radio"]),
+         select, textarea) {
+    width: 100%;
+  }
+  :where(.auth-card, .login-card, .signup-card, .form-card) {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+  :where(.CodeMirror, .cm-editor) {
+    font-size: 13px;
+  }
+  :where(.mobile-nav, .mobile-bottom-nav) {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 360px) {
+  :where(.main-content, .main-area, .space-main, .profile-main,
+         .projects-page, .container, .page) {
+    padding-inline: 10px;
+  }
+  :where(.topbar-actions, .profile-top-actions) { gap: 6px; }
+  :where(.wallet-row, .score-row) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :where(.mobile-nav, .mobile-bottom-nav) {
+    gap: 2px;
+    padding-inline: 3px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
