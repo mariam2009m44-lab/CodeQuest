@@ -396,10 +396,19 @@ function saveLocalLessonCompletion({ serverVerified = true } = {}) {
 
 async function syncLocalProgressToCloud() {
   const pending = getLocalProgress();
-  if (!pending.length || !currentUser?.uid) return;
+  const syncUid = currentUser?.uid;
+  if (!pending.length || !syncUid) return;
 
-  const unsynced = [];
+  // A local completion without server verification must never become a
+  // trusted cloud completion merely because connectivity returned.
+  const unsynced = pending.filter(item => item.serverVerified !== true);
   for (const item of pending) {
+    if (item.serverVerified !== true) continue;
+    if (currentUser?.uid !== syncUid) {
+      unsynced.push(item);
+      continue;
+    }
+
     try {
       await saveLessonProgress({
         language: languageKey,
@@ -408,7 +417,7 @@ async function syncLocalProgressToCloud() {
         completed: true
       });
     } catch (error) {
-      console.warn("تعذرت مزامنة إنجاز محلي:", item, error);
+      console.warn("تعذرت مزامنة إنجاز محلي موثّق:", item, error);
       unsynced.push(item);
     }
   }
@@ -422,7 +431,9 @@ async function syncLocalProgressToCloud() {
 
 function mergeProgressRecords(cloudRecords = []) {
   const records = new Map();
-  [...(Array.isArray(cloudRecords) ? cloudRecords : []), ...getLocalProgress()]
+  // Local-only records remain visible, but the cloud record is authoritative
+  // for timestamps and account-synced state when the same lesson exists.
+  [...getLocalProgress(), ...(Array.isArray(cloudRecords) ? cloudRecords : [])]
     .forEach(item => {
       if (item?.completed === true) {
         records.set(`${item.chapter}:${item.lesson}`, item);
@@ -767,12 +778,16 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
   }
 
   try {
-    await saveLessonProgress({
-      language: languageKey,
-      chapter: chapterIndex,
-      lesson: lessonIndex,
-      completed: true
-    });
+    // Only server-verified completions may be written to the trusted cloud
+    // progress collection. Offline/unverified completions stay device-local.
+    if (serverVerified) {
+      await saveLessonProgress({
+        language: languageKey,
+        chapter: chapterIndex,
+        lesson: lessonIndex,
+        completed: true
+      });
+    }
 
     saveLocalLessonCompletion({ serverVerified });
     lessonCompleted = true;
