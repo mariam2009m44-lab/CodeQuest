@@ -1464,6 +1464,14 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
         if (result.correct === true) {
           quizVerifiedOnServer = true;
           showNotice("تم التحقق من سؤال الفهم على الخادم.", "success");
+          if (readProgress()[currentLessonId]?.completed === true) {
+            const previousXP = getXP();
+            const previousStars = accountStars;
+            const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
+            if (rewardsUpdated) {
+              showNotice("تم تحديث مكافآت هذا الدرس المحفوظ مسبقًا.", "success");
+            }
+          }
         } else {
           showNotice(result.message || "تعذر اعتماد إجابة سؤال الفهم.", "error");
         }
