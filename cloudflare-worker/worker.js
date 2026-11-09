@@ -9,15 +9,10 @@ const FIREBASE_KEYS = createRemoteJWKSet(
 
 const ALLOWED_ORIGIN = "https://mariam2009m44-lab.github.io";
 
-const CURRICULUM_URLS = {
-  javascript:
-    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/js_curriculum.json",
-
-  python:
-    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/python_curriculum.json",
-
-  cpp:
-    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/cpp_curriculum.json"
+const CURRICULUM_PATHS = {
+  javascript: "/json/js_curriculum.json",
+  python: "/json/python_curriculum.json",
+  cpp: "/json/cpp_curriculum.json"
 };
 
 function jsonResponse(data, status, origin = null) {
@@ -264,13 +259,19 @@ async function handleCodeRun(request, env, origin) {
   }, 200, origin);
 }
 
-async function loadQuiz(language, lessonId) {
-  const curriculumUrl = CURRICULUM_URLS[language];
+async function loadQuiz(language, lessonId, env) {
+  const curriculumPath = CURRICULUM_PATHS[language];
 
-  if (!curriculumUrl) {
+  if (!curriculumPath) {
     throw new Error("UNSUPPORTED_LANGUAGE");
   }
 
+  const curriculumBase = (
+    env.CURRICULUM_BASE_URL ||
+    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main"
+  ).replace(/\\/+$/, "");
+
+  const curriculumUrl = `${curriculumBase}${curriculumPath}`;
   const response = await fetch(curriculumUrl, {
     headers: {
       "Accept": "application/json"
@@ -360,7 +361,7 @@ async function handleQuizCheck(request, env, origin) {
 
   if (
     !Object.prototype.hasOwnProperty.call(
-      CURRICULUM_URLS,
+      CURRICULUM_PATHS,
       language
     ) ||
     typeof lessonId !== "string" ||
@@ -376,7 +377,7 @@ async function handleQuizCheck(request, env, origin) {
   }
 
   try {
-    const quiz = await loadQuiz(language, lessonId);
+    const quiz = await loadQuiz(language, lessonId, env);
 
     if (!quiz) {
       return jsonResponse({
