@@ -151,7 +151,7 @@ These are separate Java resources and are not listed as one of the three main la
 | Gamification | XP, stars, levels, coins, and learning rewards. |
 | Achievements | Dedicated achievements page. |
 | Leaderboard | Public leaderboard synchronization. |
-| Games | Multiple standalone educational game pages. |
+| Games | Standalone educational games, including a Three.js 3D coding mission. |
 | Projects | Dedicated project-related learning page. |
 | Store | User store and server-side purchase functionality. |
 | PWA Support | Web app manifest and service-worker functionality. |
@@ -605,6 +605,7 @@ CodeQuest/
 ├── game-memory.html
 ├── game-quiz.html
 ├── game-speed.html
+├── game-3d.html
 │
 ├── profile.html
 ├── progress.html
