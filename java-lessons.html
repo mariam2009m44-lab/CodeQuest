@@ -379,17 +379,66 @@
     }
 
     .editor-body {
+      display: flex;
+      min-width: 0;
+      min-height: 0;
       padding: 12px;
       background: #0B1020;
     }
 
     .CodeMirror {
-      height: 300px;
+      width: 100%;
+      height: clamp(320px, 52vh, 620px);
+      min-height: 320px;
+      max-height: 72vh;
       border-radius: 10px;
-      font-size: 13px;
+      font-size: 14px;
       direction: ltr;
       text-align: left;
       font-family: Consolas, monospace;
+      touch-action: pan-y;
+    }
+
+    .editor-expand-btn {
+      min-height: 40px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-light);
+      color: var(--text);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .editor-card.is-expanded {
+      position: fixed;
+      inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      z-index: 4000;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      background: var(--panel);
+      box-shadow: 0 20px 70px rgba(0,0,0,.55);
+    }
+
+    .editor-card.is-expanded .editor-body {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .editor-card.is-expanded .CodeMirror {
+      height: 100% !important;
+      min-height: 0;
+      max-height: none;
+      flex: 1 1 auto;
+    }
+
+    body.editor-open {
+      overflow: hidden;
     }
 
     .editor-actions {
@@ -601,7 +650,22 @@
       }
 
       .CodeMirror {
-        height: 260px;
+        height: clamp(280px, 46svh, 480px);
+        min-height: 280px;
+        max-height: 65svh;
+        font-size: 14px;
+      }
+
+      .editor-header {
+        flex-wrap: wrap;
+      }
+
+      .editor-expand-btn {
+        flex: 0 0 auto;
+      }
+
+      .editor-card.is-expanded .CodeMirror {
+        height: 100% !important;
       }
     }
 
@@ -748,8 +812,12 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           <section class="card editor-card">
             <div class="editor-header">
               <strong>⌨️ محرر Java</strong>
-              <div class="editor-dots" aria-hidden="true">
-                <span></span><span></span><span></span>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <button class="editor-expand-btn" id="editorExpandToggle" type="button"
+                  aria-expanded="false" aria-controls="codeEditor">تكبير المحرر</button>
+                <div class="editor-dots" aria-hidden="true">
+                  <span></span><span></span><span></span>
+                </div>
               </div>
             </div>
 
@@ -1362,10 +1430,13 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             indentUnit: 4,
             tabSize: 4,
             indentWithTabs: false,
-            lineWrapping: true
+            lineWrapping: true,
+            inputStyle: "contenteditable",
+            screenReaderLabel: "محرر كود Java"
           });
 
-          editor.setSize("100%", "320px");
+          editor.setSize("100%", null);
+          requestAnimationFrame(() => editor?.refresh());
           return;
         } catch (error) {
           console.error("تعذر تشغيل CodeMirror:", error);
@@ -1374,10 +1445,52 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
 
       textarea.style.display = "block";
       textarea.style.width = "100%";
-      textarea.style.minHeight = "320px";
+      textarea.style.minHeight = "clamp(280px, 46svh, 480px)";
+      textarea.style.width = "100%";
+      textarea.style.resize = "vertical";
+      textarea.style.direction = "ltr";
+      textarea.style.textAlign = "left";
+      textarea.style.fontFamily = "Consolas, monospace";
+      textarea.style.fontSize = "14px";
 
       showNotice("تعذر تحميل محرر الأكواد؛ يمكنك الكتابة في مربع النص.", "warning");
     }
+
+    function setEditorExpanded(expanded) {
+      const card = document.querySelector(".editor-card");
+      const button = document.getElementById("editorExpandToggle");
+      if (!card || !button) return;
+
+      card.classList.toggle("is-expanded", expanded);
+      document.body.classList.toggle("editor-open", expanded);
+      button.setAttribute("aria-expanded", String(expanded));
+      button.textContent = expanded ? "تصغير المحرر" : "تكبير المحرر";
+
+      requestAnimationFrame(() => {
+        if (editor) {
+          editor.setSize("100%", expanded ? "100%" : null);
+          editor.refresh();
+          editor.focus();
+        } else {
+          document.getElementById("codeEditor")?.focus();
+        }
+      });
+    }
+
+    document.getElementById("editorExpandToggle")?.addEventListener("click", () => {
+      const card = document.querySelector(".editor-card");
+      setEditorExpanded(!card?.classList.contains("is-expanded"));
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && document.querySelector(".editor-card.is-expanded")) {
+        setEditorExpanded(false);
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      requestAnimationFrame(() => editor?.refresh());
+    });
 
     function getEditorCode() {
       const textarea = document.getElementById("codeEditor");
