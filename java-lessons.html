@@ -379,17 +379,68 @@
     }
 
     .editor-body {
+      display: flex;
+      min-width: 0;
+      min-height: 0;
       padding: 12px;
       background: #0B1020;
     }
 
     .CodeMirror {
-      height: 300px;
+      width: 100%;
+      height: clamp(320px, 52vh, 620px);
+      min-height: 320px;
+      max-height: 72vh;
+      resize: vertical;
+      overflow: auto;
       border-radius: 10px;
-      font-size: 13px;
+      font-size: 14px;
       direction: ltr;
       text-align: left;
       font-family: Consolas, monospace;
+      touch-action: pan-y;
+    }
+
+    .editor-expand-btn {
+      min-height: 40px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-light);
+      color: var(--text);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .editor-card.is-expanded {
+      position: fixed;
+      inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      z-index: 4000;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      background: var(--panel);
+      box-shadow: 0 20px 70px rgba(0,0,0,.55);
+    }
+
+    .editor-card.is-expanded .editor-body {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .editor-card.is-expanded .CodeMirror {
+      height: 100% !important;
+      min-height: 0;
+      max-height: none;
+      flex: 1 1 auto;
+    }
+
+    body.editor-open {
+      overflow: hidden;
     }
 
     .editor-actions {
@@ -601,7 +652,22 @@
       }
 
       .CodeMirror {
-        height: 260px;
+        height: clamp(280px, 46svh, 480px);
+        min-height: 280px;
+        max-height: 65svh;
+        font-size: 14px;
+      }
+
+      .editor-header {
+        flex-wrap: wrap;
+      }
+
+      .editor-expand-btn {
+        flex: 0 0 auto;
+      }
+
+      .editor-card.is-expanded .CodeMirror {
+        height: 100% !important;
       }
     }
 
@@ -621,6 +687,50 @@
     }
   </style>
   <link rel="stylesheet" href="css/theme.css">
+<style>
+html[data-theme="light"] {
+  --bg: #F5F7FC;
+  --panel: #FFFFFF;
+  --panel-light: #EEF2F8;
+  --border: #DCE3EF;
+  --text: #182235;
+  --muted: #64748B;
+  --cyan: #087F9B;
+  --purple: #7652D5;
+  --green: #0F9468;
+  --red: #D94862;
+}
+html[data-theme="light"] body { background: var(--bg); color: var(--text); }
+html[data-theme="light"] .topbar {
+  background: rgba(255,255,255,.96);
+  border-color: var(--border);
+}
+html[data-theme="light"] .lesson-card,
+html[data-theme="light"] .lesson-content,
+html[data-theme="light"] .lesson-panel,
+html[data-theme="light"] .quiz-option,
+html[data-theme="light"] .notice,
+html[data-theme="light"] .panel,
+html[data-theme="light"] .card {
+  background: #FFFFFF;
+  color: var(--text);
+  border-color: var(--border);
+}
+html[data-theme="light"] .card p,
+html[data-theme="light"] .card .muted {
+  color: #475569;
+}
+html[data-theme="light"] .CodeMirror,
+html[data-theme="light"] textarea {
+  background: #111827;
+  color: #E5EDF8;
+}
+html[data-theme="light"] .xp-pill { color: #805B00; }
+.lesson-user-avatar { width: 42px; height: 42px; flex: 0 0 42px; overflow: hidden; border-radius: 50%; border: 2px solid var(--cyan); background: var(--panel-light); }
+.lesson-user-avatar .anime-avatar { width: 100%; height: 100%; overflow: hidden; }
+.lesson-user-avatar .anime-character { width: 100%; height: 100%; }
+.lesson-user-avatar .anime-avatar-svg { width: 100%; height: 100%; max-width: none; }
+</style>
 </head>
 
 <body>
@@ -633,6 +743,7 @@
     <div class="top-actions">
       <span class="xp-pill">⭐ XP: <span id="xpCount">0</span></span>
       <span class="xp-pill">🌟 النجوم: <span id="starCount">0</span></span>
+      <div class="lesson-user-avatar" id="lessonUserAvatar" aria-label="صورة الحساب"></div>
       <a class="back-link" href="java-chapters.html">← فصول Java</a>
     </div>
   </header>
@@ -707,8 +818,12 @@
           <section class="card editor-card">
             <div class="editor-header">
               <strong>⌨️ محرر Java</strong>
-              <div class="editor-dots" aria-hidden="true">
-                <span></span><span></span><span></span>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <button class="editor-expand-btn" id="editorExpandToggle" type="button"
+                  aria-expanded="false" aria-controls="codeEditor">تكبير المحرر</button>
+                <div class="editor-dots" aria-hidden="true">
+                  <span></span><span></span><span></span>
+                </div>
               </div>
             </div>
 
@@ -755,11 +870,42 @@
   <script type="module">
     "use strict";
 
-    import { verifyJavaChallenge, runCodeOnServer } from "./js/code-runner.js";
-    import { saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
+    import { verifyJavaChallenge, verifyJavaQuizAnswer, runCodeOnServer } from "./js/code-runner.js";
+    import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
-    const PROGRESS_KEY = "cody_java_progress";
-    const XP_KEY = "cody_java_xp";
+    let currentUserId = "anonymous";
+    function progressStorageKey() {
+      return `cody_java_progress_${currentUserId}`;
+    }
+
+    function migrateLegacyJavaProgress(uid) {
+      if (!uid) return;
+      try {
+        const markerKey = "cody_java_legacy_migrated_uid";
+        if (localStorage.getItem(markerKey)) return;
+
+        const legacyKey = "cody_java_progress";
+        const scopedKey = `cody_java_progress_${uid}`;
+        const legacyValue = localStorage.getItem(legacyKey);
+        if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+          localStorage.setItem(scopedKey, legacyValue);
+        }
+
+        const legacyXP = localStorage.getItem("cody_java_xp");
+        const scopedXP = `cody_java_xp_${uid}`;
+        if (legacyXP !== null && localStorage.getItem(scopedXP) === null) {
+          localStorage.setItem(scopedXP, legacyXP);
+        }
+
+        // The previous key had no account owner; migrate it only once.
+        localStorage.setItem(markerKey, uid);
+      } catch (error) {
+        console.warn("تعذرت ترقية تقدم Java القديم:", error);
+      }
+    }
+    function xpStorageKey() {
+      return `cody_java_xp_${currentUserId}`;
+    }
 
     /*
       منهج Java من الصفر.
@@ -1151,6 +1297,7 @@
     let editor = null;
     let selectedQuizAnswer = null;
     let quizAnswered = false;
+    let quizVerifiedOnServer = false;
     let challengeVerified = false;
     let challengeVerifiedOnServer = false;
     let accountXP = null;
@@ -1182,26 +1329,61 @@
 
     function readProgress() {
       try {
-        return JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
+        return JSON.parse(localStorage.getItem(progressStorageKey()) || "{}");
       } catch (error) {
         console.error("تعذر قراءة التقدم:", error);
         return {};
       }
     }
 
+    async function syncPendingJavaProgress() {
+      const syncUid = currentUserId;
+      if (!syncUid) return;
+      const progress = readProgress();
+      let changed = false;
+
+      for (const [lessonId, record] of Object.entries(progress)) {
+        if (record?.completed !== true || record.localOnly !== true || record.serverVerified !== true) continue;
+        const position = /^java-(\d+)-(\d+)$/.exec(lessonId);
+        if (!position) continue;
+
+        try {
+          await saveLessonProgress({
+            language: "java",
+            chapter: Number(position[1]) - 1,
+            lesson: Number(position[2]) - 1,
+            completed: true,
+            expectedUid: syncUid
+          });
+          if (currentUserId !== syncUid) return;
+          delete record.localOnly;
+          progress[lessonId] = record;
+          changed = true;
+        } catch (error) {
+          console.warn("تعذرت مزامنة إنجاز Java موثّق:", lessonId, error);
+        }
+      }
+
+      if (changed && currentUserId === syncUid) {
+        saveProgress(progress);
+        updateStats();
+        updateNavigationButtons();
+      }
+    }
+
     function getXP() {
       return accountXP === null
-        ? Number(localStorage.getItem(XP_KEY) || 0)
+        ? Number(localStorage.getItem(xpStorageKey()) || 0)
         : accountXP;
     }
 
     function addXP(amount) {
-      localStorage.setItem(XP_KEY, String(getXP() + amount));
+      localStorage.setItem(xpStorageKey(), String(getXP() + amount));
       updateStats();
     }
 
     function saveProgress(progress) {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+      localStorage.setItem(progressStorageKey(), JSON.stringify(progress));
     }
 
     function updateStats() {
@@ -1317,10 +1499,20 @@
             indentUnit: 4,
             tabSize: 4,
             indentWithTabs: false,
-            lineWrapping: true
+            lineWrapping: true,
+            inputStyle: "contenteditable",
+            screenReaderLabel: "محرر كود Java",
+            extraKeys: {
+              Tab: cm => {
+                if (cm.somethingSelected()) cm.indentSelection("add");
+                else cm.replaceSelection(" ".repeat(cm.getOption("indentUnit") || 4), "end");
+              },
+              "Shift-Tab": cm => cm.indentSelection("subtract")
+            }
           });
 
-          editor.setSize("100%", "320px");
+          editor.setSize("100%", null);
+          requestAnimationFrame(() => editor?.refresh());
           return;
         } catch (error) {
           console.error("تعذر تشغيل CodeMirror:", error);
@@ -1329,10 +1521,52 @@
 
       textarea.style.display = "block";
       textarea.style.width = "100%";
-      textarea.style.minHeight = "320px";
+      textarea.style.minHeight = "clamp(280px, 46svh, 480px)";
+      textarea.style.width = "100%";
+      textarea.style.resize = "vertical";
+      textarea.style.direction = "ltr";
+      textarea.style.textAlign = "left";
+      textarea.style.fontFamily = "Consolas, monospace";
+      textarea.style.fontSize = "14px";
 
       showNotice("تعذر تحميل محرر الأكواد؛ يمكنك الكتابة في مربع النص.", "warning");
     }
+
+    function setEditorExpanded(expanded) {
+      const card = document.querySelector(".editor-card");
+      const button = document.getElementById("editorExpandToggle");
+      if (!card || !button) return;
+
+      card.classList.toggle("is-expanded", expanded);
+      document.body.classList.toggle("editor-open", expanded);
+      button.setAttribute("aria-expanded", String(expanded));
+      button.textContent = expanded ? "تصغير المحرر" : "تكبير المحرر";
+
+      requestAnimationFrame(() => {
+        if (editor) {
+          editor.setSize("100%", expanded ? "100%" : null);
+          editor.refresh();
+          editor.focus();
+        } else {
+          document.getElementById("codeEditor")?.focus();
+        }
+      });
+    }
+
+    document.getElementById("editorExpandToggle")?.addEventListener("click", () => {
+      const card = document.querySelector(".editor-card");
+      setEditorExpanded(!card?.classList.contains("is-expanded"));
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && document.querySelector(".editor-card.is-expanded")) {
+        setEditorExpanded(false);
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      requestAnimationFrame(() => editor?.refresh());
+    });
 
     function getEditorCode() {
       const textarea = document.getElementById("codeEditor");
@@ -1356,6 +1590,7 @@
       container.replaceChildren();
       selectedQuizAnswer = null;
       quizAnswered = false;
+      quizVerifiedOnServer = false;
 
       if (!quiz) return;
 
@@ -1409,7 +1644,42 @@
       }
     }
 
-    function checkQuizAnswer() {
+    async function verifySelectedQuizOnServer() {
+      if (!challengeVerifiedOnServer || !quizAnswered || quizVerifiedOnServer) return;
+      const requestedLessonId = currentLessonId;
+      const requestedAnswer = selectedQuizAnswer;
+      const position = /^java-(\d+)-(\d+)$/.exec(requestedLessonId || "");
+      if (!position) return;
+
+      try {
+        const result = await verifyJavaQuizAnswer(
+          Number(position[1]) - 1,
+          Number(position[2]) - 1,
+          requestedAnswer
+        );
+        if (currentLessonId !== requestedLessonId) return;
+        if (result.correct === true) {
+          quizVerifiedOnServer = true;
+          showNotice("تم التحقق من سؤال الفهم على الخادم.", "success");
+          if (readProgress()[currentLessonId]?.completed === true) {
+            const previousXP = getXP();
+            const previousStars = accountStars;
+            const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
+            if (rewardsUpdated) {
+              showNotice("تم تحديث مكافآت هذا الدرس المحفوظ مسبقًا.", "success");
+            }
+          }
+        } else {
+          showNotice(result.message || "تعذر اعتماد إجابة سؤال الفهم.", "error");
+        }
+      } catch (error) {
+        console.warn("Java quiz server verification unavailable:", error);
+        showNotice("إجابتك صحيحة محليًا، لكن تعذر اعتمادها على الخادم. لن تُمنح مكافأة قبل التحقق.", "info");
+      }
+      updateNavigationButtons();
+    }
+
+    async function checkQuizAnswer() {
       const lesson = findLesson(currentLessonId);
       const feedback = document.getElementById("quizFeedback");
 
@@ -1421,7 +1691,12 @@
         return;
       }
 
-      if (quizAnswered) return;
+      if (quizAnswered) {
+        if (challengeVerifiedOnServer && !quizVerifiedOnServer) {
+          await verifySelectedQuizOnServer();
+        }
+        return;
+      }
 
       if (selectedQuizAnswer === lesson.quiz.answer) {
         quizAnswered = true;
@@ -1431,6 +1706,7 @@
           `input[name="lesson-quiz"][value="${selectedQuizAnswer}"]`
         )?.closest(".quiz-option");
         selectedOption?.classList.add("correct");
+        await verifySelectedQuizOnServer();
         updateNavigationButtons();
       } else {
         feedback.textContent = "الإجابة غير صحيحة. راجع الشرح أو التلميح ثم حاول مرة أخرى.";
@@ -1448,6 +1724,7 @@
       currentLessonId = lesson.id;
       challengeVerified = false;
       challengeVerifiedOnServer = false;
+      quizVerifiedOnServer = false;
 
       const hint = document.getElementById("lessonHint");
       if (hint) hint.hidden = true;
@@ -1513,6 +1790,7 @@
     async function checkChallenge() {
       const lesson = findLesson(currentLessonId);
       if (!lesson) return;
+      const requestedLessonId = lesson.id;
 
       const code = getEditorCode();
       challengeVerified = false;
@@ -1545,15 +1823,20 @@
             Number(position[2]) - 1,
             code
           );
+          if (currentLessonId !== requestedLessonId) return;
           challengeVerifiedOnServer = true;
         } catch (verificationError) {
-          const errorCode = String(verificationError?.code || "");
-          if (!/not-found|unimplemented/.test(errorCode)) {
+          const errorCode = String(verificationError?.code || "")
+            .replace(/^functions\//, "");
+
+          // عند تعذر الوصول إلى Callable، استخدم تنفيذ Worker كمسار احتياطي.
+          // لا يُنشأ إثبات مكافأة خادمي في هذا المسار؛ لذلك لا تُمنح XP أو نجوم.
+          if (!/not-found|unimplemented|unavailable|deadline-exceeded|internal|unknown/.test(errorCode)) {
             throw verificationError;
           }
 
-          // توافق مؤقت مع مشروع Firebase قبل نشر الدالة الجديدة.
           const fallback = await runCodeOnServer("java", code);
+          if (currentLessonId !== requestedLessonId) return;
           if (!fallback.ok) {
             const diagnostic = [
               fallback.compileOutput,
@@ -1612,20 +1895,26 @@
           return;
         }
 
+        if (currentLessonId !== requestedLessonId) return;
         challengeVerified = true;
+        if (challengeVerifiedOnServer && quizAnswered) {
+          await verifySelectedQuizOnServer();
+        }
         const output = String(result.stdout || "").trim();
         setOutput(
           (challengeVerifiedOnServer
             ? "ممتاز! تم التحقق من الحل على الخادم بنجاح."
-            : "ممتاز! تم تشغيل الحل والتحقق من الناتج.") +
+            : "تم تشغيل الكود، لكن لم يتم اعتماد نجاح التحدي من خادم Firebase.") +
           "\n\nالناتج:\n" + (output || "(لا يوجد ناتج)"),
-          "success"
+          challengeVerifiedOnServer ? "success" : "info"
         );
         showNotice(
-          quizAnswered
-            ? "اجتزت التحدي والسؤال! يمكنك الآن إكمال الدرس."
-            : "اجتزت تحدي الكود. أجب عن سؤال الفهم لإكمال الدرس.",
-          "success"
+          !challengeVerifiedOnServer
+            ? "التشغيل والتحقق من الحل نجحا. يمكنك متابعة المنهج، لكن XP والنجوم ينتظران التحقق الخادمي."
+            : quizAnswered
+              ? "اجتزت التحدي والسؤال! يمكنك الآن إكمال الدرس."
+              : "اجتزت تحدي الكود. أجب عن سؤال الفهم لإكمال الدرس.",
+          challengeVerifiedOnServer ? "success" : "info"
         );
         updateNavigationButtons();
       } catch (error) {
@@ -1643,6 +1932,8 @@
     }
 
     async function refreshAccountStats(previousXP, previousStars) {
+      // Reward reconciliation is handled by the idempotent Firestore trigger.
+      // Avoid scanning every completed lesson on every balance refresh.
       for (let attempt = 0; attempt < 5; attempt++) {
         if (attempt > 0) {
           await new Promise(resolve => setTimeout(resolve, 700));
@@ -1670,10 +1961,7 @@
       if (!lesson) return;
 
       if (!challengeVerified || !quizAnswered) {
-        showNotice(
-          "لإكمال الدرس، شغّل حلًا صحيحًا ثم أجب عن سؤال الفهم إجابة صحيحة.",
-          "info"
-        );
+        showNotice("لإكمال الدرس، شغّل حلًا صحيحًا ثم أجب عن سؤال الفهم إجابة صحيحة.", "info");
         return;
       }
 
@@ -1686,82 +1974,92 @@
       const chapter = Number(position[1]) - 1;
       const lessonIndex = Number(position[2]) - 1;
       const progress = readProgress();
-      const alreadyCompleted = progress[lesson.id]?.completed === true;
+      const previousRecord = progress[lesson.id] || {};
+      const alreadyCompleted = previousRecord.completed === true && previousRecord.localOnly !== true;
+      const hasTrustedProof = challengeVerifiedOnServer && quizVerifiedOnServer;
       const previousXP = getXP();
       const previousStars = accountStars;
+      let cloudSaved = false;
+      let cloudSaveError = null;
 
-      let cloudSaved = true;
+      // لا نكتب إنجازًا موثوقًا في Firestore إلا بعد اعتماد التحدي والسؤال معًا.
+      if (hasTrustedProof) {
+        try {
+          await saveLessonProgress({
+            language: "java",
+            chapter,
+            lesson: lessonIndex,
+            completed: true,
+            expectedUid: currentUserId
+          });
+          cloudSaved = true;
+        } catch (error) {
+          cloudSaveError = error;
+          console.error("Java progress cloud save failed:", error);
+        }
+      }
 
-      try {
-        // احفظ التقدم في حساب المستخدم أولًا.
-        await saveLessonProgress({
-          language: "java",
-          chapter,
-          lesson: lessonIndex,
-          completed: true
-        });
-      } catch (error) {
-        console.error("Java progress cloud save failed:", error);
-        const errorCode = String(error?.code || "").split("/").pop();
+      if (hasTrustedProof && !cloudSaved) {
+        const errorCode = String(cloudSaveError?.code || "")
+          .replace(/^firestore\//, "")
+          .replace(/^functions\//, "");
+        const recoverableCloudError =
+          /^(unavailable|deadline-exceeded|network-request-failed|cancelled)$/.test(errorCode) ||
+          cloudSaveError?.name === "TypeError";
 
-        if (errorCode !== "permission-denied") {
+        if (!recoverableCloudError) {
           showNotice(
-            "تعذر حفظ تقدم Java في حسابك. تحقق من الاتصال وحاول مرة أخرى.",
+            "تعذر حفظ الإنجاز في حسابك بسبب مشكلة في صلاحية الحساب أو التحقق. لم نضع علامة إكمال محلية حتى لا يظهر تقدم غير محفوظ. راجع تسجيل الدخول وحاول مرة أخرى.",
             "error"
           );
+          updateNavigationButtons();
           return;
         }
-
-        // توافق مؤقت: قواعد Firestore المنشورة قديمة ولا تسمح بلغة Java بعد.
-        cloudSaved = false;
       }
 
       if (!cloudSaved) {
         progress[lesson.id] = {
-          ...(progress[lesson.id] || {}),
+          ...previousRecord,
           completed: true,
-          completedAt: new Date().toISOString(),
-          localOnly: true
+          completedAt: previousRecord.completedAt || new Date().toISOString(),
+          localOnly: true,
+          serverVerified: hasTrustedProof
         };
         saveProgress(progress);
         updateStats();
         updateNavigationButtons();
         showNotice(
-          "تم حفظ الدرس على هذا الجهاز. مزامنة الحساب ومكافآت XP والنجوم ستعمل بعد نشر تحديثات Firebase.",
+          hasTrustedProof
+            ? "تعذر حفظ الإنجاز في الحساب الآن. احتفظنا به على هذا الجهاز فقط، وحاول إكماله مرة أخرى عند عودة الاتصال."
+            : "تم حفظ التقدم على هذا الجهاز فقط. لن يُعتمد في الحساب أو يمنح XP ونجومًا قبل التحقق الخادمي من التحدي والسؤال.",
           "info"
         );
         return;
       }
 
-      if (alreadyCompleted) {
-        showNotice("تمت مزامنة إكمال هذا الدرس مع حسابك.", "success");
-        return;
-      }
-
-      progress[lesson.id] = {
-        ...(progress[lesson.id] || {}),
+      const savedRecord = {
+        ...previousRecord,
         completed: true,
-        completedAt: new Date().toISOString()
+        completedAt: previousRecord.completedAt || new Date().toISOString(),
+        serverVerified: true
       };
-
+      delete savedRecord.localOnly;
+      progress[lesson.id] = savedRecord;
       saveProgress(progress);
       updateStats();
       updateNavigationButtons();
 
-      if (challengeVerifiedOnServer) {
-        const rewardsUpdated = await refreshAccountStats(previousXP, previousStars);
-        showNotice(
-          rewardsUpdated
-            ? "تم حفظ الدرس وإضافة مكافآته إلى حسابك بنجاح!"
-            : "تم حفظ الدرس بنجاح. قد يستغرق تحديث نقاط الخبرة والنجوم بضع لحظات.",
-          "success"
-        );
-      } else {
-        showNotice(
-          "تم حفظ تقدم الدرس. المكافآت المركزية ستُضاف بعد نشر دالة التحقق الخادمي على Firebase.",
-          "info"
-        );
-      }
+      showNotice(
+        alreadyCompleted
+          ? "تم التحقق من الدرس المحفوظ سابقًا. يجري تحديث المكافآت."
+          : "تم حفظ الدرس والتحقق منه بنجاح. يجري تحديث المكافآت.",
+        "success"
+      );
+      void refreshAccountStats(previousXP, previousStars).then(rewardsUpdated => {
+        if (rewardsUpdated) {
+          showNotice("تم تحديث XP والنجوم من حسابك.", "success");
+        }
+      });
     }
 
     function updateNavigationButtons() {
@@ -1774,7 +2072,8 @@
       const complete = document.getElementById("completeLesson");
       const counter = document.getElementById("lessonChapter");
 
-      const done = Boolean(readProgress()[currentLessonId]?.completed);
+      const currentProgress = readProgress()[currentLessonId];
+      const done = currentProgress?.completed === true && currentProgress.localOnly !== true;
       if (previous) previous.disabled = index <= 0;
       if (next) {
         next.disabled = index < 0 || index >= allLessons.length - 1 || !done;
@@ -1784,12 +2083,21 @@
       }
 
       if (complete) {
-        complete.disabled = done || !challengeVerified || !quizAnswered;
+        // Progression may continue after a locally checked Worker fallback.
+        // Server-verified evidence remains mandatory for XP and stars.
+        complete.disabled =
+          done ||
+          !challengeVerified ||
+          !quizAnswered;
         complete.textContent = done
           ? "تم إكمال الدرس ✓"
-          : (!challengeVerified || !quizAnswered)
-            ? "أكمل التحدي والسؤال أولًا"
-            : "إكمال الدرس";
+          : !challengeVerified
+            ? "شغّل حلًا صحيحًا أولًا"
+            : !quizAnswered
+              ? "أجب عن سؤال الفهم أولًا"
+              : (!challengeVerifiedOnServer || !quizVerifiedOnServer)
+                ? "إكمال محلي مؤقتًا دون مكافأة"
+                : "إكمال الدرس";
       }
 
       if (counter && index >= 0) {
@@ -1854,15 +2162,49 @@
       if (requested && findLesson(requested)) return requested;
 
       const progress = readProgress();
-      const incomplete = allLessons.find(
-        lesson => !progress[lesson.id]?.completed
-      );
+      const incomplete = allLessons.find(lesson => {
+        const record = progress[lesson.id];
+        return !record?.completed || record.localOnly === true;
+      });
 
       return incomplete?.id || allLessons[0]?.id || null;
     }
 
+    async function loadLessonAvatar() {
+      let profile = null;
+      try {
+        profile = await getUserProfile();
+      } catch (error) {
+        console.warn("تعذر تحميل ملف حساب Java:", error);
+        return null;
+      }
+
+      const container = document.getElementById("lessonUserAvatar");
+      if (!container) return profile;
+
+      try {
+        const avatarModule = await import("./js/avatars.js");
+        const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
+        const activeAvatar = typeof profile.activeAvatar === "string" ? profile.activeAvatar : "cody";
+        const selected = avatarModule.getAllAvatars().find(avatar =>
+          avatar.id === activeAvatar && (!avatar.storeItem || inventory.includes(avatar.id))
+        );
+        avatarModule.installAvatarStyles();
+        container.innerHTML = avatarModule.renderAvatar(selected?.id || "cody");
+      } catch (error) {
+        console.warn("تعذر تحميل صورة حساب Java:", error);
+      }
+
+      return profile;
+    }
+
     async function startApp() {
       try {
+        const signedInUser = await requireUser();
+        currentUserId = signedInUser.uid;
+        migrateLegacyJavaProgress(currentUserId);
+        const profile = await loadLessonAvatar();
+
         allLessons = CURRICULUM.flatMap(chapter => chapter.lessons);
 
         if (!allLessons.length) {
@@ -1870,20 +2212,17 @@
           return;
         }
 
-        // تحميل أرصدة الحساب الموثوقة من Firestore.
-        try {
-          const profile = await getUserProfile();
-          accountXP = Number.isSafeInteger(profile.xp) ? profile.xp : 0;
-          accountStars = Number.isSafeInteger(profile.stars) ? profile.stars : 0;
-        } catch (profileError) {
-          console.warn("تعذر تحميل أرصدة الحساب:", profileError);
-        }
+        // استُخدم ملف الحساب نفسه الذي جُلب لتحميل الصورة لتقليل قراءات Firestore.
+        accountXP = Number.isSafeInteger(profile?.xp) ? profile.xp : 0;
+        accountStars = Number.isSafeInteger(profile?.stars) ? profile.stars : 0;
 
         // استعادة التقدم المحفوظ في الحساب حتى يعمل المسار على أكثر من جهاز.
         try {
           const cloudRecords = await getLessonProgress("java");
           const progress = readProgress();
 
+          // لا تتم مزامنة الإنجازات المحلية غير الموثقة تلقائيًا.
+          // يعيد المتعلم فتح الدرس ويجتاز التحققين الخادميين قبل اعتماد الإنجاز.
           cloudRecords.forEach(record => {
             if (
               record?.completed !== true ||
@@ -1900,11 +2239,14 @@
             const lessonId = `java-${record.chapter + 1}-${record.lesson + 1}`;
             progress[lessonId] = {
               ...(progress[lessonId] || {}),
-              completed: true
+              completed: true,
+              serverVerified: true
             };
+            delete progress[lessonId].localOnly;
           });
 
           saveProgress(progress);
+          void syncPendingJavaProgress();
         } catch (syncError) {
           console.warn("تعذر استعادة تقدم Java من الحساب؛ سيتم عرض التقدم المحلي:", syncError);
         }

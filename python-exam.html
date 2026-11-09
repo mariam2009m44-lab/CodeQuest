@@ -834,26 +834,56 @@
         let answered = false;
         let examFinished = false;
 
-        // قراءة التقدم المحلي
+        function migrateLegacyPythonStorage(uid) {
+          if (!uid) return;
+          try {
+            const markerKey = "cody_python_legacy_migrated_uid";
+            if (localStorage.getItem(markerKey)) return;
+
+            const legacyKeys = [
+              "cody_python_progress",
+              "cody_python_completed_lessons",
+              ...Array.from({ length: 12 }, (_, index) =>
+                `cody_python_exam_passed_${index + 1}`
+              )
+            ];
+
+            for (const legacyKey of legacyKeys) {
+              const legacyValue = localStorage.getItem(legacyKey);
+              const scopedKey = `codequest_${uid}_${legacyKey}`;
+              if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+                localStorage.setItem(scopedKey, legacyValue);
+              }
+            }
+
+            localStorage.setItem(markerKey, uid);
+          } catch (error) {
+            console.warn("تعذرت ترقية بيانات Python القديمة:", error);
+          }
+        }
+
+        // قراءة التقدم المحلي الخاص بالحساب الحالي.
         function readLocalProgress() {
           try {
-            const saved = JSON.parse(
-              localStorage.getItem("cody_python_progress") || "{}"
-            );
+            const storageKey = currentUser?.uid
+              ? `codequest_${currentUser.uid}_cody_python_progress`
+              : "cody_python_progress";
+            const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+            const completed = Array.isArray(saved)
+              ? saved.map(Number)
+              : Array.isArray(saved.completed)
+                ? saved.completed.map(Number)
+                : [];
 
             return {
-              completed: Array.isArray(saved.completed)
-                ? saved.completed.map(Number)
-                : [],
-              stars: saved.stars || {}
+              completed: [...new Set(completed.filter(Number.isInteger))],
+              stars: !Array.isArray(saved) && saved.stars && typeof saved.stars === "object"
+                ? saved.stars
+                : {}
             };
           } catch (error) {
             console.error("Local progress error:", error);
-
-            return {
-              completed: [],
-              stars: {}
-            };
+            return { completed: [], stars: {} };
           }
         }
 
@@ -1081,7 +1111,8 @@
               language: "python",
               chapter: 12,
               lesson: 105,
-              completed: true
+              completed: true,
+              expectedUid: currentUser.uid
             });
 
             saveStatus.textContent =
@@ -1170,6 +1201,8 @@
             if (!currentUser || !currentUser.uid) {
               throw new Error("لم يتم العثور على حساب مسجل.");
             }
+
+            migrateLegacyPythonStorage(currentUser.uid);
 
             showStatus("جارٍ التحقق من إكمال الفصول الاثني عشر...");
 

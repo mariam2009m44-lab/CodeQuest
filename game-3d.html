@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <meta name="description" content="مهمة Cody ثلاثية الأبعاد: تعلّم تسلسل الأوامر وحل التحديات البرمجية.">
+  <title>مهمة Cody ثلاثية الأبعاد | CodeQuest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Fira+Code:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:#080d19;--panel:#111a2b;--panel2:#17243a;--line:#293750;
+      --text:#f1f5f9;--muted:#9aaac2;--purple:#7955e8;--cyan:#36bfe5;
+      --gold:#ffd66b;--green:#43c99a;--red:#ff7185;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Cairo,sans-serif}
+    body{min-height:100dvh;background:radial-gradient(ellipse at 15% 0%,rgba(121,85,232,.17),transparent 36%),radial-gradient(ellipse at 90% 20%,rgba(54,191,229,.12),transparent 34%),var(--bg);padding:16px}
+    button,a{-webkit-tap-highlight-color:transparent}
+    button{font:inherit}
+    button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+    .shell{width:min(1440px,100%);margin:auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 auto 16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.15rem;color:var(--cyan)}
+    .brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#7955e8,#36bfe5);color:white;font-size:1.45rem;box-shadow:0 8px 24px #36bfe533}
+    [hidden]{display:none!important}
+    .nav-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-btn,.action-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 15px;border:1px solid var(--line);border-radius:13px;background:#ffffff08;color:var(--text);text-decoration:none;font-weight:800;cursor:pointer}
+    .nav-btn:hover,.action-btn:hover{border-color:var(--cyan);background:#36bfe51a}
+    .intro{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin:10px 0 18px}
+    .eyebrow{color:var(--cyan);font-size:.78rem;font-weight:900;letter-spacing:.04em}
+    h1{font-size:clamp(1.45rem,3vw,2.3rem);line-height:1.35;margin:5px 0}
+    .intro p{margin:0;color:var(--muted);line-height:1.8;font-size:.92rem}
+    .local-note{white-space:nowrap;color:var(--gold);font-size:.75rem;font-weight:800;border:1px solid #ffd66b44;background:#ffd66b12;border-radius:999px;padding:7px 12px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.8fr);gap:16px;align-items:stretch}
+    .stage-card,.control-card{min-width:0;border:1px solid var(--line);border-radius:24px;background:linear-gradient(155deg,#111a2bf2,#0e1728f2);box-shadow:0 18px 50px #0003;overflow:hidden}
+    .stage-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+    .stage-title{font-weight:900}.stage-sub{font-size:.78rem;color:var(--muted)}
+    .level-pills{display:flex;gap:7px;flex-wrap:wrap}
+    .level-pill{min-width:36px;height:36px;border:1px solid var(--line);border-radius:11px;background:#ffffff08;color:var(--muted);font-weight:900;cursor:pointer}
+    .level-pill.active{background:linear-gradient(135deg,var(--purple),#4b79d8);border-color:transparent;color:white}
+    .level-pill:disabled{opacity:.35;cursor:not-allowed}
+    .scene-wrap{position:relative;min-height:390px;height:min(58vh,610px);background:radial-gradient(ellipse at 50% 60%,#192d49,#080e1b 72%);overflow:hidden}
+    #gameCanvas{display:block;width:100%;height:100%;touch-action:none}
+    .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    .scene-tools{position:absolute;top:56px;left:12px;z-index:4;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px)}
+    .scene-tools button{min-height:40px;padding:7px 11px;border:1px solid var(--line);border-radius:11px;background:rgba(8,15,29,.88);color:var(--text);font:inherit;font-size:.78rem;font-weight:800;cursor:pointer;touch-action:manipulation}
+    .scene-tools span{padding:7px 10px;border:1px solid var(--line);border-radius:11px;background:rgba(8,15,29,.72);color:var(--muted);font-size:.72rem}
+    @media(max-width:520px){.scene-tools span{display:none}.scene-tools button{min-height:44px}}
+    .scene-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:800;pointer-events:none}
+    .scene-hud{position:absolute;top:13px;right:13px;left:13px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+    .hud-chip{padding:7px 11px;border:1px solid #ffffff20;border-radius:12px;background:#08101dcc;backdrop-filter:blur(10px);font-size:.78rem;font-weight:900}
+    .hud-chip strong{color:var(--gold)}
+    .scene-caption{position:absolute;bottom:13px;right:13px;left:13px;display:flex;justify-content:center;pointer-events:none}
+    .caption-chip{padding:7px 12px;border-radius:999px;background:#08101dcc;border:1px solid #ffffff20;color:#dce9ff;font-size:.75rem}
+    .fallback-board{display:none;position:absolute;inset:0;align-content:center;justify-content:center;grid-template-columns:repeat(5,minmax(35px,58px));gap:5px;padding:18px}
+    .fallback-cell{aspect-ratio:1;border-radius:10px;background:#1a2a42;border:1px solid #344763;display:grid;place-items:center;font-size:clamp(1rem,4vw,1.7rem)}
+    .fallback-cell.wall{background:#39445b}.fallback-cell.goal{background:#174f49}.fallback-cell.gem{background:#4a3c1c}
+    .control-card{padding:18px;display:flex;flex-direction:column;gap:15px}
+    .mission{padding:14px;border:1px solid #36bfe544;border-radius:16px;background:#36bfe510}
+    .mission-label{font-size:.72rem;color:var(--cyan);font-weight:900}
+    .mission h2{font-size:1.05rem;margin:4px 0}
+    .mission p{font-size:.83rem;color:var(--muted);line-height:1.8;margin:0}
+    .concept{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:.78rem;font-weight:800}
+    .section-label{display:flex;justify-content:space-between;align-items:center;font-size:.84rem;font-weight:900}
+    .section-label small{color:var(--muted);font-weight:600}
+    .command-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .command-btn{min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid var(--line);border-radius:15px;background:#ffffff08;color:var(--text);font-weight:900;cursor:pointer;transition:transform .15s,border-color .15s}
+    .command-btn:active{transform:scale(.96)}
+    .command-btn:hover{border-color:var(--cyan);background:#36bfe512}
+    .command-btn i{font-size:1.35rem;color:var(--cyan)}
+    .command-btn span{font-size:.76rem}
+    .program-box{border:1px solid var(--line);border-radius:15px;background:#080f1d;overflow:hidden}
+    .program-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);font-size:.78rem;font-weight:900}
+    .program-list{list-style:none;padding:9px;margin:0;min-height:66px;max-height:190px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+    .program-empty{text-align:center;color:var(--muted);font-size:.78rem;padding:13px 5px}
+    .program-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;background:#ffffff08;color:#dbeafe;font-family:"Fira Code",monospace;font-size:.78rem;direction:ltr}
+    .program-item.current{background:#7955e833;outline:1px solid #9b7bff}
+    .program-item .step-no{color:var(--muted);font-size:.68rem;min-width:18px}
+    .program-item .step-actions{display:flex;align-items:center;gap:4px;margin-left:auto}
+    .program-item .move-step,.program-item .remove-step{display:grid;place-items:center;min-width:44px;min-height:44px;padding:0;border:1px solid var(--line);border-radius:9px;background:#ffffff0a;color:var(--text);cursor:pointer;font:800 .9rem/1 sans-serif;touch-action:manipulation}
+    .program-item .move-step:disabled{opacity:.3;cursor:not-allowed}
+    .program-item .remove-step{color:#ff9eaa}
+    .program-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .primary-action{background:linear-gradient(135deg,#7955e8,#4e7ee0);border:0;color:#fff}
+    .primary-action:hover{filter:brightness(1.1);background:linear-gradient(135deg,#7955e8,#4e7ee0)}
+    .primary-action:disabled,.action-btn:disabled{opacity:.45;cursor:not-allowed}
+    .feedback{min-height:52px;padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:#ffffff06;color:var(--muted);font-size:.8rem;line-height:1.7}
+    .feedback.good{border-color:#43c99a66;background:#43c99a12;color:#8de7c5}
+    .feedback.bad{border-color:#ff718566;background:#ff718512;color:#ffabb5}
+    .feedback strong{color:inherit}
+    .footer-tip{color:var(--muted);font-size:.72rem;line-height:1.7}
+    .win-banner{display:none;text-align:center;padding:12px;border-radius:14px;background:linear-gradient(100deg,#43c99a20,#36bfe520);border:1px solid #43c99a66}
+    .win-banner.show{display:block}.win-banner strong{color:var(--green)}
+    html[data-theme="light"] body{background:#eef3fb;color:#182235}
+    html[data-theme="light"] .stage-card,html[data-theme="light"] .control-card{background:#fff;border-color:#dce3ef;box-shadow:0 12px 35px #20304a12}
+    html[data-theme="light"] .stage-head,html[data-theme="light"] .program-head{border-color:#dce3ef}
+    html[data-theme="light"] .nav-btn,html[data-theme="light"] .action-btn,html[data-theme="light"] .level-pill,html[data-theme="light"] .command-btn{background:#f4f7fb;color:#26354d;border-color:#dce3ef}
+    html[data-theme="light"] .program-box{background:#f6f8fc;border-color:#dce3ef}
+    html[data-theme="light"] .program-item{background:#e9eef8;color:#26354d}
+    html[data-theme="light"] .feedback{background:#f7f9fc;border-color:#dce3ef}
+    html[data-theme="light"] .stage-sub,html[data-theme="light"] .intro p,html[data-theme="light"] .mission p,html[data-theme="light"] .footer-tip{color:#64748b}
+    html[data-theme="light"] .mission{background:#eefaff;border-color:#b6e8f4}
+    html[data-theme="light"] .local-note,
+    html[data-theme="light"] .concept{color:#805b00}
+    @media(max-width:900px){body{padding:12px}.layout{grid-template-columns:1fr}.scene-wrap{height:min(52vh,520px);min-height:300px}.control-card{order:2}.stage-card{order:1}.intro{align-items:flex-start;flex-direction:column}.local-note{white-space:normal}}
+    @media(max-width:520px){body{padding:9px}.topbar{align-items:flex-start}.brand{font-size:1rem}.brand-mark{width:38px;height:38px}.nav-btn{min-height:40px;padding:7px 10px;font-size:.78rem}.nav-btn span{display:none}.scene-wrap{min-height:270px;height:38vh}.stage-head{align-items:flex-start;flex-direction:column}.control-card{padding:13px}.command-btn{min-height:64px}.program-actions{grid-template-columns:1fr 1fr}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"><i class="ri-robot-2-line" aria-hidden="true"></i></span><span>Cody Academy</span></div>
+      <nav class="nav-actions" aria-label="التنقل">
+        <a class="nav-btn" id="returnLessonLink" href="#" hidden aria-label="العودة إلى الدرس"><i class="ri-arrow-go-back-line" aria-hidden="true"></i><span>العودة للدرس</span></a>
+        <a class="nav-btn" href="games.html" aria-label="العودة إلى مركز الألعاب"><i class="ri-gamepad-line" aria-hidden="true"></i><span>مركز الألعاب</span></a>
+        <a class="nav-btn" href="dashboard.html" aria-label="العودة إلى الصفحة الرئيسية"><i class="ri-home-5-line" aria-hidden="true"></i><span>الرئيسية</span></a>
+      </nav>
+    </header>
+
+    <section class="intro">
+      <div>
+        <div class="eyebrow">3D CODING QUEST · MISSION 01</div>
+        <h1>مهمة كودي: أنقذ محطة الفضاء 🚀</h1>
+        <p>خطّط للأوامر، جرّب برنامجك، وساعد كودي يوصل لهدفه ويتجاوز العقبات.</p>
+      </div>
+      <div class="local-note"><i class="ri-save-3-line"></i> أفضل نتيجة محفوظة على هذا الجهاز</div>
+    </section>
+
+    <section class="layout">
+      <article class="stage-card" aria-label="عالم اللعبة ثلاثي الأبعاد">
+        <div class="stage-head">
+          <div><div class="stage-title" id="stageTitle">المهمة 1 · بداية الرحلة</div><div class="stage-sub" id="stageSub">حرّك كودي إلى بوابة الوصول</div></div>
+          <div class="level-pills" id="levelPills" aria-label="اختيار المرحلة"></div>
+        </div>
+        <div class="scene-wrap" id="sceneWrap">
+          <canvas id="gameCanvas" aria-label="مشهد ثلاثي الأبعاد لمتاهة كودي"></canvas>
+          <div class="scene-loading" id="sceneLoading">جارٍ تجهيز عالم كودي ثلاثي الأبعاد…</div>
+          <div class="scene-hud"><div class="hud-chip">⭐ النجوم: <strong id="gemCount">0 / 0</strong></div><div class="hud-chip">🏆 أفضل نتيجة: <strong id="bestScore">0</strong></div></div>
+          <div class="scene-tools">
+            <button id="resetCameraButton" type="button" aria-label="إعادة زاوية الكاميرا">إعادة زاوية العرض</button>
+            <span>اسحب لتدوير المشهد · إصبعان للتقريب</span>
+          </div>
+          <div class="scene-caption"><div class="caption-chip" id="sceneCaption">اجمع النجوم ثم وصل كودي إلى البوابة</div></div>
+          <div class="fallback-board" id="fallbackBoard" role="grid" aria-label="خريطة بديلة ثنائية الأبعاد"></div>
+          <div class="sr-only" id="gameAnnouncement" role="status" aria-live="polite" aria-atomic="true"></div>
+        </div>
+      </article>
+
+      <aside class="control-card">
+        <section class="mission">
+          <div class="mission-label">🎯 هدف المهمة</div>
+          <h2 id="missionTitle">الوصول إلى بوابة الفضاء</h2>
+          <p id="missionText">أضف أوامر الحركة بالترتيب الصحيح، ثم شغّل البرنامج.</p>
+          <div class="concept"><i class="ri-lightbulb-flash-line"></i><span id="conceptText">المفهوم: تسلسل الأوامر</span></div>
+        </section>
+
+        <div class="section-label"><span>لوحة الأوامر</span><small>اضغط لإضافة أمر</small></div>
+        <div class="command-grid">
+          <button class="command-btn" type="button" data-command="forward"><i class="ri-arrow-up-line"></i><span>تقدّم</span></button>
+          <button class="command-btn" type="button" data-command="left"><i class="ri-rotate-left-line"></i><span>يسار</span></button>
+          <button class="command-btn" type="button" data-command="right"><i class="ri-rotate-right-line"></i><span>يمين</span></button>
+        </div>
+
+        <section class="program-box" aria-label="برنامج الأوامر">
+          <div class="program-head"><span><i class="ri-code-s-slash-line"></i> برنامج كودي</span><span id="commandCount">0 / 16</span></div>
+          <ol class="program-list" id="programList"><li class="program-empty">لم تضف أوامر بعد. ابدأ من لوحة الأوامر!</li></ol>
+        </section>
+
+        <div class="program-actions">
+          <button class="action-btn primary-action" id="runButton" type="button"><i class="ri-play-fill"></i> نفّذ البرنامج</button>
+          <button class="action-btn" id="clearButton" type="button"><i class="ri-delete-bin-6-line"></i> مسح الأوامر</button>
+        </div>
+        <button class="action-btn" id="resetButton" type="button"><i class="ri-refresh-line"></i> إعادة المحاولة من البداية</button>
+        <div class="feedback" id="feedback" role="status" aria-live="polite">💡 نصيحة كودي: اقرأ الخريطة أولًا، ثم قرّر اتجاه الحركة قبل إضافة الأوامر.</div>
+        <div class="win-banner" id="winBanner"><strong>أحسنت! وصلت إلى الهدف 🎉</strong><div id="winText"></div><button class="action-btn primary-action" id="nextButton" type="button" style="margin-top:10px">المرحلة التالية <i class="ri-arrow-left-line"></i></button></div>
+        <p class="footer-tip">تتعلّم هنا التفكير الخوارزمي: ترتيب الخطوات، اختبار الحل، اكتشاف الخطأ، ثم تحسين البرنامج. لا توجد موسيقى أو مؤثرات صوتية تلقائية.</p>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module">
+    const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js";
+    const LEVELS = [
+      {name:"بداية الرحلة",subtitle:"تعرّف على أمر التقدّم",goal:[2,0],start:[2,4],dir:0,walls:[],gems:[[2,2]],concept:"المفهوم: تسلسل الأوامر",brief:"حرّك كودي للأمام حتى يصل إلى البوابة، واجمع النجمة في طريقه.",hint:"كودي ينظر إلى الأمام بالفعل. كم مرة يحتاج إلى التقدّم؟"},
+      {name:"انعطاف ذكي",subtitle:"استخدم تغيير الاتجاه",goal:[4,2],start:[0,2],dir:0,walls:[],gems:[[2,2]],concept:"المفهوم: الاتجاهات وترتيب التعليمات",brief:"البوابة على يمين كودي. غيّر اتجاهه أولًا ثم تقدّم.",hint:"قبل التقدّم، اجعل كودي ينظر ناحية اليمين."},
+      {name:"حقل النجوم",subtitle:"خطّط لمسار يجمع النجوم",goal:[4,4],start:[0,4],dir:0,walls:[],gems:[[1,4],[3,4]],concept:"المفهوم: التخطيط وتقسيم المشكلة",brief:"اجمع النجمتين في الطريق ثم وصل إلى البوابة.",hint:"ابدأ بانعطاف يمين، ثم تحرّك على الصف السفلي."},
+      {name:"الممر المحمي",subtitle:"تجنّب العقبات",goal:[4,0],start:[0,4],dir:0,walls:[[1,2],[2,2],[3,2]],gems:[[4,3]],concept:"المفهوم: حل المشكلات وتجنّب العقبات",brief:"هناك حائط في المنتصف. ابحث عن ممر آمن حوله.",hint:"يمكنك المرور من العمود الأيمن: اتجه يمينًا حتى نهايته ثم اتجه للأعلى."},
+      {name:"تحدّي المحطة",subtitle:"اجمع النجوم واختر المسار",goal:[4,0],start:[0,4],dir:0,walls:[[1,3],[1,2],[3,1]],gems:[[2,4],[4,2]],concept:"المفهوم: بناء خوارزمية كاملة",brief:"اجمع النجمتين وتجاوز الحواجز للوصول إلى البوابة.",hint:"قسّم الطريق إلى أجزاء قصيرة، وتأكد من اتجاه كودي بعد كل انعطاف."}
+    ];
+    const COMMANDS = {
+      forward:{label:"FORWARD",icon:"↑"},
+      left:{label:"TURN LEFT",icon:"↶"},
+      right:{label:"TURN RIGHT",icon:"↷"}
+    };
+    const $ = id => document.getElementById(id);
+    function safeStorageGet(key,fallback=null){
+      try{const value=window.localStorage.getItem(key);return value===null?fallback:value;}
+      catch(error){console.warn("Local storage unavailable:",error);return fallback;}
+    }
+    function safeStorageSet(key,value){
+      try{window.localStorage.setItem(key,String(value));return true;}
+      catch(error){console.warn("Could not persist game progress:",error);return false;}
+    }
+    const reducedMotion = Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)
+      || safeStorageGet("cq_motion","on")==="off";
+    let levelIndex=0,program=[],running=false,completed=new Set(),score=0,bestScore=Number(safeStorageGet("cody3dBestScore","0"))||0;
+    let position=[0,0],direction=0,collected=new Set(),THREE=null,renderer=null,scene=null,camera=null,robot=null,world=null,goalRing=null,gemMeshes=[],clock=null,animationFrame=null;
+    let cameraYaw=.703,cameraPitch=.637,cameraDistance=14.8,pinchDistance=0;
+    const cameraPointers=new Map();
+    const vectors=[[0,-1],[1,0],[0,1],[-1,0]];
+    $("bestScore").textContent=bestScore;
+
+    function readCompleted(){
+      try{completed=new Set(JSON.parse(safeStorageGet("cody3dCompleted","[]")).filter(n=>Number.isInteger(n)&&n>=0&&n<LEVELS.length));}
+      catch{completed=new Set();}
+    }
+    readCompleted();
+
+    const returnLessonPath = new URLSearchParams(window.location.search).get("return") || "";
+    const validReturnLessonPath = /^python-lesson\.html\?ch=\d{1,2}&lesson=\d{1,2}&gameFor=\d{1,2}_\d{1,2}$/.test(returnLessonPath);
+
+    function updateReturnLessonLink(){
+      const link=$("returnLessonLink");
+      if(!link||!validReturnLessonPath||!completed.has(0))return;
+      link.href=returnLessonPath+"&gameDone=1";
+      link.hidden=false;
+    }
+    updateReturnLessonLink();
+
+    function buildLevelButtons(){
+      const restoreFocus=document.activeElement?.classList.contains("level-pill");
+      $("levelPills").innerHTML="";
+      LEVELS.forEach((level,index)=>{
+        const button=document.createElement("button");
+        button.type="button";button.className="level-pill"+(index===levelIndex?" active":"");
+        button.textContent=String(index+1);
+        button.setAttribute("aria-label","المرحلة "+(index+1));
+        button.setAttribute("aria-pressed",String(index===levelIndex));
+        button.disabled=index>0&&!completed.has(index-1);
+        button.addEventListener("click",()=>selectLevel(index));
+        $("levelPills").append(button);
+      });
+      if(restoreFocus)$("levelPills").querySelector(".level-pill.active")?.focus();
+    }
+    function setFeedback(message,type=""){
+      const box=$("feedback");box.className="feedback"+(type?" "+type:"");box.textContent=message;
+    }
+    function updateMission(){
+      const level=LEVELS[levelIndex];
+      $("stageTitle").textContent="المهمة "+(levelIndex+1)+" · "+level.name;
+      $("stageSub").textContent=level.subtitle;
+      $("missionTitle").textContent="الوصول إلى بوابة الفضاء";
+      $("missionText").textContent=level.brief;
+      $("conceptText").textContent=level.concept;
+      $("sceneCaption").textContent="اجمع "+level.gems.length+" نجمة"+(level.gems.length===1?"":"") +" ثم وصل إلى البوابة";
+      $("gemCount").textContent="0 / "+level.gems.length;
+      $("winBanner").classList.remove("show");
+      $("nextButton").style.display=levelIndex===LEVELS.length-1?"none":"inline-flex";
+      buildLevelButtons();
+      renderProgram();
+    }
+    function selectLevel(index){
+      if(running||index<0||index>=LEVELS.length||(index>0&&!completed.has(index-1)))return;
+      levelIndex=index;program=[];resetState();updateMission();buildWorld();setFeedback("💡 "+LEVELS[index].hint);
+    }
+    function resetState(){
+      const level=LEVELS[levelIndex];position=[...level.start];direction=level.dir;collected=new Set();score=0;
+      $("gemCount").textContent="0 / "+level.gems.length;
+      $("winBanner").classList.remove("show");
+      renderFallbackBoard();
+      syncRobot();
+    }
+    function renderProgram(activeIndex=-1){
+      const list=$("programList");list.innerHTML="";
+      if(!program.length){const empty=document.createElement("li");empty.className="program-empty";empty.textContent="لم تضف أوامر بعد. ابدأ من لوحة الأوامر!";list.append(empty);}
+      program.forEach((command,index)=>{
+        const item=document.createElement("li");
+        item.className="program-item"+(index===activeIndex?" current":"");
+        item.dataset.index=String(index);
+
+        const number=document.createElement("span");
+        number.className="step-no";
+        number.textContent=String(index+1).padStart(2,"0");
+
+        const code=document.createElement("span");
+        code.textContent=COMMANDS[command].label;
+
+        const actions=document.createElement("div");
+        actions.className="step-actions";
+
+        const up=document.createElement("button");
+        up.type="button";up.className="move-step";up.textContent="↑";
+        up.disabled=running||index===0;
+        up.setAttribute("aria-label","نقل الأمر "+(index+1)+" لأعلى");
+        up.addEventListener("click",()=>moveCommand(index,-1));
+
+        const down=document.createElement("button");
+        down.type="button";down.className="move-step";down.textContent="↓";
+        down.disabled=running||index===program.length-1;
+        down.setAttribute("aria-label","نقل الأمر "+(index+1)+" لأسفل");
+        down.addEventListener("click",()=>moveCommand(index,1));
+
+        const remove=document.createElement("button");
+        remove.type="button";remove.className="remove-step";remove.textContent="×";
+        remove.setAttribute("aria-label","حذف الأمر "+(index+1));
+        remove.disabled=running;
+        remove.addEventListener("click",()=>{program.splice(index,1);renderProgram();});
+
+        actions.append(up,down,remove);
+        item.append(number,code,actions);
+        list.append(item);
+      });
+      $("commandCount").textContent=program.length+" / 16";
+      $("runButton").disabled=running||!program.length;
+      $("clearButton").disabled=running||!program.length;
+      document.querySelectorAll("[data-command]").forEach(button=>button.disabled=running||program.length>=16);
+    }
+    function moveCommand(index,delta){
+      if(running)return;
+      const target=index+delta;
+      if(target<0||target>=program.length)return;
+      [program[index],program[target]]=[program[target],program[index]];
+      renderProgram();
+      setFeedback("تم تغيير ترتيب الأوامر. جرّب تنفيذ البرنامج بعد مراجعة التسلسل.");
+      document.querySelector(`.program-item[data-index="${target}"] .move-step`)?.focus();
+    }
+
+    function addCommand(command){
+      if(running||program.length>=16)return;
+      program.push(command);renderProgram();setFeedback("تمت إضافة الأمر "+COMMANDS[command].label+". رتّب بقية الخطوات ثم نفّذ البرنامج.");
+    }
+    document.querySelectorAll("[data-command]").forEach(button=>button.addEventListener("click",()=>addCommand(button.dataset.command)));
+    $("clearButton").addEventListener("click",()=>{if(running)return;program=[];renderProgram();setFeedback("تم مسح الأوامر. يمكنك بناء برنامج جديد.");});
+    $("resetButton").addEventListener("click",()=>{if(running)return;program=[];resetState();renderProgram();setFeedback("رجع كودي إلى نقطة البداية. جرّب خطة مختلفة.");});
+    $("nextButton").addEventListener("click",()=>{if(levelIndex<LEVELS.length-1)selectLevel(levelIndex+1);});
+
+    function cellToWorld(x,z){return {x:(x-2)*1.45,z:(z-2)*1.45};}
+    function disposeGroup(group){
+      if(!group)return;
+      group.traverse(object=>{if(object.geometry)object.geometry.dispose();if(object.material){if(Array.isArray(object.material))object.material.forEach(m=>m.dispose());else object.material.dispose();}});
+      if(scene)scene.remove(group);
+    }
+    function material(color,roughness=.65,metalness=.05,emissive=null){
+      return new THREE.MeshStandardMaterial({color,roughness,metalness,emissive:emissive||0x000000,emissiveIntensity:emissive?0.28:0});
+    }
+    function makeRobot(){
+      const group=new THREE.Group();
+      const shell=material(0x7b65e8,.38,.24);
+      const darkMetal=material(0x263c5b,.42,.48);
+      const cyanMetal=material(0x36bfe5,.3,.42,0x087eaa);
+
+      const backpack=new THREE.Mesh(new THREE.BoxGeometry(.46,.46,.22),darkMetal);
+      backpack.position.set(0,.73,.28);group.add(backpack);
+      [-.16,.16].forEach(x=>{
+        const thruster=new THREE.Mesh(new THREE.CylinderGeometry(.075,.095,.24,12),cyanMetal);
+        thruster.position.set(x,.48,.36);group.add(thruster);
+        const glow=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),new THREE.MeshBasicMaterial({color:0x36bfe5}));
+        glow.position.set(x,.34,.36);group.add(glow);
+      });
+
+      const body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.42,5,12),shell);
+      body.position.y=.62;group.add(body);
+      const chest=new THREE.Mesh(new THREE.BoxGeometry(.31,.24,.045),material(0x152d4b,.3,.55));
+      chest.position.set(0,.72,-.315);group.add(chest);
+      const chestLight=new THREE.Mesh(new THREE.SphereGeometry(.055,12,10),new THREE.MeshStandardMaterial({color:0xffd66b,emissive:0xffb52e,emissiveIntensity:1}));
+      chestLight.position.set(0,.73,-.35);group.add(chestLight);
+
+      const face=new THREE.Mesh(new THREE.SphereGeometry(.31,24,18),material(0xdceeff,.3,.12));
+      face.scale.set(1,.82,.75);face.position.set(0,1.12,0);group.add(face);
+      const visor=new THREE.Mesh(new THREE.SphereGeometry(.235,20,14),new THREE.MeshStandardMaterial({color:0x10243d,metalness:.55,roughness:.2,emissive:0x092d4a,emissiveIntensity:.7}));
+      visor.scale.set(1,.48,.32);visor.position.set(0,1.15,-.205);group.add(visor);
+      const eyeMat=new THREE.MeshStandardMaterial({color:0x10243d,emissive:0x36bfe5,emissiveIntensity:1.15});
+      [-.105,.105].forEach(x=>{
+        const eye=new THREE.Mesh(new THREE.SphereGeometry(.04,12,10),eyeMat);
+        eye.position.set(x,1.16,-.275);group.add(eye);
+      });
+
+      const armGeo=new THREE.CapsuleGeometry(.085,.25,4,10);
+      [-1,1].forEach(side=>{
+        const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.13,14,12),darkMetal);
+        shoulder.position.set(side*.34,.83,0);group.add(shoulder);
+        const arm=new THREE.Mesh(armGeo,shell);
+        arm.position.set(side*.43,.62,-.015);arm.rotation.z=side*.28;group.add(arm);
+        const hand=new THREE.Mesh(new THREE.SphereGeometry(.09,12,10),cyanMetal);
+        hand.position.set(side*.48,.43,-.02);group.add(hand);
+        const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.22,4,10),darkMetal);
+        leg.position.set(side*.16,.25,0);group.add(leg);
+        const boot=new THREE.Mesh(new THREE.BoxGeometry(.22,.09,.3),material(0x172b46,.35,.5));
+        boot.position.set(side*.16,.105,-.035);group.add(boot);
+      });
+
+      const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.2,8),cyanMetal);
+      antenna.position.set(0,1.48,0);group.add(antenna);
+      const tip=new THREE.Mesh(new THREE.SphereGeometry(.07,14,12),new THREE.MeshStandardMaterial({color:0xffd66b,emissive:0xffb52e,emissiveIntensity:1.1}));
+      tip.position.y=1.59;group.add(tip);
+      const waistRing=new THREE.Mesh(new THREE.TorusGeometry(.31,.035,8,28),cyanMetal);
+      waistRing.rotation.x=Math.PI/2;waistRing.position.y=.45;group.add(waistRing);
+      const foot=new THREE.Mesh(new THREE.CylinderGeometry(.29,.34,.13,20),darkMetal);
+      foot.position.y=.12;group.add(foot);
+      const robotLight=new THREE.PointLight(0x36bfe5,.55,2.8);
+      robotLight.position.set(0,1.05,-.45);group.add(robotLight);
+      return group;
+    }
+    function buildWorld(){
+      if(!THREE||!scene)return;
+      disposeGroup(world);world=new THREE.Group();scene.add(world);gemMeshes=[];
+      const platform=new THREE.Mesh(new THREE.CylinderGeometry(5.35,5.55,.24,64),material(0x10233a,.42,.62));
+      platform.position.y=-.25;world.add(platform);
+      const platformRim=new THREE.Mesh(new THREE.TorusGeometry(5.38,.065,10,72),new THREE.MeshStandardMaterial({color:0x36bfe5,emissive:0x087eaa,emissiveIntensity:.75,metalness:.4,roughness:.3}));
+      platformRim.rotation.x=Math.PI/2;platformRim.position.y=-.105;world.add(platformRim);
+
+      const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshStandardMaterial({color:0x0d1b2c,roughness:.92}));
+      floor.rotation.x=-Math.PI/2;floor.position.y=-.12;world.add(floor);
+
+      const starPositions=new Float32Array(240*3);
+      for(let i=0;i<240;i++){
+        const angle=i*2.399963;
+        const radius=7+(i%13)*.72;
+        starPositions[i*3]=Math.cos(angle)*radius;
+        starPositions[i*3+1]=1.8+(i%17)*.58;
+        starPositions[i*3+2]=Math.sin(angle)*radius;
+      }
+      const starGeometry=new THREE.BufferGeometry();
+      starGeometry.setAttribute("position",new THREE.BufferAttribute(starPositions,3));
+      const starField=new THREE.Points(starGeometry,new THREE.PointsMaterial({color:0x9bcaff,size:.055,transparent:true,opacity:.72,sizeAttenuation:true}));
+      world.add(starField);
+
+      const level=LEVELS[levelIndex];
+      for(let z=0;z<5;z++)for(let x=0;x<5;x++){
+        const p=cellToWorld(x,z);
+        const tile=new THREE.Mesh(new THREE.BoxGeometry(1.32,.13,1.32),material((x+z)%2?0x1b2d45:0x203650,.8,.05));
+        tile.position.set(p.x,0,p.z);world.add(tile);
+        const edge=new THREE.Mesh(new THREE.BoxGeometry(1.24,.018,1.24),new THREE.MeshBasicMaterial({color:0x36bfe5,transparent:true,opacity:.13}));
+        edge.position.set(p.x,.075,p.z);world.add(edge);
+      }
+      level.walls.forEach(([x,z])=>{
+        const p=cellToWorld(x,z);
+        const wall=new THREE.Mesh(new THREE.BoxGeometry(1.12,.95,1.12),material(0x39465f,.85,.12));
+        wall.position.set(p.x,.53,p.z);world.add(wall);
+        const cap=new THREE.Mesh(new THREE.BoxGeometry(1.15,.09,1.15),material(0x6c7c9a,.45,.22));
+        cap.position.set(p.x,1.04,p.z);world.add(cap);
+      });
+      const gp=cellToWorld(level.goal[0],level.goal[1]);
+      goalRing=new THREE.Mesh(new THREE.TorusGeometry(.48,.075,14,44),new THREE.MeshStandardMaterial({color:0x43c99a,emissive:0x1b9c75,emissiveIntensity:1.05,metalness:.35,roughness:.25}));
+      goalRing.rotation.x=Math.PI/2;goalRing.position.set(gp.x,.2,gp.z);world.add(goalRing);
+      const innerRing=new THREE.Mesh(new THREE.TorusGeometry(.31,.025,8,36),new THREE.MeshBasicMaterial({color:0x9bffd9,transparent:true,opacity:.9}));
+      innerRing.rotation.x=Math.PI/2;innerRing.position.set(gp.x,.22,gp.z);world.add(innerRing);
+      const beam=new THREE.Mesh(new THREE.CylinderGeometry(.28,.38,1.55,20,1,true),new THREE.MeshStandardMaterial({color:0x43c99a,emissive:0x1b9c75,emissiveIntensity:.45,transparent:true,opacity:.16,side:THREE.DoubleSide}));
+      beam.position.set(gp.x,.9,gp.z);world.add(beam);
+      const beacon=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.9,12),new THREE.MeshStandardMaterial({color:0x43c99a,emissive:0x43c99a,emissiveIntensity:.85}));
+      beacon.position.set(gp.x,.65,gp.z);world.add(beacon);
+      const goalLight=new THREE.PointLight(0x43c99a,1.15,4.2);
+      goalLight.position.set(gp.x,1.6,gp.z);world.add(goalLight);
+      level.gems.forEach(([x,z])=>{
+        const p=cellToWorld(x,z);
+        const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.24,0),new THREE.MeshStandardMaterial({color:0xffd66b,emissive:0xffb52e,emissiveIntensity:.85,metalness:.35,roughness:.25}));
+        gem.position.set(p.x,.48,p.z);gem.userData.grid=[x,z];world.add(gem);gemMeshes.push(gem);
+      });
+      robot=makeRobot();world.add(robot);syncRobot();
+      const grid=new THREE.GridHelper(12,24,0x294c6c,0x172a40);grid.position.y=-.105;world.add(grid);
+      renderFallbackBoard();
+    }
+    function syncRobot(){
+      const p=cellToWorld(position[0],position[1]);
+      if(robot){robot.position.set(p.x,.08,p.z);robot.rotation.y=-direction*Math.PI/2;}
+      renderFallbackBoard();
+    }
+    function renderFallbackBoard(){
+      const level=LEVELS[levelIndex];
+      const announcement=$("gameAnnouncement");
+      if(announcement){
+        announcement.textContent=`كودي في الصف ${position[1]+1} والعمود ${position[0]+1}. جمعت ${collected.size} من ${level.gems.length} نجوم.`;
+      }
+
+      const board=$("fallbackBoard");
+      if(!board||board.style.display!=="grid")return;
+      board.replaceChildren();
+
+      for(let z=0;z<5;z++)for(let x=0;x<5;x++){
+        const cell=document.createElement("div");
+        cell.className="fallback-cell";
+        cell.setAttribute("role","gridcell");
+        let description="مربع فارغ";
+
+        if(level.walls.some(([wx,wz])=>wx===x&&wz===z)){
+          cell.classList.add("wall");cell.textContent="▦";description="حاجز";
+        }else if(level.goal[0]===x&&level.goal[1]===z){
+          cell.classList.add("goal");cell.textContent="🚪";description="بوابة الوصول";
+        }else if(level.gems.some(([gx,gz])=>gx===x&&gz===z)&&!collected.has(x+","+z)){
+          cell.classList.add("gem");cell.textContent="⭐";description="نجمة قابلة للجمع";
+        }
+
+        if(position[0]===x&&position[1]===z){
+          cell.textContent="🤖";description="موقع كودي";
+        }
+
+        cell.setAttribute("aria-label",`الصف ${z+1}، العمود ${x+1}: ${description}`);
+        board.append(cell);
+      }
+    }
+    function collectGem(){
+      const key=position[0]+","+position[1];
+      if(collected.has(key)){renderFallbackBoard();return;}
+      const level=LEVELS[levelIndex];
+      if(level.gems.some(([x,z])=>x===position[0]&&z===position[1])){
+        collected.add(key);score+=20;
+        const gem=gemMeshes.find(item=>item.userData.grid[0]===position[0]&&item.userData.grid[1]===position[1]);
+        if(gem)gem.visible=false;
+        $("gemCount").textContent=collected.size+" / "+level.gems.length;
+      }
+      renderFallbackBoard();
+    }
+    function animateRobot(targetPosition,targetDirection){
+      if(!robot||reducedMotion){position=[...targetPosition];direction=targetDirection;syncRobot();return Promise.resolve();}
+      const from={x:robot.position.x,z:robot.position.z,rotation:robot.rotation.y};
+      const target=cellToWorld(targetPosition[0],targetPosition[1]);
+      const targetRotation=-targetDirection*Math.PI/2;
+      const start=performance.now(),duration=280;
+      return new Promise(resolve=>{
+        function frame(now){
+          const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,3);
+          robot.position.x=from.x+(target.x-from.x)*ease;robot.position.z=from.z+(target.z-from.z)*ease;
+          let delta=targetRotation-from.rotation;
+          while(delta>Math.PI)delta-=Math.PI*2;while(delta< -Math.PI)delta+=Math.PI*2;
+          robot.rotation.y=from.rotation+delta*ease;
+          if(t<1)requestAnimationFrame(frame);else{position=[...targetPosition];direction=targetDirection;renderFallbackBoard();resolve();}
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+    function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+    function stopRun(message,type="bad"){
+      running=false;renderProgram();setFeedback(message,type);
+    }
+    async function runProgram(){
+      if(running||!program.length)return;
+      running=true;resetState();renderProgram();
+      const level=LEVELS[levelIndex];setFeedback("بدأ التنفيذ… راقب كودي خطوة بخطوة.");
+      for(let i=0;i<program.length;i++){
+        renderProgram(i);
+        const command=program[i];
+        let nextPosition=[...position],nextDirection=direction;
+        if(command==="left")nextDirection=(direction+3)%4;
+        else if(command==="right")nextDirection=(direction+1)%4;
+        else{
+          const vector=vectors[direction];nextPosition=[position[0]+vector[0],position[1]+vector[1]];
+          if(nextPosition[0]<0||nextPosition[0]>4||nextPosition[1]<0||nextPosition[1]>4){stopRun("توقّف كودي عند حافة الخريطة. راجع عدد أوامر التقدّم واتجاهه.");return;}
+          if(level.walls.some(([x,z])=>x===nextPosition[0]&&z===nextPosition[1])){stopRun("وجد كودي حاجزًا أمامه! جرّب تغيير الاتجاه قبل التقدّم.");return;}
+        }
+        await animateRobot(nextPosition,nextDirection);collectGem();await delay(reducedMotion?0:90);
+      }
+      running=false;renderProgram();
+      const reached=position[0]===level.goal[0]&&position[1]===level.goal[1];
+      const allGems=collected.size===level.gems.length;
+      if(reached&&allGems){
+        score+=100;completed.add(levelIndex);
+        safeStorageSet("cody3dCompleted",JSON.stringify([...completed]));
+        updateReturnLessonLink();
+        bestScore=Math.max(bestScore,score);safeStorageSet("cody3dBestScore",String(bestScore));
+        const totalScore=Number(safeStorageGet("codyTotalScore","0"))||0;
+        safeStorageSet("codyTotalScore",totalScore+score);
+        $("bestScore").textContent=bestScore;
+        $("winText").textContent="جمعت كل النجوم وأنهيت المهمة في "+program.length+" أمرًا. نقاط هذه الجولة: "+score+".";
+        $("winBanner").classList.add("show");
+        setFeedback("رائع! خطتك نجحت. لقد استخدمت تسلسل الأوامر والتفكير المنطقي لحل المهمة.","good");
+        buildLevelButtons();
+      }else if(reached){
+        setFeedback("وصلت إلى البوابة، لكن بقيت نجمة لم تجمعها. أعد التخطيط للمسار.","bad");
+      }else{
+        setFeedback("انتهت الأوامر قبل الوصول إلى البوابة. أضف الخطوات الناقصة ثم جرّب مرة أخرى.","bad");
+      }
+    }
+    $("runButton").addEventListener("click",runProgram);
+
+    function updateCameraView(){
+      if(!camera)return;
+      const horizontal=cameraDistance*Math.cos(cameraPitch);
+      camera.position.set(
+        Math.sin(cameraYaw)*horizontal,
+        Math.sin(cameraPitch)*cameraDistance+.1,
+        Math.cos(cameraYaw)*horizontal
+      );
+      camera.lookAt(0,.1,0);
+    }
+    function pointerGap(){
+      const points=[...cameraPointers.values()];
+      if(points.length<2)return 0;
+      return Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);
+    }
+    function attachTouchCameraControls(canvas){
+      canvas.addEventListener("pointerdown",event=>{
+        if(event.pointerType==="mouse"&&event.button!==0)return;
+        cameraPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+        try{canvas.setPointerCapture(event.pointerId);}catch{}
+        if(cameraPointers.size===2)pinchDistance=pointerGap();
+      });
+      canvas.addEventListener("pointermove",event=>{
+        const previous=cameraPointers.get(event.pointerId);
+        if(!previous)return;
+        cameraPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+        if(cameraPointers.size===1){
+          const dx=event.clientX-previous.x,dy=event.clientY-previous.y;
+          cameraYaw-=dx*.008;
+          cameraPitch=Math.max(.24,Math.min(1.18,cameraPitch+dy*.006));
+          updateCameraView();
+        }else if(cameraPointers.size>=2){
+          const nextGap=pointerGap();
+          if(pinchDistance>0&&nextGap>0){
+            cameraDistance=Math.max(9,Math.min(22,cameraDistance*pinchDistance/nextGap));
+            updateCameraView();
+          }
+          pinchDistance=nextGap;
+        }
+      });
+      const releasePointer=event=>{
+        cameraPointers.delete(event.pointerId);
+        pinchDistance=cameraPointers.size===2?pointerGap():0;
+      };
+      canvas.addEventListener("pointerup",releasePointer);
+      canvas.addEventListener("pointercancel",releasePointer);
+      canvas.addEventListener("lostpointercapture",releasePointer);
+      canvas.addEventListener("wheel",event=>{
+        event.preventDefault();
+        cameraDistance=Math.max(9,Math.min(22,cameraDistance*Math.exp(event.deltaY*.001)));
+        updateCameraView();
+      },{passive:false});
+      $("resetCameraButton")?.addEventListener("click",()=>{
+        cameraYaw=.703;cameraPitch=.637;cameraDistance=14.8;updateCameraView();
+      });
+    }
+
+    async function init3D(){
+      try{
+        THREE=await import(THREE_URL);
+        const canvas=$("gameCanvas");
+        renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:"low-power"});
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+        renderer.outputColorSpace=THREE.SRGBColorSpace;
+        renderer.toneMapping=THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure=1.15;
+        scene=new THREE.Scene();
+        scene.background=new THREE.Color(0x080f1e);
+        scene.fog=new THREE.FogExp2(0x080f1e,.018);
+        camera=new THREE.PerspectiveCamera(42,1,.1,100);updateCameraView();attachTouchCameraControls(canvas);
+        scene.add(new THREE.HemisphereLight(0xb8dcff,0x10182a,2.0));
+        const keyLight=new THREE.DirectionalLight(0xffffff,2.4);keyLight.position.set(5,10,6);scene.add(keyLight);
+        const rimLight=new THREE.PointLight(0x36bfe5,18,16);rimLight.position.set(-5,4,-4);scene.add(rimLight);
+        const ambientStars=new THREE.Group();
+        for(let i=0;i<70;i++){
+          const dot=new THREE.Mesh(new THREE.SphereGeometry(.018,6,6),new THREE.MeshBasicMaterial({color:i%3===0?0xffd66b:0x8ac9ff}));
+          dot.position.set((Math.random()-.5)*22,1+Math.random()*8,(Math.random()-.5)*22);ambientStars.add(dot);
+        }
+        scene.add(ambientStars);
+        buildWorld();
+        const resize=()=>{
+          const rect=$("sceneWrap").getBoundingClientRect();const width=Math.max(1,rect.width),height=Math.max(1,rect.height);
+          renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
+        };
+        new ResizeObserver(resize).observe($("sceneWrap"));resize();
+        $("sceneLoading").style.display="none";
+        renderer.setAnimationLoop(time=>{
+          if(!reducedMotion){
+            if(goalRing)goalRing.rotation.z=Math.sin(time*.0018)*.12;
+            gemMeshes.forEach((gem,index)=>{if(gem.visible){gem.rotation.y=time*.0015+index;gem.position.y=.48+Math.sin(time*.002+index)*.07;}});
+            if(robot&&!running)robot.position.y=.08+Math.sin(time*.0022)*.035;
+          }
+          renderer.render(scene,camera);
+        });
+      }catch(error){
+        console.warn("3D renderer unavailable; using accessible 2D fallback.",error);
+        $("sceneLoading").textContent="وضع العرض ثلاثي الأبعاد غير متاح على هذا المتصفح. تم تشغيل الخريطة البديلة.";
+        $("sceneLoading").style.display="grid";
+        $("gameCanvas").style.display="none";
+        $("fallbackBoard").style.display="grid";
+        renderer=null;THREE=null;
+        const resetCameraButton=$("resetCameraButton");
+        if(resetCameraButton)resetCameraButton.disabled=true;
+        renderFallbackBoard();
+      }
+    }
+
+    updateMission();resetState();renderProgram();init3D();
+  </script>
+  <script type="module" src="js/route-guard.js"></script>
+</body>
+</html>

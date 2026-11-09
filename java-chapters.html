@@ -61,7 +61,8 @@
 
     import {
       requireUser,
-      getLessonProgress
+      getLessonProgress,
+      getUserProfile
     } from "./js/auth.js";
 
     // الفصول المتاحة حاليًا هي الفصول التي لها دروس فعلية في java-lessons.html.
@@ -77,9 +78,42 @@
     ];
     const PROGRESS_KEY = "cody_java_progress";
     const XP_KEY = "cody_java_xp";
-    function readProgress() {
+    let activeUserUid = null;
+    let accountXP = null;
+
+    function getProgressStorageKey() {
+      return activeUserUid
+        ? `cody_java_progress_${activeUserUid}`
+        : null;
+    }
+
+    function migrateLegacyJavaProgress(uid) {
+      if (!uid) return;
       try {
-        const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
+        const markerKey = "cody_java_legacy_migrated_uid";
+        if (localStorage.getItem(markerKey)) return;
+
+        const legacyValue = localStorage.getItem(PROGRESS_KEY);
+        const scopedKey = `cody_java_progress_${uid}`;
+        if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+          localStorage.setItem(scopedKey, legacyValue);
+        }
+
+        const legacyXP = localStorage.getItem(XP_KEY);
+        const scopedXP = `cody_java_xp_${uid}`;
+        if (legacyXP !== null && localStorage.getItem(scopedXP) === null) {
+          localStorage.setItem(scopedXP, legacyXP);
+        }
+        localStorage.setItem(markerKey, uid);
+      } catch (error) {
+        console.warn("تعذرت ترقية بيانات Java القديمة:", error);
+      }
+    }
+
+    function readProgress() {
+      if (!activeUserUid) return { completed: [], stars: {} };
+      try {
+        const saved = JSON.parse(localStorage.getItem(getProgressStorageKey()) || "{}");
         const completed = Array.isArray(saved.completed)
           ? saved.completed.map(Number)
           : [];
@@ -102,8 +136,13 @@
       }
     }
     function renderXp() {
+      const fallback = Number(
+        activeUserUid
+          ? localStorage.getItem(`cody_java_xp_${activeUserUid}`) || 0
+          : 0
+      ) || 0;
       document.getElementById("xpDisplay").textContent =
-        localStorage.getItem(XP_KEY) || "0";
+        String(accountXP ?? fallback);
     }
     function buildChapterUrl(chapterId) {
       return `java-lessons.html?lesson=java-${chapterId}-1`;
@@ -131,10 +170,18 @@
     }
     async function initializeChapterMap() {
       try {
-        await requireUser();
-        const records = await getLessonProgress("java");
+        const user = await requireUser();
+        if (!user?.uid) throw new Error("تعذر تحديد حساب Java.");
+        activeUserUid = user.uid;
+        migrateLegacyJavaProgress(activeUserUid);
+
+        const [records, profile] = await Promise.all([
+          getLessonProgress("java"),
+          getUserProfile()
+        ]);
+        accountXP = Number.isSafeInteger(profile?.xp) ? profile.xp : 0;
         const saved = JSON.parse(
-          localStorage.getItem(PROGRESS_KEY) || "{}"
+          localStorage.getItem(getProgressStorageKey()) || "{}"
         );
 
         for (const record of records) {
@@ -155,12 +202,14 @@
 
           saved[lessonId] = {
             ...(saved[lessonId] || {}),
-            completed: true
+            completed: true,
+            serverVerified: true
           };
+          delete saved[lessonId].localOnly;
         }
 
         localStorage.setItem(
-          PROGRESS_KEY,
+          getProgressStorageKey(),
           JSON.stringify(saved)
         );
       } catch (error) {

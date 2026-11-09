@@ -442,7 +442,8 @@
   <script type="module">
     import {
       requireUser,
-      getLessonProgress
+      getLessonProgress,
+      saveLessonProgress
     } from "./js/auth.js";
 
     import {
@@ -795,6 +796,92 @@
       return Math.floor(xp);
     }
 
+    function readLocalProgress(uid, language) {
+      try {
+        if (language === "java") {
+          const raw = localStorage.getItem(`cody_java_progress_${uid}`);
+          const parsed = raw ? JSON.parse(raw) : {};
+          return Object.entries(parsed).flatMap(([id, value]) => {
+            const match = /^java-(\d+)-(\d+)$/.exec(id);
+            if (!match || value?.completed !== true) return [];
+            return [{
+              language: "java",
+              chapter: Number(match[1]) - 1,
+              lesson: Number(match[2]) - 1,
+              completed: true,
+              updatedAt: value.completedAt || null,
+              localOnly: value.localOnly === true,
+              serverVerified: value.serverVerified === true
+            }];
+          });
+        }
+
+        const raw = localStorage.getItem(
+          `codequest_lesson_progress_${uid}_${language}`
+        );
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed)
+          ? parsed.filter(item =>
+              item?.completed === true &&
+              Number.isSafeInteger(item.chapter) && item.chapter >= 0 &&
+              Number.isSafeInteger(item.lesson) && item.lesson >= 0
+            ).map(item => ({
+              ...item,
+              language,
+              serverVerified: item.serverVerified === true
+            }))
+          : [];
+      } catch (error) {
+        console.warn(`تعذر قراءة التقدم المحلي للغة ${language}:`, error);
+        return [];
+      }
+    }
+
+    function mergeProgressRecords(cloudRecords, localRecords) {
+      const merged = new Map();
+      // Prefer cloud records last so Firestore timestamps remain available
+      // for activity history when a local copy has no updatedAt field.
+      for (const record of [...localRecords, ...cloudRecords]) {
+        if (record?.completed !== true) continue;
+        merged.set(`${record.chapter}:${record.lesson}`, record);
+      }
+      return [...merged.values()];
+    }
+
+    async function syncPendingLocalProgress(uid, cloudByLanguage) {
+      const result = {};
+      for (const language of Object.keys(LANGUAGE_NAMES)) {
+        const localRecords = readLocalProgress(uid, language);
+        result[language] = localRecords;
+        const cloudKeys = new Set((cloudByLanguage[language] || []).map(
+          record => `${record.chapter}:${record.lesson}`
+        ));
+        for (const record of localRecords) {
+          const key = `${record.chapter}:${record.lesson}`;
+          if (cloudKeys.has(key)) continue;
+
+          // Local completion is useful for display, but only a record carrying
+          // an explicit server-verification flag may be copied into Firestore.
+          if (record.serverVerified !== true) continue;
+
+          try {
+            await saveLessonProgress({
+              language,
+              chapter: record.chapter,
+              lesson: record.lesson,
+              completed: true,
+              expectedUid: uid
+            });
+            cloudKeys.add(key);
+          } catch (error) {
+            // Keep the local record visible; retry on the next visit.
+            console.warn(`تعذرت مزامنة تقدم ${language}:`, error);
+          }
+        }
+      }
+      return result;
+    }
+
     function validateLanguageRecords(records, language) {
       if (!Array.isArray(records)) {
         throw new Error(
@@ -842,23 +929,30 @@
         getLessonProgress("java")
       ]);
 
+      const localProgress = await syncPendingLocalProgress(user.uid, {
+        python: pythonRawRecords,
+        javascript: javascriptRawRecords,
+        cpp: cppRawRecords,
+        java: javaRawRecords
+      });
+
       const pythonRecords = validateLanguageRecords(
-        pythonRawRecords,
+        mergeProgressRecords(pythonRawRecords, localProgress.python),
         "python"
       );
 
       const javascriptRecords = validateLanguageRecords(
-        javascriptRawRecords,
+        mergeProgressRecords(javascriptRawRecords, localProgress.javascript),
         "javascript"
       );
 
       const cppRecords = validateLanguageRecords(
-        cppRawRecords,
+        mergeProgressRecords(cppRawRecords, localProgress.cpp),
         "cpp"
       );
 
       const javaRecords = validateLanguageRecords(
-        javaRawRecords,
+        mergeProgressRecords(javaRawRecords, localProgress.java),
         "java"
       );
 

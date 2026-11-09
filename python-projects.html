@@ -236,7 +236,16 @@ for task in tasks:
         blockAccess("سجّل الدخول أولًا للوصول إلى المشاريع.", "login.html");
       } else {
         const examKey = `${EXAM_KEY_PREFIX}${user.uid}`;
-        const passed = localStorage.getItem(examKey) === "true";
+        const storedExamResult = localStorage.getItem(examKey);
+        let passed = storedExamResult === "true";
+        if (!passed && storedExamResult) {
+          try {
+            const parsedExamResult = JSON.parse(storedExamResult);
+            passed = parsedExamResult?.passed === true;
+          } catch {
+            passed = false;
+          }
+        }
 
         if (!passed) {
           blockAccess("صفحة المشاريع مقفولة حاليًا. أكمل الفصول واجتز الامتحان أولًا.", "python-chapters.html");

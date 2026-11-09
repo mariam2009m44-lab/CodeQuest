@@ -1,23 +1,12 @@
-import { runCodeOnServer } from "./code-runner.js";
+import { runCodeOnServer, checkQuizAnswerOnServer } from "./code-runner.js";
 
 import {
   requireUser,
   saveLessonProgress,
-  getLessonProgress
+  getLessonProgress,
+  getUserProfile
 } from "./auth.js";
 
-import {
-  httpsCallable
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
-
-import {
-  functions
-} from "./firebase-config.js";
-
-const verifyLessonAnswer = httpsCallable(
-  functions,
-  "checkQuizAnswer"
-);
 
 const LANGUAGE_CONFIG = {
   javascript: {
@@ -35,7 +24,7 @@ const LANGUAGE_CONFIG = {
   cpp: {
     label: "C++",
     curriculumUrl: "./json/cpp_curriculum.json",
-    editorLanguage: "cpp",
+    editorLanguage: "text/x-c++src",
     starter: `#include <iostream>
 using namespace std;
 
@@ -70,8 +59,10 @@ let currentLesson = null;
 let lessonCompleted = false;
 let selectedQuizOption = null;
 let quizPassed = false;
+let lessonNeedsServerVerification = false;
 
 let editor = null;
+let editorResizeObserver = null;
 let quizRequestInProgress = false;
 let codeRunning = false;
 
@@ -178,6 +169,7 @@ function initializeEditor() {
     typeof window.CodeMirror.fromTextArea === "function"
   ) {
     try {
+      editorResizeObserver?.disconnect();
       editor = window.CodeMirror.fromTextArea(textarea, {
         lineNumbers: true,
         mode: LANGUAGE_CONFIG[languageKey].editorLanguage,
@@ -185,10 +177,24 @@ function initializeEditor() {
         indentUnit: 4,
         tabSize: 4,
         lineWrapping: true,
-        autofocus: false
+        autofocus: false,
+        inputStyle: "contenteditable",
+        screenReaderLabel: "محرر الكود",
+        extraKeys: {
+          Tab: cm => {
+            if (cm.somethingSelected()) cm.indentSelection("add");
+            else cm.replaceSelection(" ".repeat(cm.getOption("indentUnit") || 4), "end");
+          },
+          "Shift-Tab": cm => cm.indentSelection("subtract")
+        }
       });
 
-      editor.setSize("100%", "auto");
+      editor.setSize("100%", null);
+      if (typeof ResizeObserver !== "undefined") {
+        editorResizeObserver = new ResizeObserver(() => editor?.refresh());
+        editorResizeObserver.observe(editor.getWrapperElement());
+      }
+      requestAnimationFrame(() => editor?.refresh());
 
     } catch (error) {
       console.warn(
@@ -356,6 +362,103 @@ function getLevelsUrl() {
   return `levels.html?lang=${encodeURIComponent(languageKey)}`;
 }
 
+function getLocalProgressStorageKey() {
+  return `codequest_lesson_progress_${currentUser?.uid || "anonymous"}_${languageKey}`;
+}
+
+function getLocalProgress() {
+  try {
+    const value = JSON.parse(
+      localStorage.getItem(getLocalProgressStorageKey()) || "[]"
+    );
+    return Array.isArray(value)
+      ? value.filter(item =>
+          item &&
+          item.completed === true &&
+          Number.isSafeInteger(item.chapter) &&
+          Number.isSafeInteger(item.lesson)
+        )
+      : [];
+  } catch (error) {
+    console.warn("تعذر قراءة التقدم المحلي:", error);
+    return [];
+  }
+}
+
+function saveLocalLessonCompletion({ serverVerified = true } = {}) {
+  try {
+    const records = getLocalProgress();
+    const key = `${chapterIndex}:${lessonIndex}`;
+    const next = records.filter(
+      item => `${item.chapter}:${item.lesson}` !== key
+    );
+    next.push({
+      language: languageKey,
+      chapter: chapterIndex,
+      lesson: lessonIndex,
+      completed: true,
+      serverVerified
+    });
+    localStorage.setItem(
+      getLocalProgressStorageKey(),
+      JSON.stringify(next)
+    );
+    return true;
+  } catch (error) {
+    console.warn("تعذر حفظ التقدم محليًا:", error);
+    return false;
+  }
+}
+
+async function syncLocalProgressToCloud() {
+  const pending = getLocalProgress();
+  const syncUid = currentUser?.uid;
+  if (!pending.length || !syncUid) return;
+
+  // A local completion without server verification must never become a
+  // trusted cloud completion merely because connectivity returned.
+  const unsynced = pending.filter(item => item.serverVerified !== true);
+  for (const item of pending) {
+    if (item.serverVerified !== true) continue;
+    if (currentUser?.uid !== syncUid) {
+      unsynced.push(item);
+      continue;
+    }
+
+    try {
+      await saveLessonProgress({
+        language: languageKey,
+        chapter: item.chapter,
+        lesson: item.lesson,
+        completed: true,
+        expectedUid: syncUid
+      });
+    } catch (error) {
+      console.warn("تعذرت مزامنة إنجاز محلي موثّق:", item, error);
+      unsynced.push(item);
+    }
+  }
+
+  try {
+    localStorage.setItem(getLocalProgressStorageKey(), JSON.stringify(unsynced));
+  } catch (error) {
+    console.warn("تعذر تحديث سجل المزامنة المحلية:", error);
+  }
+}
+
+function mergeProgressRecords(cloudRecords = []) {
+  const records = new Map();
+  // Local-only records remain visible, but the cloud record is authoritative
+  // for timestamps and account-synced state when the same lesson exists.
+  [...getLocalProgress(), ...(Array.isArray(cloudRecords) ? cloudRecords : [])]
+    .forEach(item => {
+      if (item?.completed === true) {
+        records.set(`${item.chapter}:${item.lesson}`, item);
+      }
+    });
+  return [...records.values()];
+}
+
 function renderProgress(progressData) {
   const total = Math.max(getTotalLessons(), 1);
   const completed = new Set();
@@ -482,7 +585,7 @@ function renderLessonContent(lesson) {
   const feedback = byId("quizFeedback");
 
   selectedQuizOption = null;
-  quizPassed = lessonCompleted;
+  quizPassed = lessonCompleted && !lessonNeedsServerVerification;
 
   if (questionElement) {
     questionElement.textContent =
@@ -551,10 +654,12 @@ function renderLessonContent(lesson) {
 
   setFeedback(
     feedback,
-    lessonCompleted
-      ? "تم إكمال هذا الدرس سابقًا."
-      : "",
-    lessonCompleted ? "success" : ""
+    lessonNeedsServerVerification
+      ? "تم حفظ تقدمك سابقًا، لكن يلزم إعادة التحقق لتأكيد المكافآت."
+      : lessonCompleted
+        ? "تم إكمال هذا الدرس سابقًا."
+        : "",
+    lessonNeedsServerVerification ? "info" : lessonCompleted ? "success" : ""
   );
 
   setCodeEditorValue(getLessonCode(lesson));
@@ -643,75 +748,85 @@ async function loadCurriculum() {
   }
 }
 async function loadProgress() {
+  let cloudProgress = [];
+
   try {
-    const progress = await getLessonProgress(languageKey);
-
-    renderProgress(progress);
-
+    cloudProgress = await getLessonProgress(languageKey);
   } catch (error) {
-    console.warn(
-      "تعذر تحميل تقدم الدروس:",
-      error
-    );
-
-    renderProgress([]);
+    console.warn("تعذر تحميل تقدم الدروس من الحساب:", error);
   }
+
+  renderProgress(mergeProgressRecords(cloudProgress));
 }
 
 async function loadCurrentCompletion() {
-  lessonCompleted = false;
+  let cloudProgress = [];
 
   try {
-    const progress = await getLessonProgress(languageKey);
-
-    if (!Array.isArray(progress)) {
-      return;
-    }
-
-    lessonCompleted = progress.some(
-      (item) =>
-        item &&
-        item.chapter === chapterIndex &&
-        item.lesson === lessonIndex &&
-        item.completed === true
-    );
-
+    cloudProgress = await getLessonProgress(languageKey);
   } catch (error) {
-    console.warn(
-      "تعذر قراءة حالة إكمال الدرس:",
-      error
-    );
+    console.warn("تعذر قراءة تقدم الدرس من الحساب:", error);
+  }
+
+  lessonCompleted = mergeProgressRecords(cloudProgress).some(
+    item =>
+      item.chapter === chapterIndex &&
+      item.lesson === lessonIndex &&
+      item.completed === true
+  );
+
+  const localRecord = getLocalProgress().find(
+    item =>
+      item.chapter === chapterIndex &&
+      item.lesson === lessonIndex &&
+      item.completed === true
+  );
+  lessonNeedsServerVerification = localRecord?.serverVerified === false;
+  if (lessonNeedsServerVerification) {
+    // Keep navigation available while allowing a fresh server verification attempt.
+    quizPassed = false;
   }
 }
 
-async function completeCurrentLesson() {
-  if (lessonCompleted) {
+async function completeCurrentLesson({ serverVerified = true } = {}) {
+  if (lessonCompleted && !lessonNeedsServerVerification) {
     quizPassed = true;
     return true;
   }
 
   try {
-    await saveLessonProgress({
-      language: languageKey,
-      chapter: chapterIndex,
-      lesson: lessonIndex,
-      completed: true
-    });
+    // Only server-verified completions may be written to the trusted cloud
+    // progress collection. Offline/unverified completions stay device-local.
+    if (serverVerified) {
+      await saveLessonProgress({
+        language: languageKey,
+        chapter: chapterIndex,
+        lesson: lessonIndex,
+        completed: true,
+        expectedUid: currentUser?.uid
+      });
+    }
 
+    saveLocalLessonCompletion({ serverVerified });
     lessonCompleted = true;
+    lessonNeedsServerVerification = !serverVerified;
     quizPassed = true;
 
     setStatus(
-      "ممتاز! تم حفظ تقدم الدرس.",
-      "success"
+      serverVerified
+        ? "ممتاز! تم حفظ تقدم الدرس في حسابك."
+        : "إجابة صحيحة! تم حفظ التقدم على هذا الجهاز، لكن تعذر تأكيد حالة التحقق والمكافأة من الخادم الآن.",
+      serverVerified ? "success" : "info"
     );
 
     const feedback = byId("quizFeedback");
 
     setFeedback(
       feedback,
-      "إجابة صحيحة! تم تسجيل إكمال الدرس.",
-      "success"
+      serverVerified
+        ? "إجابة صحيحة! تم تسجيل إكمال الدرس."
+        : "إجابة صحيحة! يمكنك متابعة الدرس التالي. حالة التحقق والمكافآت غير مؤكدة حتى نتمكن من مراجعة الخادم.",
+      serverVerified ? "success" : "info"
     );
 
     const options = byId("quizOptions");
@@ -759,20 +874,54 @@ async function completeCurrentLesson() {
       error
     );
 
+    const localSaved = saveLocalLessonCompletion({ serverVerified: false });
+    lessonCompleted = localSaved;
+    lessonNeedsServerVerification = localSaved;
+    quizPassed = localSaved;
+
+    if (localSaved) {
+      setStatus(
+        "تم إكمال الدرس على هذا الجهاز، لكن تعذر مزامنته مع حسابك الآن.",
+        "info"
+      );
+      setFeedback(
+        byId("quizFeedback"),
+        "إجابة صحيحة! تم حفظ تقدمك محليًا حتى لا يتوقف انتقالك للدرس التالي. ستحتاج المزامنة السحابية عند عودة الاتصال.",
+        "info"
+      );
+
+      const checkButton = byId("checkQuizBtn");
+      if (checkButton) checkButton.disabled = true;
+
+      const options = byId("quizOptions");
+      options?.querySelectorAll('input[type="radio"]').forEach(input => {
+        input.disabled = true;
+      });
+
+      const nextButton = byId("nextLessonBtn");
+      if (nextButton) {
+        nextButton.hidden = false;
+        nextButton.disabled = codeRunning;
+        nextButton.textContent = getNextLessonUrl()
+          ? "الدرس التالي ←"
+          : "العودة للمستويات";
+      }
+
+      await loadProgress();
+      return true;
+    }
+
     lessonCompleted = false;
     quizPassed = false;
-
     setStatus(
-      "إجابتك صحيحة، لكن لم نتمكن من حفظ التقدم. حاول مرة أخرى.",
+      "تعذر حفظ التقدم. تحقق من مساحة التخزين والاتصال ثم حاول مرة أخرى.",
       "error"
     );
-
     setFeedback(
       byId("quizFeedback"),
-      "الإجابة صحيحة، لكن الحفظ لم ينجح. اضغط تحقق مرة أخرى لإعادة المحاولة.",
+      "الإجابة صحيحة، لكن تعذر حفظ التقدم على هذا الجهاز أو في الحساب.",
       "error"
     );
-
     return false;
   }
 }
@@ -835,13 +984,11 @@ async function checkQuizAnswer() {
       );
     }
 
-    const response = await verifyLessonAnswer({
+    const result = await checkQuizAnswerOnServer({
       language: languageKey,
       lessonId: currentLesson.id,
       selectedIndex: selectedQuizOption
     });
-
-    const result = response.data;
 
     if (result?.success !== true) {
       throw new Error(
@@ -922,16 +1069,23 @@ async function checkQuizAnswer() {
           quiz.explanation ||
           "إجابة صحيحة!";
 
-        setFeedback(
-          feedback,
-          `${localMessage} الإجابة صحيحة، لكن تعذر الاتصال بخدمة الحفظ؛ تقدمك لم يُسجل بعد. أعد المحاولة عند عودة الاتصال.`,
-          "info"
-        );
+        const completed = await completeCurrentLesson({
+          serverVerified: false
+        });
 
-        setStatus(
-          "تم التعرف على الإجابة، لكن لم يتم حفظ الدرس على الحساب.",
-          "error"
-        );
+        if (completed) {
+          setFeedback(
+            feedback,
+            `${localMessage} يمكنك متابعة الدرس التالي. تعذّر تأكيد التحقق والمكافآت الآن؛ أعِد المحاولة عند استقرار الاتصال.`,
+            "info"
+          );
+        } else {
+          setFeedback(
+            feedback,
+            `${localMessage} تعذر حفظ التقدم حتى على هذا الجهاز. تحقق من مساحة التخزين وحاول مرة أخرى.`,
+            "error"
+          );
+        }
       } else {
         setFeedback(
           feedback,
@@ -1061,228 +1215,30 @@ async function runJavaScript(code) {
   return result.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
 }
 
-function runPython(code) {
-  return runInSandbox("python", code);
+async function runPython(code) {
+  const result = await runCodeOnServer(
+    "python",
+    code,
+    byId("stdinInput")?.value || ""
+  );
+
+  const diagnostics = [
+    result.compileOutput,
+    result.stderr,
+    result.message
+  ].filter(Boolean).join("\n").trim();
+
+  if (!result.ok) {
+    throw new Error(
+      diagnostics ||
+      result.status ||
+      "لم ينجح تشغيل Python. راجع الكود وحاول مرة أخرى."
+    );
+  }
+
+  return result.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
 }
 
-function runInSandbox(language, code) {
-  return new Promise((resolve, reject) => {
-    const frame = document.createElement("iframe");
-
-    frame.setAttribute("sandbox", "allow-scripts");
-    frame.title = `${language} code execution sandbox`;
-    frame.style.display = "none";
-
-    let finished = false;
-    let timeoutId = null;
-
-    const output = [];
-
-    const finish = (error = null) => {
-      if (finished) return;
-
-      finished = true;
-
-      window.removeEventListener(
-        "message",
-        onMessage
-      );
-
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
-      }
-
-      frame.remove();
-
-      if (error) {
-        reject(error);
-      } else {
-        resolve(
-          output.join("\n") ||
-          "تم تشغيل الكود بدون مخرجات."
-        );
-      }
-    };
-
-    const onMessage = (event) => {
-      if (
-        event.source !== frame.contentWindow ||
-        !event.data ||
-        event.data.source !== "codequest-runner" ||
-        event.data.language !== language
-      ) {
-        return;
-      }
-
-      if (event.data.type === "output") {
-        output.push(String(event.data.value));
-      }
-
-      if (event.data.type === "done") {
-        finish();
-      }
-
-      if (event.data.type === "error") {
-        finish(
-          new Error(
-            event.data.value ||
-            "حدث خطأ أثناء تشغيل الكود."
-          )
-        );
-      }
-    };
-
-    window.addEventListener(
-      "message",
-      onMessage
-    );
-
-    timeoutId = window.setTimeout(
-      () => {
-        finish(
-          new Error(
-            "انتهى وقت التشغيل. قد يحتوي الكود على حلقة لا نهائية."
-          )
-        );
-      },
-      language === "python" ? 30000 : 5000
-    );
-
-    const safeCode = JSON.stringify(code)
-      .replace(/</g, "\\u003c");
-
-    const runner = language === "javascript"
-      ? `
-        const userCode = ${safeCode};
-
-        const format = (value) => {
-          if (typeof value === "string") return value;
-
-          if (typeof value === "undefined") {
-            return "undefined";
-          }
-
-          try {
-            const result = JSON.stringify(value);
-
-            return result === undefined
-              ? String(value)
-              : result;
-
-          } catch {
-            return String(value);
-          }
-        };
-
-        console.log = (...args) => {
-          send(
-            "output",
-            args.map(format).join(" ")
-          );
-        };
-
-        console.error = (...args) => {
-          send(
-            "output",
-            "خطأ: " + args.map(format).join(" ")
-          );
-        };
-
-        window.onerror = (message) => {
-          send("error", message);
-        };
-
-        try {
-          (new Function('"use strict";\\n' + userCode))();
-          send("done");
-
-        } catch (error) {
-          send(
-            "error",
-            error?.message || error
-          );
-        }
-      `
-      : `
-        const load = document.createElement("script");
-
-        load.src =
-          "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js";
-
-        load.onload = async () => {
-          try {
-            const pyodide = await loadPyodide();
-
-            const captured = [];
-
-            pyodide.setStdout({
-              batched: (value) => captured.push(value)
-            });
-
-            pyodide.setStderr({
-              batched: (value) => {
-                captured.push("خطأ: " + value);
-              }
-            });
-
-            await pyodide.runPythonAsync(${safeCode});
-
-            for (const line of captured) {
-              send("output", line);
-            }
-
-            send("done");
-
-          } catch (error) {
-            send(
-              "error",
-              error?.message || error
-            );
-          }
-        };
-
-        load.onerror = () => {
-          send(
-            "error",
-            "تعذر تحميل بيئة Python. تحقق من اتصال الإنترنت."
-          );
-        };
-
-        document.head.append(load);
-      `;
-
-    const srcdoc = `<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-</head>
-<body>
-<script>
-(() => {
-  const language = ${JSON.stringify(language)};
-
-  const send = (type, value = "") => {
-    parent.postMessage(
-      {
-        source: "codequest-runner",
-        language,
-        type,
-        value: String(value)
-      },
-      "*"
-    );
-  };
-
-  ${runner}
-})();
-</script>
-</body>
-</html>`;
-
-    frame.srcdoc = srcdoc;
-    document.body.append(frame);
-  });
-}
 function encodeBase64Utf8(value) {
   const bytes = new TextEncoder().encode(value);
 
@@ -1425,7 +1381,40 @@ function navigateNextLesson() {
     nextUrl || getLevelsUrl();
 }
 
+function setEditorPanelExpanded(expanded) {
+  const panel = byId("editorPanel");
+  const button = byId("editorExpandBtn");
+  if (!panel || !button) return;
+
+  panel.classList.toggle("is-expanded", expanded);
+  document.body.classList.toggle("editor-panel-open", expanded);
+  button.setAttribute("aria-expanded", String(expanded));
+  button.textContent = expanded ? "تصغير المحرر" : "تكبير المحرر";
+
+  requestAnimationFrame(() => {
+    editor?.refresh();
+    if (expanded) {
+      editor?.focus();
+    } else {
+      button.focus();
+    }
+  });
+}
+
 function attachEvents() {
+  byId("editorExpandBtn")?.addEventListener("click", () => {
+    setEditorPanelExpanded(!byId("editorPanel")?.classList.contains("is-expanded"));
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && byId("editorPanel")?.classList.contains("is-expanded")) {
+      setEditorPanelExpanded(false);
+    }
+  });
+
+  window.addEventListener("resize", () => requestAnimationFrame(() => editor?.refresh()));
+  window.visualViewport?.addEventListener("resize", () => requestAnimationFrame(() => editor?.refresh()));
+
   byId("hintBtn")?.addEventListener(
     "click",
     showHint
@@ -1471,6 +1460,26 @@ function attachEvents() {
   );
 }
 
+async function loadLessonAvatar() {
+  const container = byId("lessonUserAvatar");
+  if (!container) return;
+  try {
+    const [profile, avatarModule] = await Promise.all([
+      getUserProfile(),
+      import("./avatars.js")
+    ]);
+    const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
+    const activeAvatar = typeof profile.activeAvatar === "string" ? profile.activeAvatar : "cody";
+    const selected = avatarModule.getAllAvatars().find(avatar =>
+      avatar.id === activeAvatar && (!avatar.storeItem || inventory.includes(avatar.id))
+    );
+    avatarModule.installAvatarStyles();
+    container.innerHTML = avatarModule.renderAvatar(selected?.id || "cody");
+  } catch (error) {
+    console.warn("تعذر تحميل صورة الحساب في الدرس:", error);
+  }
+}
+
 async function initializeLecture() {
   setStatus(
     "جاري تحميل الدرس...",
@@ -1482,6 +1491,10 @@ async function initializeLecture() {
 
     if (!currentUser) return;
 
+    await loadLessonAvatar();
+    void syncLocalProgressToCloud().catch(error => {
+      console.warn("تعذرت مزامنة التقدم المحلي:", error);
+    });
     await loadCurriculum();
 
     initializeEditor();

@@ -81,6 +81,17 @@ const JAVA_CHALLENGES = Object.freeze({
   "7_1": { required: [/class\s+Student/, /Student\s*\(\s*String\s+studentName\s*\)/, /\bname\s*=\s*studentName\s*;/, /System\.out\.println\s*\(\s*student\.name\s*\)\s*;/], output: "Cody" }
 });
 
+const JAVA_QUIZ_ANSWERS = Object.freeze({
+  "0_0": 1, "0_1": 1,
+  "1_0": 1, "1_1": 1,
+  "2_0": 1, "2_1": 1,
+  "3_0": 1, "3_1": 0,
+  "4_0": 1, "4_1": 0,
+  "5_0": 0, "5_1": 1,
+  "6_0": 1, "6_1": 0,
+  "7_0": 1, "7_1": 0
+});
+
 function requireAuth(request) {
   if (!request.auth?.uid) {
     throw new HttpsError(
@@ -410,17 +421,25 @@ exports.verifyJavaChallenge = onCall(
     const resultRef = db.collection("users").doc(uid)
       .collection("quizResults").doc("lesson_" + lessonId);
 
-    await resultRef.set({
-      verificationVersion: 1,
-      serverVerified: true,
-      passed: true,
-      uid,
-      lessonId,
-      language: "java",
-      chapter,
-      lesson,
-      verificationType: "java-challenge",
-      verifiedAt: FieldValue.serverTimestamp()
+    await db.runTransaction(async transaction => {
+      const existingSnapshot = await transaction.get(resultRef);
+      const existing = existingSnapshot.exists ? existingSnapshot.data() || {} : {};
+      const quizAlreadyVerified = existing.quizVerified === true;
+
+      transaction.set(resultRef, {
+        verificationVersion: 1,
+        serverVerified: true,
+        passed: quizAlreadyVerified,
+        challengeVerified: true,
+        quizVerified: quizAlreadyVerified,
+        uid,
+        lessonId,
+        language: "java",
+        chapter,
+        lesson,
+        verificationType: "java-challenge",
+        verifiedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
     });
 
     return {
@@ -428,6 +447,63 @@ exports.verifyJavaChallenge = onCall(
       correct: true,
       message: "تم التحقق من الحل والناتج على الخادم.",
       stdout: safeOutput(execution.stdout)
+    };
+  }
+);
+
+/*
+ * التحقق الخادمي من سؤال فهم Java بعد اجتياز تحدي الكود.
+ * لا يصبح إثبات الدرس قابلًا للمكافأة إلا بعد نجاح التحققين.
+ */
+exports.verifyJavaQuizAnswer = onCall(
+  CALL_OPTIONS,
+  async request => {
+    const uid = requireAuth(request);
+    const { chapter, lesson, selectedIndex } = request.data || {};
+
+    if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8) {
+      throw new HttpsError("invalid-argument", "رقم فصل Java غير صالح.");
+    }
+    if (!Number.isInteger(lesson) || lesson < 0 || lesson >= 2) {
+      throw new HttpsError("invalid-argument", "رقم درس Java غير صالح.");
+    }
+    if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex > 2) {
+      throw new HttpsError("invalid-argument", "اختيار سؤال Java غير صالح.");
+    }
+
+    const correctIndex = JAVA_QUIZ_ANSWERS[chapter + "_" + lesson];
+    if (correctIndex === undefined) {
+      throw new HttpsError("not-found", "سؤال Java غير موجود.");
+    }
+    if (selectedIndex !== correctIndex) {
+      return { success: true, correct: false, message: "الإجابة غير صحيحة. حاول مرة أخرى." };
+    }
+
+    const lessonId = "java_" + chapter + "_" + lesson;
+    const resultRef = db.collection("users").doc(uid)
+      .collection("quizResults").doc("lesson_" + lessonId);
+    const resultSnapshot = await resultRef.get();
+
+    if (!resultSnapshot.exists || resultSnapshot.data()?.challengeVerified !== true) {
+      throw new HttpsError(
+        "failed-precondition",
+        "اجتز تحدي الكود على الخادم أولًا قبل اعتماد سؤال الفهم."
+      );
+    }
+
+    await resultRef.set({
+      verificationVersion: 1,
+      serverVerified: true,
+      passed: true,
+      quizVerified: true,
+      selectedQuizIndex: selectedIndex,
+      quizVerifiedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    return {
+      success: true,
+      correct: true,
+      message: "تم التحقق من إجابة السؤال على الخادم."
     };
   }
 );
@@ -860,7 +936,8 @@ function hasVerifiedLessonResult(uid, lessonId, lesson, result) {
     && result.lessonId === lessonId
     && result.language === lesson.language
     && result.chapter === lesson.chapter
-    && result.lesson === lesson.lesson;
+    && result.lesson === lesson.lesson
+    && (lesson.language !== "java" || result.quizVerified === true);
 }
 
 /*
@@ -1008,9 +1085,11 @@ exports.awardLessonReward = onDocumentWritten(
       ? before.data() || {}
       : {};
 
-    if (oldData.completed === true) return;
     if (newData.completed !== true) return;
 
+    // Re-check even when the progress document was already complete:
+    // a later successful server verification may make its reward eligible.
+    // awardCompletedLesson is idempotent through the gameRewards document.
     await awardCompletedLesson(
       event.params.uid,
       event.params.lessonId,
@@ -1676,7 +1755,62 @@ function normalizePythonOutput(value) {
 }
 
 /*
- * فحص وجود الأجزاء المطلوبة في الكود.
+ * تطبيع كود Python للمقارنة دون حساسية غير ضرورية للمسافات
+ * أو لاختيار علامات الاقتباس المفردة/المزدوجة.
+ * نحذف التعليقات خارج النصوص فقط، ونحافظ على المسافات داخل النص.
+ */
+function normalizePythonSource(value) {
+  const source = String(value || "");
+  let normalized = "";
+  let quote = null;
+  let escaped = false;
+  let inComment = false;
+
+  for (const character of source) {
+    if (inComment) {
+      if (character === "\n") inComment = false;
+      continue;
+    }
+
+    if (quote) {
+      if (escaped) {
+        normalized += character;
+        escaped = false;
+        continue;
+      }
+      if (character === "\\") {
+        normalized += character;
+        escaped = true;
+        continue;
+      }
+      if (character === quote) {
+        normalized += '"';
+        quote = null;
+        continue;
+      }
+      normalized += character;
+      continue;
+    }
+
+    if (character === "#") {
+      inComment = true;
+      continue;
+    }
+    if (character === "'" || character === '"') {
+      quote = character;
+      normalized += '"';
+      continue;
+    }
+    if (/\s/.test(character)) continue;
+    normalized += character;
+  }
+
+  return normalized;
+}
+
+/*
+ * فحص وجود الأجزاء المطلوبة في الكود بعد تطبيع المسافات والاقتباسات.
+ * يبقى تشغيل الكود ومطابقة الناتج على الخادم شرطًا أساسيًا.
  */
 function validatePythonChallengeSource(code, challenge) {
   if (
@@ -1686,8 +1820,9 @@ function validatePythonChallengeSource(code, challenge) {
     return false;
   }
 
+  const normalizedCode = normalizePythonSource(code);
   return challenge.required.every(part =>
-    code.includes(part)
+    normalizedCode.includes(normalizePythonSource(part))
   );
 }
 

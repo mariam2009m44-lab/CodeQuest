@@ -9,16 +9,54 @@ const FIREBASE_KEYS = createRemoteJWKSet(
 
 const ALLOWED_ORIGIN = "https://mariam2009m44-lab.github.io";
 
-const CURRICULUM_URLS = {
-  javascript:
-    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/js_curriculum.json",
-
-  python:
-    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/python_curriculum.json",
-
-  cpp:
-    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/cpp_curriculum.json"
+const CURRICULUM_PATHS = {
+  javascript: "/json/js_curriculum.json",
+  python: "/json/python_curriculum.json",
+  cpp: "/json/cpp_curriculum.json"
 };
+
+async function readBoundedJson(request, maxBytes = 65536) {
+  const declaredLength = Number(request.headers.get("Content-Length") || 0);
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new Error("REQUEST_BODY_TOO_LARGE");
+  }
+
+  if (!request.body) throw new Error("INVALID_JSON");
+
+  const reader = request.body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+
+      if (totalBytes > maxBytes) {
+        await reader.cancel("REQUEST_BODY_TOO_LARGE").catch(() => {});
+        throw new Error("REQUEST_BODY_TOO_LARGE");
+      }
+
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw new Error("INVALID_JSON");
+  }
+}
 
 function jsonResponse(data, status, origin = null) {
   const headers = {
@@ -41,10 +79,30 @@ function jsonResponse(data, status, origin = null) {
   });
 }
 
-function getAllowedOrigin(request) {
+function getAllowedOrigin(request, env) {
   const origin = request.headers.get("Origin");
+  const allowedOrigin = env.ALLOWED_ORIGIN || ALLOWED_ORIGIN;
 
-  return origin === ALLOWED_ORIGIN ? origin : null;
+  if (origin === allowedOrigin) return origin;
+
+  // Hash-prefixed Cloudflare Pages previews are separate origins. Allow them
+  // only on preview deployments; never widen the production allow-list.
+  if (
+    env.ENVIRONMENT === "preview" &&
+    /^https:\/\/[a-f0-9]{8}\.codequest-preview\.pages\.dev$/i.test(origin || "")
+  ) {
+    return origin;
+  }
+
+  // Local development is routed to the preview Worker only.
+  if (
+    env.ENVIRONMENT === "preview" &&
+    /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin || "")
+  ) {
+    return origin;
+  }
+
+  return null;
 }
 
 async function verifyFirebaseUser(request, env) {
@@ -99,13 +157,284 @@ async function verifyFirebaseUser(request, env) {
   };
 }
 
-async function loadQuiz(language, lessonId) {
-  const curriculumUrl = CURRICULUM_URLS[language];
+const EXECUTABLE_LANGUAGES = Object.freeze({
+  javascript: 63,
+  python: 71,
+  cpp: 54,
+  java: 62
+});
 
-  if (!curriculumUrl) {
+function safeOutput(value) {
+  return typeof value === "string" ? value.slice(0, 20000) : "";
+}
+
+async function readJudge0Response(response) {
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("INVALID_JUDGE0_RESPONSE");
+  }
+
+  if (!response.ok) {
+    console.error("Judge0 HTTP error:", response.status, data);
+    throw new Error("JUDGE0_UNAVAILABLE");
+  }
+
+  return data;
+}
+
+async function handleCodeRun(request, env, origin) {
+  let authenticatedUser;
+  try {
+    authenticatedUser = await verifyFirebaseUser(request, env);
+  } catch {
+    return jsonResponse({
+      success: false,
+      message: "سجّلي الدخول أولًا لتشغيل الأكواد."
+    }, 401, origin);
+  }
+
+  let body;
+
+  try {
+    body = await readBoundedJson(request);
+  } catch (error) {
+    const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
+    return jsonResponse({
+      success: false,
+      message: tooLarge ? "حجم طلب التشغيل أكبر من الحد المسموح." : "بيانات طلب التشغيل غير صالحة."
+    }, tooLarge ? 413 : 400, origin);
+  }
+
+  if (
+    !body ||
+    typeof body !== "object" ||
+    Array.isArray(body) ||
+    !Object.prototype.hasOwnProperty.call(
+      EXECUTABLE_LANGUAGES,
+      body.language
+    ) ||
+    typeof body.code !== "string" ||
+    !body.code.trim() ||
+    body.code.length > 50000 ||
+    (body.stdin !== undefined &&
+      (typeof body.stdin !== "string" || body.stdin.length > 10000))
+  ) {
+    return jsonResponse({
+      success: false,
+      message: "لغة البرمجة أو الكود أو بيانات الإدخال غير صالحة."
+    }, 400, origin);
+  }
+
+  // Atomic per-account quota is checked before creating an external Judge0 job.
+  if (!env.CODE_EXECUTION_LIMITER) {
+    return jsonResponse({
+      success: false,
+      message: "حماية خدمة التشغيل غير مفعّلة حاليًا. حاول مرة أخرى لاحقًا."
+    }, 503, origin);
+  }
+
+  try {
+    const limiterId = env.CODE_EXECUTION_LIMITER.idFromName("global-code-run-quota");
+    const limiter = env.CODE_EXECUTION_LIMITER.get(limiterId);
+    const quotaResponse = await limiter.fetch("https://quota.internal/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid: authenticatedUser.uid })
+    });
+    const quota = await quotaResponse.json();
+
+    if (!quotaResponse.ok || quota?.allowed !== true) {
+      return jsonResponse({
+        success: false,
+        errorCode: "CODE_RUN_DAILY_LIMIT",
+        message: quota?.message || "وصلت إلى الحد اليومي لتشغيل الأكواد. حاول غدًا."
+      }, quotaResponse.status === 429 ? 429 : 503, origin);
+    }
+  } catch (error) {
+    console.error("Code execution quota check failed:", error);
+    return jsonResponse({
+      success: false,
+      message: "تعذر التحقق من حد تشغيل الأكواد. حاول مرة أخرى لاحقًا."
+    }, 503, origin);
+  }
+
+  const baseUrl = (env.JUDGE0_URL || "https://ce.judge0.com")
+    .replace(/\/+$/, "");
+  // Bound the entire submission + polling lifecycle, not each request independently.
+  const executionDeadline = Date.now() + 40000;
+
+  let submission = null;
+  let submissionError = null;
+
+  // Retry only explicit rate-limit/early-rejection responses. A network
+  // timeout or an ambiguous 5xx may have created a job already, so do not
+  // blindly submit the same source twice.
+  for (let attempt = 0; attempt < 3 && Date.now() < executionDeadline; attempt++) {
+    let response;
+    try {
+      response = await fetch(
+        `${baseUrl}/submissions?base64_encoded=false&wait=false`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source_code: body.code,
+            language_id: EXECUTABLE_LANGUAGES[body.language],
+            stdin: body.stdin || ""
+          }),
+          signal: AbortSignal.timeout(Math.min(15000, Math.max(1, executionDeadline - Date.now())))
+        }
+      );
+    } catch (error) {
+      submissionError = error?.message || "SUBMISSION_NETWORK_ERROR";
+      console.error("Judge0 submission request failed:", submissionError);
+      break;
+    }
+
+    if ([425, 429].includes(response.status)) {
+      submissionError = `HTTP_${response.status}`;
+      const retryAfterHeader = response.headers.get("Retry-After");
+      const retryAfterSeconds = Number(retryAfterHeader);
+      const retryAfterDate = retryAfterHeader && !Number.isFinite(retryAfterSeconds)
+        ? Date.parse(retryAfterHeader)
+        : NaN;
+      const retryAfterMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+        ? retryAfterSeconds * 1000
+        : Number.isFinite(retryAfterDate)
+          ? Math.max(0, retryAfterDate - Date.now())
+          : Math.min(500 * (attempt + 1), 1800);
+
+      await response.body?.cancel().catch(() => {});
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(
+          resolve,
+          Math.min(retryAfterMs, 2500, Math.max(0, executionDeadline - Date.now()))
+        ));
+        continue;
+      }
+      break;
+    }
+
+    if (!response.ok) {
+      submissionError = `HTTP_${response.status}`;
+      console.error("Judge0 rejected submission:", submissionError);
+      break;
+    }
+
+    try {
+      submission = await readJudge0Response(response);
+    } catch (error) {
+      submissionError = error?.message || "INVALID_SUBMISSION_RESPONSE";
+      console.error("Judge0 submission response failed:", submissionError);
+    }
+    break;
+  }
+
+  if (!submission?.token) {
+    return jsonResponse({
+      success: false,
+      errorCode: submissionError || "SUBMISSION_FAILED",
+      message: "تعذر إرسال الكود إلى خدمة التشغيل حاليًا. انتظر قليلًا ثم حاول مرة أخرى."
+    }, 503, origin);
+  }
+
+  if (!submission?.token) {
+    console.error("Judge0 response did not include a token:", submission);
+    return jsonResponse({
+      success: false,
+      message: "خدمة التشغيل لم تُرجع رقم التنفيذ."
+    }, 502, origin);
+  }
+
+  let result = null;
+  let lastPollingError = null;
+
+  // Public Judge0 instances may briefly queue requests or rate-limit polling.
+  // Retry transient polling failures instead of failing on the first response.
+  for (let attempt = 0; attempt < 12 && Date.now() < executionDeadline; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, Math.min(1000, Math.max(0, executionDeadline - Date.now()))));
+
+    try {
+      const response = await fetch(
+        `${baseUrl}/submissions/${encodeURIComponent(submission.token)}?base64_encoded=false`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(Math.min(5000, Math.max(1, executionDeadline - Date.now())))
+        }
+      );
+
+      if ([408, 425, 429].includes(response.status) || response.status >= 500) {
+        lastPollingError = `HTTP_${response.status}`;
+        const retryAfter = Number(response.headers.get("Retry-After"));
+        const retryDelay = Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(retryAfter * 1000, 2500)
+          : Math.min(500 * (attempt + 1), 2000);
+        await new Promise(resolve => setTimeout(resolve, Math.min(retryDelay, Math.max(0, executionDeadline - Date.now()))));
+        continue;
+      }
+
+      if (!response.ok) {
+        const diagnosticCode = `JUDGE0_HTTP_${response.status}`;
+        console.error("Judge0 rejected polling request:", diagnosticCode);
+        return jsonResponse({
+          success: false,
+          errorCode: diagnosticCode,
+          message: `رفضت خدمة التشغيل طلب الحصول على النتيجة (HTTP ${response.status}).`
+        }, 502, origin);
+      }
+
+      result = await readJudge0Response(response);
+      lastPollingError = null;
+    } catch (error) {
+      lastPollingError = error?.message || "POLLING_FAILED";
+      console.warn("Judge0 polling attempt failed:", attempt + 1, lastPollingError);
+      continue;
+    }
+
+    if (result?.status?.id && result.status.id > 2) {
+      break;
+    }
+  }
+
+  if (!result?.status || result.status.id <= 2) {
+    console.error("Judge0 result polling exhausted:", lastPollingError);
+    return jsonResponse({
+      success: false,
+      message: lastPollingError
+        ? "تعذر الاتصال بخدمة النتائج بعد عدة محاولات. حاولي مرة أخرى."
+        : "استغرق تنفيذ الكود وقتًا طويلًا. حاولي مرة أخرى."
+    }, lastPollingError ? 503 : 504, origin);
+  }
+
+  return jsonResponse({
+    ok: result.status.id === 3,
+    stdout: safeOutput(result.stdout),
+    stderr: safeOutput(result.stderr),
+    compileOutput: safeOutput(result.compile_output),
+    message: safeOutput(result.message),
+    status: result.status.description || "Unknown",
+    time: result.time || null,
+    memory: result.memory || null
+  }, 200, origin);
+}
+
+async function loadQuiz(language, lessonId, env) {
+  const curriculumPath = CURRICULUM_PATHS[language];
+
+  if (!curriculumPath) {
     throw new Error("UNSUPPORTED_LANGUAGE");
   }
 
+  const curriculumBase = (
+    env.CURRICULUM_BASE_URL ||
+    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main"
+  ).replace(/\/+$/, "");
+
+  const curriculumUrl = `${curriculumBase}${curriculumPath}`;
   const response = await fetch(curriculumUrl, {
     headers: {
       "Accept": "application/json"
@@ -168,12 +497,13 @@ async function handleQuizCheck(request, env, origin) {
   let body;
 
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request, 32768);
+  } catch (error) {
+    const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
     return jsonResponse({
       success: false,
-      message: "بيانات الطلب غير صالحة."
-    }, 400, origin);
+      message: tooLarge ? "حجم طلب السؤال أكبر من الحد المسموح." : "بيانات الطلب غير صالحة."
+    }, tooLarge ? 413 : 400, origin);
   }
 
   if (
@@ -195,7 +525,7 @@ async function handleQuizCheck(request, env, origin) {
 
   if (
     !Object.prototype.hasOwnProperty.call(
-      CURRICULUM_URLS,
+      CURRICULUM_PATHS,
       language
     ) ||
     typeof lessonId !== "string" ||
@@ -211,7 +541,7 @@ async function handleQuizCheck(request, env, origin) {
   }
 
   try {
-    const quiz = await loadQuiz(language, lessonId);
+    const quiz = await loadQuiz(language, lessonId, env);
 
     if (!quiz) {
       return jsonResponse({
@@ -261,7 +591,7 @@ async function handleQuizCheck(request, env, origin) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const origin = getAllowedOrigin(request);
+    const origin = getAllowedOrigin(request, env);
 
     if (
       url.pathname === "/health" &&
@@ -334,6 +664,13 @@ export default {
     }
 
     if (
+      url.pathname === "/api/code/run" &&
+      request.method === "POST"
+    ) {
+      return handleCodeRun(request, env, origin);
+    }
+
+    if (
       url.pathname === "/api/quiz/check" &&
       request.method === "POST"
     ) {
@@ -350,3 +687,61 @@ export default {
     }, 404, origin);
   }
 };
+
+
+// Atomic per-account quota for the shared Judge0 service.
+// Durable Object storage serializes checks and avoids KV update races.
+export class CodeExecutionLimiter {
+  constructor(state) {
+    this.state = state;
+  }
+
+  async fetch(request) {
+    if (request.method !== "POST") {
+      return new Response("Method not allowed", { status: 405 });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json({ allowed: false, message: "Invalid quota request." }, { status: 400 });
+    }
+
+    const uid = typeof body?.uid === "string" ? body.uid : "";
+    if (!uid || uid.length > 128) {
+      return Response.json({ allowed: false, message: "Invalid user." }, { status: 400 });
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `user:${uid}`;
+
+    const result = await this.state.storage.transaction(async transaction => {
+      const current = await transaction.get(key);
+      const record = current?.day === today
+        ? current
+        : { day: today, count: 0 };
+
+      if (record.count >= 30) {
+        return { allowed: false, count: record.count };
+      }
+
+      record.count += 1;
+      await transaction.put(key, record);
+      return { allowed: true, count: record.count };
+    });
+
+    if (!result.allowed) {
+      return Response.json({
+        allowed: false,
+        count: result.count,
+        message: "وصلت إلى الحد اليومي المسموح به (30 تشغيلًا). حاول غدًا."
+      }, { status: 429 });
+    }
+
+    return Response.json({
+      allowed: true,
+      remaining: 30 - result.count
+    });
+  }
+}

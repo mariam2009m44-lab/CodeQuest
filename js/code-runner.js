@@ -5,16 +5,44 @@ import {
   httpsCallable
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 
-const runCodeCallable = httpsCallable(
-  functions,
-  "runCode",
-  { timeout: 40000 }
-);
+import { auth } from "./firebase-config.js";
+import { requireUser } from "./auth.js";
+
+const PRODUCTION_CODE_RUNNER_URL =
+  "https://codequest.mariam2009m44.workers.dev";
+
+const PREVIEW_CODE_RUNNER_URL =
+  "https://fix-cloudflare-code-runner-codequest.mariam2009m44.workers.dev";
+
+// Cloudflare Pages preview builds use a hash-prefixed hostname, for example
+// abc123.codequest-preview.pages.dev. Match the suffix, not one exact host.
+const currentHost = window.location.hostname.toLowerCase();
+const isPagesPreview =
+  currentHost === "codequest-preview.pages.dev" ||
+  currentHost.endsWith(".codequest-preview.pages.dev");
+const isLocalDevelopment =
+  currentHost === "localhost" || currentHost === "127.0.0.1";
+
+const CODE_RUNNER_URL = isPagesPreview || isLocalDevelopment
+  ? PREVIEW_CODE_RUNNER_URL
+  : PRODUCTION_CODE_RUNNER_URL;
 
 const verifyJavaCallable = httpsCallable(
   functions,
   "verifyJavaChallenge",
   { timeout: 45000 }
+);
+
+const checkQuizCallable = httpsCallable(
+  functions,
+  "checkQuizAnswer",
+  { timeout: 30000 }
+);
+
+const verifyJavaQuizCallable = httpsCallable(
+  functions,
+  "verifyJavaQuizAnswer",
+  { timeout: 30000 }
 );
 
 const ALLOWED_LANGUAGES = new Set([
@@ -42,36 +70,49 @@ export async function runCodeOnServer(language, code, stdin = "") {
   }
 
   try {
-    const response = await runCodeCallable({
-      language,
-      code,
-      stdin
+    const user = auth.currentUser || await requireUser();
+    const idToken = await user.getIdToken();
+
+    const response = await fetch(`${CODE_RUNNER_URL}/api/code/run`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
+      },
+      body: JSON.stringify({
+        language,
+        code,
+        stdin
+      })
     });
 
-    if (!response || !response.data) {
-      throw new Error("لم تصل نتيجة من خدمة تشغيل الأكواد.");
+    let result;
+
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error("وصل رد غير مفهوم من خدمة تشغيل الأكواد.");
     }
 
-    return response.data;
-  } catch (error) {
-    console.error("Code execution error:", error);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("انتهت جلسة تسجيل الدخول. سجّلي الدخول مرة أخرى.");
+      }
 
-    const errorCode = String(error?.code || "")
-      .replace(/^functions\//, "");
-
-    if (errorCode === "unauthenticated") {
-      throw new Error("سجّلي الدخول أولًا لتشغيل الأكواد.");
-    }
-
-    if (errorCode === "unavailable") {
-      throw new Error("خدمة تشغيل الأكواد غير متاحة حاليًا.");
-    }
-
-    if (errorCode === "deadline-exceeded") {
       throw new Error(
-        "استغرق تشغيل الكود وقتًا طويلًا. حاولي مرة أخرى."
+        result?.message || "خدمة تشغيل الأكواد غير متاحة حاليًا."
       );
     }
+
+    if (!result || typeof result.ok !== "boolean") {
+      throw new Error(
+        result?.message || "لم تصل نتيجة صحيحة من خدمة تشغيل الأكواد."
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Code execution error:", error);
 
     if (error instanceof Error && error.message) {
       throw error;
@@ -85,7 +126,84 @@ export async function runCodeOnServer(language, code, stdin = "") {
 
 
 /**
- * Verify a Java learning challenge on the server.
+ * Verify a lesson quiz through the preview Worker.
+ * The Worker loads the published curriculum and checks the selected answer
+ * on the server, so lesson completion does not depend on a Firebase callable.
+ */
+export async function checkQuizAnswerOnServer({
+  language,
+  lessonId,
+  selectedIndex
+}) {
+  if (!ALLOWED_LANGUAGES.has(language) || language === "java") {
+    throw new Error("لغة المنهج غير مدعومة للتحقق من هذا السؤال.");
+  }
+
+  if (
+    typeof lessonId !== "string" ||
+    !/^[a-zA-Z0-9_-]{1,100}$/.test(lessonId) ||
+    !Number.isInteger(selectedIndex) ||
+    selectedIndex < 0 ||
+    selectedIndex > 20
+  ) {
+    throw new Error("بيانات السؤال أو الاختيار غير صحيحة.");
+  }
+
+  try {
+    const response = await checkQuizCallable({ language, lessonId, selectedIndex });
+    if (!response?.data || response.data.success !== true) {
+      throw new Error("لم تصل نتيجة صحيحة من خادم التحقق.");
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Lesson quiz verification error:", error);
+    if (error instanceof Error && error.message) throw error;
+    throw new Error("تعذر الاتصال بخدمة التحقق من السؤال.");
+  }
+}
+
+
+/**
+ * Verify a Java lesson comprehension answer on the server.
+ * The server checks the selected option after the coding challenge is verified.
+ */
+export async function verifyJavaQuizAnswer(chapter, lesson, selectedIndex) {
+  if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8 ||
+      !Number.isInteger(lesson) || lesson < 0 || lesson >= 2 ||
+      !Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex > 2) {
+    throw new Error("بيانات سؤال Java غير صالحة.");
+  }
+
+  try {
+    const response = await verifyJavaQuizCallable({ chapter, lesson, selectedIndex });
+    if (response?.data?.success !== true) {
+      throw new Error("لم تصل نتيجة صحيحة من خادم التحقق.");
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Java quiz verification failed:", error);
+    const code = String(error?.code || "").replace(/^functions\//, "");
+    if (code === "failed-precondition") {
+      throw new Error(error?.message || "اجتز تحدي الكود أولًا.");
+    }
+    if (code === "unavailable" || code === "deadline-exceeded") {
+      const mappedError = new Error(
+        code === "deadline-exceeded"
+          ? "استغرق التحقق من سؤال Java وقتًا طويلًا. حاول مرة أخرى."
+          : "خدمة التحقق من سؤال Java غير متاحة حاليًا."
+      );
+      mappedError.code = error?.code;
+      throw mappedError;
+    }
+    throw error instanceof Error && error.message
+      ? error
+      : new Error("تعذر التحقق من إجابة Java.");
+  }
+}
+
+
+/**
+ * Verify a Java coding challenge on the server.
  * The server checks required code, executes it, and compares the expected output.
  */
 export async function verifyJavaChallenge(chapter, lesson, code) {
@@ -117,10 +235,14 @@ export async function verifyJavaChallenge(chapter, lesson, code) {
       throw new Error("سجّل الدخول أولًا للتحقق من تحديات Java.");
     }
     if (code === "unavailable") {
-      throw new Error("خدمة التحقق من Java غير متاحة حاليًا.");
+      const mappedError = new Error("خدمة التحقق من Java غير متاحة حاليًا.");
+      mappedError.code = error?.code;
+      throw mappedError;
     }
     if (code === "deadline-exceeded") {
-      throw new Error("استغرق التحقق وقتًا طويلًا. حاول مرة أخرى.");
+      const mappedError = new Error("استغرق التحقق وقتًا طويلًا. حاول مرة أخرى.");
+      mappedError.code = error?.code;
+      throw mappedError;
     }
 
     throw error instanceof Error && error.message

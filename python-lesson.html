@@ -419,6 +419,41 @@
       cursor: not-allowed;
     }
 
+    .game-step-card {
+      width: min(100%, 620px);
+      margin: 0 55px 12px 0;
+      padding: 16px;
+      border: 1px solid rgba(54,191,229,.3);
+      border-radius: 16px;
+      background: linear-gradient(145deg, rgba(26,43,68,.96), rgba(15,26,44,.96));
+    }
+
+    .game-step-link {
+      display: flex;
+      min-height: 54px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 13px;
+      color: #fff;
+      background: linear-gradient(110deg,#7955e8,#5368df 55%,#36bfe5);
+      font-weight: 900;
+      text-decoration: none;
+      touch-action: manipulation;
+    }
+
+    .game-step-note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.8;
+    }
+
+    @media(max-width:900px) {
+      .game-step-card { width:100%; margin-inline:0; }
+    }
+
     /* محرر بايثون */
 
     .editor-wrapper {
@@ -434,6 +469,75 @@
 
     .editor-wrapper.show {
       display: flex;
+    }
+
+    .editor-wrapper.show.is-expanded {
+      position: fixed;
+      inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      z-index: 2700;
+      width: auto;
+      height: auto;
+      min-height: 0;
+      max-height: none;
+      margin: 0;
+      border-radius: 16px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.65);
+    }
+
+    .editor-wrapper.show.is-expanded .code-area {
+      flex: 1 1 auto;
+      height: auto !important;
+      min-height: 250px;
+      max-height: none;
+      resize: none;
+    }
+
+    .editor-resize-grip {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:44px;
+      width:100%;
+      cursor:ns-resize;
+      touch-action:none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .editor-resize-grip::after {
+      content:"";
+      width:64px;
+      height:5px;
+      border-radius:999px;
+      background:var(--muted);
+      opacity:.65;
+    }
+    .editor-wrapper.show.is-expanded .editor-resize-grip { display:none; }
+
+    .editor-wrapper.show.is-expanded .CodeMirror,
+    .editor-wrapper.show.is-expanded .CodeMirror-scroll,
+    .editor-wrapper.show.is-expanded .code-fallback {
+      min-height: 250px;
+      max-height: none;
+    }
+
+    .editor-wrapper.show.is-expanded .CodeMirror {
+      height: 100% !important;
+    }
+
+    body.python-editor-expanded {
+      overflow: hidden;
+    }
+
+    .editor-expand-btn {
+      min-height: 40px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-weight: 800;
+      cursor: pointer;
     }
 
     .editor-header {
@@ -456,6 +560,39 @@
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .editor-size-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      background: #111827;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .editor-size-controls button {
+      min-height: 36px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .editor-size-controls button[aria-pressed="true"] {
+      border-color: var(--cyan);
+      background: rgba(75,213,242,.12);
+      color: var(--cyan);
+    }
+
+    .editor-size-controls button:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
     }
 
     .btn-run,
@@ -489,8 +626,10 @@
     .code-area {
       display: flex;
       min-height: 210px;
-      flex: 1;
-      overflow: hidden;
+      max-height: 70vh;
+      flex: 0 0 auto;
+      overflow: auto;
+      resize: none;
     }
 
     .CodeMirror {
@@ -927,6 +1066,51 @@
     .message-row.cody .avatar { background:linear-gradient(145deg,#233e60,#12617a); border-color:rgba(75,213,242,.45); }
     .avatar img,.avatar svg { display:block; width:100%; height:100%; object-fit:contain; }
     .avatar-fallback { display:grid; width:100%; height:100%; place-items:center; color:white; font-size:1.2rem; }
+    .lesson-user-avatar {
+      display:grid;
+      place-items:center;
+      width:42px;
+      height:42px;
+      flex:0 0 42px;
+      overflow:hidden;
+      border:2px solid rgba(139,108,255,.55);
+      border-radius:50%;
+      background:linear-gradient(145deg,#8b6cff,#4bd5f2);
+      box-shadow:0 4px 14px rgba(0,0,0,.18);
+    }
+    .lesson-user-avatar svg,
+    .lesson-user-avatar img {
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+
+    /* renderAvatar() returns nested wrappers; size every layer inside the 42px circle */
+    .lesson-user-avatar .anime-avatar,
+    .lesson-user-avatar .anime-character,
+    .lesson-user-avatar .anime-avatar-svg {
+      display:block !important;
+      width:100% !important;
+      height:100% !important;
+      min-width:0 !important;
+      min-height:0 !important;
+      max-width:100% !important;
+      max-height:100% !important;
+      overflow:hidden;
+      object-fit:contain;
+    }
+
+    .avatar .anime-avatar,
+    .avatar .anime-character,
+    .avatar .anime-avatar-svg {
+      width:100%;
+      height:100%;
+      min-height:0;
+      max-height:100%;
+      overflow:hidden;
+      object-fit:contain;
+    }
     .bubble { max-width:min(820px,88%); padding:17px 20px; border:1px solid rgba(148,163,184,.17); border-radius:20px 20px 5px 20px; background:linear-gradient(145deg,rgba(19,31,52,.98),rgba(14,23,40,.98)); box-shadow:0 10px 28px rgba(0,0,0,.12); font-size:1rem; line-height:2; }
     .message-row.student .bubble { border:1px solid rgba(139,108,255,.3); border-radius:20px 20px 20px 5px; background:linear-gradient(135deg,#5140a0,#3b347a); }
     .bubble code { margin:2px 3px; padding:4px 9px; border:1px solid rgba(75,213,242,.16); border-radius:8px; background:#080e1b; color:#72e1f6; direction:ltr; unicode-bidi:isolate; }
@@ -978,8 +1162,10 @@
 
     .code-area {
       width: 100%;
-      min-height: clamp(190px, 34vh, 360px);
-      flex: 1 1 auto;
+      min-height: 210px;
+      max-height: 70vh;
+      flex: 0 0 auto;
+      resize: none;
     }
 
     .CodeMirror,
@@ -987,12 +1173,12 @@
       width: 100%;
       max-width: 100%;
       min-width: 0;
-      min-height: clamp(190px, 34vh, 360px);
+      min-height: 210px;
       font-size: clamp(.82rem, 1.6vw, .98rem);
     }
 
     .CodeMirror-scroll {
-      min-height: clamp(190px, 34vh, 360px);
+      min-height: 210px;
     }
 
     .inline-code-hint {
@@ -1308,8 +1494,129 @@
       animation: hintReveal .22s ease-out;
     }
 
-  </style>
+  
+    /* Mobile editor: keep the full editor usable without clipping its controls. */
+    @media (max-width: 900px) {
+      .editor-wrapper.show {
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        height: min(82dvh, 760px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 12px);
+        padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+      }
+
+      .editor-wrapper.show .editor-header {
+        position: sticky;
+        top: 0;
+        flex: 0 0 auto;
+      }
+
+      .editor-wrapper.show .code-area {
+        flex: 0 0 auto;
+        min-height: 0;
+      }
+
+      .editor-wrapper.show .CodeMirror,
+      .editor-wrapper.show .CodeMirror-scroll {
+        min-height: 0;
+      }
+
+      .editor-wrapper.show .code-area {
+        flex: 0 0 auto;
+        min-height: 0;
+      }
+
+      .editor-size-controls {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .editor-size-controls button {
+        min-height: 40px;
+      }
+
+      .editor-wrapper.show #pythonStdin {
+        width: calc(100% - 24px);
+        max-width: calc(100% - 24px);
+        margin-inline: 12px;
+        flex: 0 0 auto;
+      }
+
+      .editor-wrapper.show .lesson-help-panel,
+      .editor-wrapper.show .output-area,
+      .editor-wrapper.show .inline-code-hint {
+        flex: 0 0 auto;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .editor-wrapper.show .output-area {
+        max-height: 140px;
+      }
+    }
+
+</style>
   <link rel="stylesheet" href="css/theme.css">
+<style>
+html[data-theme="light"] {
+  --bg: #F5F7FC;
+  --surface: #FFFFFF;
+  --surface-2: #EEF2F8;
+  --border: #DCE3EF;
+  --text: #182235;
+  --muted: #64748B;
+  --purple: #7652D5;
+  --cyan: #087F9B;
+  --gold: #946200;
+  --green: #0F9468;
+  --red: #D94862;
+  --pink: #D65B8C;
+}
+html[data-theme="light"] body {
+  background: radial-gradient(circle at 15% 10%, rgba(118,82,213,.07), transparent 28%),
+              radial-gradient(circle at 90% 85%, rgba(8,127,155,.06), transparent 25%),
+              var(--bg);
+  color: var(--text);
+}
+html[data-theme="light"] .sidebar,
+html[data-theme="light"] header {
+  background: rgba(255,255,255,.96);
+  border-color: var(--border);
+}
+html[data-theme="light"] .chapter-item,
+html[data-theme="light"] .choice-btn,
+html[data-theme="light"] .exam-option,
+html[data-theme="light"] .exam-question-box,
+html[data-theme="light"] .exam-result {
+  background: #FFFFFF;
+  color: var(--text);
+  border-color: var(--border);
+}
+html[data-theme="light"] .bubble {
+  background: #FFFFFF;
+  color: #26354D;
+  border-color: var(--border);
+}
+html[data-theme="light"] .message-row.student .bubble {
+  background: #EEE9FF;
+  color: #30245B;
+  border-color: #D8CCFF;
+}
+html[data-theme="light"] .bubble code,
+html[data-theme="light"] .bubble pre,
+html[data-theme="light"] .CodeMirror {
+  background: #111827;
+  color: #E5EDF8;
+}
+html[data-theme="light"] .bottom-action {
+  background: linear-gradient(180deg, rgba(245,247,252,.2), rgba(245,247,252,.98));
+}
+</style>
 </head>
 
 <body>
@@ -1367,9 +1674,15 @@
           </a>
 
           <div class="stats-badge" title="نقاط الخبرة">
-            <i class="ri-star-fill"></i>
-            <span id="xpDisplay">0</span>
+            <i class="ri-flashlight-fill"></i>
+            <span id="xpDisplay">—</span>
           </div>
+          <div class="stats-badge stats-stars" title="النجوم">
+            <i class="ri-star-fill"></i>
+            <span id="starsDisplay">—</span>
+          </div>
+
+          <div class="lesson-user-avatar" id="lessonUserAvatar" aria-label="صورة الحساب"></div>
 
       </div>
 
@@ -1515,8 +1828,11 @@
   let challengeSolved = false;
 
   let editor = null;
+  let editorResizeObserver = null;
 
   let profileAvatarHTML = "";
+  let accountXP = null;
+  let accountStars = null;
 
   let currentExamQuestions = [];
   let currentExamIndex = 0;
@@ -1541,12 +1857,50 @@
 
 
   // ==========================================
-  // 2) التخزين المحلي
+  // 2) التخزين المحلي الخاص بكل حساب
   // ==========================================
+
+  let activeUserUid = "anonymous";
+
+  function getScopedStorageKey(key) {
+    return `codequest_${activeUserUid}_${key}`;
+  }
+
+  function migrateLegacyPythonStorage(uid) {
+    if (!uid) return;
+
+    const markerKey = "cody_python_legacy_migrated_uid";
+    try {
+      const previousOwner = localStorage.getItem(markerKey);
+      if (previousOwner) return;
+
+      const legacyKeys = [
+        "cody_python_progress",
+        "cody_python_completed_lessons",
+        ...Array.from({ length: 12 }, (_, index) =>
+          `cody_python_exam_passed_${index + 1}`
+        )
+      ];
+
+      for (const legacyKey of legacyKeys) {
+        const legacyValue = localStorage.getItem(legacyKey);
+        const scopedKey = `codequest_${uid}_${legacyKey}`;
+        if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+          localStorage.setItem(scopedKey, legacyValue);
+        }
+      }
+
+      // The old keys had no account owner. Assign them once to the first
+      // authenticated account and never copy them to a different account.
+      localStorage.setItem(markerKey, uid);
+    } catch (error) {
+      console.warn("تعذرت ترقية بيانات Python القديمة:", error);
+    }
+  }
 
   function readStorage(key, fallback) {
     try {
-      const value = localStorage.getItem(key);
+      const value = localStorage.getItem(getScopedStorageKey(key));
 
       return value === null
         ? fallback
@@ -1561,7 +1915,7 @@
   function writeStorage(key, value) {
     try {
       localStorage.setItem(
-        key,
+        getScopedStorageKey(key),
         JSON.stringify(value)
       );
 
@@ -1573,33 +1927,39 @@
     }
   }
 
-  const storedCompletedLessons = readStorage(
-    "cody_python_completed_lessons",
-    []
-  );
+  let completedLessonKeys = new Set();
+  let completedChapters = new Set();
 
-  const storedCompletedChapters = readStorage(
-    "cody_python_progress",
-    []
-  );
+  function loadLocalProgressState() {
+    const storedCompletedLessons = readStorage(
+      "cody_python_completed_lessons",
+      []
+    );
+    const storedCompletedChapters = readStorage(
+      "cody_python_progress",
+      []
+    );
 
-  const completedLessonKeys = new Set(
-    (Array.isArray(storedCompletedLessons) ? storedCompletedLessons : [])
-      .map(String)
-  );
+    completedLessonKeys = new Set(
+      (Array.isArray(storedCompletedLessons) ? storedCompletedLessons : [])
+        .map(String)
+    );
 
-  // يدعم التنسيق القديم (مصفوفة) والجديد (كائن) دون فقدان تقدم المستخدم.
-  const normalizedCompletedChapters = Array.isArray(storedCompletedChapters)
-    ? storedCompletedChapters
-    : Array.isArray(storedCompletedChapters?.completed)
-      ? storedCompletedChapters.completed
-      : [];
+    // يدعم التنسيق القديم (مصفوفة) والجديد (كائن).
+    const normalizedCompletedChapters = Array.isArray(storedCompletedChapters)
+      ? storedCompletedChapters
+      : Array.isArray(storedCompletedChapters?.completed)
+        ? storedCompletedChapters.completed
+        : [];
 
-  const completedChapters = new Set(
-    normalizedCompletedChapters
-      .map(Number)
-      .filter(Number.isInteger)
-  );
+    completedChapters = new Set(
+      normalizedCompletedChapters
+        .map(Number)
+        .filter(Number.isInteger)
+    );
+  }
+
+  loadLocalProgressState();
 
   function getLessonKey(chapterId, lessonIndex) {
     return `${Number(chapterId)}_${Number(lessonIndex)}`;
@@ -1981,11 +2341,18 @@
     }
 
     const xpDisplay = $("xpDisplay");
+    const starsDisplay = $("starsDisplay");
 
     if (xpDisplay) {
-      xpDisplay.textContent = String(
-        readStorage("cody_xp", 0)
-      );
+      xpDisplay.textContent = accountXP === null
+        ? "—"
+        : String(accountXP);
+    }
+
+    if (starsDisplay) {
+      starsDisplay.textContent = accountStars === null
+        ? "—"
+        : String(accountStars);
     }
   }
 
@@ -1997,41 +2364,16 @@
   function awardLessonReward(chapterId, lessonIndex) {
     const key = getLessonKey(chapterId, lessonIndex);
 
-    if (completedLessonKeys.has(key)) {
-      return false;
-    }
-
+    if (completedLessonKeys.has(key)) return false;
     completedLessonKeys.add(key);
-
-    const legacyXP = Number(
-      readStorage("cody_python_xp", 0)
-    ) || 0;
-
-    const sharedXP = Number(
-      readStorage("cody_xp", 0)
-    ) || 0;
-
-    const oldXP = Math.max(legacyXP, sharedXP);
-    const newXP = oldXP + 10;
-
-    // مفتاح موحد مع صفحة خريطة الفصول، مع ترحيل المفتاح القديم.
-    writeStorage("cody_xp", newXP);
-    writeStorage("cody_python_xp", newXP);
-
     saveLocalProgress();
 
     const lessons = getChapterLessons(chapterId);
-
     const normalLessons = lessons
-      .map((lesson, index) => ({
-        lesson,
-        index
-      }))
+      .map((lesson, index) => ({ lesson, index }))
       .filter(({ lesson }) => !isExamLesson(lesson));
-
     const chapterCompleted = normalLessons.every(
-      ({ index }) =>
-        isLessonCompleted(chapterId, index)
+      ({ index }) => isLessonCompleted(chapterId, index)
     );
 
     if (chapterCompleted) {
@@ -2041,9 +2383,6 @@
 
     updateProgressDisplay();
     renderChapters();
-
-    showToast("أحسنت! حصلت على 10 نقاط خبرة ⭐");
-
     return true;
   }
 
@@ -2116,6 +2455,43 @@
     ).toLowerCase();
 
     const text = getStepText(step);
+
+    if (type === "example") {
+      addBubble(
+        "cody",
+        renderLessonMarkup(text || "شغّل المثال الجاهز ولاحظ الناتج قبل تعديل الكود.")
+      );
+      showEditor(step);
+      return;
+    }
+
+    if (type === "game") {
+      addBubble(
+        "cody",
+        renderLessonMarkup(text || "حان وقت تحدي كودي العملي!")
+      );
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "game-step-card";
+
+      const link = document.createElement("a");
+      link.className = "game-step-link";
+      link.href = `game-3d.html?return=${encodeURIComponent(
+        `python-lesson.html?ch=${currentChapterId}&lesson=${currentLessonIndex + 1}&gameFor=${getLessonKey(currentChapterId, currentLessonIndex)}`
+      )}`;
+      link.textContent = step.buttonText || "ابدأ مهمة كودي ثلاثية الأبعاد";
+      link.setAttribute("aria-label", "ابدأ تحدي كودي ثلاثي الأبعاد ثم ارجع للدرس");
+
+      const note = document.createElement("p");
+      note.className = "game-step-note";
+      note.textContent = "أكمل المهمة الأولى، ثم استخدم زر العودة للدرس لمتابعة التعلم.";
+
+      wrapper.append(link, note);
+      chatContainer.appendChild(wrapper);
+      scrollChatToBottom();
+      showBottomAction(true, "متابعة بعد اللعبة");
+      return;
+    }
 
     if (
       type === "challenge" ||
@@ -2312,6 +2688,14 @@
 
           <button
             type="button"
+            class="editor-expand-btn"
+            id="expandPythonEditor"
+            aria-expanded="false"
+            aria-controls="pythonCodeInput"
+          >ملء الشاشة</button>
+
+          <button
+            type="button"
             class="editor-close-btn"
             id="closePythonEditor"
             aria-label="إغلاق المحرر"
@@ -2319,6 +2703,13 @@
             <i class="ri-close-line"></i>
           </button>
         </div>
+      </div>
+
+      <div class="editor-size-controls" role="group" aria-label="حجم محرر الأكواد">
+        <span>حجم المحرر</span>
+        <button type="button" data-editor-height="220" aria-pressed="false">صغير</button>
+        <button type="button" data-editor-height="300" aria-pressed="true">متوسط</button>
+        <button type="button" data-editor-height="420" aria-pressed="false">كبير</button>
       </div>
 
       <div class="code-area">
@@ -2329,6 +2720,10 @@
           dir="ltr"
         ></textarea>
       </div>
+      <div id="pythonEditorResizeGrip" class="editor-resize-grip"
+        role="separator" aria-orientation="horizontal"
+        aria-label="اسحب لتغيير ارتفاع محرر Python"
+        aria-valuemin="220" aria-valuemax="720" aria-valuenow="300" tabindex="0"></div>
 
       <label for="pythonStdin" style="display:block;margin:12px 0 6px;font-weight:800;color:var(--muted)">مدخلات البرنامج (اختياري) — اكتب كل قيمة في سطر</label>
       <textarea id="pythonStdin" rows="3" dir="ltr" spellcheck="false" placeholder="مثال:&#10;Mariam&#10;17" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-family:'Fira Code',monospace;resize:vertical"></textarea>
@@ -2391,10 +2786,78 @@
 
     initializePythonEditor();
 
+    wrapper.querySelectorAll("[data-editor-height]").forEach(button => {
+      button.addEventListener("click", () => {
+        setPythonEditorHeight(Number(button.dataset.editorHeight));
+      });
+    });
+
+    const resizeGrip = $("pythonEditorResizeGrip");
+    const codeArea = wrapper.querySelector(".code-area");
+    let activeResizePointer = null;
+    let resizeStartY = 0;
+    let resizeStartHeight = 300;
+
+    resizeGrip?.addEventListener("pointerdown", event => {
+      if (wrapper.classList.contains("is-expanded")) return;
+      activeResizePointer = event.pointerId;
+      resizeStartY = event.clientY;
+      resizeStartHeight = codeArea?.getBoundingClientRect().height || 300;
+      resizeGrip.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+
+    resizeGrip?.addEventListener("pointermove", event => {
+      if (activeResizePointer !== event.pointerId) return;
+      setPythonEditorHeight(resizeStartHeight + event.clientY - resizeStartY);
+    });
+
+    const endResize = event => {
+      if (activeResizePointer === event.pointerId) activeResizePointer = null;
+    };
+    resizeGrip?.addEventListener("pointerup", endResize);
+    resizeGrip?.addEventListener("pointercancel", endResize);
+
+    resizeGrip?.addEventListener("keydown", event => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      event.preventDefault();
+      const currentHeight = codeArea?.getBoundingClientRect().height || 300;
+      setPythonEditorHeight(currentHeight + (event.key === "ArrowDown" ? 24 : -24));
+    });
+
     $("runPythonBtn")?.addEventListener(
       "click",
       runPythonChallenge
     );
+
+    $("expandPythonEditor")?.addEventListener("click", () => {
+      const wrapper = $("pythonEditorWrapper");
+      const button = $("expandPythonEditor");
+      if (!wrapper || !button) return;
+
+      const expanded = !wrapper.classList.contains("is-expanded");
+      wrapper.classList.toggle("is-expanded", expanded);
+      document.body.classList.toggle("python-editor-expanded", expanded);
+      button.setAttribute("aria-expanded", String(expanded));
+      button.textContent = expanded ? "استعادة الحجم" : "ملء الشاشة";
+
+      requestAnimationFrame(() => {
+        editor?.refresh();
+        if (expanded) editor?.focus();
+      });
+    });
+
+    wrapper.addEventListener("keydown", event => {
+      if (event.key !== "Escape" || !wrapper.classList.contains("is-expanded")) return;
+      wrapper.classList.remove("is-expanded");
+      document.body.classList.remove("python-editor-expanded");
+      const button = $("expandPythonEditor");
+      if (button) {
+        button.setAttribute("aria-expanded", "false");
+        button.textContent = "ملء الشاشة";
+      }
+      requestAnimationFrame(() => editor?.refresh());
+    });
 
     $("closePythonEditor")?.addEventListener(
       "click",
@@ -2444,18 +2907,44 @@
           tabSize: 4,
           lineWrapping: true,
           direction: "ltr",
-          viewportMargin: Infinity,
+          viewportMargin: 20,
+          inputStyle: "contenteditable",
+          screenReaderLabel: "محرر كود Python",
           extraKeys: {
-            Tab: (cm) => cm.replaceSelection("    ")
+            Tab: (cm) => {
+              if (cm.somethingSelected()) {
+                cm.indentSelection("add");
+              } else {
+                cm.replaceSelection(" ".repeat(cm.getOption("indentUnit") || 4), "end");
+              }
+            },
+            "Shift-Tab": (cm) => cm.indentSelection("subtract")
           }
         }
       );
 
-      editor.setSize("100%", "360px");
+      setPythonEditorHeight(
+        300
+      );
+
+      const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
+      editorResizeObserver?.disconnect();
+      if (codeArea && typeof ResizeObserver !== "undefined") {
+        editorResizeObserver = new ResizeObserver(entries => {
+          const height = Math.round(entries[0]?.contentRect?.height || 0);
+          if (height >= 210 && editor) {
+            editor.setSize("100%", `${height}px`);
+            document.querySelectorAll("#pythonEditorWrapper [data-editor-height]").forEach(button => {
+              const matchesPreset = Math.abs(Number(button.dataset.editorHeight) - height) <= 4;
+              button.setAttribute("aria-pressed", String(matchesPreset));
+            });
+          }
+        });
+        editorResizeObserver.observe(codeArea);
+      }
 
       requestAnimationFrame(() => {
         editor?.refresh();
-        editor?.focus();
       });
 
     } catch (error) {
@@ -2466,6 +2955,41 @@
 
       editor = null;
     }
+  }
+
+
+  function setPythonEditorHeight(height) {
+    const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
+    const maxHeight = Math.min(720, Math.max(220, Math.floor(window.innerHeight * 0.7)));
+    const requestedHeight = Number(height);
+    const nextHeight = Math.round(Math.max(220, Math.min(
+      maxHeight,
+      Number.isFinite(requestedHeight) ? requestedHeight : 300
+    )));
+    const textarea = $("pythonCodeInput");
+
+    if (codeArea) {
+      codeArea.style.height = `${nextHeight}px`;
+      codeArea.style.flex = "0 0 auto";
+    }
+
+    if (editor) {
+      editor.setSize("100%", `${nextHeight}px`);
+      editor.refresh();
+    } else if (textarea) {
+      textarea.style.height = `${nextHeight}px`;
+      textarea.style.minHeight = "0";
+    }
+
+    document.querySelectorAll("#pythonEditorWrapper [data-editor-height]").forEach(button => {
+      const presetHeight = Number(button.dataset.editorHeight);
+      const available = presetHeight <= maxHeight;
+      button.disabled = !available;
+      button.setAttribute("aria-pressed", String(available && presetHeight === nextHeight));
+    });
+    const grip = $("pythonEditorResizeGrip");
+    grip?.setAttribute("aria-valuenow", String(nextHeight));
+    grip?.setAttribute("aria-valuemax", String(maxHeight));
   }
 
 
@@ -2492,6 +3016,8 @@
 
     if (discardChallenge) {
       $("editorContainer")?.replaceChildren();
+      editorResizeObserver?.disconnect();
+      editorResizeObserver = null;
       editor = null;
       currentChallenge = null;
       currentHintIndex = 0;
@@ -2682,6 +3208,28 @@
   async function checkChallengeResult(programOutput, sourceCode = "") {
     if (!currentChallenge || challengeSolved) return;
 
+    if (currentChallenge.runOnly === true) {
+      const expected = String(
+        currentChallenge.expectedOutput ?? currentChallenge.expected ?? ""
+      ).replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      const actual = String(programOutput)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+
+      if (expected && actual === expected) {
+        challengeSolved = true;
+        addBubble(
+          "cody",
+          renderLessonMarkup(currentChallenge.successMsg || "ممتاز! شغّلت المثال وفهمت ناتجه.")
+        );
+        showBottomAction(true);
+      } else {
+        addBubble("cody", "شغّل المثال مرة أخرى، وقارن الناتج بما توقعته.");
+      }
+      return;
+    }
+
     /*
      * اختبارات الفصل النهائي فقط تستخدم فحص الواجهة؛
      * أما تحديات الدروس العادية فيجب اعتمادها من الخادم.
@@ -2727,11 +3275,17 @@
         return;
       } catch (error) {
         console.error("Python challenge verification failed:", error);
+        const verificationErrorCode = String(error?.code || "")
+          .replace("functions/", "") || "unknown";
+        const verificationErrorMessage = typeof error?.message === "string"
+          ? error.message.slice(0, 180)
+          : "";
+
         addBubble(
           "cody",
-          "تم تشغيل الكود، لكن تعذر التحقق من إجابتك وحفظ إثبات النجاح. تحقق من الاتصال وحاول تشغيل التحدي مرة أخرى."
+          `تم تشغيل الكود، لكن لم يكتمل التحقق وحفظ إثبات النجاح. رمز الخطأ: ${verificationErrorCode}.${verificationErrorMessage ? ` التفاصيل: ${verificationErrorMessage}` : ""} تأكد من الاتصال وحاول مرة أخرى.`
         );
-        showToast("لم يكتمل التحقق من التحدي. لم يتم اعتماد النجاح.");
+        showToast(`تعذر اعتماد النجاح (${verificationErrorCode}).`);
         return;
       }
     }
@@ -2758,20 +3312,22 @@
 
     let passed = false;
 
-    if (customCheck) {
+    if (expectedOutput !== undefined && expectedOutput !== null) {
+      const actual = String(programOutput)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+      const expected = String(expectedOutput)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+      passed = actual === expected;
+    } else if (customCheck) {
       try {
         passed = Boolean(customCheck(sourceCode, programOutput));
       } catch (error) {
         console.warn("تعذر تنفيذ اختبار التحدي:", error);
       }
-    } else {
-      const actual = String(programOutput)
-        .replace(/\r\n/g, "\n")
-        .trim();
-      const expected = String(expectedOutput)
-        .replace(/\\r\\n/g, "\\n")
-        .trim();
-      passed = actual === expected;
     }
 
     if (passed) {
@@ -2796,10 +3352,20 @@
 
     const steps = getLessonSteps(currentLesson);
 
+    if (currentStep && String(currentStep.type || "").toLowerCase() === "game") {
+      const params = new URLSearchParams(window.location.search);
+      const expectedGameFor = getLessonKey(currentChapterId, currentLessonIndex);
+      if (params.get("gameDone") !== "1" || params.get("gameFor") !== expectedGameFor) {
+        showToast("أكمل مهمة كودي أولًا، ثم ارجع للدرس للمتابعة.");
+        return;
+      }
+    }
+
     if (currentStep && (
       currentStep.type === "challenge" ||
       currentStep.type === "code" ||
-      currentStep.type === "coding"
+      currentStep.type === "coding" ||
+      currentStep.type === "example"
     )) {
       if (!challengeSolved) {
         showToast("أكمل التحدي الأول.");
@@ -2832,26 +3398,30 @@
       currentLessonIndex
     );
 
-    let cloudSaved = true;
+    // أعد كتابة سجل الإنجاز حتى يستطيع الخادم إعادة فحص المكافأة
+    // إذا كان الإنجاز المحلي قديمًا ولم يُعتمد سابقًا.
+    const cloudSaved = await saveProgressToFirebase();
 
-    if (!wasCompleted) {
-      cloudSaved = await saveProgressToFirebase();
+    if (!cloudSaved && !wasCompleted) {
+      clearChat();
+      addBubble(
+        "cody",
+        "لم نتمكن من حفظ إكمال الدرس في حسابك الآن. لم نضف نقاطًا أو نعلن اكتمال الدرس. تحقق من اتصال الإنترنت ثم اضغط إعادة المحاولة."
+      );
+      showBottomAction(true, "إعادة المحاولة");
+      return;
+    }
 
-      if (!cloudSaved) {
-        clearChat();
-        addBubble(
-          "cody",
-          "لم نتمكن من حفظ إكمال الدرس في حسابك الآن. لم نضف نقاطًا أو نعلن اكتمال الدرس. تحقق من اتصال الإنترنت ثم اضغط إعادة المحاولة."
-        );
-        showBottomAction(true, "إعادة المحاولة");
-        return;
-      }
-
+    if (!wasCompleted && cloudSaved) {
       // لا نضيف المكافأة المحلية إلا بعد نجاح حفظ سجل التقدم.
       awardLessonReward(
         currentChapterId,
         currentLessonIndex
       );
+    }
+
+    if (cloudSaved) {
+      showToast("تم حفظ الإنجاز في الحساب. سيُحدّث رصيد المكافآت بعد التحقق الخادمي.");
     }
 
     clearChat();
@@ -2872,6 +3442,27 @@
   // ==========================================
   // 20) تحميل الدرس الحالي
   // ==========================================
+
+  function updateCurrentLessonUrl() {
+    const params = new URLSearchParams(window.location.search);
+    params.set("ch", String(currentChapterId));
+    params.set("lesson", String(currentLessonIndex + 1));
+
+    const matchingGameReturn =
+      params.get("gameDone") === "1" &&
+      params.get("gameFor") === getLessonKey(currentChapterId, currentLessonIndex);
+
+    if (!matchingGameReturn) {
+      params.delete("gameDone");
+      params.delete("gameFor");
+    }
+
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
+  }
 
   function loadCurrentLesson() {
     const lessons = getChapterLessons(
@@ -2901,6 +3492,7 @@
 
     if (!currentLesson) return;
 
+    updateCurrentLessonUrl();
     currentStepIndex = 0;
     currentStep = null;
     stepCompleted = false;
@@ -2944,7 +3536,23 @@
       return;
     }
 
-    renderStep(steps[0]);
+    const params = new URLSearchParams(window.location.search);
+    const expectedGameFor = getLessonKey(currentChapterId, currentLessonIndex);
+    const gameStepIndex = steps.findIndex(step =>
+      step && String(step.type || "").toLowerCase() === "game"
+    );
+    const returnedFromMatchingGame =
+      params.get("gameDone") === "1" &&
+      params.get("gameFor") === expectedGameFor &&
+      gameStepIndex >= 0;
+
+    if (returnedFromMatchingGame) {
+      currentStepIndex = gameStepIndex;
+      renderStep(steps[gameStepIndex]);
+      showBottomAction(true, "متابعة بعد اللعبة");
+    } else {
+      renderStep(steps[0]);
+    }
 
     updateProgressDisplay();
     renderChapters();
@@ -3356,11 +3964,17 @@
       true
     );
 
+    completedChapters.add(Number(currentChapterId));
+    saveLocalProgress();
+
     // الامتحان له سجل مستقل حتى لا يُحسب كدرس عادي.
-    await saveProgressToFirebase({
+    const cloudSaved = await saveProgressToFirebase({
       chapter: Number(currentChapterId) - 1,
       lesson: 104
     });
+    if (!cloudSaved) {
+      showToast("تم حفظ نجاح الامتحان على هذا الجهاز، وستتم مزامنته عند عودة الاتصال.");
+    }
   }
 }
 
@@ -3417,7 +4031,8 @@ async function saveProgressToFirebase(position = {}) {
       language: "python",
       chapter,
       lesson,
-      completed: true
+      completed: true,
+      expectedUid: activeUserUid
     });
 
     return true;
@@ -3527,18 +4142,7 @@ function bindPageEvents() {
 // ==========================================
 
 async function loadStudentData() {
-  const xpDisplay = $("xpDisplay");
-  const savedXP = Math.max(
-    Number(readStorage("cody_xp", 0)) || 0,
-    Number(readStorage("cody_python_xp", 0)) || 0
-  );
-
-  if (savedXP > 0) {
-    writeStorage("cody_xp", savedXP);
-    writeStorage("cody_python_xp", savedXP);
-  }
-
-  if (xpDisplay) xpDisplay.textContent = String(savedXP);
+  updateProgressDisplay();
 
   try {
     const [authModule, firebaseModule, firestoreModule, avatarModule] =
@@ -3550,9 +4154,40 @@ async function loadStudentData() {
       ]);
 
     const user = await authModule.requireUser();
+    activeUserUid = user.uid;
+    migrateLegacyPythonStorage(activeUserUid);
+    loadLocalProgressState();
+
+    try {
+      const cloudProgress = await authModule.getLessonProgress("python");
+      for (const record of cloudProgress) {
+        completedLessonKeys.add(
+          getLessonKey(Number(record.chapter) + 1, record.lesson)
+        );
+      }
+    } catch (progressError) {
+      // Continue with this account's own local cache when the network is down.
+      console.warn("تعذر تحميل تقدم Python من السحابة:", progressError);
+    }
+
+    for (const chapterId of getChapterIds()) {
+      const normalLessons = getChapterLessons(chapterId)
+        .map((lesson, index) => ({ lesson, index }))
+        .filter(({ lesson }) => !isExamLesson(lesson));
+      if (normalLessons.length && normalLessons.every(({ index }) =>
+        isLessonCompleted(chapterId, index)
+      )) {
+        completedChapters.add(Number(chapterId));
+      }
+    }
+    saveLocalProgress();
+
     const userRef = firestoreModule.doc(firebaseModule.db, "users", user.uid);
     const snapshot = await firestoreModule.getDoc(userRef);
     const userData = snapshot.exists() ? snapshot.data() : {};
+    accountXP = Number.isSafeInteger(userData.xp) ? userData.xp : 0;
+    accountStars = Number.isSafeInteger(userData.stars) ? userData.stars : 0;
+    updateProgressDisplay();
     const avatars = avatarModule.getAllAvatars();
     const inventory = Array.isArray(userData.inventory) ? userData.inventory : [];
     const activeAvatar = typeof userData.activeAvatar === "string"
@@ -3567,6 +4202,13 @@ async function loadStudentData() {
     avatarModule.installAvatarStyles();
     profileAvatarHTML = avatarModule.renderAvatar(selected?.id || "cody");
 
+    // Keep the selected account avatar visible throughout the lesson, not only
+    // after the learner sends a chat response.
+    const lessonAvatar = $("lessonUserAvatar");
+    if (lessonAvatar) {
+      lessonAvatar.innerHTML = profileAvatarHTML;
+    }
+
     const nameElement = $("studentName");
     if (nameElement) {
       nameElement.textContent = userData.displayName || user.displayName || "المتعلم";
@@ -3578,6 +4220,10 @@ async function loadStudentData() {
     profileAvatarHTML = typeof cached === "string" && cached.trim()
       ? `<img src="${escapeHTML(cached)}" alt="صورة الملف الشخصي">`
       : '<span class="avatar-fallback" aria-label="صورة الملف الشخصي"><i class="ri-user-3-fill"></i></span>';
+    const lessonAvatar = $("lessonUserAvatar");
+    if (lessonAvatar) {
+      lessonAvatar.innerHTML = profileAvatarHTML;
+    }
     return false;
   }
 }
@@ -3625,6 +4271,9 @@ async function initializePythonLesson() {
   updateProgressDisplay();
 
   const firstChapter = getChapterIds()[0];
+  const params = new URLSearchParams(window.location.search);
+  const requestedChapter = Number(params.get("ch"));
+  const requestedLesson = Number(params.get("lesson"));
 
   const savedChapter = Number(
     readStorage(
@@ -3640,14 +4289,18 @@ async function initializePythonLesson() {
     )
   );
 
-  currentChapterId = getChapter(savedChapter)
-    ? savedChapter
-    : firstChapter;
+  currentChapterId = params.has("ch") && getChapter(requestedChapter)
+    ? requestedChapter
+    : getChapter(savedChapter)
+      ? savedChapter
+      : firstChapter;
 
   currentLessonIndex =
-    Number.isInteger(savedLesson) && savedLesson >= 0
-      ? savedLesson
-      : 0;
+    params.has("lesson") && Number.isInteger(requestedLesson) && requestedLesson >= 1
+      ? requestedLesson - 1
+      : Number.isInteger(savedLesson) && savedLesson >= 0
+        ? savedLesson
+        : 0;
 
   if (
     currentLessonIndex >=

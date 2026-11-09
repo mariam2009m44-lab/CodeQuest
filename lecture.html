@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
 
   <style>
     :root {
@@ -266,6 +268,93 @@
       outline-offset: -2px;
     }
 
+    .CodeMirror {
+      resize: vertical;
+      overflow: auto;
+      min-height: 300px;
+      height: auto;
+      direction: ltr;
+      text-align: left;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .CodeMirror-scroll {
+      min-height: 300px;
+    }
+
+    .editor-panel .CodeMirror {
+      width: 100%;
+      min-height: 320px;
+      height: clamp(320px, 52vh, 640px);
+      max-height: 76vh;
+      resize: vertical;
+      overflow: auto;
+      touch-action: pan-y;
+    }
+
+    .editor-panel .CodeMirror-scroll {
+      min-height: 320px;
+    }
+
+    .editor-panel.is-expanded {
+      position: fixed;
+      inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      max-height: none;
+      margin: 0;
+      overflow: auto;
+      background: #0b1220;
+      box-shadow: 0 20px 70px rgba(0,0,0,.6);
+    }
+
+    .editor-panel.is-expanded .CodeMirror {
+      height: 52vh !important;
+      min-height: 280px;
+      max-height: none;
+    }
+
+    .editor-panel.is-expanded .CodeMirror-scroll {
+      min-height: 280px;
+    }
+
+    .editor-expand-btn {
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: #f5f8ff;
+      background: rgba(255,255,255,.06);
+      font-weight: 800;
+    }
+
+    body.editor-panel-open {
+      overflow: hidden;
+    }
+
+    @media (max-width: 800px) {
+      .editor-panel .CodeMirror {
+        height: clamp(300px, 48svh, 520px);
+        min-height: 300px;
+        max-height: 68svh;
+        font-size: 14px;
+      }
+
+      .editor-panel.is-expanded .CodeMirror {
+        height: 48svh !important;
+        min-height: 260px;
+      }
+
+      .editor-expand-btn {
+        min-height: 44px;
+      }
+    }
+
     .terminal {
       min-height: 100px;
       max-height: 300px;
@@ -344,6 +433,44 @@
     }
   </style>
   <link rel="stylesheet" href="css/theme.css">
+<style>
+html[data-theme="light"] {
+  --bg: #F5F7FC;
+  --panel: #FFFFFF;
+  --cyan: #087F9B;
+  --purple: #7652D5;
+  --muted: #64748B;
+  --border: #DCE3EF;
+  --green: #0F9468;
+  --red: #D94862;
+}
+html[data-theme="light"] body {
+  color: #182235;
+  background: radial-gradient(ellipse at 10% 0%, rgba(8,127,155,.06), transparent 40%),
+              radial-gradient(ellipse at 90% 10%, rgba(118,82,213,.06), transparent 40%),
+              var(--bg);
+}
+html[data-theme="light"] .topbar,
+html[data-theme="light"] .lesson-panel,
+html[data-theme="light"] .lesson-card,
+html[data-theme="light"] .panel,
+html[data-theme="light"] .card,
+html[data-theme="light"] .quiz-card,
+html[data-theme="light"] .task-card {
+  background: #FFFFFF;
+  color: #182235;
+  border-color: var(--border);
+}
+html[data-theme="light"] .CodeMirror,
+html[data-theme="light"] textarea {
+  background: #111827;
+  color: #E5EDF8;
+}
+.lesson-user-avatar { width: 42px; height: 42px; flex: 0 0 42px; overflow: hidden; border-radius: 50%; border: 2px solid var(--cyan); background: var(--panel); }
+.lesson-user-avatar .anime-avatar { width: 100%; height: 100%; overflow: hidden; }
+.lesson-user-avatar .anime-character { width: 100%; height: 100%; }
+.lesson-user-avatar .anime-avatar-svg { width: 100%; height: 100%; max-width: none; }
+</style>
 </head>
 
 <body>
@@ -357,6 +484,8 @@
       <i class="ri-robot-2-line"></i>
       <span>Cody Academy</span>
     </a>
+
+    <div class="lesson-user-avatar" id="lessonUserAvatar" aria-label="صورة الحساب"></div>
   </header>
 
   <main class="page">
@@ -446,10 +575,14 @@
         </section>
 
         <section>
-          <article class="panel">
+          <article class="panel editor-panel" id="editorPanel">
             <div class="panel-header">
               <h2><i class="ri-code-s-slash-line"></i> محرر الأكواد</h2>
-              <span class="eyebrow" id="editorLanguage">CODE</span>
+              <div class="editor-toolbar">
+                <span class="eyebrow" id="editorLanguage">CODE</span>
+                <button class="editor-expand-btn" id="editorExpandBtn" type="button"
+                  aria-expanded="false" aria-controls="codeEditor">تكبير المحرر</button>
+              </div>
             </div>
 
             <div class="panel-body" style="padding-bottom:10px">
@@ -522,6 +655,10 @@
   </main>
 
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
   <script type="module" src="./js/lecture.js"></script>
 <script type="module" src="js/reminders.js"></script>
 </body>

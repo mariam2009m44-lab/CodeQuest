@@ -17,7 +17,8 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-import { auth, db } from "./firebase-config.js";
+import { auth, db, functions } from "./firebase-config.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 
 const USERS_COLLECTION = "users";
 const MIN_PASSWORD_LENGTH = 6;
@@ -379,7 +380,8 @@ export async function saveLessonProgress({
   language,
   chapter,
   lesson,
-  completed = true
+  completed = true,
+  expectedUid = null
 }) {
   validateLanguage(language);
   validateLessonPosition(chapter, lesson);
@@ -392,6 +394,10 @@ export async function saveLessonProgress({
 
   if (!user?.uid) {
     throw new Error("سجّل الدخول أولًا لحفظ التقدم.");
+  }
+
+  if (expectedUid && user.uid !== expectedUid) {
+    throw new Error("تغيّر الحساب أثناء مزامنة التقدم؛ أُوقفت العملية لحماية بيانات الحساب.");
   }
 
   try {
@@ -431,6 +437,40 @@ export async function saveLessonProgress({
   } catch (error) {
     throw normalizeError(error);
   }
+}
+
+/**
+ * مزامنة المكافآت التي ثبت اجتيازها على الخادم، ثم إعادة أرصدة الحساب الموثوقة.
+ * العملية آمنة عند تكرارها لأن الخادم يمنع منح المكافأة أكثر من مرة.
+ */
+export async function syncTrustedLessonRewards() {
+  const user = await requireUser();
+  if (!user?.uid) {
+    throw new Error("سجّل الدخول أولًا لمزامنة المكافآت.");
+  }
+
+  const expectedUid = user.uid;
+  const syncRewards = httpsCallable(
+    functions,
+    "syncExistingLessonRewards",
+    { timeout: 120000 }
+  );
+  const response = await syncRewards({});
+  const data = response?.data;
+
+  if (auth.currentUser?.uid !== expectedUid) {
+    throw new Error("تغيّر الحساب أثناء مزامنة المكافآت؛ لم نعرض رصيد حساب آخر.");
+  }
+  if (data?.success !== true) {
+    throw new Error(data?.message || "تعذرت مزامنة مكافآت الحساب.");
+  }
+  if (!Number.isSafeInteger(data.xp) || data.xp < 0 ||
+      !Number.isSafeInteger(data.stars) || data.stars < 0) {
+    throw new Error("أعاد الخادم أرصدة مكافآت غير صالحة.");
+  }
+
+  // Callable returns the trusted profile balances; avoid a second Firestore read.
+  return data;
 }
 
 /**
