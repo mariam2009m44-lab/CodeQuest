@@ -1487,8 +1487,12 @@
           </a>
 
           <div class="stats-badge" title="نقاط الخبرة">
+            <i class="ri-flashlight-fill"></i>
+            <span id="xpDisplay">—</span>
+          </div>
+          <div class="stats-badge stats-stars" title="النجوم">
             <i class="ri-star-fill"></i>
-            <span id="xpDisplay">0</span>
+            <span id="starsDisplay">—</span>
           </div>
 
           <div class="lesson-user-avatar" id="lessonUserAvatar" aria-label="صورة الحساب"></div>
@@ -1640,6 +1644,8 @@
   let editorResizeObserver = null;
 
   let profileAvatarHTML = "";
+  let accountXP = null;
+  let accountStars = null;
 
   let currentExamQuestions = [];
   let currentExamIndex = 0;
@@ -2104,11 +2110,18 @@
     }
 
     const xpDisplay = $("xpDisplay");
+    const starsDisplay = $("starsDisplay");
 
     if (xpDisplay) {
-      xpDisplay.textContent = String(
-        readStorage("cody_xp", 0)
-      );
+      xpDisplay.textContent = accountXP === null
+        ? "—"
+        : String(accountXP);
+    }
+
+    if (starsDisplay) {
+      starsDisplay.textContent = accountStars === null
+        ? "—"
+        : String(accountStars);
     }
   }
 
@@ -2120,41 +2133,16 @@
   function awardLessonReward(chapterId, lessonIndex) {
     const key = getLessonKey(chapterId, lessonIndex);
 
-    if (completedLessonKeys.has(key)) {
-      return false;
-    }
-
+    if (completedLessonKeys.has(key)) return false;
     completedLessonKeys.add(key);
-
-    const legacyXP = Number(
-      readStorage("cody_python_xp", 0)
-    ) || 0;
-
-    const sharedXP = Number(
-      readStorage("cody_xp", 0)
-    ) || 0;
-
-    const oldXP = Math.max(legacyXP, sharedXP);
-    const newXP = oldXP + 10;
-
-    // مفتاح موحد مع صفحة خريطة الفصول، مع ترحيل المفتاح القديم.
-    writeStorage("cody_xp", newXP);
-    writeStorage("cody_python_xp", newXP);
-
     saveLocalProgress();
 
     const lessons = getChapterLessons(chapterId);
-
     const normalLessons = lessons
-      .map((lesson, index) => ({
-        lesson,
-        index
-      }))
+      .map((lesson, index) => ({ lesson, index }))
       .filter(({ lesson }) => !isExamLesson(lesson));
-
     const chapterCompleted = normalLessons.every(
-      ({ index }) =>
-        isLessonCompleted(chapterId, index)
+      ({ index }) => isLessonCompleted(chapterId, index)
     );
 
     if (chapterCompleted) {
@@ -2164,9 +2152,6 @@
 
     updateProgressDisplay();
     renderChapters();
-
-    showToast("أحسنت! حصلت على 10 نقاط خبرة ⭐");
-
     return true;
   }
 
@@ -3036,6 +3021,18 @@
         currentChapterId,
         currentLessonIndex
       );
+
+      try {
+        const authModule = await import("./js/auth.js");
+        const rewards = await authModule.syncTrustedLessonRewards();
+        accountXP = rewards.xp;
+        accountStars = rewards.stars;
+        updateProgressDisplay();
+        showToast("تم حفظ الدرس وتحديث XP والنجوم من حسابك.");
+      } catch (rewardError) {
+        console.warn("تعذر تحديث مكافآت Python من الحساب:", rewardError);
+        showToast("تم حفظ الدرس. تحديث XP والنجوم ينتظر اتصال خدمة المكافآت.");
+      }
     }
 
     clearChat();
@@ -3711,18 +3708,7 @@ function bindPageEvents() {
 // ==========================================
 
 async function loadStudentData() {
-  const xpDisplay = $("xpDisplay");
-  const savedXP = Math.max(
-    Number(readStorage("cody_xp", 0)) || 0,
-    Number(readStorage("cody_python_xp", 0)) || 0
-  );
-
-  if (savedXP > 0) {
-    writeStorage("cody_xp", savedXP);
-    writeStorage("cody_python_xp", savedXP);
-  }
-
-  if (xpDisplay) xpDisplay.textContent = String(savedXP);
+  updateProgressDisplay();
 
   try {
     const [authModule, firebaseModule, firestoreModule, avatarModule] =
@@ -3737,6 +3723,9 @@ async function loadStudentData() {
     const userRef = firestoreModule.doc(firebaseModule.db, "users", user.uid);
     const snapshot = await firestoreModule.getDoc(userRef);
     const userData = snapshot.exists() ? snapshot.data() : {};
+    accountXP = Number.isSafeInteger(userData.xp) ? userData.xp : 0;
+    accountStars = Number.isSafeInteger(userData.stars) ? userData.stars : 0;
+    updateProgressDisplay();
     const avatars = avatarModule.getAllAvatars();
     const inventory = Array.isArray(userData.inventory) ? userData.inventory : [];
     const activeAvatar = typeof userData.activeAvatar === "string"
