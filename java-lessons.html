@@ -1783,12 +1783,18 @@
       }
 
       if (complete) {
-        complete.disabled = done || !challengeVerified || !quizAnswered;
+        complete.disabled =
+          done ||
+          !challengeVerified ||
+          !challengeVerifiedOnServer ||
+          !quizAnswered;
         complete.textContent = done
           ? "تم إكمال الدرس ✓"
-          : (!challengeVerified || !quizAnswered)
-            ? "أكمل التحدي والسؤال أولًا"
-            : "إكمال الدرس";
+          : !challengeVerifiedOnServer
+            ? "تحقق الخادم مطلوب لإكمال الدرس"
+            : (!challengeVerified || !quizAnswered)
+              ? "أكمل التحدي والسؤال أولًا"
+              : "إكمال الدرس";
       }
 
       if (counter && index >= 0) {
