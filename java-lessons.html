@@ -1486,7 +1486,12 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
         return;
       }
 
-      if (quizAnswered) return;
+      if (quizAnswered) {
+        if (challengeVerifiedOnServer && !quizVerifiedOnServer) {
+          await verifySelectedQuizOnServer();
+        }
+        return;
+      }
 
       if (selectedQuizAnswer === lesson.quiz.answer) {
         quizAnswered = true;
