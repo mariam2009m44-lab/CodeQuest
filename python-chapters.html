@@ -330,7 +330,7 @@
     function renderXp() {
       const sharedXP = localStorage.getItem(XP_KEY);
       const legacyXP = localStorage.getItem("cody_python_xp");
-      const value = accountXP ?? Number(sharedXP ?? legacyXP ?? 0) || 0;
+      const value = accountXP ?? (Number(sharedXP ?? legacyXP ?? 0) || 0);
       document.getElementById("xpDisplay").textContent = String(value);
     }
 
