@@ -29,6 +29,7 @@
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 auto 16px}
     .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.15rem;color:var(--cyan)}
     .brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#7955e8,#36bfe5);color:white;font-size:1.45rem;box-shadow:0 8px 24px #36bfe533}
+    [hidden]{display:none!important}
     .nav-actions{display:flex;gap:8px;flex-wrap:wrap}
     .nav-btn,.action-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 15px;border:1px solid var(--line);border-radius:13px;background:#ffffff08;color:var(--text);text-decoration:none;font-weight:800;cursor:pointer}
     .nav-btn:hover,.action-btn:hover{border-color:var(--cyan);background:#36bfe51a}
@@ -115,6 +116,7 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark"><i class="ri-robot-2-line" aria-hidden="true"></i></span><span>Cody Academy</span></div>
       <nav class="nav-actions" aria-label="التنقل">
+        <a class="nav-btn" id="returnLessonLink" href="#" hidden aria-label="العودة إلى الدرس"><i class="ri-arrow-go-back-line" aria-hidden="true"></i><span>العودة للدرس</span></a>
         <a class="nav-btn" href="games.html" aria-label="العودة إلى مركز الألعاب"><i class="ri-gamepad-line" aria-hidden="true"></i><span>مركز الألعاب</span></a>
         <a class="nav-btn" href="dashboard.html" aria-label="العودة إلى الصفحة الرئيسية"><i class="ri-home-5-line" aria-hidden="true"></i><span>الرئيسية</span></a>
       </nav>
@@ -218,6 +220,17 @@
       catch{completed=new Set();}
     }
     readCompleted();
+
+    const returnLessonPath = new URLSearchParams(window.location.search).get("return") || "";
+    const validReturnLessonPath = /^python-lesson\.html\?ch=\d{1,2}&lesson=\d{1,2}&gameFor=\d{1,2}_\d{1,2}$/.test(returnLessonPath);
+
+    function updateReturnLessonLink(){
+      const link=$("returnLessonLink");
+      if(!link||!validReturnLessonPath||!completed.has(0))return;
+      link.href=returnLessonPath+"&gameDone=1";
+      link.hidden=false;
+    }
+    updateReturnLessonLink();
 
     function buildLevelButtons(){
       const restoreFocus=document.activeElement?.classList.contains("level-pill");
@@ -441,6 +454,7 @@
       if(reached&&allGems){
         score+=100;completed.add(levelIndex);
         safeStorageSet("cody3dCompleted",JSON.stringify([...completed]));
+        updateReturnLessonLink();
         bestScore=Math.max(bestScore,score);safeStorageSet("cody3dBestScore",String(bestScore));
         const totalScore=Number(safeStorageGet("codyTotalScore","0"))||0;
         safeStorageSet("codyTotalScore",totalScore+score);
