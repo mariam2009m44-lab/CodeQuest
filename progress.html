@@ -810,7 +810,8 @@
               lesson: Number(match[2]) - 1,
               completed: true,
               updatedAt: value.completedAt || null,
-              localOnly: value.localOnly === true
+              localOnly: value.localOnly === true,
+              serverVerified: value.serverVerified === true && value.localOnly !== true
             }];
           });
         }
@@ -824,7 +825,11 @@
               item?.completed === true &&
               Number.isSafeInteger(item.chapter) && item.chapter >= 0 &&
               Number.isSafeInteger(item.lesson) && item.lesson >= 0
-            ).map(item => ({ ...item, language }))
+            ).map(item => ({
+              ...item,
+              language,
+              serverVerified: item.serverVerified === true
+            }))
           : [];
       } catch (error) {
         console.warn(`تعذر قراءة التقدم المحلي للغة ${language}:`, error);
@@ -852,6 +857,11 @@
         for (const record of localRecords) {
           const key = `${record.chapter}:${record.lesson}`;
           if (cloudKeys.has(key)) continue;
+
+          // Local completion is useful for display, but only a record carrying
+          // an explicit server-verification flag may be copied into Firestore.
+          if (record.serverVerified !== true) continue;
+
           try {
             await saveLessonProgress({
               language,
