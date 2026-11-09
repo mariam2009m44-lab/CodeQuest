@@ -419,6 +419,41 @@
       cursor: not-allowed;
     }
 
+    .game-step-card {
+      width: min(100%, 620px);
+      margin: 0 55px 12px 0;
+      padding: 16px;
+      border: 1px solid rgba(54,191,229,.3);
+      border-radius: 16px;
+      background: linear-gradient(145deg, rgba(26,43,68,.96), rgba(15,26,44,.96));
+    }
+
+    .game-step-link {
+      display: flex;
+      min-height: 54px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 13px;
+      color: #fff;
+      background: linear-gradient(110deg,#7955e8,#5368df 55%,#36bfe5);
+      font-weight: 900;
+      text-decoration: none;
+      touch-action: manipulation;
+    }
+
+    .game-step-note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.8;
+    }
+
+    @media(max-width:900px) {
+      .game-step-card { width:100%; margin-inline:0; }
+    }
+
     /* محرر بايثون */
 
     .editor-wrapper {
@@ -2398,6 +2433,34 @@ html[data-theme="light"] .bottom-action {
 
     const text = getStepText(step);
 
+    if (type === "game") {
+      addBubble(
+        "cody",
+        renderLessonMarkup(text || "حان وقت تحدي كودي العملي!")
+      );
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "game-step-card";
+
+      const link = document.createElement("a");
+      link.className = "game-step-link";
+      link.href = `game-3d.html?return=${encodeURIComponent(
+        `python-lesson.html?ch=${currentChapterId}&lesson=${currentLessonIndex + 1}&gameFor=${getLessonKey(currentChapterId, currentLessonIndex)}`
+      )}`;
+      link.textContent = step.buttonText || "ابدأ مهمة كودي ثلاثية الأبعاد";
+      link.setAttribute("aria-label", "ابدأ تحدي كودي ثلاثي الأبعاد ثم ارجع للدرس");
+
+      const note = document.createElement("p");
+      note.className = "game-step-note";
+      note.textContent = "أكمل المهمة الأولى، ثم استخدم زر العودة للدرس لمتابعة التعلم.";
+
+      wrapper.append(link, note);
+      chatContainer.appendChild(wrapper);
+      scrollChatToBottom();
+      showBottomAction(true, "متابعة بعد اللعبة");
+      return;
+    }
+
     if (
       type === "challenge" ||
       type === "code" ||
@@ -3185,6 +3248,15 @@ html[data-theme="light"] .bottom-action {
 
     const steps = getLessonSteps(currentLesson);
 
+    if (currentStep && String(currentStep.type || "").toLowerCase() === "game") {
+      const params = new URLSearchParams(window.location.search);
+      const expectedGameFor = getLessonKey(currentChapterId, currentLessonIndex);
+      if (params.get("gameDone") !== "1" || params.get("gameFor") !== expectedGameFor) {
+        showToast("أكمل مهمة كودي أولًا، ثم ارجع للدرس للمتابعة.");
+        return;
+      }
+    }
+
     if (currentStep && (
       currentStep.type === "challenge" ||
       currentStep.type === "code" ||
@@ -3337,7 +3409,23 @@ html[data-theme="light"] .bottom-action {
       return;
     }
 
-    renderStep(steps[0]);
+    const params = new URLSearchParams(window.location.search);
+    const expectedGameFor = getLessonKey(currentChapterId, currentLessonIndex);
+    const gameStepIndex = steps.findIndex(step =>
+      step && String(step.type || "").toLowerCase() === "game"
+    );
+    const returnedFromMatchingGame =
+      params.get("gameDone") === "1" &&
+      params.get("gameFor") === expectedGameFor &&
+      gameStepIndex >= 0;
+
+    if (returnedFromMatchingGame) {
+      currentStepIndex = gameStepIndex;
+      renderStep(steps[gameStepIndex]);
+      showBottomAction(true, "متابعة بعد اللعبة");
+    } else {
+      renderStep(steps[0]);
+    }
 
     updateProgressDisplay();
     renderChapters();
@@ -4056,6 +4144,9 @@ async function initializePythonLesson() {
   updateProgressDisplay();
 
   const firstChapter = getChapterIds()[0];
+  const params = new URLSearchParams(window.location.search);
+  const requestedChapter = Number(params.get("ch"));
+  const requestedLesson = Number(params.get("lesson"));
 
   const savedChapter = Number(
     readStorage(
@@ -4071,14 +4162,18 @@ async function initializePythonLesson() {
     )
   );
 
-  currentChapterId = getChapter(savedChapter)
-    ? savedChapter
-    : firstChapter;
+  currentChapterId = params.has("ch") && getChapter(requestedChapter)
+    ? requestedChapter
+    : getChapter(savedChapter)
+      ? savedChapter
+      : firstChapter;
 
   currentLessonIndex =
-    Number.isInteger(savedLesson) && savedLesson >= 0
-      ? savedLesson
-      : 0;
+    params.has("lesson") && Number.isInteger(requestedLesson) && requestedLesson >= 1
+      ? requestedLesson - 1
+      : Number.isInteger(savedLesson) && savedLesson >= 0
+        ? savedLesson
+        : 0;
 
   if (
     currentLessonIndex >=
