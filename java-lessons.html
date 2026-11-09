@@ -1328,6 +1328,41 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       }
     }
 
+    async function syncPendingJavaProgress() {
+      const syncUid = currentUserId;
+      if (!syncUid) return;
+      const progress = readProgress();
+      let changed = false;
+
+      for (const [lessonId, record] of Object.entries(progress)) {
+        if (record?.completed !== true || record.localOnly !== true || record.serverVerified !== true) continue;
+        const position = /^java-(\d+)-(\d+)$/.exec(lessonId);
+        if (!position) continue;
+
+        try {
+          await saveLessonProgress({
+            language: "java",
+            chapter: Number(position[1]) - 1,
+            lesson: Number(position[2]) - 1,
+            completed: true,
+            expectedUid: syncUid
+          });
+          if (currentUserId !== syncUid) return;
+          delete record.localOnly;
+          progress[lessonId] = record;
+          changed = true;
+        } catch (error) {
+          console.warn("تعذرت مزامنة إنجاز Java موثّق:", lessonId, error);
+        }
+      }
+
+      if (changed && currentUserId === syncUid) {
+        saveProgress(progress);
+        updateStats();
+        updateNavigationButtons();
+      }
+    }
+
     function getXP() {
       return accountXP === null
         ? Number(localStorage.getItem(XP_KEY) || 0)
@@ -1959,7 +1994,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
           ...previousRecord,
           completed: true,
           completedAt: previousRecord.completedAt || new Date().toISOString(),
-          localOnly: true
+          localOnly: true,
+          serverVerified: hasTrustedProof
         };
         saveProgress(progress);
         updateStats();
@@ -1976,7 +2012,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const savedRecord = {
         ...previousRecord,
         completed: true,
-        completedAt: previousRecord.completedAt || new Date().toISOString()
+        completedAt: previousRecord.completedAt || new Date().toISOString(),
+        serverVerified: true
       };
       delete savedRecord.localOnly;
       progress[lesson.id] = savedRecord;
@@ -2174,11 +2211,14 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             const lessonId = `java-${record.chapter + 1}-${record.lesson + 1}`;
             progress[lessonId] = {
               ...(progress[lessonId] || {}),
-              completed: true
+              completed: true,
+              serverVerified: true
             };
+            delete progress[lessonId].localOnly;
           });
 
           saveProgress(progress);
+          void syncPendingJavaProgress();
         } catch (syncError) {
           console.warn("تعذر استعادة تقدم Java من الحساب؛ سيتم عرض التقدم المحلي:", syncError);
         }
