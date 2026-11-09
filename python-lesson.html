@@ -436,7 +436,7 @@
       display: flex;
     }
 
-    .editor-wrapper.is-expanded {
+    .editor-wrapper.show.is-expanded {
       position: fixed;
       inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
         max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
@@ -450,7 +450,7 @@
       box-shadow: 0 20px 70px rgba(0,0,0,.65);
     }
 
-    .editor-wrapper.is-expanded .code-area {
+    .editor-wrapper.show.is-expanded .code-area {
       flex: 1 1 auto;
       height: auto !important;
       min-height: 250px;
@@ -458,14 +458,14 @@
       resize: none;
     }
 
-    .editor-wrapper.is-expanded .CodeMirror,
-    .editor-wrapper.is-expanded .CodeMirror-scroll,
-    .editor-wrapper.is-expanded .code-fallback {
+    .editor-wrapper.show.is-expanded .CodeMirror,
+    .editor-wrapper.show.is-expanded .CodeMirror-scroll,
+    .editor-wrapper.show.is-expanded .code-fallback {
       min-height: 250px;
       max-height: none;
     }
 
-    .editor-wrapper.is-expanded .CodeMirror {
+    .editor-wrapper.show.is-expanded .CodeMirror {
       height: 100% !important;
     }
 
@@ -2681,24 +2681,22 @@ html[data-theme="light"] .bottom-action {
       });
     });
 
+    wrapper.addEventListener("keydown", event => {
+      if (event.key !== "Escape" || !wrapper.classList.contains("is-expanded")) return;
+      wrapper.classList.remove("is-expanded");
+      document.body.classList.remove("python-editor-expanded");
+      const button = $("expandPythonEditor");
+      if (button) {
+        button.setAttribute("aria-expanded", "false");
+        button.textContent = "ملء الشاشة";
+      }
+      requestAnimationFrame(() => editor?.refresh());
+    });
+
     $("closePythonEditor")?.addEventListener(
       "click",
       closeEditor
     );
-
-    document.addEventListener("keydown", event => {
-      const wrapper = $("pythonEditorWrapper");
-      if (event.key === "Escape" && wrapper?.classList.contains("is-expanded")) {
-        wrapper.classList.remove("is-expanded");
-        document.body.classList.remove("python-editor-expanded");
-        const button = $("expandPythonEditor");
-        if (button) {
-          button.setAttribute("aria-expanded", "false");
-          button.textContent = "ملء الشاشة";
-        }
-        requestAnimationFrame(() => editor?.refresh());
-      }
-    });
 
     $("showPythonHint")?.addEventListener(
       "click",
