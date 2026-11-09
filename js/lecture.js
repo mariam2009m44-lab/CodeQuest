@@ -1644,7 +1644,9 @@ async function initializeLecture() {
     if (!currentUser) return;
 
     await loadLessonAvatar();
-    await syncLocalProgressToCloud();
+    void syncLocalProgressToCloud().catch(error => {
+      console.warn("تعذرت مزامنة التقدم المحلي:", error);
+    });
     await loadCurriculum();
 
     initializeEditor();
