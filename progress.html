@@ -839,7 +839,9 @@
 
     function mergeProgressRecords(cloudRecords, localRecords) {
       const merged = new Map();
-      for (const record of [...cloudRecords, ...localRecords]) {
+      // Prefer cloud records last so Firestore timestamps remain available
+      // for activity history when a local copy has no updatedAt field.
+      for (const record of [...localRecords, ...cloudRecords]) {
         if (record?.completed !== true) continue;
         merged.set(`${record.chapter}:${record.lesson}`, record);
       }
