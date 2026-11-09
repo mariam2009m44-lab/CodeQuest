@@ -430,7 +430,8 @@ async function syncLocalProgressToCloud() {
         language: languageKey,
         chapter: item.chapter,
         lesson: item.lesson,
-        completed: true
+        completed: true,
+        expectedUid: syncUid
       });
     } catch (error) {
       console.warn("تعذرت مزامنة إنجاز محلي موثّق:", item, error);
@@ -801,7 +802,8 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
         language: languageKey,
         chapter: chapterIndex,
         lesson: lessonIndex,
-        completed: true
+        completed: true,
+        expectedUid: currentUser?.uid
       });
     }
 
