@@ -9,7 +9,7 @@ import { auth } from "./firebase-config.js";
 import { requireUser } from "./auth.js";
 
 const CODE_RUNNER_URL =
-  "https://codequest.mariam2009m44.workers.dev";
+  "https://fix-cloudflare-code-runner-codequest.mariam2009m44.workers.dev";
 
 const verifyJavaCallable = httpsCallable(
   functions,
