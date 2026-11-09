@@ -436,6 +436,54 @@
       display: flex;
     }
 
+    .editor-wrapper.is-expanded {
+      position: fixed;
+      inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      z-index: 2700;
+      width: auto;
+      height: auto;
+      min-height: 0;
+      max-height: none;
+      margin: 0;
+      border-radius: 16px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.65);
+    }
+
+    .editor-wrapper.is-expanded .code-area {
+      flex: 1 1 auto;
+      height: auto !important;
+      min-height: 250px;
+      max-height: none;
+      resize: none;
+    }
+
+    .editor-wrapper.is-expanded .CodeMirror,
+    .editor-wrapper.is-expanded .CodeMirror-scroll,
+    .editor-wrapper.is-expanded .code-fallback {
+      min-height: 250px;
+      max-height: none;
+    }
+
+    .editor-wrapper.is-expanded .CodeMirror {
+      height: 100% !important;
+    }
+
+    body.python-editor-expanded {
+      overflow: hidden;
+    }
+
+    .editor-expand-btn {
+      min-height: 40px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
     .editor-header {
       display: flex;
       align-items: center;
@@ -2511,6 +2559,14 @@ html[data-theme="light"] .bottom-action {
 
           <button
             type="button"
+            class="editor-expand-btn"
+            id="expandPythonEditor"
+            aria-expanded="false"
+            aria-controls="pythonCodeInput"
+          >ملء الشاشة</button>
+
+          <button
+            type="button"
             class="editor-close-btn"
             id="closePythonEditor"
             aria-label="إغلاق المحرر"
@@ -2608,10 +2664,41 @@ html[data-theme="light"] .bottom-action {
       runPythonChallenge
     );
 
+    $("expandPythonEditor")?.addEventListener("click", () => {
+      const wrapper = $("pythonEditorWrapper");
+      const button = $("expandPythonEditor");
+      if (!wrapper || !button) return;
+
+      const expanded = !wrapper.classList.contains("is-expanded");
+      wrapper.classList.toggle("is-expanded", expanded);
+      document.body.classList.toggle("python-editor-expanded", expanded);
+      button.setAttribute("aria-expanded", String(expanded));
+      button.textContent = expanded ? "استعادة الحجم" : "ملء الشاشة";
+
+      requestAnimationFrame(() => {
+        editor?.refresh();
+        if (expanded) editor?.focus();
+      });
+    });
+
     $("closePythonEditor")?.addEventListener(
       "click",
       closeEditor
     );
+
+    document.addEventListener("keydown", event => {
+      const wrapper = $("pythonEditorWrapper");
+      if (event.key === "Escape" && wrapper?.classList.contains("is-expanded")) {
+        wrapper.classList.remove("is-expanded");
+        document.body.classList.remove("python-editor-expanded");
+        const button = $("expandPythonEditor");
+        if (button) {
+          button.setAttribute("aria-expanded", "false");
+          button.textContent = "ملء الشاشة";
+        }
+        requestAnimationFrame(() => editor?.refresh());
+      }
+    });
 
     $("showPythonHint")?.addEventListener(
       "click",
