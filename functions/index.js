@@ -421,19 +421,25 @@ exports.verifyJavaChallenge = onCall(
     const resultRef = db.collection("users").doc(uid)
       .collection("quizResults").doc("lesson_" + lessonId);
 
-    await resultRef.set({
-      verificationVersion: 1,
-      serverVerified: true,
-      passed: false,
-      challengeVerified: true,
-      quizVerified: false,
-      uid,
-      lessonId,
-      language: "java",
-      chapter,
-      lesson,
-      verificationType: "java-challenge",
-      verifiedAt: FieldValue.serverTimestamp()
+    await db.runTransaction(async transaction => {
+      const existingSnapshot = await transaction.get(resultRef);
+      const existing = existingSnapshot.exists ? existingSnapshot.data() || {} : {};
+      const quizAlreadyVerified = existing.quizVerified === true;
+
+      transaction.set(resultRef, {
+        verificationVersion: 1,
+        serverVerified: true,
+        passed: quizAlreadyVerified,
+        challengeVerified: true,
+        quizVerified: quizAlreadyVerified,
+        uid,
+        lessonId,
+        language: "java",
+        chapter,
+        lesson,
+        verificationType: "java-challenge",
+        verifiedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
     });
 
     return {
@@ -1079,9 +1085,11 @@ exports.awardLessonReward = onDocumentWritten(
       ? before.data() || {}
       : {};
 
-    if (oldData.completed === true) return;
     if (newData.completed !== true) return;
 
+    // Re-check even when the progress document was already complete:
+    // a later successful server verification may make its reward eligible.
+    // awardCompletedLesson is idempotent through the gameRewards document.
     await awardCompletedLesson(
       event.params.uid,
       event.params.lessonId,
