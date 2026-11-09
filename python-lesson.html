@@ -2556,15 +2556,22 @@
           tabSize: 4,
           lineWrapping: true,
           direction: "ltr",
-          viewportMargin: Infinity,
+          viewportMargin: 20,
           extraKeys: {
-            Tab: (cm) => cm.replaceSelection("    ")
+            Tab: (cm) => {
+              if (cm.somethingSelected()) {
+                cm.indentSelection("add");
+              } else {
+                cm.replaceSelection(" ".repeat(cm.getOption("indentUnit") || 4), "end");
+              }
+            },
+            "Shift-Tab": (cm) => cm.indentSelection("subtract")
           }
         }
       );
 
       setPythonEditorHeight(
-        window.matchMedia("(max-width: 900px)").matches ? 260 : 320
+        300
       );
 
       requestAnimationFrame(() => {
