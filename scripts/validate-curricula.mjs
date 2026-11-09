@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 
 const curriculumFiles = [
   ["python", "json/python_curriculum.json"],
@@ -100,6 +101,98 @@ for (const [language, filename] of curriculumFiles) {
 
   summary.push({ language, chapters: data.chapters.length, lessons: lessonCount });
 }
+
+// Validate the active Python route as well as the separate JSON curriculum.
+// Chapter files only construct data objects; their challenge callbacks are not executed here.
+const activePythonWindow = { CHAPTERS: {} };
+for (let chapterId = 1; chapterId <= 12; chapterId += 1) {
+  const filename = `js/chapters/ch${chapterId}.js`;
+  try {
+    const source = fs.readFileSync(path.resolve(filename), "utf8");
+    vm.runInNewContext(source, { window: activePythonWindow }, {
+      filename,
+      timeout: 1000
+    });
+  } catch (error) {
+    fail(`${filename}: cannot load chapter data (${error.message})`);
+  }
+}
+
+let activePythonLessons = 0;
+let activePythonExams = 0;
+for (let chapterId = 1; chapterId <= 12; chapterId += 1) {
+  const chapter = activePythonWindow.CHAPTERS[chapterId];
+  if (!chapter || !Array.isArray(chapter.lessons) || chapter.lessons.length === 0) {
+    fail(`Active Python chapter ${chapterId}: no lessons found`);
+    continue;
+  }
+
+  chapter.lessons.forEach((lesson, lessonIndex) => {
+    const label = `Active Python chapter ${chapterId}, lesson ${lessonIndex + 1}`;
+    if (!lesson || typeof lesson.title !== "string" || !lesson.title.trim()) {
+      fail(`${label}: missing title`);
+    }
+    if (!Array.isArray(lesson?.steps) || lesson.steps.length === 0) {
+      fail(`${label}: missing lesson steps`);
+      return;
+    }
+
+    const types = lesson.steps.map(step => String(step?.type || "text").toLowerCase());
+    const challenges = lesson.steps.filter(step =>
+      ["challenge", "code", "coding"].includes(String(step?.type || "").toLowerCase())
+    );
+    const quizzes = lesson.steps.filter(step =>
+      ["quiz", "question"].includes(String(step?.type || "").toLowerCase())
+    );
+
+    if (!challenges.length) fail(`${label}: needs at least one coding challenge`);
+    for (const challenge of challenges) {
+      if (
+        typeof challenge.expected !== "string" ||
+        typeof challenge.defaultCode !== "string" ||
+        typeof challenge.check !== "function"
+      ) {
+        fail(`${label}: challenge is missing expected output, starter code, or checker`);
+      }
+    }
+
+    for (const quiz of quizzes) {
+      if (
+        typeof quiz.question !== "string" ||
+        !Array.isArray(quiz.options) ||
+        quiz.options.length < 2 ||
+        !Number.isInteger(quiz.correct) ||
+        quiz.correct < 0 ||
+        quiz.correct >= quiz.options.length
+      ) {
+        fail(`${label}: invalid quiz step`);
+      }
+    }
+
+    for (const type of types) {
+      if (!["cody", "choice", "challenge", "code", "coding", "quiz", "question", "game", "text"].includes(type)) {
+        fail(`${label}: unsupported step type "${type}"`);
+      }
+    }
+
+    if (types.includes("game")) {
+      const gameStep = lesson.steps.find(step => String(step?.type || "").toLowerCase() === "game");
+      if (typeof gameStep?.text !== "string" || !gameStep.text.trim()) {
+        fail(`${label}: game step needs explanatory text`);
+      }
+    }
+
+    if (lessonIndex === chapter.lessons.length - 1) activePythonExams += 1;
+    else activePythonLessons += 1;
+  });
+}
+
+summary.push({
+  language: "python-active",
+  chapters: 12,
+  lessons: activePythonLessons,
+  chapterExams: activePythonExams
+});
 
 if (failures.length) {
   console.error("Curriculum validation failed:");
