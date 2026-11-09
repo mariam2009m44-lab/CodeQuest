@@ -3735,11 +3735,16 @@ async function loadStudentData() {
     activeUserUid = user.uid;
     loadLocalProgressState();
 
-    const cloudProgress = await authModule.getLessonProgress("python");
-    for (const record of cloudProgress) {
-      completedLessonKeys.add(
-        getLessonKey(Number(record.chapter) + 1, record.lesson)
-      );
+    try {
+      const cloudProgress = await authModule.getLessonProgress("python");
+      for (const record of cloudProgress) {
+        completedLessonKeys.add(
+          getLessonKey(Number(record.chapter) + 1, record.lesson)
+        );
+      }
+    } catch (progressError) {
+      // Continue with this account's own local cache when the network is down.
+      console.warn("تعذر تحميل تقدم Python من السحابة:", progressError);
     }
 
     for (const chapterId of getChapterIds()) {
