@@ -22,7 +22,7 @@ for (const [index, video] of videos.entries()) {
   if (typeof video.youtubeId !== "string" || !/^[A-Za-z0-9_-]{11}$/.test(video.youtubeId)) {
     throw new Error("Video " + index + " needs a valid 11-character YouTube ID.");
   }
-  for (const key of ["description", "category", "level"]) {
+  for (const key of ["description", "category", "level", "duration"]) {
     if (video[key] !== undefined && typeof video[key] !== "string") {
       throw new Error("Video " + index + " has invalid " + key + ".");
     }
@@ -52,7 +52,21 @@ if (mediaScript.includes("codyMusicToggle") || mediaScript.includes("audioContex
   throw new Error("Homepage media script must not mount a floating music control.");
 }
 const settings = fs.readFileSync("settings.html", "utf8");
-if (!settings.includes('id="musicToggle"') || !settings.includes('id="musicVolume"')) {
-  throw new Error("Music preferences must be available in Settings.");
+if (settings.includes('id="musicToggle"') || settings.includes("cq_music")) {
+  throw new Error("Background music must be removed from the platform.");
+}
+if (!settings.includes('id="soundToggle"')) {
+  throw new Error("Sound effects must remain configurable in Settings.");
+}
+const gameAudio = fs.readFileSync("js/game-audio.js", "utf8");
+if (!gameAudio.includes("cq-game-sound-toggle") || gameAudio.includes("cq_music")) {
+  throw new Error("Games need a top-positioned sound-only toggle, without music.");
+}
+if (!mediaScript.includes("learningVideoFilters")) {
+  throw new Error("Editorial video magazine filters are missing.");
+}
+const parent = fs.readFileSync("parent.html", "utf8");
+if (!parent.includes('id="parentGuideTitle"') || parent.indexOf('id="parentGuideTitle"') > parent.indexOf('class="mode-grid"')) {
+  throw new Error("Parent introduction must appear before account linking.");
 }
 console.log("Dashboard media integration validated.");
