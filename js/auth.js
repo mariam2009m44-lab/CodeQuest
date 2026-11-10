@@ -262,11 +262,17 @@ export async function registerUser(name, email, password) {
 /**
  * تحديث اسم العرض في Firebase Authentication وملف Firestore.
  */
-export async function updateCurrentUserName(name) {
+export async function updateCurrentUserName(name, expectedUid = null) {
   const cleanName = normalizeName(name);
   validateName(cleanName);
+
   const user = auth.currentUser;
   if (!user?.uid) throw new Error("سجّل الدخول أولًا لتعديل الاسم.");
+  if (expectedUid && user.uid !== expectedUid) {
+    throw new Error("تغيّر الحساب قبل حفظ الاسم؛ أُوقفت العملية لحماية بيانات الحساب.");
+  }
+
+  const targetUid = user.uid;
 
   try {
     await updateProfile(user, { displayName: cleanName });
@@ -274,8 +280,13 @@ export async function updateCurrentUserName(name) {
     throw normalizeError(error);
   }
 
+  // لا نكتب في ملف Firestore إذا تبدلت جلسة الدخول أثناء تحديث Auth.
+  if (auth.currentUser?.uid !== targetUid) {
+    throw new Error("تغيّر الحساب أثناء حفظ الاسم؛ لم يتم تحديث ملف الحساب الآخر.");
+  }
+
   try {
-    await updateDoc(doc(db, USERS_COLLECTION, user.uid), {
+    await updateDoc(doc(db, USERS_COLLECTION, targetUid), {
       displayName: cleanName,
       updatedAt: serverTimestamp()
     });
