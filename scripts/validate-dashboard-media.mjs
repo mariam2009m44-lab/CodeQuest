@@ -30,15 +30,15 @@ for (const [index, video] of videos.entries()) {
   }
 }
 
-const inlineScripts = [...html.matchAll(/<script(?:\\s+type="module")?>([\\s\\S]*?)<\\/script>/g)];
+const inlineScripts = [...html.matchAll(/<script(?:\s+type="module")?>([\s\S]*?)<\/script>/g)];
 if (!inlineScripts.length) throw new Error("Dashboard inline script not found.");
-fs.writeFileSync("/tmp/codequest-dashboard-inline.mjs", inlineScripts.map(match => match[1]).join("\\n"));
+fs.writeFileSync("/tmp/codequest-dashboard-inline.mjs", inlineScripts.map(match => match[1]).join("\n"));
 
-const localRefs = [...html.matchAll(/(?:href|src)\\s*=\\s*["']([^"'<>]+)["']/gi)];
+const localRefs = [...html.matchAll(/(?:href|src)\s*=\s*["']([^"'<>]+)["']/gi)];
 for (const match of localRefs) {
   const raw = match[1].trim();
-  if (!raw || /^(?:#|https?:|mailto:|tel:|javascript:|data:|blob:|\\/\\/)/i.test(raw)) continue;
-  const target = raw.split(/[?#]/)[0].replace(/^\\//, "");
+  if (!raw || /^(?:#|https?:|mailto:|tel:|javascript:|data:|blob:|\/\/)/i.test(raw)) continue;
+  const target = raw.split(/[?#]/)[0].replace(/^\//, "");
   if (target && !fs.existsSync(path.resolve(target))) {
     throw new Error("Missing local dashboard asset: " + raw);
   }
