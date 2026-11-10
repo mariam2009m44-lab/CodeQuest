@@ -1,8 +1,10 @@
+import os
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path.cwd()
+IGNORED_DIRS = {".git", "node_modules", "dist", "build", ".wrangler", ".venv", "__pycache__"}
 
 class LocalReferenceParser(HTMLParser):
     def __init__(self, source):
@@ -15,10 +17,18 @@ class LocalReferenceParser(HTMLParser):
             if name in {"href", "src"} and value:
                 self.references.append((name, value.strip()))
 
-pages = sorted(ROOT.rglob("*.html"))
+pages = []
+for current, directories, filenames in os.walk(ROOT):
+    directories[:] = [name for name in directories if name not in IGNORED_DIRS]
+    pages.extend(
+        Path(current) / filename
+        for filename in filenames
+        if filename.endswith(".html")
+    )
+
 missing = []
 
-for page in pages:
+for page in sorted(pages):
     parser = LocalReferenceParser(page)
     try:
         parser.feed(page.read_text(encoding="utf-8"))
