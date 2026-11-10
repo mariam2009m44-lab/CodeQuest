@@ -687,7 +687,7 @@ export default {
 
       let body;
       try {
-        body = await readBoundedJson(request, 24000);
+        body = await readBoundedJson(request, 49152);
       } catch {
         return jsonResponse({ success: false, message: "بيانات المحادثة غير صالحة." }, 400, origin);
       }
