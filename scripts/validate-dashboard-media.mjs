@@ -1,32 +1,55 @@
 import fs from "node:fs";
 
 const html = fs.readFileSync("dashboard.html", "utf8");
-const mediaScript = fs.readFileSync("js/dashboard-media.js", "utf8");
-const videos = JSON.parse(fs.readFileSync("json/learning-videos.json", "utf8"));
+const magazineScript = fs.readFileSync("js/learning-magazine.js", "utf8");
+const magazineCss = fs.readFileSync("css/learning-magazine.css", "utf8");
+const magazine = JSON.parse(fs.readFileSync("json/learning-videos.json", "utf8"));
 
 for (const marker of [
-  'id="learningVideos"',
-  'id="learningVideosGrid"',
-  'id="codyChatLauncher"',
-  'css/dashboard-media.css',
-  'js/dashboard-media.js'
+  'id="learningMagazine"',
+  'id="magazineHeroImage"',
+  'id="magazineHeroDots"',
+  'id="magazineSeriesGrid"',
+  'css/learning-magazine.css',
+  'js/learning-magazine.js'
 ]) {
-  if (!html.includes(marker)) throw new Error("Missing dashboard media integration: " + marker);
+  if (!html.includes(marker)) throw new Error("Missing learning magazine integration: " + marker);
 }
 
-if (!Array.isArray(videos) || videos.length < 1) throw new Error("Add at least one curated learning video.");
-for (const [index, video] of videos.entries()) {
-  if (!video || typeof video.title !== "string" || !video.title.trim()) {
-    throw new Error("Video " + index + " needs a title.");
+if (!magazine || !Array.isArray(magazine.slides) || magazine.slides.length < 3 ||
+    !Array.isArray(magazine.series) || magazine.series.length < 6) {
+  throw new Error("The magazine needs multiple hero slides and a broad language series library.");
+}
+const validYouTubeId = value => typeof value === "string" && /^[A-Za-z0-9_-]{11}$/.test(value);
+for (const [index, slide] of magazine.slides.entries()) {
+  if (!slide || !slide.title || !slide.description || !slide.category ||
+      !validYouTubeId(slide.youtubeId) || typeof slide.playlistUrl !== "string" ||
+      !slide.playlistUrl.startsWith("https://www.youtube.com/playlist?list=")) {
+    throw new Error("Hero slide " + index + " has incomplete or invalid media metadata.");
   }
-  if (typeof video.youtubeId !== "string" || !/^[A-Za-z0-9_-]{11}$/.test(video.youtubeId)) {
-    throw new Error("Video " + index + " needs a valid 11-character YouTube ID.");
+}
+const seriesIds = new Set();
+for (const [index, series] of magazine.series.entries()) {
+  if (!series || !series.id || !series.name || !series.description ||
+      !validYouTubeId(series.youtubeId) || !/^[A-Za-z0-9_-]{10,}$/.test(series.playlistId || "") ||
+      !series.provider || !series.source) {
+    throw new Error("Learning series " + index + " has incomplete or invalid metadata.");
   }
-  for (const key of ["description", "category", "level", "duration"]) {
-    if (video[key] !== undefined && typeof video[key] !== "string") {
-      throw new Error("Video " + index + " has invalid " + key + ".");
-    }
-  }
+  if (seriesIds.has(series.id)) throw new Error("Duplicate learning series id: " + series.id);
+  seriesIds.add(series.id);
+}
+for (const required of ["python", "javascript", "cpp", "java", "html", "css"]) {
+  if (!seriesIds.has(required)) throw new Error("Missing language series: " + required);
+}
+if (!magazineScript.includes("setInterval") ||
+    !magazineScript.includes("prefers-reduced-motion") ||
+    !magazineScript.includes("noopener noreferrer")) {
+  throw new Error("Magazine carousel needs controlled autoplay, reduced-motion support and safe external links.");
+}
+if (!magazineCss.includes(".magazine-hero") ||
+    !magazineCss.includes("@media(max-width:620px)") ||
+    !magazineCss.includes("prefers-reduced-motion")) {
+  throw new Error("Magazine needs editorial hero, mobile layout and reduced-motion styling.");
 }
 
 const openTag = "<script>";
@@ -37,7 +60,8 @@ fs.writeFileSync("/tmp/codequest-dashboard-inline.mjs", html.slice(start + openT
 
 for (const asset of [
   "css/dashboard-media.css",
-  "js/dashboard-media.js",
+  "css/learning-magazine.css",
+  "js/learning-magazine.js",
   "js/app.js",
   "js/theme.js",
   "json/learning-videos.json"
@@ -45,12 +69,6 @@ for (const asset of [
   if (!fs.existsSync(asset)) throw new Error("Missing dashboard asset: " + asset);
 }
 
-if (!mediaScript.includes("youtube-nocookie.com/embed/")) {
-  throw new Error("Privacy-enhanced YouTube embed host missing.");
-}
-if (mediaScript.includes("codyMusicToggle") || mediaScript.includes("audioContext")) {
-  throw new Error("Homepage media script must not mount a floating music control.");
-}
 const settings = fs.readFileSync("settings.html", "utf8");
 if (settings.includes('id="musicToggle"') || settings.includes("cq_music")) {
   throw new Error("Background music must be removed from the platform.");
@@ -62,25 +80,22 @@ const gameAudio = fs.readFileSync("js/game-audio.js", "utf8");
 if (!gameAudio.includes("cq-game-sound-toggle") || gameAudio.includes("cq_music")) {
   throw new Error("Games need a top-positioned sound-only toggle, without music.");
 }
-if (!mediaScript.includes("learningVideoFilters")) {
-  throw new Error("Editorial video magazine filters are missing.");
-}
 const parent = fs.readFileSync("parent.html", "utf8");
 if (!parent.includes('id="parentGuideTitle"') || parent.indexOf('id="parentGuideTitle"') > parent.indexOf('class="mode-grid"')) {
   throw new Error("Parent introduction must appear before account linking.");
 }
-const learnerSettings = fs.readFileSync("settings.html", "utf8");
-if (!learnerSettings.includes('id="createParentCodeButton"')) {
+if (!settings.includes('id="createParentCodeButton"')) {
   throw new Error("Learners must create parent-link codes from their own settings.");
 }
 if (parent.includes('id="createLinkButton"') || parent.includes('id="generatedCodeBox"')) {
   throw new Error("Parent dashboard must not expose learner-side code generation.");
 }
 const learnerLinkScript = fs.readFileSync("js/learner-parent-link.js", "utf8");
-if (!learnerLinkScript.includes('"createParentLinkCode"')) {
-  throw new Error("Learner-side parent link generator is missing its callable integration.");
+if (!learnerLinkScript.includes('"createParentLinkCode"') ||
+    !learnerLinkScript.includes('"getMyParentLinks"') ||
+    !learnerLinkScript.includes('"removeParentLinkAsChild"')) {
+  throw new Error("Learner parent-link management callables are incomplete.");
 }
-
 const progressPage = fs.readFileSync("progress.html", "utf8");
 if (!progressPage.includes(String.raw`const match = /^(\d+)_(\d+)$/.exec(String(key));`)) {
   throw new Error("Python local progress keys must parse numeric chapter_lesson IDs.");
@@ -103,8 +118,4 @@ if (!functionsSource.includes("exports.getMyParentLinks") ||
     !functionsSource.includes("exports.removeParentLinkAsChild")) {
   throw new Error("Learner-side parent unlink callables are missing.");
 }
-if (!learnerLinkScript.includes('"getMyParentLinks"') ||
-    !learnerLinkScript.includes('"removeParentLinkAsChild"')) {
-  throw new Error("Learner settings must load and revoke parent links.");
-}
-console.log("Dashboard media and parent-link integration validated.");
+console.log("Learning magazine, media and parent-link integration validated.");
