@@ -820,7 +820,7 @@
           `codequest_lesson_progress_${uid}_${language}`
         );
         const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed)
+        const standardRecords = Array.isArray(parsed)
           ? parsed.filter(item =>
               item?.completed === true &&
               Number.isSafeInteger(item.chapter) && item.chapter >= 0 &&
@@ -831,6 +831,42 @@
               serverVerified: item.serverVerified === true
             }))
           : [];
+
+        // Python lesson page stores completed lessons as "chapter_lesson"
+        // under the account-scoped Cody key. Convert that existing format to
+        // the zero-based records used by this progress dashboard.
+        if (language !== "python") return standardRecords;
+
+        const pythonRaw = localStorage.getItem(
+          `codequest_${uid}_cody_python_completed_lessons`
+        );
+        const pythonKeys = pythonRaw ? JSON.parse(pythonRaw) : [];
+        const pythonRecords = Array.isArray(pythonKeys)
+          ? pythonKeys.flatMap(key => {
+              const match = /^(\\d+)_(\\d+)$/.exec(String(key));
+              if (!match) return [];
+              const chapterNumber = Number(match[1]);
+              const lessonNumber = Number(match[2]);
+              if (
+                !Number.isSafeInteger(chapterNumber) || chapterNumber < 1 ||
+                !Number.isSafeInteger(lessonNumber) || lessonNumber < 0
+              ) return [];
+              return [{
+                language: "python",
+                chapter: chapterNumber - 1,
+                lesson: lessonNumber,
+                completed: true,
+                localOnly: true,
+                serverVerified: false
+              }];
+            })
+          : [];
+
+        const merged = new Map();
+        for (const record of [...standardRecords, ...pythonRecords]) {
+          merged.set(`${record.chapter}:${record.lesson}`, record);
+        }
+        return [...merged.values()];
       } catch (error) {
         console.warn(`تعذر قراءة التقدم المحلي للغة ${language}:`, error);
         return [];
