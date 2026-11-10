@@ -116,6 +116,39 @@
       box-shadow: 0 18px 50px rgba(0,0,0,.18);
     }
 
+    .stdin-area {
+      display: grid;
+      gap: 7px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .stdin-area label {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stdin-area textarea {
+      width: 100%;
+      min-height: 76px;
+      max-height: 180px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0b1020;
+      color: var(--text);
+      font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .stdin-area textarea:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
     .panel-header {
       display: flex;
       flex-wrap: wrap;
@@ -342,6 +375,12 @@
 
       <div class="editor-area">
         <textarea id="editor" aria-label="محرر الكود"></textarea>
+      </div>
+
+      <div class="stdin-area">
+        <label for="stdinInput">مدخلات البرنامج (Python و C++)</label>
+        <textarea id="stdinInput" rows="3" spellcheck="false" aria-describedby="stdinHelp" placeholder="اكتب المدخلات هنا، كل قيمة في سطر..."></textarea>
+        <span class="helper" id="stdinHelp">تُرسل هذه القيم إلى البرنامج عند تشغيله. اترك الحقل فارغًا إذا لم يحتج البرنامج إلى مدخلات.</span>
       </div>
 
       <div class="editor-footer">
@@ -815,7 +854,7 @@ int main() {
             body: JSON.stringify({
               source_code: encodeBase64Utf8(code),
               language_id: judge0LanguageIds[language],
-              stdin: encodeBase64Utf8("")
+              stdin: encodeBase64Utf8($("stdinInput").value)
             })
           }
         );
