@@ -1,4 +1,4 @@
-/* Homepage video library and optional ambient audio control */
+/* Cody Academy learning magazine and chat assistant */
 .learning-videos-section { min-width: 0; }
 .videos-section-tag {
   display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto;
@@ -7,7 +7,7 @@
   font-size: .75rem; font-weight: 800;
 }
 .learning-videos-grid {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
   min-width: 0;
 }
 .learning-videos-empty {
@@ -28,10 +28,12 @@
   border-radius: 6px; color: var(--cyan); background: rgba(54,191,229,.1);
 }
 .learning-video-card {
-  min-width: 0; overflow: hidden; border: 1px solid var(--border);
+  min-width: 0; overflow: hidden; position:relative; border: 1px solid var(--border);
   border-radius: 19px; background: var(--surface-glass);
   transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
 }
+.learning-video-card:nth-child(5n + 1) { grid-column: span 2; }
+.learning-video-card:nth-child(5n + 1) .learning-video-frame { aspect-ratio: 16 / 8; }
 .learning-video-card:hover {
   transform: translateY(-4px); border-color: var(--border-hover);
   box-shadow: 0 14px 32px rgba(0,0,0,.13);
@@ -66,27 +68,41 @@
 .learning-video-level { margin-inline-start: auto; color: var(--muted); font-size: .67rem; }
 .learning-video-info h3 { margin: 0; color: var(--text); font-size: .95rem; font-weight: 900; }
 .learning-video-info p { margin: 6px 0 0; color: var(--muted); font-size: .76rem; line-height: 1.85; }
-.cody-music-toggle {
-  position: fixed; z-index: 80; left: 18px; bottom: 18px;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 44px; padding: 0 14px; border: 1px solid var(--border);
-  border-radius: 999px; color: var(--text); background: var(--surface-raised, #10182b);
-  box-shadow: 0 8px 24px rgba(0,0,0,.2); font: inherit; font-size: .76rem;
-  font-weight: 800; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+/* Audio controls live only in Settings. */
+.cody-chat-launcher {
+  position:fixed; z-index:10010; left:18px; bottom:18px;
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  min-height:52px; padding:0 16px; border:1px solid var(--border);
+  border-radius:999px; color:var(--text); background:var(--surface-raised,#10182b);
+  box-shadow:0 8px 24px rgba(0,0,0,.22); font:inherit; font-size:.8rem;
+  font-weight:900; cursor:pointer; -webkit-tap-highlight-color:transparent;
 }
-.cody-music-toggle i { color: var(--cyan); font-size: 1.1rem; }
-.cody-music-toggle:hover { transform: translateY(-2px); border-color: var(--cyan); }
-.cody-music-toggle[aria-pressed="true"] { border-color: var(--cyan); background: rgba(54,191,229,.13); }
-.cody-music-toggle:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+.cody-chat-orb { display:grid; place-items:center; width:29px; height:29px; border-radius:10px; background:linear-gradient(135deg,#7955e8,#36bfe5); }
+.cody-chat-launcher i { color:var(--cyan); font-size:1.1rem; }
+.cody-chat-panel { position:fixed; z-index:10020; left:18px; bottom:82px; display:flex; flex-direction:column; width:min(370px,calc(100vw - 28px)); height:min(520px,calc(100dvh - 150px)); overflow:hidden; border:1px solid var(--border); border-radius:22px; background:var(--surface-raised,#10182b); box-shadow:0 20px 65px #0008; }
+.cody-chat-panel[hidden] { display:none!important; }
+.cody-chat-header { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:linear-gradient(110deg,#7955e8,#176b93); color:white; }
+.cody-chat-header strong,.cody-chat-header small { display:block; }
+.cody-chat-header small { opacity:.82; font-size:.72rem; }
+.cody-chat-header button { border:0; background:transparent; color:white; font-size:1.7rem; }
+.cody-chat-messages { flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding:14px; }
+.cody-chat-message { max-width:88%; padding:10px 13px; border-radius:15px; white-space:pre-wrap; line-height:1.8; font-size:.84rem; }
+.cody-from-bot { align-self:flex-start; background:var(--surface-glass); color:var(--text); border:1px solid var(--border); }
+.cody-from-user { align-self:flex-end; color:#fff; background:linear-gradient(135deg,#7955e8,#258dbd); }
+.cody-chat-form { display:flex; gap:8px; padding:10px; border-top:1px solid var(--border); }
+.cody-chat-form input { flex:1; min-width:0; border:1px solid var(--border); border-radius:13px; padding:11px; color:var(--text); background:var(--surface-glass); font:inherit; }
+.cody-chat-form button { width:44px; border:0; border-radius:13px; color:#06111d; background:var(--cyan); font-size:1.15rem; }
+.cody-chat-status { min-height:18px; margin:0; padding:0 12px 8px; color:var(--muted); font-size:.7rem; }
+.cody-chat-launcher:focus-visible,.cody-chat-form button:focus-visible { outline:3px solid var(--cyan); outline-offset:3px; }
 @media (max-width: 900px) {
   .learning-videos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .learning-videos-grid { grid-template-columns: 1fr; }
   .videos-section-tag { display: none; }
-  .cody-music-toggle { left: 12px; bottom: calc(78px + env(safe-area-inset-bottom)); }
+  .cody-chat-launcher { left: 12px; bottom: calc(78px + env(safe-area-inset-bottom)); }
+  .cody-chat-panel { left:10px; bottom:calc(138px + env(safe-area-inset-bottom)); width:calc(100vw - 20px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .learning-video-card, .learning-video-play, .cody-music-toggle { transition: none; }
+  .learning-video-card, .learning-video-play, .cody-chat-launcher { transition: none; }
 }
