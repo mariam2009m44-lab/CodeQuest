@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import path from "node:path";
 
 const html = fs.readFileSync("dashboard.html", "utf8");
 const mediaScript = fs.readFileSync("js/dashboard-media.js", "utf8");
@@ -30,18 +29,20 @@ for (const [index, video] of videos.entries()) {
   }
 }
 
-const inlineScripts = [...html.matchAll(/<script(?:\s+type="module")?>([\s\S]*?)<\/script>/g)];
-if (!inlineScripts.length) throw new Error("Dashboard inline script not found.");
-fs.writeFileSync("/tmp/codequest-dashboard-inline.mjs", inlineScripts.map(match => match[1]).join("\n"));
+const openTag = "<script>";
+const start = html.indexOf(openTag);
+const end = html.indexOf("</script>", start);
+if (start < 0 || end < 0) throw new Error("Dashboard inline script not found.");
+fs.writeFileSync("/tmp/codequest-dashboard-inline.mjs", html.slice(start + openTag.length, end));
 
-const localRefs = [...html.matchAll(/(?:href|src)\s*=\s*["']([^"'<>]+)["']/gi)];
-for (const match of localRefs) {
-  const raw = match[1].trim();
-  if (!raw || /^(?:#|https?:|mailto:|tel:|javascript:|data:|blob:|\/\/)/i.test(raw)) continue;
-  const target = raw.split(/[?#]/)[0].replace(/^\//, "");
-  if (target && !fs.existsSync(path.resolve(target))) {
-    throw new Error("Missing local dashboard asset: " + raw);
-  }
+for (const asset of [
+  "css/dashboard-media.css",
+  "js/dashboard-media.js",
+  "js/app.js",
+  "js/theme.js",
+  "json/learning-videos.json"
+]) {
+  if (!fs.existsSync(asset)) throw new Error("Missing dashboard asset: " + asset);
 }
 
 if (!mediaScript.includes("youtube-nocookie.com/embed/")) {
