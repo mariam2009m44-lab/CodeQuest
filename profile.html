@@ -1149,7 +1149,13 @@
     const LANGUAGES = {
       python: "./json/python_curriculum.json",
       javascript: "./json/js_curriculum.json",
-      cpp: "./json/cpp_curriculum.json"
+      cpp: "./json/cpp_curriculum.json",
+      java: {
+        chapters: Array.from(
+          { length: 8 },
+          () => ({ lessons: [{}, {}] })
+        )
+      }
     };
 
     const badgesGrid = document.getElementById("badgesGrid");
@@ -1162,8 +1168,12 @@
       const entries = Object.entries(LANGUAGES);
 
       const results = await Promise.all(
-        entries.map(async ([language, url]) => {
-          const response = await fetch(url, {
+        entries.map(async ([language, source]) => {
+          if (language === "java") {
+            return [language, source];
+          }
+
+          const response = await fetch(source, {
             cache: "no-store"
           });
 
@@ -1188,7 +1198,8 @@
       const completed = {
         python: new Set(),
         javascript: new Set(),
-        cpp: new Set()
+        cpp: new Set(),
+        java: new Set()
       };
 
       for (const item of documents) {
@@ -1381,7 +1392,8 @@
             const completedCount =
               completedSets.python.size +
               completedSets.javascript.size +
-              completedSets.cpp.size;
+              completedSets.cpp.size +
+              completedSets.java.size;
 
             renderBadges(completedCount);
           },
