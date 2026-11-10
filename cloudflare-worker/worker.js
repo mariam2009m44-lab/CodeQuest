@@ -335,19 +335,19 @@ async function handleCodeRun(request, env, origin) {
   }
 
   if (!submission?.token) {
-    return jsonResponse({
-      success: false,
-      errorCode: submissionError || "SUBMISSION_FAILED",
-      message: "تعذر إرسال الكود إلى خدمة التشغيل حاليًا. انتظر قليلًا ثم حاول مرة أخرى."
-    }, 503, origin);
-  }
+    console.error(
+      "Judge0 submission did not return a token:",
+      submissionError || "MISSING_SUBMISSION_TOKEN"
+    );
 
-  if (!submission?.token) {
-    console.error("Judge0 response did not include a token:", submission);
+    const submissionFailed = Boolean(submissionError);
     return jsonResponse({
       success: false,
-      message: "خدمة التشغيل لم تُرجع رقم التنفيذ."
-    }, 502, origin);
+      errorCode: submissionError || "INVALID_SUBMISSION_RESPONSE",
+      message: submissionFailed
+        ? "تعذر إرسال الكود إلى خدمة التشغيل حاليًا. انتظر قليلًا ثم حاول مرة أخرى."
+        : "خدمة التشغيل لم تُرجع رقم التنفيذ."
+    }, submissionFailed ? 503 : 502, origin);
   }
 
   let result = null;
