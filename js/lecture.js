@@ -1211,28 +1211,55 @@ function clearOutput() {
   setFeedback(byId("codeFeedback"), "");
 }
 
+function runJavaScriptLocally(code) {
+  return new Promise((resolve, reject) => {
+    const frame = document.createElement("iframe");
+    frame.setAttribute("sandbox", "allow-scripts");
+    frame.setAttribute("aria-hidden", "true");
+    frame.tabIndex = -1;
+    frame.style.cssText = "position:fixed;width:1px;height:1px;left:-10px;top:-10px;border:0;opacity:0;pointer-events:none";
+
+    const encodedCode = encodeBase64Utf8(code);
+    const source = "<!doctype html><html><head><meta charset=\\"utf-8\\">" +
+      "<meta http-equiv=\\"Content-Security-Policy\\" content=\\"default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; connect-src 'none'; img-src 'none'; media-src 'none'; style-src 'none'; form-action 'none'; base-uri 'none'\\">" +
+      "</head><body><script>(() => {" +
+      "const send = payload => parent.postMessage({__codeQuestRun:true,...payload}, '*');" +
+      "const output = [];" +
+      "const format = value => { if(typeof value==='string') return \\"'\\"+value.replace(/\\\\\\\\/g,'\\\\\\\\\\\\\\\\').replace(/'/g,\\"\\\\\\\\'\\").replace(/\\\\n/g,'\\\\\\\\n')+\\"'\\"; if(value===undefined)return 'undefined'; if(value===null)return 'null'; if(Array.isArray(value))return '[ '+value.map(format).join(', ')+' ]'; if(typeof value==='object'){try{return JSON.stringify(value)}catch(_){return '[object Object]'}} return String(value); };" +
+      "console.log=(...args)=>output.push(args.map(format).join(' ')); console.info=console.log;" +
+      "console.warn=(...args)=>output.push('Warning: '+args.map(format).join(' ')); console.error=(...args)=>output.push('Error: '+args.map(format).join(' '));" +
+      "try { const binary=atob('__CODE_PLACEHOLDER__'); const bytes=Uint8Array.from(binary,ch=>ch.charCodeAt(0)); const userCode=new TextDecoder().decode(bytes); (0,eval)(userCode); send({ok:true,stdout:output.join('\\\\n')}); }" +
+      "catch(error){send({ok:false,error:(error&&error.name?error.name+': ':'')+(error&&error.message?error.message:String(error))});}" +
+      "})();<\\/script></body></html>";
+    frame.srcdoc = source.replace("__CODE_PLACEHOLDER__", encodedCode);
+
+    let settled = false;
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener("message", onMessage);
+      window.clearTimeout(timeout);
+      frame.remove();
+      callback(value);
+    };
+    const onMessage = event => {
+      if (event.source !== frame.contentWindow || event.data?.__codeQuestRun !== true) return;
+      if (event.data.ok) finish(resolve, event.data.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.");
+      else finish(reject, new Error(event.data.error || "حدث خطأ أثناء تشغيل JavaScript."));
+    };
+    const timeout = window.setTimeout(() => {
+      finish(reject, new Error("توقف التشغيل لأنه استغرق وقتًا طويلًا. راجع الحلقات وتأكد أنها تنتهي."));
+    }, 1800);
+
+    window.addEventListener("message", onMessage);
+    document.body.append(frame);
+  });
+}
+
 async function runJavaScript(code) {
-  const result = await runCodeOnServer(
-    "javascript",
-    code,
-    byId("stdinInput")?.value || ""
-  );
-
-  const diagnostics = [
-    result.compileOutput,
-    result.stderr,
-    result.message
-  ].filter(Boolean).join("\n").trim();
-
-  if (!result.ok) {
-    throw new Error(
-      diagnostics ||
-      result.status ||
-      "لم ينجح تشغيل JavaScript. راجع الكود وحاول مرة أخرى."
-    );
-  }
-
-  return result.stdout || "تم تشغيل الكود بنجاح، لكن لم تظهر مخرجات.";
+  // Run JavaScript lesson code locally in an isolated, opaque-origin iframe.
+  // This avoids consuming the shared Judge0 daily quota for lesson examples.
+  return runJavaScriptLocally(code);
 }
 
 async function runPython(code) {
