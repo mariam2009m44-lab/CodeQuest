@@ -1,6 +1,4 @@
 const grid = document.getElementById("learningVideosGrid");
-const musicButton = document.getElementById("codyMusicToggle");
-
 function makeElement(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -16,14 +14,14 @@ function validVideo(item) {
     (item.level === undefined || typeof item.level === "string");
 }
 
-function renderVideo(item) {
+function renderVideo(item, index) {
   const card = makeElement("article", "learning-video-card");
+  card.style.setProperty("--magazine-order", String(index));
   const frame = makeElement("div", "learning-video-frame");
   const play = makeElement("button", "learning-video-play");
   play.type = "button";
   play.setAttribute("aria-label", `تشغيل فيديو: ${item.title}`);
   play.innerHTML = '<i class="ri-play-fill" aria-hidden="true"></i>';
-
   play.addEventListener("click", () => {
     if (frame.querySelector("iframe")) return;
     const player = document.createElement("iframe");
@@ -35,7 +33,6 @@ function renderVideo(item) {
     player.allowFullscreen = true;
     frame.replaceChildren(player);
   }, { once: true });
-
   frame.append(play);
   const info = makeElement("div", "learning-video-info");
   const meta = makeElement("div", "learning-video-meta");
@@ -48,105 +45,27 @@ function renderVideo(item) {
 }
 
 async function loadLearningVideos() {
+  const grid = document.getElementById("learningVideosGrid");
   if (!grid) return;
   try {
     const response = await fetch("json/learning-videos.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const videos = await response.json();
-    if (!Array.isArray(videos)) throw new Error("ملف الفيديوهات يجب أن يحتوي على قائمة.");
+    if (!Array.isArray(videos)) throw new Error("قائمة الفيديوهات غير صالحة.");
     const valid = videos.filter(validVideo);
-    if (!valid.length) return;
+    if (!valid.length) {
+      grid.replaceChildren();
+      const empty = makeElement("div", "learning-videos-empty");
+      empty.append(makeElement("span", "learning-videos-empty-icon", "✦"));
+      empty.append(makeElement("strong", "", "مجلة كودي التعليمية"));
+      empty.append(makeElement("p", "", "ستظهر هنا الفيديوهات التي تضيفينها، مرتبة في أقسام تعليمية سهلة التصفح."));
+      grid.append(empty);
+      return;
+    }
     grid.replaceChildren(...valid.map(renderVideo));
   } catch (error) {
     console.error("تعذر تحميل فيديوهات الشرح:", error);
-    const note = makeElement("p", "learning-videos-empty", "تعذر تحميل قائمة الفيديوهات حاليًا. يمكنك المحاولة مرة أخرى لاحقًا.");
-    grid.replaceChildren(note);
+    grid.replaceChildren(makeElement("p", "learning-videos-empty", "تعذر تحميل المجلة التعليمية حاليًا. حاولي مرة أخرى لاحقًا."));
   }
 }
-
-const melody = [60, 64, 67, 72, 67, 64, 62, 65, 69, 74, 69, 65];
-let audioContext = null;
-let musicTimer = null;
-let noteIndex = 0;
-let musicEnabled = false;
-
-function playSoftNote() {
-  if (!audioContext || audioContext.state !== "running") return;
-  const now = audioContext.currentTime;
-  const oscillator = audioContext.createOscillator();
-  const volume = audioContext.createGain();
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(440 * Math.pow(2, (melody[noteIndex % melody.length] - 69) / 12), now);
-  volume.gain.setValueAtTime(0.0001, now);
-  volume.gain.exponentialRampToValueAtTime(0.025, now + 0.035);
-  volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
-  oscillator.connect(volume);
-  volume.connect(audioContext.destination);
-  oscillator.start(now);
-  oscillator.stop(now + 0.58);
-  noteIndex += 1;
-}
-
-function updateMusicButton(active) {
-  if (!musicButton) return;
-  musicButton.setAttribute("aria-pressed", String(active));
-  musicButton.setAttribute("aria-label", active ? "إيقاف الموسيقى الهادئة" : "تشغيل الموسيقى الهادئة");
-  musicButton.title = active ? "إيقاف الموسيقى الهادئة" : "تشغيل الموسيقى الهادئة";
-  musicButton.innerHTML = active
-    ? '<i class="ri-pause-circle-line" aria-hidden="true"></i><span>إيقاف الموسيقى</span>'
-    : '<i class="ri-music-2-line" aria-hidden="true"></i><span>موسيقى كودي</span>';
-}
-
-function stopMusic() {
-  musicEnabled = false;
-  if (musicTimer) window.clearInterval(musicTimer);
-  musicTimer = null;
-  if (audioContext && audioContext.state === "running") audioContext.suspend().catch(() => {});
-  updateMusicButton(false);
-}
-
-async function startMusic() {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) throw new Error("المتصفح لا يدعم تشغيل الموسيقى.");
-  if (!audioContext) audioContext = new AudioContextClass();
-  await audioContext.resume();
-  musicEnabled = true;
-  playSoftNote();
-  musicTimer = window.setInterval(playSoftNote, 680);
-  updateMusicButton(true);
-}
-
-musicButton?.addEventListener("click", async () => {
-  if (musicEnabled) {
-    stopMusic();
-    return;
-  }
-  musicButton.disabled = true;
-  try {
-    await startMusic();
-  } catch (error) {
-    console.warn("تعذر تشغيل الموسيقى:", error);
-    musicButton.title = "الموسيقى غير متاحة في هذا المتصفح";
-  } finally {
-    musicButton.disabled = false;
-  }
-});
-
-document.addEventListener("visibilitychange", () => {
-  if (!audioContext || !musicEnabled) return;
-  if (document.hidden) {
-    if (musicTimer) window.clearInterval(musicTimer);
-    musicTimer = null;
-    audioContext.suspend().catch(() => {});
-  } else {
-    audioContext.resume().then(() => {
-      if (musicEnabled && !musicTimer) {
-        playSoftNote();
-        musicTimer = window.setInterval(playSoftNote, 680);
-      }
-    }).catch(() => stopMusic());
-  }
-});
-
-updateMusicButton(false);
 loadLearningVideos();
