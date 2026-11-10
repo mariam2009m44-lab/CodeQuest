@@ -87,7 +87,8 @@ export function classifyCodyQuestion(question) {
   const vector = new Map();
   let norm = 0;
   for (const [gram, count] of grams) {
-    const df = classifier.documentFrequencies.get(gram) || 0;
+    const df = classifier.documentFrequencies.get(gram);
+    if (!df) continue;
     const idf = Math.log(1 + classifier.docs.length / (1 + df));
     const weight = (1 + Math.log(count)) * idf;
     vector.set(gram, weight);
