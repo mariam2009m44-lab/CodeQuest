@@ -3246,7 +3246,8 @@ html[data-theme="light"] .bottom-action {
 
         const verifyChallenge = httpsCallable(
           functions,
-          "verifyPythonChallenge"
+          "verifyPythonChallenge",
+          { timeout: 65000 }
         );
 
         const response = await verifyChallenge({
@@ -3281,9 +3282,17 @@ html[data-theme="light"] .bottom-action {
           ? error.message.slice(0, 180)
           : "";
 
+        const isTemporaryServiceError = [
+          "unavailable",
+          "deadline-exceeded",
+          "internal"
+        ].includes(verificationErrorCode);
+
         addBubble(
           "cody",
-          `تم تشغيل الكود، لكن لم يكتمل التحقق وحفظ إثبات النجاح. رمز الخطأ: ${verificationErrorCode}.${verificationErrorMessage ? ` التفاصيل: ${verificationErrorMessage}` : ""} تأكد من الاتصال وحاول مرة أخرى.`
+          isTemporaryServiceError
+            ? "تم تشغيل الكود، لكن خدمة التحقق واجهت مشكلة مؤقتة ولم يتم اعتماد الإنجاز. لم نفقد تقدمك السابق؛ انتظر قليلًا ثم أعد المحاولة."
+            : `تم تشغيل الكود، لكن لم يكتمل التحقق وحفظ إثبات النجاح. رمز الخطأ: ${verificationErrorCode}.${verificationErrorMessage ? ` التفاصيل: ${verificationErrorMessage}` : ""} تأكد من الاتصال وحاول مرة أخرى.`
         );
         showToast(`تعذر اعتماد النجاح (${verificationErrorCode}).`);
         return;
