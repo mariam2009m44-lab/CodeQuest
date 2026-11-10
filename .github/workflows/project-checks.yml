@@ -57,6 +57,12 @@ jobs:
           node --input-type=module --check < js/lecture.js
           node --check cloudflare-worker/worker.js
 
+      - name: Validate Cloudflare Worker bundle without deployment
+        working-directory: cloudflare-worker
+        run: |
+          npm install --no-audit --no-fund
+          npx wrangler deploy --dry-run --outdir /tmp/codequest-worker-dist
+
       - name: Validate Java lesson page
         run: |
           node --input-type=module -e 'import fs from "node:fs"; const html = fs.readFileSync("java-lessons.html", "utf8"); const open = "<script type=\"module\">"; const close = "</script>"; const start = html.indexOf(open); const end = html.indexOf(close, start); if (start < 0 || end < 0) throw new Error("Java lesson module script missing"); fs.writeFileSync("/tmp/java-lessons.mjs", html.slice(start + open.length, end)); const ids = html.match(/id: "java-[0-9]+-[0-9]+"/g) || []; if (ids.length !== 16) throw new Error("Expected 16 implemented Java lessons"); if ((html.match(/id="quizFeedback"/g) || []).length !== 1) throw new Error("Quiz feedback element must be unique");'
