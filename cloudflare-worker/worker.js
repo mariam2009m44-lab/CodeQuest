@@ -410,13 +410,19 @@ async function handleCodeRun(request, env, origin) {
     }, lastPollingError ? 503 : 504, origin);
   }
 
+  const judgeStatusId = Number(result.status.id);
+  const judgeStatusDescription = safeOutput(result.status.description || "Unknown");
+  const internalExecutionError = judgeStatusId === 13;
+
   return jsonResponse({
-    ok: result.status.id === 3,
+    ok: judgeStatusId === 3,
     stdout: safeOutput(result.stdout),
     stderr: safeOutput(result.stderr),
     compileOutput: safeOutput(result.compile_output),
     message: safeOutput(result.message),
-    status: result.status.description || "Unknown",
+    status: judgeStatusDescription,
+    statusId: Number.isInteger(judgeStatusId) ? judgeStatusId : null,
+    errorCode: internalExecutionError ? "JUDGE0_INTERNAL_ERROR" : null,
     time: result.time || null,
     memory: result.memory || null
   }, 200, origin);
