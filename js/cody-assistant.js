@@ -43,7 +43,7 @@ form?.addEventListener("submit", async event => {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ question, history: history.slice(-10), page_context: "CodeQuest dashboard; Arabic-first programming learning platform." })
+      body: JSON.stringify({ question, history: history.slice(-10).map(item => ({ role: item.role, text: String(item.text || "").slice(0, 1500) })), page_context: "CodeQuest dashboard; Arabic-first programming learning platform." })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || data.message || "خدمة كودي غير متاحة حاليًا.");
