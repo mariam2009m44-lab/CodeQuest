@@ -20,6 +20,7 @@
   let volume = 0.16;
   let button = null;
   let volumeInput = null;
+  let effectsButton = null;
 
   function loadSettings() {
     try {
@@ -75,6 +76,12 @@
       });
     }
     noteIndex += 1;
+  }
+
+  function updateEffectsButton() {
+    if (!effectsButton) return;
+    effectsButton.setAttribute("aria-pressed", String(soundEnabled));
+    effectsButton.textContent = soundEnabled ? "المؤثرات مفعّلة" : "المؤثرات مكتومة";
   }
 
   function updateButton() {
@@ -141,10 +148,12 @@
     panel.id = "cq-game-audio";
     panel.innerHTML = `
       <button type="button" id="cq-game-music" aria-pressed="false">♪ موسيقى اللعبة</button>
+      <button type="button" id="cq-game-effects" aria-pressed="true">المؤثرات مفعّلة</button>
       <label title="مستوى الصوت"><span aria-hidden="true">🔉</span><input id="cq-game-volume" type="range" min="0.03" max="0.35" step="0.01" value="${volume}" aria-label="مستوى صوت الموسيقى"></label>
     `;
     document.body.appendChild(panel);
     button = panel.querySelector("#cq-game-music");
+    effectsButton = panel.querySelector("#cq-game-effects");
     volumeInput = panel.querySelector("#cq-game-volume");
     button.addEventListener("click", async () => {
       button.disabled = true;
@@ -157,11 +166,17 @@
         button.disabled = false;
       }
     });
+    effectsButton.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      saveSettings();
+      updateEffectsButton();
+    });
     volumeInput.addEventListener("input", () => {
       volume = Number(volumeInput.value);
       saveSettings();
     });
     updateButton();
+    updateEffectsButton();
 
     document.addEventListener("click", event => {
       if (event.target.closest("button, .choice-btn, .piece, .code-block, .match-item, .bug-line, .drag-piece")) {
