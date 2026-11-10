@@ -10,7 +10,10 @@ function makeElement(tag, className, text) {
 
 function validVideo(item) {
   return item && typeof item.title === "string" && item.title.trim() &&
-    typeof item.youtubeId === "string" && /^[A-Za-z0-9_-]{11}$/.test(item.youtubeId);
+    typeof item.youtubeId === "string" && /^[A-Za-z0-9_-]{11}$/.test(item.youtubeId) &&
+    (item.description === undefined || typeof item.description === "string") &&
+    (item.category === undefined || typeof item.category === "string") &&
+    (item.level === undefined || typeof item.level === "string");
 }
 
 function renderVideo(item) {
