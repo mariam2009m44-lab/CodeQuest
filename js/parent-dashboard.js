@@ -97,6 +97,21 @@ function renderChild(child) {
   last.style.margin = "14px 0 0";
   card.append(last);
 
+  const unavailableSections = [];
+  if (child.dataAvailability?.progress === false) unavailableSections.push("التقدم");
+  if (child.dataAvailability?.projects === false) unavailableSections.push("المشروعات");
+  if (unavailableSections.length) {
+    const warning = element(
+      "p",
+      "child-sub",
+      "تعذر تحميل " + unavailableSections.join(" و") + " مؤقتًا؛ الأرقام المعروضة لهذه الأقسام غير مكتملة."
+    );
+    warning.setAttribute("role", "status");
+    warning.style.margin = "10px 0 0";
+    warning.style.color = "var(--warning, #b7791f)";
+    card.append(warning);
+  }
+
   const actions = element("div", "child-actions");
   actions.append(element("span", "child-sub", "المستوى " + (child.level || 1) + " · " + (child.xp || 0) + " XP · " + (child.stars || 0) + " نجمة"));
   const unlink = element("button", "unlink-button", "إلغاء الربط");
