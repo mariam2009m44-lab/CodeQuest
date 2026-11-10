@@ -90,7 +90,6 @@
     enabled = false;
     if (musicTimer) window.clearInterval(musicTimer);
     musicTimer = null;
-    if (context && context.state === "running") context.suspend().catch(() => {});
     updateButton();
   }
 
@@ -166,7 +165,10 @@
 
     document.addEventListener("click", event => {
       if (event.target.closest("button, .choice-btn, .piece, .code-block, .match-item, .bug-line, .drag-piece")) {
-        play("tap");
+        try {
+          const audio = getContext();
+          audio.resume().then(() => play("tap")).catch(() => {});
+        } catch {}
       }
     }, true);
 
