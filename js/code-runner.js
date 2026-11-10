@@ -112,9 +112,14 @@ export async function runCodeOnServer(language, code, stdin = "") {
 
     // Judge0 status 13 is an execution-service failure, not a syntax error
     // in the learner's program. Explain this distinction in every editor.
-    if (result.status === "Internal Error" || result.status === "Internal Error (Internal Error)") {
-      result.message = "واجه محرك تشغيل الأكواد خطأً داخليًا مؤقتًا. هذا لا يعني بالضرورة أن كودك خطأ؛ انتظر قليلًا ثم أعد المحاولة.";
-      result.status = "خطأ مؤقت في محرك التشغيل";
+    if (
+      result.errorCode === "JUDGE0_INTERNAL_ERROR" ||
+      Number(result.statusId) === 13 ||
+      /^(Internal Error)( \\(Internal Error\\))?$/i.test(String(result.status || "").trim())
+    ) {
+      result.message = "أبلغ خادم التنفيذ عن خطأ داخلي (Judge0 status 13). هذا خطأ في خدمة التشغيل الخارجية وليس تشخيصًا لخطأ في كودك. انتظر قليلًا ثم أعد المحاولة.";
+      result.status = "خطأ داخلي في خدمة التنفيذ";
+      result.errorCode = "JUDGE0_INTERNAL_ERROR";
     }
 
     return result;
