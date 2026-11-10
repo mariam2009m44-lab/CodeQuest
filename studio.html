@@ -90,7 +90,9 @@
       frame.setAttribute("aria-hidden", "true");
       frame.tabIndex = -1;
       frame.style.cssText = "position:absolute;width:1px;height:1px;left:-10000px;border:0;";
-      frame.srcdoc = `<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; connect-src 'none'; img-src data:; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'"><script>
+      const runnerScriptOpen = "<scr" + "ipt>";
+      const runnerScriptClose = "</scr" + "ipt>";
+      frame.srcdoc = `<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; connect-src 'none'; img-src data:; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">${runnerScriptOpen}
         window.addEventListener("message", function(event) {
           if (!event.data || event.data.type !== "run") return;
           const lines = [];
@@ -110,7 +112,7 @@
             parent.postMessage({channel:"codequest-studio-runner", type:"error", message:error && error.message ? error.message : String(error)}, "*");
           }
         });
-      </script>`;
+      ${runnerScriptClose}`;
       activeFrame = frame;
       window.addEventListener("message", handleRunnerMessage);
       document.body.appendChild(frame);
