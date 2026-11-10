@@ -664,6 +664,49 @@ export default {
     }
 
     if (
+      url.pathname === "/api/cody/chat" &&
+      request.method === "POST"
+    ) {
+      if (!env.CODY_API_URL) {
+        return jsonResponse({ success: false, message: "خدمة محادثة كودي تحتاج إلى إعداد رابط الخادم." }, 503, origin);
+      }
+      try {
+        await verifyFirebaseUser(request, env);
+      } catch {
+        return jsonResponse({ success: false, message: "سجّل الدخول أولًا لاستخدام كودي." }, 401, origin);
+      }
+      let body;
+      try {
+        body = await readBoundedJson(request, 12000);
+      } catch {
+        return jsonResponse({ success: false, message: "بيانات المحادثة غير صالحة." }, 400, origin);
+      }
+      if (!body || typeof body.question !== "string" || !body.question.trim() || body.question.length > 3000) {
+        return jsonResponse({ success: false, message: "اكتب سؤالًا صالحًا لا يتجاوز 3000 حرف." }, 400, origin);
+      }
+      try {
+        const upstream = await fetch(env.CODY_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": request.headers.get("Authorization") || ""
+          },
+          body: JSON.stringify({
+            question: body.question,
+            history: Array.isArray(body.history) ? body.history.slice(-10) : [],
+            page_context: typeof body.page_context === "string" ? body.page_context.slice(0, 1500) : ""
+          }),
+          signal: AbortSignal.timeout(45000)
+        });
+        const payload = await upstream.json().catch(() => ({}));
+        return jsonResponse(payload, upstream.status, origin);
+      } catch (error) {
+        console.error("Cody upstream request failed:", error);
+        return jsonResponse({ success: false, message: "تعذر الاتصال بخادم كودي." }, 503, origin);
+      }
+    }
+
+    if (
       url.pathname === "/api/code/run" &&
       request.method === "POST"
     ) {

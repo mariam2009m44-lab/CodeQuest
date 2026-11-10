@@ -1,229 +1,125 @@
 (() => {
   "use strict";
-
   if (window.CodeQuestAudio) return;
 
-  const STORAGE_KEY = "codequest_game_audio_v1";
-  const NOTES = [261.63, 293.66, 329.63, 392, 440, 392, 329.63, 293.66];
-  const CHORDS = [
-    [261.63, 329.63, 392],
-    [220, 261.63, 329.63],
-    [174.61, 220, 261.63],
-    [196, 246.94, 293.66]
-  ];
-
-  let context = null;
+  const KEYS = { music: "cq_music", sound: "cq_sound", volume: "cq_music_volume" };
+  let audio = null;
   let musicTimer = null;
-  let noteIndex = 0;
-  let enabled = false;
-  let soundEnabled = true;
-  let volume = 0.16;
-  let button = null;
-  let volumeInput = null;
-  let effectsButton = null;
+  let step = 0;
+  let musicEnabled = false;
+  let soundEnabled = false;
+  let volume = 0.12;
 
-  function loadSettings() {
+  function readPreferences() {
     try {
-      const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      soundEnabled = value.soundEnabled !== false;
-      volume = Number.isFinite(value.volume)
-        ? Math.min(0.35, Math.max(0.03, value.volume))
-        : 0.16;
+      musicEnabled = localStorage.getItem(KEYS.music) === "on";
+      soundEnabled = localStorage.getItem(KEYS.sound) === "on";
+      const stored = Number(localStorage.getItem(KEYS.volume));
+      volume = Number.isFinite(stored) && stored > 0 ? Math.min(.25, Math.max(.03, stored)) : .12;
     } catch {
-      soundEnabled = true;
-      volume = 0.16;
+      musicEnabled = false;
+      soundEnabled = false;
+      volume = .12;
     }
   }
-
-  function saveSettings() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ soundEnabled, volume }));
-    } catch {}
+  function context() {
+    const Audio = window.AudioContext || window.webkitAudioContext;
+    if (!Audio) throw new Error("Audio unavailable");
+    if (!audio) audio = new Audio();
+    return audio;
   }
-
-  function getContext() {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) throw new Error("Audio is not supported");
-    if (!context) context = new AudioContextClass();
-    return context;
+  function note(freq, duration, wave, level, when = 0, filterFreq = 2400) {
+    if (!audio || audio.state !== "running") return;
+    const start = audio.currentTime + when;
+    const osc = audio.createOscillator();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(filterFreq, start);
+    osc.type = wave;
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.0002, level), start + Math.min(.18, duration * .25));
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    osc.connect(filter); filter.connect(gain); gain.connect(audio.destination);
+    osc.start(start); osc.stop(start + duration + .03);
   }
-
-  function tone(frequency, duration, type, gainValue, delay = 0) {
-    if (!context || context.state !== "running" || !soundEnabled) return;
-    const now = context.currentTime + delay;
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = type || "sine";
-    oscillator.frequency.setValueAtTime(frequency, now);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, gainValue), now + 0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + duration + 0.03);
+  const scale = [261.63,293.66,349.23,392,440,523.25,440,392,349.23,329.63,293.66,392];
+  const chords = [[130.81,164.81,196],[110,130.81,164.81],[146.83,174.61,220],[98,123.47,146.83]];
+  function musicStep() {
+    if (!musicEnabled || !audio || audio.state !== "running") return;
+    const n = step % scale.length;
+    const chord = chords[Math.floor(step / 3) % chords.length];
+    const master = volume;
+    note(scale[n], .9, "sine", master * .10, 0, 1800);
+    note(scale[n] * 2, .32, "triangle", master * .025, .08, 3200);
+    if (step % 3 === 0) chord.forEach((hz,i) => note(hz, 2.1, "sine", master * .026, i * .035, 700));
+    if (step % 6 === 0) note(chord[0] / 2, 2.4, "triangle", master * .045, .02, 420);
+    step++;
   }
-
-  function playMusicStep() {
-    if (!enabled || !context || context.state !== "running") return;
-    const chord = CHORDS[Math.floor(noteIndex / 4) % CHORDS.length];
-    const melodyNote = NOTES[noteIndex % NOTES.length];
-    const base = volume * 0.10;
-    tone(melodyNote, 0.75, "sine", base);
-    if (noteIndex % 4 === 0) {
-      chord.forEach((frequency, index) => {
-        tone(frequency / 2, 1.45, "triangle", base * 0.32, index * 0.035);
-      });
-    }
-    noteIndex += 1;
+  async function startMusic() {
+    if (!musicEnabled || musicTimer) return;
+    const ctx = context();
+    await ctx.resume();
+    musicStep();
+    musicTimer = window.setInterval(musicStep, 720);
   }
-
-  function updateEffectsButton() {
-    if (!effectsButton) return;
-    effectsButton.setAttribute("aria-pressed", String(soundEnabled));
-    effectsButton.textContent = soundEnabled ? "المؤثرات مفعّلة" : "المؤثرات مكتومة";
-  }
-
-  function updateButton() {
-    if (!button) return;
-    button.setAttribute("aria-pressed", String(enabled));
-    button.innerHTML = enabled
-      ? '<span aria-hidden="true">♫</span><span>إيقاف موسيقى اللعبة</span>'
-      : '<span aria-hidden="true">♪</span><span>موسيقى اللعبة</span>';
-    button.classList.toggle("is-playing", enabled);
-  }
-
   function stopMusic() {
-    enabled = false;
-    if (musicTimer) window.clearInterval(musicTimer);
+    if (musicTimer) clearInterval(musicTimer);
     musicTimer = null;
-    updateButton();
+    if (audio?.state === "running") audio.suspend().catch(() => {});
   }
-
-  async function toggleMusic() {
-    if (enabled) {
-      stopMusic();
-      return;
-    }
-    const audio = getContext();
-    await audio.resume();
-    enabled = true;
-    playMusicStep();
-    musicTimer = window.setInterval(playMusicStep, 620);
-    updateButton();
-  }
-
   function play(name = "tap") {
     if (!soundEnabled) return;
     try {
-      if (!context || context.state !== "running") return;
+      const ctx = context();
+      if (ctx.state !== "running") return;
       const patterns = {
-        tap: [[660, 0.07, 0.018]],
-        correct: [[523.25, 0.12, 0.035], [659.25, 0.16, 0.03], [783.99, 0.2, 0.025]],
-        wrong: [[220, 0.14, 0.025], [185, 0.18, 0.02]],
-        reward: [[523.25, 0.13, 0.035], [659.25, 0.13, 0.035], [783.99, 0.13, 0.035], [1046.5, 0.28, 0.03]]
+        tap: [[740,.055,.012]],
+        correct: [[523.25,.13,.022],[659.25,.16,.024],[783.99,.24,.022]],
+        wrong: [[246.94,.12,.018],[196,.2,.016]],
+        reward: [[523.25,.12,.025],[659.25,.12,.025],[783.99,.12,.025],[1046.5,.3,.02]]
       };
-      (patterns[name] || patterns.tap).forEach((item, index) => {
-        tone(item[0], item[1], "sine", item[2], index * 0.105);
-      });
+      (patterns[name] || patterns.tap).forEach((v,i) => note(v[0],v[1],"sine",v[2],i*.095,2600));
     } catch {}
   }
-
-  function mount() {
-    if (!document.body || document.getElementById("cq-game-audio")) return;
-    const style = document.createElement("style");
-    style.textContent = `
-      #cq-game-audio{position:fixed;z-index:9999;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid rgba(107,232,255,.32);border-radius:16px;background:rgba(8,15,30,.94);color:#f8fafc;box-shadow:0 8px 28px rgba(0,0,0,.28);font:700 12px Cairo,sans-serif;backdrop-filter:blur(12px)}
-      #cq-game-audio button{min-height:40px;border:0;border-radius:11px;padding:8px 12px;background:linear-gradient(135deg,#7955e8,#238db9);color:white;font:inherit;cursor:pointer}
-      #cq-game-audio button:focus-visible,#cq-game-audio input:focus-visible{outline:3px solid #ffd66b;outline-offset:3px}
-      #cq-game-audio button.is-playing{background:linear-gradient(135deg,#168c76,#36bfe5)}
-      #cq-game-audio label{display:flex;align-items:center;gap:6px;color:#cbd5e1}
-      #cq-game-audio input{width:68px;accent-color:#36bfe5}
-      @media(max-width:480px){#cq-game-audio{right:8px;bottom:calc(8px + env(safe-area-inset-bottom));gap:6px;padding:7px}#cq-game-audio button{padding:7px 9px;font-size:11px}#cq-game-audio label{font-size:10px}#cq-game-audio input{width:52px}}
-      @media(prefers-reduced-motion:reduce){#cq-game-audio *{transition:none!important}}
-    `;
-    document.head.appendChild(style);
-
-    const panel = document.createElement("div");
-    panel.id = "cq-game-audio";
-    panel.innerHTML = `
-      <button type="button" id="cq-game-music" aria-pressed="false">♪ موسيقى اللعبة</button>
-      <button type="button" id="cq-game-effects" aria-pressed="true">المؤثرات مفعّلة</button>
-      <label title="مستوى الصوت"><span aria-hidden="true">🔉</span><input id="cq-game-volume" type="range" min="0.03" max="0.35" step="0.01" value="${volume}" aria-label="مستوى صوت الموسيقى"></label>
-    `;
-    document.body.appendChild(panel);
-    button = panel.querySelector("#cq-game-music");
-    effectsButton = panel.querySelector("#cq-game-effects");
-    volumeInput = panel.querySelector("#cq-game-volume");
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      try {
-        await toggleMusic();
-      } catch (error) {
-        console.warn("تعذر تشغيل موسيقى اللعبة:", error);
-        button.textContent = "الصوت غير متاح";
-      } finally {
-        button.disabled = false;
-      }
-    });
-    effectsButton.addEventListener("click", () => {
-      soundEnabled = !soundEnabled;
-      saveSettings();
-      updateEffectsButton();
-    });
-    volumeInput.addEventListener("input", () => {
-      volume = Number(volumeInput.value);
-      saveSettings();
-    });
-    updateButton();
-    updateEffectsButton();
-
-    document.addEventListener("click", event => {
-      if (event.target.closest("button, .choice-btn, .piece, .code-block, .match-item, .bug-line, .drag-piece")) {
-        try {
-          const audio = getContext();
-          audio.resume().then(() => play("tap")).catch(() => {});
-        } catch {}
-      }
-    }, true);
-
-    const feedbackObserver = new MutationObserver(records => {
-      for (const record of records) {
-        if (record.type === "attributes" && record.attributeName === "class") {
-          const element = record.target;
-          if (element.classList.contains("correct") || element.classList.contains("matched") || element.classList.contains("correct-build")) {
-            play("correct");
-          } else if (element.classList.contains("wrong") || element.classList.contains("incorrect")) {
-            play("wrong");
-          }
-        }
-      }
-    });
-    feedbackObserver.observe(document.body, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["class"]
-    });
+  function onInteraction(event) {
+    if (!event.isTrusted) return;
+    if (!event.target.closest("button, .choice-btn, .piece, .code-block, .match-item, .bug-line, .drag-piece, input, select")) return;
+    try {
+      const ctx = context();
+      ctx.resume().then(() => {
+        if (musicEnabled && !musicTimer) startMusic().catch(() => {});
+        play("tap");
+      }).catch(() => {});
+    } catch {}
   }
-
+  document.addEventListener("pointerdown", onInteraction, { passive: true });
+  document.addEventListener("keydown", onInteraction);
   document.addEventListener("visibilitychange", () => {
-    if (!context || !enabled) return;
+    if (!audio || !musicEnabled) return;
     if (document.hidden) {
-      if (musicTimer) window.clearInterval(musicTimer);
+      if (musicTimer) clearInterval(musicTimer);
       musicTimer = null;
-      context.suspend().catch(() => {});
-    } else {
-      context.resume().then(() => {
-        if (enabled && !musicTimer) musicTimer = window.setInterval(playMusicStep, 620);
-      }).catch(() => stopMusic());
+      audio.suspend().catch(() => {});
+    } else if (musicEnabled) {
+      audio.resume().then(() => { if (!musicTimer) { musicStep(); musicTimer = setInterval(musicStep,720); } }).catch(() => {});
     }
   });
-
-  loadSettings();
+  window.addEventListener("storage", event => {
+    if (!Object.values(KEYS).includes(event.key)) return;
+    readPreferences();
+    if (!musicEnabled) stopMusic();
+  });
+  const observer = new MutationObserver(records => {
+    for (const record of records) {
+      if (record.type !== "attributes" || record.attributeName !== "class") continue;
+      const el = record.target;
+      if (el.classList.contains("correct") || el.classList.contains("matched") || el.classList.contains("correct-build")) play("correct");
+      else if (el.classList.contains("wrong") || el.classList.contains("incorrect")) play("wrong");
+    }
+  });
+  if (document.body) observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class"]});
+  readPreferences();
   window.CodeQuestAudio = Object.freeze({ play, stop: stopMusic });
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", mount, { once: true });
-  } else {
-    mount();
-  }
 })();

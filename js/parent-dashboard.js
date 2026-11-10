@@ -127,7 +127,7 @@ function renderChildren(children) {
     empty.style.gridColumn = "1 / -1";
     empty.append(element("i", "", "♧"));
     empty.append(element("strong", "", "لا توجد حسابات مرتبطة حتى الآن"));
-    empty.append(element("p", "", "افتح حساب المتعلم في هذا الجهاز، وأنشئ رمز ربط، ثم أدخله هنا من حساب ولي الأمر."));
+    empty.append(element("p", "", "يُنشئ المتعلم رمز الربط من حسابه على جهازه، ثم يشاركه مع ولي الأمر لإدخاله هنا من حساب ولي الأمر."));
     childrenContainer.append(empty);
     return;
   }

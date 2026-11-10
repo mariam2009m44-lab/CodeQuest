@@ -26,6 +26,13 @@
     .eyebrow{color:var(--parent-cyan);font-size:.78rem;font-weight:900}
     h1{font-size:clamp(1.6rem,4vw,2.35rem);line-height:1.35;margin:7px 0}
     .hero p,.muted{color:var(--parent-muted);line-height:1.9;margin:0}
+    .parent-guide{margin:18px 0 22px;padding:clamp(20px,4vw,34px);border:1px solid var(--parent-line);border-radius:25px;background:linear-gradient(135deg,#7955e81a,#36bfe50b),var(--parent-panel)}
+    .guide-heading h2{font-size:clamp(1.3rem,3vw,1.8rem);margin:8px 0}.guide-heading p{color:var(--parent-muted);line-height:1.9;margin:0;max-width:760px}
+    .guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px}
+    .guide-grid article{padding:17px;border:1px solid var(--parent-line);border-radius:17px;background:#080f1d80}
+    .guide-grid i{font-size:1.5rem;color:var(--parent-cyan)}.guide-grid h3{font-size:.95rem;margin:8px 0 4px}.guide-grid p{margin:0;color:var(--parent-muted);font-size:.8rem;line-height:1.8}
+    .guide-steps{margin-top:16px;padding:17px;border-radius:17px;background:#36bfe50b;color:var(--parent-muted);line-height:1.9;font-size:.84rem}
+    .guide-steps strong{color:var(--parent-text)}.guide-steps ol{margin:8px 0;padding-inline-start:22px}.guide-steps p{margin:0}
     .mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
     .panel{min-width:0;padding:22px;border:1px solid var(--parent-line);border-radius:22px;background:rgba(17,26,43,.94)}
     .panel h2{font-size:1.1rem;margin:0 0 8px}
@@ -60,7 +67,8 @@
     .empty-state{padding:30px 18px;border:1px dashed var(--parent-line);border-radius:18px;text-align:center;color:var(--parent-muted);line-height:1.9}
     .empty-state i{display:block;font-size:2rem;color:var(--parent-cyan);margin-bottom:8px}
     .privacy-note{margin-top:18px;padding:14px 16px;border-radius:14px;background:#36bfe50b;color:var(--parent-muted);font-size:.78rem;line-height:1.9}
-    @media(max-width:720px){.mode-grid,.children-grid{grid-template-columns:1fr}.parent-top{align-items:flex-start;flex-direction:column}.parent-nav{width:100%}.parent-nav a{flex:1}}
+    @media(max-width:720px){.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mode-grid,.children-grid{grid-template-columns:1fr}.parent-top{align-items:flex-start;flex-direction:column}.parent-nav{width:100%}.parent-nav a{flex:1}}
+    @media(max-width:460px){.guide-grid{grid-template-columns:1fr}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
@@ -79,7 +87,7 @@
 
     <section class="mode-grid" aria-label="إعداد ربط الحسابات">
       <article class="panel">
-        <h2><i class="ri-user-heart-line" style="color:var(--parent-cyan)"></i> أنا ولي الأمر</h2>
+        <h2><i class="ri-user-heart-line" style="color:var(--parent-cyan)"></i> ربط حساب المتعلم</h2>
         <p>أدخل رمز الربط الذي أنشأه المتعلم من حسابه. الرمز صالح لمدة 30 دقيقة ويُستخدم مرة واحدة.</p>
         <label class="field-label" for="parentLinkCode">رمز الربط</label>
         <input class="code-input" id="parentLinkCode" inputmode="text" autocomplete="one-time-code" maxlength="16" placeholder="مثال: A1B2C3D4E5F60718" dir="ltr">
@@ -88,7 +96,7 @@
       </article>
 
       <article class="panel">
-        <h2><i class="ri-share-forward-line" style="color:var(--parent-green)"></i> أنا المتعلم</h2>
+        <h2><i class="ri-share-forward-line" style="color:var(--parent-green)"></i> إنشاء رمز من حساب المتعلم</h2>
         <p>أنشئ رمزًا من حسابك، وشاركه مع ولي أمرك بنفسك. لا تشارك الرمز مع أي شخص آخر.</p>
         <button class="primary-button" id="createLinkButton" type="button">إنشاء رمز ربط آمن</button>
         <div class="generated-code" id="generatedCodeBox" aria-live="polite">
