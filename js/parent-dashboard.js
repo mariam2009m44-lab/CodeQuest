@@ -184,7 +184,7 @@ onAuthStateChanged(auth, user => {
     childrenContainer.append(empty);
     claimButton.disabled = true;
     setStatus(claimStatus, "يلزم تسجيل الدخول لاستخدام الربط.");
-    setStatus(createStatus, "يلزم تسجيل الدخول لإنشاء رمز.");
+
     return;
   }
   claimButton.disabled = false;
