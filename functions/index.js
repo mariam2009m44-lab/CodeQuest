@@ -2116,3 +2116,187 @@ exports.verifyPythonChallenge = onCall(
     };
   }
 );
+
+// -----------------------------------------------------------------------------
+// Parent dashboard: child-initiated, one-time account linking.
+// Parent data is returned only by callable functions after checking the link.
+// -----------------------------------------------------------------------------
+const crypto = require("crypto");
+
+function hashParentLinkCode(code) {
+  return crypto.createHash("sha256").update(code).digest("hex");
+}
+
+exports.createParentLinkCode = onCall(CALL_OPTIONS, async request => {
+  const childUid = requireAuth(request);
+  const code = crypto.randomBytes(8).toString("hex");
+  const codeHash = hashParentLinkCode(code);
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+  await db.collection("parentLinkCodes").doc(codeHash).create({
+    childUid,
+    createdAt: FieldValue.serverTimestamp(),
+    expiresAt,
+    claimedBy: null
+  });
+
+  return {
+    success: true,
+    code,
+    expiresAt: expiresAt.toISOString(),
+    expiresInMinutes: 30
+  };
+});
+
+exports.claimParentLinkCode = onCall(CALL_OPTIONS, async request => {
+  const parentUid = requireAuth(request);
+  const code = String(request.data?.code || "").trim().toLowerCase();
+
+  if (!/^[a-f0-9]{16}$/.test(code)) {
+    throw new HttpsError("invalid-argument", "رمز الربط غير صحيح.");
+  }
+
+  const codeRef = db.collection("parentLinkCodes").doc(hashParentLinkCode(code));
+
+  const result = await db.runTransaction(async transaction => {
+    const codeSnapshot = await transaction.get(codeRef);
+    if (!codeSnapshot.exists) {
+      throw new HttpsError("not-found", "رمز الربط غير موجود أو تم استخدامه.");
+    }
+
+    const invite = codeSnapshot.data() || {};
+    if (invite.claimedBy) {
+      throw new HttpsError("already-exists", "تم استخدام رمز الربط بالفعل.");
+    }
+    if (!invite.expiresAt || invite.expiresAt.toMillis() <= Date.now()) {
+      throw new HttpsError("deadline-exceeded", "انتهت صلاحية رمز الربط. اطلب رمزًا جديدًا.");
+    }
+    if (!invite.childUid || invite.childUid === parentUid) {
+      throw new HttpsError("failed-precondition", "لا يمكن ربط الحساب بنفسه.");
+    }
+
+    const childRef = db.collection("users").doc(invite.childUid);
+    const childSnapshot = await transaction.get(childRef);
+    if (!childSnapshot.exists) {
+      throw new HttpsError("not-found", "حساب المتعلم غير موجود.");
+    }
+
+    const linkRef = db.collection("parentLinks").doc(invite.childUid + "_" + parentUid);
+    const existingLink = await transaction.get(linkRef);
+    if (existingLink.exists) {
+      throw new HttpsError("already-exists", "هذا الحساب مرتبط بالفعل.");
+    }
+
+    transaction.create(linkRef, {
+      childUid: invite.childUid,
+      parentUid,
+      createdAt: FieldValue.serverTimestamp()
+    });
+    transaction.update(codeRef, {
+      claimedBy: parentUid,
+      claimedAt: FieldValue.serverTimestamp()
+    });
+
+    return {
+      childUid: invite.childUid,
+      childName: String(childSnapshot.data()?.displayName || "المتعلم").slice(0, 50)
+    };
+  });
+
+  return { success: true, ...result };
+});
+
+exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
+  const parentUid = requireAuth(request);
+  const linksSnapshot = await db.collection("parentLinks")
+    .where("parentUid", "==", parentUid)
+    .limit(10)
+    .get();
+
+  const children = await Promise.all(linksSnapshot.docs.map(async linkDoc => {
+    const link = linkDoc.data() || {};
+    const childUid = link.childUid;
+    if (typeof childUid !== "string" || !childUid) return null;
+
+    const childRef = db.collection("users").doc(childUid);
+    const [childSnapshot, progressSnapshot, projectsSnapshot] = await Promise.all([
+      childRef.get(),
+      childRef.collection("lessonProgress").get(),
+      db.collection("projects").where("userId", "==", childUid).get()
+    ]);
+
+    if (!childSnapshot.exists) return null;
+    const profile = childSnapshot.data() || {};
+    const completed = progressSnapshot.docs
+      .map(doc => doc.data() || {})
+      .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
+
+    const now = Date.now();
+    const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const recent = completed.filter(item => {
+      const timestamp = item.updatedAt?.toMillis?.();
+      return Number.isFinite(timestamp) && timestamp >= weekAgo && timestamp <= now;
+    });
+
+    const languages = {};
+    for (const language of ["python", "javascript", "cpp", "java"]) {
+      languages[language] = completed.filter(item => item.language === language).length;
+    }
+
+    const timestamps = completed
+      .map(item => item.updatedAt?.toMillis?.())
+      .filter(Number.isFinite);
+    const lastActivity = timestamps.length ? Math.max(...timestamps) : null;
+
+    return {
+      childUid,
+      displayName: String(profile.displayName || "المتعلم").slice(0, 50),
+      xp: Number.isSafeInteger(profile.xp) && profile.xp >= 0 ? profile.xp : 0,
+      stars: Number.isSafeInteger(profile.stars) && profile.stars >= 0 ? profile.stars : 0,
+      level: Number.isSafeInteger(profile.level) && profile.level >= 1 ? profile.level : 1,
+      completedLessons: completed.length,
+      lessonsThisWeek: recent.length,
+      projectsCount: projectsSnapshot.size,
+      languageCounts: languages,
+      lastActivity: lastActivity ? new Date(lastActivity).toISOString() : null
+    };
+  }));
+
+  return {
+    success: true,
+    children: children.filter(Boolean),
+    generatedAt: new Date().toISOString()
+  };
+});
+
+exports.unlinkParentChild = onCall(CALL_OPTIONS, async request => {
+  const parentUid = requireAuth(request);
+  const childUid = String(request.data?.childUid || "");
+  if (!/^[A-Za-z0-9_-]{20,128}$/.test(childUid)) {
+    throw new HttpsError("invalid-argument", "حساب المتعلم غير صالح.");
+  }
+
+  const linkRef = db.collection("parentLinks").doc(childUid + "_" + parentUid);
+  const snapshot = await linkRef.get();
+  if (!snapshot.exists || snapshot.data()?.parentUid !== parentUid) {
+    throw new HttpsError("not-found", "لا يوجد ربط بهذا الحساب.");
+  }
+  await linkRef.delete();
+  return { success: true };
+});
+
+exports.removeParentLinkAsChild = onCall(CALL_OPTIONS, async request => {
+  const childUid = requireAuth(request);
+  const parentUid = String(request.data?.parentUid || "");
+  if (!/^[A-Za-z0-9_-]{20,128}$/.test(parentUid)) {
+    throw new HttpsError("invalid-argument", "حساب ولي الأمر غير صالح.");
+  }
+
+  const linkRef = db.collection("parentLinks").doc(childUid + "_" + parentUid);
+  const snapshot = await linkRef.get();
+  if (!snapshot.exists || snapshot.data()?.childUid !== childUid) {
+    throw new HttpsError("not-found", "لا يوجد ربط بهذا الحساب.");
+  }
+  await linkRef.delete();
+  return { success: true };
+});
