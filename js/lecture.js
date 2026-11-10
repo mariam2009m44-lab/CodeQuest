@@ -807,7 +807,16 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
       });
     }
 
-    saveLocalLessonCompletion({ serverVerified });
+    const localSaved = saveLocalLessonCompletion({ serverVerified });
+    if (!serverVerified && !localSaved) {
+      throw new Error(
+        "تعذر حفظ التقدم محليًا. تحقق من مساحة التخزين في المتصفح ثم حاول مرة أخرى."
+      );
+    }
+
+    // A verified cloud save is authoritative even if the optional local cache
+    // cannot be written. An offline completion, however, is valid only when
+    // its device-local record was actually persisted.
     lessonCompleted = true;
     lessonNeedsServerVerification = !serverVerified;
     quizPassed = true;
