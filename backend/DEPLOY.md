@@ -1,43 +1,46 @@
-# نشر خادم كودي (FastAPI)
+# تشغيل كودي بدون خادم مدفوع
 
-هذا الخادم مستقل عن GitHub Pages وCloudflare Worker. ملف `render.yaml` يجهز خدمة Render من جذر المستودع.
+يعمل مسار المحادثة داخل Cloudflare Worker الحالي، ولا يحتاج إلى Render أو خادم FastAPI منفصل.
 
-## متغيرات البيئة المطلوبة
+## المتطلبات
 
-أثناء إنشاء الخدمة، أضيفي القيم السرية في لوحة الاستضافة فقط:
+- Cloudflare Worker الحالي باسم `codequest`.
+- Firebase Authentication لمصادقة حساب الطالب.
+- مفتاح Gemini API مع تفعيل نموذج متاح في حساب AI Studio.
+- ربط Durable Object الحالي `CODE_EXECUTION_LIMITER` كما هو موضح في `wrangler.toml`.
 
-- `GEMINI_API_KEY`: مفتاح Gemini API.
-- `FIREBASE_SERVICE_ACCOUNT_JSON`: محتوى JSON لحساب خدمة Firebase الخاص بمشروع `codequest-6350a`.
+## إضافة مفتاح Gemini بأمان
 
-لا تضعي هذه القيم في GitHub أو داخل ملفات المشروع أو في المحادثة. استخدمي حساب خدمة مخصصًا بأقل صلاحيات ممكنة، واحتفظي بملفه في مكان آمن.
+من Cloudflare Dashboard:
 
-المتغيرات العامة المضبوطة في `render.yaml`:
-- `FIREBASE_PROJECT_ID=codequest-6350a`
-- `GEMINI_MODEL=gemini-3.8-flash`
-- `CORS_ORIGINS=https://mariam2009m44-lab.github.io`
+1. افتحي **Workers & Pages** ثم اختاري Worker باسم `codequest`.
+2. افتحي **Settings → Variables and Secrets**.
+3. أضيفي Secret باسم `GEMINI_API_KEY` والصقي المفتاح في خانة القيمة.
+4. أضيفي متغيرًا عاديًا باسم `GEMINI_MODEL` وقيمة نموذج متاح في Gemini API (الافتراضي في الكود `gemini-2.5-flash`).
+5. احفظي التغييرات ثم أعيدي نشر Worker.
 
-## خطوات النشر
+لا تضعي مفتاح Gemini في GitHub أو ملفات JavaScript التي تصل للمتصفح، ولا ترسليه في المحادثة.
 
-1. افتحي Render واختاري إنشاء Web Service من مستودع GitHub.
-2. اختاري مستودع CodeQuest والفرع الذي يحتوي على هذا الإصلاح.
-3. اتركي Render يقرأ إعدادات `render.yaml`.
-4. أضيفي المتغيرين السريين السابقين في Environment، ثم ابدئي النشر.
-5. بعد نجاح النشر، اختبري `https://YOUR-SERVICE.onrender.com/health` ويجب أن يعيد حالة healthy.
+## ما الذي يحدث عند سؤال كودي؟
 
-## ربط Cloudflare Worker
+1. يتحقق Worker من Firebase ID token.
+2. يصنّف السؤال محليًا باستخدام مصنف خفيف مبني على أمثلة `cody-ml-engine/data/training_data.json` والفئات الست نفسها.
+3. يرسل السؤال والسياق وسجلًا محدودًا إلى Gemini من الخادم.
+4. يعيد الإجابة والتصنيف للواجهة.
+5. يحدّ Durable Object الاستخدام إلى 20 سؤالًا يوميًا لكل حساب.
 
-من إعدادات Worker المسمى `codequest` افتحي Settings ثم Variables and Secrets، وأضيفي متغيرًا نصيًا باسم:
+المصنف داخل Worker يستخدم TF-IDF character n-grams مع أقرب مركز فئة. وهو بديل خفيف متوافق مع بيئة Workers، وليس نسخة مطابقة لخوارزمية Logistic Regression في Python؛ لذلك يجب اختبار دقته على أسئلة عربية وإنجليزية فعلية وتحسين بيانات التدريب عند الحاجة.
 
-`CODY_API_URL`
+## حدود الخطة المجانية
 
-واجعلي قيمته عنوان الخادم المنشور متبوعًا بالمسار:
+Cloudflare وGemini لديهما حدود استخدام ومعدلات طلب قد تتغير. المجانية ليست استخدامًا غير محدود، وقد تتوقف إجابات كودي مؤقتًا عند بلوغ حد المزود.
 
-`https://YOUR-SERVICE.onrender.com/api/cody/chat`
+## اختبار بعد النشر
 
-احفظي الإعدادات ثم أعيدي نشر Worker. لا تضعي مفتاح Gemini أو ملف Firebase في Worker؛ يظلان في خادم FastAPI فقط.
+- افتحي CodeQuest بحساب مسجل الدخول.
+- ارسلي سؤالًا برمجيًا بالعربية، مثل: `اشرح لي المتغيرات في بايثون`.
+- جربي سؤالًا علميًا وسؤالًا باللغة الإنجليزية.
+- تأكدي أن الاستجابة تتضمن `success: true` و`answer` و`category`.
+- جرّبي الطلب دون تسجيل الدخول؛ يجب أن يرجع `401`.
 
-## ملاحظات
-
-- لا يعتبر إنشاء خدمة Render نشرًا مكتملًا حتى تظهر حالة الخدمة Live وينجح فحص `/health`.
-- بعد ربط Worker، اختبري محادثة حقيقية بحساب CodeQuest مسجل الدخول.
-- لا تشاركي مفاتيح Gemini أو بيانات حساب خدمة Firebase مع أي شخص.
+لا تعتبري كودي جاهزًا للإطلاق قبل نجاح هذه الاختبارات من الموقع المنشور.
