@@ -2248,14 +2248,45 @@ exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
       if (typeof childUid !== "string" || !childUid) return null;
 
       const childRef = db.collection("users").doc(childUid);
-      const [childSnapshot, progressSnapshot, projectsSnapshot] = await Promise.all([
+      const [profileResult, progressResult, projectsResult] = await Promise.allSettled([
         childRef.get(),
         childRef.collection("lessonProgress").get(),
         db.collection("projects").where("userId", "==", childUid).get()
       ]);
 
+      // A profile is required to identify the linked learner. Progress and
+      // project reads are independent: one unavailable collection must not
+      // blank the entire family dashboard.
+      if (profileResult.status === "rejected") {
+        console.error("getParentDashboard child profile read failed:", {
+          stage: "child-profile",
+          code: typeof profileResult.reason?.code === "string" ? profileResult.reason.code : "unknown"
+        });
+        return null;
+      }
+
+      const childSnapshot = profileResult.value;
       if (!childSnapshot.exists) return null;
       const profile = childSnapshot.data() || {};
+
+      const progressAvailable = progressResult.status === "fulfilled";
+      const projectsAvailable = projectsResult.status === "fulfilled";
+
+      if (!progressAvailable) {
+        console.error("getParentDashboard progress read failed:", {
+          stage: "child-progress",
+          code: typeof progressResult.reason?.code === "string" ? progressResult.reason.code : "unknown"
+        });
+      }
+      if (!projectsAvailable) {
+        console.error("getParentDashboard projects read failed:", {
+          stage: "child-projects",
+          code: typeof projectsResult.reason?.code === "string" ? projectsResult.reason.code : "unknown"
+        });
+      }
+
+      const progressSnapshot = progressAvailable ? progressResult.value : { docs: [] };
+      const projectsSnapshot = projectsAvailable ? projectsResult.value : { size: 0 };
       const completed = progressSnapshot.docs
         .map(doc => doc.data() || {})
         .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
@@ -2287,6 +2318,10 @@ exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
         lessonsThisWeek: recent.length,
         projectsCount: projectsSnapshot.size,
         languageCounts: languages,
+        dataAvailability: {
+          progress: progressAvailable,
+          projects: projectsAvailable
+        },
         lastActivity: lastActivity ? new Date(lastActivity).toISOString() : null
       };
     }));
