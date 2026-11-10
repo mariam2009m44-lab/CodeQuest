@@ -309,7 +309,7 @@ exports.runCode = onCall(
 exports.verifyJavaChallenge = onCall(
   {
     region: "europe-west1",
-    timeoutSeconds: 45,
+    timeoutSeconds: 60,
     memory: "256MiB",
     maxInstances: 5
   },
@@ -1936,6 +1936,19 @@ async function executePythonChallenge(code) {
     throw new HttpsError(
       "deadline-exceeded",
       "انتهى وقت انتظار تنفيذ التحدي."
+    );
+  }
+
+  // Judge0 status 13 is an upstream execution-service failure. Do not
+  // misreport it as a learner-code failure or return a generic "Internal".
+  if (result.status.id === 13) {
+    console.error("Judge0 reported an internal execution error:", {
+      statusId: result.status.id,
+      status: String(result.status.description || "Internal Error").slice(0, 80)
+    });
+    throw new HttpsError(
+      "unavailable",
+      "خدمة تشغيل الأكواد الخارجية واجهت خطأ مؤقتًا. الكود لم يُرفض بسبب صياغته؛ حاول مرة أخرى بعد قليل."
     );
   }
 
