@@ -66,6 +66,12 @@
 
   function mountControl() {
     if (!document.body || button) return;
+    if (!document.getElementById("cqGameSoundStyles")) {
+      const style = document.createElement("style");
+      style.id = "cqGameSoundStyles";
+      style.textContent = ".cq-game-sound-toggle{position:fixed;z-index:10050;inset-block-start:max(12px,env(safe-area-inset-top));inset-inline-end:14px;width:44px;height:44px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.35);border-radius:14px;background:rgba(12,19,35,.88);color:#eaf6ff;box-shadow:0 8px 24px rgba(0,0,0,.22);backdrop-filter:blur(12px);font-size:1.25rem;cursor:pointer;-webkit-tap-highlight-color:transparent}.cq-game-sound-toggle[aria-pressed=\"true\"]{color:#36bfe5;border-color:#36bfe5}.cq-game-sound-toggle:focus-visible{outline:3px solid #36bfe5;outline-offset:3px}";
+      document.head.append(style);
+    }
     button = document.createElement("button");
     button.type = "button";
     button.className = "cq-game-sound-toggle";
