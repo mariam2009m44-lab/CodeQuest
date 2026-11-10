@@ -151,9 +151,12 @@ async function readJudge0Response(response) {
   try {
     data = await response.json();
   } catch {
+    console.error("Judge0 returned a non-JSON response:", {
+      status: response.status
+    });
     throw new HttpsError(
-      "internal",
-      "وصلت استجابة غير مفهومة من خدمة التشغيل."
+      "unavailable",
+      "خدمة تشغيل الأكواد أرسلت استجابة غير صالحة. حاول مرة أخرى لاحقًا."
     );
   }
 
@@ -1871,9 +1874,14 @@ async function executePythonChallenge(code) {
   }
 
   if (!submission?.token) {
+    console.error("Judge0 submission response did not include a token:", {
+      responseKeys: submission && typeof submission === "object"
+        ? Object.keys(submission).slice(0, 12)
+        : []
+    });
     throw new HttpsError(
-      "internal",
-      "لم تُرجع خدمة التشغيل رقم التنفيذ."
+      "unavailable",
+      "خدمة تشغيل الأكواد لم تبدأ التنفيذ حاليًا. حاول مرة أخرى بعد قليل."
     );
   }
 
@@ -2208,65 +2216,83 @@ exports.claimParentLinkCode = onCall(CALL_OPTIONS, async request => {
 
 exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
   const parentUid = requireAuth(request);
-  const linksSnapshot = await db.collection("parentLinks")
-    .where("parentUid", "==", parentUid)
-    .limit(10)
-    .get();
+  let stage = "parent-links";
 
-  const children = await Promise.all(linksSnapshot.docs.map(async linkDoc => {
-    const link = linkDoc.data() || {};
-    const childUid = link.childUid;
-    if (typeof childUid !== "string" || !childUid) return null;
+  try {
+    const linksSnapshot = await db.collection("parentLinks")
+      .where("parentUid", "==", parentUid)
+      .limit(10)
+      .get();
 
-    const childRef = db.collection("users").doc(childUid);
-    const [childSnapshot, progressSnapshot, projectsSnapshot] = await Promise.all([
-      childRef.get(),
-      childRef.collection("lessonProgress").get(),
-      db.collection("projects").where("userId", "==", childUid).get()
-    ]);
+    stage = "child-data";
+    const children = await Promise.all(linksSnapshot.docs.map(async linkDoc => {
+      const link = linkDoc.data() || {};
+      const childUid = link.childUid;
+      if (typeof childUid !== "string" || !childUid) return null;
 
-    if (!childSnapshot.exists) return null;
-    const profile = childSnapshot.data() || {};
-    const completed = progressSnapshot.docs
-      .map(doc => doc.data() || {})
-      .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
+      const childRef = db.collection("users").doc(childUid);
+      const [childSnapshot, progressSnapshot, projectsSnapshot] = await Promise.all([
+        childRef.get(),
+        childRef.collection("lessonProgress").get(),
+        db.collection("projects").where("userId", "==", childUid).get()
+      ]);
 
-    const now = Date.now();
-    const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-    const recent = completed.filter(item => {
-      const timestamp = item.updatedAt?.toMillis?.();
-      return Number.isFinite(timestamp) && timestamp >= weekAgo && timestamp <= now;
-    });
+      if (!childSnapshot.exists) return null;
+      const profile = childSnapshot.data() || {};
+      const completed = progressSnapshot.docs
+        .map(doc => doc.data() || {})
+        .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
 
-    const languages = {};
-    for (const language of ["python", "javascript", "cpp", "java"]) {
-      languages[language] = completed.filter(item => item.language === language).length;
-    }
+      const now = Date.now();
+      const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const recent = completed.filter(item => {
+        const timestamp = item.updatedAt?.toMillis?.();
+        return Number.isFinite(timestamp) && timestamp >= weekAgo && timestamp <= now;
+      });
 
-    const timestamps = completed
-      .map(item => item.updatedAt?.toMillis?.())
-      .filter(Number.isFinite);
-    const lastActivity = timestamps.length ? Math.max(...timestamps) : null;
+      const languages = {};
+      for (const language of ["python", "javascript", "cpp", "java"]) {
+        languages[language] = completed.filter(item => item.language === language).length;
+      }
+
+      const timestamps = completed
+        .map(item => item.updatedAt?.toMillis?.())
+        .filter(Number.isFinite);
+      const lastActivity = timestamps.length ? Math.max(...timestamps) : null;
+
+      return {
+        childUid,
+        displayName: String(profile.displayName || "المتعلم").slice(0, 50),
+        xp: Number.isSafeInteger(profile.xp) && profile.xp >= 0 ? profile.xp : 0,
+        stars: Number.isSafeInteger(profile.stars) && profile.stars >= 0 ? profile.stars : 0,
+        level: Number.isSafeInteger(profile.level) && profile.level >= 1 ? profile.level : 1,
+        completedLessons: completed.length,
+        lessonsThisWeek: recent.length,
+        projectsCount: projectsSnapshot.size,
+        languageCounts: languages,
+        lastActivity: lastActivity ? new Date(lastActivity).toISOString() : null
+      };
+    }));
 
     return {
-      childUid,
-      displayName: String(profile.displayName || "المتعلم").slice(0, 50),
-      xp: Number.isSafeInteger(profile.xp) && profile.xp >= 0 ? profile.xp : 0,
-      stars: Number.isSafeInteger(profile.stars) && profile.stars >= 0 ? profile.stars : 0,
-      level: Number.isSafeInteger(profile.level) && profile.level >= 1 ? profile.level : 1,
-      completedLessons: completed.length,
-      lessonsThisWeek: recent.length,
-      projectsCount: projectsSnapshot.size,
-      languageCounts: languages,
-      lastActivity: lastActivity ? new Date(lastActivity).toISOString() : null
+      success: true,
+      children: children.filter(Boolean),
+      generatedAt: new Date().toISOString()
     };
-  }));
+  } catch (error) {
+    // Keep private account identifiers and document contents out of logs.
+    console.error("getParentDashboard failed:", {
+      stage,
+      code: typeof error?.code === "string" ? error.code : "unknown",
+      name: typeof error?.name === "string" ? error.name : "Error"
+    });
 
-  return {
-    success: true,
-    children: children.filter(Boolean),
-    generatedAt: new Date().toISOString()
-  };
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError(
+      "unavailable",
+      "تعذر تحميل بيانات لوحة ولي الأمر حاليًا. حاول تحديث الصفحة بعد قليل."
+    );
+  }
 });
 
 exports.unlinkParentChild = onCall(CALL_OPTIONS, async request => {
