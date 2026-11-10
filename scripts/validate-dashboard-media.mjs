@@ -80,4 +80,31 @@ const learnerLinkScript = fs.readFileSync("js/learner-parent-link.js", "utf8");
 if (!learnerLinkScript.includes('"createParentLinkCode"')) {
   throw new Error("Learner-side parent link generator is missing its callable integration.");
 }
+
+const progressPage = fs.readFileSync("progress.html", "utf8");
+if (!progressPage.includes(String.raw`const match = /^(\d+)_(\d+)$/.exec(String(key));`)) {
+  throw new Error("Python local progress keys must parse numeric chapter_lesson IDs.");
+}
+if (progressPage.includes(String.raw`const match = /^(\\d+)_(\\d+)$/.exec(String(key));`)) {
+  throw new Error("Python progress parser contains an over-escaped digit expression.");
+}
+const worker = fs.readFileSync("cloudflare-worker/worker.js", "utf8");
+const codeRunner = fs.readFileSync("js/code-runner.js", "utf8");
+if (!worker.includes('statusId: Number.isInteger(judgeStatusId)') ||
+    !worker.includes('"JUDGE0_INTERNAL_ERROR"')) {
+  throw new Error("Worker must expose structured Judge0 status diagnostics.");
+}
+if (!codeRunner.includes('Number(result.statusId) === 13') ||
+    !codeRunner.includes('"JUDGE0_INTERNAL_ERROR"')) {
+  throw new Error("Code runner must recognize Judge0 status 13.");
+}
+const functionsSource = fs.readFileSync("functions/index.js", "utf8");
+if (!functionsSource.includes("exports.getMyParentLinks") ||
+    !functionsSource.includes("exports.removeParentLinkAsChild")) {
+  throw new Error("Learner-side parent unlink callables are missing.");
+}
+if (!learnerLinkScript.includes('"getMyParentLinks"') ||
+    !learnerLinkScript.includes('"removeParentLinkAsChild"')) {
+  throw new Error("Learner settings must load and revoke parent links.");
+}
 console.log("Dashboard media and parent-link integration validated.");
