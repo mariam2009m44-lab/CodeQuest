@@ -1988,6 +1988,8 @@ exports.verifyPythonChallenge = onCall(
     maxInstances: 5
   },
   async request => {
+    let stage = "input-validation";
+    try {
     const uid = requireAuth(request);
 
     const data = request.data || {};
@@ -2055,6 +2057,7 @@ exports.verifyPythonChallenge = onCall(
       };
     }
 
+    stage = "judge0-execution";
     const execution = await executePythonChallenge(code);
 
     if (!execution.accepted) {
@@ -2094,6 +2097,7 @@ exports.verifyPythonChallenge = onCall(
      * هذا الإثبات يُنشأ من الخادم فقط.
      * Firestore Rules تمنع المتصفح من كتابة quizResults.
      */
+    stage = "proof-write";
     await resultRef.set({
       verificationVersion: 1,
       serverVerified: true,
@@ -2122,9 +2126,22 @@ exports.verifyPythonChallenge = onCall(
       chapter,
       lesson
     };
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+      console.error("verifyPythonChallenge failed:", {
+        stage,
+        code: typeof error?.code === "string" ? error.code : "unknown",
+        name: typeof error?.name === "string" ? error.name : "Error"
+      });
+      throw new HttpsError(
+        "unavailable",
+        stage === "proof-write"
+          ? "تم تنفيذ التحدي، لكن تعذر حفظ إثبات النجاح. حاول مرة أخرى."
+          : "تعذر التحقق من التحدي حاليًا. حاول مرة أخرى بعد قليل."
+      );
+    }
   }
 );
-
 // -----------------------------------------------------------------------------
 // Parent dashboard: child-initiated, one-time account linking.
 // Parent data is returned only by callable functions after checking the link.
