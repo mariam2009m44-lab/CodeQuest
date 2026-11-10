@@ -19,7 +19,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
 
   <link rel="stylesheet" href="css/dashboard.css">
-  <link rel="stylesheet" href="css/dashboard-media.css">
+  <link rel="stylesheet" href="css/dashboard-media.css">\n  <link rel="stylesheet" href="css/learning-magazine.css">
   <link rel="stylesheet" href="js/css/avatar-display.css">
   <link rel="stylesheet" href="css/theme.css">
 
@@ -821,26 +821,47 @@
     </section>
 
 
-    <!-- مكتبة فيديوهات الشرح -->
-    <section class="dashboard-section learning-videos-section" id="learningVideos" aria-labelledby="learningVideosTitle">
-      <div class="section-heading">
+    <!-- مجلة كودي التعليمية -->
+    <section class="dashboard-section learning-magazine" id="learningMagazine" aria-labelledby="learningMagazineTitle">
+      <div class="learning-magazine-intro">
         <div>
-          <span class="section-eyebrow">نتعلم بالفيديو</span>
-          <h2 id="learningVideosTitle">سينما كودي التعليمية <span class="heading-sparkle">✦</span></h2>
-          <p>شروحات مبسطة تساعدك تشوف الفكرة وتطبقها خطوة بخطوة.</p>
+          <span class="learning-magazine-kicker"><i class="ri-book-open-line" aria-hidden="true"></i> مجلة كودي · إصدار التعلم</span>
+          <h2 id="learningMagazineTitle">تعلّم البرمجة بأسلوب مختلف</h2>
+          <p>سلاسل منتقاة، مرتبة حسب اللغة والمستوى، لتتعلم خطوة بخطوة ومن غير زحمة.</p>
         </div>
-        <span class="videos-section-tag"><i class="ri-play-circle-line" aria-hidden="true"></i> فيديوهات للأطفال</span>
+        <span class="magazine-edition">مختارات تعليمية · تتجدد باستمرار</span>
       </div>
-      <div class="magazine-toolbar">
-        <div class="magazine-filter-list" id="learningVideoFilters" aria-label="تصفية الفيديوهات"></div>
-        <span class="magazine-count" id="learningVideoCount">محتوى قصير ومنتقًى</span>
-      </div>
-      <div class="learning-videos-grid" id="learningVideosGrid" aria-live="polite">
-        <div class="learning-videos-empty">
-          <span class="learning-videos-empty-icon"><i class="ri-video-add-line" aria-hidden="true"></i></span>
-          <strong>مساحة الشروحات جاهزة!</strong>
-          <p>يمكن إضافة روابط فيديوهات الشرح في ملف <code>json/learning-videos.json</code>، وهتظهر هنا تلقائيًا.</p>
+
+      <div class="magazine-hero" aria-roledescription="carousel" aria-label="سلاسل تعليمية مميزة">
+        <div class="magazine-hero-copy">
+          <span class="magazine-hero-eyebrow" id="magazineHeroEyebrow">رحلتك تبدأ من هنا</span>
+          <h3 id="magazineHeroTitle">اكتشف عالم البرمجة</h3>
+          <p id="magazineHeroDescription">اختار اللغة المناسبة وابدأ رحلتك التعليمية.</p>
+          <div class="magazine-hero-actions">
+            <a class="magazine-primary-link" id="magazineHeroLink" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">
+              <i class="ri-play-circle-line" aria-hidden="true"></i> ابدأ السلسلة
+            </a>
+            <span class="magazine-hero-level" id="magazineHeroLevel">مناسب للمبتدئين</span>
+          </div>
         </div>
+        <div class="magazine-hero-art">
+          <img id="magazineHeroImage" src="https://img.youtube.com/vi/h3VCQjyaLws/hqdefault.jpg" alt="" fetchpriority="high">
+        </div>
+        <div class="magazine-hero-dots" id="magazineHeroDots" aria-label="اختيار الغلاف"></div>
+        <div class="magazine-hero-controls">
+          <button class="magazine-arrow" id="magazinePrevious" type="button" aria-label="الصورة السابقة"><i class="ri-arrow-right-s-line" aria-hidden="true"></i></button>
+          <button class="magazine-arrow" id="magazineNext" type="button" aria-label="الصورة التالية"><i class="ri-arrow-left-s-line" aria-hidden="true"></i></button>
+          <button class="magazine-pause" id="magazinePause" type="button" aria-pressed="false">إيقاف الحركة</button>
+        </div>
+      </div>
+
+      <div class="magazine-library-head">
+        <h3>مكتبة السلاسل التعليمية</h3>
+        <span id="magazineSeriesCount">سلاسل مرتبة حسب اللغة</span>
+      </div>
+      <div class="magazine-filters" id="magazineFilters" aria-label="تصفية السلاسل حسب اللغة"></div>
+      <div class="magazine-series-grid" id="magazineSeriesGrid" aria-live="polite">
+        <p class="magazine-load-error">جارٍ تجهيز مكتبة التعلم...</p>
       </div>
     </section>
 
@@ -1049,7 +1070,7 @@
 
 <!-- ملفات تشغيل المنصة -->
 <script type="module" src="js/app.js"></script>
-<script type="module" src="js/dashboard-media.js"></script>
+<script type="module" src="js/learning-magazine.js"></script>
 <script type="module" src="js/cody-assistant.js"></script>
 <script src="js/pro-accessibility.js" defer></script>
 
