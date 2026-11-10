@@ -167,6 +167,10 @@
       const p = puzzles[level]; correctSeq = p.correct; taskText.textContent = p.task;
       const shuffled = [...p.options].sort(() => Math.random() - 0.5);
       source.innerHTML = ''; drop.innerHTML = ''; seq = []; btn.disabled = true;
+      btn.textContent = 'تحقق من الترتيب';
+      btn.style.background = 'var(--green)';
+      drop.style.borderColor = '';
+      drop.style.background = '';
       shuffled.forEach(opt => {
         const el = document.createElement('div'); el.className = 'code-block';
         el.textContent = opt; el.onclick = () => select(el, opt); source.appendChild(el);
@@ -174,19 +178,30 @@
     }
 
     function select(el, code) {
-      el.classList.add('selected'); seq.push(code);
+      if (el.classList.contains('selected')) return;
+      const sourceIndex = Array.prototype.indexOf.call(source.children, el);
+      el.classList.add('selected');
+      el.setAttribute('aria-disabled', 'true');
+      seq.push(code);
       const newEl = document.createElement('div'); newEl.className = 'code-block';
-      newEl.textContent = code; newEl.onclick = () => remove(newEl, code); drop.appendChild(newEl);
+      newEl.textContent = code;
+      newEl.dataset.sourceIndex = String(sourceIndex);
+      newEl.onclick = () => remove(newEl, code);
+      drop.appendChild(newEl);
       btn.disabled = seq.length !== correctSeq.length;
     }
 
     function remove(el, code) {
-      const i = seq.indexOf(code);
+      const i = Array.prototype.indexOf.call(drop.children, el);
       if (i > -1) {
-        seq.splice(i, 1); el.remove();
-        document.querySelectorAll('#sourceZone .code-block').forEach(b => {
-          if (b.textContent.includes(code)) b.classList.remove('selected');
-        });
+        seq.splice(i, 1);
+        const sourceIndex = Number(el.dataset.sourceIndex);
+        const sourceItem = source.children[sourceIndex];
+        if (sourceItem) {
+          sourceItem.classList.remove('selected');
+          sourceItem.removeAttribute('aria-disabled');
+        }
+        el.remove();
         btn.disabled = seq.length !== correctSeq.length;
       }
     }
