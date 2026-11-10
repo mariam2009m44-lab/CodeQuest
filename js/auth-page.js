@@ -119,6 +119,13 @@ if (!form) {
   }
 
   function getErrorMessage(error) {
+    if (error?.accountCreated) {
+      const stage = error.profileStage === "read"
+        ? "قراءة ملف التعلم"
+        : "حفظ ملف التعلم";
+      return `تم إنشاء حساب الدخول بنجاح، لكن تعذرت ${stage} في قاعدة البيانات. لا تحاولي إنشاء الحساب مرة أخرى؛ انتقلي إلى تسجيل الدخول، وسيحاول الموقع إكمال إعداد ملفك تلقائيًا بعد إصلاح الصلاحيات.`;
+    }
+
     if (error?.code) {
       return authError(error);
     }
