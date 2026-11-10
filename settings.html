@@ -398,6 +398,24 @@
       </div>
     </section>
 
+    <!-- الملف الشخصي -->
+    <section class="settings-group" aria-labelledby="profileTitle">
+      <div class="settings-group-title" id="profileTitle">
+        <i class="ri-user-settings-line" aria-hidden="true"></i>
+        الملف الشخصي
+      </div>
+      <form id="displayNameForm" class="setting-row" style="display:block">
+        <div class="setting-info">
+          <h3>اسم العرض</h3>
+          <p>عدّل الاسم الذي يظهر في لوحة التعلم والملف الشخصي.</p>
+        </div>
+        <label for="displayNameInput" class="setting-info" style="display:block;margin-top:12px">الاسم</label>
+        <input id="displayNameInput" name="displayName" type="text" minlength="2" maxlength="50" autocomplete="name" required style="width:100%;margin-top:7px;padding:12px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-deep);color:var(--text-primary);font:inherit">
+        <button type="submit" class="btn-secondary" id="saveDisplayNameButton" style="margin-top:12px">حفظ الاسم</button>
+        <p id="displayNameStatus" class="page-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
     <!-- الخصوصية -->
     <section class="settings-group" aria-labelledby="privacyTitle">
 
@@ -441,7 +459,8 @@
   <script type="module">
     import {
       requireUser,
-      logoutUser
+      logoutUser,
+      updateCurrentUserName
     } from "./js/auth.js";
 
     import {
@@ -455,7 +474,11 @@
       motion: document.getElementById("motionToggle"),
       logout: document.getElementById("logoutBtn"),
       parent: document.getElementById("parentDashboardBtn"),
-      status: document.getElementById("pageStatus")
+      status: document.getElementById("pageStatus"),
+      nameForm: document.getElementById("displayNameForm"),
+      nameInput: document.getElementById("displayNameInput"),
+      nameSave: document.getElementById("saveDisplayNameButton"),
+      nameStatus: document.getElementById("displayNameStatus")
     };
 
     const STORAGE_KEYS = {
@@ -756,7 +779,32 @@
     initializeSettings();
 
     try {
-      await requireUser();
+      const currentUser = await requireUser();
+      elements.nameInput.value = currentUser.displayName || "";
+      elements.nameForm.addEventListener("submit", async event => {
+        event.preventDefault();
+        const nextName = elements.nameInput.value.trim().replace(/\\s+/g, " ");
+        if (nextName.length < 2 || nextName.length > 50) {
+          elements.nameStatus.textContent = "اكتب اسمًا من 2 إلى 50 حرفًا.";
+          return;
+        }
+        elements.nameSave.disabled = true;
+        elements.nameSave.textContent = "جارٍ الحفظ...";
+        elements.nameStatus.textContent = "";
+        try {
+          await updateCurrentUserName(nextName);
+          elements.nameInput.value = nextName;
+          elements.nameStatus.textContent = "تم تحديث اسم الحساب بنجاح.";
+          showToast("تم تحديث اسم الحساب.", "success");
+        } catch (error) {
+          console.error("Display name update failed:", error);
+          elements.nameStatus.textContent = error?.message || "تعذر تحديث الاسم. حاول مرة أخرى.";
+          showToast(elements.nameStatus.textContent, "error");
+        } finally {
+          elements.nameSave.disabled = false;
+          elements.nameSave.textContent = "حفظ الاسم";
+        }
+      });
     } catch (error) {
       if (error?.message !== "يجب تسجيل الدخول.") {
         console.error("Settings authentication error:", error);
