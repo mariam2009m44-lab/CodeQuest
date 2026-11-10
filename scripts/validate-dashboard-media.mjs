@@ -14,7 +14,7 @@ for (const marker of [
   if (!html.includes(marker)) throw new Error("Missing dashboard media integration: " + marker);
 }
 
-if (!Array.isArray(videos)) throw new Error("learning-videos.json must be an array.");
+if (!Array.isArray(videos) || videos.length < 1) throw new Error("Add at least one curated learning video.");
 for (const [index, video] of videos.entries()) {
   if (!video || typeof video.title !== "string" || !video.title.trim()) {
     throw new Error("Video " + index + " needs a title.");
@@ -69,4 +69,15 @@ const parent = fs.readFileSync("parent.html", "utf8");
 if (!parent.includes('id="parentGuideTitle"') || parent.indexOf('id="parentGuideTitle"') > parent.indexOf('class="mode-grid"')) {
   throw new Error("Parent introduction must appear before account linking.");
 }
-console.log("Dashboard media integration validated.");
+const learnerSettings = fs.readFileSync("settings.html", "utf8");
+if (!learnerSettings.includes('id="createParentCodeButton"')) {
+  throw new Error("Learners must create parent-link codes from their own settings.");
+}
+if (parent.includes('id="createLinkButton"') || parent.includes('id="generatedCodeBox"')) {
+  throw new Error("Parent dashboard must not expose learner-side code generation.");
+}
+const learnerLinkScript = fs.readFileSync("js/learner-parent-link.js", "utf8");
+if (!learnerLinkScript.includes('"createParentLinkCode"')) {
+  throw new Error("Learner-side parent link generator is missing its callable integration.");
+}
+console.log("Dashboard media and parent-link integration validated.");
