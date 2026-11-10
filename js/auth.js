@@ -13,6 +13,7 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  updateDoc,
   collection,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -256,6 +257,35 @@ export async function registerUser(name, email, password) {
 
     throw normalized;
   }
+}
+
+/**
+ * تحديث اسم العرض في Firebase Authentication وملف Firestore.
+ */
+export async function updateCurrentUserName(name) {
+  const cleanName = normalizeName(name);
+  validateName(cleanName);
+  const user = auth.currentUser;
+  if (!user?.uid) throw new Error("سجّل الدخول أولًا لتعديل الاسم.");
+
+  try {
+    await updateProfile(user, { displayName: cleanName });
+  } catch (error) {
+    throw normalizeError(error);
+  }
+
+  try {
+    await updateDoc(doc(db, USERS_COLLECTION, user.uid), {
+      displayName: cleanName,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    normalized.message = "تم تحديث اسم تسجيل الدخول، لكن تعذر مزامنته مع ملف التعلم. تحقق من اتصال Firestore ثم حاول حفظ الاسم مرة أخرى.";
+    throw normalized;
+  }
+
+  return cleanName;
 }
 
 /**
