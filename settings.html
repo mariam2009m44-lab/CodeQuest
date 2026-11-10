@@ -341,23 +341,6 @@
 
       <div class="setting-row">
         <div class="setting-info">
-          <h3>موسيقى الخلفية</h3>
-          <p>موسيقى هادئة اختيارية داخل الألعاب، ولا تبدأ إلا بعد تفاعل المستخدم مع الصفحة.</p>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="musicToggle" aria-label="تفعيل موسيقى الخلفية">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="setting-row">
-        <div class="setting-info">
-          <h3>مستوى صوت الموسيقى</h3>
-          <p>تحكم في مستوى الصوت من هنا.</p>
-        </div>
-        <input id="musicVolume" type="range" min="0.03" max="0.25" step="0.01" value="0.12" aria-label="مستوى صوت الموسيقى">
-      </div>
-      <div class="setting-row">
-        <div class="setting-info">
           <h3>تذكير المهام اليومية</h3>
           <p>إشعار يومي في الوقت المحدد عندما تكون المنصة مفتوحة، بعد السماح بإشعارات المتصفح.</p>
         </div>
@@ -388,6 +371,31 @@
         <button type="button" id="enableNotificationsBtn" class="btn-secondary">تفعيل الإشعارات</button>
       </div>
 
+    </section>
+
+    <!-- ربط حساب المتعلم بولي الأمر -->
+    <section class="settings-group" aria-labelledby="learnerLinkTitle">
+      <div class="settings-group-title" id="learnerLinkTitle">
+        <i class="ri-parent-line" aria-hidden="true"></i>
+        ربط حساب ولي الأمر
+      </div>
+      <div class="setting-row" style="display:block">
+        <div class="setting-info">
+          <h3>إنشاء رمز ربط آمن</h3>
+          <p>أنشئ رمزًا مؤقتًا وشاركه مع ولي أمرك ليُدخله في لوحة ولي الأمر. الرمز صالح لمدة 30 دقيقة ويُستخدم مرة واحدة، ولا يحتاج إلى مشاركة كلمة المرور أو البريد الإلكتروني.</p>
+        </div>
+        <button type="button" class="btn-secondary" id="createParentCodeButton" style="margin-top:14px">إنشاء رمز الربط</button>
+        <div id="parentCodeBox" hidden style="margin-top:14px;padding:16px;border:1px dashed var(--border-soft);border-radius:14px;text-align:center">
+          <strong id="parentCodeValue" dir="ltr" style="display:block;font:900 1.5rem ui-monospace,monospace;letter-spacing:.12em"></strong>
+          <p id="parentCodeExpiry" style="margin:8px 0;color:var(--text-muted)"></p>
+          <button type="button" class="btn-secondary" id="copyParentCodeButton">نسخ الرمز</button>
+        </div>
+        <p id="parentCodeStatus" class="page-status" role="status" aria-live="polite"></p>
+        <div id="linkedParentsSection" hidden style="margin-top:18px">
+          <h3 style="margin:0 0 10px">الحسابات المرتبطة بحسابك</h3>
+          <div id="linkedParentsList" style="display:grid;gap:10px"></div>
+        </div>
+      </div>
     </section>
 
     <!-- الخصوصية -->
@@ -429,6 +437,7 @@
 
   </main>
 
+  <script type="module" src="./js/learner-parent-link.js"></script>
   <script type="module">
     import {
       requireUser,
@@ -442,8 +451,6 @@
     const elements = {
       dark: document.getElementById("darkModeToggle"),
       sound: document.getElementById("soundToggle"),
-      music: document.getElementById("musicToggle"),
-      volume: document.getElementById("musicVolume"),
       notifications: document.getElementById("notifToggle"),
       motion: document.getElementById("motionToggle"),
       logout: document.getElementById("logoutBtn"),
@@ -454,8 +461,6 @@
     const STORAGE_KEYS = {
       theme: "cq_theme",
       sound: "cq_sound",
-      music: "cq_music",
-      volume: "cq_music_volume",
       notifications: "cq_notif",
       motion: "cq_motion"
     };
@@ -508,8 +513,6 @@
     function initializeSettings() {
       const theme = readSetting(STORAGE_KEYS.theme, "dark");
       const sound = readSetting(STORAGE_KEYS.sound, "off");
-      const music = readSetting(STORAGE_KEYS.music, "off");
-      const volume = readSetting(STORAGE_KEYS.volume, "0.12");
       const notifications = readSetting(
         STORAGE_KEYS.notifications,
         "on"
@@ -518,8 +521,6 @@
 
       elements.dark.checked = theme === "dark";
       elements.sound.checked = sound !== "off";
-      elements.music.checked = music === "on";
-      elements.volume.value = volume;
       elements.notifications.checked = notifications === "on";
       document.getElementById("reminderTime").value = readSetting("cq_reminder_time", "18:00");
       updateNotificationPermissionStatus();
@@ -575,9 +576,6 @@
       null,
       "تم حفظ إعدادات الصوت."
     );
-
-    bindToggle(elements.music, STORAGE_KEYS.music, "on", "off", null, "تم حفظ إعدادات موسيقى الخلفية.");
-    elements.volume.addEventListener("input", () => saveSetting(STORAGE_KEYS.volume, elements.volume.value));
 
     let reminderTimer = null;
 

@@ -2285,6 +2285,27 @@ exports.unlinkParentChild = onCall(CALL_OPTIONS, async request => {
   return { success: true };
 });
 
+exports.getMyParentLinks = onCall(CALL_OPTIONS, async request => {
+  const childUid = requireAuth(request);
+  const linksSnapshot = await db.collection("parentLinks")
+    .where("childUid", "==", childUid)
+    .limit(10)
+    .get();
+
+  const parents = await Promise.all(linksSnapshot.docs.map(async linkDoc => {
+    const parentUid = linkDoc.data()?.parentUid;
+    if (typeof parentUid !== "string" || !parentUid) return null;
+    const parentSnapshot = await db.collection("users").doc(parentUid).get();
+    const profile = parentSnapshot.exists ? parentSnapshot.data() || {} : {};
+    return {
+      parentUid,
+      displayName: String(profile.displayName || "ولي الأمر").slice(0, 50)
+    };
+  }));
+
+  return { success: true, parents: parents.filter(Boolean) };
+});
+
 exports.removeParentLinkAsChild = onCall(CALL_OPTIONS, async request => {
   const childUid = requireAuth(request);
   const parentUid = String(request.data?.parentUid || "");

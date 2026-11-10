@@ -722,6 +722,7 @@ int main() {
           } else {
             const newProject = await addDoc(collection(db, "projects"), {
               ...data,
+              userId: currentUser.uid,
               date: new Date().toLocaleDateString("ar-EG"),
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp()

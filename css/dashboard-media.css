@@ -68,6 +68,22 @@
 .learning-video-level { margin-inline-start: auto; color: var(--muted); font-size: .67rem; }
 .learning-video-info h3 { margin: 0; color: var(--text); font-size: .95rem; font-weight: 900; }
 .learning-video-info p { margin: 6px 0 0; color: var(--muted); font-size: .76rem; line-height: 1.85; }
+
+.magazine-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 14px;flex-wrap:wrap}
+.magazine-filter-list{display:flex;gap:8px;flex-wrap:wrap}
+.magazine-filter{border:1px solid var(--border);border-radius:999px;padding:8px 14px;background:var(--surface-glass);color:var(--muted);font:800 .75rem inherit;cursor:pointer}
+.magazine-filter.is-active{background:linear-gradient(120deg,#7955e8,#258dbd);border-color:transparent;color:#fff}
+.magazine-filter:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.magazine-count{color:var(--muted);font-size:.72rem}
+.learning-video-thumbnail{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
+.learning-video-frame:has(.learning-video-thumbnail)::before,.learning-video-frame:has(.learning-video-thumbnail)::after{display:none}
+.learning-video-play{z-index:2}
+.learning-video-card.is-featured{grid-column:span 2}
+.learning-video-card.is-featured .learning-video-frame{aspect-ratio:16/8}
+.learning-video-duration{margin-inline-start:auto;color:var(--muted);font-size:.67rem}
+.learning-video-level+.learning-video-duration{margin-inline-start:0}
+@media(max-width:600px){.magazine-toolbar{align-items:flex-start}.magazine-filter-list{flex-wrap:nowrap;max-width:100%;overflow-x:auto;padding-bottom:5px}.learning-video-card.is-featured{grid-column:auto}.learning-video-card.is-featured .learning-video-frame{aspect-ratio:16/9}}
+
 /* Audio controls live only in Settings. */
 .cody-chat-launcher {
   position:fixed; z-index:10010; left:18px; bottom:18px;

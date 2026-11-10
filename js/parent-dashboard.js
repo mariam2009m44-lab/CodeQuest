@@ -4,18 +4,15 @@ import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
 
 const call = name => httpsCallable(functions, name, { timeout: 30000 });
 const claimCode = call("claimParentLinkCode");
-const createCode = call("createParentLinkCode");
 const getDashboard = call("getParentDashboard");
 const unlinkChild = call("unlinkParentChild");
 
 const $ = selector => document.querySelector(selector);
 const childrenContainer = $("#childrenContainer");
 const claimButton = $("#claimLinkButton");
-const createButton = $("#createLinkButton");
 const refreshButton = $("#refreshButton");
 const codeInput = $("#parentLinkCode");
 const claimStatus = $("#claimStatus");
-const createStatus = $("#createStatus");
 let currentUser = null;
 let generatedCodeValue = "";
 
@@ -168,33 +165,6 @@ claimButton.addEventListener("click", async () => {
   }
 });
 
-createButton.addEventListener("click", async () => {
-  setBusy(createButton, true, "جارٍ إنشاء الرمز...");
-  setStatus(createStatus, "يتم إنشاء رمز استخدام واحد...");
-  try {
-    const response = await createCode({});
-    generatedCodeValue = String(response.data.code || "").toUpperCase();
-    $("#generatedCode").textContent = generatedCodeValue;
-    $("#generatedExpiry").textContent = "ينتهي في " + formatDate(response.data.expiresAt);
-    $("#generatedCodeBox").classList.add("visible");
-    setStatus(createStatus, "شارك الرمز مع ولي أمرك فقط.", "success");
-  } catch (error) {
-    setStatus(createStatus, friendlyError(error), "error");
-  } finally {
-    setBusy(createButton, false);
-  }
-});
-
-$("#copyCodeButton").addEventListener("click", async () => {
-  if (!generatedCodeValue) return;
-  try {
-    await navigator.clipboard.writeText(generatedCodeValue);
-    setStatus(createStatus, "تم نسخ الرمز.", "success");
-  } catch {
-    setStatus(createStatus, "تعذر النسخ تلقائيًا. انسخ الرمز الظاهر يدويًا.", "error");
-  }
-});
-
 refreshButton.addEventListener("click", loadDashboard);
 codeInput.addEventListener("input", () => {
   codeInput.value = codeInput.value.replace(/[^a-fA-F0-9]/g, "").slice(0, 16).toUpperCase();
@@ -213,12 +183,10 @@ onAuthStateChanged(auth, user => {
     empty.append(link);
     childrenContainer.append(empty);
     claimButton.disabled = true;
-    createButton.disabled = true;
     setStatus(claimStatus, "يلزم تسجيل الدخول لاستخدام الربط.");
-    setStatus(createStatus, "يلزم تسجيل الدخول لإنشاء رمز.");
+
     return;
   }
   claimButton.disabled = false;
-  createButton.disabled = false;
   loadDashboard();
 });
