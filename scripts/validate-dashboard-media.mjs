@@ -7,7 +7,7 @@ const videos = JSON.parse(fs.readFileSync("json/learning-videos.json", "utf8"));
 for (const marker of [
   'id="learningVideos"',
   'id="learningVideosGrid"',
-  'id="codyMusicToggle"',
+  'id="codyChatLauncher"',
   'css/dashboard-media.css',
   'js/dashboard-media.js'
 ]) {
@@ -48,7 +48,11 @@ for (const asset of [
 if (!mediaScript.includes("youtube-nocookie.com/embed/")) {
   throw new Error("Privacy-enhanced YouTube embed host missing.");
 }
-if (!mediaScript.includes("audioContext")) {
-  throw new Error("Optional ambient audio controller missing.");
+if (mediaScript.includes("codyMusicToggle") || mediaScript.includes("audioContext")) {
+  throw new Error("Homepage media script must not mount a floating music control.");
+}
+const settings = fs.readFileSync("settings.html", "utf8");
+if (!settings.includes('id="musicToggle"') || !settings.includes('id="musicVolume"')) {
+  throw new Error("Music preferences must be available in Settings.");
 }
 console.log("Dashboard media integration validated.");
