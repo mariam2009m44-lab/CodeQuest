@@ -1,6 +1,5 @@
 
 import { createRemoteJWKSet, jwtVerify } from "jose";
-import trainingData from "../cody-ml-engine/data/training_data.json";
 import { classifyCodyQuestion } from "./cody-classifier.js";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
@@ -878,7 +877,7 @@ export class CodeExecutionLimiter {
 
     const isCody = new URL(request.url).pathname === "/cody-check";
     const today = new Date().toISOString().slice(0, 10);
-    const key = `${isCody ? "cody" : "code"}:${uid}`;
+    const key = isCody ? `cody:${uid}` : `user:${uid}`;
     const dailyLimit = isCody ? 20 : 30;
 
     const result = await this.state.storage.transaction(async transaction => {
