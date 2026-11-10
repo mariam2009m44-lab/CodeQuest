@@ -141,6 +141,8 @@ export async function ensureUserProfile(user) {
     throw new Error("تعذر تحديد الحساب الحالي.");
   }
 
+  let profileStage = "read";
+
   try {
     const profileRef = doc(
       db,
@@ -191,6 +193,7 @@ export async function ensureUserProfile(user) {
       updatedAt: serverTimestamp()
     };
 
+    profileStage = "create";
     await setDoc(profileRef, profile);
 
     return {
@@ -198,7 +201,9 @@ export async function ensureUserProfile(user) {
       uid: user.uid
     };
   } catch (error) {
-    throw normalizeError(error);
+    const normalized = normalizeError(error);
+    normalized.profileStage = profileStage;
+    throw normalized;
   }
 }
 
@@ -213,8 +218,10 @@ export async function registerUser(name, email, password) {
   validateEmail(cleanEmail);
   validatePassword(password);
 
+  let credential = null;
+
   try {
-    const credential = await createUserWithEmailAndPassword(
+    credential = await createUserWithEmailAndPassword(
       auth,
       cleanEmail,
       password
@@ -228,7 +235,17 @@ export async function registerUser(name, email, password) {
 
     return credential.user;
   } catch (error) {
-    throw normalizeError(error);
+    const normalized = normalizeError(error);
+
+    // Authentication may succeed before the Firestore profile write fails.
+    // Preserve this state so the UI can guide the learner to sign in again;
+    // loginUser() retries ensureUserProfile() for the authenticated account.
+    if (credential?.user?.uid) {
+      normalized.accountCreated = true;
+      normalized.profileStage = normalized.profileStage || "profile";
+    }
+
+    throw normalized;
   }
 }
 
