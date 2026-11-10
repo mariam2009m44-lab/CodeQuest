@@ -44,6 +44,9 @@ jobs:
       - name: Check Firebase Functions syntax
         run: node --check functions/index.js
 
+      - name: Audit JavaScript syntax across repository
+        run: node scripts/validate-js-syntax.mjs
+
       - name: Validate curriculum structure and lesson content
         run: node scripts/validate-curricula.mjs
 
@@ -54,16 +57,29 @@ jobs:
           node --input-type=module --check < js/lecture.js
           node --check cloudflare-worker/worker.js
 
+      - name: Validate Cloudflare Worker bundle without deployment
+        working-directory: cloudflare-worker
+        run: |
+          npm install --no-audit --no-fund
+          npx wrangler deploy --dry-run --outdir /tmp/codequest-worker-dist
+
       - name: Validate Java lesson page
         run: |
           node --input-type=module -e 'import fs from "node:fs"; const html = fs.readFileSync("java-lessons.html", "utf8"); const open = "<script type=\"module\">"; const close = "</script>"; const start = html.indexOf(open); const end = html.indexOf(close, start); if (start < 0 || end < 0) throw new Error("Java lesson module script missing"); fs.writeFileSync("/tmp/java-lessons.mjs", html.slice(start + open.length, end)); const ids = html.match(/id: "java-[0-9]+-[0-9]+"/g) || []; if (ids.length !== 16) throw new Error("Expected 16 implemented Java lessons"); if ((html.match(/id="quizFeedback"/g) || []).length !== 1) throw new Error("Quiz feedback element must be unique");'
           node --check /tmp/java-lessons.mjs
 
+      - name: Validate dashboard media integration
+        run: |
+          node scripts/validate-dashboard-media.mjs
+          node --check /tmp/codequest-dashboard-inline.mjs
+          node --input-type=module --check < js/dashboard-media.js
+
       - name: Validate learning pages, progress, and games scripts
         run: |
-          node --input-type=module -e 'import fs from "node:fs"; for (const file of ["python-lesson.html", "python-chapters.html", "python-exam.html", "python-projects.html", "java-lessons.html", "progress.html", "games.html", "game-3d.html", "game-quiz.html", "game-memory.html", "game-build.html", "game-bug.html", "game-speed.html", "game-match.html"]) { const html = fs.readFileSync(file, "utf8"); const scripts = [...html.matchAll(/<script(?: type="module")?>([\s\S]*?)<\/script>/g)]; if (!scripts.length) throw new Error("No inline script found in " + file); fs.writeFileSync("/tmp/" + file.replace(".html", ".mjs"), scripts.map(match => match[1]).join("\n")); }'
-          for file in python-lesson python-chapters python-exam python-projects java-lessons progress games game-3d game-quiz game-memory game-build game-bug game-speed game-match; do node --check "/tmp/$file.mjs"; done
+          node --input-type=module -e 'import fs from "node:fs"; for (const file of ["python-lesson.html", "python-chapters.html", "python-exam.html", "python-projects.html", "java-lessons.html", "progress.html", "games.html", "game-3d.html", "game-quiz.html", "game-memory.html", "game-build.html", "game-bug.html", "game-speed.html", "game-match.html", "studio.html", "playground.html"]) { const html = fs.readFileSync(file, "utf8"); const scripts = [...html.matchAll(/<script(?: type="module")?>([\s\S]*?)<\/script>/g)]; if (!scripts.length) throw new Error("No inline script found in " + file); fs.writeFileSync("/tmp/" + file.replace(".html", ".mjs"), scripts.map(match => match[1]).join("\n")); }'
+          for file in python-lesson python-chapters python-exam python-projects java-lessons progress games game-3d game-quiz game-memory game-build game-bug game-speed game-match studio playground; do node --check "/tmp/$file.mjs"; done
 
+          node --input-type=module -e 'import fs from "node:fs"; const html = fs.readFileSync("python-chapters.html", "utf8"); const start = html.indexOf("<script>"); const end = html.indexOf("</script>", start); const script = html.slice(start + 8, end); if (!/function getScopedStorageKey\(key\)/.test(script)) throw new Error("Python chapters account-scoped storage helper is missing"); if (!/return getScopedStorageKey\(PROGRESS_KEY\)/.test(script)) throw new Error("Python progress key must use the account-scoped helper");'
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -72,6 +88,9 @@ jobs:
           cache-dependency-path: |
             backend/requirements.txt
             cody-ml-engine/requirements.txt
+
+      - name: Audit local links across HTML pages
+        run: python scripts/validate-local-links.py
 
       - name: Install backend dependencies
         run: pip install -r backend/requirements.txt -r cody-ml-engine/requirements.txt

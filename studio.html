@@ -1,72 +1,144 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
   <script src="js/theme.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الاستوديو | CodeQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/global.css">
-    <style>
-        .studio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
-        .task-panel { background: var(--bg-surface); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-light); }
-        .editor-panel { background: #1d1f21; border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; }
-        .editor-header { background: #2d2f31; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .output-box { background: #fff; color: #1e293b; padding: 15px; font-family: var(--font-code); min-height: 100px; border-top: 1px solid var(--border-light); direction: ltr; }
-        textarea { width: 100%; height: 300px; background: #282a36; color: #f8f8f2; border: none; padding: 15px; font-family: var(--font-code); font-size: 15px; resize: none; outline: none; direction: ltr; }
-        @media (max-width: 768px) { .studio-grid { grid-template-columns: 1fr; } }
-    </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090d19">
+  <title>الاستوديو | CodeQuest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/theme.css">
+  <style>
+    .studio-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; padding:20px; max-width:1400px; margin:0 auto; }
+    .task-panel { min-width:0; background:var(--bg-surface); padding:24px; border-radius:var(--radius-lg); border:1px solid var(--border-light); }
+    .editor-panel { min-width:0; background:#1d1f21; border-radius:var(--radius-lg); display:flex; flex-direction:column; overflow:hidden; }
+    .editor-header { background:#2d2f31; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .output-box { background:#fff; color:#1e293b; padding:15px; font-family:var(--font-code); min-height:100px; max-height:260px; overflow:auto; border-top:1px solid var(--border-light); direction:ltr; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .studio-editor { display:block; width:100%; min-height:220px; height:clamp(220px,38vh,420px); background:#282a36; color:#f8f8f2; border:0; padding:15px; font-family:var(--font-code); font-size:15px; line-height:1.7; resize:vertical; outline:none; direction:ltr; }
+    .studio-editor:focus-visible { outline:2px solid var(--cyan,#36bfe5); outline-offset:-2px; }
+    .studio-actions { display:flex; gap:10px; align-items:center; }
+    .studio-actions button { min-height:40px; }
+    @media (max-width:768px) { .studio-grid { grid-template-columns:minmax(0,1fr); padding:14px; gap:14px; } .task-panel { padding:18px; } }
+    @media (min-width:1500px) { .studio-grid { gap:24px; padding:28px; } }
+  </style>
 </head>
 <body>
-    <div class="studio-grid">
-        <div class="task-panel">
-            <h2 style="color: var(--primary-main); margin-bottom: 15px;">المهمة: طباعة النص</h2>
-            <p style="color: var(--text-muted); line-height: 1.8; margin-bottom: 20px;">قم بكتابة كود يطبع الجملة التالية على الشاشة: <strong>"مرحباً يا كودي"</strong>.</p>
-            <div style="background: var(--bg-base); padding: 15px; border-radius: var(--radius-md); border-right: 4px solid var(--primary-main); margin-bottom: 20px;">
-                <p style="font-weight: 600; margin-bottom: 5px;">تلميح:</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">استخدم <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">console.log("النص")</code></p>
-            </div>
-            <button class="btn btn-primary" style="width: 100%;" onclick="checkSolution()"><i class="ri-check-double-line"></i> تحقق من الحل</button>
-            <div id="resultMsg" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+  <main class="studio-grid">
+    <section class="task-panel">
+      <h2 style="color:var(--primary-main);margin-bottom:15px;">المهمة: طباعة النص</h2>
+      <p style="color:var(--text-muted);line-height:1.8;margin-bottom:20px;">قم بكتابة كود يطبع الجملة التالية على الشاشة: <strong>"مرحباً يا كودي"</strong>.</p>
+      <div style="background:var(--bg-base);padding:15px;border-radius:var(--radius-md);border-right:4px solid var(--primary-main);margin-bottom:20px;">
+        <p style="font-weight:600;margin-bottom:5px;">تلميح:</p>
+        <p style="color:var(--text-muted);font-size:.9rem;">استخدم <code>console.log("النص")</code></p>
+      </div>
+      <button class="btn btn-primary" id="checkSolutionBtn" type="button" style="width:100%;"><i class="ri-check-double-line"></i> تحقق من الحل</button>
+      <div id="resultMsg" role="status" aria-live="polite" style="margin-top:15px;font-weight:bold;text-align:center;"></div>
+    </section>
+    <section class="editor-panel" aria-label="محرر JavaScript">
+      <div class="editor-header">
+        <span style="color:#a0aec0;font-family:var(--font-code);font-size:.9rem;">solution.js</span>
+        <div class="studio-actions">
+          <button class="btn btn-secondary" id="runCodeBtn" type="button" style="padding:4px 12px;font-size:.8rem;border-color:var(--primary-main);color:var(--primary-main);"><i class="ri-play-fill"></i> تشغيل</button>
         </div>
-        <div class="editor-panel">
-            <div class="editor-header">
-                <span style="color: #a0aec0; font-family: var(--font-code); font-size: 0.9rem;">solution.js</span>
-                <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.8rem; border-color: var(--primary-main); color: var(--primary-main);" onclick="runCode()"><i class="ri-play-fill"></i> تشغيل</button>
-            </div>
-            <textarea id="codeInput" placeholder="// اكتب الكود هنا..."></textarea>
-            <div id="consoleOutput" class="output-box">> Output will appear here...</div>
-        </div>
-    </div>
-    <script>
-        function runCode() {
-            const code = document.getElementById('codeInput').value;
-            const output = document.getElementById('consoleOutput');
-            let logs = [];
-            const origLog = console.log;
-            console.log = (...args) => logs.push(args.join(' '));
-            try {
-                new Function(code)();
-                console.log = origLog;
-                output.innerHTML = logs.length > 0 ? logs.map(l => `> ${l}`).join('<br>') : '> No output';
-            } catch (e) {
-                console.log = origLog;
-                output.innerHTML = `<span style="color:red;">> Error: ${e.message}</span>`;
-            }
-        }
+      </div>
+      <textarea id="codeInput" class="studio-editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="اكتب كود JavaScript هنا" placeholder="// اكتب الكود هنا..."></textarea>
+      <pre id="consoleOutput" class="output-box" aria-live="polite">> Output will appear here...</pre>
+    </section>
+  </main>
 
-        function checkSolution() {
-            const code = document.getElementById('codeInput').value;
-            const msg = document.getElementById('resultMsg');
-            if (code.includes('مرحباً يا كودي') && code.includes('console.log')) {
-                msg.innerHTML = '<span style="color: var(--success);">✅ إجابة صحيحة! أحسنت.</span>';
-            } else {
-                msg.innerHTML = '<span style="color: var(--danger);">❌ حاول مرة أخرى، تأكد من النص المطلوب.</span>';
-            }
-        }
-    </script>
-<script type="module" src="js/route-guard.js"></script>
+  <script>
+    const codeInput = document.getElementById("codeInput");
+    const output = document.getElementById("consoleOutput");
+    const resultMsg = document.getElementById("resultMsg");
+    let activeFrame = null;
+    let activeTimer = null;
+
+    function formatOutput(value) {
+      if (typeof value === "string") return value;
+      try { return JSON.stringify(value); }
+      catch (_) { return String(value); }
+    }
+
+    function cleanupRunner() {
+      if (activeTimer) clearTimeout(activeTimer);
+      activeTimer = null;
+      if (activeFrame) activeFrame.remove();
+      activeFrame = null;
+      window.removeEventListener("message", handleRunnerMessage);
+    }
+
+    function handleRunnerMessage(event) {
+      if (!activeFrame || event.source !== activeFrame.contentWindow) return;
+      const data = event.data;
+      if (!data || data.channel !== "codequest-studio-runner") return;
+      if (data.type === "result") {
+        output.textContent = data.lines.length ? data.lines.map(line => "> " + line).join("\n") : "> No output";
+        cleanupRunner();
+      } else if (data.type === "error") {
+        output.textContent = "> Error: " + String(data.message || "حدث خطأ أثناء التشغيل.");
+        cleanupRunner();
+      }
+    }
+
+    function runCode() {
+      cleanupRunner();
+      output.textContent = "> جاري تشغيل الكود...";
+      const frame = document.createElement("iframe");
+      frame.title = "بيئة تشغيل JavaScript معزولة";
+      frame.setAttribute("sandbox", "allow-scripts");
+      frame.setAttribute("aria-hidden", "true");
+      frame.tabIndex = -1;
+      frame.style.cssText = "position:absolute;width:1px;height:1px;left:-10000px;border:0;";
+      const runnerScriptOpen = "<scr" + "ipt>";
+      const runnerScriptClose = "</scr" + "ipt>";
+      frame.srcdoc = `<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; connect-src 'none'; img-src data:; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">${runnerScriptOpen}
+        window.addEventListener("message", function(event) {
+          if (!event.data || event.data.type !== "run") return;
+          const lines = [];
+          const safeConsole = {
+            log: (...args) => lines.push(args.map(value => {
+              if (typeof value === "string") return value;
+              try { return JSON.stringify(value); } catch (_) { return String(value); }
+            }).join(" ")),
+            info: (...args) => lines.push(args.map(String).join(" ")),
+            warn: (...args) => lines.push("تحذير: " + args.map(String).join(" ")),
+            error: (...args) => lines.push("خطأ: " + args.map(String).join(" "))
+          };
+          try {
+            new Function("console", event.data.code)(safeConsole);
+            parent.postMessage({channel:"codequest-studio-runner", type:"result", lines:lines}, "*");
+          } catch (error) {
+            parent.postMessage({channel:"codequest-studio-runner", type:"error", message:error && error.message ? error.message : String(error)}, "*");
+          }
+        });
+      ${runnerScriptClose}`;
+      activeFrame = frame;
+      window.addEventListener("message", handleRunnerMessage);
+      document.body.appendChild(frame);
+      frame.addEventListener("load", () => {
+        if (activeFrame !== frame) return;
+        frame.contentWindow.postMessage({type:"run", code:codeInput.value}, "*");
+      }, {once:true});
+      activeTimer = setTimeout(() => {
+        if (activeFrame !== frame) return;
+        output.textContent = "> انتهت مهلة التشغيل. تحقق من الكود وحاول مرة أخرى.";
+        cleanupRunner();
+      }, 3000);
+    }
+
+    function checkSolution() {
+      const code = codeInput.value;
+      const correct = /console\s*\.\s*log\s*\(/.test(code) && code.includes("مرحباً يا كودي");
+      resultMsg.textContent = correct ? "✅ إجابة صحيحة! أحسنت." : "❌ حاول مرة أخرى، تأكد من النص المطلوب.";
+      resultMsg.style.color = correct ? "var(--success)" : "var(--danger)";
+    }
+
+    document.getElementById("runCodeBtn").addEventListener("click", runCode);
+    document.getElementById("checkSolutionBtn").addEventListener("click", checkSolution);
+    window.addEventListener("pagehide", cleanupRunner);
+  </script>
+  <script type="module" src="js/route-guard.js"></script>
 </body>
 </html>

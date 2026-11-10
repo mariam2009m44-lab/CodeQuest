@@ -210,9 +210,7 @@ for task in tasks:
   </a>
 
   <script type="module">
-    import { requireUser } from "./js/auth.js";
-
-    const EXAM_KEY_PREFIX = "codequest_python_exam_passed_";
+    import { requireUser, getLessonProgress } from "./js/auth.js";
     const statusMessage = document.getElementById("statusMessage");
     const projectsContent = document.getElementById("projectsContent");
     const backLink = document.getElementById("backLink");
@@ -235,17 +233,14 @@ for task in tasks:
       if (!user?.uid) {
         blockAccess("سجّل الدخول أولًا للوصول إلى المشاريع.", "login.html");
       } else {
-        const examKey = `${EXAM_KEY_PREFIX}${user.uid}`;
-        const storedExamResult = localStorage.getItem(examKey);
-        let passed = storedExamResult === "true";
-        if (!passed && storedExamResult) {
-          try {
-            const parsedExamResult = JSON.parse(storedExamResult);
-            passed = parsedExamResult?.passed === true;
-          } catch {
-            passed = false;
-          }
-        }
+        // لا نفتح المشاريع اعتمادًا على نتيجة محلية قابلة للتغيير.
+        // يجب أن تكون نتيجة الامتحان محفوظة في سجل تقدم حساب المستخدم.
+        const records = await getLessonProgress("python");
+        const passed = records.some(record =>
+          Number(record.chapter) === 12 &&
+          Number(record.lesson) === 105 &&
+          record.completed === true
+        );
 
         if (!passed) {
           blockAccess("صفحة المشاريع مقفولة حاليًا. أكمل الفصول واجتز الامتحان أولًا.", "python-chapters.html");

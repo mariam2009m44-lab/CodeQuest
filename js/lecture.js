@@ -768,7 +768,14 @@ async function loadCurrentCompletion() {
     console.warn("تعذر قراءة تقدم الدرس من الحساب:", error);
   }
 
-  lessonCompleted = mergeProgressRecords(cloudProgress).some(
+  const hasCloudCompletion = Array.isArray(cloudProgress) && cloudProgress.some(
+    item =>
+      item?.chapter === chapterIndex &&
+      item?.lesson === lessonIndex &&
+      item?.completed === true
+  );
+
+  lessonCompleted = hasCloudCompletion || mergeProgressRecords(cloudProgress).some(
     item =>
       item.chapter === chapterIndex &&
       item.lesson === lessonIndex &&
@@ -781,7 +788,11 @@ async function loadCurrentCompletion() {
       item.lesson === lessonIndex &&
       item.completed === true
   );
-  lessonNeedsServerVerification = localRecord?.serverVerified === false;
+
+  // A trusted cloud completion wins over an older offline cache for the
+  // same lesson; do not force students to repeat an already verified lesson.
+  lessonNeedsServerVerification =
+    !hasCloudCompletion && localRecord?.serverVerified === false;
   if (lessonNeedsServerVerification) {
     // Keep navigation available while allowing a fresh server verification attempt.
     quizPassed = false;
@@ -807,7 +818,16 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
       });
     }
 
-    saveLocalLessonCompletion({ serverVerified });
+    const localSaved = saveLocalLessonCompletion({ serverVerified });
+    if (!serverVerified && !localSaved) {
+      throw new Error(
+        "تعذر حفظ التقدم محليًا. تحقق من مساحة التخزين في المتصفح ثم حاول مرة أخرى."
+      );
+    }
+
+    // A verified cloud save is authoritative even if the optional local cache
+    // cannot be written. An offline completion, however, is valid only when
+    // its device-local record was actually persisted.
     lessonCompleted = true;
     lessonNeedsServerVerification = !serverVerified;
     quizPassed = true;
