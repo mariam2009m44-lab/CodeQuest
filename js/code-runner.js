@@ -115,7 +115,7 @@ export async function runCodeOnServer(language, code, stdin = "") {
     if (
       result.errorCode === "JUDGE0_INTERNAL_ERROR" ||
       Number(result.statusId) === 13 ||
-      /^(Internal Error)( \\(Internal Error\\))?$/i.test(String(result.status || "").trim())
+      String(result.status || "").toLowerCase().includes("internal error")
     ) {
       result.message = "أبلغ خادم التنفيذ عن خطأ داخلي (Judge0 status 13). هذا خطأ في خدمة التشغيل الخارجية وليس تشخيصًا لخطأ في كودك. انتظر قليلًا ثم أعد المحاولة.";
       result.status = "خطأ داخلي في خدمة التنفيذ";
