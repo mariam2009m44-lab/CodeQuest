@@ -9,6 +9,18 @@
 - مفتاح Gemini API مع تفعيل نموذج متاح في حساب AI Studio.
 - ربط Durable Object الحالي `CODE_EXECUTION_LIMITER` كما هو موضح في `wrangler.toml`.
 
+## إعداد النشر التلقائي من GitHub
+
+إذا كان Worker مربوطًا بمستودع GitHub من لوحة Cloudflare، اضبطي إعدادات البناء والنشر كالتالي:
+
+- **Root directory:** `cloudflare-worker`
+- **Build command:** اتركيه فارغًا
+- **Deploy command:** `npx wrangler deploy`
+
+لا تستخدمي `npx wrangler preview` في خانة Deploy command؛ هذا أمر معاينة محلي وليس أمر نشر Worker، وقد يفشل في بيئة البناء بسبب إعدادات المعاينة.
+
+بعد حفظ الإعدادات، أعيدي نشر آخر commit. يجب أن يقرأ Wrangler ملف `wrangler.toml` الموجود داخل `cloudflare-worker`.
+
 ## إضافة مفتاح Gemini بأمان
 
 من Cloudflare Dashboard:
