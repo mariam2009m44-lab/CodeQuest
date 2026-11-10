@@ -130,6 +130,14 @@ function normalizeError(error) {
     normalized.code = error.code;
   }
 
+  // Preserve structured context while wrapping Firebase SDK errors.
+  if (typeof error?.profileStage === "string") {
+    normalized.profileStage = error.profileStage;
+  }
+  if (typeof error?.accountCreated === "boolean") {
+    normalized.accountCreated = error.accountCreated;
+  }
+
   return normalized;
 }
 
