@@ -245,10 +245,14 @@
     let accountXP = null;
     let cloudCompletedChapters = [];
 
-    function getProgressStorageKey() {
+    function getScopedStorageKey(key) {
       return activeUserUid
-        ? `codequest_${activeUserUid}_${PROGRESS_KEY}`
-        : PROGRESS_KEY;
+        ? `codequest_${activeUserUid}_${key}`
+        : key;
+    }
+
+    function getProgressStorageKey() {
+      return getScopedStorageKey(PROGRESS_KEY);
     }
 
     function migrateLegacyPythonStorage(uid) {
