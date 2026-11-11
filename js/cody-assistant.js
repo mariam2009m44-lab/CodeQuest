@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/fi
 
 const API_URL = "https://codequest.mariam2009m44.workers.dev/api/cody/chat";
 const launcher = document.getElementById("codyChatLauncher");
+const heroLauncher = document.getElementById("codyHeroLauncher");
 const panel = document.getElementById("codyChatPanel");
 const closeButton = document.getElementById("codyChatClose");
 const form = document.getElementById("codyChatForm");
@@ -49,6 +50,8 @@ function addMessage(text, role) {
   messages.append(node);
   messages.scrollTop = messages.scrollHeight;
 }
+heroLauncher?.addEventListener("click", () => launcher?.click());
+
 launcher?.addEventListener("click", () => {
   panel.hidden = false;
   playCodyEmotion("wave");
