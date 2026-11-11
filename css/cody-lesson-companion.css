@@ -1,0 +1,41 @@
+/* Shared Cody companion for all lesson engines. */
+.cody-lesson{position:fixed;z-index:9500;inset-inline-start:14px;bottom:max(14px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;gap:8px;direction:rtl;font-family:"Cairo",sans-serif;max-width:calc(100vw - 20px)}
+.cody-lesson button{font-family:inherit;cursor:pointer}
+.cody-lesson-bot{position:relative;width:112px;height:128px;flex:0 0 112px;filter:drop-shadow(0 14px 12px #0005);perspective:700px}
+.cody-lesson-bot .head{position:absolute;z-index:4;top:20px;left:19px;width:74px;height:59px;border:5px solid #f5f7ff;border-radius:23px 23px 19px 19px;background:linear-gradient(145deg,#344767,#111a32 68%);box-shadow:inset 0 0 0 2px #42ddf455,0 5px 0 #aebbd5,inset 0 7px 12px #fff2}
+.cody-lesson-bot .head:before,.cody-lesson-bot .head:after{position:absolute;top:15px;width:11px;height:23px;content:"";border:3px solid #f5f7ff;background:linear-gradient(#9d8aff,#5942b5);border-radius:7px}
+.cody-lesson-bot .head:before{left:-14px}.cody-lesson-bot .head:after{right:-14px}
+.cody-lesson-bot .antenna{position:absolute;z-index:2;top:5px;left:53px;width:6px;height:19px;border-radius:6px;background:linear-gradient(#42ddf4,#8663e8)}
+.cody-lesson-bot .antenna:after{position:absolute;top:-7px;left:-4px;width:14px;height:14px;content:"";border:2px solid #d9fbff;border-radius:50%;background:#42ddf4;box-shadow:0 0 13px #42ddf4}
+.cody-lesson-bot .eye{position:absolute;top:17px;width:9px;height:12px;border-radius:50%;background:#42ddf4;box-shadow:0 0 9px #42ddf4;animation:codyBlink 5s infinite}
+.cody-lesson-bot .eye:first-child{left:15px}.cody-lesson-bot .eye:nth-child(2){right:15px}
+.cody-lesson-bot .mouth{position:absolute;left:50%;bottom:10px;width:13px;height:6px;border-bottom:2px solid #ffb6d1;border-radius:0 0 12px 12px;transform:translateX(-50%)}
+.cody-lesson-bot .body{position:absolute;z-index:3;top:79px;left:30px;display:grid;place-items:center;width:53px;height:40px;border:4px solid #f5f7ff;border-radius:15px 15px 17px 17px;background:linear-gradient(145deg,#b1a2ff,#6849ca);box-shadow:inset 0 -5px #24145c33,0 4px 0 #aebbd5,inset 0 5px 8px #fff3}
+.cody-lesson-bot .core{display:grid;place-items:center;width:21px;height:21px;color:#6b4bc8;font-size:13px;border:2px solid #fff0b6;border-radius:8px;background:linear-gradient(145deg,#fff4c9,#ffd66b);box-shadow:0 0 10px #ffd66b80}
+.cody-lesson-bot .arm{position:absolute;z-index:2;top:83px;width:17px;height:31px;border:4px solid #f5f7ff;border-radius:12px;background:linear-gradient(#b1a2ff,#6849ca);transform-origin:50% 7px}
+.cody-lesson-bot .arm.left{left:16px;transform:rotate(22deg)}.cody-lesson-bot .arm.right{right:16px;transform:rotate(-25deg)}
+.cody-lesson-bot .leg{position:absolute;z-index:1;top:112px;width:17px;height:14px;border:3px solid #f5f7ff;border-radius:5px 5px 9px 9px;background:#6679a7}
+.cody-lesson-bot .leg.left{left:37px}.cody-lesson-bot .leg.right{right:37px}
+.cody-lesson-bubble{width:min(265px,calc(100vw - 145px));margin-bottom:12px;padding:13px;border:1px solid #36bfe566;border-radius:17px 17px 5px 17px;color:#f4f7ff;background:linear-gradient(145deg,#14203af7,#0a1122f7);box-shadow:0 16px 42px #0005,inset 0 1px #fff2;backdrop-filter:blur(14px);transform-origin:bottom right;animation:codyPop .22s ease-out}
+.cody-lesson-bubble[hidden]{display:none}
+.cody-lesson-title{display:flex;justify-content:space-between;gap:6px;margin-bottom:6px;color:#74e7ff;font-size:.78rem;font-weight:900}
+.cody-lesson-bubble p{margin:0;color:#e3eafa;font-size:.74rem;line-height:1.85}
+.cody-lesson-actions{display:flex;gap:7px;margin-top:9px}
+.cody-lesson-actions button{padding:6px 10px;border:1px solid #71dcff40;border-radius:9px;color:#eafaff;background:#36bfe51a;font-size:.68rem;font-weight:800}
+.cody-lesson-bot.is-happy{animation:codyHappy .48s ease-in-out 4}
+.cody-lesson-bot.is-happy .mouth{width:23px;height:11px;bottom:7px;border-bottom:3px solid #ffb6d1;border-radius:0 0 18px 18px}
+.cody-lesson-bot.is-happy .eye{top:21px;height:5px;border-radius:8px 8px 2px 2px;animation:none}
+.cody-lesson-bot.is-sad{animation:codySad .5s ease-in-out 2}
+.cody-lesson-bot.is-sad .mouth{bottom:6px;width:17px;height:9px;border:0;border-top:3px solid #ff9cad;border-radius:50% 50% 0 0}
+.cody-lesson-bot.is-sad .eye{top:22px;height:8px}
+.cody-lesson-bot.is-waving .arm.right{animation:codyWave .42s ease-in-out 3}
+.cody-lesson-bot.is-happy:before,.cody-lesson-bot.is-happy:after{position:absolute;z-index:8;top:25px;color:#ffd66b;font-size:24px;content:"✦";animation:codySpark .65s ease-in-out 3}
+.cody-lesson-bot.is-happy:before{left:0}.cody-lesson-bot.is-happy:after{right:0;top:48px;color:#42ddf4}
+@keyframes codyBlink{0%,45%,49%,100%{transform:scaleY(1)}47%,48%{transform:scaleY(.12)}}
+@keyframes codyWave{0%,100%{transform:rotate(-25deg)}50%{transform:rotate(-78deg)}}
+@keyframes codyHappy{0%,100%{translate:0 0;rotate:0}30%{translate:0 -9px;rotate:-3deg}65%{translate:0 -4px;rotate:3deg}}
+@keyframes codySad{0%,100%{translate:0 0;rotate:0}35%{translate:0 3px;rotate:-5deg}70%{translate:0 1px;rotate:4deg}}
+@keyframes codySpark{0%,100%{opacity:0;scale:.4}50%{opacity:1;scale:1.2}}
+@keyframes codyPop{from{opacity:0;translate:0 8px;scale:.96}to{opacity:1;translate:0 0;scale:1}}
+@media(max-width:520px){.cody-lesson{inset-inline-start:5px;bottom:max(6px,env(safe-area-inset-bottom));gap:0}.cody-lesson-bot{transform:scale(.76);transform-origin:bottom center;width:88px;height:100px;flex-basis:88px}.cody-lesson-bubble{width:min(230px,calc(100vw - 100px));padding:10px}.cody-lesson-bubble p{font-size:.69rem}}
+@media(prefers-reduced-motion:reduce){.cody-lesson-bot,.cody-lesson-bot *,.cody-lesson-bubble{animation:none!important;transition:none!important}}
