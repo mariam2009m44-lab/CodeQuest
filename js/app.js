@@ -498,7 +498,7 @@ function readLocalLessonProgress(uid) {
   // Python lesson page stores completed positions as "chapter_lesson"
   // with one-based chapters and zero-based lesson indexes.
   for (const key of readArray(`codequest_${uid}_cody_python_completed_lessons`)) {
-    const match = /^(\\d+)_(\\d+)$/.exec(String(key));
+    const match = /^(\d+)_(\d+)$/.exec(String(key));
     if (!match) continue;
     const chapter = Number(match[1]);
     const lesson = Number(match[2]);
