@@ -3047,7 +3047,6 @@ html[data-theme="light"] .bottom-action {
       currentChallenge = null;
       currentHintIndex = 0;
       challengeSolved = false;
-      challengeVerifiedOnServer = false;
     } else if (wrapper) {
       wrapper.classList.remove("show");
       wrapper.style.display = "none";
@@ -3473,7 +3472,11 @@ html[data-theme="light"] .bottom-action {
       "cody",
       wasCompleted
         ? "أهلًا بعودتك! الدرس ده مكتمل بالفعل. تقدر تراجع محتواه أو تنتقل للدرس التالي."
-        : "رائع! تم حفظ إكمال الدرس بنجاح، وستتم مزامنة المكافأة مع حسابك ⭐"
+        : cloudSaved
+          ? "رائع! تم حفظ إكمال الدرس في حسابك، وستتم مزامنة المكافأة بعد التحقق الخادمي ⭐"
+          : challengeVerifiedOnServer
+            ? "رائع! حفظنا تقدمك على هذا الجهاز، وسنحاول مزامنته مع حسابك عند فتح صفحة التقدم مع توفر الاتصال."
+            : "تم حفظ تقدمك على هذا الجهاز فقط. لن تُضاف مكافآت قبل التحقق الخادمي من الإنجاز."
     );
 
     showBottomAction(true, "الدرس التالي");
@@ -3532,6 +3535,7 @@ html[data-theme="light"] .bottom-action {
     }
 
     currentLesson = lessons[currentLessonIndex];
+    challengeVerifiedOnServer = false;
 
     if (!currentLesson) return;
 
