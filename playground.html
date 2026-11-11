@@ -736,8 +736,14 @@ int main() {
             const snapshot = await getDoc(projectRef);
 
             if (!snapshot.exists()) {
+              // Do not silently recreate a project that was deleted elsewhere.
+              // Keep the editor content in the session so the learner can save
+              // it deliberately as a new project on the next save attempt.
               currentProjectId = "";
               sessionStorage.removeItem("currentProjectId");
+              throw new Error(
+                "المشروع الأصلي لم يعد موجودًا. احتفظنا بالكود؛ اضغط حفظ مرة أخرى لإنشاء مشروع جديد."
+              );
             } else if (snapshot.data().userId !== currentUser.uid) {
               throw new Error("لا يمكن تعديل مشروع لا يخص هذا الحساب.");
             }
