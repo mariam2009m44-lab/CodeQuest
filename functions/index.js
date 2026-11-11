@@ -2275,7 +2275,26 @@ exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
           stage: "child-profile",
           code: typeof profileResult.reason?.code === "string" ? profileResult.reason.code : "unknown"
         });
-        return null;
+
+        // Preserve the existing parent-child link in the response. A temporary
+        // profile read failure must not look like the parent has no linked child.
+        return {
+          childUid,
+          displayName: "بيانات الحساب غير متاحة مؤقتًا",
+          xp: 0,
+          stars: 0,
+          level: 1,
+          completedLessons: 0,
+          lessonsThisWeek: 0,
+          projectsCount: 0,
+          languageCounts: { python: 0, javascript: 0, cpp: 0, java: 0 },
+          dataAvailability: {
+            profile: false,
+            progress: false,
+            projects: false
+          },
+          lastActivity: null
+        };
       }
 
       const childSnapshot = profileResult.value;
