@@ -2244,6 +2244,43 @@ exports.claimParentLinkCode = onCall(CALL_OPTIONS, async request => {
   return { success: true, ...result };
 });
 
+// Curriculum bounds used by the parent dashboard. Client-writable progress
+// documents must not be allowed to inflate family statistics with invented
+// lesson positions or duplicate document IDs.
+const PARENT_PROGRESS_LESSON_COUNTS = Object.freeze({
+  python: Object.freeze([4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]),
+  javascript: Object.freeze([3, 4, 4, 3, 3, 4, 3, 2]),
+  cpp: Object.freeze([5, 3, 3, 3, 3, 4, 2]),
+  java: Object.freeze([2, 2, 2, 2, 2, 2, 2, 2])
+});
+
+function isValidParentLessonProgressDocument(documentSnapshot) {
+  if (!documentSnapshot || typeof documentSnapshot.id !== "string") {
+    return false;
+  }
+
+  const item = documentSnapshot.data() || {};
+  const lessonCounts = PARENT_PROGRESS_LESSON_COUNTS[item.language];
+
+  if (
+    item.completed !== true ||
+    !lessonCounts ||
+    !Number.isSafeInteger(item.chapter) ||
+    !Number.isSafeInteger(item.lesson) ||
+    item.chapter < 0 ||
+    item.chapter >= lessonCounts.length ||
+    item.lesson < 0 ||
+    item.lesson >= lessonCounts[item.chapter]
+  ) {
+    return false;
+  }
+
+  // The canonical ID prevents duplicate or mismatched records from being
+  // counted as separate completed lessons.
+  return documentSnapshot.id ===
+    `${item.language}_${item.chapter}_${item.lesson}`;
+}
+
 exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
   const parentUid = requireAuth(request);
   let stage = "parent-links";
@@ -2319,9 +2356,11 @@ exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
 
       const progressSnapshot = progressAvailable ? progressResult.value : { docs: [] };
       const projectsSnapshot = projectsAvailable ? projectsResult.value : { size: 0 };
+      // Count only real curriculum positions with their canonical document IDs.
+      // This also excludes the separate Python exam marker (lesson 104).
       const completed = progressSnapshot.docs
-        .map(doc => doc.data() || {})
-        .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
+        .filter(isValidParentLessonProgressDocument)
+        .map(doc => doc.data() || {});
 
       const now = Date.now();
       const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
