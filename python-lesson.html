@@ -1617,7 +1617,7 @@ html[data-theme="light"] .bottom-action {
   background: linear-gradient(180deg, rgba(245,247,252,.2), rgba(245,247,252,.98));
 }
 </style>
-</head>
+  <link rel="stylesheet" href="css/cody-lesson-companion.css">\n  <style>\n    .python-cody-welcome .avatar{display:none}\n    .python-cody-welcome .bubble{width:min(100%,680px);max-width:100%;padding:clamp(14px,3vw,24px);overflow:hidden;background:linear-gradient(145deg,#182743,#101a30);border-color:rgba(54,191,229,.3);box-shadow:0 18px 45px rgba(0,0,0,.22)}\n    .python-cody-welcome-art{position:relative;display:grid;place-items:center;min-height:190px;margin:-4px -4px 14px;overflow:hidden;border:1px solid rgba(120,112,255,.22);border-radius:18px;background:radial-gradient(ellipse at 50% 72%,rgba(54,191,229,.22),transparent 54%),radial-gradient(ellipse at 50% 20%,rgba(121,85,232,.26),transparent 60%),linear-gradient(135deg,#111b35,#0b1428)}\n    .python-cody-welcome-art:before,.python-cody-welcome-art:after{position:absolute;content:"";width:220px;height:220px;border:1px solid rgba(105,205,255,.16);border-radius:50%;box-shadow:0 0 0 18px rgba(105,205,255,.025),0 0 0 38px rgba(105,205,255,.02)}\n    .python-cody-welcome-art:after{width:280px;height:280px;border-style:dashed;animation:pythonCodyOrbit 28s linear infinite}\n    .python-cody-welcome-art img{position:relative;z-index:1;display:block;width:auto;height:220px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.35))}\n    \n    .avatar{position:relative}.avatar .cody-character--chat{position:absolute;top:0;left:0;transform:scale(.34);transform-origin:top left;animation:none}.avatar .cody-character--chat .cody-character__eye{animation:none}\n    @keyframes pythonCodyOrbit{to{transform:rotate(360deg)}}\n    @media(max-width:520px){.python-cody-welcome-art{min-height:160px}.python-cody-welcome-art img{height:185px}}\n    @media(prefers-reduced-motion:reduce){.python-cody-welcome-art:after,}\n  </style>\n</head>
 
 <body>
 
@@ -2079,7 +2079,7 @@ html[data-theme="light"] .bottom-action {
   }
 
   function getCodyAvatarHTML() {
-    return '<span aria-label="Cody">🤖</span>';
+    return '<span class="cody-character cody-character--chat" aria-hidden="true"><span class="cody-character__antenna"></span><span class="cody-character__head"><span class="cody-character__eye cody-character__eye--left"></span><span class="cody-character__eye cody-character__eye--right"></span><span class="cody-character__mouth"></span></span><span class="cody-character__body"><span class="cody-character__core">✦</span></span><span class="cody-character__arm cody-character__arm--left"></span><span class="cody-character__arm cody-character__arm--right"></span><span class="cody-character__leg cody-character__leg--left"></span><span class="cody-character__leg cody-character__leg--right"></span></span>';
   }
 
   function scrollChatToBottom() {
@@ -2091,11 +2091,12 @@ html[data-theme="light"] .bottom-action {
     });
   }
 
-  function addBubble(type, message) {
+  function addBubble(type, message, options = {}) {
     if (!chatContainer) return null;
 
     const row = document.createElement("div");
     row.className = `message-row ${type}`;
+    if (options.welcome === true) row.classList.add("python-cody-welcome");
 
     const avatar = document.createElement("div");
     avatar.className = "avatar";
@@ -2107,6 +2108,17 @@ html[data-theme="light"] .bottom-action {
     const bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.innerHTML = String(message ?? "");
+
+    if (options.welcome === true && type === "cody") {
+      const art = document.createElement("div");
+      art.className = "python-cody-welcome-art";
+      const image = document.createElement("img");
+      image.src = "assets/cody/cody-welcome.svg";
+      image.alt = "كودي يرحّب بك في رحلة تعلم Python";
+      image.loading = "eager";
+      art.appendChild(image);
+      bubble.prepend(art);
+    }
 
     row.appendChild(avatar);
     row.appendChild(bubble);
@@ -3219,12 +3231,14 @@ html[data-theme="light"] .bottom-action {
 
       if (expected && actual === expected) {
         challengeSolved = true;
+        window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: true, message: "الناتج مطابق للمطلوب!" } }));
         addBubble(
           "cody",
           renderLessonMarkup(currentChallenge.successMsg || "ممتاز! شغّلت المثال وفهمت ناتجه.")
         );
         showBottomAction(true);
       } else {
+        window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: false, message: "الناتج مختلف عن المتوقع. راجع الكود وحاول تاني." } }));
         addBubble("cody", "شغّل المثال مرة أخرى، وقارن الناتج بما توقعته.");
       }
       return;
@@ -3259,6 +3273,7 @@ html[data-theme="light"] .bottom-action {
         const verification = response?.data || {};
 
         if (verification.correct !== true) {
+          window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: false, message: verification.message || "الحل محتاج مراجعة." } }));
           addBubble(
             "cody",
             verification.message ||
@@ -3268,6 +3283,7 @@ html[data-theme="light"] .bottom-action {
         }
 
         challengeSolved = true;
+        window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: true, message: "تم التحقق من التحدي على الخادم بنجاح!" } }));
         addBubble(
           "cody",
           "تم التحقق من التحدي على الخادم بنجاح! أحسنت 🎉"
@@ -3520,7 +3536,8 @@ html[data-theme="light"] .bottom-action {
         )}</strong>
         <br>
         ${escapeHTML(getLessonTitle(currentLesson))}
-      `
+      `,
+      { welcome: true }
     );
 
     if (isExamLesson(currentLesson)) {
@@ -4361,5 +4378,5 @@ if (document.readyState === "loading") {
 </script>
 
 <script type="module" src="js/reminders.js"></script>
-</body>
+  <script defer src="js/cody-lesson-companion.js"></script>\n</body>
 </html>
