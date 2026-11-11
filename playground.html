@@ -619,6 +619,24 @@ int main() {
         return;
       }
 
+      // Session drafts and project IDs must never cross authenticated accounts.
+      // This also handles direct account switching without an explicit logout.
+      const draftOwnerUid = sessionStorage.getItem("playgroundOwnerUid");
+      if (draftOwnerUid !== currentUser.uid) {
+        for (const key of [
+          "currentProjectId",
+          "currentProjectName",
+          "playgroundCode",
+          "playgroundLang"
+        ]) {
+          sessionStorage.removeItem(key);
+        }
+        currentProjectId = "";
+        currentProjectName = "";
+        setSaveStatus("تم فتح مساحة عمل الحساب الحالي");
+      }
+      sessionStorage.setItem("playgroundOwnerUid", currentUser.uid);
+
       if (currentProjectId) {
         try {
           const projectRef = doc(db, "projects", currentProjectId);
@@ -749,6 +767,7 @@ int main() {
           currentProjectName = data.name;
 
           sessionStorage.setItem("currentProjectName", currentProjectName);
+          sessionStorage.setItem("playgroundOwnerUid", currentUser.uid);
           sessionStorage.setItem("playgroundCode", data.code);
           sessionStorage.setItem("playgroundLang", data.language);
 
