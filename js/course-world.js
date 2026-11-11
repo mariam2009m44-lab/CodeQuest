@@ -18,7 +18,7 @@ function getLocalDone(){try{
  const java=JSON.parse(localStorage.getItem("cody_java_progress_"+uid)||"{}");
  const javaRecords=Object.entries(java||{}).filter(([k,v])=>v?.completed===true).map(([id])=>({id,completed:true}));
  const list=[...(Array.isArray(generic)?generic:[]),...(Array.isArray(python)?python.map(key=>({id:String(key),completed:true})):[]),...javaRecords];
- if(language==="java"&&Array.isArray(java?.completed))list.push(...java.completed.map(chapter=>({chapter:Number(chapter)-1,lesson:1,completed:true})));
+ if(language==="java"&&Array.isArray(java?.completed))list.push(...java.completed.flatMap(chapter=>[{chapter:Number(chapter)-1,lesson:0,completed:true},{chapter:Number(chapter)-1,lesson:1,completed:true}]));
  return list;
  }catch{return []}}
 let uid=null;
