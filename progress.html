@@ -836,6 +836,9 @@
             ).map(item => ({
               ...item,
               language,
+              // This record came from localStorage; keep it local-only until
+              // a matching Firestore record is confirmed.
+              localOnly: true,
               serverVerified: item.serverVerified === true
             }))
           : [];
