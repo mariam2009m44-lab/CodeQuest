@@ -1,0 +1,68 @@
+/* CodeQuest responsive lesson workspace — shared across Python, JavaScript, C++ and Java */
+:root{--cq-safe-top:env(safe-area-inset-top,0px);--cq-safe-bottom:env(safe-area-inset-bottom,0px)}
+html{min-width:320px;scroll-padding-top:76px}
+body{overflow-x:clip}
+button,a,[role=button]{touch-action:manipulation}
+.CodeMirror,.code-fallback,textarea.editor{direction:ltr;text-align:left;unicode-bidi:plaintext;tab-size:4}
+.CodeMirror{max-width:100%;overscroll-behavior:contain}
+.editor-wrapper,.editor-panel,.editor-card,.editor-body,.code-area,.content-grid,.workspace{min-width:0;max-width:100%}
+.editor-wrapper.show.is-expanded,.editor-panel.is-expanded,.editor-card.is-expanded{
+ position:fixed!important;inset:calc(var(--cq-safe-top) + 8px) 8px calc(var(--cq-safe-bottom) + 8px)!important;
+ z-index:9990!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
+ max-width:none!important;max-height:none!important;margin:0!important;border-radius:18px!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;
+ background:#0b1220!important;box-shadow:0 24px 90px #000b!important;
+}
+.editor-wrapper.show.is-expanded .editor-header,.editor-panel.is-expanded .editor-toolbar,
+.editor-card.is-expanded .editor-header{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+.editor-wrapper.show.is-expanded .editor-header{padding:10px 12px}
+.editor-wrapper.show.is-expanded .editor-header-actions{display:flex;flex-wrap:wrap;gap:7px}
+.editor-wrapper.show.is-expanded .editor-size-controls{flex:0 0 auto;gap:6px;padding:7px 10px}
+.editor-wrapper.show.is-expanded .code-area,.editor-panel.is-expanded .editor-body,
+.editor-card.is-expanded .editor-body{flex:1 1 0!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important}
+.editor-wrapper.show.is-expanded .CodeMirror,.editor-wrapper.show.is-expanded .CodeMirror-scroll,
+.editor-wrapper.show.is-expanded .code-fallback,.editor-panel.is-expanded .CodeMirror,
+.editor-panel.is-expanded .CodeMirror-scroll,.editor-card.is-expanded .CodeMirror{
+ height:100%!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important
+}
+.editor-wrapper.show.is-expanded .editor-resize-grip{display:none!important}
+.editor-wrapper.show.is-expanded #pythonOutput,
+.editor-panel.is-expanded .terminal,.editor-card.is-expanded .output{
+ flex:0 0 auto;min-height:42px;max-height:19dvh;overflow:auto;overscroll-behavior:contain
+}
+.editor-wrapper.show.is-expanded .editor-close-btn,
+.editor-wrapper.show.is-expanded .btn-run,
+.editor-wrapper.show.is-expanded .editor-expand-btn{min-height:42px}
+.editor-panel.is-expanded .editor-toolbar,.editor-card.is-expanded .editor-actions{flex:0 0 auto;flex-wrap:wrap}
+body.python-editor-expanded,body.editor-open{overflow:hidden!important;overscroll-behavior:none}
+@media(max-width:760px){
+ .editor-wrapper{min-height:0}
+ .editor-header{gap:8px;padding:10px}
+ .editor-title{font-size:.82rem}
+ .editor-header-actions{gap:6px}
+ .editor-header-actions button{min-height:42px;padding:8px 10px;font-size:.82rem}
+ .editor-size-controls{font-size:.76rem}
+ .editor-size-controls button{min-height:38px;padding:6px 9px}
+ .code-area{min-height:190px;max-height:52dvh}
+ .CodeMirror,.code-fallback{font-size:14px!important}
+ .editor-panel .CodeMirror,.CodeMirror{max-width:100%}
+ .editor-panel.is-expanded .CodeMirror{height:auto!important;min-height:0!important}
+ .editor-panel.is-expanded .editor-toolbar{gap:6px;padding:9px}
+ .editor-panel.is-expanded .editor-toolbar button,.editor-card.is-expanded .editor-actions button{min-height:42px;flex:1 1 auto}
+ .editor-card.is-expanded .editor-body{padding:8px}
+ .editor-card.is-expanded .editor-actions{padding:8px}
+ .editor-card.is-expanded .output{max-height:18dvh}
+ .cq-path-panel{max-width:min(92vw,390px)}
+}
+@media(max-width:420px){
+ .editor-wrapper.show.is-expanded .editor-header{align-items:stretch}
+ .editor-wrapper.show.is-expanded .editor-title{width:100%}
+ .editor-wrapper.show.is-expanded .editor-header-actions{width:100%;display:grid;grid-template-columns:1fr 1fr 44px}
+ .editor-wrapper.show.is-expanded .editor-header-actions button{width:100%;padding-inline:5px}
+ .editor-wrapper.show.is-expanded .editor-size-controls span{width:100%}
+ .editor-wrapper.show.is-expanded .editor-size-controls button{flex:1}
+ .editor-panel.is-expanded .editor-toolbar button{font-size:.78rem;padding:8px 7px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
