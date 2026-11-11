@@ -30,7 +30,8 @@ const CODE_RUNNER_URL = isPagesPreview || isLocalDevelopment
 const verifyJavaCallable = httpsCallable(
   functions,
   "verifyJavaChallenge",
-  { timeout: 45000 }
+  // The callable allows 60 seconds server-side; leave a small client margin.
+  { timeout: 65000 }
 );
 
 const checkQuizCallable = httpsCallable(

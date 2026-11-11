@@ -365,6 +365,7 @@
             <option value="javascript">JavaScript</option>
             <option value="python">Python</option>
             <option value="cpp">C++</option>
+            <option value="java">Java</option>
           </select>
 
           <button class="btn" id="resetBtn" type="button">إعادة المثال</button>
@@ -378,7 +379,7 @@
       </div>
 
       <div class="stdin-area">
-        <label for="stdinInput">مدخلات البرنامج (Python و C++)</label>
+        <label for="stdinInput">مدخلات البرنامج (Python و C++ و Java)</label>
         <textarea id="stdinInput" rows="3" spellcheck="false" aria-describedby="stdinHelp" placeholder="اكتب المدخلات هنا، كل قيمة في سطر..."></textarea>
         <span class="helper" id="stdinHelp">تُرسل هذه القيم إلى البرنامج عند تشغيله. اترك الحقل فارغًا إذا لم يحتج البرنامج إلى مدخلات.</span>
       </div>
@@ -481,19 +482,32 @@ int main() {
     cout << "Result: " << result << endl;
 
     return 0;
+}`,
+      java: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, Cody!");
+
+        String name = "Mariam";
+        System.out.println("Hello, " + name);
+
+        int result = 10 + 5;
+        System.out.println("Result: " + result);
+    }
 }`
     };
 
     const languageModes = {
       javascript: "javascript",
       python: "python",
-      cpp: "text/x-c++src"
+      cpp: "text/x-c++src",
+      java: "text/x-java"
     };
 
     const judge0LanguageIds = {
       javascript: 63,
       python: 71,
-      cpp: 54
+      cpp: 54,
+      java: 62
     };
 
     const editor = CodeMirror.fromTextArea($("editor"), {

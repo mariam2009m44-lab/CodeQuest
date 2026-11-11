@@ -124,3 +124,587 @@
 @media (prefers-reduced-motion: reduce) {
   .learning-video-card, .learning-video-play, .cody-chat-launcher { transition: none; }
 }
+
+
+/* Cody mascot sizing overrides — loaded after the main dashboard styles. */
+.mascot-card {
+  width: 138px;
+  min-height: 160px;
+  padding: 8px;
+}
+.mascot-card .cody-mascot {
+  width: 126px;
+  height: 132px;
+}
+.mascot-card .mascot-sparkle {
+  position: absolute;
+  z-index: 5;
+  top: 7px;
+  right: 12px;
+}
+.mascot-card .mascot-label {
+  position: absolute;
+  z-index: 5;
+  bottom: 7px;
+  margin: 0;
+  font-size: .72rem;
+  font-weight: 900;
+}
+.cody-chat-orb {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+.cody-character--compact {
+  transform: scale(.38);
+}
+@media (max-width: 600px) {
+  .mascot-card {
+    width: 116px;
+    min-height: 145px;
+  }
+  .mascot-card .cody-mascot {
+    transform: scale(.78);
+  }
+}
+
+
+/* Larger mascot-only Cody launcher: the whole character opens the chat. */
+.cody-chat-launcher {
+  width: 82px;
+  height: 82px;
+  min-height: 82px;
+  padding: 6px;
+  gap: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(115, 220, 255, .38);
+  background: linear-gradient(145deg, rgba(30, 42, 76, .98), rgba(13, 20, 42, .98));
+  box-shadow: 0 9px 28px rgba(0, 0, 0, .3), 0 0 0 4px rgba(92, 119, 232, .12);
+}
+.cody-chat-orb {
+  flex: 0 0 68px;
+  width: 68px;
+  height: 68px;
+  border-radius: 19px;
+}
+.cody-character--compact {
+  transform: scale(.52);
+}
+.cody-chat-launcher:active {
+  transform: scale(.94);
+}
+.cody-chat-panel {
+  bottom: 112px;
+}
+@media (max-width: 600px) {
+  .cody-chat-launcher {
+    left: 12px;
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    width: 76px;
+    height: 76px;
+    min-height: 76px;
+  }
+  .cody-chat-orb {
+    flex-basis: 64px;
+    width: 64px;
+    height: 64px;
+  }
+  .cody-character--compact {
+    transform: scale(.49);
+  }
+  .cody-chat-panel {
+    left: 10px;
+    bottom: calc(168px + env(safe-area-inset-bottom));
+    width: calc(100vw - 20px);
+  }
+}
+
+
+/* Floating Cody is shown as the character only: no orb, tile, frame or button plate. */
+.cody-chat-launcher {
+  width: 96px;
+  height: 112px;
+  min-height: 112px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible;
+}
+.cody-chat-launcher:hover,
+.cody-chat-launcher:focus-visible {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.cody-chat-launcher:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 18px;
+}
+.cody-chat-orb {
+  display: grid;
+  flex: 0 0 96px;
+  place-items: center;
+  width: 96px;
+  height: 112px;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.cody-character--compact {
+  transform: scale(.64);
+  transform-origin: center center;
+}
+@media (max-width: 600px) {
+  .cody-chat-launcher {
+    left: 4px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 92px;
+    height: 108px;
+    min-height: 108px;
+  }
+  .cody-chat-orb {
+    flex-basis: 92px;
+    width: 92px;
+    height: 108px;
+  }
+  .cody-character--compact {
+    transform: scale(.60);
+  }
+  .cody-chat-panel {
+    left: 10px;
+    bottom: calc(166px + env(safe-area-inset-bottom));
+    width: calc(100vw - 20px);
+  }
+}
+
+
+/* Mobile: keep Cody as a floating character, never inside a tile. */
+@media (max-width: 600px) {
+  .mascot-card {
+    width: 132px;
+    min-height: 145px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  .mascot-card .cody-mascot {
+    width: 126px;
+    height: 132px;
+    transform: none;
+  }
+  .mascot-card .cody-character {
+    transform: scale(.88);
+  }
+  .cody-chat-launcher {
+    width: 86px;
+    height: 92px;
+    min-height: 92px;
+    padding: 0;
+    left: 8px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .cody-chat-orb {
+    flex: 0 0 84px;
+    width: 84px;
+    height: 84px;
+    border-radius: 0;
+    background: transparent;
+  }
+  .cody-character--compact {
+    transform: scale(.58);
+  }
+}
+
+
+/* ==========================================================
+   Cody responsive layout — phones, tablets, laptops & desktop
+   Keep the mascot artwork intact; adapt only its scale/position.
+   ========================================================== */
+
+/* Wide tablets and compact laptops */
+@media (min-width: 601px) and (max-width: 1100px) {
+  .hero-universe {
+    flex: 0 1 250px;
+    width: min(250px, 34vw);
+    height: 250px;
+  }
+  .mascot-card {
+    right: -4px;
+    width: clamp(112px, 14vw, 138px);
+    min-height: 142px;
+  }
+  .mascot-card .cody-mascot {
+    width: 124px;
+    height: 132px;
+  }
+  .cody-chat-panel {
+    left: max(14px, env(safe-area-inset-left));
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    width: min(390px, calc(100vw - 28px));
+    height: min(560px, calc(100dvh - 120px));
+  }
+}
+
+/* Standard phones */
+@media (max-width: 600px) {
+  .hero-universe {
+    flex: 0 1 190px;
+    width: min(190px, 48vw);
+    height: min(190px, 48vw);
+    min-width: 142px;
+    min-height: 142px;
+    margin-inline: auto;
+    transform: none;
+  }
+  .orbit-one { width: 62%; height: 62%; }
+  .orbit-two { width: 86%; height: 86%; }
+  .orbit-three { width: 100%; height: 42%; }
+  .mascot-card {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 128px;
+    min-height: 138px;
+    transform: translate(-50%, -50%);
+  }
+  .mascot-card:hover,
+  .mascot-card:focus-visible {
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+  .mascot-card .cody-mascot {
+    width: 120px;
+    height: 126px;
+  }
+  .mascot-card .cody-character {
+    transform: scale(.82);
+  }
+  .mascot-label { font-size: .8rem; }
+
+  .cody-chat-launcher {
+    position: fixed;
+    z-index: 10021;
+    left: max(8px, env(safe-area-inset-left));
+    right: auto;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 76px;
+    height: 82px;
+    min-height: 82px;
+    min-width: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    touch-action: manipulation;
+  }
+  .cody-chat-orb {
+    width: 76px;
+    height: 76px;
+    flex-basis: 76px;
+    display: grid;
+    place-items: center;
+  }
+  .cody-character--compact { transform: scale(.52); }
+
+  .cody-chat-panel {
+    position: fixed;
+    z-index: 10022;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: calc(154px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: 520px;
+    height: min( min(560px, 68dvh), calc(100dvh - 180px - env(safe-area-inset-bottom)) );
+    min-height: 280px;
+    max-height: calc(100dvh - 120px - env(safe-area-inset-bottom));
+    margin-inline: auto;
+    border-radius: 20px;
+  }
+  .cody-chat-header { flex: 0 0 auto; padding: 12px 14px; }
+  .cody-chat-messages { min-height: 0; overscroll-behavior: contain; }
+  .cody-chat-form { flex: 0 0 auto; padding: 9px; }
+  .cody-chat-form input {
+    min-width: 0;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .cody-chat-form button { flex: 0 0 44px; min-height: 44px; }
+}
+
+/* Small phones, including narrow 320px screens */
+@media (max-width: 380px) {
+  .hero-universe {
+    width: 154px;
+    height: 154px;
+    min-width: 154px;
+    min-height: 154px;
+  }
+  .mascot-card {
+    width: 112px;
+    min-height: 126px;
+  }
+  .mascot-card .cody-mascot {
+    width: 108px;
+    height: 112px;
+  }
+  .mascot-card .cody-character { transform: scale(.72); }
+  .mascot-label { font-size: .74rem; }
+  .cody-chat-launcher {
+    width: 66px;
+    height: 72px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  .cody-chat-orb {
+    width: 66px;
+    height: 66px;
+    flex-basis: 66px;
+  }
+  .cody-character--compact { transform: scale(.46); }
+  .cody-chat-panel {
+    left: 6px;
+    right: 6px;
+    bottom: calc(142px + env(safe-area-inset-bottom));
+    min-height: 260px;
+  }
+}
+
+/* Landscape phones: keep the chat above the keyboard and nav. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .cody-chat-launcher {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+  .cody-chat-panel {
+    left: 92px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: auto;
+    height: min(78dvh, 420px);
+    min-height: 220px;
+    max-height: calc(100dvh - 20px);
+  }
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .mascot-card,
+  .cody-chat-launcher,
+  .cody-character--compact {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+
+/* ==========================================================
+   FINAL RESPONSIVE POLISH — Cody mascot and chat
+   Fluid sizing for phones, tablets, laptops and wide displays.
+   Keep the existing character artwork and dashboard identity.
+   ========================================================== */
+.cody-chat-launcher {
+  position: fixed;
+  z-index: 10021;
+  left: max(16px, env(safe-area-inset-left));
+  right: auto;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  width: clamp(76px, 7.2vw, 104px);
+  height: clamp(86px, 8vw, 116px);
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.cody-chat-launcher:hover,
+.cody-chat-launcher:active {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.cody-chat-launcher:active { transform: scale(.96); }
+.cody-chat-launcher:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 5px;
+  border-radius: 18px;
+}
+.cody-chat-orb {
+  display: grid;
+  place-items: center;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.cody-character--compact {
+  transform: scale(clamp(.48, 5.1vw, .68));
+  transform-origin: center;
+}
+.cody-chat-panel {
+  position: fixed;
+  z-index: 10022;
+  left: max(18px, env(safe-area-inset-left));
+  right: auto;
+  bottom: max(132px, calc(112px + env(safe-area-inset-bottom)));
+  width: min(410px, calc(100vw - 36px));
+  height: min(620px, calc(100dvh - 160px));
+  min-height: 300px;
+  max-height: calc(100dvh - 120px - env(safe-area-inset-bottom));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: contain;
+}
+.cody-chat-panel[hidden] { display: none !important; }
+.cody-chat-header { flex: 0 0 auto; min-height: 58px; }
+.cody-chat-header button {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cody-chat-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  -webkit-overflow-scrolling: touch;
+}
+.cody-chat-message {
+  max-width: min(88%, 34rem);
+  overflow-wrap: anywhere;
+}
+.cody-chat-form {
+  flex: 0 0 auto;
+  align-items: center;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+.cody-chat-form input {
+  min-width: 0;
+  min-height: 46px;
+  font-size: 16px;
+}
+.cody-chat-form button {
+  flex: 0 0 46px;
+  width: 46px;
+  min-height: 46px;
+  touch-action: manipulation;
+}
+
+/* Large tablets and compact laptops */
+@media (min-width: 601px) and (max-width: 1100px) {
+  .cody-chat-launcher {
+    left: max(14px, env(safe-area-inset-left));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    width: 88px;
+    height: 98px;
+  }
+  .cody-character--compact { transform: scale(.56); }
+  .cody-chat-panel {
+    left: max(14px, env(safe-area-inset-left));
+    bottom: max(118px, calc(104px + env(safe-area-inset-bottom)));
+    width: min(390px, calc(100vw - 28px));
+    height: min(580px, calc(100dvh - 140px));
+  }
+}
+
+/* Phones */
+@media (max-width: 600px) {
+  .cody-chat-launcher {
+    left: max(10px, env(safe-area-inset-left));
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    width: 76px;
+    height: 84px;
+    min-width: 64px;
+    min-height: 64px;
+  }
+  .cody-chat-orb { width: 100%; height: 100%; }
+  .cody-character--compact { transform: scale(.52); }
+  .cody-chat-panel {
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: calc(166px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    height: min(560px, calc(100dvh - 190px - env(safe-area-inset-bottom)));
+    min-height: 260px;
+    max-height: calc(100dvh - 150px - env(safe-area-inset-bottom));
+    margin: 0;
+    border-radius: 18px;
+  }
+  .cody-chat-header { padding: 10px 12px; }
+  .cody-chat-messages { padding: 12px; }
+  .cody-chat-form { gap: 7px; padding: 8px; }
+  .cody-chat-form input { min-height: 46px; }
+}
+
+/* Narrow phones */
+@media (max-width: 360px) {
+  .cody-chat-launcher {
+    left: max(6px, env(safe-area-inset-left));
+    width: 68px;
+    height: 76px;
+  }
+  .cody-character--compact { transform: scale(.46); }
+  .cody-chat-panel {
+    left: 6px;
+    right: 6px;
+    bottom: calc(148px + env(safe-area-inset-bottom));
+    height: calc(100dvh - 172px - env(safe-area-inset-bottom));
+    min-height: 240px;
+  }
+}
+
+/* Landscape phones: use the horizontal space instead of covering the page. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .cody-chat-launcher {
+    left: max(8px, env(safe-area-inset-left));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: 68px;
+    height: 76px;
+  }
+  .cody-chat-panel {
+    left: max(86px, calc(76px + env(safe-area-inset-left)));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: auto;
+    height: calc(100dvh - 16px - env(safe-area-inset-bottom));
+    min-height: 190px;
+    max-height: none;
+  }
+}
+
+/* Extra-large screens */
+@media (min-width: 1600px) {
+  .cody-chat-panel {
+    width: 440px;
+    height: min(680px, calc(100dvh - 170px));
+  }
+}
+
+/* Accessibility and touch ergonomics */
+@media (hover: none) and (pointer: coarse) {
+  .cody-chat-launcher { -webkit-tap-highlight-color: transparent; }
+  .cody-chat-header button,
+  .cody-chat-form button { min-width: 44px; min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cody-chat-launcher,
+  .cody-character--compact { animation: none !important; transition: none !important; }
+}

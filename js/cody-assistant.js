@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/fi
 
 const API_URL = "https://codequest.mariam2009m44.workers.dev/api/cody/chat";
 const launcher = document.getElementById("codyChatLauncher");
+const heroLauncher = document.getElementById("codyHeroLauncher");
 const panel = document.getElementById("codyChatPanel");
 const closeButton = document.getElementById("codyChatClose");
 const form = document.getElementById("codyChatForm");
@@ -12,6 +13,36 @@ const status = document.getElementById("codyChatStatus");
 let currentUser = null;
 let history = [];
 
+const CODY_EMOTION_CLASSES = ["is-waving", "is-happy", "is-celebrating", "is-encouraging"];
+let emotionTimer = null;
+
+function playCodyEmotion(emotion = "wave") {
+  const classByEmotion = {
+    wave: "is-waving",
+    happy: "is-happy",
+    celebrate: "is-celebrating",
+    encourage: "is-encouraging"
+  };
+  const className = classByEmotion[emotion] || classByEmotion.wave;
+  const characters = document.querySelectorAll(".cody-character");
+  if (!characters.length) return;
+
+  characters.forEach(character => {
+    character.classList.remove(...CODY_EMOTION_CLASSES);
+    void character.offsetWidth;
+    character.classList.add(className);
+  });
+
+  window.clearTimeout(emotionTimer);
+  emotionTimer = window.setTimeout(() => {
+    characters.forEach(character => character.classList.remove(...CODY_EMOTION_CLASSES));
+  }, emotion === "celebrate" ? 2600 : 1900);
+}
+
+window.addEventListener("codequest:cody-emotion", event => {
+  playCodyEmotion(event.detail?.emotion || "wave");
+});
+
 function addMessage(text, role) {
   const node = document.createElement("div");
   node.className = "cody-chat-message " + (role === "user" ? "cody-from-user" : "cody-from-bot");
@@ -19,11 +50,17 @@ function addMessage(text, role) {
   messages.append(node);
   messages.scrollTop = messages.scrollHeight;
 }
+heroLauncher?.addEventListener("click", () => launcher?.click());
+
 launcher?.addEventListener("click", () => {
   panel.hidden = false;
+  playCodyEmotion("wave");
   input.focus();
 });
-closeButton?.addEventListener("click", () => { panel.hidden = true; });
+closeButton?.addEventListener("click", () => {
+  panel.hidden = true;
+  playCodyEmotion("wave");
+});
 onAuthStateChanged(auth, user => { currentUser = user; });
 form?.addEventListener("submit", async event => {
   event.preventDefault();
@@ -43,7 +80,7 @@ form?.addEventListener("submit", async event => {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ question, history: history.slice(-10), page_context: "CodeQuest dashboard; Arabic-first programming learning platform." })
+      body: JSON.stringify({ question, history: history.slice(-10).map(item => ({ role: item.role, text: String(item.text || "").slice(0, 1500) })), page_context: "CodeQuest dashboard; Arabic-first programming learning platform." })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || data.message || "خدمة كودي غير متاحة حاليًا.");
@@ -59,3 +96,6 @@ form?.addEventListener("submit", async event => {
     input.focus();
   }
 });
+
+// A small welcome wave when the dashboard mascot first appears.
+window.setTimeout(() => playCodyEmotion("wave"), 650);

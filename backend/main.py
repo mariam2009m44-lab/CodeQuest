@@ -7,7 +7,7 @@ from typing import Optional
 
 import httpx
 import firebase_admin
-from firebase_admin import auth as firebase_auth
+from firebase_admin import auth as firebase_auth, credentials
 
 from fastapi import (
     FastAPI,
@@ -95,8 +95,42 @@ def get_firebase_app():
 
     except ValueError:
         try:
-            return firebase_admin.initialize_app()
+            service_account_json = os.getenv(
+                "FIREBASE_SERVICE_ACCOUNT_JSON", ""
+            ).strip()
 
+            options = {
+                "projectId": os.getenv(
+                    "FIREBASE_PROJECT_ID", "codequest-6350a"
+                )
+            }
+
+            if service_account_json:
+                try:
+                    service_account_data = json.loads(
+                        service_account_json
+                    )
+                    if not isinstance(service_account_data, dict):
+                        raise ValueError("Service account must be a JSON object.")
+                    firebase_credential = credentials.Certificate(
+                        service_account_data
+                    )
+                    return firebase_admin.initialize_app(
+                        firebase_credential,
+                        options
+                    )
+                except (ValueError, TypeError, KeyError):
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Firebase service account configuration is invalid."
+                    )
+
+            # On Google Cloud, Application Default Credentials may be available.
+            # On other hosts, configure FIREBASE_SERVICE_ACCOUNT_JSON securely.
+            return firebase_admin.initialize_app(options=options)
+
+        except HTTPException:
+            raise
         except Exception:
             raise HTTPException(
                 status_code=503,

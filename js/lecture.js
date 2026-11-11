@@ -1212,6 +1212,8 @@ function clearOutput() {
 }
 
 async function runJavaScript(code) {
+  // Use the bounded server runner so infinite loops can be stopped safely,
+  // asynchronous output is collected by Judge0, and stdin remains supported.
   const result = await runCodeOnServer(
     "javascript",
     code,

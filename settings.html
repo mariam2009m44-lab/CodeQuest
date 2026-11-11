@@ -398,6 +398,24 @@
       </div>
     </section>
 
+    <!-- الملف الشخصي -->
+    <section class="settings-group" aria-labelledby="profileTitle">
+      <div class="settings-group-title" id="profileTitle">
+        <i class="ri-user-settings-line" aria-hidden="true"></i>
+        الملف الشخصي
+      </div>
+      <form id="displayNameForm" class="setting-row" style="display:block">
+        <div class="setting-info">
+          <h3>اسم العرض</h3>
+          <p>عدّل الاسم الذي يظهر في لوحة التعلم والملف الشخصي.</p>
+        </div>
+        <label for="displayNameInput" class="setting-info" style="display:block;margin-top:12px">الاسم</label>
+        <input id="displayNameInput" name="displayName" type="text" minlength="2" maxlength="50" autocomplete="name" required style="width:100%;margin-top:7px;padding:12px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-deep);color:var(--text-primary);font:inherit">
+        <button type="submit" class="btn-secondary" id="saveDisplayNameButton" style="margin-top:12px">حفظ الاسم</button>
+        <p id="displayNameStatus" class="page-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
     <!-- الخصوصية -->
     <section class="settings-group" aria-labelledby="privacyTitle">
 
@@ -441,7 +459,9 @@
   <script type="module">
     import {
       requireUser,
-      logoutUser
+      getCurrentUser,
+      logoutUser,
+      updateCurrentUserName
     } from "./js/auth.js";
 
     import {
@@ -455,8 +475,17 @@
       motion: document.getElementById("motionToggle"),
       logout: document.getElementById("logoutBtn"),
       parent: document.getElementById("parentDashboardBtn"),
-      status: document.getElementById("pageStatus")
+      status: document.getElementById("pageStatus"),
+      nameForm: document.getElementById("displayNameForm"),
+      nameInput: document.getElementById("displayNameInput"),
+      nameSave: document.getElementById("saveDisplayNameButton"),
+      nameStatus: document.getElementById("displayNameStatus")
     };
+
+    // لا يُفعّل نموذج الاسم قبل التحقق من جلسة الحساب.
+    let authenticatedNameUid = null;
+    elements.nameInput.disabled = true;
+    elements.nameSave.disabled = true;
 
     const STORAGE_KEYS = {
       theme: "cq_theme",
@@ -755,19 +784,78 @@
 
     initializeSettings();
 
+    // نربط معالج الإرسال فورًا حتى لا يؤدي الضغط المبكر إلى GET أو كشف الاسم في الرابط.
+    elements.nameForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (!authenticatedNameUid) {
+        elements.nameStatus.textContent = "انتظر حتى يتم التحقق من تسجيل الدخول.";
+        return;
+      }
+
+      const activeUser = getCurrentUser();
+      if (!activeUser?.uid || activeUser.uid !== authenticatedNameUid) {
+        authenticatedNameUid = null;
+        elements.nameInput.value = "";
+        elements.nameInput.disabled = true;
+        elements.nameSave.disabled = true;
+        elements.nameStatus.textContent = "تغيّر الحساب. أعد تحميل صفحة الإعدادات قبل تعديل الاسم.";
+        return;
+      }
+
+      const nextName = elements.nameInput.value.trim().replace(/\s+/g, " ");
+      if (nextName.length < 2 || nextName.length > 50) {
+        elements.nameStatus.textContent = "اكتب اسمًا من 2 إلى 50 حرفًا.";
+        return;
+      }
+
+      elements.nameSave.disabled = true;
+      elements.nameInput.disabled = true;
+      elements.nameSave.textContent = "جارٍ الحفظ...";
+      elements.nameStatus.textContent = "";
+
+      try {
+        await updateCurrentUserName(nextName, authenticatedNameUid);
+        // لا نعرض نجاحًا إذا تغيّرت الجلسة أثناء الحفظ.
+        if (getCurrentUser()?.uid !== authenticatedNameUid) {
+          authenticatedNameUid = null;
+          elements.nameStatus.textContent = "تغيّر الحساب أثناء الحفظ. أعد تحميل الصفحة للتحقق من الاسم.";
+          return;
+        }
+        elements.nameInput.value = nextName;
+        elements.nameStatus.textContent = "تم تحديث اسم الحساب بنجاح.";
+        showToast("تم تحديث اسم الحساب.", "success");
+      } catch (error) {
+        console.error("Display name update failed:", error);
+        elements.nameStatus.textContent = error?.message || "تعذر تحديث الاسم. حاول مرة أخرى.";
+        showToast(elements.nameStatus.textContent, "error");
+      } finally {
+        const stillSameUser = authenticatedNameUid &&
+          getCurrentUser()?.uid === authenticatedNameUid;
+        elements.nameInput.disabled = !stillSameUser;
+        elements.nameSave.disabled = !stillSameUser;
+        elements.nameSave.textContent = "حفظ الاسم";
+      }
+    });
+
     try {
-      await requireUser();
+      const currentUser = await requireUser();
+      if (getCurrentUser()?.uid !== currentUser.uid) {
+        throw new Error("تغيّر الحساب أثناء تحميل الإعدادات. أعد تحميل الصفحة.");
+      }
+      authenticatedNameUid = currentUser.uid;
+      elements.nameInput.value = currentUser.displayName || "";
+      elements.nameInput.disabled = false;
+      elements.nameSave.disabled = false;
     } catch (error) {
+      authenticatedNameUid = null;
+      elements.nameInput.disabled = true;
+      elements.nameSave.disabled = true;
+
       if (error?.message !== "يجب تسجيل الدخول.") {
         console.error("Settings authentication error:", error);
-
-        elements.status.textContent =
-          "تعذر التحقق من الحساب.";
-
-        showToast(
-          "تعذر التحقق من الحساب.",
-          "error"
-        );
+        elements.status.textContent = "تعذر التحقق من الحساب.";
+        showToast("تعذر التحقق من الحساب.", "error");
       }
     }
   </script>

@@ -151,9 +151,12 @@ async function readJudge0Response(response) {
   try {
     data = await response.json();
   } catch {
+    console.error("Judge0 returned a non-JSON response:", {
+      status: response.status
+    });
     throw new HttpsError(
-      "internal",
-      "وصلت استجابة غير مفهومة من خدمة التشغيل."
+      "unavailable",
+      "خدمة تشغيل الأكواد أرسلت استجابة غير صالحة. حاول مرة أخرى لاحقًا."
     );
   }
 
@@ -306,7 +309,7 @@ exports.runCode = onCall(
 exports.verifyJavaChallenge = onCall(
   {
     region: "europe-west1",
-    timeoutSeconds: 45,
+    timeoutSeconds: 60,
     memory: "256MiB",
     maxInstances: 5
   },
@@ -1871,9 +1874,14 @@ async function executePythonChallenge(code) {
   }
 
   if (!submission?.token) {
+    console.error("Judge0 submission response did not include a token:", {
+      responseKeys: submission && typeof submission === "object"
+        ? Object.keys(submission).slice(0, 12)
+        : []
+    });
     throw new HttpsError(
-      "internal",
-      "لم تُرجع خدمة التشغيل رقم التنفيذ."
+      "unavailable",
+      "خدمة تشغيل الأكواد لم تبدأ التنفيذ حاليًا. حاول مرة أخرى بعد قليل."
     );
   }
 
@@ -1931,6 +1939,19 @@ async function executePythonChallenge(code) {
     );
   }
 
+  // Judge0 status 13 is an upstream execution-service failure. Do not
+  // misreport it as a learner-code failure or return a generic "Internal".
+  if (result.status.id === 13) {
+    console.error("Judge0 reported an internal execution error:", {
+      statusId: result.status.id,
+      status: String(result.status.description || "Internal Error").slice(0, 80)
+    });
+    throw new HttpsError(
+      "unavailable",
+      "خدمة تشغيل الأكواد الخارجية واجهت خطأ مؤقتًا. الكود لم يُرفض بسبب صياغته؛ حاول مرة أخرى بعد قليل."
+    );
+  }
+
   return {
     accepted: result.status.id === 3,
     stdout: safeOutput(result.stdout),
@@ -1980,6 +2001,8 @@ exports.verifyPythonChallenge = onCall(
     maxInstances: 5
   },
   async request => {
+    let stage = "input-validation";
+    try {
     const uid = requireAuth(request);
 
     const data = request.data || {};
@@ -2047,6 +2070,7 @@ exports.verifyPythonChallenge = onCall(
       };
     }
 
+    stage = "judge0-execution";
     const execution = await executePythonChallenge(code);
 
     if (!execution.accepted) {
@@ -2086,6 +2110,7 @@ exports.verifyPythonChallenge = onCall(
      * هذا الإثبات يُنشأ من الخادم فقط.
      * Firestore Rules تمنع المتصفح من كتابة quizResults.
      */
+    stage = "proof-write";
     await resultRef.set({
       verificationVersion: 1,
       serverVerified: true,
@@ -2114,9 +2139,22 @@ exports.verifyPythonChallenge = onCall(
       chapter,
       lesson
     };
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+      console.error("verifyPythonChallenge failed:", {
+        stage,
+        code: typeof error?.code === "string" ? error.code : "unknown",
+        name: typeof error?.name === "string" ? error.name : "Error"
+      });
+      throw new HttpsError(
+        "unavailable",
+        stage === "proof-write"
+          ? "تم تنفيذ التحدي، لكن تعذر حفظ إثبات النجاح. حاول مرة أخرى."
+          : "تعذر التحقق من التحدي حاليًا. حاول مرة أخرى بعد قليل."
+      );
+    }
   }
 );
-
 // -----------------------------------------------------------------------------
 // Parent dashboard: child-initiated, one-time account linking.
 // Parent data is returned only by callable functions after checking the link.
@@ -2208,65 +2246,137 @@ exports.claimParentLinkCode = onCall(CALL_OPTIONS, async request => {
 
 exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
   const parentUid = requireAuth(request);
-  const linksSnapshot = await db.collection("parentLinks")
-    .where("parentUid", "==", parentUid)
-    .limit(10)
-    .get();
+  let stage = "parent-links";
 
-  const children = await Promise.all(linksSnapshot.docs.map(async linkDoc => {
-    const link = linkDoc.data() || {};
-    const childUid = link.childUid;
-    if (typeof childUid !== "string" || !childUid) return null;
+  try {
+    const linksSnapshot = await db.collection("parentLinks")
+      .where("parentUid", "==", parentUid)
+      .limit(10)
+      .get();
 
-    const childRef = db.collection("users").doc(childUid);
-    const [childSnapshot, progressSnapshot, projectsSnapshot] = await Promise.all([
-      childRef.get(),
-      childRef.collection("lessonProgress").get(),
-      db.collection("projects").where("userId", "==", childUid).get()
-    ]);
+    stage = "child-data";
+    const children = await Promise.all(linksSnapshot.docs.map(async linkDoc => {
+      const link = linkDoc.data() || {};
+      const childUid = link.childUid;
+      if (typeof childUid !== "string" || !childUid) return null;
 
-    if (!childSnapshot.exists) return null;
-    const profile = childSnapshot.data() || {};
-    const completed = progressSnapshot.docs
-      .map(doc => doc.data() || {})
-      .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
+      const childRef = db.collection("users").doc(childUid);
+      const [profileResult, progressResult, projectsResult] = await Promise.allSettled([
+        childRef.get(),
+        childRef.collection("lessonProgress").get(),
+        db.collection("projects").where("userId", "==", childUid).get()
+      ]);
 
-    const now = Date.now();
-    const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-    const recent = completed.filter(item => {
-      const timestamp = item.updatedAt?.toMillis?.();
-      return Number.isFinite(timestamp) && timestamp >= weekAgo && timestamp <= now;
-    });
+      // A profile is required to identify the linked learner. Progress and
+      // project reads are independent: one unavailable collection must not
+      // blank the entire family dashboard.
+      if (profileResult.status === "rejected") {
+        console.error("getParentDashboard child profile read failed:", {
+          stage: "child-profile",
+          code: typeof profileResult.reason?.code === "string" ? profileResult.reason.code : "unknown"
+        });
 
-    const languages = {};
-    for (const language of ["python", "javascript", "cpp", "java"]) {
-      languages[language] = completed.filter(item => item.language === language).length;
-    }
+        // Preserve the existing parent-child link in the response. A temporary
+        // profile read failure must not look like the parent has no linked child.
+        return {
+          childUid,
+          displayName: "بيانات الحساب غير متاحة مؤقتًا",
+          xp: 0,
+          stars: 0,
+          level: 1,
+          completedLessons: 0,
+          lessonsThisWeek: 0,
+          projectsCount: 0,
+          languageCounts: { python: 0, javascript: 0, cpp: 0, java: 0 },
+          dataAvailability: {
+            profile: false,
+            progress: false,
+            projects: false
+          },
+          lastActivity: null
+        };
+      }
 
-    const timestamps = completed
-      .map(item => item.updatedAt?.toMillis?.())
-      .filter(Number.isFinite);
-    const lastActivity = timestamps.length ? Math.max(...timestamps) : null;
+      const childSnapshot = profileResult.value;
+      if (!childSnapshot.exists) return null;
+      const profile = childSnapshot.data() || {};
+
+      const progressAvailable = progressResult.status === "fulfilled";
+      const projectsAvailable = projectsResult.status === "fulfilled";
+
+      if (!progressAvailable) {
+        console.error("getParentDashboard progress read failed:", {
+          stage: "child-progress",
+          code: typeof progressResult.reason?.code === "string" ? progressResult.reason.code : "unknown"
+        });
+      }
+      if (!projectsAvailable) {
+        console.error("getParentDashboard projects read failed:", {
+          stage: "child-projects",
+          code: typeof projectsResult.reason?.code === "string" ? projectsResult.reason.code : "unknown"
+        });
+      }
+
+      const progressSnapshot = progressAvailable ? progressResult.value : { docs: [] };
+      const projectsSnapshot = projectsAvailable ? projectsResult.value : { size: 0 };
+      const completed = progressSnapshot.docs
+        .map(doc => doc.data() || {})
+        .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
+
+      const now = Date.now();
+      const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const recent = completed.filter(item => {
+        const timestamp = item.updatedAt?.toMillis?.();
+        return Number.isFinite(timestamp) && timestamp >= weekAgo && timestamp <= now;
+      });
+
+      const languages = {};
+      for (const language of ["python", "javascript", "cpp", "java"]) {
+        languages[language] = completed.filter(item => item.language === language).length;
+      }
+
+      const timestamps = completed
+        .map(item => item.updatedAt?.toMillis?.())
+        .filter(Number.isFinite);
+      const lastActivity = timestamps.length ? Math.max(...timestamps) : null;
+
+      return {
+        childUid,
+        displayName: String(profile.displayName || "المتعلم").slice(0, 50),
+        xp: Number.isSafeInteger(profile.xp) && profile.xp >= 0 ? profile.xp : 0,
+        stars: Number.isSafeInteger(profile.stars) && profile.stars >= 0 ? profile.stars : 0,
+        level: Number.isSafeInteger(profile.level) && profile.level >= 1 ? profile.level : 1,
+        completedLessons: completed.length,
+        lessonsThisWeek: recent.length,
+        projectsCount: projectsSnapshot.size,
+        languageCounts: languages,
+        dataAvailability: {
+          progress: progressAvailable,
+          projects: projectsAvailable
+        },
+        lastActivity: lastActivity ? new Date(lastActivity).toISOString() : null
+      };
+    }));
 
     return {
-      childUid,
-      displayName: String(profile.displayName || "المتعلم").slice(0, 50),
-      xp: Number.isSafeInteger(profile.xp) && profile.xp >= 0 ? profile.xp : 0,
-      stars: Number.isSafeInteger(profile.stars) && profile.stars >= 0 ? profile.stars : 0,
-      level: Number.isSafeInteger(profile.level) && profile.level >= 1 ? profile.level : 1,
-      completedLessons: completed.length,
-      lessonsThisWeek: recent.length,
-      projectsCount: projectsSnapshot.size,
-      languageCounts: languages,
-      lastActivity: lastActivity ? new Date(lastActivity).toISOString() : null
+      success: true,
+      children: children.filter(Boolean),
+      generatedAt: new Date().toISOString()
     };
-  }));
+  } catch (error) {
+    // Keep private account identifiers and document contents out of logs.
+    console.error("getParentDashboard failed:", {
+      stage,
+      code: typeof error?.code === "string" ? error.code : "unknown",
+      name: typeof error?.name === "string" ? error.name : "Error"
+    });
 
-  return {
-    success: true,
-    children: children.filter(Boolean),
-    generatedAt: new Date().toISOString()
-  };
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError(
+      "unavailable",
+      "تعذر تحميل بيانات لوحة ولي الأمر حاليًا. حاول تحديث الصفحة بعد قليل."
+    );
+  }
 });
 
 exports.unlinkParentChild = onCall(CALL_OPTIONS, async request => {

@@ -352,6 +352,7 @@
     .language-icon.javascript { color: #fcd34d; background: rgba(250,204,21,.1); }
     .language-icon.python { color: #93c5fd; background: rgba(59,130,246,.13); }
     .language-icon.cpp { color: #67e8f9; background: rgba(34,211,238,.11); }
+    .language-icon.java { color: #fca5a5; background: rgba(248,113,113,.11); }
     .language-icon.other { color: #c4b5fd; background: rgba(167,139,250,.12); }
 
     .icon-button {
@@ -720,7 +721,7 @@
       </article>
       <article class="stat-card">
         <div class="stat-icon pink"><i class="ri-code-box-line"></i></div>
-        <div><div class="stat-label">مشروعات Python و C++</div><strong class="stat-value" id="otherProjects">—</strong></div>
+        <div><div class="stat-label">مشروعات Python و C++ و Java</div><strong class="stat-value" id="otherProjects">—</strong></div>
       </article>
     </section>
 
@@ -749,6 +750,7 @@
           <option value="javascript">JavaScript</option>
           <option value="python">Python</option>
           <option value="cpp">C++</option>
+          <option value="java">Java</option>
         </select>
       </div>
 
@@ -795,6 +797,7 @@
             <option value="javascript">JavaScript</option>
             <option value="python">Python</option>
             <option value="cpp">C++</option>
+            <option value="java">Java</option>
           </select>
         </div>
 
@@ -895,6 +898,12 @@
         icon: "ri-code-s-slash-line",
         className: "cpp",
         description: "مشروع C++ جاهز للتجربة والتطوير."
+      },
+      java: {
+        name: "Java",
+        icon: "ri-cup-line",
+        className: "java",
+        description: "مشروع Java جاهز للتجربة والتطوير."
       }
     };
 
@@ -910,6 +919,16 @@
     function getStarterCode(language) {
       if (language === "python") {
         return 'print("Hello CodeQuest!")';
+      }
+
+      if (language === "java") {
+        return [
+          "public class Main {",
+          "    public static void main(String[] args) {",
+          '        System.out.println("Hello CodeQuest!");',
+          "    }",
+          "}"
+        ].join("\n");
       }
 
       if (language === "cpp") {
@@ -1012,7 +1031,7 @@
 
     function updateStats() {
       const javascriptCount = projects.filter(p => p.language === "javascript").length;
-      const otherCount = projects.filter(p => p.language === "python" || p.language === "cpp").length;
+      const otherCount = projects.filter(p => p.language === "python" || p.language === "cpp" || p.language === "java").length;
       document.getElementById("totalProjects").textContent = projects.length.toLocaleString("ar-EG");
       document.getElementById("jsProjects").textContent = javascriptCount.toLocaleString("ar-EG");
       document.getElementById("otherProjects").textContent = otherCount.toLocaleString("ar-EG");

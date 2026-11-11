@@ -13,6 +13,7 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  updateDoc,
   collection,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -130,6 +131,14 @@ function normalizeError(error) {
     normalized.code = error.code;
   }
 
+  // Preserve structured context while wrapping Firebase SDK errors.
+  if (typeof error?.profileStage === "string") {
+    normalized.profileStage = error.profileStage;
+  }
+  if (typeof error?.accountCreated === "boolean") {
+    normalized.accountCreated = error.accountCreated;
+  }
+
   return normalized;
 }
 
@@ -140,6 +149,8 @@ export async function ensureUserProfile(user) {
   if (!user?.uid) {
     throw new Error("تعذر تحديد الحساب الحالي.");
   }
+
+  let profileStage = "read";
 
   try {
     const profileRef = doc(
@@ -184,13 +195,15 @@ export async function ensureUserProfile(user) {
       languageProgress: {
         python: 0,
         javascript: 0,
-        cpp: 0
+        cpp: 0,
+        java: 0
       },
 
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
 
+    profileStage = "create";
     await setDoc(profileRef, profile);
 
     return {
@@ -198,7 +211,9 @@ export async function ensureUserProfile(user) {
       uid: user.uid
     };
   } catch (error) {
-    throw normalizeError(error);
+    const normalized = normalizeError(error);
+    normalized.profileStage = profileStage;
+    throw normalized;
   }
 }
 
@@ -213,8 +228,10 @@ export async function registerUser(name, email, password) {
   validateEmail(cleanEmail);
   validatePassword(password);
 
+  let credential = null;
+
   try {
-    const credential = await createUserWithEmailAndPassword(
+    credential = await createUserWithEmailAndPassword(
       auth,
       cleanEmail,
       password
@@ -228,8 +245,58 @@ export async function registerUser(name, email, password) {
 
     return credential.user;
   } catch (error) {
+    const normalized = normalizeError(error);
+
+    // Authentication may succeed before the Firestore profile write fails.
+    // Preserve this state so the UI can guide the learner to sign in again;
+    // loginUser() retries ensureUserProfile() for the authenticated account.
+    if (credential?.user?.uid) {
+      normalized.accountCreated = true;
+      normalized.profileStage = normalized.profileStage || "profile";
+    }
+
+    throw normalized;
+  }
+}
+
+/**
+ * تحديث اسم العرض في Firebase Authentication وملف Firestore.
+ */
+export async function updateCurrentUserName(name, expectedUid = null) {
+  const cleanName = normalizeName(name);
+  validateName(cleanName);
+
+  const user = auth.currentUser;
+  if (!user?.uid) throw new Error("سجّل الدخول أولًا لتعديل الاسم.");
+  if (expectedUid && user.uid !== expectedUid) {
+    throw new Error("تغيّر الحساب قبل حفظ الاسم؛ أُوقفت العملية لحماية بيانات الحساب.");
+  }
+
+  const targetUid = user.uid;
+
+  try {
+    await updateProfile(user, { displayName: cleanName });
+  } catch (error) {
     throw normalizeError(error);
   }
+
+  // لا نكتب في ملف Firestore إذا تبدلت جلسة الدخول أثناء تحديث Auth.
+  if (auth.currentUser?.uid !== targetUid) {
+    throw new Error("تغيّر الحساب أثناء حفظ الاسم؛ لم يتم تحديث ملف الحساب الآخر.");
+  }
+
+  try {
+    await updateDoc(doc(db, USERS_COLLECTION, targetUid), {
+      displayName: cleanName,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    normalized.message = "تم تحديث اسم تسجيل الدخول، لكن تعذر مزامنته مع ملف التعلم. تحقق من اتصال Firestore ثم حاول حفظ الاسم مرة أخرى.";
+    throw normalized;
+  }
+
+  return cleanName;
 }
 
 /**
