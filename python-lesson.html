@@ -1829,6 +1829,7 @@ html[data-theme="light"] .bottom-action {
   let currentChallenge = null;
   let currentHintIndex = 0;
   let challengeSolved = false;
+  let challengeVerifiedOnServer = false;
 
   let editor = null;
   let editorResizeObserver = null;
@@ -2685,6 +2686,7 @@ html[data-theme="light"] .bottom-action {
     currentChallenge = step;
     currentHintIndex = 0;
     challengeSolved = false;
+    challengeVerifiedOnServer = false;
 
     container.innerHTML = "";
 
@@ -3291,6 +3293,7 @@ html[data-theme="light"] .bottom-action {
         }
 
         challengeSolved = true;
+        challengeVerifiedOnServer = true;
         addBubble(
           "cody",
           "تم التحقق من التحدي على الخادم بنجاح! أحسنت 🎉"
@@ -3440,20 +3443,22 @@ html[data-theme="light"] .bottom-action {
     }
 
     if (!cloudSaved && !wasCompleted) {
-      clearChat();
-      addBubble(
-        "cody",
-        "لم نتمكن من حفظ إكمال الدرس في حسابك الآن. لم نضف نقاطًا أو نعلن اكتمال الدرس. تحقق من اتصال الإنترنت ثم اضغط إعادة المحاولة."
-      );
-      showBottomAction(true, "إعادة المحاولة");
-      return;
-    }
+      // احفظ إنجاز المتعلم محليًا حتى لا يضيع عند تعذر الاتصال.
+      // لا نعتبره إثباتًا خادميًا ولا نمنح عنه مكافآت.
+      awardLessonReward(currentChapterId, currentLessonIndex);
 
-    if (!wasCompleted && cloudSaved) {
-      // لا نضيف المكافأة المحلية إلا بعد نجاح حفظ سجل التقدم.
-      awardLessonReward(
-        currentChapterId,
-        currentLessonIndex
+      if (challengeVerifiedOnServer) {
+        const verifiedKeys = readStorage("cody_python_server_verified_lessons", []);
+        const safeKeys = Array.isArray(verifiedKeys) ? verifiedKeys.map(String) : [];
+        const key = getLessonKey(currentChapterId, currentLessonIndex);
+        if (!safeKeys.includes(key)) safeKeys.push(key);
+        writeStorage("cody_python_server_verified_lessons", safeKeys);
+      }
+
+      showToast(
+        challengeVerifiedOnServer
+          ? "حفظنا تقدمك على هذا الجهاز، وسنحاول مزامنته مع حسابك عند عودة الاتصال."
+          : "حفظنا تقدمك على هذا الجهاز فقط. سيظهر محليًا، لكنه لن يمنح مكافآت قبل التحقق من الخادم."
       );
     }
 
@@ -3467,7 +3472,11 @@ html[data-theme="light"] .bottom-action {
       "cody",
       wasCompleted
         ? "أهلًا بعودتك! الدرس ده مكتمل بالفعل. تقدر تراجع محتواه أو تنتقل للدرس التالي."
-        : "رائع! تم حفظ إكمال الدرس بنجاح، وستتم مزامنة المكافأة مع حسابك ⭐"
+        : cloudSaved
+          ? "رائع! تم حفظ إكمال الدرس في حسابك، وستتم مزامنة المكافأة بعد التحقق الخادمي ⭐"
+          : challengeVerifiedOnServer
+            ? "رائع! حفظنا تقدمك على هذا الجهاز، وسنحاول مزامنته مع حسابك عند فتح صفحة التقدم مع توفر الاتصال."
+            : "تم حفظ تقدمك على هذا الجهاز فقط. لن تُضاف مكافآت قبل التحقق الخادمي من الإنجاز."
     );
 
     showBottomAction(true, "الدرس التالي");
@@ -3526,6 +3535,7 @@ html[data-theme="light"] .bottom-action {
     }
 
     currentLesson = lessons[currentLessonIndex];
+    challengeVerifiedOnServer = false;
 
     if (!currentLesson) return;
 

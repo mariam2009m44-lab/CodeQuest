@@ -435,6 +435,14 @@
         >
           جارٍ تحميل بيانات الحساب...
         </p>
+        <button
+          id="retryProgressSync"
+          class="btn-secondary"
+          type="button"
+          hidden
+        >
+          إعادة تحميل ومزامنة التقدم
+        </button>
       </article>
 
     </section>
@@ -841,6 +849,18 @@
           `codequest_${uid}_cody_python_completed_lessons`
         );
         const pythonKeys = pythonRaw ? JSON.parse(pythonRaw) : [];
+        const verifiedRaw = localStorage.getItem(
+          `codequest_${uid}_cody_python_server_verified_lessons`
+        );
+        let verifiedKeys = new Set();
+        try {
+          const parsedVerifiedKeys = verifiedRaw ? JSON.parse(verifiedRaw) : [];
+          if (Array.isArray(parsedVerifiedKeys)) {
+            verifiedKeys = new Set(parsedVerifiedKeys.map(String));
+          }
+        } catch {
+          verifiedKeys = new Set();
+        }
         const pythonRecords = Array.isArray(pythonKeys)
           ? pythonKeys.flatMap(key => {
               const match = /^(\d+)_(\d+)$/.exec(String(key));
@@ -857,7 +877,7 @@
                 lesson: lessonNumber,
                 completed: true,
                 localOnly: true,
-                serverVerified: false
+                serverVerified: verifiedKeys.has(`${chapterNumber}_${lessonNumber}`)
               }];
             })
           : [];
@@ -934,6 +954,11 @@
               expectedUid: uid
             });
             cloudKeys.add(key);
+            record.localOnly = false;
+            cloudByLanguage[language].push({
+              ...record,
+              localOnly: false
+            });
           } catch (error) {
             // Keep the local record visible; retry on the next visit.
             console.warn(`تعذرت مزامنة تقدم ${language}:`, error);
@@ -971,6 +996,17 @@
         "جارٍ تحميل ملفات المناهج والتقدم المحفوظ..."
       );
 
+      const cloudReadErrors = [];
+      const readCloudProgress = async language => {
+        try {
+          return await getLessonProgress(language);
+        } catch (error) {
+          cloudReadErrors.push({ language, error });
+          console.warn(`تعذر تحميل تقدم ${LANGUAGE_NAMES[language]} من الحساب:`, error);
+          return [];
+        }
+      };
+
       const [
         pythonChapters,
         javascriptChapters,
@@ -984,10 +1020,10 @@
         readCurriculum(CURRICULUM_FILES.javascript),
         readCurriculum(CURRICULUM_FILES.cpp),
 
-        getLessonProgress("python"),
-        getLessonProgress("javascript"),
-        getLessonProgress("cpp"),
-        getLessonProgress("java")
+        readCloudProgress("python"),
+        readCloudProgress("javascript"),
+        readCloudProgress("cpp"),
+        readCloudProgress("java")
       ]);
 
       const localProgress = await syncPendingLocalProgress(user.uid, {
@@ -1115,7 +1151,39 @@
           "تعذر التحميل";
       }
 
-      if (xpLoaded) {
+      const allProgressRecords = [
+        ...pythonRecords,
+        ...javascriptRecords,
+        ...cppRecords,
+        ...javaRecords
+      ];
+      const localOnlyCount = allProgressRecords.filter(
+        record => record?.completed === true && record.localOnly === true
+      ).length;
+      const pendingVerifiedSyncCount = allProgressRecords.filter(
+        record =>
+          record?.completed === true &&
+          record.localOnly === true &&
+          record.serverVerified === true
+      ).length;
+
+      const retryButton = $("retryProgressSync");
+      if (retryButton) {
+        retryButton.hidden =
+          pendingVerifiedSyncCount === 0 && cloudReadErrors.length === 0;
+      }
+
+      if (cloudReadErrors.length > 0) {
+        showStatus(
+          `تعذر تحميل ${cloudReadErrors.length} مسارًا من السحابة. نعرض التقدم المحلي المحفوظ على هذا الجهاز؛ اضغط إعادة المزامنة عند توفر الاتصال.`,
+          "error"
+        );
+      } else if (localOnlyCount > 0) {
+        showStatus(
+          `تم تحميل تقدم الحساب. يوجد ${localOnlyCount} إنجاز محلي؛ الإنجازات التي تم التحقق منها فقط مؤهلة للمزامنة مع الحساب.`,
+          "success"
+        );
+      } else if (xpLoaded) {
         showStatus(
           "تم تحميل تقدم المسارات وامتحانات بايثون ونقاط الخبرة من حسابك.",
           "success"
@@ -1144,6 +1212,22 @@
         xpLoaded
       });
     }
+
+    $("retryProgressSync")?.addEventListener("click", async () => {
+      const button = $("retryProgressSync");
+      if (!button || button.disabled) return;
+      button.disabled = true;
+      const previousLabel = button.textContent;
+      button.textContent = "جارٍ إعادة المزامنة...";
+      try {
+        await loadProgress();
+      } catch (error) {
+        console.error("تعذرت إعادة مزامنة التقدم:", error);
+      } finally {
+        button.disabled = false;
+        button.textContent = previousLabel;
+      }
+    });
 
     loadProgress().catch(error => {
       console.error(
