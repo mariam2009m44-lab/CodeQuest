@@ -71,6 +71,7 @@ export function mountCodyTutor(lesson, language = "اللغة الحالية") {
   const back = panel.querySelector(".cody-tutor-back");
   const next = panel.querySelector(".cody-tutor-next");
   let index = 0;
+  let finished = false;
 
   function render() {
     const step = steps[index];
@@ -93,6 +94,7 @@ export function mountCodyTutor(lesson, language = "اللغة الحالية") {
   });
 
   next.addEventListener("click", () => {
+    if (finished) { index = 0; finished = false; render(); return; }
     if (index < steps.length - 1) {
       index += 1;
       render();
@@ -102,8 +104,8 @@ export function mountCodyTutor(lesson, language = "اللغة الحالية") {
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
     const editor = document.querySelector("#codeEditor, #pythonCodeInput");
     editor?.focus({ preventScroll: true });
+    finished = true;
     next.textContent = "راجع الشرح مرة أخرى";
-    next.onclick = () => { index = 0; render(); };
   });
 
   render();
