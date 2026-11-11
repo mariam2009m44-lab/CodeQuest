@@ -841,9 +841,21 @@
           `codequest_${uid}_cody_python_completed_lessons`
         );
         const pythonKeys = pythonRaw ? JSON.parse(pythonRaw) : [];
+        const verifiedRaw = localStorage.getItem(
+          `codequest_${uid}_cody_python_server_verified_lessons`
+        );
+        let verifiedKeys = new Set();
+        try {
+          const parsedVerifiedKeys = verifiedRaw ? JSON.parse(verifiedRaw) : [];
+          if (Array.isArray(parsedVerifiedKeys)) {
+            verifiedKeys = new Set(parsedVerifiedKeys.map(String));
+          }
+        } catch {
+          verifiedKeys = new Set();
+        }
         const pythonRecords = Array.isArray(pythonKeys)
           ? pythonKeys.flatMap(key => {
-              const match = /^(\d+)_(\d+)$/.exec(String(key));
+              const match = /^(\\d+)_(\\d+)$/.exec(String(key));
               if (!match) return [];
               const chapterNumber = Number(match[1]);
               const lessonNumber = Number(match[2]);
@@ -857,7 +869,7 @@
                 lesson: lessonNumber,
                 completed: true,
                 localOnly: true,
-                serverVerified: false
+                serverVerified: verifiedKeys.has(`${chapterNumber}_${lessonNumber}`)
               }];
             })
           : [];
@@ -934,6 +946,11 @@
               expectedUid: uid
             });
             cloudKeys.add(key);
+            record.localOnly = false;
+            cloudByLanguage[language].push({
+              ...record,
+              localOnly: false
+            });
           } catch (error) {
             // Keep the local record visible; retry on the next visit.
             console.warn(`تعذرت مزامنة تقدم ${language}:`, error);
@@ -1115,9 +1132,21 @@
           "تعذر التحميل";
       }
 
+      const allProgressRecords = [
+        ...pythonRecords,
+        ...javascriptRecords,
+        ...cppRecords,
+        ...javaRecords
+      ];
+      const localOnlyCount = allProgressRecords.filter(
+        record => record?.completed === true && record.localOnly === true
+      ).length;
+
       if (xpLoaded) {
         showStatus(
-          "تم تحميل تقدم المسارات وامتحانات بايثون ونقاط الخبرة من حسابك.",
+          localOnlyCount > 0
+            ? `تم تحميل تقدم الحساب. يوجد ${localOnlyCount} إنجاز محلي محفوظ على هذا الجهاز؛ ستتم مزامنة الإنجازات التي تم التحقق منها تلقائيًا.`
+            : "تم تحميل تقدم المسارات وامتحانات بايثون ونقاط الخبرة من حسابك.",
           "success"
         );
       } else {
