@@ -343,3 +343,71 @@
 @media(max-width:390px){.cw-node{width:58px;height:58px}.cw-road-node{width:39%}.cw-node-label{max-width:108px;font-size:.62rem}}
 
 .cody-tutor-mascot .cody-character{transform:scale(.78);transform-origin:center bottom}.cody-tutor-mascot.is-thinking .cody-character__arm--right{animation:cwCodyThink .8s ease-in-out infinite alternate}.cody-tutor-mascot .cody-character.is-happy{animation:cody-character-happy-bounce .48s ease-in-out 4}
+
+
+/* Cody's welcome-to-path sequence, animated progress and course finish */
+[hidden]{display:none!important}
+body.cw-welcome-open{overflow:hidden}
+.cw-welcome{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:18px;background:rgba(5,10,22,.88);backdrop-filter:blur(13px);opacity:1;transition:opacity .45s ease}
+.cw-welcome.is-leaving{opacity:0;pointer-events:none}
+.cw-welcome-card{position:relative;width:min(520px,100%);padding:clamp(22px,5vw,38px);border:1px solid #9caff044;border-radius:30px;background:radial-gradient(circle at 50% 5%,#354b7b 0,#192640 42%,#111a2d 100%);box-shadow:0 30px 90px #0009;text-align:center;overflow:hidden;animation:cwWelcomeAppear .55s cubic-bezier(.2,.8,.2,1) both}
+.cw-welcome-card:before{position:absolute;content:"";width:230px;height:230px;top:-125px;left:calc(50% - 115px);border-radius:50%;background:#36bfe522;filter:blur(10px)}
+.cw-welcome-kicker{position:relative;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border:1px solid #36bfe544;border-radius:999px;color:#8ceaff;background:#36bfe512;font-size:.75rem;font-weight:900}
+.cw-welcome-mascot{position:relative;width:175px;height:176px;margin:12px auto 5px;display:grid;place-items:center;filter:drop-shadow(0 15px 24px #36bfe52b)}
+.cw-welcome-mascot .cody-character{transform:scale(1.15);transform-origin:center center}
+.cw-welcome-mascot.is-launching .cody-character{animation:cwCodyLaunch .92s cubic-bezier(.2,.8,.2,1) both}
+.cw-welcome-speech{position:relative;margin:10px auto 18px;padding:18px 20px;border:1px solid #ffffff1c;border-radius:22px;background:#ffffff0b}
+.cw-welcome-speech h2{margin:0 0 8px;color:#f6f8ff;font-size:clamp(1.35rem,4vw,1.8rem);font-weight:900}
+.cw-welcome-speech p{margin:0;color:#c5d1e5;font-size:.91rem;line-height:2}
+.cw-welcome-dots{display:flex;justify-content:center;gap:8px;margin:0 0 17px}
+.cw-welcome-dots i{width:7px;height:7px;border-radius:50%;background:#63728d;transition:all .2s}
+.cw-welcome-dots i.active{width:23px;border-radius:10px;background:#36bfe5}
+.cw-welcome-next{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:58px;padding:13px 18px;border:0;border-radius:17px;background:linear-gradient(110deg,#65e4f4,#32b8df);color:#10223b;font:inherit;font-weight:900;font-size:1rem;box-shadow:0 6px 0 #197c9d;transition:transform .18s,box-shadow .18s}
+.cw-welcome-next:hover{transform:translateY(-2px);box-shadow:0 8px 0 #197c9d}
+.cw-welcome-next:active{transform:translateY(3px);box-shadow:0 2px 0 #197c9d}
+.cw-welcome-next:disabled{opacity:.75}
+.cw-welcome-skip{margin-top:13px;border:0;background:transparent;color:#9aabc5;font:inherit;font-size:.75rem;text-decoration:underline;text-underline-offset:4px}
+@keyframes cwWelcomeAppear{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cwCodyLaunch{0%{transform:translateY(0) rotate(0) scale(1)}18%{transform:translateY(9px) rotate(-14deg) scale(.92)}48%{transform:translateY(-82px) rotate(370deg) scale(1.12)}72%{transform:translateY(-25px) rotate(520deg) scale(.98)}100%{transform:translateY(0) rotate(720deg) scale(1)}}
+.cw-cody--launching .cody-character{animation:cwCodyPathJump .72s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cwCodyPathJump{0%{transform:translateY(0) rotate(0)}25%{transform:translateY(-15px) rotate(-20deg)}65%{transform:translateY(-30px) rotate(18deg)}100%{transform:translateY(0) rotate(0)}}
+.cw-cody--node .cody-character{animation:cwCodyIdle .95s ease-in-out infinite alternate}
+@keyframes cwCodyIdle{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-5px) rotate(2deg)}}
+.cw-unit-title{min-width:0;flex:1}
+.cw-unit-progress{height:6px;max-width:190px;margin-top:8px;overflow:hidden;border-radius:99px;background:#ffffff16}
+.cw-unit-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#36bfe5,#43c99a);transition:width .5s ease}
+.cw-unit.is-complete .cw-unit-number{background:linear-gradient(145deg,#ffd66b,#f2a93a);border-color:#fff0bd;box-shadow:0 4px 0 #a96a20}
+.cw-unit.is-complete .cw-unit-head{background:linear-gradient(100deg,#43c99a20,#ffd66b12)}
+.cw-road-node.is-current .cw-cody--node{animation:cwCodyArrive .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cwCodyArrive{0%{opacity:0;translate:0 -24px;scale:.7}70%{opacity:1;translate:0 4px;scale:1.08}100%{opacity:1;translate:0 0;scale:1}}
+.cw-finish{margin:28px auto 12px;max-width:760px}
+.cw-finish-card{position:relative;overflow:hidden;padding:clamp(24px,5vw,42px);border:1px solid #ffd66b55;border-radius:28px;background:radial-gradient(circle at 50% 0,#7955e844,transparent 48%),linear-gradient(145deg,#1b2e4b,#121d32);text-align:center;box-shadow:0 20px 55px #0004;animation:cwWelcomeAppear .55s ease both}
+.cw-finish-confetti{color:#ffd66b;font-size:1.5rem;letter-spacing:18px;animation:cwConfettiFloat 2s ease-in-out infinite alternate}
+@keyframes cwConfettiFloat{to{transform:translateY(-7px) rotate(4deg)}}
+.cw-finish-icon{display:grid;place-items:center;width:78px;height:78px;margin:10px auto 15px;border:2px solid #fff0b6;border-radius:25px;background:linear-gradient(145deg,#ffd66b,#e9a73c);color:#593c16;font-size:2.4rem;box-shadow:0 9px 0 #986b2c,0 0 32px #ffd66b40}
+.cw-finish-card h2{margin:10px 0;color:#fff;font-size:clamp(1.45rem,4vw,2rem);font-weight:900}
+.cw-finish-card p{max-width:480px;margin:0 auto;color:#bdcce0;line-height:1.9}
+.cw-finish-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:23px 0}
+.cw-finish-stats div{padding:14px 8px;border:1px solid #ffffff18;border-radius:16px;background:#ffffff09}
+.cw-finish-stats strong{display:block;color:#8deaff;font-size:1.55rem;font-weight:900}
+.cw-finish-stats span{display:block;margin-top:3px;color:#aebed4;font-size:.72rem}
+.cw-finish-card button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 19px;border:0;border-radius:14px;background:#36bfe5;color:#10233c;font:inherit;font-weight:900}
+.cw-jump-current{position:fixed;z-index:50;right:18px;bottom:22px;display:flex;align-items:center;gap:8px;padding:12px 16px;border:1px solid #8ceaff66;border-radius:999px;background:#142b47;color:#b8f5ff;font:inherit;font-size:.8rem;font-weight:900;box-shadow:0 9px 28px #0005}
+.cw-jump-current[hidden]{display:none}
+@media(max-width:600px){
+ .cw-welcome{padding:12px}
+ .cw-welcome-card{padding:22px 18px;border-radius:24px}
+ .cw-welcome-mascot{height:148px;margin-top:8px}
+ .cw-welcome-mascot .cody-character{transform:scale(1.02)}
+ .cw-welcome-speech{padding:15px}
+ .cw-welcome-speech p{font-size:.83rem}
+ .cw-finish-stats{gap:6px}
+ .cw-finish-stats div{padding:11px 5px}
+ .cw-finish-stats strong{font-size:1.25rem}
+ .cw-finish-stats span{font-size:.64rem}
+ .cw-jump-current{right:12px;bottom:14px;padding:10px 13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .cw-welcome-card,.cw-welcome-mascot.is-launching .cody-character,.cw-cody--launching .cody-character,.cw-cody--node .cody-character,.cw-road-node.is-current .cw-cody--node,.cw-finish-card,.cw-finish-confetti{animation:none!important}
+ *{scroll-behavior:auto!important;transition:none!important}
+}
