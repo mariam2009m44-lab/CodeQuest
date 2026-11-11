@@ -1,1 +1,29 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=course-path.html?lang=javascript"><title>جاري فتح خريطة التعلم</title><script>location.replace("course-path.html?lang=javascript");</script></head><body><p>جاري فتح خريطة التعلم... <a href="course-path.html?lang=javascript">اضغط هنا للمتابعة</a></p></body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1224">
+  <title>جاري فتح خريطة التعلم | CodeQuest</title>
+  <script>
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+      const requestedLanguage = (params.get("lang") || "javascript").toLowerCase();
+      const supportedLanguages = new Set(["javascript", "cpp"]);
+      const language = supportedLanguages.has(requestedLanguage)
+        ? requestedLanguage
+        : "javascript";
+
+      const destination = new URL("course-path.html", window.location.href);
+      destination.searchParams.set("lang", language);
+      window.location.replace(destination.href);
+    })();
+  </script>
+</head>
+<body>
+  <p>
+    جاري فتح خريطة التعلم...
+    <a href="course-path.html?lang=javascript">اضغط هنا للمتابعة إلى JavaScript</a>
+  </p>
+</body>
+</html>
