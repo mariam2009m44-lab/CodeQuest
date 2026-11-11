@@ -126,6 +126,47 @@ function safeNumber(value) {
     : 0;
 }
 
+// Keep the last server-confirmed reward balance across page navigation.
+// This lets Cody celebrate a reward earned inside a lesson after the learner
+// returns to the dashboard, without celebrating on the first-ever load.
+function readRewardSnapshot(uid) {
+  if (!uid) return null;
+
+  try {
+    const raw = localStorage.getItem(`codequest_reward_snapshot_v1_${uid}`);
+    if (!raw) return null;
+
+    const value = JSON.parse(raw);
+    if (
+      !value ||
+      !Number.isSafeInteger(value.xp) ||
+      value.xp < 0 ||
+      !Number.isSafeInteger(value.stars) ||
+      value.stars < 0
+    ) {
+      return null;
+    }
+
+    return { xp: value.xp, stars: value.stars };
+  } catch {
+    return null;
+  }
+}
+
+function writeRewardSnapshot(uid, rewards) {
+  if (!uid || !rewards) return;
+
+  try {
+    localStorage.setItem(
+      `codequest_reward_snapshot_v1_${uid}`,
+      JSON.stringify({ xp: rewards.xp, stars: rewards.stars })
+    );
+  } catch (error) {
+    // Reward animation is optional; storage restrictions must not affect learning.
+    console.warn("تعذر حفظ ملخص المكافآت محليًا:", error);
+  }
+}
+
 function getLoginRedirectUrl() {
   const page = currentPage();
 
@@ -522,13 +563,16 @@ export const App = {
 
           const nextXP = safeNumber(data.xp);
           const nextStars = safeNumber(data.stars);
-          const previousRewards = this.lastKnownRewards;
+          const previousRewards =
+            this.lastKnownRewards || readRewardSnapshot(user.uid);
 
           this.xp = nextXP;
           this.stars = nextStars;
           this.coins = safeNumber(data.coins);
 
-          // Celebrate only when Firestore confirms a real reward increase.
+          // Firestore remains the source of truth. The stored snapshot is only
+          // a previous-value marker so rewards earned on another page can be
+          // celebrated when the learner returns to the dashboard.
           if (
             previousRewards &&
             (nextXP > previousRewards.xp || nextStars > previousRewards.stars)
@@ -539,6 +583,7 @@ export const App = {
           }
 
           this.lastKnownRewards = { xp: nextXP, stars: nextStars };
+          writeRewardSnapshot(user.uid, this.lastKnownRewards);
           this.updateUI(data);
         },
 
