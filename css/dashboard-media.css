@@ -219,3 +219,63 @@
     width: calc(100vw - 20px);
   }
 }
+
+
+/* Floating Cody is shown as the character only: no orb, tile, frame or button plate. */
+.cody-chat-launcher {
+  width: 96px;
+  height: 112px;
+  min-height: 112px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible;
+}
+.cody-chat-launcher:hover,
+.cody-chat-launcher:focus-visible {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.cody-chat-launcher:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 18px;
+}
+.cody-chat-orb {
+  display: grid;
+  flex: 0 0 96px;
+  place-items: center;
+  width: 96px;
+  height: 112px;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.cody-character--compact {
+  transform: scale(.64);
+  transform-origin: center center;
+}
+@media (max-width: 600px) {
+  .cody-chat-launcher {
+    left: 4px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 92px;
+    height: 108px;
+    min-height: 108px;
+  }
+  .cody-chat-orb {
+    flex-basis: 92px;
+    width: 92px;
+    height: 108px;
+  }
+  .cody-character--compact {
+    transform: scale(.60);
+  }
+  .cody-chat-panel {
+    left: 10px;
+    bottom: calc(166px + env(safe-area-inset-bottom));
+    width: calc(100vw - 20px);
+  }
+}
