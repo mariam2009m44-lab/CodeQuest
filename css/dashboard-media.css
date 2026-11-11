@@ -168,3 +168,54 @@
     transform: scale(.78);
   }
 }
+
+
+/* Larger mascot-only Cody launcher: the whole character opens the chat. */
+.cody-chat-launcher {
+  width: 82px;
+  height: 82px;
+  min-height: 82px;
+  padding: 6px;
+  gap: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(115, 220, 255, .38);
+  background: linear-gradient(145deg, rgba(30, 42, 76, .98), rgba(13, 20, 42, .98));
+  box-shadow: 0 9px 28px rgba(0, 0, 0, .3), 0 0 0 4px rgba(92, 119, 232, .12);
+}
+.cody-chat-orb {
+  flex: 0 0 68px;
+  width: 68px;
+  height: 68px;
+  border-radius: 19px;
+}
+.cody-character--compact {
+  transform: scale(.52);
+}
+.cody-chat-launcher:active {
+  transform: scale(.94);
+}
+.cody-chat-panel {
+  bottom: 112px;
+}
+@media (max-width: 600px) {
+  .cody-chat-launcher {
+    left: 12px;
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    width: 76px;
+    height: 76px;
+    min-height: 76px;
+  }
+  .cody-chat-orb {
+    flex-basis: 64px;
+    width: 64px;
+    height: 64px;
+  }
+  .cody-character--compact {
+    transform: scale(.49);
+  }
+  .cody-chat-panel {
+    left: 10px;
+    bottom: calc(168px + env(safe-area-inset-bottom));
+    width: calc(100vw - 20px);
+  }
+}
