@@ -464,6 +464,58 @@ function calculateLessonStats(documents, totals) {
     percentages
   };
 }
+/**
+ * Read account-scoped lesson completions saved by lesson pages on this device.
+ * These records are displayed as device-local progress only; Firestore remains
+ * authoritative for synced progress and trusted rewards.
+ */
+function readLocalLessonProgress(uid) {
+  if (!uid) return [];
+
+  const records = [];
+  const readArray = key => {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch (error) {
+      console.warn("تعذر قراءة سجل التقدم المحلي:", key, error);
+      return [];
+    }
+  };
+
+  for (const language of ["javascript", "cpp"]) {
+    for (const item of readArray(`codequest_lesson_progress_${uid}_${language}`)) {
+      if (
+        item?.completed === true &&
+        Number.isSafeInteger(item.chapter) && item.chapter >= 0 &&
+        Number.isSafeInteger(item.lesson) && item.lesson >= 0
+      ) {
+        records.push({ ...item, language, localOnly: true });
+      }
+    }
+  }
+
+  // Python lesson page stores completed positions as "chapter_lesson"
+  // with one-based chapters and zero-based lesson indexes.
+  for (const key of readArray(`codequest_${uid}_cody_python_completed_lessons`)) {
+    const match = /^(\\d+)_(\\d+)$/.exec(String(key));
+    if (!match) continue;
+    const chapter = Number(match[1]);
+    const lesson = Number(match[2]);
+    if (!Number.isSafeInteger(chapter) || chapter < 1 ||
+        !Number.isSafeInteger(lesson) || lesson < 0 || lesson >= 4) continue;
+    records.push({
+      language: "python",
+      chapter: chapter - 1,
+      lesson,
+      completed: true,
+      localOnly: true
+    });
+  }
+
+  return records;
+}
+
 /* =========================================
    Main application controller
 ========================================= */
@@ -647,13 +699,25 @@ export const App = {
         ),
 
         snapshot => {
-          const documents = snapshot.docs.map(item => ({
+          const cloudDocuments = snapshot.docs.map(item => ({
             id: item.id,
             ...item.data()
           }));
+          const localDocuments = readLocalLessonProgress(user.uid);
+          const merged = new Map();
+
+          // Local progress keeps the dashboard useful when cloud sync is
+          // unavailable. A matching Firestore record always takes precedence.
+          for (const item of [...localDocuments, ...cloudDocuments]) {
+            if (item?.completed !== true) continue;
+            merged.set(
+              `${item.language}:${item.chapter}:${item.lesson}`,
+              item
+            );
+          }
 
           this.lessonStats = calculateLessonStats(
-            documents,
+            [...merged.values()],
             this.curriculumTotals || {}
           );
 
@@ -666,9 +730,17 @@ export const App = {
             error
           );
 
+          // Keep locally saved progress visible, but never label it as
+          // cloud-synced or use it to grant XP/stars.
+          this.lessonStats = calculateLessonStats(
+            readLocalLessonProgress(user.uid),
+            this.curriculumTotals || {}
+          );
+          this.updateLessonProgressUI();
+
           showToast(
-            "تعذر تحميل تقدم الدروس من حسابك.",
-            "error"
+            "تعذر تحميل التقدم السحابي؛ نعرض التقدم المحفوظ على هذا الجهاز.",
+            "warning"
           );
         }
       );
