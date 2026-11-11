@@ -152,23 +152,39 @@ async function refreshProgress(){
 async function init(){
  if(!cfg){map.innerHTML='<div class="cw-empty">المسار المطلوب غير موجود. ارجع واختار لغة من المسارات.</div>';return}
  try{
-  const user=await requireUser();uid=user.uid;
+  // Load the curriculum before account data so a temporary authentication
+  // or Firestore issue cannot prevent the learning map from being displayed.
   if(language==="python"){
-   // Use the active 12-chapter, 48-lesson Python course rather than the
-   // separate 24-lesson JSON draft, so the map and saved lesson positions agree.
    await Promise.all(Array.from({length:12},(_,index)=>import(`./chapters/ch${index+1}.js`)));
    curriculumChapters=Array.from({length:12},(_,index)=>
     window.CHAPTERS?.[index+1]||{title:"الفصل "+(index+1),lessons:[]}
    );
-   if(curriculumChapters.some(chapter=>!Array.isArray(chapter.lessons)||chapter.lessons.length!==4)){
-    throw new Error("منهج Python الفعلي يجب أن يحتوي على 4 دروس في كل فصل.");
-   }
   }else{
-   const response=await fetch(cfg.file,{cache:"no-store"});if(!response.ok)throw new Error("تعذر تحميل المنهج");
-   const curriculum=await response.json();curriculumChapters=curriculum.chapters||[];
+   const response=await fetch(cfg.file,{cache:"no-store"});
+   if(!response.ok)throw new Error(`تعذر تحميل المنهج (${response.status}): ${cfg.file}`);
+   const curriculum=await response.json();
+   curriculumChapters=Array.isArray(curriculum.chapters)?curriculum.chapters:[];
   }
-  try{lastRecords=await getLessonProgress(language)}catch(error){console.warn("Cloud progress unavailable; using local cache",error)}
-  lastLocal=getLocalDone();render(curriculumChapters,lastRecords,lastLocal);
+
+  if(!curriculumChapters.length ||
+     curriculumChapters.some(chapter=>!Array.isArray(chapter.lessons)||chapter.lessons.length===0)){
+   throw new Error("ملفات المنهج غير مكتملة أو لا تحتوي على دروس.");
+  }
+
+  try{
+   const user=await requireUser();
+   uid=user?.uid||null;
+  }catch(error){
+   console.warn("Account unavailable; showing the course map without cloud progress:",error);
+   uid=null;
+  }
+
+  if(uid){
+   try{lastRecords=await getLessonProgress(language)}
+   catch(error){console.warn("Cloud progress unavailable; using local cache",error)}
+  }
+  lastLocal=getLocalDone();
+  render(curriculumChapters,lastRecords,lastLocal);
   try{const profile=await getUserProfile();document.getElementById("cwXp").textContent=String(profile?.xp??0);document.getElementById("cwStars").textContent=String(profile?.stars??0)}
   catch{document.getElementById("cwXp").textContent="—";document.getElementById("cwStars").textContent="—"}
   showWelcome();
