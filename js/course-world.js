@@ -53,22 +53,51 @@ function scrollToCurrent(){
 }
 function showWelcome(){
  const overlay=document.getElementById("cwWelcome"),key="cq_cody_intro_"+uid+"_"+language;
- if(!overlay||sessionStorage.getItem(key)){scrollToCurrent();return}
- overlay.hidden=false;document.body.classList.add("cw-welcome-open");
+ const hasSeenIntro=()=>{
+  try{return sessionStorage.getItem(key)==="1"}catch(error){console.warn("تعذر قراءة حالة الترحيب:",error);return false}
+ };
+ const rememberIntro=()=>{
+  try{sessionStorage.setItem(key,"1")}catch(error){console.warn("تعذر حفظ حالة الترحيب:",error)}
+ };
+ if(!overlay||hasSeenIntro()){scrollToCurrent();return}
  const next=document.getElementById("cwWelcomeNext"),skip=document.getElementById("cwWelcomeSkip"),mascot=document.getElementById("cwWelcomeMascot"),title=document.getElementById("cwWelcomeTitle"),copy=document.getElementById("cwWelcomeText"),dots=overlay.querySelectorAll(".cw-welcome-dots i");
+ if(!next||!skip||!mascot||!title||!copy){scrollToCurrent();return}
+ const previousFocus=document.activeElement;
  let step=0,busy=false;
+ const focusable=()=>[next,skip].filter(button=>!button.disabled&&!button.hidden);
+ const handleDialogKeys=event=>{
+  if(event.key==="Escape"){event.preventDefault();finish();return}
+  if(event.key!=="Tab")return;
+  const controls=focusable();
+  if(!controls.length){event.preventDefault();return}
+  const first=controls[0],last=controls[controls.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+ };
+ overlay.hidden=false;document.body.classList.add("cw-welcome-open");
+ overlay.addEventListener("keydown",handleDialogKeys);
  const finish=()=>{
-  if(busy)return;busy=true;sessionStorage.setItem(key,"1");
+  if(busy)return;busy=true;rememberIntro();
   mascot.classList.remove("is-waving");mascot.classList.add("is-launching");
   title.textContent="يلا بينا! 🚀";copy.textContent="كودي وصل للمكان اللي هتكمل منه. الطريق قدامك، وكل إنجاز هيفتح لك الخطوة اللي بعدها.";
-  next.disabled=true;next.innerHTML="انطلقنا! <i class='ri-rocket-2-line'></i>";
-  setTimeout(()=>{overlay.classList.add("is-leaving");setTimeout(()=>{overlay.hidden=true;overlay.classList.remove("is-leaving");document.body.classList.remove("cw-welcome-open");scrollToCurrent();setCody("wave","وصلنا لمكانك على الطريق! أنا هفضل جنبك في كل درس. دوس على المحطة المضيئة ونبدأ.");},480)},780);
+  next.disabled=true;skip.disabled=true;next.innerHTML="انطلقنا! <i class='ri-rocket-2-line'></i>";
+  setTimeout(()=>{overlay.classList.add("is-leaving");setTimeout(()=>{
+   overlay.hidden=true;overlay.classList.remove("is-leaving");document.body.classList.remove("cw-welcome-open");
+   overlay.removeEventListener("keydown",handleDialogKeys);
+   scrollToCurrent();
+   const currentButton=map?.querySelector(".cw-road-node.is-current .cw-node");
+   if(currentButton)currentButton.focus({preventScroll:true});
+   else if(previousFocus&&previousFocus!==document.body&&typeof previousFocus.focus==="function")previousFocus.focus({preventScroll:true});
+   setCody("wave","وصلنا لمكانك على الطريق! أنا هفضل جنبك في كل درس. دوس على المحطة المضيئة ونبدأ.");
+  },480)},780);
  };
- next?.addEventListener("click",()=>{
+ next.addEventListener("click",()=>{
+  if(busy)return;
   if(step===0){step=1;title.textContent="هنمشيها خطوة بخطوة!";copy.textContent="كل دائرة درس، وكل مجموعة دروس وحدة. لما تخلص درس، هتلاقي الطريق بيتقدم وكودي بينط للمحطة الجديدة.";dots.forEach((dot,i)=>dot.classList.toggle("active",i<=1));next.innerHTML="ورّيني الطريق <i class='ri-arrow-left-line'></i>";return}
   finish();
  });
- skip?.addEventListener("click",finish);
+ skip.addEventListener("click",finish);
+ next.focus({preventScroll:true});
 }
 function render(chapters,records,local){
  const flat=[];
