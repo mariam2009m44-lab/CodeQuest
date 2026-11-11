@@ -862,8 +862,33 @@
             })
           : [];
 
+        // امتحانات Python تحفظ علامة نجاح مستقلة لكل فصل.
+        // أضفها للعرض المحلي حتى عند انقطاع الإنترنت، من دون اعتبارها
+        // إثباتًا خادميًا أو محاولة منح مكافأة قبل المزامنة.
+        const pythonExamRecords = Array.from(
+          { length: PYTHON_CHAPTERS_COUNT },
+          (_, index) => index + 1
+        ).flatMap(chapterNumber => {
+          try {
+            const rawExam = localStorage.getItem(
+              `codequest_${uid}_cody_python_exam_passed_${chapterNumber}`
+            );
+            if (rawExam === null || JSON.parse(rawExam) !== true) return [];
+            return [{
+              language: "python",
+              chapter: chapterNumber - 1,
+              lesson: PYTHON_EXAM_MARKER,
+              completed: true,
+              localOnly: true,
+              serverVerified: false
+            }];
+          } catch {
+            return [];
+          }
+        });
+
         const merged = new Map();
-        for (const record of [...standardRecords, ...pythonRecords]) {
+        for (const record of [...standardRecords, ...pythonRecords, ...pythonExamRecords]) {
           merged.set(`${record.chapter}:${record.lesson}`, record);
         }
         return [...merged.values()];
