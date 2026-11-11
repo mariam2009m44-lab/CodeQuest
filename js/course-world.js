@@ -12,10 +12,18 @@ const p=new URLSearchParams(location.search);const language=(p.get("lang")||"pyt
 const safe=s=>String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const codyMarkup='<div class="cody-3d-scene cody-3d--wave" aria-hidden="true"><div class="cody-3d-shadow"></div><div class="cody-3d"><div class="cody-3d-antenna"><i></i></div><div class="cody-3d-head"><i class="cody-3d-ear left"></i><i class="cody-3d-ear right"></i><i class="cody-3d-eye left"></i><i class="cody-3d-eye right"></i><i class="cody-3d-mouth"></i><i class="cody-3d-cheek left"></i><i class="cody-3d-cheek right"></i></div><div class="cody-3d-neck"></div><div class="cody-3d-body"><i class="cody-3d-core">✦</i></div><div class="cody-3d-arm left"></div><div class="cody-3d-arm right"></div><div class="cody-3d-leg left"></div><div class="cody-3d-leg right"></div></div></div>';
 function setCody(mood,message){const c=document.getElementById("cwCody");c.className="cody-3d-scene cody-3d--"+mood;c.innerHTML=codyMarkup;document.getElementById("cwSpeech").textContent=message;}
-function getLocalDone(){try{return JSON.parse(localStorage.getItem("codequest_lesson_progress_"+uid+"_"+language)||"[]")}catch{return []}}
+function getLocalDone(){try{
+ const generic=JSON.parse(localStorage.getItem("codequest_lesson_progress_"+uid+"_"+language)||"[]");
+ const python=JSON.parse(localStorage.getItem("codequest_"+uid+"_cody_python_completed_lessons")||"[]");
+ const java=JSON.parse(localStorage.getItem("cody_java_progress_"+uid)||"{}");
+ const javaRecords=Object.entries(java||{}).filter(([k,v])=>v?.completed===true).map(([id])=>({id,completed:true}));
+ const list=[...(Array.isArray(generic)?generic:[]),...(Array.isArray(python)?python.map(key=>({id:String(key),completed:true})):[]),...javaRecords];
+ if(language==="java"&&Array.isArray(java?.completed))list.push(...java.completed.map(chapter=>({chapter:Number(chapter)-1,lesson:1,completed:true})));
+ return list;
+ }catch{return []}}
 let uid=null;
 function keyOf(x){return x?.chapter+":"+x?.lesson}
-function isDone(item,ci,li,records,local){const id=String(item.id||"");return records.some(x=>x.completed===true&&(keyOf(x)===ci+":"+li||String(x.lessonId||x.id||"")===id))||local.some(x=>x.completed===true&&(keyOf(x)===ci+":"+li||String(x.lessonId||x.id||"")===id));}
+function isDone(item,ci,li,records,local){const id=String(item.id||"");const pythonKey=(ci+1)+"_"+li;const javaKey="java-"+(ci+1)+"-"+(li+1);const match=x=>x?.completed===true&&(keyOf(x)===ci+":"+li||String(x.lessonId||x.id||"")===id||String(x.id||"")===pythonKey||String(x.id||"")===javaKey);return records.some(match)||local.some(match);}
 function render(chapters,records,local){const flat=[];chapters.forEach((ch,ci)=>(ch.lessons||[]).forEach((lesson,li)=>flat.push({ch,lesson,ci,li,done:isDone(lesson,ci,li,records,local)})));let first=flat.findIndex(x=>!x.done);if(first<0)first=flat.length;
 const completed=flat.filter(x=>x.done).length,percent=flat.length?Math.round(completed/flat.length*100):0;
 document.getElementById("cwTitle").textContent="رحلة "+cfg.name;document.getElementById("cwDescription").textContent=cfg.description;document.getElementById("cwProgressText").textContent=percent+"% مكتمل";document.getElementById("cwLessonCount").textContent=completed+" من "+flat.length+" درس";document.getElementById("cwProgressBar").style.width=percent+"%";
