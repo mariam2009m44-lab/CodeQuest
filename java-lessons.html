@@ -1423,6 +1423,9 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       if (!sidebar) return;
 
       const progress = readProgress();
+      const firstIncompleteIndex = allLessons.findIndex(lesson =>
+        progress[lesson.id]?.completed !== true || progress[lesson.id]?.localOnly === true
+      );
       sidebar.replaceChildren();
 
       CURRICULUM.forEach(chapter => {
@@ -1445,12 +1448,26 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             button.classList.add("active");
           }
 
-          if (progress[lesson.id]?.completed) {
+          if (progress[lesson.id]?.completed && progress[lesson.id]?.localOnly !== true) {
             button.classList.add("completed");
             button.textContent += " ✓";
           }
 
-          button.addEventListener("click", () => navigateLesson(lesson.id));
+          const lessonOrder = allLessons.findIndex(item => item.id === lesson.id);
+          const locked = firstIncompleteIndex >= 0 &&
+            lessonOrder > firstIncompleteIndex &&
+            progress[lesson.id]?.completed !== true;
+          if (locked) {
+            button.disabled = true;
+            button.classList.add("locked");
+            button.setAttribute("aria-disabled", "true");
+            button.textContent = "🔒 " + lesson.title;
+          }
+
+          button.addEventListener("click", () => {
+            if (locked) return;
+            navigateLesson(lesson.id);
+          });
           chapterElement.appendChild(button);
         });
 
