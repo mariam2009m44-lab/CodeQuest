@@ -3527,6 +3527,31 @@ html[data-theme="light"] .bottom-action {
 
     if (!currentLesson) return;
 
+    const orderedPathLessons = getChapterIds().flatMap(chapterId =>
+      getChapterLessons(chapterId).map((lesson, lessonIndex) => ({
+        chapterId,
+        lessonIndex,
+        lesson
+      }))
+    );
+    const firstIncompletePathIndex = orderedPathLessons.findIndex(item =>
+      !isLessonCompleted(item.chapterId, item.lessonIndex)
+    );
+    const requestedPathIndex = orderedPathLessons.findIndex(item =>
+      item.chapterId === currentChapterId && item.lessonIndex === currentLessonIndex
+    );
+    if (
+      firstIncompletePathIndex >= 0 &&
+      requestedPathIndex > firstIncompletePathIndex &&
+      !isLessonCompleted(currentChapterId, currentLessonIndex)
+    ) {
+      const nextAvailable = orderedPathLessons[firstIncompletePathIndex];
+      currentChapterId = nextAvailable.chapterId;
+      currentLessonIndex = nextAvailable.lessonIndex;
+      currentLesson = nextAvailable.lesson;
+      showToast("كمّل الخطوة الحالية الأول، وبعدها كودي هيفتح لك اللي بعدها.");
+    }
+
     updateCurrentLessonUrl();
     currentStepIndex = 0;
     currentStep = null;
