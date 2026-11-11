@@ -433,6 +433,7 @@ export const App = {
   xp: 0,
   stars: 0,
   coins: 0,
+  lastKnownRewards: null,
 
   currentUid: null,
 
@@ -519,10 +520,25 @@ export const App = {
             user.displayName ||
             "متعلم";
 
-          this.xp = safeNumber(data.xp);
-          this.stars = safeNumber(data.stars);
+          const nextXP = safeNumber(data.xp);
+          const nextStars = safeNumber(data.stars);
+          const previousRewards = this.lastKnownRewards;
+
+          this.xp = nextXP;
+          this.stars = nextStars;
           this.coins = safeNumber(data.coins);
 
+          // Celebrate only when Firestore confirms a real reward increase.
+          if (
+            previousRewards &&
+            (nextXP > previousRewards.xp || nextStars > previousRewards.stars)
+          ) {
+            window.dispatchEvent(new CustomEvent("codequest:cody-emotion", {
+              detail: { emotion: "celebrate", reason: "reward-earned" }
+            }));
+          }
+
+          this.lastKnownRewards = { xp: nextXP, stars: nextStars };
           this.updateUI(data);
         },
 
@@ -889,6 +905,7 @@ export const App = {
     this.xp = 0;
     this.stars = 0;
     this.coins = 0;
+    this.lastKnownRewards = null;
 
     this.lessonStats = null;
     this.curriculumTotals = null;
