@@ -1980,3 +1980,199 @@ html[data-theme="light"] .sidebar-mission {
     radial-gradient(ellipse at 50% 0%, rgba(7,140,174,.1), transparent 65%),
     linear-gradient(145deg, #fff, #eef5fc);
 }
+
+/* =========================================
+   CODY ROBOT — CSS-DRAWN REUSABLE MASCOT
+   No image files, emoji or external assets.
+========================================= */
+.mascot-card {
+  overflow: visible;
+  isolation: isolate;
+}
+.mascot-card .cody-mascot {
+  display: grid;
+  place-items: center;
+  width: 126px;
+  height: 132px;
+  overflow: visible;
+}
+.cody-character {
+  --cody-shell: #f4f7ff;
+  --cody-shadow: #aebbd5;
+  --cody-face: #111a32;
+  --cody-cyan: #42ddf4;
+  --cody-purple: #8663e8;
+  --cody-gold: #ffd66b;
+  position: relative;
+  display: block;
+  width: 124px;
+  height: 130px;
+  transform-origin: 50% 80%;
+  animation: cody-character-float 3.8s ease-in-out infinite;
+  filter: drop-shadow(0 9px 9px rgba(3, 8, 24, .2));
+}
+.cody-character__head {
+  position: absolute;
+  z-index: 4;
+  top: 20px;
+  left: 25px;
+  width: 74px;
+  height: 59px;
+  border: 5px solid var(--cody-shell);
+  border-radius: 23px 23px 19px 19px;
+  background: linear-gradient(145deg, #263453, var(--cody-face) 68%);
+  box-shadow: inset 0 0 0 2px rgba(66, 221, 244, .3), 0 5px 0 var(--cody-shadow);
+}
+.cody-character__head::before,
+.cody-character__head::after {
+  position: absolute;
+  top: 15px;
+  width: 11px;
+  height: 23px;
+  content: "";
+  border: 3px solid var(--cody-shell);
+  background: linear-gradient(180deg, var(--cody-purple), #5942b5);
+  border-radius: 7px;
+}
+.cody-character__head::before { left: -14px; }
+.cody-character__head::after { right: -14px; }
+.cody-character__eye {
+  position: absolute;
+  top: 17px;
+  width: 9px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--cody-cyan);
+  box-shadow: 0 0 9px rgba(66, 221, 244, .9);
+  animation: cody-eye-blink 5.2s infinite;
+}
+.cody-character__eye--left { left: 15px; }
+.cody-character__eye--right { right: 15px; }
+.cody-character__mouth {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 13px;
+  height: 6px;
+  border-bottom: 2px solid #ffb6d1;
+  border-radius: 0 0 12px 12px;
+  transform: translateX(-50%);
+}
+.cody-character__antenna {
+  position: absolute;
+  z-index: 2;
+  top: 5px;
+  left: 59px;
+  width: 6px;
+  height: 19px;
+  border-radius: 6px;
+  background: linear-gradient(var(--cody-cyan), var(--cody-purple));
+}
+.cody-character__antenna::after {
+  position: absolute;
+  top: -7px;
+  left: -4px;
+  width: 14px;
+  height: 14px;
+  content: "";
+  border: 2px solid #d9fbff;
+  border-radius: 50%;
+  background: var(--cody-cyan);
+  box-shadow: 0 0 13px rgba(66, 221, 244, .9);
+}
+.cody-character__body {
+  position: absolute;
+  z-index: 3;
+  top: 79px;
+  left: 36px;
+  display: grid;
+  place-items: center;
+  width: 53px;
+  height: 40px;
+  border: 4px solid var(--cody-shell);
+  border-radius: 15px 15px 17px 17px;
+  background: linear-gradient(145deg, #9d8aff, #6849ca);
+  box-shadow: inset 0 -5px 0 rgba(34, 20, 92, .18), 0 4px 0 var(--cody-shadow);
+}
+.cody-character__core {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  color: #6b4bc8;
+  font-size: 13px;
+  border: 2px solid #fff0b6;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #fff4c9, var(--cody-gold));
+  box-shadow: 0 0 10px rgba(255, 214, 107, .5);
+}
+.cody-character__arm {
+  position: absolute;
+  z-index: 2;
+  top: 83px;
+  width: 17px;
+  height: 31px;
+  border: 4px solid var(--cody-shell);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #9d8aff, #6849ca);
+  transform-origin: 50% 7px;
+}
+.cody-character__arm--left { left: 22px; transform: rotate(22deg); }
+.cody-character__arm--right { right: 20px; transform: rotate(-25deg); }
+.mascot-card:hover .cody-character__arm--right {
+  animation: cody-character-wave .55s ease-in-out 2;
+}
+.cody-character__leg {
+  position: absolute;
+  z-index: 1;
+  top: 112px;
+  width: 17px;
+  height: 14px;
+  border: 3px solid var(--cody-shell);
+  border-radius: 5px 5px 9px 9px;
+  background: #6679a7;
+}
+.cody-character__leg--left { left: 43px; }
+.cody-character__leg--right { right: 42px; }
+.cody-chat-orb {
+  display: inline-grid;
+  flex: 0 0 48px;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  overflow: visible;
+}
+.cody-character--compact {
+  transform: scale(.43);
+  transform-origin: center center;
+  animation-duration: 2.8s;
+}
+.cody-chat-launcher:hover .cody-character--compact {
+  animation: cody-character-pop .45s ease-in-out;
+}
+@keyframes cody-character-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -5px; }
+}
+@keyframes cody-character-wave {
+  0%, 100% { transform: rotate(-25deg); }
+  50% { transform: rotate(-78deg); }
+}
+@keyframes cody-character-pop {
+  0%, 100% { rotate: 0deg; }
+  35% { rotate: -8deg; }
+  70% { rotate: 8deg; }
+}
+@keyframes cody-eye-blink {
+  0%, 45%, 49%, 100% { transform: scaleY(1); }
+  47%, 48% { transform: scaleY(.12); }
+}
+@media (max-width: 600px) {
+  .mascot-card .cody-mascot { transform: scale(.78); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cody-character,
+  .cody-character__eye,
+  .cody-character__arm--right,
+  .cody-character--compact { animation: none !important; }
+}
