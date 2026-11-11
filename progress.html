@@ -435,6 +435,14 @@
         >
           جارٍ تحميل بيانات الحساب...
         </p>
+        <button
+          id="retryProgressSync"
+          class="btn-secondary"
+          type="button"
+          hidden
+        >
+          إعادة تحميل ومزامنة التقدم
+        </button>
       </article>
 
     </section>
@@ -988,6 +996,17 @@
         "جارٍ تحميل ملفات المناهج والتقدم المحفوظ..."
       );
 
+      const cloudReadErrors = [];
+      const readCloudProgress = async language => {
+        try {
+          return await getLessonProgress(language);
+        } catch (error) {
+          cloudReadErrors.push({ language, error });
+          console.warn(`تعذر تحميل تقدم ${LANGUAGE_NAMES[language]} من الحساب:`, error);
+          return [];
+        }
+      };
+
       const [
         pythonChapters,
         javascriptChapters,
@@ -1001,10 +1020,10 @@
         readCurriculum(CURRICULUM_FILES.javascript),
         readCurriculum(CURRICULUM_FILES.cpp),
 
-        getLessonProgress("python"),
-        getLessonProgress("javascript"),
-        getLessonProgress("cpp"),
-        getLessonProgress("java")
+        readCloudProgress("python"),
+        readCloudProgress("javascript"),
+        readCloudProgress("cpp"),
+        readCloudProgress("java")
       ]);
 
       const localProgress = await syncPendingLocalProgress(user.uid, {
@@ -1142,11 +1161,24 @@
         record => record?.completed === true && record.localOnly === true
       ).length;
 
-      if (xpLoaded) {
+      const retryButton = $("retryProgressSync");
+      if (retryButton) {
+        retryButton.hidden = localOnlyCount === 0 && cloudReadErrors.length === 0;
+      }
+
+      if (cloudReadErrors.length > 0) {
         showStatus(
-          localOnlyCount > 0
-            ? `تم تحميل تقدم الحساب. يوجد ${localOnlyCount} إنجاز محلي محفوظ على هذا الجهاز؛ ستتم مزامنة الإنجازات التي تم التحقق منها تلقائيًا.`
-            : "تم تحميل تقدم المسارات وامتحانات بايثون ونقاط الخبرة من حسابك.",
+          `تعذر تحميل ${cloudReadErrors.length} مسارًا من السحابة. نعرض التقدم المحلي المحفوظ على هذا الجهاز؛ اضغط إعادة المزامنة عند توفر الاتصال.`,
+          "error"
+        );
+      } else if (localOnlyCount > 0) {
+        showStatus(
+          `تم تحميل تقدم الحساب. يوجد ${localOnlyCount} إنجاز محلي؛ ستتم مزامنة الإنجازات التي تم التحقق منها عند توفر الاتصال.`,
+          "success"
+        );
+      } else if (xpLoaded) {
+        showStatus(
+          "تم تحميل تقدم المسارات وامتحانات بايثون ونقاط الخبرة من حسابك.",
           "success"
         );
       } else {
@@ -1173,6 +1205,22 @@
         xpLoaded
       });
     }
+
+    $("retryProgressSync")?.addEventListener("click", async () => {
+      const button = $("retryProgressSync");
+      if (!button || button.disabled) return;
+      button.disabled = true;
+      const previousLabel = button.textContent;
+      button.textContent = "جارٍ إعادة المزامنة...";
+      try {
+        await loadProgress();
+      } catch (error) {
+        console.error("تعذرت إعادة مزامنة التقدم:", error);
+      } finally {
+        button.disabled = false;
+        button.textContent = previousLabel;
+      }
+    });
 
     loadProgress().catch(error => {
       console.error(
