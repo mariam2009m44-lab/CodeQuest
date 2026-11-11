@@ -1,4 +1,5 @@
 import { runCodeOnServer, checkQuizAnswerOnServer } from "./code-runner.js";
+import { mountCodyTutor } from "./cody-tutor.js";
 
 import {
   requireUser,
@@ -686,6 +687,8 @@ function renderLessonContent(lesson) {
   if (content) {
     content.hidden = false;
   }
+
+  mountCodyTutor(lesson, LANGUAGE_CONFIG[languageKey].label);
 }
 
 async function loadCurriculum() {
@@ -885,6 +888,11 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
     }
 
     await loadProgress();
+    if (serverVerified) {
+      window.dispatchEvent(new CustomEvent("codequest:lesson-completed", {
+        detail: { language: languageKey, chapter: chapterIndex, lesson: lessonIndex }
+      }));
+    }
 
     return true;
 

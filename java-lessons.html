@@ -731,9 +731,10 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
 .lesson-user-avatar .anime-character { width: 100%; height: 100%; }
 .lesson-user-avatar .anime-avatar-svg { width: 100%; height: 100%; max-width: none; }
 </style>
+  <link rel="stylesheet" href="css/language-experience.css">
 </head>
 
-<body>
+<body data-course="java">
   <header class="topbar">
     <a class="brand" href="index.html">
       <span class="brand-icon">C</span>
@@ -871,6 +872,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     "use strict";
 
     import { verifyJavaChallenge, verifyJavaQuizAnswer, runCodeOnServer } from "./js/code-runner.js";
+    import { mountCodyTutor } from "./js/cody-tutor.js";
     import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
     let currentUserId = "anonymous";
@@ -1422,6 +1424,9 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       if (!sidebar) return;
 
       const progress = readProgress();
+      const firstIncompleteIndex = allLessons.findIndex(lesson =>
+        progress[lesson.id]?.completed !== true || progress[lesson.id]?.localOnly === true
+      );
       sidebar.replaceChildren();
 
       CURRICULUM.forEach(chapter => {
@@ -1444,12 +1449,26 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             button.classList.add("active");
           }
 
-          if (progress[lesson.id]?.completed) {
+          if (progress[lesson.id]?.completed && progress[lesson.id]?.localOnly !== true) {
             button.classList.add("completed");
             button.textContent += " ✓";
           }
 
-          button.addEventListener("click", () => navigateLesson(lesson.id));
+          const lessonOrder = allLessons.findIndex(item => item.id === lesson.id);
+          const locked = firstIncompleteIndex >= 0 &&
+            lessonOrder > firstIncompleteIndex &&
+            progress[lesson.id]?.completed !== true;
+          if (locked) {
+            button.disabled = true;
+            button.classList.add("locked");
+            button.setAttribute("aria-disabled", "true");
+            button.textContent = "🔒 " + lesson.title;
+          }
+
+          button.addEventListener("click", () => {
+            if (locked) return;
+            navigateLesson(lesson.id);
+          });
           chapterElement.appendChild(button);
         });
 
@@ -1753,6 +1772,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       renderSidebar();
       updateNavigationButtons();
       setOutput("ابدأ بقراءة المطلوب، ثم اكتب الحل وشغّله للتحقق من الناتج.", "info");
+      mountCodyTutor(lesson, "Java");
 
       const url = new URL(window.location.href);
       url.searchParams.set("lesson", lesson.id);
@@ -2048,6 +2068,9 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       saveProgress(progress);
       updateStats();
       updateNavigationButtons();
+      window.dispatchEvent(new CustomEvent("codequest:lesson-completed", {
+        detail: { language: "java", chapter, lesson: lessonIndex }
+      }));
 
       showNotice(
         alreadyCompleted
@@ -2107,7 +2130,18 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
 
     function navigateLesson(id) {
       const lesson = findLesson(id);
-      if (lesson) renderLesson(lesson);
+      if (!lesson) return;
+      const progress = readProgress();
+      const firstIncompleteIndex = allLessons.findIndex(item =>
+        progress[item.id]?.completed !== true || progress[item.id]?.localOnly === true
+      );
+      const targetIndex = allLessons.findIndex(item => item.id === id);
+      const isCompleted = progress[id]?.completed === true && progress[id]?.localOnly !== true;
+      if (firstIncompleteIndex >= 0 && targetIndex > firstIncompleteIndex && !isCompleted) {
+        showNotice("كمّل الدرس الحالي واجتز التحدي قبل فتح الخطوة التالية.", "info");
+        return;
+      }
+      renderLesson(lesson);
     }
 
     function moveLesson(direction) {
@@ -2159,15 +2193,19 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const params = new URLSearchParams(window.location.search);
       const requested = params.get("lesson");
 
-      if (requested && findLesson(requested)) return requested;
-
       const progress = readProgress();
-      const incomplete = allLessons.find(lesson => {
+      const firstIncompleteIndex = allLessons.findIndex(lesson => {
         const record = progress[lesson.id];
-        return !record?.completed || record.localOnly === true;
+        return record?.completed !== true || record.localOnly === true;
       });
-
-      return incomplete?.id || allLessons[0]?.id || null;
+      if (requested && findLesson(requested)) {
+        const requestedIndex = allLessons.findIndex(lesson => lesson.id === requested);
+        const requestedCompleted = progress[requested]?.completed === true && progress[requested]?.localOnly !== true;
+        if (requestedCompleted || firstIncompleteIndex < 0 || requestedIndex <= firstIncompleteIndex) {
+          return requested;
+        }
+      }
+      return allLessons[firstIncompleteIndex]?.id || allLessons[0]?.id || null;
     }
 
     async function loadLessonAvatar() {
@@ -2271,5 +2309,6 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
   </script>
 <script type="module" src="js/route-guard.js"></script>
 <script type="module" src="js/reminders.js"></script>
+  <script defer src="js/language-experience.js"></script>
 </body>
 </html>
