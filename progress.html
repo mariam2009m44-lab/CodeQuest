@@ -469,9 +469,10 @@
       cpp: "./json/cpp_curriculum.json"
     };
 
-    // The active Python learning path uses 12 chapters with 4 lessons each.
-    // The JSON curriculum is a separate 24-lesson draft and must not define
-    // the learner's real progress denominator.
+    // Python's active learning path contains 12 chapters with 4 lessons each.
+    // Declare the count before constructing the curriculum to avoid a
+    // temporal-dead-zone ReferenceError that stops this entire module.
+    const PYTHON_CHAPTERS_COUNT = 12;
     const PYTHON_CHAPTERS = Array.from(
       { length: PYTHON_CHAPTERS_COUNT },
       () => ({ lessons: Array.from({ length: 4 }, () => ({})) })
@@ -492,7 +493,6 @@
     // في صفحة Python، الرقم 104 مخصص لتسجيل اجتياز امتحان الفصل.
     // لا يُحسب هذا الرقم ضمن الدروس العادية.
     const PYTHON_EXAM_MARKER = 104;
-    const PYTHON_CHAPTERS_COUNT = 12;
 
     function showStatus(message, type = "") {
       const element = $("statusMessage");
