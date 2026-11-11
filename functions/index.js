@@ -802,7 +802,8 @@ exports.saveVerifiedLessonProgress = onCall(
     await enforceUserRateLimit(uid, "saveLessonProgress");
 
     const { language, chapter, lesson } = request.data || {};
-    if (!Object.prototype.hasOwnProperty.call(CURRICULUM_URLS, language)) {
+    if (typeof language !== "string" ||
+        !Object.prototype.hasOwnProperty.call(LANGUAGES, language)) {
       throw new HttpsError("invalid-argument", "لغة البرمجة غير مدعومة.");
     }
     if (!Number.isInteger(chapter) || chapter < 0 || chapter > 100 ||
