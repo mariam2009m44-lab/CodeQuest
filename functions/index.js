@@ -2319,9 +2319,15 @@ exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
 
       const progressSnapshot = progressAvailable ? progressResult.value : { docs: [] };
       const projectsSnapshot = projectsAvailable ? projectsResult.value : { size: 0 };
+      // امتحان Python يُحفظ بعلامة مستقلة (lesson 104)، وليس درسًا عاديًا.
+      // استبعده من إحصائيات الدروس حتى لا يرفع عدد إنجازات المتعلم خطأً.
       const completed = progressSnapshot.docs
         .map(doc => doc.data() || {})
-        .filter(item => item.completed === true && ["python", "javascript", "cpp", "java"].includes(item.language));
+        .filter(item =>
+          item.completed === true &&
+          ["python", "javascript", "cpp", "java"].includes(item.language) &&
+          !(item.language === "python" && item.lesson === 104)
+        );
 
       const now = Date.now();
       const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
