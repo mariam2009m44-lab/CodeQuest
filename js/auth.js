@@ -469,38 +469,32 @@ export async function saveLessonProgress({
   }
 
   try {
-    const documentId = getLessonDocumentId(
+    if (!completed) {
+      throw new Error("لا يمكن إلغاء إنجاز موثّق من خلال مسار الحفظ.");
+    }
+
+    const saveVerifiedLessonProgress = httpsCallable(
+      functions,
+      "saveVerifiedLessonProgress",
+      { timeout: 30000 }
+    );
+    const response = await saveVerifiedLessonProgress({
       language,
       chapter,
       lesson
-    );
+    });
+    const data = response?.data || {};
 
-    const progressRef = doc(
-      db,
-      USERS_COLLECTION,
-      user.uid,
-      "lessonProgress",
-      documentId
-    );
-
-    await setDoc(
-      progressRef,
-      {
-        language,
-        chapter,
-        lesson,
-        completed,
-        updatedAt: serverTimestamp()
-      },
-      { merge: true }
-    );
+    if (data.success !== true || data.completed !== true) {
+      throw new Error("لم يؤكد الخادم حفظ تقدم الدرس.");
+    }
 
     return {
-      id: documentId,
+      id: data.id || getLessonDocumentId(language, chapter, lesson),
       language,
       chapter,
       lesson,
-      completed
+      completed: true
     };
   } catch (error) {
     throw normalizeError(error);
