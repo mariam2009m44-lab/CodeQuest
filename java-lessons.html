@@ -872,6 +872,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     "use strict";
 
     import { verifyJavaChallenge, verifyJavaQuizAnswer, runCodeOnServer } from "./js/code-runner.js";
+    import { mountCodyTutor } from "./js/cody-tutor.js";
     import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
     let currentUserId = "anonymous";
@@ -1771,6 +1772,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       renderSidebar();
       updateNavigationButtons();
       setOutput("ابدأ بقراءة المطلوب، ثم اكتب الحل وشغّله للتحقق من الناتج.", "info");
+      mountCodyTutor(lesson, "Java");
 
       const url = new URL(window.location.href);
       url.searchParams.set("lesson", lesson.id);
