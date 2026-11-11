@@ -2049,6 +2049,9 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       saveProgress(progress);
       updateStats();
       updateNavigationButtons();
+      window.dispatchEvent(new CustomEvent("codequest:lesson-completed", {
+        detail: { language: "java", chapter, lesson: lessonIndex }
+      }));
 
       showNotice(
         alreadyCompleted
