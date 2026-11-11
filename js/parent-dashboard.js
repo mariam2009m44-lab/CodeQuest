@@ -98,13 +98,14 @@ function renderChild(child) {
   card.append(last);
 
   const unavailableSections = [];
+  if (child.dataAvailability?.profile === false) unavailableSections.push("بيانات الحساب");
   if (child.dataAvailability?.progress === false) unavailableSections.push("التقدم");
   if (child.dataAvailability?.projects === false) unavailableSections.push("المشروعات");
   if (unavailableSections.length) {
     const warning = element(
       "p",
       "child-sub",
-      "تعذر تحميل " + unavailableSections.join(" و") + " مؤقتًا؛ الأرقام المعروضة لهذه الأقسام غير مكتملة."
+      "تعذر تحميل " + unavailableSections.join(" و") + " مؤقتًا؛ قد لا تعكس الأرقام المعروضة بيانات الحساب كاملة."
     );
     warning.setAttribute("role", "status");
     warning.style.margin = "10px 0 0";
