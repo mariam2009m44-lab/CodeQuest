@@ -3219,12 +3219,14 @@ html[data-theme="light"] .bottom-action {
 
       if (expected && actual === expected) {
         challengeSolved = true;
+        window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: true, message: "الناتج مطابق للمطلوب!" } }));
         addBubble(
           "cody",
           renderLessonMarkup(currentChallenge.successMsg || "ممتاز! شغّلت المثال وفهمت ناتجه.")
         );
         showBottomAction(true);
       } else {
+        window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: false, message: "الناتج مختلف عن المتوقع. راجع الكود وحاول تاني." } }));
         addBubble("cody", "شغّل المثال مرة أخرى، وقارن الناتج بما توقعته.");
       }
       return;
@@ -3259,6 +3261,7 @@ html[data-theme="light"] .bottom-action {
         const verification = response?.data || {};
 
         if (verification.correct !== true) {
+          window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: false, message: verification.message || "الحل محتاج مراجعة." } }));
           addBubble(
             "cody",
             verification.message ||
@@ -3268,6 +3271,7 @@ html[data-theme="light"] .bottom-action {
         }
 
         challengeSolved = true;
+        window.dispatchEvent(new CustomEvent("codequest:answer", { detail: { correct: true, message: "تم التحقق من التحدي على الخادم بنجاح!" } }));
         addBubble(
           "cody",
           "تم التحقق من التحدي على الخادم بنجاح! أحسنت 🎉"
