@@ -44,6 +44,7 @@ const CURRICULUM_CACHE_TTL_MS = 5 * 60 * 1000;
 const curriculumCache = new Map();
 const USER_RATE_LIMITS = Object.freeze({
   quizAnswer: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
+  saveLessonProgress: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
   runCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 }),
   verifyJavaChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 }),
   verifyPythonChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 })
@@ -788,6 +789,64 @@ async function findCurriculumQuiz(language, curriculumLessonId) {
     "لم يتم العثور على الدرس داخل المنهج."
   );
 }
+
+/*
+ * حفظ تقدم الدرس بعد التحقق من الإثبات الخادمي.
+ * يكتب Admin SDK السجل بعد فحص quizResults، فلا يعتمد الحفظ على
+ * صلاحية كتابة lessonProgress من المتصفح أو على نشر قواعد قديمة.
+ */
+exports.saveVerifiedLessonProgress = onCall(
+  CALL_OPTIONS,
+  async request => {
+    const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "saveLessonProgress");
+
+    const { language, chapter, lesson } = request.data || {};
+    if (!Object.prototype.hasOwnProperty.call(CURRICULUM_URLS, language)) {
+      throw new HttpsError("invalid-argument", "لغة البرمجة غير مدعومة.");
+    }
+    if (!Number.isInteger(chapter) || chapter < 0 || chapter > 100 ||
+        !Number.isInteger(lesson) || lesson < 0 || lesson > 100) {
+      throw new HttpsError("invalid-argument", "موضع الدرس غير صالح.");
+    }
+
+    const lessonId = language + "_" + chapter + "_" + lesson;
+    const userRef = db.collection("users").doc(uid);
+    const proofRef = userRef.collection("quizResults").doc("lesson_" + lessonId);
+    const progressRef = userRef.collection("lessonProgress").doc(lessonId);
+    const proofSnapshot = await proofRef.get();
+
+    if (!proofSnapshot.exists) {
+      throw new HttpsError("failed-precondition", "لم يتم العثور على إثبات اجتياز الدرس من الخادم.");
+    }
+
+    const proof = proofSnapshot.data() || {};
+    const validProof =
+      proof.uid === uid &&
+      proof.language === language &&
+      proof.chapter === chapter &&
+      proof.lesson === lesson &&
+      proof.serverVerified === true &&
+      proof.passed === true &&
+      proof.verificationVersion === 1 &&
+      (language !== "java" ||
+        (proof.challengeVerified === true && proof.quizVerified === true));
+
+    if (!validProof) {
+      throw new HttpsError("failed-precondition", "إثبات إكمال الدرس غير مكتمل أو لا يطابق الحساب.");
+    }
+
+    await progressRef.set({
+      language,
+      chapter,
+      lesson,
+      completed: true,
+      updatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    return { success: true, id: lessonId, language, chapter, lesson, completed: true };
+  }
+);
 
 /*
  * التحقق من إجابة الاختبار من الخادم.
