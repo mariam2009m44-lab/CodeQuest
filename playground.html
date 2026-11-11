@@ -558,6 +558,94 @@ int main() {
         `المشروع: ${currentProjectName || "مشروع جديد"}`;
     }
 
+    // Keep a per-account recovery copy so drafts survive closing the tab or
+    // losing the network. It is never shared between authenticated users.
+    function getLocalDraftKey(uid) {
+      return `codequest_playground_draft_${uid}`;
+    }
+
+    function readLocalDraft(uid) {
+      if (!uid) return null;
+
+      try {
+        const raw = localStorage.getItem(getLocalDraftKey(uid));
+        if (!raw) return null;
+
+        const draft = JSON.parse(raw);
+        if (
+          !draft ||
+          typeof draft.code !== "string" ||
+          draft.code.length > 50000 ||
+          !Object.hasOwn(languageModes, draft.language) ||
+          typeof draft.name !== "string" ||
+          !Number.isFinite(draft.updatedAt) ||
+          !Number.isFinite(draft.syncedAt) ||
+          typeof draft.projectId !== "string"
+        ) {
+          return null;
+        }
+
+        return draft;
+      } catch (error) {
+        console.warn("Local draft could not be read:", error);
+        return null;
+      }
+    }
+
+    function persistLocalDraft(markSynced = false) {
+      if (!currentUser?.uid) return false;
+
+      const previous = readLocalDraft(currentUser.uid);
+      const updatedAt = Date.now();
+      const draft = {
+        code: editor.getValue(),
+        language: getLanguage(),
+        name: currentProjectName || "مشروعي الجديد",
+        projectId: currentProjectId || "",
+        updatedAt,
+        syncedAt: markSynced
+          ? updatedAt
+          : (previous?.syncedAt || 0)
+      };
+
+      try {
+        localStorage.setItem(
+          getLocalDraftKey(currentUser.uid),
+          JSON.stringify(draft)
+        );
+        return true;
+      } catch (error) {
+        console.warn("Local draft could not be saved:", error);
+        return false;
+      }
+    }
+
+    function applyLocalDraft(draft, statusMessage) {
+      if (!draft) return false;
+
+      currentProjectId = draft.projectId || "";
+      currentProjectName = draft.name || "مشروعي الجديد";
+      languageSelect.value = draft.language;
+      editor.setOption("mode", languageModes[draft.language]);
+      editor.setValue(draft.code);
+
+      sessionStorage.setItem("currentProjectId", currentProjectId);
+      sessionStorage.setItem("currentProjectName", currentProjectName);
+      sessionStorage.setItem("playgroundOwnerUid", currentUser.uid);
+      sessionStorage.setItem("playgroundCode", draft.code);
+      sessionStorage.setItem("playgroundLang", draft.language);
+
+      updateProjectLabel();
+      setSaveStatus(statusMessage);
+      editor.refresh();
+      return true;
+    }
+
+    function hasUnsyncedLocalDraft() {
+      const draft = readLocalDraft(currentUser?.uid);
+      return Boolean(draft && draft.updatedAt > draft.syncedAt);
+    }
+
     function getLanguage() {
       return languageSelect.value;
     }
@@ -636,6 +724,7 @@ int main() {
         setSaveStatus("تم فتح مساحة عمل الحساب الحالي");
       }
       sessionStorage.setItem("playgroundOwnerUid", currentUser.uid);
+      const localDraft = readLocalDraft(currentUser.uid);
 
       if (currentProjectId) {
         try {
@@ -652,6 +741,23 @@ int main() {
               sessionStorage.removeItem("currentProjectId");
               sessionStorage.removeItem("currentProjectName");
             } else {
+              // Prefer a newer local recovery copy over the last cloud version.
+              // The next online autosave will synchronize it to Firestore.
+              if (
+                localDraft &&
+                localDraft.projectId === currentProjectId &&
+                localDraft.updatedAt > localDraft.syncedAt
+              ) {
+                applyLocalDraft(
+                  localDraft,
+                  navigator.onLine
+                    ? "تم استرجاع آخر تعديلاتك — جاري المزامنة"
+                    : "تم استرجاع مسودتك — غير متصل بالإنترنت"
+                );
+                if (navigator.onLine) scheduleAutoSave();
+                return;
+              }
+
               currentProjectName = data.name || "مشروعي";
 
               const lang = Object.hasOwn(languageModes, data.language)
@@ -670,6 +776,7 @@ int main() {
               sessionStorage.setItem("currentProjectName", currentProjectName);
               sessionStorage.setItem("playgroundCode", editor.getValue());
               sessionStorage.setItem("playgroundLang", lang);
+              persistLocalDraft(true);
 
               updateProjectLabel();
               setSaveStatus("تم تحميل المشروع");
@@ -699,9 +806,24 @@ int main() {
       const savedDraft = sessionStorage.getItem("playgroundCode");
       editor.setValue(savedDraft !== null ? savedDraft : examples[lang]);
 
-      updateProjectLabel();
-      setSaveStatus("جاهز");
-      editor.refresh();
+      // Restore unsaved work for this account even after the browser tab closed.
+      if (
+        localDraft &&
+        (!currentProjectId || localDraft.projectId === currentProjectId) &&
+        localDraft.updatedAt > localDraft.syncedAt
+      ) {
+        applyLocalDraft(
+          localDraft,
+          navigator.onLine
+            ? "تم استرجاع مسودتك — جاري المزامنة"
+            : "تم استرجاع مسودتك — غير متصل بالإنترنت"
+        );
+        if (navigator.onLine) scheduleAutoSave();
+      } else {
+        updateProjectLabel();
+        setSaveStatus("جاهز");
+        editor.refresh();
+      }
     }
 
     async function saveProject(showMessage = true) {
@@ -776,6 +898,7 @@ int main() {
           sessionStorage.setItem("playgroundOwnerUid", currentUser.uid);
           sessionStorage.setItem("playgroundCode", data.code);
           sessionStorage.setItem("playgroundLang", data.language);
+          persistLocalDraft(true);
 
           updateProjectLabel();
           savedSuccessfully = true;
@@ -818,6 +941,7 @@ int main() {
     function scheduleAutoSave() {
       sessionStorage.setItem("playgroundCode", editor.getValue());
       sessionStorage.setItem("playgroundLang", getLanguage());
+      persistLocalDraft(false);
 
       if (!currentUser?.uid) {
         setSaveStatus("التعديلات محفوظة في المتصفح فقط");
@@ -1165,6 +1289,18 @@ int main() {
       if (isSaving) {
         event.preventDefault();
         event.returnValue = "";
+      }
+    });
+
+    window.addEventListener("offline", () => {
+      persistLocalDraft(false);
+      setSaveStatus("غير متصل — مسودتك محفوظة على هذا الجهاز");
+    });
+
+    window.addEventListener("online", () => {
+      if (currentUser?.uid && hasUnsyncedLocalDraft()) {
+        setSaveStatus("عاد الاتصال — جاري مزامنة المسودة", true);
+        saveProject(false);
       }
     });
 
