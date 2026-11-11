@@ -592,7 +592,7 @@ int main() {
       }
     }
 
-    function persistLocalDraft(markSynced = false) {
+    function persistLocalDraft(markSynced = false, syncedData = null) {
       if (!currentUser?.uid) return false;
 
       const previous = readLocalDraft(currentUser.uid);
@@ -603,7 +603,14 @@ int main() {
         name: currentProjectName || "مشروعي الجديد",
         projectId: currentProjectId || "",
         updatedAt,
-        syncedAt: markSynced
+        syncedAt: markSynced &&
+          navigator.onLine &&
+          (!syncedData || (
+            syncedData.code === editor.getValue() &&
+            syncedData.language === getLanguage() &&
+            syncedData.name === (currentProjectName || "مشروعي الجديد") &&
+            syncedData.projectId === (currentProjectId || "")
+          ))
           ? updatedAt
           : (previous?.syncedAt || 0)
       };
@@ -898,7 +905,10 @@ int main() {
           sessionStorage.setItem("playgroundOwnerUid", currentUser.uid);
           sessionStorage.setItem("playgroundCode", data.code);
           sessionStorage.setItem("playgroundLang", data.language);
-          persistLocalDraft(true);
+          persistLocalDraft(true, {
+            ...data,
+            projectId: currentProjectId || ""
+          });
 
           updateProjectLabel();
           savedSuccessfully = true;
@@ -906,7 +916,12 @@ int main() {
         } while (hasPendingSave);
 
         if (savedSuccessfully) {
-          setSaveStatus("تم حفظ آخر التعديلات");
+          setSaveStatus(
+            hasUnsyncedLocalDraft()
+              ? "تم حفظ النسخة السابقة — توجد تعديلات بانتظار المزامنة"
+              : "تم حفظ آخر التعديلات",
+            hasUnsyncedLocalDraft()
+          );
 
           if (showMessage) {
             showToast("تم حفظ المشروع بنجاح ✓");
