@@ -1160,10 +1160,17 @@
       const localOnlyCount = allProgressRecords.filter(
         record => record?.completed === true && record.localOnly === true
       ).length;
+      const pendingVerifiedSyncCount = allProgressRecords.filter(
+        record =>
+          record?.completed === true &&
+          record.localOnly === true &&
+          record.serverVerified === true
+      ).length;
 
       const retryButton = $("retryProgressSync");
       if (retryButton) {
-        retryButton.hidden = localOnlyCount === 0 && cloudReadErrors.length === 0;
+        retryButton.hidden =
+          pendingVerifiedSyncCount === 0 && cloudReadErrors.length === 0;
       }
 
       if (cloudReadErrors.length > 0) {
@@ -1173,7 +1180,7 @@
         );
       } else if (localOnlyCount > 0) {
         showStatus(
-          `تم تحميل تقدم الحساب. يوجد ${localOnlyCount} إنجاز محلي؛ ستتم مزامنة الإنجازات التي تم التحقق منها عند توفر الاتصال.`,
+          `تم تحميل تقدم الحساب. يوجد ${localOnlyCount} إنجاز محلي؛ الإنجازات التي تم التحقق منها فقط مؤهلة للمزامنة مع الحساب.`,
           "success"
         );
       } else if (xpLoaded) {
