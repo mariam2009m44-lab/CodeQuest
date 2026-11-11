@@ -15,6 +15,9 @@ const codeInput = $("#parentLinkCode");
 const claimStatus = $("#claimStatus");
 let currentUser = null;
 let generatedCodeValue = "";
+// Prevent a slower response for a previous signed-in account from replacing
+// the current account's dashboard.
+let dashboardRequestId = 0;
 
 function setStatus(element, message, type = "") {
   element.textContent = message;
@@ -148,16 +151,47 @@ function renderChildren(children) {
 }
 
 async function loadDashboard() {
-  if (!currentUser) return;
+  if (!currentUser?.uid) return;
+
+  const requestedUid = currentUser.uid;
+  const requestId = ++dashboardRequestId;
+
+  // Clear the previous account's data immediately on every reload.
+  childrenContainer.replaceChildren(
+    element("div", "empty-state", "جارٍ تحميل بيانات الأسرة...")
+  );
   refreshButton.disabled = true;
+
   try {
     const response = await getDashboard({});
-    const children = Array.isArray(response.data?.children) ? response.data.children : [];
+
+    // Ignore stale responses after account switches or a newer refresh.
+    if (
+      requestId !== dashboardRequestId ||
+      currentUser?.uid !== requestedUid
+    ) {
+      return;
+    }
+
+    const children = Array.isArray(response.data?.children)
+      ? response.data.children
+      : [];
     renderChildren(children);
   } catch (error) {
-    childrenContainer.replaceChildren(element("div", "empty-state", friendlyError(error)));
+    if (
+      requestId !== dashboardRequestId ||
+      currentUser?.uid !== requestedUid
+    ) {
+      return;
+    }
+
+    childrenContainer.replaceChildren(
+      element("div", "empty-state", friendlyError(error))
+    );
   } finally {
-    refreshButton.disabled = false;
+    if (requestId === dashboardRequestId) {
+      refreshButton.disabled = !currentUser?.uid;
+    }
   }
 }
 
@@ -188,6 +222,10 @@ codeInput.addEventListener("input", () => {
 
 onAuthStateChanged(auth, user => {
   currentUser = user;
+
+  // Invalidate in-flight requests before rendering another account's state.
+  dashboardRequestId++;
+
   if (!user) {
     childrenContainer.replaceChildren();
     const empty = element("div", "empty-state");
