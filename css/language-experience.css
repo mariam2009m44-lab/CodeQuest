@@ -238,3 +238,33 @@ body[data-course="java"] .lesson-item:before{content:"";position:absolute;inset-
 body[data-course="java"] .lesson-item.completed:before{border-color:#43c99a;background:#43c99a;box-shadow:inset 0 0 0 5px #111c33}
 body[data-course="java"] .lesson-item.active:before{border-color:#36bfe5;background:#36bfe5;box-shadow:0 0 13px #36bfe566}
 body[data-course="java"] .lesson-item.locked{opacity:.43}
+
+
+/* Interactive Cody lesson coach */
+.cody-tutor{position:relative;display:block;min-width:0;margin:0 0 20px;padding:clamp(15px,2.5vw,22px);overflow:hidden;border:1px solid rgba(54,191,229,.3);border-radius:22px;background:radial-gradient(ellipse at 4% 0%,rgba(54,191,229,.13),transparent 44%),linear-gradient(135deg,rgba(17,30,54,.98),rgba(10,17,33,.98));box-shadow:0 16px 42px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.04);color:#f3f7ff}
+.cody-tutor-top{display:flex;align-items:center;gap:13px;min-width:0}
+.cody-tutor-mascot{display:grid;place-items:center;flex:0 0 76px;width:76px;height:76px;border:1px solid rgba(54,191,229,.25);border-radius:20px;background:rgba(54,191,229,.09)}
+.cody-tutor .cody-character--chat{transform:scale(.53);transform-origin:center center;margin:0}
+.cody-tutor-identity{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.cody-tutor-identity strong{font-size:1.05rem;font-weight:900}
+.cody-tutor-identity span{color:#9eb1d0;font-size:.76rem}
+.cody-tutor-live{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid rgba(67,201,154,.24);border-radius:999px;color:#9af0cb;background:rgba(67,201,154,.08);font-size:.68rem;font-weight:800;white-space:nowrap}
+.cody-tutor-live i{width:7px;height:7px;border-radius:50%;background:#43c99a;box-shadow:0 0 10px #43c99a}
+.cody-tutor-progress{height:6px;margin:17px 0 10px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.09)}
+.cody-tutor-progress span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#36bfe5,#7955e8,#43c99a);transition:width .28s ease}
+.cody-tutor-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;color:#8deaff;font-size:.78rem}
+.cody-tutor-meta strong{font-weight:900}
+.cody-tutor-step-count{color:#9eb1d0;font-size:.7rem}
+.cody-tutor-message{min-height:74px;padding:15px 17px;border:1px solid rgba(255,255,255,.09);border-radius:17px 17px 5px 17px;background:rgba(255,255,255,.055);color:#edf4ff;font-size:clamp(.91rem,1.7vw,1rem);line-height:2;white-space:pre-wrap}
+.cody-tutor-code{max-width:100%;margin:11px 0 0;padding:13px;overflow:auto;border:1px solid rgba(54,191,229,.2);border-radius:13px;background:#060d1b;color:#bcefff;text-align:left;white-space:pre;font:500 .84rem/1.8 "Fira Code",Consolas,monospace}
+.cody-tutor-actions{display:flex;justify-content:space-between;gap:10px;margin-top:13px}
+.cody-tutor-actions button{min-height:43px;padding:9px 17px;border:1px solid rgba(255,255,255,.13);border-radius:12px;background:rgba(255,255,255,.06);color:#dce9ff;font:800 .83rem Cairo,sans-serif;cursor:pointer}
+.cody-tutor-actions .cody-tutor-next{flex:1;border-color:transparent;background:linear-gradient(100deg,#36bfe5,#43c99a);color:#071522}
+.cody-tutor-actions button:disabled{opacity:.4;cursor:not-allowed}
+.cody-tutor-actions button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+html[data-theme="light"] .cody-tutor{background:linear-gradient(135deg,#fff,#f2f7ff);color:#182235;border-color:#c8e6ef}
+html[data-theme="light"] .cody-tutor-message{background:#f2f6fc;color:#26354d;border-color:#dce5f1}
+html[data-theme="light"] .cody-tutor-identity span,html[data-theme="light"] .cody-tutor-step-count{color:#64748b}
+html[data-theme="light"] .cody-tutor-actions button:not(.cody-tutor-next){color:#334155;background:#edf2f8;border-color:#dbe3ef}
+@media(max-width:560px){.cody-tutor{padding:14px;border-radius:18px}.cody-tutor-mascot{flex-basis:62px;width:62px;height:62px}.cody-tutor-live{font-size:.6rem;padding:5px 7px}.cody-tutor-message{min-height:86px;padding:13px;font-size:.9rem}.cody-tutor-actions button{min-height:46px}}
+@media(prefers-reduced-motion:reduce){.cody-tutor-progress span{transition:none}}
