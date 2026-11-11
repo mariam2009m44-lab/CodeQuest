@@ -42,14 +42,21 @@ const LANGUAGES = Object.freeze({
 
 const CURRICULUM_CACHE_TTL_MS = 5 * 60 * 1000;
 const curriculumCache = new Map();
-const QUIZ_ANSWER_RATE_LIMIT = Object.freeze({
-  windowMs: 60 * 1000,
-  maxRequests: 30
+const USER_RATE_LIMITS = Object.freeze({
+  quizAnswer: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
+  runCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 }),
+  verifyJavaChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 }),
+  verifyPythonChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 })
 });
 
-async function enforceQuizAnswerRateLimit(uid) {
+async function enforceUserRateLimit(uid, action) {
+  const limit = USER_RATE_LIMITS[action];
+  if (!limit) {
+    throw new HttpsError("internal", "إعدادات حدود الاستخدام غير متاحة.");
+  }
+
   const limitRef = db.collection("users").doc(uid)
-    .collection("securityLimits").doc("quizAnswer");
+    .collection("securityLimits").doc(action);
   const now = Date.now();
 
   await db.runTransaction(async transaction => {
@@ -59,12 +66,12 @@ async function enforceQuizAnswerRateLimit(uid) {
     const requestCount = Number(current.requestCount) || 0;
     const windowIsActive =
       now >= windowStartedAt &&
-      now - windowStartedAt < QUIZ_ANSWER_RATE_LIMIT.windowMs;
+      now - windowStartedAt < limit.windowMs;
 
-    if (windowIsActive && requestCount >= QUIZ_ANSWER_RATE_LIMIT.maxRequests) {
+    if (windowIsActive && requestCount >= limit.maxRequests) {
       throw new HttpsError(
         "resource-exhausted",
-        "تم تجاوز عدد محاولات التحقق. انتظر دقيقة ثم حاول مرة أخرى."
+        "تم تجاوز عدد المحاولات المسموح بها مؤقتًا. انتظر دقيقة ثم حاول مرة أخرى."
       );
     }
 
@@ -219,7 +226,8 @@ async function readJudge0Response(response) {
 exports.runCode = onCall(
   CALL_OPTIONS,
   async request => {
-    requireAuth(request);
+    const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "runCode");
 
     const data = request.data || {};
 
@@ -352,6 +360,7 @@ exports.verifyJavaChallenge = onCall(
   },
   async request => {
     const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "verifyJavaChallenge");
     const data = request.data || {};
     const chapter = data.chapter;
     const lesson = data.lesson;
@@ -799,7 +808,7 @@ exports.checkQuizAnswer = onCall(
   },
   async request => {
     const uid = requireAuth(request);
-    await enforceQuizAnswerRateLimit(uid);
+    await enforceUserRateLimit(uid, "quizAnswer");
 
     const data = request.data || {};
 
@@ -2055,6 +2064,7 @@ exports.verifyPythonChallenge = onCall(
     let stage = "input-validation";
     try {
     const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "verifyPythonChallenge");
 
     const data = request.data || {};
 
