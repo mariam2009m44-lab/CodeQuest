@@ -2128,7 +2128,18 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
 
     function navigateLesson(id) {
       const lesson = findLesson(id);
-      if (lesson) renderLesson(lesson);
+      if (!lesson) return;
+      const progress = readProgress();
+      const firstIncompleteIndex = allLessons.findIndex(item =>
+        progress[item.id]?.completed !== true || progress[item.id]?.localOnly === true
+      );
+      const targetIndex = allLessons.findIndex(item => item.id === id);
+      const isCompleted = progress[id]?.completed === true && progress[id]?.localOnly !== true;
+      if (firstIncompleteIndex >= 0 && targetIndex > firstIncompleteIndex && !isCompleted) {
+        showNotice("كمّل الدرس الحالي واجتز التحدي قبل فتح الخطوة التالية.", "info");
+        return;
+      }
+      renderLesson(lesson);
     }
 
     function moveLesson(direction) {
@@ -2180,15 +2191,19 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const params = new URLSearchParams(window.location.search);
       const requested = params.get("lesson");
 
-      if (requested && findLesson(requested)) return requested;
-
       const progress = readProgress();
-      const incomplete = allLessons.find(lesson => {
+      const firstIncompleteIndex = allLessons.findIndex(lesson => {
         const record = progress[lesson.id];
-        return !record?.completed || record.localOnly === true;
+        return record?.completed !== true || record.localOnly === true;
       });
-
-      return incomplete?.id || allLessons[0]?.id || null;
+      if (requested && findLesson(requested)) {
+        const requestedIndex = allLessons.findIndex(lesson => lesson.id === requested);
+        const requestedCompleted = progress[requested]?.completed === true && progress[requested]?.localOnly !== true;
+        if (requestedCompleted || firstIncompleteIndex < 0 || requestedIndex <= firstIncompleteIndex) {
+          return requested;
+        }
+      }
+      return allLessons[firstIncompleteIndex]?.id || allLessons[0]?.id || null;
     }
 
     async function loadLessonAvatar() {
