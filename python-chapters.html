@@ -1,1 +1,489 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=course-path.html?lang=python"><title>جاري فتح خريطة التعلم</title><script>location.replace("course-path.html?lang=python");</script></head><body><p>جاري فتح خريطة التعلم... <a href="course-path.html?lang=python">اضغط هنا للمتابعة</a></p></body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="0;url=course-path.html?lang=python">
+  <meta name="theme-color" content="#050810">
+  <title>خريطة مغامرة بايثون | Cody</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050810;
+      --glass: rgba(15, 23, 42, 0.8);
+      --border: rgba(255,255,255,0.1);
+      --text: #ffffff;
+      --muted: #94a3b8;
+      --cyan: #6be8ff;
+      --green: #76e9c0;
+      --gold: #ffd48a;
+      --purple: #a99aff;
+      --surface: rgba(15, 23, 42, 0.8);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px;
+      background-image: radial-gradient(circle at 50% 0%, rgba(107,232,255,0.08), transparent 60%);
+    }
+
+    .top-nav {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .header-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .python-logo {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 20px rgba(55, 118, 171, 0.5));
+    }
+
+    .header-section h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .map-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .chapter-node {
+      background: var(--glass);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .chapter-node:hover:not(.locked) {
+      transform: translateY(-5px);
+      border-color: var(--cyan);
+      box-shadow: 0 10px 30px rgba(107,232,255,0.15);
+    }
+
+    .chapter-node.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+      filter: grayscale(1);
+    }
+
+    .chapter-number {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--cyan);
+      border: 2px solid var(--border);
+      margin-bottom: 15px;
+    }
+
+    .chapter-node.completed .chapter-number {
+      background: var(--green);
+      color: #000;
+      border-color: var(--green);
+    }
+
+    .chapter-node h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .exam-node {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(169, 154, 255, 0.1), rgba(255, 212, 138, 0.1));
+      border: 2px solid var(--purple);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .exam-node.locked {
+      opacity: 0.5;
+      filter: grayscale(1);
+      cursor: not-allowed;
+    }
+
+    .exam-node h2 { font-size: 1.5rem; color: #fff; }
+
+    .btn-exam {
+      background: var(--purple);
+      color: #000;
+      padding: 12px 30px;
+      border-radius: 12px;
+      font-weight: 900;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .sync-status {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 12px;
+      text-align: center;
+      min-height: 24px;
+    }
+
+    @media (max-width: 600px) {
+      .exam-node {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .header-section h1 { font-size: 1.7rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body>
+  <div class="top-nav">
+    <a href="languages.html" class="back-btn">
+      <i class="ri-arrow-right-line"></i>
+      رجوع للمسارات
+    </a>
+
+    <div style="font-weight: 900; color: var(--gold);">
+      XP: <span id="xpDisplay">0</span>
+    </div>
+  </div>
+
+  <div class="header-section">
+    <svg class="python-logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M23.488 9.14v2.966a4.284 4.284 0 01-4.173 4.236h-6.672a3.408 3.408 0 00-3.34 3.394v6.36c0 1.81 1.574 2.876 3.34 3.395a11.176 11.176 0 006.672 0c1.682-.487 3.34-1.467 3.34-3.394V23.55h-6.672v-.849h10.012c1.941 0 2.665-1.354 3.34-3.386a11.464 11.464 0 000-6.79c-.48-1.932-1.396-3.386-3.34-3.386Zm-3.752 16.108a1.273 1.273 0 11-1.254 1.269 1.26 1.26 0 011.254-1.27Z" fill="#387EB8"/>
+      <path d="M15.835 2a19.072 19.072 0 00-3.192.273c-2.827.499-3.34 1.544-3.34 3.472V8.29h6.68v.849H6.796a4.17 4.17 0 00-4.173 3.387 12.486 12.486 0 000 6.789c.475 1.977 1.609 3.386 3.55 3.386H8.47V19.65a4.245 4.245 0 014.173-4.15h6.672a3.365 3.365 0 003.34-3.394V5.745a3.729 3.729 0 00-3.34-3.472A20.838 20.838 0 0015.835 2Zm-3.612 2.048a1.273 1.273 0 11-1.254 1.277 1.268 1.268 0 01-1.254-1.277Z" fill="#FFE052"/>
+    </svg>
+
+    <h1>خريطة مغامرة بايثون</h1>
+    <p style="color: var(--muted);">
+      أكمل الفصول لجمع النجوم وفتح المشروع النهائي!
+    </p>
+    <p class="sync-status" id="syncStatus">جاري تحميل التقدم...</p>
+  </div>
+
+  <div class="map-container" id="mapContainer"></div>
+
+  <script>
+    "use strict";
+
+    const chapters = [
+      { id: 1, title: "الطباعة" },
+      { id: 2, title: "المتغيرات" },
+      { id: 3, title: "العمليات الحسابية" },
+      { id: 4, title: "الشروط" },
+      { id: 5, title: "التكرار" },
+      { id: 6, title: "القوائم" },
+      { id: 7, title: "الدوال" },
+      { id: 8, title: "النصوص" },
+      { id: 9, title: "الأخطاء" },
+      { id: 10, title: "القواميس" },
+      { id: 11, title: "المكتبات" },
+      { id: 12, title: "المشروع النهائي" }
+    ];
+
+    const PROGRESS_KEY = "cody_python_progress";
+    const XP_KEY = "cody_xp";
+
+    let activeUserUid = null;
+    let accountXP = null;
+    let cloudCompletedChapters = [];
+
+    function getScopedStorageKey(key) {
+      return activeUserUid
+        ? `codequest_${activeUserUid}_${key}`
+        : key;
+    }
+
+    function getProgressStorageKey() {
+      return getScopedStorageKey(PROGRESS_KEY);
+    }
+
+    function migrateLegacyPythonStorage(uid) {
+      if (!uid) return;
+      try {
+        const markerKey = "cody_python_legacy_migrated_uid";
+        if (localStorage.getItem(markerKey)) return;
+
+        const legacyKeys = [
+          "cody_python_progress",
+          "cody_python_completed_lessons",
+          "cody_xp",
+          "cody_python_xp",
+          ...Array.from({ length: 12 }, (_, index) =>
+            `cody_python_exam_passed_${index + 1}`
+          )
+        ];
+
+        for (const legacyKey of legacyKeys) {
+          const legacyValue = localStorage.getItem(legacyKey);
+          const scopedKey = `codequest_${uid}_${legacyKey}`;
+          if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+            localStorage.setItem(scopedKey, legacyValue);
+          }
+        }
+
+        localStorage.setItem(markerKey, uid);
+      } catch (error) {
+        console.warn("تعذرت ترقية بيانات Python القديمة:", error);
+      }
+    }
+
+    function readLocalProgress() {
+      if (!activeUserUid) return { completed: [], stars: {} };
+
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem(getProgressStorageKey()) || "{}"
+        );
+
+        const completed = Array.isArray(saved)
+          ? saved.map(Number)
+          : Array.isArray(saved.completed)
+            ? saved.completed.map(Number)
+            : [];
+
+        return {
+          completed: [...new Set(completed.filter(Number.isInteger))],
+          stars: !Array.isArray(saved) && saved.stars && typeof saved.stars === "object"
+            ? saved.stars
+            : {}
+        };
+      } catch {
+        return { completed: [], stars: {} };
+      }
+    }
+
+    function getMergedProgress() {
+      const local = readLocalProgress();
+
+      return {
+        completed: [
+          ...new Set([
+            ...local.completed,
+            ...cloudCompletedChapters
+          ])
+        ],
+        stars: local.stars
+      };
+    }
+
+    function saveMergedProgress() {
+      const progress = getMergedProgress();
+
+      if (activeUserUid) {
+        localStorage.setItem(
+          getProgressStorageKey(),
+          JSON.stringify(progress)
+        );
+      }
+
+      return progress;
+    }
+
+    function renderXp() {
+      const sharedXP = activeUserUid
+        ? localStorage.getItem(getScopedStorageKey(XP_KEY))
+        : null;
+      const legacyXP = activeUserUid
+        ? localStorage.getItem(getScopedStorageKey("cody_python_xp"))
+        : null;
+      const value = accountXP ?? (Number(sharedXP ?? legacyXP ?? 0) || 0);
+      document.getElementById("xpDisplay").textContent = String(value);
+    }
+
+    function buildChapterUrl(chapterId) {
+      return `python-lesson.html?ch=${chapterId}&lesson=1`;
+    }
+
+    function renderMap() {
+      const progress = saveMergedProgress();
+      const container = document.getElementById("mapContainer");
+      const fragment = document.createDocumentFragment();
+
+      chapters.forEach((chapter, index) => {
+        const isDone = progress.completed.includes(chapter.id);
+
+        const isUnlocked =
+          index === 0 ||
+          progress.completed.includes(chapters[index - 1].id);
+
+        const node = document.createElement("a");
+
+        node.className =
+          `chapter-node ${isDone ? "completed" : ""} ${isUnlocked ? "" : "locked"}`;
+
+        node.href = isUnlocked
+          ? buildChapterUrl(chapter.id)
+          : "#";
+
+        if (!isUnlocked) {
+          node.addEventListener("click", event => {
+            event.preventDefault();
+          });
+        }
+
+        node.innerHTML = `
+          <div class="chapter-number">
+            ${isDone ? '<i class="ri-check-line"></i>' : chapter.id}
+          </div>
+          <h3>${chapter.title}</h3>
+          <small style="color:var(--muted)">
+            ${isDone ? "تم إكمال الفصل" : isUnlocked ? "متاح للتعلم" : "مغلق"}
+          </small>
+        `;
+
+        fragment.appendChild(node);
+      });
+
+      const allDone = chapters.every(chapter =>
+        progress.completed.includes(chapter.id)
+      );
+
+      const examNode = document.createElement("div");
+
+      examNode.className =
+        `exam-node ${allDone ? "" : "locked"}`;
+
+      examNode.innerHTML = `
+        <div>
+          <h2>الامتحان والمشروع النهائي</h2>
+          <p style="color:var(--muted);">
+            أكمل الفصول الـ 12 لفتح الامتحان
+          </p>
+        </div>
+      `;
+
+      if (allDone) {
+        const link = document.createElement("a");
+        link.href = "python-exam.html";
+        link.className = "btn-exam";
+        link.textContent = "ابدأ الامتحان";
+        examNode.appendChild(link);
+      }
+
+      fragment.appendChild(examNode);
+      container.replaceChildren(fragment);
+    }
+
+    async function loadCloudProgress() {
+      const status = document.getElementById("syncStatus");
+
+      try {
+        const authModule = await import("./js/auth.js");
+        const user = await authModule.requireUser();
+        if (!user?.uid) throw new Error("تعذر تحديد حساب المستخدم.");
+
+        activeUserUid = user.uid;
+        migrateLegacyPythonStorage(activeUserUid);
+
+        const [records, profile] = await Promise.all([
+          authModule.getLessonProgress("python"),
+          authModule.getUserProfile()
+        ]);
+        accountXP = Number.isSafeInteger(profile?.xp) ? profile.xp : 0;
+        renderXp();
+
+        /*
+          النظام القديم في Python:
+          lesson 1 إلى 4 = دروس تدريبية
+          lesson 5 = امتحان الفصل
+
+          في Firestore:
+          chapter = رقم الفصل - 1
+          lesson = 104 للامتحان
+
+          نعتبر الفصل مكتملاً عند وجود سجل الامتحان 104.
+        */
+
+        cloudCompletedChapters = records
+          .filter(record =>
+            Number.isInteger(Number(record.chapter)) &&
+            Number(record.lesson) === 104 &&
+            record.completed === true
+          )
+          .map(record => Number(record.chapter) + 1)
+          .filter(chapterId =>
+            chapterId >= 1 && chapterId <= 12
+          );
+
+        saveMergedProgress();
+        renderMap();
+
+        status.textContent = "تم تحديث التقدم من الحساب.";
+      } catch (error) {
+        console.error("Python cloud progress loading failed:", error);
+
+        status.textContent =
+          "تعذر تحميل التقدم من الحساب. يتم عرض التقدم المحفوظ على هذا الجهاز.";
+
+        renderXp();
+        renderMap();
+      }
+    }
+
+    renderXp();
+    loadCloudProgress();
+  </script>
+
+  <script type="module" src="js/route-guard.js"></script>
+<script type="module" src="js/reminders.js"></script>
+</body>
+</html>
