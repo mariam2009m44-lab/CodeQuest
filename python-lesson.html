@@ -1617,9 +1617,10 @@ html[data-theme="light"] .bottom-action {
   background: linear-gradient(180deg, rgba(245,247,252,.2), rgba(245,247,252,.98));
 }
 </style>
+  <link rel="stylesheet" href="css/language-experience.css">
 </head>
 
-<body>
+<body data-course="python">
 
   <div class="overlay" id="overlay"></div>
   <div class="editor-backdrop" id="editorBackdrop"></div>
@@ -2194,6 +2195,14 @@ html[data-theme="light"] .bottom-action {
       return;
     }
 
+    const orderedPathLessons = chapterIds.flatMap((id) =>
+      getChapterLessons(id).map((lesson, lessonIndex) => ({ id, lessonIndex }))
+    );
+    const firstIncompletePathIndex = orderedPathLessons.findIndex(
+      item => !isLessonCompleted(item.id, item.lessonIndex)
+    );
+    let pathOrderIndex = 0;
+
     chapterIds.forEach((chapterId, index) => {
       const chapter = getChapter(chapterId);
 
@@ -2244,6 +2253,10 @@ html[data-theme="light"] .bottom-action {
           chapterId,
           lessonIndex
         );
+        const currentPathIndex = pathOrderIndex++;
+        const locked = firstIncompletePathIndex >= 0 &&
+          currentPathIndex > firstIncompletePathIndex &&
+          !completed;
 
         const link = document.createElement("button");
 
@@ -2252,6 +2265,11 @@ html[data-theme="light"] .bottom-action {
 
         if (completed) {
           link.classList.add("completed");
+        }
+        if (locked) {
+          link.classList.add("locked");
+          link.disabled = true;
+          link.setAttribute("aria-disabled", "true");
         }
 
         if (
@@ -2263,7 +2281,9 @@ html[data-theme="light"] .bottom-action {
 
         const lessonIcon = completed
           ? "ri-checkbox-circle-fill"
-          : "ri-play-circle-line";
+          : locked
+            ? "ri-lock-2-line"
+            : "ri-play-circle-line";
 
         link.innerHTML = `
           <i class="${lessonIcon}"></i>
@@ -2271,6 +2291,7 @@ html[data-theme="light"] .bottom-action {
         `;
 
         link.addEventListener("click", () => {
+          if (locked) return;
           currentChapterId = chapterId;
           currentLessonIndex = lessonIndex;
 
@@ -3410,6 +3431,11 @@ html[data-theme="light"] .bottom-action {
     // أعد كتابة سجل الإنجاز حتى يستطيع الخادم إعادة فحص المكافأة
     // إذا كان الإنجاز المحلي قديمًا ولم يُعتمد سابقًا.
     const cloudSaved = await saveProgressToFirebase();
+    if (cloudSaved) {
+      window.dispatchEvent(new CustomEvent("codequest:lesson-completed", {
+        detail: { language: "python", chapter: Number(currentChapterId) - 1, lesson: Number(currentLessonIndex) }
+      }));
+    }
 
     if (!cloudSaved && !wasCompleted) {
       clearChat();
@@ -3500,6 +3526,31 @@ html[data-theme="light"] .bottom-action {
     currentLesson = lessons[currentLessonIndex];
 
     if (!currentLesson) return;
+
+    const orderedPathLessons = getChapterIds().flatMap(chapterId =>
+      getChapterLessons(chapterId).map((lesson, lessonIndex) => ({
+        chapterId,
+        lessonIndex,
+        lesson
+      }))
+    );
+    const firstIncompletePathIndex = orderedPathLessons.findIndex(item =>
+      !isLessonCompleted(item.chapterId, item.lessonIndex)
+    );
+    const requestedPathIndex = orderedPathLessons.findIndex(item =>
+      item.chapterId === currentChapterId && item.lessonIndex === currentLessonIndex
+    );
+    if (
+      firstIncompletePathIndex >= 0 &&
+      requestedPathIndex > firstIncompletePathIndex &&
+      !isLessonCompleted(currentChapterId, currentLessonIndex)
+    ) {
+      const nextAvailable = orderedPathLessons[firstIncompletePathIndex];
+      currentChapterId = nextAvailable.chapterId;
+      currentLessonIndex = nextAvailable.lessonIndex;
+      currentLesson = nextAvailable.lesson;
+      showToast("كمّل الخطوة الحالية الأول، وبعدها كودي هيفتح لك اللي بعدها.");
+    }
 
     updateCurrentLessonUrl();
     currentStepIndex = 0;
@@ -4361,5 +4412,6 @@ if (document.readyState === "loading") {
 </script>
 
 <script type="module" src="js/reminders.js"></script>
+  <script defer src="js/language-experience.js"></script>
 </body>
 </html>

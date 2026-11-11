@@ -885,6 +885,11 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
     }
 
     await loadProgress();
+    if (serverVerified) {
+      window.dispatchEvent(new CustomEvent("codequest:lesson-completed", {
+        detail: { language: languageKey, chapter: chapterIndex, lesson: lessonIndex }
+      }));
+    }
 
     return true;
 
