@@ -349,7 +349,8 @@ export async function logoutUser() {
       "currentProjectId",
       "currentProjectName",
       "playgroundCode",
-      "playgroundLang"
+      "playgroundLang",
+      "playgroundOwnerUid"
     ];
 
     for (const key of sessionKeys) {
