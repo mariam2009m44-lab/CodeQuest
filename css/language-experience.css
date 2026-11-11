@@ -201,7 +201,7 @@
 .cq-path-close{display:none;border:1px solid #ffffff20;border-radius:9px;padding:5px 9px;color:#fff;background:#ffffff0b;font:700 .8rem Cairo,sans-serif}
 .cq-path-backdrop{display:none}
 body.cq-has-path{padding-inline-start:292px}
-body.cq-has-path .cq-path-toggle{display:flex}
+@media(max-width:900px){body.cq-has-path .cq-path-toggle{display:flex}}
 @keyframes cqFade{from{opacity:0}to{opacity:1}}
 @keyframes cqSparkle{0%,100%{opacity:.45;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}}
 @keyframes cqWave{0%,100%{transform:rotate(-25deg)}50%{transform:rotate(-78deg)}}
@@ -216,3 +216,9 @@ body[data-course="python"] .lesson-link.active,body[data-course="java"] .lesson-
 body[data-course="python"] .lesson-link.completed,body[data-course="java"] .lesson-item.completed{border-color:#43c99a55;background:#43c99a0e}
 body[data-course="python"] .cq-inline-cody,body[data-course="java"] .cq-inline-cody{position:absolute;inset-inline-end:0;top:50%;width:49px;height:53px;overflow:hidden;transform:translateY(-50%);pointer-events:none}
 body[data-course="python"] .cq-inline-cody .cody-character,body[data-course="java"] .cq-inline-cody .cody-character{transform:scale(.39);transform-origin:top right;animation:cqCodyBob 2.4s ease-in-out infinite}
+
+body[data-course="python"] .lesson-link.locked,
+body[data-course="java"] .lesson-item.locked{opacity:.42;filter:saturate(.55);cursor:not-allowed;border-style:dashed}
+body[data-course="java"] .lesson-item{display:flex;align-items:center;width:100%;text-align:start}
+body[data-course="java"] .lesson-item.active{padding-inline-end:48px}
+@media(min-width:901px){body[data-course="python"] .sidebar,body[data-course="java"] .sidebar{position:sticky;top:0;max-height:100dvh;overflow:auto}}
