@@ -469,6 +469,14 @@
       cpp: "./json/cpp_curriculum.json"
     };
 
+    // The active Python learning path uses 12 chapters with 4 lessons each.
+    // The JSON curriculum is a separate 24-lesson draft and must not define
+    // the learner's real progress denominator.
+    const PYTHON_CHAPTERS = Array.from(
+      { length: PYTHON_CHAPTERS_COUNT },
+      () => ({ lessons: Array.from({ length: 4 }, () => ({})) })
+    );
+
     const JAVA_CHAPTERS = Array.from(
       { length: 8 },
       () => ({ lessons: [{}, {}] })
@@ -1019,7 +1027,7 @@
         cppRawRecords,
         javaRawRecords
       ] = await Promise.all([
-        readCurriculum(CURRICULUM_FILES.python),
+        Promise.resolve(PYTHON_CHAPTERS),
         readCurriculum(CURRICULUM_FILES.javascript),
         readCurriculum(CURRICULUM_FILES.cpp),
 
