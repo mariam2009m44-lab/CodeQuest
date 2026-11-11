@@ -39,6 +39,43 @@ const LANGUAGES = Object.freeze({
   java: 62
 });
 
+
+const CURRICULUM_CACHE_TTL_MS = 5 * 60 * 1000;
+const curriculumCache = new Map();
+const QUIZ_ANSWER_RATE_LIMIT = Object.freeze({
+  windowMs: 60 * 1000,
+  maxRequests: 30
+});
+
+async function enforceQuizAnswerRateLimit(uid) {
+  const limitRef = db.collection("users").doc(uid)
+    .collection("securityLimits").doc("quizAnswer");
+  const now = Date.now();
+
+  await db.runTransaction(async transaction => {
+    const snapshot = await transaction.get(limitRef);
+    const current = snapshot.exists ? snapshot.data() || {} : {};
+    const windowStartedAt = Number(current.windowStartedAt) || 0;
+    const requestCount = Number(current.requestCount) || 0;
+    const windowIsActive =
+      now >= windowStartedAt &&
+      now - windowStartedAt < QUIZ_ANSWER_RATE_LIMIT.windowMs;
+
+    if (windowIsActive && requestCount >= QUIZ_ANSWER_RATE_LIMIT.maxRequests) {
+      throw new HttpsError(
+        "resource-exhausted",
+        "تم تجاوز عدد محاولات التحقق. انتظر دقيقة ثم حاول مرة أخرى."
+      );
+    }
+
+    transaction.set(limitRef, {
+      windowStartedAt: windowIsActive ? windowStartedAt : now,
+      requestCount: windowIsActive ? requestCount + 1 : 1,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+  });
+}
+
 const CURRICULUM_URLS = Object.freeze({
   javascript:
     "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/js_curriculum.json",
@@ -637,47 +674,56 @@ async function findCurriculumQuiz(language, curriculumLessonId) {
     );
   }
 
-  let response;
+  const cached = curriculumCache.get(language);
+  let curriculum = cached && Date.now() - cached.cachedAt < CURRICULUM_CACHE_TTL_MS
+    ? cached.value
+    : null;
 
-  try {
-    response = await fetch(curriculumUrl, {
-      headers: {
-        Accept: "application/json"
-      },
-      signal: AbortSignal.timeout(15000)
+  if (!curriculum) {
+    let response;
+
+    try {
+      response = await fetch(curriculumUrl, {
+        headers: {
+          Accept: "application/json"
+        },
+        signal: AbortSignal.timeout(15000)
+      });
+    } catch (error) {
+      console.error("Curriculum fetch failed:", error);
+      throw new HttpsError(
+        "unavailable",
+        "تعذر الاتصال بملف المنهج حاليًا."
+      );
+    }
+
+    if (!response.ok) {
+      throw new HttpsError(
+        "unavailable",
+        "تعذر تحميل المنهج للتحقق من الإجابة."
+      );
+    }
+
+    try {
+      curriculum = await response.json();
+    } catch {
+      throw new HttpsError(
+        "internal",
+        "ملف المنهج لا يحتوي على بيانات صالحة."
+      );
+    }
+
+    if (!Array.isArray(curriculum?.chapters)) {
+      throw new HttpsError(
+        "internal",
+        "تركيب ملف المنهج غير صحيح."
+      );
+    }
+
+    curriculumCache.set(language, {
+      value: curriculum,
+      cachedAt: Date.now()
     });
-  } catch (error) {
-    console.error("Curriculum fetch failed:", error);
-
-    throw new HttpsError(
-      "unavailable",
-      "تعذر الاتصال بملف المنهج حاليًا."
-    );
-  }
-
-  if (!response.ok) {
-    throw new HttpsError(
-      "unavailable",
-      "تعذر تحميل المنهج للتحقق من الإجابة."
-    );
-  }
-
-  let curriculum;
-
-  try {
-    curriculum = await response.json();
-  } catch {
-    throw new HttpsError(
-      "internal",
-      "ملف المنهج لا يحتوي على بيانات صالحة."
-    );
-  }
-
-  if (!Array.isArray(curriculum?.chapters)) {
-    throw new HttpsError(
-      "internal",
-      "تركيب ملف المنهج غير صحيح."
-    );
   }
 
   for (
@@ -753,6 +799,8 @@ exports.checkQuizAnswer = onCall(
   },
   async request => {
     const uid = requireAuth(request);
+    await enforceQuizAnswerRateLimit(uid);
+
     const data = request.data || {};
 
     const {
@@ -940,7 +988,10 @@ function hasVerifiedLessonResult(uid, lessonId, lesson, result) {
     && result.language === lesson.language
     && result.chapter === lesson.chapter
     && result.lesson === lesson.lesson
-    && (lesson.language !== "java" || result.quizVerified === true);
+    && (
+      lesson.language !== "java" ||
+      (result.challengeVerified === true && result.quizVerified === true)
+    );
 }
 
 /*
@@ -2356,11 +2407,43 @@ exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
 
       const progressSnapshot = progressAvailable ? progressResult.value : { docs: [] };
       const projectsSnapshot = projectsAvailable ? projectsResult.value : { size: 0 };
-      // Count only real curriculum positions with their canonical document IDs.
-      // This also excludes the separate Python exam marker (lesson 104).
-      const completed = progressSnapshot.docs
-        .filter(isValidParentLessonProgressDocument)
-        .map(doc => doc.data() || {});
+      // A client-writable progress record is not proof of passing a lesson.
+      // Match each canonical record to its server-only quizResults evidence.
+      const candidateProgress = progressSnapshot.docs
+        .filter(isValidParentLessonProgressDocument);
+      let verificationAvailable = true;
+      let verifiedProgressDocs = [];
+
+      if (candidateProgress.length) {
+        try {
+          const resultRefs = candidateProgress.map(doc =>
+            childRef.collection("quizResults").doc(`lesson_${doc.id}`)
+          );
+          const resultSnapshots = await db.getAll(...resultRefs);
+
+          verifiedProgressDocs = candidateProgress.filter((doc, index) => {
+            const lesson = getRewardableLesson(doc.id, doc.data());
+            const resultSnapshot = resultSnapshots[index];
+            return lesson && resultSnapshot?.exists === true
+              && hasVerifiedLessonResult(
+                childUid,
+                doc.id,
+                lesson,
+                resultSnapshot.data()
+              );
+          });
+        } catch (verificationError) {
+          verificationAvailable = false;
+          console.error("getParentDashboard progress verification failed:", {
+            stage: "progress-verification",
+            code: typeof verificationError?.code === "string"
+              ? verificationError.code
+              : "unknown"
+          });
+        }
+      }
+
+      const completed = verifiedProgressDocs.map(doc => doc.data() || {});
 
       const now = Date.now();
       const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
