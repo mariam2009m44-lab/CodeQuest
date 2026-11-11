@@ -2176,3 +2176,91 @@ html[data-theme="light"] .sidebar-mission {
   .cody-character__arm--right,
   .cody-character--compact { animation: none !important; }
 }
+
+
+/* Cody's expressions: greeting, laughter and reward celebration. */
+.cody-character.is-waving .cody-character__arm--right {
+  animation: cody-character-wave 0.42s ease-in-out 3;
+}
+.cody-character.is-waving .cody-character__arm--left {
+  animation: cody-character-wave-left 0.42s ease-in-out 3;
+}
+.cody-character.is-happy,
+.cody-character.is-celebrating {
+  animation: cody-character-happy-bounce 0.48s ease-in-out 4;
+}
+.cody-character.is-happy .cody-character__mouth,
+.cody-character.is-celebrating .cody-character__mouth {
+  width: 23px;
+  height: 11px;
+  bottom: 7px;
+  border-bottom: 3px solid #ffb6d1;
+  border-radius: 0 0 18px 18px;
+}
+.cody-character.is-happy .cody-character__eye,
+.cody-character.is-celebrating .cody-character__eye {
+  top: 21px;
+  height: 5px;
+  border-radius: 8px 8px 2px 2px;
+  transform: rotate(-8deg);
+}
+.cody-character.is-celebrating::before,
+.cody-character.is-celebrating::after {
+  position: absolute;
+  z-index: 8;
+  color: #ffd66b;
+  font-size: 25px;
+  line-height: 1;
+  content: "✦";
+  pointer-events: none;
+  text-shadow: 0 0 12px rgba(255, 214, 107, .8);
+  animation: cody-celebration-sparkle .65s ease-in-out 3;
+}
+.cody-character.is-celebrating::before {
+  top: 24px;
+  left: -3px;
+}
+.cody-character.is-celebrating::after {
+  top: 48px;
+  right: -8px;
+  color: #42ddf4;
+  animation-delay: .12s;
+}
+.cody-character.is-celebrating .cody-character__arm--right {
+  animation: cody-character-wave .38s ease-in-out 4;
+}
+.cody-character.is-celebrating .cody-character__arm--left {
+  animation: cody-character-wave-left .38s ease-in-out 4;
+}
+.cody-character.is-encouraging .cody-character__core {
+  animation: cody-core-pulse .8s ease-in-out 2;
+}
+@keyframes cody-character-wave-left {
+  0%, 100% { transform: rotate(22deg); }
+  50% { transform: rotate(72deg); }
+}
+@keyframes cody-character-happy-bounce {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  30% { translate: 0 -9px; rotate: -3deg; }
+  65% { translate: 0 -4px; rotate: 3deg; }
+}
+@keyframes cody-celebration-sparkle {
+  0%, 100% { opacity: 0; scale: .45; rotate: -25deg; }
+  50% { opacity: 1; scale: 1.2; rotate: 20deg; }
+}
+@keyframes cody-core-pulse {
+  0%, 100% { scale: 1; box-shadow: 0 0 10px rgba(255, 214, 107, .5); }
+  50% { scale: 1.2; box-shadow: 0 0 19px rgba(255, 214, 107, .95); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cody-character.is-waving,
+  .cody-character.is-happy,
+  .cody-character.is-celebrating,
+  .cody-character.is-encouraging,
+  .cody-character.is-celebrating::before,
+  .cody-character.is-celebrating::after,
+  .cody-character.is-waving .cody-character__arm,
+  .cody-character.is-celebrating .cody-character__arm {
+    animation: none !important;
+  }
+}
