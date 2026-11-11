@@ -2473,7 +2473,7 @@ exports.getParentDashboard = onCall(CALL_OPTIONS, async request => {
         projectsCount: projectsSnapshot.size,
         languageCounts: languages,
         dataAvailability: {
-          progress: progressAvailable,
+          progress: progressAvailable && verificationAvailable,
           projects: projectsAvailable
         },
         lastActivity: lastActivity ? new Date(lastActivity).toISOString() : null
