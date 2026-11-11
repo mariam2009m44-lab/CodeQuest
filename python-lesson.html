@@ -2195,6 +2195,14 @@ html[data-theme="light"] .bottom-action {
       return;
     }
 
+    const orderedPathLessons = chapterIds.flatMap((id) =>
+      getChapterLessons(id).map((lesson, lessonIndex) => ({ id, lessonIndex }))
+    );
+    const firstIncompletePathIndex = orderedPathLessons.findIndex(
+      item => !isLessonCompleted(item.id, item.lessonIndex)
+    );
+    let pathOrderIndex = 0;
+
     chapterIds.forEach((chapterId, index) => {
       const chapter = getChapter(chapterId);
 
@@ -2245,6 +2253,10 @@ html[data-theme="light"] .bottom-action {
           chapterId,
           lessonIndex
         );
+        const currentPathIndex = pathOrderIndex++;
+        const locked = firstIncompletePathIndex >= 0 &&
+          currentPathIndex > firstIncompletePathIndex &&
+          !completed;
 
         const link = document.createElement("button");
 
@@ -2253,6 +2265,11 @@ html[data-theme="light"] .bottom-action {
 
         if (completed) {
           link.classList.add("completed");
+        }
+        if (locked) {
+          link.classList.add("locked");
+          link.disabled = true;
+          link.setAttribute("aria-disabled", "true");
         }
 
         if (
@@ -2264,7 +2281,9 @@ html[data-theme="light"] .bottom-action {
 
         const lessonIcon = completed
           ? "ri-checkbox-circle-fill"
-          : "ri-play-circle-line";
+          : locked
+            ? "ri-lock-2-line"
+            : "ri-play-circle-line";
 
         link.innerHTML = `
           <i class="${lessonIcon}"></i>
@@ -2272,6 +2291,7 @@ html[data-theme="light"] .bottom-action {
         `;
 
         link.addEventListener("click", () => {
+          if (locked) return;
           currentChapterId = chapterId;
           currentLessonIndex = lessonIndex;
 
