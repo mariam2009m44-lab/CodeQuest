@@ -139,6 +139,9 @@ class AuditLogAdmin(admin.ModelAdmin):
     def has_view_or_change_permission(self, request, obj=None):
         return self.has_view_permission(request, obj)
 
+    def has_module_permission(self, request):
+        return self.has_view_permission(request)
+
 
 @admin.register(StudentLookupAudit)
 class StudentLookupAuditAdmin(admin.ModelAdmin):
@@ -157,6 +160,9 @@ class StudentLookupAuditAdmin(admin.ModelAdmin):
 
     def has_view_or_change_permission(self, request, obj=None):
         return self.has_view_permission(request, obj)
+
+    def has_module_permission(self, request):
+        return self.has_view_permission(request)
 
     def has_add_permission(self, request):
         return False
