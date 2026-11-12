@@ -1,0 +1,36 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+{% if admin_portal_counts %}
+  <div style="margin:0 0 24px">
+    <h2 style="margin-bottom:12px">نظرة عامة على المنصة</h2>
+    <p>إحصائيات محتوى لوحة الإدارة فقط؛ لا تمثل عدد حسابات الطلاب أو بيانات Firebase.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin:16px 0">
+      <a href="{% url 'admin:content_learningpath_changelist' %}" style="display:block;padding:16px;border:1px solid var(--border-color);border-radius:10px;text-decoration:none">
+        <strong>المسارات التعليمية</strong><div style="font-size:28px;margin-top:8px">{{ admin_portal_counts.paths }}</div><small>منشور: {{ admin_portal_published.paths }}</small>
+      </a>
+      <a href="{% url 'admin:content_course_changelist' %}" style="display:block;padding:16px;border:1px solid var(--border-color);border-radius:10px;text-decoration:none">
+        <strong>المناهج</strong><div style="font-size:28px;margin-top:8px">{{ admin_portal_counts.courses }}</div><small>منشور: {{ admin_portal_published.courses }}</small>
+      </a>
+      <a href="{% url 'admin:content_lesson_changelist' %}" style="display:block;padding:16px;border:1px solid var(--border-color);border-radius:10px;text-decoration:none">
+        <strong>الدروس</strong><div style="font-size:28px;margin-top:8px">{{ admin_portal_counts.lessons }}</div><small>منشور: {{ admin_portal_published.lessons }}</small>
+      </a>
+      <a href="{% url 'admin:content_quizquestion_changelist' %}" style="display:block;padding:16px;border:1px solid var(--border-color);border-radius:10px;text-decoration:none">
+        <strong>أسئلة الاختبارات</strong><div style="font-size:28px;margin-top:8px">{{ admin_portal_counts.questions }}</div><small>منشور: {{ admin_portal_published.questions }}</small>
+      </a>
+      <a href="{% url 'admin:content_announcement_changelist' %}" style="display:block;padding:16px;border:1px solid var(--border-color);border-radius:10px;text-decoration:none">
+        <strong>الإعلانات</strong><div style="font-size:28px;margin-top:8px">{{ admin_portal_counts.announcements }}</div><small>منشور: {{ admin_portal_published.announcements }}</small>
+      </a>
+      <a href="{% url 'admin:content_studentproject_changelist' %}" style="display:block;padding:16px;border:1px solid var(--border-color);border-radius:10px;text-decoration:none">
+        <strong>المشروعات التعليمية</strong><div style="font-size:28px;margin-top:8px">{{ admin_portal_counts.projects }}</div><small>منشور: {{ admin_portal_published.projects }}</small>
+      </a>
+    </div>
+    {% if can_manage_student_data %}
+      <h2>متابعة الطلاب</h2>
+      <p><a class="button" href="{% url 'student_accounts' %}">فتح الطلاب والحسابات</a>
+         <a class="button" href="{% url 'student_lookup' %}">البحث عن طالب</a></p>
+    {% endif %}
+  </div>
+{% endif %}
+{{ block.super }}
+{% endblock %}
