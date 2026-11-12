@@ -86,9 +86,7 @@ class AdminRoleTests(TestCase):
         self.assertTrue(user.has_perm("content.delete_learningpath"))
 
     def test_only_platform_manager_can_view_audit_log(self):
-        log_admin = __import__("django.contrib.admin", fromlist=["site"]).site._registry[
-            __import__("django.contrib.admin.models", fromlist=["LogEntry"]).LogEntry
-        ]
+        log_admin = admin.site._registry[LogEntry]
         editor_group = Group.objects.get(name="محرر المحتوى")
         editor = get_user_model().objects.create_user(username="audit-editor", password="safe-test-password")
         editor.groups.add(editor_group)
