@@ -808,6 +808,16 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
     return true;
   }
 
+  let previousStars = null;
+  if (serverVerified) {
+    try {
+      const previousProfile = await getUserProfile();
+      previousStars = Number.isSafeInteger(previousProfile.stars) ? previousProfile.stars : 0;
+    } catch (error) {
+      console.warn("تعذر قراءة رصيد الجواهر قبل إكمال الدرس:", error);
+    }
+  }
+
   try {
     // Only server-verified completions may be written to the trusted cloud
     // progress collection. Offline/unverified completions stay device-local.
@@ -892,6 +902,26 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
       window.dispatchEvent(new CustomEvent("codequest:lesson-completed", {
         detail: { language: languageKey, chapter: chapterIndex, lesson: lessonIndex }
       }));
+      if (previousStars !== null) {
+        for (let attempt = 0; attempt < 5; attempt++) {
+          if (attempt > 0) await new Promise(resolve => setTimeout(resolve, 700));
+          try {
+            const profile = await getUserProfile();
+            const nextStars = Number.isSafeInteger(profile.stars) ? profile.stars : 0;
+            if (nextStars > previousStars) {
+              window.CodeQuestExperience?.reward({
+                gems: nextStars - previousStars,
+                balance: nextStars,
+                title: "جوهرة جديدة!",
+                message: "كودي بيحتفل بيك! مكافأة الدرس اتضافت لرصيدك."
+              });
+              break;
+            }
+          } catch (error) {
+            console.warn("تعذر التحقق من مكافأة الدرس:", error);
+          }
+        }
+      }
     }
 
     return true;
