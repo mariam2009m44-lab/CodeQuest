@@ -23,6 +23,7 @@ test("معاملة المكافأة مع طلبات متزامنة داخل ال
   const context = {
     exports: {}, console,
     require(name) {
+      if (name === "crypto") return require("node:crypto");
       if (name === "firebase-admin/app") return { initializeApp() {} };
       if (name === "firebase-admin/firestore") return {
         // توحيد سياق Promise بين vm ومكتبة Firestore في أداة الاختبار.
