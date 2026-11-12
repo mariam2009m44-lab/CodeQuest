@@ -9,6 +9,7 @@ function loadValidator() {
     exports: {},
     console,
     require(name) {
+      if (name === "crypto") return require("node:crypto");
       if (name === "firebase-admin/app") return { initializeApp() {} };
       if (name === "firebase-admin/firestore") return {
         getFirestore: () => ({}),
