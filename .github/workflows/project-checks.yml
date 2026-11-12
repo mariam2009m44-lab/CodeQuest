@@ -44,6 +44,12 @@ jobs:
       - name: Check Firebase Functions syntax
         run: node --check functions/index.js
 
+      - name: Install Firebase Functions dependencies
+        run: npm install --prefix functions --no-audit --no-fund
+
+      - name: Run Firebase Functions unit and regression tests
+        run: npm --prefix functions run test:unit
+
       - name: Audit JavaScript syntax across repository
         run: node scripts/validate-js-syntax.mjs
 
