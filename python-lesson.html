@@ -3442,6 +3442,32 @@ html[data-theme="light"] .bottom-action {
       }));
     }
 
+    if (cloudSaved && !wasCompleted) {
+      const previousStars = Number(accountStars) || 0;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        if (attempt > 0) await new Promise(resolve => setTimeout(resolve, 700));
+        try {
+          const authModule = await import("./js/auth.js");
+          const profile = await authModule.getUserProfile();
+          const nextStars = Number.isSafeInteger(profile.stars) ? profile.stars : 0;
+          accountXP = Number.isSafeInteger(profile.xp) ? profile.xp : accountXP;
+          accountStars = nextStars;
+          updateProgressDisplay();
+          if (nextStars > previousStars) {
+            window.CodeQuestExperience?.reward({
+              gems: nextStars - previousStars,
+              balance: nextStars,
+              title: "جوهرة جديدة!",
+              message: "كودي بيحتفل بيك! مكافأة الدرس اتضافت لرصيدك."
+            });
+            break;
+          }
+        } catch (error) {
+          console.warn("تعذر التحقق من مكافأة درس Python:", error);
+        }
+      }
+    }
+
     if (!cloudSaved && !wasCompleted) {
       // احفظ إنجاز المتعلم محليًا حتى لا يضيع عند تعذر الاتصال.
       // لا نعتبره إثباتًا خادميًا ولا نمنح عنه مكافآت.
