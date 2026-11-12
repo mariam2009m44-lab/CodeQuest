@@ -2083,6 +2083,14 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       void refreshAccountStats(previousXP, previousStars).then(rewardsUpdated => {
         if (rewardsUpdated) {
           showNotice("تم تحديث XP والنجوم من حسابك.", "success");
+          if (accountStars > previousStars) {
+            window.CodeQuestExperience?.reward({
+              gems: accountStars - previousStars,
+              balance: accountStars,
+              title: "جوهرة جديدة!",
+              message: "كودي بيحتفل بيك! مكافأة الدرس اتضافت لرصيدك."
+            });
+          }
         }
       });
     }
