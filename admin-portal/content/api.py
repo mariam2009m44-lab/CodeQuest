@@ -1,8 +1,9 @@
 from django.http import JsonResponse
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 
-from .models import LearningPath
+from .models import LearningPath, Lesson, QuizQuestion
 
 
 def _lesson_payload(lesson):
@@ -23,7 +24,7 @@ def _lesson_payload(lesson):
         payload["xp_reward"] = source_data["xp_reward"]
 
     questions = []
-    for question in lesson.questions.filter(status="published").order_by("display_order", "id"):
+    for question in getattr(lesson, "published_questions", []):
         quiz = {
             "question": question.prompt,
             "options": question.options,
@@ -50,14 +51,19 @@ def public_curriculum_api(request, language):
         LearningPath.objects.filter(status=LearningPath.Status.PUBLISHED),
         language__iexact=language,
     )
-    courses = path.courses.filter(status="published").prefetch_related("lessons__questions")
+    published_questions = QuizQuestion.objects.filter(status="published").order_by("display_order", "id")
+    published_lessons = (
+        Lesson.objects.filter(status="published")
+        .order_by("chapter_order", "lesson_order", "display_order", "title")
+        .prefetch_related(Prefetch("questions", queryset=published_questions, to_attr="published_questions"))
+    )
+    courses = path.courses.filter(status="published").prefetch_related(
+        Prefetch("lessons", queryset=published_lessons)
+    )
     chapters_by_key = {}
 
     for course in courses:
-        lessons = course.lessons.filter(status="published").order_by(
-            "chapter_order", "lesson_order", "display_order", "title"
-        )
-        for lesson in lessons:
+        for lesson in course.lessons.all():
             chapter_key = lesson.chapter_key or "uncategorized"
             chapter = chapters_by_key.setdefault(chapter_key, {
                 "id": chapter_key,
