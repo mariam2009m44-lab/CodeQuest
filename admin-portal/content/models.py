@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
@@ -136,3 +137,22 @@ class StudentProject(PublishedModel):
 
     def __str__(self):
         return self.title
+
+
+class StudentLookupAudit(models.Model):
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="student_lookup_audits",
+        verbose_name="المسؤول",
+    )
+    target_uid_hash = models.CharField("بصمة معرّف الطالب", max_length=64, db_index=True)
+    accessed_at = models.DateTimeField("وقت الاطلاع", auto_now_add=True)
+
+    class Meta:
+        ordering = ["-accessed_at"]
+        verbose_name = "سجل الاطلاع على بيانات طالب"
+        verbose_name_plural = "سجل الاطلاع على بيانات الطلاب"
+
+    def __str__(self):
+        return f"{self.requested_by} — {self.accessed_at:%Y-%m-%d %H:%M}"
