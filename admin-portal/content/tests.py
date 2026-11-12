@@ -218,3 +218,27 @@ class StudentAccountsPageTests(TestCase):
         response = self.client.get(reverse("student_accounts"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "تكامل بيانات الطلاب غير مفعّل")
+
+
+class AdminOverviewTests(TestCase):
+    def test_admin_home_shows_content_counts_and_quick_links(self):
+        user = get_user_model().objects.create_user(
+            username="overview-admin",
+            password="safe-test-password",
+            is_staff=True,
+            is_superuser=True,
+        )
+        path = LearningPath.objects.create(
+            title="Python Overview",
+            language="Python",
+            status=LearningPath.Status.PUBLISHED,
+        )
+        Course.objects.create(path=path, title="Overview Course")
+        self.client.force_login(user)
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "نظرة عامة على المنصة")
+        self.assertContains(response, "المسارات التعليمية")
+        self.assertContains(response, "متابعة الطلاب")
+        self.assertEqual(response.context["admin_portal_counts"]["paths"], 1)
+        self.assertEqual(response.context["admin_portal_published"]["paths"], 1)
