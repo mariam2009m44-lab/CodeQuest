@@ -43,6 +43,73 @@ class ContentValidationTests(TestCase):
             announcement.full_clean()
 
 
+class PublicCurriculumApiTests(TestCase):
+    def setUp(self):
+        self.path = LearningPath.objects.create(
+            title="Python Curriculum",
+            language="python",
+            description="منهج تجريبي",
+            status=LearningPath.Status.PUBLISHED,
+        )
+        self.course = Course.objects.create(
+            path=self.path,
+            title="Python Basics",
+            status=Course.Status.PUBLISHED,
+        )
+        self.lesson = Lesson.objects.create(
+            course=self.course,
+            title="First lesson",
+            lesson_key="py-1-1",
+            chapter_key="python-chapter-1",
+            chapter_title="الفصل الأول",
+            chapter_order=1,
+            lesson_order=1,
+            objective="هدف الدرس",
+            cody_intro="مقدمة Cody",
+            task="مهمة",
+            hints=["تلميح أول"],
+            code_example="print('hello')",
+            status=Lesson.Status.PUBLISHED,
+        )
+        QuizQuestion.objects.create(
+            lesson=self.lesson,
+            prompt="ما الأمر؟",
+            options=["print()", "input()"],
+            correct_index=0,
+            explanation="شرح الإجابة",
+            status=QuizQuestion.Status.PUBLISHED,
+        )
+
+    def test_public_api_returns_only_published_curriculum_in_existing_json_shape(self):
+        response = self.client.get(reverse("public_curriculum_api", kwargs={"language": "python"}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+        data = response.json()
+        self.assertEqual(data["schema_version"], 1)
+        self.assertEqual(data["language"], "python")
+        self.assertEqual(data["chapters"][0]["id"], "python-chapter-1")
+        lesson = data["chapters"][0]["lessons"][0]
+        self.assertEqual(lesson["id"], "py-1-1")
+        self.assertEqual(lesson["objective"], "هدف الدرس")
+        self.assertEqual(lesson["hints"], ["تلميح أول"])
+        self.assertEqual(lesson["quiz"]["correct_index"], 0)
+
+    def test_public_api_excludes_draft_lessons_and_questions(self):
+        self.lesson.status = Lesson.Status.DRAFT
+        self.lesson.save(update_fields=("status", "updated_at"))
+        response = self.client.get(reverse("public_curriculum_api", kwargs={"language": "python"}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["chapters"], [])
+
+    def test_public_api_is_read_only(self):
+        response = self.client.post(reverse("public_curriculum_api", kwargs={"language": "python"}))
+        self.assertEqual(response.status_code, 405)
+
+    def test_unknown_or_unpublished_language_returns_404(self):
+        response = self.client.get(reverse("public_curriculum_api", kwargs={"language": "unknown"}))
+        self.assertEqual(response.status_code, 404)
+
+
 class FirebaseStudentSummaryTests(TestCase):
     @patch("content.firebase_service.get_firestore_client")
     def test_student_summary_uses_the_real_firestore_paths_and_bounded_reads(self, mock_get_db):
