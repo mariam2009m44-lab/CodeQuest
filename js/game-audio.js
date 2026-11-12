@@ -121,10 +121,10 @@
     const style=document.createElement("style");
     style.id="cqExperienceStyles";
     style.textContent=`
-      .cq-audio-dock{position:fixed;z-index:10050;inset-block-start:max(12px,env(safe-area-inset-top));inset-inline-end:12px;display:flex;gap:7px;padding:6px;border:1px solid rgba(148,163,184,.24);border-radius:17px;background:rgba(8,14,29,.84);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
+      .cq-audio-dock{position:fixed;z-index:10050;inset-block-end:18px;inset-inline-end:12px;display:flex;gap:7px;padding:6px;border:1px solid rgba(148,163,184,.24);border-radius:17px;background:rgba(8,14,29,.84);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
       .cq-audio-dock button{width:40px;height:40px;min-width:40px;min-height:40px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.3);border-radius:12px;background:rgba(255,255,255,.06);color:#d9e8f5;font-size:1.15rem;cursor:pointer}
       .cq-audio-dock button[aria-pressed="true"]{color:#6be8ff;border-color:#36bfe5;background:rgba(54,191,229,.14);box-shadow:0 0 16px rgba(54,191,229,.16)}
-      .cq-gem-wallet{position:fixed;z-index:10040;inset-block-start:max(14px,env(safe-area-inset-top));inset-inline-start:12px;display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(255,214,107,.35);border-radius:16px;background:rgba(18,20,38,.88);color:#fff;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.2);font:800 13px/1.2 Cairo,sans-serif}
+      .cq-gem-wallet{position:fixed;z-index:10040;inset-block-end:18px;inset-inline-start:12px;display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(255,214,107,.35);border-radius:16px;background:rgba(18,20,38,.88);color:#fff;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.2);font:800 13px/1.2 Cairo,sans-serif}
       .cq-gem-wallet__icon{width:27px;height:27px;display:grid;place-items:center;color:#ffd66b;font-size:1.2rem;filter:drop-shadow(0 0 7px rgba(255,214,107,.6))}
       .cq-gem-wallet__value{font-variant-numeric:tabular-nums;color:#ffe6a0;font-size:14px}.cq-gem-wallet__label{color:#b8c5d6;font-size:10px}
       .cq-reward-overlay{position:fixed;inset:0;z-index:10100;display:grid;place-items:center;padding:20px;background:rgba(3,7,18,.78);backdrop-filter:blur(9px);opacity:0;pointer-events:none;transition:opacity .25s ease}
@@ -138,7 +138,7 @@
       .cq-reward-close{min-height:46px;padding:10px 24px;border:0;border-radius:14px;background:linear-gradient(100deg,#ffd66b,#ffae47);color:#25162d;font:900 15px Cairo,sans-serif;cursor:pointer}
       .cq-reward-particle{position:fixed;z-index:10101;left:var(--x);top:var(--y);width:8px;height:8px;border-radius:2px;background:var(--c);pointer-events:none;animation:cqParticle 950ms ease-out forwards}
       @keyframes cqGemFloat{50%{transform:translateY(-9px) rotate(4deg);filter:drop-shadow(0 0 22px rgba(255,235,128,1))}}@keyframes cqCodyBounce{to{transform:translateY(-7px) rotate(-4deg)}}@keyframes cqParticle{to{transform:translate(var(--dx),var(--dy)) rotate(240deg) scale(.1);opacity:0}}
-      @media(max-width:520px){.cq-audio-dock{inset-inline-end:8px;gap:5px}.cq-audio-dock button{width:36px;height:36px;min-width:36px;min-height:36px}.cq-gem-wallet{inset-inline-start:8px;padding:6px 9px}.cq-reward-card{padding:22px 16px}}
+      @media(max-width:720px){.cq-audio-dock{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-end:8px;gap:5px}.cq-audio-dock button{width:36px;height:36px;min-width:36px;min-height:36px}.cq-gem-wallet{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:8px;padding:6px 9px}.cq-reward-card{padding:22px 16px}}
       @media(prefers-reduced-motion:reduce){.cq-reward-gem,.cq-reward-cody,.cq-reward-overlay,.cq-reward-card{animation:none!important;transition:none!important}.cq-reward-particle{display:none}}
     `;
     document.head.append(style);
