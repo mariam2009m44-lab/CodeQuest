@@ -129,7 +129,23 @@ if (root) {
       image.decoding = "async";
       image.onerror = () => { image.hidden = true; cover.classList.add("has-no-image"); };
       const label = make("span", "magazine-series-mark", item.name);
-      cover.append(image, label);
+      const play = make("button", "magazine-series-play", "شاهد الآن");
+      play.type = "button";
+      play.setAttribute("aria-label", "شاهد فيديو " + item.name + " داخل المنصة");
+      play.innerHTML = '<i class="ri-play-fill" aria-hidden="true"></i><span>شاهد الآن</span>';
+      play.addEventListener("click", () => {
+        if (cover.querySelector("iframe")) return;
+        const player = document.createElement("iframe");
+        player.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(item.youtubeId) + "?autoplay=1&rel=0&modestbranding=1";
+        player.title = "فيديو تعليمي: " + item.name;
+        player.loading = "lazy";
+        player.referrerPolicy = "strict-origin-when-cross-origin";
+        player.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        player.allowFullscreen = true;
+        cover.classList.add("is-playing");
+        cover.replaceChildren(player);
+      });
+      cover.append(image, label, play);
       const content = make("div", "magazine-series-content");
       const meta = make("div", "magazine-series-meta");
       meta.append(make("span", "magazine-series-group", item.group));
