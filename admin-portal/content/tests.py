@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
@@ -100,3 +101,43 @@ class AdminRoleTests(TestCase):
         self.assertFalse(log_admin.has_view_permission(request))
         request.user = manager
         self.assertTrue(log_admin.has_view_permission(request))
+
+
+    def test_student_lookup_is_available_to_staff_manager_only(self):
+        manager_group = Group.objects.get(name="مدير المنصة")
+        manager = get_user_model().objects.create_user(
+            username="student-data-manager",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        manager.groups.add(manager_group)
+        self.client.force_login(manager)
+        response = self.client.get(reverse("student_lookup"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Firebase UID")
+
+        editor_group = Group.objects.get(name="محرر المحتوى")
+        editor = get_user_model().objects.create_user(
+            username="student-data-editor",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        editor.groups.add(editor_group)
+        self.client.force_login(editor)
+        response = self.client.get(reverse("student_lookup"))
+        self.assertEqual(response.status_code, 403)
+
+    @patch.dict("os.environ", {"FIREBASE_ADMIN_ENABLED": "false"})
+    def test_student_lookup_does_not_connect_when_firebase_is_disabled(self):
+        manager_group = Group.objects.get(name="مدير المنصة")
+        manager = get_user_model().objects.create_user(
+            username="firebase-disabled-manager",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        manager.groups.add(manager_group)
+        self.client.force_login(manager)
+
+        response = self.client.post(reverse("student_lookup"), {"uid": "sample_uid_123"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "تكامل بيانات الطلاب غير مفعّل")
