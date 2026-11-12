@@ -6,8 +6,14 @@
   const MUSIC_KEY = "cq_music";
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   let context = null, soundEnabled = false, musicEnabled = false, musicTimer = null, dock = null, balanceNode = null;
-  let soundVolume = Number(localStorage.getItem("cq_sound_volume") || 0.9);
-  let musicVolume = Number(localStorage.getItem("cq_music_volume") || 0.9);
+  let soundVolume = 0.9;
+  let musicVolume = 0.9;
+  try {
+    const savedSoundVolume = Number(localStorage.getItem("cq_sound_volume"));
+    const savedMusicVolume = Number(localStorage.getItem("cq_music_volume"));
+    if (Number.isFinite(savedSoundVolume)) soundVolume = Math.min(1, Math.max(0, savedSoundVolume));
+    if (Number.isFinite(savedMusicVolume)) musicVolume = Math.min(1, Math.max(0, savedMusicVolume));
+  } catch {}
   const read = key => { try { return localStorage.getItem(key) === "on"; } catch { return false; } };
   const save = (key, value) => { try { localStorage.setItem(key, value ? "on" : "off"); } catch {} };
   function getContext() {
