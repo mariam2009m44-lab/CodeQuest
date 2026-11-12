@@ -12,6 +12,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from .firebase_service import FirebaseAdminDisabled
 from .models import Announcement, Course, LearningPath, Lesson, QuizQuestion, StudentLookupAudit
 
 
