@@ -172,4 +172,13 @@
     toggle: toggleMotion
   });
 
+  // Load the shared optional audio and rewards layer on every themed page.
+  if (!document.querySelector("script[data-cq-platform-audio]")) {
+    const audioScript = document.createElement("script");
+    audioScript.src = new URL("game-audio.js", document.currentScript.src).href;
+    audioScript.dataset.cqPlatformAudio = "true";
+    audioScript.defer = true;
+    document.head.append(audioScript);
+  }
+
 })();
