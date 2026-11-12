@@ -22,14 +22,24 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
+# Render supplies the public hostname at runtime. Trust only that exact host.
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if RENDER_EXTERNAL_HOSTNAME:
+    if RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    render_origin = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
+
 INSTALLED_APPS = [
+    # Load project templates before Django's built-in admin templates.
+    "content.apps.ContentConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "content.apps.ContentConfig",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -52,6 +62,7 @@ TEMPLATES = [{
         "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
         "content.context_processors.admin_portal_permissions",
+        "content.context_processors.admin_portal_overview",
     ]},
 }]
 WSGI_APPLICATION = "config.wsgi.application"
@@ -61,7 +72,8 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DEBUG and not DATABASE_URL:
     raise RuntimeError("DATABASE_URL must point to a persistent production database when DEBUG is false.")
 if DATABASE_URL:
-    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)}
+    # Avoid stale persistent connections when a serverless Postgres compute sleeps.
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=0, ssl_require=not DEBUG)}
 else:
     DATABASES = {
         "default": {

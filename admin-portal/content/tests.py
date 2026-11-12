@@ -1,6 +1,7 @@
 from datetime import timedelta
 from hashlib import sha256
-from unittest.mock import patch
+from io import StringIO
+from unittest.mock import MagicMock, patch
 
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
@@ -12,6 +13,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from .firebase_service import FirebaseAdminDisabled
 from .models import Announcement, Course, LearningPath, Lesson, QuizQuestion, StudentLookupAudit
 
 
@@ -40,6 +42,200 @@ class ContentValidationTests(TestCase):
         announcement = Announcement(title="Notice", body="Text", starts_at=start, ends_at=start - timedelta(minutes=1))
         with self.assertRaises(ValidationError):
             announcement.full_clean()
+
+
+class CurriculumImportCommandTests(TestCase):
+    def test_import_creates_drafts_and_preserves_admin_edits_by_default(self):
+        output = StringIO()
+        call_command("import_curricula", stdout=output)
+        self.assertEqual(LearningPath.objects.count(), 3)
+        self.assertEqual(Course.objects.count(), 3)
+        self.assertEqual(Lesson.objects.count(), 97)
+        self.assertEqual(QuizQuestion.objects.count(), 97)
+        self.assertFalse(LearningPath.objects.filter(language="java").exists())
+        self.assertFalse(Lesson.objects.exclude(status=Lesson.Status.DRAFT).exists())
+
+        lesson = Lesson.objects.get(lesson_key="py-1-1")
+        self.assertEqual(lesson.objective, "استخدم أوامر الطباعة لعرض النتائج على الشاشة.")
+        lesson.title = "عنوان عدّله المسؤول"
+        lesson.save(update_fields=("title", "updated_at"))
+
+        call_command("import_curricula", stdout=StringIO())
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.title, "عنوان عدّله المسؤول")
+
+        call_command("import_curricula", update_existing=True, stdout=StringIO())
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.title, "أول أمر")
+
+    def test_dry_run_validates_existing_json_curricula_without_database_writes(self):
+        output = StringIO()
+        call_command("import_curricula", dry_run=True, stdout=output)
+        report = output.getvalue()
+        self.assertIn("python_curriculum.json", report)
+        self.assertIn("js_curriculum.json", report)
+        self.assertIn("cpp_curriculum.json", report)
+        self.assertIn("java_curriculum.json", report)
+        self.assertIn("لم يتم حفظ أي بيانات", report)
+        self.assertEqual(LearningPath.objects.count(), 0)
+
+
+class PublicCurriculumApiTests(TestCase):
+    def setUp(self):
+        self.path = LearningPath.objects.create(
+            title="Python Curriculum",
+            language="python",
+            description="منهج تجريبي",
+            status=LearningPath.Status.PUBLISHED,
+        )
+        self.course = Course.objects.create(
+            path=self.path,
+            title="Python Basics",
+            status=Course.Status.PUBLISHED,
+        )
+        self.lesson = Lesson.objects.create(
+            course=self.course,
+            title="First lesson",
+            lesson_key="py-1-1",
+            chapter_key="python-chapter-1",
+            chapter_title="الفصل الأول",
+            chapter_order=1,
+            lesson_order=1,
+            objective="هدف الدرس",
+            cody_intro="مقدمة Cody",
+            task="مهمة",
+            hints=["تلميح أول"],
+            code_example="print('hello')",
+            status=Lesson.Status.PUBLISHED,
+        )
+        QuizQuestion.objects.create(
+            lesson=self.lesson,
+            prompt="ما الأمر؟",
+            options=["print()", "input()"],
+            correct_index=0,
+            explanation="شرح الإجابة",
+            status=QuizQuestion.Status.PUBLISHED,
+        )
+
+    def test_public_api_returns_only_published_curriculum_in_existing_json_shape(self):
+        response = self.client.get(reverse("public_curriculum_api", kwargs={"language": "python"}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+        data = response.json()
+        self.assertEqual(data["schema_version"], 1)
+        self.assertEqual(data["language"], "python")
+        self.assertEqual(data["chapters"][0]["id"], "python-chapter-1")
+        lesson = data["chapters"][0]["lessons"][0]
+        self.assertEqual(lesson["id"], "py-1-1")
+        self.assertEqual(lesson["objective"], "هدف الدرس")
+        self.assertEqual(lesson["hints"], ["تلميح أول"])
+        self.assertEqual(lesson["quiz"]["correct_index"], 0)
+
+    def test_public_api_excludes_draft_lessons_and_questions(self):
+        self.lesson.status = Lesson.Status.DRAFT
+        self.lesson.save(update_fields=("status", "updated_at"))
+        response = self.client.get(reverse("public_curriculum_api", kwargs={"language": "python"}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["chapters"], [])
+
+    def test_public_api_is_read_only(self):
+        response = self.client.post(reverse("public_curriculum_api", kwargs={"language": "python"}))
+        self.assertEqual(response.status_code, 405)
+
+    def test_unknown_or_unpublished_language_returns_404(self):
+        response = self.client.get(reverse("public_curriculum_api", kwargs={"language": "unknown"}))
+        self.assertEqual(response.status_code, 404)
+
+
+class FirebaseStudentSummaryTests(TestCase):
+    @patch("content.firebase_service.get_firestore_client")
+    def test_student_summary_uses_the_real_firestore_paths_and_bounded_reads(self, mock_get_db):
+        db = MagicMock()
+        users_collection = MagicMock()
+        user_document = MagicMock()
+        profile_snapshot = MagicMock()
+        profile_snapshot.exists = True
+        profile_snapshot.to_dict.return_value = {
+            "displayName": "Learner",
+            "xp": 120,
+            "stars": 4,
+            "coins": 10,
+            "level": 2,
+            "email": "private@example.test",
+        }
+        user_document.get.return_value = profile_snapshot
+
+        progress_ref = MagicMock()
+        progress_ref.limit.return_value.stream.return_value = []
+        user_document.collection.return_value = progress_ref
+        users_collection.document.return_value = user_document
+
+        projects_collection = MagicMock()
+        projects_query = MagicMock()
+        projects_collection.where.return_value = projects_query
+        projects_query.limit.return_value.stream.return_value = []
+
+        def collection(name):
+            return {
+                "users": users_collection,
+                "projects": projects_collection,
+            }[name]
+
+        db.collection.side_effect = collection
+        mock_get_db.return_value = db
+
+        from .firebase_service import get_student_summary
+
+        result = get_student_summary("sample_uid_123")
+
+        self.assertEqual(result["completed_lessons"], 0)
+        self.assertEqual(result["projects_count"], 0)
+        self.assertNotIn("email", result["profile"])
+        progress_ref.limit.assert_called_once_with(500)
+        projects_collection.where.assert_called_once_with("userId", "==", "sample_uid_123")
+        projects_query.limit.assert_called_once_with(500)
+        user_document.collection.assert_called_once_with("lessonProgress")
+
+    @patch("content.firebase_service.get_firestore_client")
+    def test_student_summary_marks_counts_as_potentially_incomplete_at_the_cap(self, mock_get_db):
+        db = MagicMock()
+        users_collection = MagicMock()
+        user_document = MagicMock()
+        profile_snapshot = MagicMock()
+        profile_snapshot.exists = True
+        profile_snapshot.to_dict.return_value = {"displayName": "Learner"}
+        user_document.get.return_value = profile_snapshot
+
+        progress_ref = MagicMock()
+        progress_ref.limit.return_value.stream.return_value = [
+            MagicMock(to_dict=MagicMock(return_value={
+                "completed": True,
+                "language": "python",
+            }))
+            for _ in range(500)
+        ]
+        user_document.collection.return_value = progress_ref
+        users_collection.document.return_value = user_document
+
+        projects_collection = MagicMock()
+        projects_query = MagicMock()
+        projects_collection.where.return_value = projects_query
+        projects_query.limit.return_value.stream.return_value = [MagicMock() for _ in range(500)]
+
+        db.collection.side_effect = lambda name: {
+            "users": users_collection,
+            "projects": projects_collection,
+        }[name]
+        mock_get_db.return_value = db
+
+        from .firebase_service import get_student_summary
+
+        result = get_student_summary("sample_uid_123")
+
+        self.assertEqual(result["completed_lessons"], 500)
+        self.assertEqual(result["projects_count"], 500)
+        self.assertTrue(result["progress_may_be_incomplete"])
+        self.assertTrue(result["projects_may_be_incomplete"])
 
 
 class AdminAccessTests(TestCase):
@@ -163,3 +359,82 @@ class AdminRoleTests(TestCase):
         self.assertEqual(response.status_code, 200)
         audit = StudentLookupAudit.objects.get(requested_by=manager)
         self.assertEqual(audit.target_uid_hash, sha256(b"sample_uid_123").hexdigest())
+
+
+class StudentAccountsPageTests(TestCase):
+    def setUp(self):
+        call_command("setup_admin_roles")
+        manager_group = Group.objects.get(name="مدير المنصة")
+        self.manager = get_user_model().objects.create_user(
+            username="accounts-page-manager",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        self.manager.groups.add(manager_group)
+
+    @patch("content.views.list_student_accounts", return_value={
+        "accounts": [{
+            "uid": "learner_123",
+            "email": "learner@example.test",
+            "display_name": "Learner",
+            "email_verified": True,
+            "disabled": False,
+            "created_at": None,
+            "last_sign_in_at": None,
+        }],
+        "next_page_token": "next-page-token",
+    })
+    def test_manager_can_view_paginated_student_accounts(self, mock_list):
+        self.client.force_login(self.manager)
+        response = self.client.get(reverse("student_accounts"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "learner@example.test")
+        self.assertContains(response, "learner_123")
+        self.assertContains(response, "الحسابات التالية")
+        mock_list.assert_called_once_with(page_token="", page_size=50)
+
+    def test_content_editor_cannot_view_student_accounts(self):
+        editor_group = Group.objects.get(name="محرر المحتوى")
+        editor = get_user_model().objects.create_user(
+            username="accounts-page-editor",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        editor.groups.add(editor_group)
+        self.client.force_login(editor)
+        response = self.client.get(reverse("student_accounts"))
+        self.assertEqual(response.status_code, 403)
+
+    @patch("content.views.list_student_accounts", side_effect=FirebaseAdminDisabled(
+        "تكامل بيانات الطلاب غير مفعّل."
+    ))
+    def test_accounts_page_explains_when_firebase_is_disabled(self, _mock_list):
+        self.client.force_login(self.manager)
+        response = self.client.get(reverse("student_accounts"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "تكامل بيانات الطلاب غير مفعّل")
+
+
+class AdminOverviewTests(TestCase):
+    def test_admin_home_shows_content_counts_and_quick_links(self):
+        user = get_user_model().objects.create_user(
+            username="overview-admin",
+            password="safe-test-password",
+            is_staff=True,
+            is_superuser=True,
+        )
+        path = LearningPath.objects.create(
+            title="Python Overview",
+            language="Python",
+            status=LearningPath.Status.PUBLISHED,
+        )
+        Course.objects.create(path=path, title="Overview Course")
+        self.client.force_login(user)
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "نظرة عامة على المنصة")
+        self.assertContains(response, "المسارات التعليمية")
+        self.assertContains(response, "متابعة الطلاب")
+        self.assertContains(response, "لا يظهر تلقائيًا في موقع الطلاب")
+        self.assertEqual(response.context["admin_portal_counts"]["paths"], 1)
+        self.assertEqual(response.context["admin_portal_published"]["paths"], 1)

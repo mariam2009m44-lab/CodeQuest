@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}الطلاب والحسابات | {{ site_title }}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <h1>الطلاب والحسابات</h1>
+  <p>عرض حسابات Firebase Authentication في صفحات من 50 حسابًا. هذه الصفحة للقراءة فقط؛ لا تغيّر الحسابات أو كلمات المرور.</p>
+  {% if error %}
+    <p class="errornote">{{ error }}</p>
+  {% else %}
+    <div class="module">
+      <p>عدد الحسابات في الصفحة الحالية: <strong>{{ page_count }}</strong></p>
+      <form method="get" style="padding:12px">
+        <label for="id_q">بحث في الصفحة الحالية</label>
+        <input id="id_q" name="q" type="search" value="{{ query|default:'' }}" placeholder="البريد أو الاسم أو UID" style="width:min(100%,420px)">
+        <button type="submit" class="button">بحث</button>
+      </form>
+      {% if filtered %}<p>البحث يفلتر الصفحة الحالية فقط؛ انتقلي للصفحة التالية للبحث في دفعة أخرى.</p>{% endif %}
+      <table>
+        <thead><tr><th>الاسم</th><th>البريد الإلكتروني</th><th>UID</th><th>الحالة</th><th>تأكيد البريد</th><th>تاريخ الإنشاء</th><th>آخر تسجيل دخول</th><th>التفاصيل</th></tr></thead>
+        <tbody>
+          {% for account in accounts %}
+            <tr>
+              <td>{{ account.display_name|default:"—" }}</td>
+              <td>{{ account.email|default:"—" }}</td>
+              <td><code>{{ account.uid }}</code></td>
+              <td>{% if account.disabled %}معطّل{% else %}نشط{% endif %}</td>
+              <td>{% if account.email_verified %}مؤكد{% else %}غير مؤكد{% endif %}</td>
+              <td>{{ account.created_at|date:"Y-m-d H:i"|default:"—" }}</td>
+              <td>{{ account.last_sign_in_at|date:"Y-m-d H:i"|default:"لم يسجل الدخول" }}</td>
+              <td>
+                <form method="post" action="{% url 'student_lookup' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="uid" value="{{ account.uid }}">
+                  <button type="submit" class="button">فتح الملف</button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="8">لا توجد حسابات في هذه الصفحة أو لا توجد نتائج مطابقة.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if next_page_token and not filtered %}
+      <div class="submit-row">
+        <a class="button default" href="?page={{ next_page_token|urlencode }}">الحسابات التالية</a>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
