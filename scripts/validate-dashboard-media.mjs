@@ -70,15 +70,12 @@ for (const asset of [
 }
 
 const settings = fs.readFileSync("settings.html", "utf8");
-if (settings.includes('id="musicToggle"') || settings.includes("cq_music")) {
-  throw new Error("Background music must be removed from the platform.");
-}
-if (!settings.includes('id="soundToggle"')) {
-  throw new Error("Sound effects must remain configurable in Settings.");
+if (!settings.includes('id="soundToggle"') || !settings.includes('id="musicToggle"')) {
+  throw new Error("Sound effects and optional background music must remain configurable in Settings.");
 }
 const gameAudio = fs.readFileSync("js/game-audio.js", "utf8");
-if (!gameAudio.includes("cq-game-sound-toggle") || gameAudio.includes("cq_music")) {
-  throw new Error("Games need a top-positioned sound-only toggle, without music.");
+if (!gameAudio.includes("cq-audio-dock") || !gameAudio.includes("cq_gem_wallet") && !gameAudio.includes("cq-gem-wallet") || !gameAudio.includes("cq_music")) {
+  throw new Error("The shared experience layer needs sound, optional music and a gem wallet.");
 }
 const parent = fs.readFileSync("parent.html", "utf8");
 if (!parent.includes('id="parentGuideTitle"') || parent.indexOf('id="parentGuideTitle"') > parent.indexOf('class="mode-grid"')) {
