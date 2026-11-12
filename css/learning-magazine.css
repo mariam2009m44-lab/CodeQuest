@@ -80,3 +80,12 @@
 @media(prefers-reduced-motion:reduce){
  .magazine-series-card,.magazine-series-cover img,.magazine-hero-art img,.magazine-chip,.magazine-primary-link{transition:none!important;}
 }
+
+/* Richer but lightweight video-library motion. */
+.magazine-series-card{animation:magazineCardEnter .62s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--series-index,0)*65ms);}
+.magazine-series-card:focus-within{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(54,191,229,.2),0 16px 34px rgba(0,0,0,.16);}
+.magazine-series-cover{background-image:radial-gradient(circle at 50% 50%,rgba(54,191,229,.22),transparent 64%),linear-gradient(135deg,#211d4c,#15506a);}
+.magazine-series-play{animation:magazinePlayPulse 2.4s ease-in-out infinite;}
+@keyframes magazineCardEnter{from{opacity:0;transform:translateY(15px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes magazinePlayPulse{0%,100%{box-shadow:0 0 16px rgba(54,191,229,.18)}50%{box-shadow:0 0 30px rgba(54,191,229,.48)}}
+@media(prefers-reduced-motion:reduce){.magazine-series-card,.magazine-series-play{animation:none!important;}}
