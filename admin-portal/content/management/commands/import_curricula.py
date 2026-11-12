@@ -86,7 +86,7 @@ class Command(BaseCommand):
                 if CONTENT_KEYS.intersection(item[3].keys())
             ]
             if not usable_items:
-                self.stderr.write(self.style.WARNING(
+                self.stdout.write(self.style.WARNING(
                     f"تخطي {filename}: الملف يحتوي على عناوين ومعرّفات فقط، وليس محتوى دروس كاملًا."
                 ))
                 totals["skipped"] += 1
