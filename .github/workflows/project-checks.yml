@@ -50,6 +50,9 @@ jobs:
       - name: Run Firebase Functions unit and regression tests
         run: npm --prefix functions run test:unit
 
+      - name: Run Firestore Rules and Functions emulator tests
+        run: npx --yes firebase-tools@14.19.1 emulators:exec --only firestore --project demo-codequest-audit --non-interactive "npm --prefix functions run test:emulator"
+
       - name: Audit JavaScript syntax across repository
         run: node scripts/validate-js-syntax.mjs
 
