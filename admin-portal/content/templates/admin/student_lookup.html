@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}بحث عن طالب | {{ site_title }}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <h1>ملخص بيانات طالب</h1>
+  <p>بحث مباشر بمعرّف Firebase UID فقط. لا تعرض هذه الصفحة قائمة بجميع الطلاب ولا تتيح تعديل بياناتهم.</p>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset class="module aligned">
+      <div class="form-row">
+        <label for="id_uid">Firebase UID</label>
+        <input id="id_uid" name="uid" type="text" maxlength="128" required autocomplete="off" style="width:min(100%, 520px)">
+      </div>
+    </fieldset>
+    <div class="submit-row">
+      <input type="submit" value="بحث" class="default">
+    </div>
+  </form>
+
+  {% if error %}
+    <p class="errornote">{{ error }}</p>
+  {% endif %}
+
+  {% if student %}
+    <div class="module">
+      <h2>الملف الأساسي</h2>
+      <table>
+        <tbody>
+          <tr><th>الاسم المعروض</th><td>{{ student.profile.displayName|default:"غير محدد" }}</td></tr>
+          <tr><th>XP</th><td>{{ student.profile.xp|default:0 }}</td></tr>
+          <tr><th>النجوم</th><td>{{ student.profile.stars|default:0 }}</td></tr>
+          <tr><th>العملات</th><td>{{ student.profile.coins|default:0 }}</td></tr>
+          <tr><th>المستوى</th><td>{{ student.profile.level|default:1 }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="module">
+      <h2>ملخص التقدم</h2>
+      <p>الدروس المكتملة: <strong>{{ student.completed_lessons }}</strong></p>
+      <p>المشاريع المحفوظة: <strong>{{ student.projects_count }}</strong></p>
+      {% if student.lessons_by_language %}
+        <table>
+          <thead><tr><th>المسار</th><th>الدروس المكتملة</th></tr></thead>
+          <tbody>
+            {% for language, count in student.lessons_by_language.items %}
+              <tr><td>{{ language }}</td><td>{{ count }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
