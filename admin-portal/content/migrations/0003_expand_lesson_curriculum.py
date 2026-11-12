@@ -7,6 +7,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterModelOptions(
+            name="lesson",
+            options={
+                "ordering": ["chapter_order", "lesson_order", "display_order", "title"],
+                "verbose_name": "درس",
+                "verbose_name_plural": "الدروس",
+            },
+        ),
         migrations.AddField(
             model_name="lesson",
             name="chapter_key",
