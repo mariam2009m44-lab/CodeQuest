@@ -1,5 +1,7 @@
 {% extends "admin/base.html" %}
 
 {% block nav-global %}
-  <a href="{% url 'student_lookup' %}" style="margin-inline-start:16px">ملخص بيانات طالب (للمدير فقط)</a>
+  {% if can_manage_student_data %}
+    <a href="{% url 'student_lookup' %}" style="margin-inline-start:16px">ملخص بيانات طالب</a>
+  {% endif %}
 {% endblock %}
