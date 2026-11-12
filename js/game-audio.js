@@ -1,11 +1,10 @@
 (() => {
   "use strict";
   if (window.CodeQuestAudio) return;
-  const SCRIPT_URL = document.currentScript?.src || new URL("js/game-audio.js", location.href).href;
   const SOUND_KEY = "cq_sound";
   const MUSIC_KEY = "cq_music";
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  let context = null, soundEnabled = false, musicEnabled = false, musicTimer = null, dock = null, balanceNode = null;
+  let context = null, soundEnabled = false, musicEnabled = false, musicTimer = null;
   let soundVolume = 0.9;
   let musicVolume = 0.9;
   try {
@@ -77,31 +76,16 @@
     try { await ctx.resume(); } catch { return; }
     musicEnabled = true; save(MUSIC_KEY,true); musicBar();
     if (musicTimer) clearInterval(musicTimer);
-    musicTimer = setInterval(musicBar,2100); updateButtons();
+    musicTimer = setInterval(musicBar,2100);
   }
   function stopMusic() {
     musicEnabled = false; save(MUSIC_KEY,false);
     if (musicTimer) clearInterval(musicTimer);
-    musicTimer = null; updateButtons();
-  }
-  function updateButtons() {
-    if (!dock) return;
-    const sound = dock.querySelector("[data-cq-sound]"), music = dock.querySelector("[data-cq-music]");
-    if (sound) {
-      sound.setAttribute("aria-pressed",String(soundEnabled));
-      sound.setAttribute("aria-label",soundEnabled?"إيقاف المؤثرات الصوتية":"تشغيل المؤثرات الصوتية");
-      sound.innerHTML = soundEnabled?'<i class="ri-volume-up-line" aria-hidden="true"></i>':'<i class="ri-volume-mute-line" aria-hidden="true"></i>';
-    }
-    if (music) {
-      music.setAttribute("aria-pressed",String(musicEnabled));
-      music.setAttribute("aria-label",musicEnabled?"إيقاف الموسيقى":"تشغيل موسيقى كودي");
-      music.innerHTML = musicEnabled?'<i class="ri-music-2-fill" aria-hidden="true"></i>':'<i class="ri-music-line" aria-hidden="true"></i>';
-    }
+    musicTimer = null;
   }
   function setGemBalance(value) {
     if (!Number.isFinite(Number(value))) return;
     const amount = String(Math.max(0, Math.floor(Number(value))));
-    if (balanceNode) balanceNode.textContent = amount;
     const settingsBalance = document.getElementById("cqSettingsGemBalance");
     if (settingsBalance) settingsBalance.textContent = amount;
   }
@@ -153,17 +137,10 @@
     }
   }
   function mountControls() {
-    if (!document.body || dock) return;
+    if (!document.body || document.getElementById("cqRewardOverlay")) return;
     const style=document.createElement("style");
     style.id="cqExperienceStyles";
-    style.textContent=`
-      .cq-audio-dock,.cq-gem-wallet{display:none!important}.cq-audio-dock{position:fixed;z-index:10050;inset-block-end:18px;inset-inline-start:50%;transform:translateX(-50%);display:flex;gap:7px;padding:6px;border:1px solid rgba(148,163,184,.24);border-radius:17px;background:rgba(8,14,29,.84);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
-      .cq-audio-dock button{width:40px;height:40px;min-width:40px;min-height:40px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.3);border-radius:12px;background:rgba(255,255,255,.06);color:#d9e8f5;font-size:1.15rem;cursor:pointer}
-      .cq-audio-dock button[aria-pressed="true"]{color:#6be8ff;border-color:#36bfe5;background:rgba(54,191,229,.14);box-shadow:0 0 16px rgba(54,191,229,.16)}
-      .cq-gem-wallet{position:fixed;z-index:10040;inset-block-end:18px;inset-inline-start:12px;display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(255,214,107,.35);border-radius:16px;background:rgba(18,20,38,.88);color:#fff;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.2);font:800 13px/1.2 Cairo,sans-serif}
-      .cq-gem-wallet__icon{width:27px;height:27px;display:grid;place-items:center;color:#ffd66b;font-size:1.2rem;filter:drop-shadow(0 0 7px rgba(255,214,107,.6))}.cq-gem-cody{width:38px;height:38px;object-fit:contain;align-self:end;margin-bottom:-7px;transform:rotate(-5deg);filter:drop-shadow(0 0 7px rgba(54,191,229,.4))}
-      .cq-gem-wallet__value{font-variant-numeric:tabular-nums;color:#ffe6a0;font-size:14px}.cq-gem-wallet__label{color:#b8c5d6;font-size:10px}
-      .cq-reward-overlay{position:fixed;inset:0;z-index:10100;display:grid;place-items:center;padding:20px;background:rgba(3,7,18,.78);backdrop-filter:blur(9px);opacity:0;pointer-events:none;transition:opacity .25s ease}
+    style.textContent=`      .cq-reward-overlay{position:fixed;inset:0;z-index:10100;display:grid;place-items:center;padding:20px;background:rgba(3,7,18,.78);backdrop-filter:blur(9px);opacity:0;pointer-events:none;transition:opacity .25s ease}
       .cq-reward-overlay.is-visible{opacity:1;pointer-events:auto}
       .cq-reward-card{position:relative;width:min(420px,100%);padding:28px 22px 24px;border:1px solid rgba(255,214,107,.45);border-radius:28px;background:radial-gradient(circle at 50% 0%,rgba(255,214,107,.2),transparent 58%),linear-gradient(145deg,#171d38,#090f22);color:#fff;text-align:center;box-shadow:0 24px 90px rgba(0,0,0,.5),0 0 48px rgba(255,190,65,.16);transform:translateY(16px) scale(.92);transition:transform .35s cubic-bezier(.2,.85,.25,1.25);overflow:hidden}
       .cq-reward-overlay.is-visible .cq-reward-card{transform:translateY(0) scale(1)}
@@ -173,23 +150,15 @@
       .cq-reward-gem i{position:relative;z-index:1;text-shadow:0 2px 9px rgba(77,35,120,.55)}.cq-reward-cody{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(54,191,229,.45));animation:cqCodyBounce .7s ease-in-out infinite alternate}
       .cq-reward-close{min-height:46px;padding:10px 24px;border:0;border-radius:14px;background:linear-gradient(100deg,#ffd66b,#ffae47);color:#25162d;font:900 15px Cairo,sans-serif;cursor:pointer}
       .cq-reward-particle{position:fixed;z-index:10101;left:var(--x);top:var(--y);width:8px;height:8px;border-radius:2px;background:var(--c);pointer-events:none;animation:cqParticle 950ms ease-out forwards}
-      .cq-gem-pickup{position:fixed;z-index:10120;inset-block-start:34%;inset-inline-start:50%;display:flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid rgba(255,225,120,.7);border-radius:18px;background:linear-gradient(120deg,rgba(34,27,65,.96),rgba(12,31,54,.96));color:#fff;font:900 15px Cairo,sans-serif;box-shadow:0 0 36px rgba(255,207,72,.45);pointer-events:none;animation:cqPickupPop 1.15s cubic-bezier(.2,.8,.2,1) forwards;}
+      .cq-gem-pickup{position:fixed;z-index:10120;inset-block-start:34%;inset-inline-start:50%;display:flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid rgba(255,225,120,.7);border-radius:18px;background:linear-gradient(120deg,rgba(34,27,65,.96),rgba(12,31,54,.96));color:#fff;font:900 15px Cairo,sans-serif;box-shadow:0 0 36px rgba(255,207,72,.45);pointer-events:none;animation:cqPickupPop 1.15s cubic-bezier(.2,.8,.2,1) forwards}
       .cq-gem-pickup i{font-size:1.7rem;color:#ffe27a;filter:drop-shadow(0 0 12px #ffd66b)}
       @keyframes cqPickupPop{0%{opacity:0;transform:translate(-50%,24px) scale(.45)}18%{opacity:1;transform:translate(-50%,0) scale(1.12)}35%{transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-72px) scale(1.06)}}
       .cq-celebrate-flash{animation:cqCelebrateFlash .42s ease-out}@keyframes cqCelebrateFlash{0%{filter:brightness(1)}35%{filter:brightness(1.22)}100%{filter:brightness(1)}}
       @keyframes cqGemFloat{50%{transform:translateY(-9px) rotate(4deg);filter:drop-shadow(0 0 22px rgba(255,235,128,1))}}@keyframes cqCodyBounce{to{transform:translateY(-7px) rotate(-4deg)}}@keyframes cqParticle{to{transform:translate(var(--dx),var(--dy)) rotate(240deg) scale(.1);opacity:0}}
-      @media(max-width:720px){.cq-audio-dock{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:50%;gap:5px}.cq-audio-dock button{width:36px;height:36px;min-width:36px;min-height:36px}.cq-gem-wallet{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:8px;padding:6px 9px}.cq-reward-card{padding:22px 16px}}
-      @media(prefers-reduced-motion:reduce){.cq-reward-gem,.cq-reward-cody,.cq-reward-overlay,.cq-reward-card{animation:none!important;transition:none!important}.cq-reward-particle{display:none}}
-    `;
+      @media(max-width:720px){.cq-reward-card{padding:22px 16px}}
+      @media(prefers-reduced-motion:reduce){.cq-reward-gem,.cq-reward-cody,.cq-reward-overlay,.cq-reward-card{animation:none!important;transition:none!important}.cq-reward-particle{display:none}}`;
+
     document.head.append(style);
-    dock=document.createElement("div");dock.className="cq-audio-dock";
-    dock.innerHTML='<button type="button" data-cq-sound aria-pressed="false"></button><button type="button" data-cq-music aria-pressed="false"></button>';
-    dock.querySelector("[data-cq-sound]").addEventListener("click",async()=>{soundEnabled=!soundEnabled;save(SOUND_KEY,soundEnabled);if(soundEnabled){try{await getContext()?.resume()}catch{}play("tap")}updateButtons()});
-    dock.querySelector("[data-cq-music]").addEventListener("click",()=>musicEnabled?stopMusic():startMusic());
-    document.body.append(dock);
-    const wallet=document.createElement("div");wallet.className="cq-gem-wallet";
-    wallet.innerHTML='<img class="cq-gem-cody" src="' + new URL("../cody-avatar.svg", SCRIPT_URL).href + '" alt="كودي"><span class="cq-gem-wallet__icon" aria-hidden="true">◆</span><span><span class="cq-gem-wallet__value">—</span><br><span class="cq-gem-wallet__label">جواهرك</span></span>';
-    document.body.append(wallet);balanceNode=wallet.querySelector(".cq-gem-wallet__value");
     const overlay=document.createElement("div");overlay.id="cqRewardOverlay";overlay.className="cq-reward-overlay";overlay.setAttribute("aria-hidden","true");
     overlay.innerHTML='<section class="cq-reward-card" role="dialog" aria-modal="true" aria-labelledby="cqRewardTitle"><div class="cq-reward-gem"><i class="ri-vip-diamond-fill" aria-hidden="true"></i></div><h2 class="cq-reward-title" id="cqRewardTitle">جوهرة جديدة!</h2><p class="cq-reward-copy">كودي فخور بيك! كل خطوة بتقربك من هدفك.</p><img class="cq-reward-cody" src="' + new URL("../cody-avatar.svg", document.currentScript?.src || location.href).href + '" alt="كودي"><div><button type="button" class="cq-reward-close">رائع!</button></div></section>';
     document.body.append(overlay);
@@ -229,7 +198,7 @@
       setTimeout(() => toast.remove(), 1250);
     }
     window.CodeQuestExperience=Object.freeze({reward:showReward,collectible:showCollectible,refreshGemBalance,setGemBalance,setVolumes});
-    updateButtons();refreshGemBalance();
+    refreshGemBalance();
   }
   function onInteraction(event) {
     if(!event.isTrusted||(!soundEnabled&&!musicEnabled))return;
@@ -242,11 +211,10 @@
   document.addEventListener("keydown",onInteraction);
   document.addEventListener("DOMContentLoaded",mountControls,{once:true});
   if(document.readyState!=="loading")mountControls();
-  window.addEventListener("storage",event=>{if(event.key===SOUND_KEY)soundEnabled=read(SOUND_KEY);if(event.key===MUSIC_KEY&&!read(MUSIC_KEY))stopMusic();updateButtons()});
-  document.addEventListener("cq:audio-settings-change",()=>{soundEnabled=read(SOUND_KEY);const shouldPlay=read(MUSIC_KEY);if(shouldPlay&&!musicEnabled)startMusic();else if(!shouldPlay&&musicEnabled)stopMusic();updateButtons()});
+  window.addEventListener("storage",event=>{if(event.key===SOUND_KEY)soundEnabled=read(SOUND_KEY);if(event.key===MUSIC_KEY){if(read(MUSIC_KEY))musicEnabled=true;else stopMusic();}});
+  document.addEventListener("cq:audio-settings-change",()=>{soundEnabled=read(SOUND_KEY);if(read(MUSIC_KEY))startMusic();else stopMusic();});
   document.addEventListener("visibilitychange",()=>{if(document.hidden&&context?.state==="running")context.suspend().catch(()=>{});else if(!document.hidden&&musicEnabled&&context?.state==="suspended")context.resume().then(()=>{if(!musicTimer){musicBar();musicTimer=setInterval(musicBar,2100)}}).catch(()=>{})});
   soundEnabled=read(SOUND_KEY);
   musicEnabled=read(MUSIC_KEY);
-  updateButtons();
   window.CodeQuestAudio=Object.freeze({play,refreshGemBalance,setGemBalance,setVolumes});
 })();
