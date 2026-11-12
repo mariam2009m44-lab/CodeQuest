@@ -341,6 +341,17 @@
 
       <div class="setting-row">
         <div class="setting-info">
+          <h3>موسيقى كودي</h3>
+          <p>موسيقى خلفية هادئة اختيارية، لا تبدأ إلا بعد تفعيلها.</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="musicToggle" aria-label="تفعيل موسيقى كودي">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
           <h3>تذكير المهام اليومية</h3>
           <p>إشعار يومي في الوقت المحدد عندما تكون المنصة مفتوحة، بعد السماح بإشعارات المتصفح.</p>
         </div>
@@ -471,6 +482,7 @@
     const elements = {
       dark: document.getElementById("darkModeToggle"),
       sound: document.getElementById("soundToggle"),
+      music: document.getElementById("musicToggle"),
       notifications: document.getElementById("notifToggle"),
       motion: document.getElementById("motionToggle"),
       logout: document.getElementById("logoutBtn"),
@@ -490,6 +502,7 @@
     const STORAGE_KEYS = {
       theme: "cq_theme",
       sound: "cq_sound",
+      music: "cq_music",
       notifications: "cq_notif",
       motion: "cq_motion"
     };
@@ -542,6 +555,7 @@
     function initializeSettings() {
       const theme = readSetting(STORAGE_KEYS.theme, "dark");
       const sound = readSetting(STORAGE_KEYS.sound, "off");
+      const music = readSetting(STORAGE_KEYS.music, "off");
       const notifications = readSetting(
         STORAGE_KEYS.notifications,
         "on"
@@ -550,6 +564,7 @@
 
       elements.dark.checked = theme === "dark";
       elements.sound.checked = sound !== "off";
+      elements.music.checked = music === "on";
       elements.notifications.checked = notifications === "on";
       document.getElementById("reminderTime").value = readSetting("cq_reminder_time", "18:00");
       updateNotificationPermissionStatus();
@@ -604,6 +619,15 @@
       "off",
       null,
       "تم حفظ إعدادات الصوت."
+    );
+
+    bindToggle(
+      elements.music,
+      STORAGE_KEYS.music,
+      "on",
+      "off",
+      enabled => document.dispatchEvent(new Event("cq:audio-settings-change")),
+      "تم حفظ إعدادات الموسيقى."
     );
 
     let reminderTimer = null;
