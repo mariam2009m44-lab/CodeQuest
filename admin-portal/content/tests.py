@@ -37,6 +37,11 @@ class ContentValidationTests(TestCase):
 
 
 class AdminAccessTests(TestCase):
+    def test_health_check_returns_ok(self):
+        response = self.client.get(reverse("health_check"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
+
     def test_admin_requires_authentication(self):
         response = self.client.get(reverse("admin:index"))
         self.assertEqual(response.status_code, 302)
