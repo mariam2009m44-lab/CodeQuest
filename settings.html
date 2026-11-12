@@ -342,12 +342,45 @@
       <div class="setting-row">
         <div class="setting-info">
           <h3>موسيقى كودي</h3>
-          <p>موسيقى خلفية هادئة اختيارية، لا تبدأ إلا بعد تفعيلها.</p>
+          <p>مقطوعة أصلية بإيقاع حماسي للرحلة التعليمية، وتعمل فقط عند تفعيلها.</p>
         </div>
         <label class="toggle-switch">
           <input type="checkbox" id="musicToggle" aria-label="تفعيل موسيقى كودي">
           <span class="slider"></span>
         </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>مستوى صوت المؤثرات</h3>
+          <p>تحكمي في وضوح أصوات الضغط والإجابة والمكافآت.</p>
+          <input id="soundVolume" type="range" min="0" max="100" step="1" value="90" style="width:min(100%,280px);accent-color:var(--primary);margin-top:12px" aria-label="مستوى صوت المؤثرات">
+          <output id="soundVolumeValue" for="soundVolume">90%</output>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>مستوى صوت الموسيقى</h3>
+          <p>ارفعي صوت المقطوعة أو اخفضيه حسب رغبتك.</p>
+          <input id="musicVolume" type="range" min="0" max="100" step="1" value="90" style="width:min(100%,280px);accent-color:var(--primary);margin-top:12px" aria-label="مستوى صوت الموسيقى">
+          <output id="musicVolumeValue" for="musicVolume">90%</output>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>رصيد الجواهر</h3>
+          <p>رصيدك الحالي من المكافآت داخل Cody Academy.</p>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+            <img src="./cody-avatar.svg" alt="كودي" width="54" height="54" style="object-fit:contain">
+            <span style="display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border:1px solid rgba(255,214,107,.35);border-radius:14px;background:rgba(255,214,107,.08);color:#ffd66b;font-weight:900">
+              <i class="ri-vip-diamond-fill" aria-hidden="true"></i>
+              <strong id="cqSettingsGemBalance">—</strong>
+              <span>جوهرة</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       <div class="setting-row">
@@ -483,6 +516,8 @@
       dark: document.getElementById("darkModeToggle"),
       sound: document.getElementById("soundToggle"),
       music: document.getElementById("musicToggle"),
+      soundVolume: document.getElementById("soundVolume"),
+      musicVolume: document.getElementById("musicVolume"),
       notifications: document.getElementById("notifToggle"),
       motion: document.getElementById("motionToggle"),
       logout: document.getElementById("logoutBtn"),
@@ -503,6 +538,8 @@
       theme: "cq_theme",
       sound: "cq_sound",
       music: "cq_music",
+      soundVolume: "cq_sound_volume",
+      musicVolume: "cq_music_volume",
       notifications: "cq_notif",
       motion: "cq_motion"
     };
@@ -565,6 +602,12 @@
       elements.dark.checked = theme === "dark";
       elements.sound.checked = sound !== "off";
       elements.music.checked = music === "on";
+      elements.soundVolume.value = Math.round(Number(readSetting(STORAGE_KEYS.soundVolume, "0.9")) * 100);
+      elements.musicVolume.value = Math.round(Number(readSetting(STORAGE_KEYS.musicVolume, "0.9")) * 100);
+      document.getElementById("soundVolumeValue").textContent = elements.soundVolume.value + "%";
+      document.getElementById("musicVolumeValue").textContent = elements.musicVolume.value + "%";
+      window.CodeQuestAudio?.setVolumes({ sound: Number(elements.soundVolume.value) / 100, music: Number(elements.musicVolume.value) / 100 });
+      window.CodeQuestAudio?.refreshGemBalance();
       elements.notifications.checked = notifications === "on";
       document.getElementById("reminderTime").value = readSetting("cq_reminder_time", "18:00");
       updateNotificationPermissionStatus();
@@ -629,6 +672,20 @@
       enabled => document.dispatchEvent(new Event("cq:audio-settings-change")),
       "تم حفظ إعدادات الموسيقى."
     );
+
+    elements.soundVolume.addEventListener("input", () => {
+      const value = Number(elements.soundVolume.value);
+      document.getElementById("soundVolumeValue").textContent = value + "%";
+      window.CodeQuestAudio?.setVolumes({ sound: value / 100 });
+      saveSetting(STORAGE_KEYS.soundVolume, String(value / 100));
+    });
+
+    elements.musicVolume.addEventListener("input", () => {
+      const value = Number(elements.musicVolume.value);
+      document.getElementById("musicVolumeValue").textContent = value + "%";
+      window.CodeQuestAudio?.setVolumes({ music: value / 100 });
+      saveSetting(STORAGE_KEYS.musicVolume, String(value / 100));
+    });
 
     let reminderTimer = null;
 
