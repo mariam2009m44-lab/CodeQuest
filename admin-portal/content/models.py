@@ -58,13 +58,25 @@ class Lesson(PublishedModel):
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name="lessons", verbose_name="المنهج")
     title = models.CharField("عنوان الدرس", max_length=180)
     lesson_key = models.SlugField("معرّف الدرس الحالي", max_length=160, unique=True, help_text="يُستخدم لربط المحتوى بمعرّفات الدروس في CodeQuest.")
+    chapter_key = models.CharField("معرّف الفصل", max_length=120, blank=True, db_index=True)
+    chapter_title = models.CharField("اسم الفصل", max_length=180, blank=True)
+    chapter_order = models.PositiveIntegerField("ترتيب الفصل", default=0)
+    lesson_order = models.PositiveIntegerField("ترتيب الدرس داخل الفصل", default=0)
+    objective = models.TextField("هدف التعلم", blank=True)
+    cody_intro = models.TextField("مقدمة Cody", blank=True)
     summary = models.TextField("ملخص", blank=True)
+    description = models.TextField("الشرح", blank=True)
     content = models.TextField("محتوى الدرس", blank=True)
+    task = models.TextField("المهمة التطبيقية", blank=True)
+    hints = models.JSONField("التلميحات", default=list, blank=True)
+    code_example = models.TextField("مثال الكود", blank=True)
+    starter_code = models.TextField("الكود الابتدائي", blank=True)
+    source_data = models.JSONField("بيانات المصدر الإضافية", default=dict, blank=True)
     estimated_minutes = models.PositiveSmallIntegerField("المدة المتوقعة بالدقائق", default=10)
     display_order = models.PositiveIntegerField("ترتيب العرض", default=0)
 
     class Meta:
-        ordering = ["display_order", "title"]
+        ordering = ["chapter_order", "lesson_order", "display_order", "title"]
         verbose_name = "درس"
         verbose_name_plural = "الدروس"
 
