@@ -160,11 +160,11 @@
     updateButtons();refreshGemBalance();
   }
   function onInteraction(event) {
-    if(!event.isTrusted||!soundEnabled)return;
+    if(!event.isTrusted||(!soundEnabled&&!musicEnabled))return;
     const target=event.target;
     if(!(target instanceof Element)||!target.closest("button,.choice-btn,.piece,.code-block,.match-item,.bug-line,.drag-piece,input,select"))return;
     const ctx=getContext();
-    if(ctx?.state==="suspended")ctx.resume().then(()=>play("tap")).catch(()=>{});else play("tap");
+    if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer){musicBar();musicTimer=setInterval(musicBar,2100)}}).catch(()=>{});else if(soundEnabled)play("tap");
   }
   document.addEventListener("pointerdown",onInteraction,{passive:true});
   document.addEventListener("keydown",onInteraction);
@@ -172,7 +172,9 @@
   if(document.readyState!=="loading")mountControls();
   window.addEventListener("storage",event=>{if(event.key===SOUND_KEY)soundEnabled=read(SOUND_KEY);if(event.key===MUSIC_KEY&&!read(MUSIC_KEY))stopMusic();updateButtons()});
   document.addEventListener("cq:audio-settings-change",()=>{soundEnabled=read(SOUND_KEY);const shouldPlay=read(MUSIC_KEY);if(shouldPlay&&!musicEnabled)startMusic();else if(!shouldPlay&&musicEnabled)stopMusic();updateButtons()});
-  document.addEventListener("visibilitychange",()=>{if(document.hidden&&context?.state==="running")context.suspend().catch(()=>{})});
+  document.addEventListener("visibilitychange",()=>{if(document.hidden&&context?.state==="running")context.suspend().catch(()=>{});else if(!document.hidden&&musicEnabled&&context?.state==="suspended")context.resume().then(()=>{if(!musicTimer){musicBar();musicTimer=setInterval(musicBar,2100)}}).catch(()=>{})});
   soundEnabled=read(SOUND_KEY);
+  musicEnabled=read(MUSIC_KEY);
+  updateButtons();
   window.CodeQuestAudio=Object.freeze({play,refreshGemBalance,setGemBalance});
 })();
