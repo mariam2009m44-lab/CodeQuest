@@ -1,4 +1,5 @@
 from datetime import timedelta
+from hashlib import sha256
 from unittest.mock import patch
 
 from django.contrib import admin
@@ -11,7 +12,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Announcement, Course, LearningPath, Lesson, QuizQuestion
+from .models import Announcement, Course, LearningPath, Lesson, QuizQuestion, StudentLookupAudit
 
 
 class ContentValidationTests(TestCase):
@@ -139,3 +140,26 @@ class AdminRoleTests(TestCase):
         response = self.client.post(reverse("student_lookup"), {"uid": "sample_uid_123"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "تكامل بيانات الطلاب غير مفعّل")
+
+
+    @patch("content.views.get_student_summary", return_value={
+        "uid": "sample_uid_123",
+        "profile": {"displayName": "Learner"},
+        "completed_lessons": 2,
+        "lessons_by_language": {"python": 2},
+        "projects_count": 1,
+    })
+    def test_successful_student_lookup_is_audited_with_hashed_uid(self, _mock_summary):
+        manager_group = Group.objects.get(name="مدير المنصة")
+        manager = get_user_model().objects.create_user(
+            username="audited-student-manager",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        manager.groups.add(manager_group)
+        self.client.force_login(manager)
+
+        response = self.client.post(reverse("student_lookup"), {"uid": "sample_uid_123"})
+        self.assertEqual(response.status_code, 200)
+        audit = StudentLookupAudit.objects.get(requested_by=manager)
+        self.assertEqual(audit.target_uid_hash, sha256(b"sample_uid_123").hexdigest())
