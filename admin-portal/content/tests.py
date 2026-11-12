@@ -1,6 +1,8 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.management import call_command
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
@@ -57,3 +59,42 @@ class AdminAccessTests(TestCase):
         response = self.client.get(reverse("admin:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "CodeQuest")
+
+
+class AdminRoleTests(TestCase):
+    def setUp(self):
+        call_command("setup_admin_roles")
+
+    def test_editor_can_manage_content_but_cannot_delete(self):
+        editor_group = Group.objects.get(name="محرر المحتوى")
+        user = get_user_model().objects.create_user(username="content-editor", password="safe-test-password")
+        user.groups.add(editor_group)
+
+        self.assertTrue(user.has_perm("content.view_learningpath"))
+        self.assertTrue(user.has_perm("content.add_learningpath"))
+        self.assertTrue(user.has_perm("content.change_learningpath"))
+        self.assertFalse(user.has_perm("content.delete_learningpath"))
+
+    def test_platform_manager_has_content_delete_permission(self):
+        manager_group = Group.objects.get(name="مدير المنصة")
+        user = get_user_model().objects.create_user(username="platform-manager", password="safe-test-password")
+        user.groups.add(manager_group)
+
+        self.assertTrue(user.has_perm("content.delete_learningpath"))
+
+    def test_only_platform_manager_can_view_audit_log(self):
+        log_admin = __import__("django.contrib.admin", fromlist=["site"]).site._registry[
+            __import__("django.contrib.admin.models", fromlist=["LogEntry"]).LogEntry
+        ]
+        editor_group = Group.objects.get(name="محرر المحتوى")
+        editor = get_user_model().objects.create_user(username="audit-editor", password="safe-test-password")
+        editor.groups.add(editor_group)
+        manager_group = Group.objects.get(name="مدير المنصة")
+        manager = get_user_model().objects.create_user(username="audit-manager", password="safe-test-password")
+        manager.groups.add(manager_group)
+
+        request = self.client.request().wsgi_request
+        request.user = editor
+        self.assertFalse(log_admin.has_view_permission(request))
+        request.user = manager
+        self.assertTrue(log_admin.has_view_permission(request))
