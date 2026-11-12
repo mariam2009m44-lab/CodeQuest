@@ -1,5 +1,6 @@
 from datetime import timedelta
 from hashlib import sha256
+from io import StringIO
 from unittest.mock import MagicMock, patch
 
 from django.contrib import admin
@@ -41,6 +42,19 @@ class ContentValidationTests(TestCase):
         announcement = Announcement(title="Notice", body="Text", starts_at=start, ends_at=start - timedelta(minutes=1))
         with self.assertRaises(ValidationError):
             announcement.full_clean()
+
+
+class CurriculumImportCommandTests(TestCase):
+    def test_dry_run_validates_existing_json_curricula_without_database_writes(self):
+        output = StringIO()
+        call_command("import_curricula", dry_run=True, stdout=output)
+        report = output.getvalue()
+        self.assertIn("python_curriculum.json", report)
+        self.assertIn("js_curriculum.json", report)
+        self.assertIn("cpp_curriculum.json", report)
+        self.assertIn("java_curriculum.json", report)
+        self.assertIn("لم يتم حفظ أي بيانات", report)
+        self.assertEqual(LearningPath.objects.count(), 0)
 
 
 class PublicCurriculumApiTests(TestCase):
