@@ -75,11 +75,10 @@ if (!settings.includes('id="soundToggle"') || !settings.includes('id="musicToggl
 }
 const gameAudio = fs.readFileSync("js/game-audio.js", "utf8");
 const themeScript = fs.readFileSync("js/theme.js", "utf8");
-if (!gameAudio.includes("cq-audio-dock") || !gameAudio.includes("cq-gem-wallet") ||
-    !gameAudio.includes(".cq-audio-dock,.cq-gem-wallet{display:none!important}") ||
+if (gameAudio.includes("cq-audio-dock") || gameAudio.includes("cq-gem-wallet") ||
     !gameAudio.includes("cq_music") || !gameAudio.includes("setVolumes") ||
     !gameAudio.includes("CodeQuestExperience") || !themeScript.includes("game-audio.js")) {
-  throw new Error("The shared experience layer must keep audio and gem controls hidden outside Settings while preserving rewards.");
+  throw new Error("Audio and gem controls must not be mounted as floating UI; the shared reward/audio APIs must remain available.");
 }
 if (!settings.includes('id="soundVolume"') || !settings.includes('id="musicVolume"') ||
     !settings.includes('id="cqSettingsGemBalance"')) {
