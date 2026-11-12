@@ -74,8 +74,19 @@ if (!settings.includes('id="soundToggle"') || !settings.includes('id="musicToggl
   throw new Error("Sound effects and optional background music must remain configurable in Settings.");
 }
 const gameAudio = fs.readFileSync("js/game-audio.js", "utf8");
-if (!gameAudio.includes("cq-audio-dock") || !gameAudio.includes("cq_gem_wallet") && !gameAudio.includes("cq-gem-wallet") || !gameAudio.includes("cq_music")) {
-  throw new Error("The shared experience layer needs sound, optional music and a gem wallet.");
+const themeScript = fs.readFileSync("js/theme.js", "utf8");
+if (!gameAudio.includes("cq-audio-dock") || !gameAudio.includes("cq-gem-wallet") ||
+    !gameAudio.includes("cq_music") || !gameAudio.includes("CodeQuestExperience") ||
+    !themeScript.includes("game-audio.js")) {
+  throw new Error("The shared experience layer needs sound, optional music, gems and platform-wide loading.");
+}
+if (!magazineScript.includes("youtube-nocookie.com/embed/") ||
+    !magazineScript.includes("magazine-series-play")) {
+  throw new Error("Learning series need an in-page video player.");
+}
+const javaSeries = magazine.series.find(item => item.id === "java");
+if (!javaSeries || javaSeries.youtubeId !== "mNvJipMTKSM" || javaSeries.provider !== "Adel Nasim") {
+  throw new Error("The Java series must use a Java-specific Arabic video source.");
 }
 const parent = fs.readFileSync("parent.html", "utf8");
 if (!parent.includes('id="parentGuideTitle"') || parent.indexOf('id="parentGuideTitle"') > parent.indexOf('class="mode-grid"')) {
