@@ -164,7 +164,7 @@ service cloud.firestore {
       match /lessonProgress/{lessonId} {
         function hasValidCompletionProof(uid, data) {
           let resultPath = /databases/$(database)/documents/users/$(uid)/quizResults/lesson_$(data.language)_$(data.chapter)_$(data.lesson);
-          let proof = get(resultPath).data;
+          let proof = exists(resultPath) ? get(resultPath).data : {};
 
           return exists(resultPath)
             && proof.verificationVersion == 1
