@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.admin.models import CHANGE, LogEntry
-from django.utils import timezone
 
 from .models import Announcement, Course, LearningPath, Lesson, QuizQuestion, StudentProject
 
