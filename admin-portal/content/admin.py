@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.contrib.admin.models import CHANGE, LogEntry
+from django.utils import timezone
+
 from .models import Announcement, Course, LearningPath, Lesson, QuizQuestion, StudentProject
 
 
@@ -7,15 +10,27 @@ class PublishingAdmin(admin.ModelAdmin):
     list_per_page = 30
     date_hierarchy = "updated_at"
 
+    def _change_status(self, request, queryset, status, message):
+        objects = list(queryset)
+        for obj in objects:
+            obj.status = status
+            obj.save(update_fields=("status", "updated_at"))
+        if objects:
+            LogEntry.objects.log_actions(
+                request.user.pk,
+                objects,
+                CHANGE,
+                change_message=message,
+            )
+        self.message_user(request, f"{message}: {len(objects)} عنصر.")
+
     @admin.action(description="نشر العناصر المحددة")
     def publish_selected(self, request, queryset):
-        updated = queryset.update(status="published")
-        self.message_user(request, f"تم نشر {updated} عنصر.")
+        self._change_status(request, queryset, "published", "نشر العناصر المحددة")
 
     @admin.action(description="أرشفة العناصر المحددة")
     def archive_selected(self, request, queryset):
-        updated = queryset.update(status="archived")
-        self.message_user(request, f"تمت أرشفة {updated} عنصر.")
+        self._change_status(request, queryset, "archived", "أرشفة العناصر المحددة")
 
 
 class CourseInline(admin.TabularInline):
@@ -83,3 +98,36 @@ class StudentProjectAdmin(PublishingAdmin):
     list_display = ("title", "language", "difficulty", "status", "display_order", "updated_at")
     list_filter = ("status", "language", "difficulty")
     search_fields = ("title", "description", "instructions")
+
+
+@admin.register(LogEntry)
+class AuditLogAdmin(admin.ModelAdmin):
+    date_hierarchy = "action_time"
+    list_display = ("action_time", "user", "content_type", "object_repr", "action_flag")
+    list_filter = ("action_flag", "content_type")
+    search_fields = ("object_repr", "change_message", "user__username")
+    ordering = ("-action_time",)
+    readonly_fields = (
+        "action_time",
+        "user",
+        "content_type",
+        "object_id",
+        "object_repr",
+        "action_flag",
+        "change_message",
+    )
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser or request.user.groups.filter(name="مدير المنصة").exists()
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_view_or_change_permission(self, request, obj=None):
+        return self.has_view_permission(request, obj)
