@@ -1,6 +1,6 @@
 from datetime import timedelta
 from hashlib import sha256
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
@@ -41,6 +41,97 @@ class ContentValidationTests(TestCase):
         announcement = Announcement(title="Notice", body="Text", starts_at=start, ends_at=start - timedelta(minutes=1))
         with self.assertRaises(ValidationError):
             announcement.full_clean()
+
+
+class FirebaseStudentSummaryTests(TestCase):
+    @patch("content.firebase_service.get_firestore_client")
+    def test_student_summary_uses_the_real_firestore_paths_and_bounded_reads(self, mock_get_db):
+        db = MagicMock()
+        users_collection = MagicMock()
+        user_document = MagicMock()
+        profile_snapshot = MagicMock()
+        profile_snapshot.exists = True
+        profile_snapshot.to_dict.return_value = {
+            "displayName": "Learner",
+            "xp": 120,
+            "stars": 4,
+            "coins": 10,
+            "level": 2,
+            "email": "private@example.test",
+        }
+        user_document.get.return_value = profile_snapshot
+
+        progress_ref = MagicMock()
+        progress_ref.limit.return_value.stream.return_value = []
+        user_document.collection.return_value = progress_ref
+        users_collection.document.return_value = user_document
+
+        projects_collection = MagicMock()
+        projects_query = MagicMock()
+        projects_collection.where.return_value = projects_query
+        projects_query.limit.return_value.stream.return_value = []
+
+        def collection(name):
+            return {
+                "users": users_collection,
+                "projects": projects_collection,
+            }[name]
+
+        db.collection.side_effect = collection
+        mock_get_db.return_value = db
+
+        from .firebase_service import get_student_summary
+
+        result = get_student_summary("sample_uid_123")
+
+        self.assertEqual(result["completed_lessons"], 0)
+        self.assertEqual(result["projects_count"], 0)
+        self.assertNotIn("email", result["profile"])
+        progress_ref.limit.assert_called_once_with(500)
+        projects_collection.where.assert_called_once_with("userId", "==", "sample_uid_123")
+        projects_query.limit.assert_called_once_with(500)
+        user_document.collection.assert_called_once_with("lessonProgress")
+
+    @patch("content.firebase_service.get_firestore_client")
+    def test_student_summary_marks_counts_as_potentially_incomplete_at_the_cap(self, mock_get_db):
+        db = MagicMock()
+        users_collection = MagicMock()
+        user_document = MagicMock()
+        profile_snapshot = MagicMock()
+        profile_snapshot.exists = True
+        profile_snapshot.to_dict.return_value = {"displayName": "Learner"}
+        user_document.get.return_value = profile_snapshot
+
+        progress_ref = MagicMock()
+        progress_ref.limit.return_value.stream.return_value = [
+            MagicMock(to_dict=MagicMock(return_value={
+                "completed": True,
+                "language": "python",
+            }))
+            for _ in range(500)
+        ]
+        user_document.collection.return_value = progress_ref
+        users_collection.document.return_value = user_document
+
+        projects_collection = MagicMock()
+        projects_query = MagicMock()
+        projects_collection.where.return_value = projects_query
+        projects_query.limit.return_value.stream.return_value = [MagicMock() for _ in range(500)]
+
+        db.collection.side_effect = lambda name: {
+            "users": users_collection,
+            "projects": projects_collection,
+        }[name]
+        mock_get_db.return_value = db
+
+        from .firebase_service import get_student_summary
+
+        result = get_student_summary("sample_uid_123")
+
+        self.assertEqual(result["completed_lessons"], 500)
+        self.assertEqual(result["projects_count"], 500)
+        self.assertTrue(result["progress_may_be_incomplete"])
+        self.assertTrue(result["projects_may_be_incomplete"])
 
 
 class AdminAccessTests(TestCase):
