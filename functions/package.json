@@ -11,11 +11,16 @@
     "deploy": "cd .. && firebase deploy --only functions,firestore:rules",
     "logs": "cd .. && firebase functions:log",
     "test": "node --test tests/*.test.cjs",
-    "test:unit": "node --test tests/parent-progress-integrity.test.cjs tests/reward-integrity.test.cjs",
-    "test:emulator": "node --test tests/reward-emulator.test.cjs"
+    "test:unit": "node --test tests/parent-progress-integrity.test.cjs tests/reward-integrity.test.cjs tests/lesson-completion.test.cjs",
+    "test:emulator": "node --test tests/reward-emulator.test.cjs tests/firestore-rules.test.cjs",
+    "emulate:firestore": "cd .. && npx --yes firebase-tools@14.19.1 emulators:exec --only firestore --project demo-codequest-audit --non-interactive \"npm --prefix functions run test:emulator\""
   },
   "dependencies": {
     "firebase-admin": "^13.5.0",
     "firebase-functions": "^6.4.0"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.3",
+    "firebase": "^10.8.1"
   }
 }
