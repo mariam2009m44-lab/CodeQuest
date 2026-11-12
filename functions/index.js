@@ -12,6 +12,8 @@ const {
 
 const { defineString } = require("firebase-functions/params");
 
+const { isValidLessonCompletionProof } = require("./lesson-completion");
+
 const {
   onDocumentWritten
 } = require("firebase-functions/v2/firestore");
@@ -822,28 +824,39 @@ exports.saveVerifiedLessonProgress = onCall(
     }
 
     const proof = proofSnapshot.data() || {};
-    const validProof =
-      proof.uid === uid &&
-      proof.language === language &&
-      proof.chapter === chapter &&
-      proof.lesson === lesson &&
-      proof.serverVerified === true &&
-      proof.passed === true &&
-      proof.verificationVersion === 1 &&
-      (language !== "java" ||
-        (proof.challengeVerified === true && proof.quizVerified === true));
+    const lessonCounts = PARENT_PROGRESS_LESSON_COUNTS[language];
+    const lessonCount = lessonCounts?.[chapter];
+    if (!Number.isInteger(lessonCount) || lesson >= lessonCount) {
+      throw new HttpsError("invalid-argument", "موضع الدرس غير موجود في المنهج الحالي.");
+    }
+
+    const validProof = isValidLessonCompletionProof(uid, lessonId, {
+      language, chapter, lesson
+    }, proof);
 
     if (!validProof) {
       throw new HttpsError("failed-precondition", "إثبات إكمال الدرس غير مكتمل أو لا يطابق الحساب.");
     }
 
-    await progressRef.set({
-      language,
-      chapter,
-      lesson,
-      completed: true,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
+    await db.runTransaction(async transaction => {
+      const existingSnapshot = await transaction.get(progressRef);
+      const existing = existingSnapshot.exists ? existingSnapshot.data() || {} : {};
+      const progressUpdate = {
+        language,
+        chapter,
+        lesson,
+        completed: true,
+        updatedAt: FieldValue.serverTimestamp()
+      };
+
+      // completedAt is assigned only on the first server-confirmed transition.
+      // Legacy completed records without this field remain undated.
+      if (!existingSnapshot.exists || existing.completed !== true) {
+        progressUpdate.completedAt = FieldValue.serverTimestamp();
+      }
+
+      transaction.set(progressRef, progressUpdate, { merge: true });
+    });
 
     return { success: true, id: lessonId, language, chapter, lesson, completed: true };
   }
@@ -961,23 +974,29 @@ exports.checkQuizAnswer = onCall(
       .collection("quizResults")
       .doc(`lesson_${progressLessonId}`);
 
-    await resultRef.set({
-      verificationVersion: 1,
-      serverVerified: true,
-      passed: true,
+    await db.runTransaction(async transaction => {
+      const existingSnapshot = await transaction.get(resultRef);
+      const existing = existingSnapshot.exists ? existingSnapshot.data() || {} : {};
+      const challengeVerified = existing.challengeVerified === true;
+      const passed = language === "python"
+        ? challengeVerified
+        : true;
 
-      uid,
-      lessonId: progressLessonId,
-
-      curriculumLessonId: lessonId,
-
-      language,
-      chapter: chapterIndex,
-      lesson: lessonIndex,
-
-      selectedIndex,
-
-      verifiedAt: FieldValue.serverTimestamp()
+      transaction.set(resultRef, {
+        verificationVersion: 1,
+        serverVerified: true,
+        passed,
+        uid,
+        lessonId: progressLessonId,
+        curriculumLessonId: lessonId,
+        language,
+        chapter: chapterIndex,
+        lesson: lessonIndex,
+        selectedIndex,
+        quizVerified: true,
+        quizVerifiedAt: FieldValue.serverTimestamp(),
+        verifiedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
     });
 
     return {
@@ -1047,20 +1066,7 @@ function getRewardableLesson(lessonId, data) {
  * التحقق من إثبات اجتياز الاختبار.
  */
 function hasVerifiedLessonResult(uid, lessonId, lesson, result) {
-  if (!result || typeof result !== "object") return false;
-
-  return result.verificationVersion === 1
-    && result.serverVerified === true
-    && result.passed === true
-    && result.uid === uid
-    && result.lessonId === lessonId
-    && result.language === lesson.language
-    && result.chapter === lesson.chapter
-    && result.lesson === lesson.lesson
-    && (
-      lesson.language !== "java" ||
-      (result.challengeVerified === true && result.quizVerified === true)
-    );
+  return isValidLessonCompletionProof(uid, lessonId, lesson, result);
 }
 
 /*
@@ -2232,24 +2238,25 @@ exports.verifyPythonChallenge = onCall(
      * Firestore Rules تمنع المتصفح من كتابة quizResults.
      */
     stage = "proof-write";
-    await resultRef.set({
-      verificationVersion: 1,
-      serverVerified: true,
-      passed: true,
-
-      uid,
-      lessonId: progressLessonId,
-
-      curriculumLessonId:
-        `python-${chapter + 1}-${lesson + 1}`,
-
-      language: "python",
-      chapter,
-      lesson,
-
-      verificationType: "python-challenge",
-
-      verifiedAt: FieldValue.serverTimestamp()
+    await db.runTransaction(async transaction => {
+      const existingSnapshot = await transaction.get(resultRef);
+      const existing = existingSnapshot.exists ? existingSnapshot.data() || {} : {};
+      transaction.set(resultRef, {
+        verificationVersion: 1,
+        serverVerified: true,
+        passed: true,
+        challengeVerified: true,
+        quizVerified: existing.quizVerified === true,
+        uid,
+        lessonId: progressLessonId,
+        curriculumLessonId: `python-${chapter + 1}-${lesson + 1}`,
+        language: "python",
+        chapter,
+        lesson,
+        verificationType: "python-challenge",
+        challengeVerifiedAt: FieldValue.serverTimestamp(),
+        verifiedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
     });
 
     return {
