@@ -1,6 +1,7 @@
 (() => {
   "use strict";
   if (window.CodeQuestAudio) return;
+  const SCRIPT_URL = document.currentScript?.src || new URL("js/game-audio.js", location.href).href;
   const SOUND_KEY = "cq_sound";
   const MUSIC_KEY = "cq_music";
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -148,7 +149,7 @@
     dock.querySelector("[data-cq-music]").addEventListener("click",()=>musicEnabled?stopMusic():startMusic());
     document.body.append(dock);
     const wallet=document.createElement("div");wallet.className="cq-gem-wallet";
-    wallet.innerHTML='<img class="cq-gem-cody" src="' + new URL("../cody-avatar.svg", document.currentScript?.src || location.href).href + '" alt="كودي"><span class="cq-gem-wallet__icon" aria-hidden="true">◆</span><span><span class="cq-gem-wallet__value">—</span><br><span class="cq-gem-wallet__label">جواهرك</span></span>';
+    wallet.innerHTML='<img class="cq-gem-cody" src="' + new URL("../cody-avatar.svg", SCRIPT_URL).href + '" alt="كودي"><span class="cq-gem-wallet__icon" aria-hidden="true">◆</span><span><span class="cq-gem-wallet__value">—</span><br><span class="cq-gem-wallet__label">جواهرك</span></span>';
     document.body.append(wallet);balanceNode=wallet.querySelector(".cq-gem-wallet__value");
     const overlay=document.createElement("div");overlay.id="cqRewardOverlay";overlay.className="cq-reward-overlay";overlay.setAttribute("aria-hidden","true");
     overlay.innerHTML='<section class="cq-reward-card" role="dialog" aria-modal="true" aria-labelledby="cqRewardTitle"><div class="cq-reward-gem"><i class="ri-vip-diamond-fill" aria-hidden="true"></i></div><h2 class="cq-reward-title" id="cqRewardTitle">جوهرة جديدة!</h2><p class="cq-reward-copy">كودي فخور بيك! كل خطوة بتقربك من هدفك.</p><img class="cq-reward-cody" src="' + new URL("../cody-avatar.svg", document.currentScript?.src || location.href).href + '" alt="كودي"><div><button type="button" class="cq-reward-close">رائع!</button></div></section>';
