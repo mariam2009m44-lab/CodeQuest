@@ -9,10 +9,16 @@
   let soundVolume = 0.9;
   let musicVolume = 0.9;
   try {
-    const savedSoundVolume = Number(localStorage.getItem("cq_sound_volume"));
-    const savedMusicVolume = Number(localStorage.getItem("cq_music_volume"));
-    if (Number.isFinite(savedSoundVolume)) soundVolume = Math.min(1, Math.max(0, savedSoundVolume));
-    if (Number.isFinite(savedMusicVolume)) musicVolume = Math.min(1, Math.max(0, savedMusicVolume));
+    const rawSoundVolume = localStorage.getItem("cq_sound_volume");
+    const rawMusicVolume = localStorage.getItem("cq_music_volume");
+    if (rawSoundVolume !== null) {
+      const savedSoundVolume = Number(rawSoundVolume);
+      if (Number.isFinite(savedSoundVolume)) soundVolume = Math.min(1, Math.max(0, savedSoundVolume));
+    }
+    if (rawMusicVolume !== null) {
+      const savedMusicVolume = Number(rawMusicVolume);
+      if (Number.isFinite(savedMusicVolume)) musicVolume = Math.min(1, Math.max(0, savedMusicVolume));
+    }
   } catch {}
   const read = key => { try { return localStorage.getItem(key) === "on"; } catch { return false; } };
   const save = (key, value) => { try { localStorage.setItem(key, value ? "on" : "off"); } catch {} };
