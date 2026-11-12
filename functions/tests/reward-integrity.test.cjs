@@ -13,6 +13,7 @@ const proof = {
   verificationVersion: 1,
   serverVerified: true,
   passed: true,
+  challengeVerified: true,
   uid: "student",
   lessonId,
   language: "python",
