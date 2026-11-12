@@ -45,6 +45,29 @@ class ContentValidationTests(TestCase):
 
 
 class CurriculumImportCommandTests(TestCase):
+    def test_import_creates_drafts_and_preserves_admin_edits_by_default(self):
+        output = StringIO()
+        call_command("import_curricula", stdout=output)
+        self.assertEqual(LearningPath.objects.count(), 3)
+        self.assertEqual(Course.objects.count(), 3)
+        self.assertEqual(Lesson.objects.count(), 97)
+        self.assertEqual(QuizQuestion.objects.count(), 97)
+        self.assertFalse(LearningPath.objects.filter(language="java").exists())
+        self.assertFalse(Lesson.objects.exclude(status=Lesson.Status.DRAFT).exists())
+
+        lesson = Lesson.objects.get(lesson_key="py-1-1")
+        self.assertEqual(lesson.objective, "استخدم أوامر الطباعة لعرض النتائج على الشاشة.")
+        lesson.title = "عنوان عدّله المسؤول"
+        lesson.save(update_fields=("title", "updated_at"))
+
+        call_command("import_curricula", stdout=StringIO())
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.title, "عنوان عدّله المسؤول")
+
+        call_command("import_curricula", update_existing=True, stdout=StringIO())
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.title, "أول أمر")
+
     def test_dry_run_validates_existing_json_curricula_without_database_writes(self):
         output = StringIO()
         call_command("import_curricula", dry_run=True, stdout=output)
