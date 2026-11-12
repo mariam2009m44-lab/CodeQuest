@@ -125,7 +125,7 @@
       .cq-audio-dock button{width:40px;height:40px;min-width:40px;min-height:40px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.3);border-radius:12px;background:rgba(255,255,255,.06);color:#d9e8f5;font-size:1.15rem;cursor:pointer}
       .cq-audio-dock button[aria-pressed="true"]{color:#6be8ff;border-color:#36bfe5;background:rgba(54,191,229,.14);box-shadow:0 0 16px rgba(54,191,229,.16)}
       .cq-gem-wallet{position:fixed;z-index:10040;inset-block-end:18px;inset-inline-start:12px;display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(255,214,107,.35);border-radius:16px;background:rgba(18,20,38,.88);color:#fff;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.2);font:800 13px/1.2 Cairo,sans-serif}
-      .cq-gem-wallet__icon{width:27px;height:27px;display:grid;place-items:center;color:#ffd66b;font-size:1.2rem;filter:drop-shadow(0 0 7px rgba(255,214,107,.6))}
+      .cq-gem-wallet__icon{width:27px;height:27px;display:grid;place-items:center;color:#ffd66b;font-size:1.2rem;filter:drop-shadow(0 0 7px rgba(255,214,107,.6))}.cq-gem-cody{width:38px;height:38px;object-fit:contain;align-self:end;margin-bottom:-7px;transform:rotate(-5deg);filter:drop-shadow(0 0 7px rgba(54,191,229,.4))}
       .cq-gem-wallet__value{font-variant-numeric:tabular-nums;color:#ffe6a0;font-size:14px}.cq-gem-wallet__label{color:#b8c5d6;font-size:10px}
       .cq-reward-overlay{position:fixed;inset:0;z-index:10100;display:grid;place-items:center;padding:20px;background:rgba(3,7,18,.78);backdrop-filter:blur(9px);opacity:0;pointer-events:none;transition:opacity .25s ease}
       .cq-reward-overlay.is-visible{opacity:1;pointer-events:auto}
@@ -148,7 +148,7 @@
     dock.querySelector("[data-cq-music]").addEventListener("click",()=>musicEnabled?stopMusic():startMusic());
     document.body.append(dock);
     const wallet=document.createElement("div");wallet.className="cq-gem-wallet";
-    wallet.innerHTML='<span class="cq-gem-wallet__icon" aria-hidden="true">◆</span><span><span class="cq-gem-wallet__value">—</span><br><span class="cq-gem-wallet__label">جواهرك</span></span>';
+    wallet.innerHTML='<img class="cq-gem-cody" src="cody-avatar.svg" alt="كودي"><span class="cq-gem-wallet__icon" aria-hidden="true">◆</span><span><span class="cq-gem-wallet__value">—</span><br><span class="cq-gem-wallet__label">جواهرك</span></span>';
     document.body.append(wallet);balanceNode=wallet.querySelector(".cq-gem-wallet__value");
     const overlay=document.createElement("div");overlay.id="cqRewardOverlay";overlay.className="cq-reward-overlay";overlay.setAttribute("aria-hidden","true");
     overlay.innerHTML='<section class="cq-reward-card" role="dialog" aria-modal="true" aria-labelledby="cqRewardTitle"><div class="cq-reward-gem"><i class="ri-vip-diamond-fill" aria-hidden="true"></i></div><h2 class="cq-reward-title" id="cqRewardTitle">جوهرة جديدة!</h2><p class="cq-reward-copy">كودي فخور بيك! كل خطوة بتقربك من هدفك.</p><img class="cq-reward-cody" src="cody-avatar.svg" alt="كودي"><div><button type="button" class="cq-reward-close">رائع!</button></div></section>';
