@@ -642,6 +642,17 @@
 
         rewardClaimed = true;
 
+        if (data.awarded) {
+          window.CodeQuestExperience?.reward({
+            gems: 1,
+            balance: data.stars,
+            title: "جوهرة جديدة!",
+            message: "كودي بيحتفل بيك! أضفنا جوهرة جديدة إلى رصيدك."
+          });
+        } else {
+          window.CodeQuestAudio?.setGemBalance(data.stars);
+        }
+
         rewardPanel.classList.add("visible");
         targetZone.classList.remove("incorrect");
         targetZone.classList.add("correct");
