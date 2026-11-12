@@ -32,14 +32,14 @@ if RENDER_EXTERNAL_HOSTNAME:
         CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 INSTALLED_APPS = [
+    # Load project templates before Django's built-in admin templates.
+    "content.apps.ContentConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Place the app before django.contrib.admin so its admin template overrides are discovered first.
-    "content.apps.ContentConfig",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
