@@ -4,6 +4,7 @@
   const SOUND_KEY = "cq_sound";
   const MUSIC_KEY = "cq_music";
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  const SCRIPT_URL = document.currentScript?.src || new URL("js/game-audio.js", location.href).href;
   let context = null, soundEnabled = false, musicEnabled = false, musicTimer = null;
   let soundVolume = 0.9;
   let musicVolume = 0.9;
@@ -160,7 +161,7 @@
 
     document.head.append(style);
     const overlay=document.createElement("div");overlay.id="cqRewardOverlay";overlay.className="cq-reward-overlay";overlay.setAttribute("aria-hidden","true");
-    overlay.innerHTML='<section class="cq-reward-card" role="dialog" aria-modal="true" aria-labelledby="cqRewardTitle"><div class="cq-reward-gem"><i class="ri-vip-diamond-fill" aria-hidden="true"></i></div><h2 class="cq-reward-title" id="cqRewardTitle">جوهرة جديدة!</h2><p class="cq-reward-copy">كودي فخور بيك! كل خطوة بتقربك من هدفك.</p><img class="cq-reward-cody" src="' + new URL("../cody-avatar.svg", document.currentScript?.src || location.href).href + '" alt="كودي"><div><button type="button" class="cq-reward-close">رائع!</button></div></section>';
+    overlay.innerHTML='<section class="cq-reward-card" role="dialog" aria-modal="true" aria-labelledby="cqRewardTitle"><div class="cq-reward-gem"><i class="ri-vip-diamond-fill" aria-hidden="true"></i></div><h2 class="cq-reward-title" id="cqRewardTitle">جوهرة جديدة!</h2><p class="cq-reward-copy">كودي فخور بيك! كل خطوة بتقربك من هدفك.</p><img class="cq-reward-cody" src="' + new URL("../cody-avatar.svg", SCRIPT_URL).href + '" alt="كودي"><div><button type="button" class="cq-reward-close">رائع!</button></div></section>';
     document.body.append(overlay);
     overlay.querySelector(".cq-reward-close").addEventListener("click",()=>closeReward(overlay));
     overlay.addEventListener("click",event=>{if(event.target===overlay)closeReward(overlay)});
