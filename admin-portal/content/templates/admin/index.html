@@ -1,4 +1,4 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
 
 {% block content %}
 {% if admin_portal_counts %}
@@ -32,5 +32,5 @@
     {% endif %}
   </div>
 {% endif %}
-{{ block.super }}
+{% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
 {% endblock %}
