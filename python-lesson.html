@@ -3314,10 +3314,50 @@ html[data-theme="light"] .bottom-action {
           "internal"
         ].includes(verificationErrorCode);
 
+        if (isTemporaryServiceError) {
+          // The program has already executed successfully. If Firebase's
+          // verification service is temporarily unavailable, use the lesson's
+          // own check/expected output as a local-only fallback so learning is
+          // not blocked. This never creates a server proof or cloud reward.
+          const expectedOutput =
+            currentChallenge.expectedOutput ??
+            currentChallenge.expected_output ??
+            currentChallenge.expected;
+          let localCheckPassed = false;
+
+          try {
+            if (typeof currentChallenge.check === "function") {
+              localCheckPassed = Boolean(
+                currentChallenge.check(String(sourceCode), String(programOutput))
+              );
+            } else if (expectedOutput !== undefined && expectedOutput !== null) {
+              const normalize = value => String(value)
+                .replace(/\\r\\n/g, "\\n")
+                .replace(/\\r/g, "\\n")
+                .trim();
+              localCheckPassed = normalize(programOutput) === normalize(expectedOutput);
+            }
+          } catch (localCheckError) {
+            console.warn("تعذر إجراء الفحص المحلي البديل:", localCheckError);
+          }
+
+          if (localCheckPassed) {
+            challengeSolved = true;
+            challengeVerifiedOnServer = false;
+            addBubble(
+              "cody",
+              "ممتاز! الكود اشتغل واجتاز اختبار الدرس على جهازك 🎉 خدمة التحقق السحابي غير متاحة مؤقتًا، لذلك تقدري تكمّلي، وسيُحفظ الإنجاز محليًا فقط من غير مكافأة سحابية لحين عودة التحقق."
+            );
+            showBottomAction(true);
+            showToast("الحل صحيح! يمكنك متابعة الدرس، وسيظل الإنجاز محليًا مؤقتًا.");
+            return;
+          }
+        }
+
         addBubble(
           "cody",
           isTemporaryServiceError
-            ? "تم تشغيل الكود، لكن خدمة التحقق واجهت مشكلة مؤقتة ولم يتم اعتماد الإنجاز. لم نفقد تقدمك السابق؛ انتظر قليلًا ثم أعد المحاولة."
+            ? "الكود اشتغل، لكن خدمة التحقق السحابي متوقفة مؤقتًا ولم نتمكن من اعتماد الحل. لم نفقد تقدمك السابق؛ جرّب مرة أخرى بعد قليل."
             : `تم تشغيل الكود، لكن لم يكتمل التحقق وحفظ إثبات النجاح. رمز الخطأ: ${verificationErrorCode}.${verificationErrorMessage ? ` التفاصيل: ${verificationErrorMessage}` : ""} تأكد من الاتصال وحاول مرة أخرى.`
         );
         showToast(`تعذر اعتماد النجاح (${verificationErrorCode}).`);
