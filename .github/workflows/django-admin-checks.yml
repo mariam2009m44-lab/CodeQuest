@@ -34,5 +34,7 @@ jobs:
         run: python manage.py check
       - name: Check migration consistency
         run: python manage.py makemigrations --check --dry-run
+      - name: Collect static files for admin template tests
+        run: python manage.py collectstatic --noinput
       - name: Run tests
         run: python manage.py test
