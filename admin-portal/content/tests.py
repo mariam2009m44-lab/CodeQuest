@@ -1,10 +1,12 @@
 from datetime import timedelta
 
+from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -93,7 +95,7 @@ class AdminRoleTests(TestCase):
         manager = get_user_model().objects.create_user(username="audit-manager", password="safe-test-password")
         manager.groups.add(manager_group)
 
-        request = self.client.request().wsgi_request
+        request = RequestFactory().get("/admin/")
         request.user = editor
         self.assertFalse(log_admin.has_view_permission(request))
         request.user = manager
