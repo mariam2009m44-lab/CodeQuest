@@ -4,8 +4,8 @@ from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.core.management import call_command
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
