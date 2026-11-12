@@ -6,6 +6,8 @@
   const MUSIC_KEY = "cq_music";
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   let context = null, soundEnabled = false, musicEnabled = false, musicTimer = null, dock = null, balanceNode = null;
+  let soundVolume = Number(localStorage.getItem("cq_sound_volume") || 0.9);
+  let musicVolume = Number(localStorage.getItem("cq_music_volume") || 0.9);
   const read = key => { try { return localStorage.getItem(key) === "on"; } catch { return false; } };
   const save = (key, value) => { try { localStorage.setItem(key, value ? "on" : "off"); } catch {} };
   function getContext() {
@@ -13,7 +15,7 @@
     if (!context) context = new AudioContextClass();
     return context;
   }
-  function note(frequency, duration, volume, offset = 0, type = "sine") {
+  function note(frequency, duration, volume, offset = 0, type = "sine", channel = "music") {
     const ctx = getContext();
     if (!ctx || ctx.state !== "running") return;
     const start = ctx.currentTime + offset, oscillator = ctx.createOscillator(), gain = ctx.createGain(), filter = ctx.createBiquadFilter();
@@ -22,7 +24,8 @@
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(3200, start);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), start + 0.04);
+    const channelVolume = channel === "sound" ? soundVolume : musicVolume;
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * channelVolume), start + 0.04);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
     oscillator.start(start); oscillator.stop(start + duration + 0.03);
@@ -37,7 +40,7 @@
       wrong: [[246.94, .12, .014], [196, .17, .012]],
       reward: [[523.25, .12, .022], [659.25, .12, .024], [783.99, .15, .024], [1046.5, .28, .025], [1318.5, .34, .018]]
     };
-    (patterns[name] || patterns.tap).forEach((item, index) => note(item[0], item[1], item[2], index * .085));
+    (patterns[name] || patterns.tap).forEach((item, index) => note(item[0], item[1], item[2], index * .085, "sine", "sound"));
   }
   const chords = [[261.63,329.63,392],[220,261.63,329.63],[174.61,220,261.63],[196,246.94,293.66]];
   let musicStep = 0;
@@ -45,10 +48,15 @@
     if (!musicEnabled || document.hidden) return;
     const chord = chords[musicStep % chords.length];
     chord.forEach((frequency,index) => {
-      note(frequency,1.9,.006,index*.11,"triangle");
-      note(frequency*2,.62,.0028,.42+index*.13);
+      note(frequency,1.9,.035,index*.11,"triangle");
+      note(frequency*2,.62,.014,.42+index*.13);
     });
-    note([523.25,587.33,659.25,783.99,659.25,587.33][musicStep%6],.42,.0038,.2);
+    note([523.25,587.33,659.25,783.99,659.25,587.33][musicStep%6],.42,.02,.2);
+    // A steady soft beat makes the original loop feel like a real game soundtrack.
+    note(110,.16,.045,0,"sine");
+    note(165,.09,.025,.55,"triangle");
+    note(6200,.025,.012,.27,"square");
+    note(6200,.025,.012,.82,"square");
     musicStep++;
   }
   async function startMusic() {
@@ -79,7 +87,22 @@
     }
   }
   function setGemBalance(value) {
-    if (balanceNode && Number.isFinite(Number(value))) balanceNode.textContent = String(Math.max(0,Math.floor(Number(value))));
+    if (!Number.isFinite(Number(value))) return;
+    const amount = String(Math.max(0, Math.floor(Number(value))));
+    if (balanceNode) balanceNode.textContent = amount;
+    const settingsBalance = document.getElementById("cqSettingsGemBalance");
+    if (settingsBalance) settingsBalance.textContent = amount;
+  }
+  function setVolumes(next = {}) {
+    if (Number.isFinite(Number(next.sound))) {
+      soundVolume = Math.min(1, Math.max(0, Number(next.sound)));
+      try { localStorage.setItem("cq_sound_volume", String(soundVolume)); } catch {}
+    }
+    if (Number.isFinite(Number(next.music))) {
+      musicVolume = Math.min(1, Math.max(0, Number(next.music)));
+      try { localStorage.setItem("cq_music_volume", String(musicVolume)); } catch {}
+    }
+    return { sound: soundVolume, music: musicVolume };
   }
   async function refreshGemBalance() {
     try {
@@ -122,7 +145,7 @@
     const style=document.createElement("style");
     style.id="cqExperienceStyles";
     style.textContent=`
-      .cq-audio-dock{position:fixed;z-index:10050;inset-block-end:18px;inset-inline-start:50%;transform:translateX(-50%);display:flex;gap:7px;padding:6px;border:1px solid rgba(148,163,184,.24);border-radius:17px;background:rgba(8,14,29,.84);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
+      .cq-audio-dock,.cq-gem-wallet{display:none!important}.cq-audio-dock{position:fixed;z-index:10050;inset-block-end:18px;inset-inline-start:50%;transform:translateX(-50%);display:flex;gap:7px;padding:6px;border:1px solid rgba(148,163,184,.24);border-radius:17px;background:rgba(8,14,29,.84);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
       .cq-audio-dock button{width:40px;height:40px;min-width:40px;min-height:40px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.3);border-radius:12px;background:rgba(255,255,255,.06);color:#d9e8f5;font-size:1.15rem;cursor:pointer}
       .cq-audio-dock button[aria-pressed="true"]{color:#6be8ff;border-color:#36bfe5;background:rgba(54,191,229,.14);box-shadow:0 0 16px rgba(54,191,229,.16)}
       .cq-gem-wallet{position:fixed;z-index:10040;inset-block-end:18px;inset-inline-start:12px;display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(255,214,107,.35);border-radius:16px;background:rgba(18,20,38,.88);color:#fff;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.2);font:800 13px/1.2 Cairo,sans-serif}
@@ -169,7 +192,7 @@
       document.body.append(toast);
       setTimeout(() => toast.remove(), 1250);
     }
-    window.CodeQuestExperience=Object.freeze({reward:showReward,collectible:showCollectible,refreshGemBalance,setGemBalance});
+    window.CodeQuestExperience=Object.freeze({reward:showReward,collectible:showCollectible,refreshGemBalance,setGemBalance,setVolumes});
     updateButtons();refreshGemBalance();
   }
   function onInteraction(event) {
@@ -189,5 +212,5 @@
   soundEnabled=read(SOUND_KEY);
   musicEnabled=read(MUSIC_KEY);
   updateButtons();
-  window.CodeQuestAudio=Object.freeze({play,refreshGemBalance,setGemBalance});
+  window.CodeQuestAudio=Object.freeze({play,refreshGemBalance,setGemBalance,setVolumes});
 })();
