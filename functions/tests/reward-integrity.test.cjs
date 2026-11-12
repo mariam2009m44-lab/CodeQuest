@@ -61,6 +61,7 @@ function createHarness({ result, user = profile, reward } = {}) {
   const context = {
     exports: {}, console,
     require(name) {
+      if (name === "./lesson-completion") return require("../lesson-completion");
       if (name === "crypto") return require("node:crypto");
       if (name === "firebase-admin/app") return { initializeApp() {} };
       if (name === "firebase-admin/firestore") return {
