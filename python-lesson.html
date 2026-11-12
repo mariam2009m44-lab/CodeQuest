@@ -3332,8 +3332,8 @@ html[data-theme="light"] .bottom-action {
               );
             } else if (expectedOutput !== undefined && expectedOutput !== null) {
               const normalize = value => String(value)
-                .replace(/\\r\\n/g, "\\n")
-                .replace(/\\r/g, "\\n")
+                .replace(/\r\n/g, "\n")
+                .replace(/\r/g, "\n")
                 .trim();
               localCheckPassed = normalize(programOutput) === normalize(expectedOutput);
             }
