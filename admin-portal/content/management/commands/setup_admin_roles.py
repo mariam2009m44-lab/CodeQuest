@@ -27,7 +27,7 @@ class Command(BaseCommand):
             permissions = Permission.objects.filter(content_type=content_type)
             manager_permissions.extend(permissions)
             editor_permissions.extend(
-                permissions.filter(codename__startswith=("view_", "add_", "change_"))
+                [permission for permission in permissions if permission.codename.startswith(("view_", "add_", "change_"))]
             )
 
         manager.permissions.set(manager_permissions)
