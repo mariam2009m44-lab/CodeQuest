@@ -1,9 +1,5 @@
 {% extends "admin/base.html" %}
 
 {% block nav-global %}
-  {% if request.user.is_superuser or request.user.groups.all %}
-    {% if request.user.is_superuser or request.user.groups.filter %}
-      <a href="{% url 'student_lookup' %}" style="margin-inline-start:16px">ملخص بيانات طالب</a>
-    {% endif %}
-  {% endif %}
+  <a href="{% url 'student_lookup' %}" style="margin-inline-start:16px">ملخص بيانات طالب (للمدير فقط)</a>
 {% endblock %}
