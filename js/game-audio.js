@@ -121,7 +121,7 @@
     const style=document.createElement("style");
     style.id="cqExperienceStyles";
     style.textContent=`
-      .cq-audio-dock{position:fixed;z-index:10050;inset-block-end:18px;inset-inline-end:12px;display:flex;gap:7px;padding:6px;border:1px solid rgba(148,163,184,.24);border-radius:17px;background:rgba(8,14,29,.84);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
+      .cq-audio-dock{position:fixed;z-index:10050;inset-block-end:18px;inset-inline-start:50%;transform:translateX(-50%);display:flex;gap:7px;padding:6px;border:1px solid rgba(148,163,184,.24);border-radius:17px;background:rgba(8,14,29,.84);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.22)}
       .cq-audio-dock button{width:40px;height:40px;min-width:40px;min-height:40px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.3);border-radius:12px;background:rgba(255,255,255,.06);color:#d9e8f5;font-size:1.15rem;cursor:pointer}
       .cq-audio-dock button[aria-pressed="true"]{color:#6be8ff;border-color:#36bfe5;background:rgba(54,191,229,.14);box-shadow:0 0 16px rgba(54,191,229,.16)}
       .cq-gem-wallet{position:fixed;z-index:10040;inset-block-end:18px;inset-inline-start:12px;display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(255,214,107,.35);border-radius:16px;background:rgba(18,20,38,.88);color:#fff;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.2);font:800 13px/1.2 Cairo,sans-serif}
@@ -138,7 +138,7 @@
       .cq-reward-close{min-height:46px;padding:10px 24px;border:0;border-radius:14px;background:linear-gradient(100deg,#ffd66b,#ffae47);color:#25162d;font:900 15px Cairo,sans-serif;cursor:pointer}
       .cq-reward-particle{position:fixed;z-index:10101;left:var(--x);top:var(--y);width:8px;height:8px;border-radius:2px;background:var(--c);pointer-events:none;animation:cqParticle 950ms ease-out forwards}
       @keyframes cqGemFloat{50%{transform:translateY(-9px) rotate(4deg);filter:drop-shadow(0 0 22px rgba(255,235,128,1))}}@keyframes cqCodyBounce{to{transform:translateY(-7px) rotate(-4deg)}}@keyframes cqParticle{to{transform:translate(var(--dx),var(--dy)) rotate(240deg) scale(.1);opacity:0}}
-      @media(max-width:720px){.cq-audio-dock{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-end:8px;gap:5px}.cq-audio-dock button{width:36px;height:36px;min-width:36px;min-height:36px}.cq-gem-wallet{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:8px;padding:6px 9px}.cq-reward-card{padding:22px 16px}}
+      @media(max-width:720px){.cq-audio-dock{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:50%;gap:5px}.cq-audio-dock button{width:36px;height:36px;min-width:36px;min-height:36px}.cq-gem-wallet{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:8px;padding:6px 9px}.cq-reward-card{padding:22px 16px}}
       @media(prefers-reduced-motion:reduce){.cq-reward-gem,.cq-reward-cody,.cq-reward-overlay,.cq-reward-card{animation:none!important;transition:none!important}.cq-reward-particle{display:none}}
     `;
     document.head.append(style);
@@ -148,10 +148,10 @@
     dock.querySelector("[data-cq-music]").addEventListener("click",()=>musicEnabled?stopMusic():startMusic());
     document.body.append(dock);
     const wallet=document.createElement("div");wallet.className="cq-gem-wallet";
-    wallet.innerHTML='<img class="cq-gem-cody" src="cody-avatar.svg" alt="كودي"><span class="cq-gem-wallet__icon" aria-hidden="true">◆</span><span><span class="cq-gem-wallet__value">—</span><br><span class="cq-gem-wallet__label">جواهرك</span></span>';
+    wallet.innerHTML='<img class="cq-gem-cody" src="' + new URL("../cody-avatar.svg", document.currentScript?.src || location.href).href + '" alt="كودي"><span class="cq-gem-wallet__icon" aria-hidden="true">◆</span><span><span class="cq-gem-wallet__value">—</span><br><span class="cq-gem-wallet__label">جواهرك</span></span>';
     document.body.append(wallet);balanceNode=wallet.querySelector(".cq-gem-wallet__value");
     const overlay=document.createElement("div");overlay.id="cqRewardOverlay";overlay.className="cq-reward-overlay";overlay.setAttribute("aria-hidden","true");
-    overlay.innerHTML='<section class="cq-reward-card" role="dialog" aria-modal="true" aria-labelledby="cqRewardTitle"><div class="cq-reward-gem"><i class="ri-vip-diamond-fill" aria-hidden="true"></i></div><h2 class="cq-reward-title" id="cqRewardTitle">جوهرة جديدة!</h2><p class="cq-reward-copy">كودي فخور بيك! كل خطوة بتقربك من هدفك.</p><img class="cq-reward-cody" src="cody-avatar.svg" alt="كودي"><div><button type="button" class="cq-reward-close">رائع!</button></div></section>';
+    overlay.innerHTML='<section class="cq-reward-card" role="dialog" aria-modal="true" aria-labelledby="cqRewardTitle"><div class="cq-reward-gem"><i class="ri-vip-diamond-fill" aria-hidden="true"></i></div><h2 class="cq-reward-title" id="cqRewardTitle">جوهرة جديدة!</h2><p class="cq-reward-copy">كودي فخور بيك! كل خطوة بتقربك من هدفك.</p><img class="cq-reward-cody" src="' + new URL("../cody-avatar.svg", document.currentScript?.src || location.href).href + '" alt="كودي"><div><button type="button" class="cq-reward-close">رائع!</button></div></section>';
     document.body.append(overlay);
     overlay.querySelector(".cq-reward-close").addEventListener("click",()=>closeReward(overlay));
     overlay.addEventListener("click",event=>{if(event.target===overlay)closeReward(overlay)});
