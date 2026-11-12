@@ -1,0 +1,40 @@
+name: Django admin portal checks
+
+on:
+  pull_request:
+    paths:
+      - "admin-portal/**"
+      - ".github/workflows/django-admin-checks.yml"
+  push:
+    branches:
+      - "feature/django-admin-portal"
+    paths:
+      - "admin-portal/**"
+      - ".github/workflows/django-admin-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  django-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin-portal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: admin-portal/requirements.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Django system check
+        run: python manage.py check
+      - name: Check migration consistency
+        run: python manage.py makemigrations --check --dry-run
+      - name: Collect static files for admin template tests
+        run: python manage.py collectstatic --noinput
+      - name: Run tests
+        run: python manage.py test
