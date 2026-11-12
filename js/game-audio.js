@@ -176,6 +176,7 @@
       .cq-gem-pickup{position:fixed;z-index:10120;inset-block-start:34%;inset-inline-start:50%;display:flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid rgba(255,225,120,.7);border-radius:18px;background:linear-gradient(120deg,rgba(34,27,65,.96),rgba(12,31,54,.96));color:#fff;font:900 15px Cairo,sans-serif;box-shadow:0 0 36px rgba(255,207,72,.45);pointer-events:none;animation:cqPickupPop 1.15s cubic-bezier(.2,.8,.2,1) forwards;}
       .cq-gem-pickup i{font-size:1.7rem;color:#ffe27a;filter:drop-shadow(0 0 12px #ffd66b)}
       @keyframes cqPickupPop{0%{opacity:0;transform:translate(-50%,24px) scale(.45)}18%{opacity:1;transform:translate(-50%,0) scale(1.12)}35%{transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-72px) scale(1.06)}}
+      .cq-celebrate-flash{animation:cqCelebrateFlash .42s ease-out}@keyframes cqCelebrateFlash{0%{filter:brightness(1)}35%{filter:brightness(1.22)}100%{filter:brightness(1)}}
       @keyframes cqGemFloat{50%{transform:translateY(-9px) rotate(4deg);filter:drop-shadow(0 0 22px rgba(255,235,128,1))}}@keyframes cqCodyBounce{to{transform:translateY(-7px) rotate(-4deg)}}@keyframes cqParticle{to{transform:translate(var(--dx),var(--dy)) rotate(240deg) scale(.1);opacity:0}}
       @media(max-width:720px){.cq-audio-dock{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:50%;gap:5px}.cq-audio-dock button{width:36px;height:36px;min-width:36px;min-height:36px}.cq-gem-wallet{inset-block-end:calc(82px + env(safe-area-inset-bottom));inset-inline-start:8px;padding:6px 9px}.cq-reward-card{padding:22px 16px}}
       @media(prefers-reduced-motion:reduce){.cq-reward-gem,.cq-reward-cody,.cq-reward-overlay,.cq-reward-card{animation:none!important;transition:none!important}.cq-reward-particle{display:none}}
@@ -200,8 +201,31 @@
       document.querySelectorAll(".cq-gem-pickup").forEach(item => item.remove());
       const toast = document.createElement("div");
       toast.className = "cq-gem-pickup";
-      toast.innerHTML = '<i class="ri-vip-diamond-fill" aria-hidden="true"></i><span>' + String(options.label || "جوهرة تم جمعها!") + '</span>';
+      const icon = document.createElement("i");
+      icon.className = "ri-vip-diamond-fill";
+      icon.setAttribute("aria-hidden", "true");
+      const label = document.createElement("span");
+      label.textContent = String(options.label || "جوهرة تم جمعها!");
+      toast.append(icon, label);
       document.body.append(toast);
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.body.classList.remove("cq-celebrate-flash");
+        void document.body.offsetWidth;
+        document.body.classList.add("cq-celebrate-flash");
+        setTimeout(() => document.body.classList.remove("cq-celebrate-flash"), 460);
+        const colors = ["#ffe27a", "#36bfe5", "#c69cff", "#ff91b5", "#ffffff"];
+        for (let i = 0; i < 18; i++) {
+          const particle = document.createElement("i");
+          particle.className = "cq-reward-particle";
+          particle.style.setProperty("--x", (48 + Math.random() * 4) + "vw");
+          particle.style.setProperty("--y", (31 + Math.random() * 8) + "vh");
+          particle.style.setProperty("--dx", ((Math.random() - .5) * 300) + "px");
+          particle.style.setProperty("--dy", ((Math.random() - .5) * 280) + "px");
+          particle.style.setProperty("--c", colors[i % colors.length]);
+          document.body.append(particle);
+          setTimeout(() => particle.remove(), 1000);
+        }
+      }
       setTimeout(() => toast.remove(), 1250);
     }
     window.CodeQuestExperience=Object.freeze({reward:showReward,collectible:showCollectible,refreshGemBalance,setGemBalance,setVolumes});
