@@ -121,6 +121,7 @@ if (root) {
     grid.replaceChildren();
     series.forEach((item, index) => {
       const card = make("article", "magazine-series-card");
+      card.style.setProperty("--series-index", String(index));
       const cover = make("div", "magazine-series-cover");
       const image = document.createElement("img");
       image.src = `https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg`;
