@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 
@@ -55,7 +56,7 @@ class Course(PublishedModel):
 class Lesson(PublishedModel):
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name="lessons", verbose_name="المنهج")
     title = models.CharField("عنوان الدرس", max_length=180)
-    lesson_key = models.SlugField("معرّف الدرس الحالي", max_length=160, unique=True, help_text="يُستخدم لاحقًا لربط المحتوى بمعرّفات الدروس في CodeQuest.")
+    lesson_key = models.SlugField("معرّف الدرس الحالي", max_length=160, unique=True, help_text="يُستخدم لربط المحتوى بمعرّفات الدروس في CodeQuest.")
     summary = models.TextField("ملخص", blank=True)
     content = models.TextField("محتوى الدرس", blank=True)
     estimated_minutes = models.PositiveSmallIntegerField("المدة المتوقعة بالدقائق", default=10)
@@ -83,6 +84,18 @@ class QuizQuestion(PublishedModel):
         verbose_name = "سؤال اختبار"
         verbose_name_plural = "بنك الأسئلة"
 
+    def clean(self):
+        super().clean()
+        errors = {}
+        if not isinstance(self.options, list) or len(self.options) < 2:
+            errors["options"] = "يجب إضافة اختيارين على الأقل."
+        elif any(not isinstance(option, str) or not option.strip() for option in self.options):
+            errors["options"] = "يجب أن يكون كل اختيار نصًا غير فارغ."
+        elif self.correct_index >= len(self.options):
+            errors["correct_index"] = "رقم الإجابة الصحيحة خارج نطاق الاختيارات."
+        if errors:
+            raise ValidationError(errors)
+
     def __str__(self):
         return self.prompt[:70]
 
@@ -97,6 +110,11 @@ class Announcement(PublishedModel):
         ordering = ["-created_at"]
         verbose_name = "إعلان"
         verbose_name_plural = "الإعلانات"
+
+    def clean(self):
+        super().clean()
+        if self.starts_at and self.ends_at and self.ends_at <= self.starts_at:
+            raise ValidationError({"ends_at": "يجب أن يكون وقت انتهاء الإعلان بعد وقت بدايته."})
 
     def __str__(self):
         return self.title
