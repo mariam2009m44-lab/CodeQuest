@@ -61,6 +61,7 @@ TEMPLATES = [{
         "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
         "content.context_processors.admin_portal_permissions",
+        "content.context_processors.admin_portal_overview",
     ]},
 }]
 WSGI_APPLICATION = "config.wsgi.application"
