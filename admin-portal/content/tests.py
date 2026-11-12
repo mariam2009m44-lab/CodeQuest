@@ -163,3 +163,57 @@ class AdminRoleTests(TestCase):
         self.assertEqual(response.status_code, 200)
         audit = StudentLookupAudit.objects.get(requested_by=manager)
         self.assertEqual(audit.target_uid_hash, sha256(b"sample_uid_123").hexdigest())
+
+
+class StudentAccountsPageTests(TestCase):
+    def setUp(self):
+        call_command("setup_admin_roles")
+        manager_group = Group.objects.get(name="مدير المنصة")
+        self.manager = get_user_model().objects.create_user(
+            username="accounts-page-manager",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        self.manager.groups.add(manager_group)
+
+    @patch("content.views.list_student_accounts", return_value={
+        "accounts": [{
+            "uid": "learner_123",
+            "email": "learner@example.test",
+            "display_name": "Learner",
+            "email_verified": True,
+            "disabled": False,
+            "created_at": None,
+            "last_sign_in_at": None,
+        }],
+        "next_page_token": "next-page-token",
+    })
+    def test_manager_can_view_paginated_student_accounts(self, mock_list):
+        self.client.force_login(self.manager)
+        response = self.client.get(reverse("student_accounts"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "learner@example.test")
+        self.assertContains(response, "learner_123")
+        self.assertContains(response, "الحسابات التالية")
+        mock_list.assert_called_once_with(page_token="", page_size=50)
+
+    def test_content_editor_cannot_view_student_accounts(self):
+        editor_group = Group.objects.get(name="محرر المحتوى")
+        editor = get_user_model().objects.create_user(
+            username="accounts-page-editor",
+            password="safe-test-password",
+            is_staff=True,
+        )
+        editor.groups.add(editor_group)
+        self.client.force_login(editor)
+        response = self.client.get(reverse("student_accounts"))
+        self.assertEqual(response.status_code, 403)
+
+    @patch("content.views.list_student_accounts", side_effect=FirebaseAdminDisabled(
+        "تكامل بيانات الطلاب غير مفعّل."
+    ))
+    def test_accounts_page_explains_when_firebase_is_disabled(self, _mock_list):
+        self.client.force_login(self.manager)
+        response = self.client.get(reverse("student_accounts"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "تكامل بيانات الطلاب غير مفعّل")
