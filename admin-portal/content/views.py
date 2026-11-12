@@ -1,9 +1,11 @@
+import hashlib
 import re
 
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 
 from .firebase_service import FirebaseAdminDisabled, get_student_summary
+from .models import StudentLookupAudit
 
 
 UID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
@@ -28,6 +30,11 @@ def student_lookup_view(request):
                 context["student"] = get_student_summary(uid)
                 if context["student"] is None:
                     context["error"] = "لم يتم العثور على حساب بهذا المعرّف."
+                else:
+                    StudentLookupAudit.objects.create(
+                        requested_by=request.user,
+                        target_uid_hash=hashlib.sha256(uid.encode("utf-8")).hexdigest(),
+                    )
             except FirebaseAdminDisabled as error:
                 context["error"] = str(error)
             except Exception:
