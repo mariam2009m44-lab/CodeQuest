@@ -76,9 +76,20 @@ if (!settings.includes('id="soundToggle"') || !settings.includes('id="musicToggl
 const gameAudio = fs.readFileSync("js/game-audio.js", "utf8");
 const themeScript = fs.readFileSync("js/theme.js", "utf8");
 if (!gameAudio.includes("cq-audio-dock") || !gameAudio.includes("cq-gem-wallet") ||
-    !gameAudio.includes("cq_music") || !gameAudio.includes("CodeQuestExperience") ||
-    !themeScript.includes("game-audio.js")) {
-  throw new Error("The shared experience layer needs sound, optional music, gems and platform-wide loading.");
+    !gameAudio.includes(".cq-audio-dock,.cq-gem-wallet{display:none!important}") ||
+    !gameAudio.includes("cq_music") || !gameAudio.includes("setVolumes") ||
+    !gameAudio.includes("CodeQuestExperience") || !themeScript.includes("game-audio.js")) {
+  throw new Error("The shared experience layer must keep audio and gem controls hidden outside Settings while preserving rewards.");
+}
+if (!settings.includes('id="soundVolume"') || !settings.includes('id="musicVolume"') ||
+    !settings.includes('id="cqSettingsGemBalance"')) {
+  throw new Error("Audio volume and gem balance controls must live in Settings.");
+}
+const pythonLesson = fs.readFileSync("python-lesson.html", "utf8");
+if (!pythonLesson.includes("localCheckPassed") ||
+    !pythonLesson.includes("challengeVerifiedOnServer = false") ||
+    !pythonLesson.includes("خدمة التحقق السحابي غير متاحة مؤقتًا")) {
+  throw new Error("Python lessons must allow honest local-only continuation during temporary verification outages.");
 }
 if (!magazineScript.includes("youtube-nocookie.com/embed/") ||
     !magazineScript.includes("magazine-series-play")) {
