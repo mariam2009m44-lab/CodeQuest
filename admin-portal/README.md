@@ -90,7 +90,7 @@ python manage.py setup_admin_roles
 
 أُضيف دعم اختياري لـ PostgreSQL عبر المتغير `DATABASE_URL`، وخادم Gunicorn، وتقديم ملفات الإدارة الثابتة عبر WhiteNoise. يظل SQLite خيارًا للتطوير المحلي فقط.
 
-- أمر البناء المقترح: `pip install -r admin-portal/requirements.txt`
+- أمر البناء المقترح: `pip install -r admin-portal/requirements.txt && cd admin-portal && python manage.py collectstatic --noinput`
 - أمر تشغيل الويب: `gunicorn config.wsgi:application --chdir admin-portal`
 - أمر الترحيلات بعد توفير قاعدة البيانات: `cd admin-portal && python manage.py migrate`
 - فحص الصحة: `/healthz/` ويعيد نصًا بسيطًا `ok`.
