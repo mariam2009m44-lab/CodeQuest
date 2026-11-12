@@ -512,6 +512,7 @@
       const level=LEVELS[levelIndex];
       if(level.gems.some(([x,z])=>x===position[0]&&z===position[1])){
         collected.add(key);score+=20;
+        window.CodeQuestExperience?.collectible({label:"جوهرة جديدة! +20 نقطة"});
         const gem=gemMeshes.find(item=>item.userData.grid[0]===position[0]&&item.userData.grid[1]===position[1]);
         if(gem)gem.visible=false;
         $("gemCount").textContent=collected.size+" / "+level.gems.length;
