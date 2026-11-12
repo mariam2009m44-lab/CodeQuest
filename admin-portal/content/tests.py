@@ -240,5 +240,6 @@ class AdminOverviewTests(TestCase):
         self.assertContains(response, "نظرة عامة على المنصة")
         self.assertContains(response, "المسارات التعليمية")
         self.assertContains(response, "متابعة الطلاب")
+        self.assertContains(response, "لا يظهر تلقائيًا في موقع الطلاب")
         self.assertEqual(response.context["admin_portal_counts"]["paths"], 1)
         self.assertEqual(response.context["admin_portal_published"]["paths"], 1)
