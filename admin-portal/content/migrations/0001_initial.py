@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("title", models.CharField(max_length=180, verbose_name="عنوان الدرس")),
-                ("lesson_key", models.SlugField(help_text="يُستخدم لاحقًا لربط المحتوى بمعرّفات الدروس في CodeQuest.", max_length=160, unique=True, verbose_name="معرّف الدرس الحالي")),
+                ("lesson_key", models.SlugField(help_text="يُستخدم لربط المحتوى بمعرّفات الدروس في CodeQuest.", max_length=160, unique=True, verbose_name="معرّف الدرس الحالي")),
                 ("summary", models.TextField(blank=True, verbose_name="ملخص")),
                 ("content", models.TextField(blank=True, verbose_name="محتوى الدرس")),
                 ("estimated_minutes", models.PositiveSmallIntegerField(default=10, verbose_name="المدة المتوقعة بالدقائق")),
