@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Place the app before django.contrib.admin so its admin template overrides are discovered first.
     "content.apps.ContentConfig",
 ]
 MIDDLEWARE = [
