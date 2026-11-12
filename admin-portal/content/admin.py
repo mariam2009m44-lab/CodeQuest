@@ -1,7 +1,15 @@
 from django.contrib import admin
 from django.contrib.admin.models import CHANGE, LogEntry
 
-from .models import Announcement, Course, LearningPath, Lesson, QuizQuestion, StudentProject
+from .models import (
+    Announcement,
+    Course,
+    LearningPath,
+    Lesson,
+    QuizQuestion,
+    StudentLookupAudit,
+    StudentProject,
+)
 
 
 class PublishingAdmin(admin.ModelAdmin):
@@ -130,3 +138,31 @@ class AuditLogAdmin(admin.ModelAdmin):
 
     def has_view_or_change_permission(self, request, obj=None):
         return self.has_view_permission(request, obj)
+
+
+@admin.register(StudentLookupAudit)
+class StudentLookupAuditAdmin(admin.ModelAdmin):
+    list_display = ("accessed_at", "requested_by", "short_uid_hash")
+    list_filter = ("accessed_at",)
+    date_hierarchy = "accessed_at"
+    ordering = ("-accessed_at",)
+    readonly_fields = ("requested_by", "target_uid_hash", "accessed_at")
+
+    @admin.display(description="بصمة UID")
+    def short_uid_hash(self, obj):
+        return obj.target_uid_hash[:12]
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser or request.user.groups.filter(name="مدير المنصة").exists()
+
+    def has_view_or_change_permission(self, request, obj=None):
+        return self.has_view_permission(request, obj)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
