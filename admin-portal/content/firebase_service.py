@@ -7,6 +7,11 @@ from firebase_admin import auth, credentials, firestore
 
 APP_NAME = "codequest-django-admin"
 
+# Keep an individual lookup bounded so an unusually large account cannot
+# trigger an unbounded Firestore scan from the admin portal.
+MAX_PROGRESS_DOCS_PER_STUDENT = 500
+MAX_PROJECT_DOCS_PER_STUDENT = 500
+
 
 class FirebaseAdminDisabled(RuntimeError):
     pass
@@ -77,14 +82,21 @@ def get_student_summary(uid):
     completed_lessons = 0
     lessons_by_language = {}
     progress_ref = db.collection("users").document(uid).collection("lessonProgress")
-    for snapshot in progress_ref.stream():
+    progress_snapshots = list(
+        progress_ref.limit(MAX_PROGRESS_DOCS_PER_STUDENT).stream()
+    )
+    for snapshot in progress_snapshots:
         progress = snapshot.to_dict() or {}
         if progress.get("completed") is True:
             completed_lessons += 1
             language = progress.get("language")
             if isinstance(language, str) and language:
                 lessons_by_language[language] = lessons_by_language.get(language, 0) + 1
-    projects_query = db.collection("projects").where("userId", "==", uid)
+    projects_query = (
+        db.collection("projects")
+        .where("userId", "==", uid)
+        .limit(MAX_PROJECT_DOCS_PER_STUDENT)
+    )
     projects_count = sum(1 for _ in projects_query.stream())
     return {
         "uid": uid,
@@ -92,4 +104,6 @@ def get_student_summary(uid):
         "completed_lessons": completed_lessons,
         "lessons_by_language": lessons_by_language,
         "projects_count": projects_count,
+        "progress_may_be_incomplete": len(progress_snapshots) == MAX_PROGRESS_DOCS_PER_STUDENT,
+        "projects_may_be_incomplete": projects_count == MAX_PROJECT_DOCS_PER_STUDENT,
     }
