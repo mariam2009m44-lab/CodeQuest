@@ -57,6 +57,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DEBUG and not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL must point to a persistent production database when DEBUG is false.")
 if DATABASE_URL:
     DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)}
 else:
