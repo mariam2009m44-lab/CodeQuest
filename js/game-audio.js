@@ -161,7 +161,8 @@
     overlay.addEventListener("click",event=>{if(event.target===overlay)closeReward(overlay)});
     window.addEventListener("keydown",event=>{if(event.key==="Escape")closeReward(overlay)});
     function showCollectible(options = {}) {
-      play("reward");
+      play("correct");
+      document.querySelectorAll(".cq-gem-pickup").forEach(item => item.remove());
       const toast = document.createElement("div");
       toast.className = "cq-gem-pickup";
       toast.innerHTML = '<i class="ri-vip-diamond-fill" aria-hidden="true"></i><span>' + String(options.label || "جوهرة تم جمعها!") + '</span>';
