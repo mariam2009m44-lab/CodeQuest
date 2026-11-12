@@ -162,23 +162,25 @@ service cloud.firestore {
       allow delete: if false;
 
       match /lessonProgress/{lessonId} {
-        function hasVerifiedQuizResult(uid, data) {
+        function hasValidCompletionProof(uid, data) {
           let resultPath = /databases/$(database)/documents/users/$(uid)/quizResults/lesson_$(data.language)_$(data.chapter)_$(data.lesson);
+          let proof = get(resultPath).data;
 
           return exists(resultPath)
-            && get(resultPath).data.verificationVersion == 1
-            && get(resultPath).data.serverVerified == true
-            && get(resultPath).data.passed == true
-            && get(resultPath).data.uid == uid
-            && get(resultPath).data.language == data.language
-            && get(resultPath).data.chapter == data.chapter
-            && get(resultPath).data.lesson == data.lesson
+            && proof.verificationVersion == 1
+            && proof.serverVerified == true
+            && proof.passed == true
+            && proof.uid == uid
+            && proof.language == data.language
+            && proof.chapter == data.chapter
+            && proof.lesson == data.lesson
             && (
-              data.language != 'java'
-              || (
-                get(resultPath).data.challengeVerified == true
-                && get(resultPath).data.quizVerified == true
-              )
+              (data.language == 'python' && proof.challengeVerified == true)
+              || (data.language == 'java'
+                && proof.challengeVerified == true
+                && proof.quizVerified == true)
+              || (data.language in ['javascript', 'cpp']
+                && (proof.quizVerified == true || proof.passed == true))
             );
         }
 
@@ -197,8 +199,10 @@ service cloud.firestore {
               'chapter',
               'lesson',
               'completed',
-              'updatedAt'
+              'updatedAt',
+              'completedAt'
             ])
+            && (!data.keys().hasAny(['completedAt']) || data.completedAt is timestamp)
             && validLanguage(data.language)
             && data.chapter is int
             && data.chapter >= 0
@@ -209,11 +213,21 @@ service cloud.firestore {
         }
 
         allow get, list: if owns(uid);
-        allow create, update: if owns(uid)
+        allow create: if owns(uid)
           && validLessonProgress()
+          && !request.resource.data.keys().hasAny(['completedAt'])
           && (
             request.resource.data.completed != true
-            || hasVerifiedQuizResult(uid, request.resource.data)
+            || hasValidCompletionProof(uid, request.resource.data)
+          );
+
+        allow update: if owns(uid)
+          && validLessonProgress()
+          && !request.resource.data.diff(resource.data)
+            .affectedKeys().hasAny(['completedAt'])
+          && (
+            request.resource.data.completed != true
+            || hasValidCompletionProof(uid, request.resource.data)
           );
         allow delete: if owns(uid);
       }
