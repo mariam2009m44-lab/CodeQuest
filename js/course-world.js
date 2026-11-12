@@ -188,7 +188,7 @@ async function init(){
   try{const profile=await getUserProfile();document.getElementById("cwXp").textContent=String(profile?.xp??0);document.getElementById("cwStars").textContent=String(profile?.stars??0)}
   catch{document.getElementById("cwXp").textContent="—";document.getElementById("cwStars").textContent="—"}
   showWelcome();
- }catch(error){console.error(error);map.innerHTML='<div class="cw-empty">مقدرتش أحمل خريطة المسار. حدّث الصفحة أو ارجع للمسارات وحاول تاني.</div>';setCody("thinking","فيه مشكلة بسيطة في تحميل الرحلة. جرّب تحدّث الصفحة.")}
+ }catch(error){console.error("Course path initialization failed:",error);const reason=error?.message||"خطأ غير معروف";if(map)map.innerHTML='<div class="cw-empty"><strong>مقدرتش أحمل خريطة المسار.</strong><p>حدّث الصفحة أو ارجع للمسارات وحاول تاني.</p><small>'+escapeHTML(reason)+'</small></div>';setCody("thinking","واجهت مشكلة أثناء تجهيز الرحلة. جرّب تحديث الصفحة، ولو استمرت المشكلة ابعت رسالة الخطأ الظاهرة.")}
 }
 window.addEventListener("codequest:lesson-completed",refreshProgress);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshProgress()});
