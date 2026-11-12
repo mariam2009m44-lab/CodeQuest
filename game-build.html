@@ -157,6 +157,7 @@
     function updateGlobalScore(points) {
       let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
       total += points; localStorage.setItem('codyTotalScore', total);
+      window.CodeQuestExperience?.collectible({ label: "+" + points + " نقطة" });
     }
 
     function startGame(level) {
