@@ -99,6 +99,14 @@ export function authError(error) {
       "تحقق من اتصال الإنترنت.",
     "auth/operation-not-allowed":
       "طريقة تسجيل الحساب غير مفعّلة في Firebase.",
+    "auth/unauthorized-domain":
+      "نطاق الموقع غير مسموح به في إعدادات Firebase Authentication.",
+    "auth/invalid-api-key":
+      "إعداد الاتصال بـ Firebase غير صحيح. راجعي إعدادات المشروع.",
+    "auth/app-not-authorized":
+      "هذا التطبيق غير مصرح له باستخدام مشروع Firebase الحالي.",
+    "auth/internal-error":
+      "حدث خطأ داخلي أثناء الاتصال بخدمة تسجيل الدخول. حاولي مرة أخرى.",
     "auth/user-disabled": "هذا الحساب غير مفعّل.",
     "auth/invalid-action-code":
       "الرابط غير صالح أو انتهت صلاحيته.",
@@ -110,6 +118,12 @@ export function authError(error) {
       "لا توجد صلاحية للوصول إلى بيانات الحساب. راجع قواعد Firestore.",
     "firestore/unavailable":
       "خدمة قاعدة البيانات غير متاحة حاليًا.",
+    "failed-precondition":
+      "إعداد مطلوب في Firebase غير مكتمل. راجعي إعدادات الخدمة.",
+    "deadline-exceeded":
+      "استغرق الاتصال بـ Firebase وقتًا أطول من اللازم. تحققي من الإنترنت وحاولي مجددًا.",
+    "unauthenticated":
+      "انتهت جلسة تسجيل الدخول. سجّلي الدخول مرة أخرى.",
     "unavailable": "الخدمة غير متاحة حاليًا."
   };
 
