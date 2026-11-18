@@ -510,7 +510,7 @@ function readLocalLessonProgress(uid) {
 
     if (javaProgress && typeof javaProgress === "object" && !Array.isArray(javaProgress)) {
       for (const [lessonId, item] of Object.entries(javaProgress)) {
-        const match = /^java-(\\d+)-(\\d+)$/.exec(lessonId);
+        const match = /^java-(\d+)-(\d+)$/.exec(lessonId);
         if (!match || item?.completed !== true) continue;
 
         records.push({
