@@ -136,4 +136,14 @@ if (!functionsSource.includes("exports.getMyParentLinks") ||
     !functionsSource.includes("exports.removeParentLinkAsChild")) {
   throw new Error("Learner-side parent unlink callables are missing.");
 }
+const appController = fs.readFileSync("js/app.js", "utf8");
+if (!appController.includes('file: "./json/java_curriculum.json"') ||
+    !appController.includes("java: new Set()") ||
+    !appController.includes(String.raw`const match = /^java-(\d+)-(\d+)$/.exec(lessonId);`)) {
+  throw new Error("Dashboard must aggregate cloud and account-scoped local Java lesson progress.");
+}
+const authPage = fs.readFileSync("js/auth-page.js", "utf8");
+if (!authPage.includes('"course-path.html"')) {
+  throw new Error("Sign-in redirect allowlist must preserve the requested course path.");
+}
 console.log("Learning magazine, media and parent-link integration validated.");
