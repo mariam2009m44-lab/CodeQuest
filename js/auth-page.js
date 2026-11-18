@@ -119,18 +119,24 @@ if (!form) {
   }
 
   function getErrorMessage(error) {
+    const code = typeof error?.code === "string"
+      ? ` (رمز الخطأ: ${error.code})`
+      : "";
+
     if (error?.accountCreated) {
       if (error.profileStage === "profile") {
-        return "تم إنشاء حساب الدخول، لكن تعذر تحديث اسم الحساب. سجّلي الدخول، ويمكنك تعديل الاسم لاحقًا من إعدادات الملف الشخصي.";
+        return `تم إنشاء حساب الدخول، لكن تعذر تحديث اسم الحساب. لا تعيدي إنشاء الحساب؛ حاولي تسجيل الدخول، ويمكن تعديل الاسم لاحقًا من الملف الشخصي.${code}`;
       }
+
       const stage = error.profileStage === "read"
-        ? "قراءة ملف التعلم"
-        : "حفظ ملف التعلم";
-      return `تم إنشاء حساب الدخول بنجاح، لكن تعذرت ${stage} في قاعدة البيانات. لا تحاولي إنشاء الحساب مرة أخرى؛ انتقلي إلى تسجيل الدخول، وسيحاول الموقع إكمال إعداد ملفك تلقائيًا بعد مراجعة إعدادات قاعدة البيانات.`;
+        ? "قراءة ملف التعلّم"
+        : "حفظ ملف التعلّم";
+
+      return `تم إنشاء حساب الدخول بالفعل، لكن تعذرت ${stage} في Firestore. لا تعيدي إنشاء الحساب؛ حاولي تسجيل الدخول مرة أخرى. إذا استمرت المشكلة، يجب مراجعة قواعد Firestore المنشورة. ${code}`;
     }
 
     if (error?.code) {
-      return authError(error);
+      return `${authError(error)}${code}`;
     }
 
     return error?.message || "حدث خطأ غير متوقع. حاولي مرة أخرى.";
@@ -176,6 +182,14 @@ if (!form) {
 
       window.location.replace(getNextPage());
     } catch (error) {
+      // Log diagnostic metadata only. Never log passwords or form values.
+      console.error("CodeQuest authentication flow failed:", {
+        code: error?.code || null,
+        profileStage: error?.profileStage || null,
+        accountCreated: error?.accountCreated === true,
+        message: error?.message || String(error)
+      });
+
       displayMessage(getErrorMessage(error), true);
     } finally {
       if (submitButton) {
