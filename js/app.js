@@ -49,6 +49,11 @@ const LANGUAGES = {
   cpp: {
     file: "./json/cpp_curriculum.json",
     selector: ".course-cpp .course-progress"
+  },
+
+  java: {
+    file: "./json/java_curriculum.json",
+    selector: ".course-java .course-progress"
   }
 };
 
@@ -360,7 +365,8 @@ function calculateLessonStats(documents, totals) {
   const completedByLanguage = {
     python: new Set(),
     javascript: new Set(),
-    cpp: new Set()
+    cpp: new Set(),
+    java: new Set()
   };
 
   for (const item of documents) {
@@ -410,7 +416,7 @@ function calculateLessonStats(documents, totals) {
     }
 
     /* -------------------------------------
-       JavaScript and C++
+       JavaScript, C++, and Java
     ------------------------------------- */
 
     if (!isValidCompletedLesson(item, totals)) {
@@ -493,6 +499,31 @@ function readLocalLessonProgress(uid) {
         records.push({ ...item, language, localOnly: true });
       }
     }
+  }
+
+  // Java lessons store account-scoped records by IDs such as "java-1-1".
+  // These are displayed as local progress only and never grant cloud rewards.
+  try {
+    const javaProgress = JSON.parse(
+      localStorage.getItem(`cody_java_progress_${uid}`) || "{}"
+    );
+
+    if (javaProgress && typeof javaProgress === "object" && !Array.isArray(javaProgress)) {
+      for (const [lessonId, item] of Object.entries(javaProgress)) {
+        const match = /^java-(\\d+)-(\\d+)$/.exec(lessonId);
+        if (!match || item?.completed !== true) continue;
+
+        records.push({
+          language: "java",
+          chapter: Number(match[1]) - 1,
+          lesson: Number(match[2]) - 1,
+          completed: true,
+          localOnly: true
+        });
+      }
+    }
+  } catch (error) {
+    console.warn("تعذر قراءة تقدم Java المحلي:", error);
   }
 
   // Python lesson page stores completed positions as "chapter_lesson"
