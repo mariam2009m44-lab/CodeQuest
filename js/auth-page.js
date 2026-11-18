@@ -63,7 +63,8 @@ if (!form) {
     "vr-lab.html",
     "studio.html",
     "parent.html",
-    "achievements.html"
+    "achievements.html",
+    "course-path.html"
   ]);
 
   function getNextPage() {
