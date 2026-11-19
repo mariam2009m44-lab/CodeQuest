@@ -1,0 +1,126 @@
+/* Shared visual corrections for pages with their own legacy inline styles.
+   The original dark appearance remains the default; these rules only adapt light mode. */
+html[data-theme="light"] {
+  --bg: #f4f7fc !important;
+  --bg-deep: #edf2f8 !important;
+  --glass: rgba(255,255,255,.88) !important;
+  --panel: rgba(255,255,255,.9) !important;
+  --border: #dfe6f0 !important;
+  --text: #18243a !important;
+  --muted: #64748b !important;
+  --cyan: #087f9b !important;
+}
+html[data-theme="light"] body {
+  color: #18243a !important;
+  background-color: #f4f7fc !important;
+}
+html[data-theme="light"] body.cw-languages-page {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(8,145,178,.11), transparent 60%),
+    #f4f7fc !important;
+}
+html[data-theme="light"] body.cw-languages-page .lang-card {
+  color: #18243a !important;
+  background: rgba(255,255,255,.88) !important;
+  border-color: #dfe6f0 !important;
+  box-shadow: 0 14px 35px rgba(35,55,90,.07);
+}
+html[data-theme="light"] body.cw-languages-page .lang-card p,
+html[data-theme="light"] body.cw-languages-page .lang-header p,
+html[data-theme="light"] body.cw-languages-page .footer-note {
+  color: #64748b !important;
+}
+html[data-theme="light"] body.cw-languages-page .back-btn {
+  color: #17647a !important;
+  background: rgba(8,145,178,.07) !important;
+  border-color: rgba(8,145,178,.24) !important;
+}
+html[data-theme="light"] body.cw-languages-page .card-action {
+  color: #334155 !important;
+  background: #f0f5fb !important;
+  border-color: #dce5f0 !important;
+}
+html[data-theme="light"] body.cw-languages-page .cw-language-hero {
+  color: #18243a;
+}
+html[data-theme="light"] body.cw-languages-page .cw-language-hero-copy p,
+html[data-theme="light"] body.cw-languages-page .cw-language-bubble span {
+  color: #64748b !important;
+}
+html[data-theme="light"] body.cw-languages-page .cw-language-hero,
+html[data-theme="light"] body.cw-languages-page .cw-language-bubble {
+  background-color: rgba(255,255,255,.88) !important;
+  border-color: #dfe6f0 !important;
+}
+html[data-theme="light"] body.cw-languages-page .cw-language-points span {
+  color: #17647a !important;
+  background: #e8f5f8 !important;
+}
+html[data-theme="light"] body.cw-languages-page .lang-header h1 {
+  text-shadow: none !important;
+}
+html[data-theme="light"] body.cw-languages-page .particles {
+  opacity: .22;
+}
+html[data-theme="light"] body:has(#bg-canvas) {
+  background: #f4f7fc !important;
+}
+html[data-theme="light"] body:has(#bg-canvas) .back-btn,
+html[data-theme="light"] body:has(#bg-canvas) .top-nav,
+html[data-theme="light"] body:has(#bg-canvas) .top-bar {
+  color: #24344d !important;
+}
+html[data-theme="light"] body:has(#bg-canvas) .game-card,
+html[data-theme="light"] body:has(#bg-canvas) .game-container,
+html[data-theme="light"] body:has(#bg-canvas) .game-panel,
+html[data-theme="light"] body:has(#bg-canvas) .quiz-container,
+html[data-theme="light"] body:has(#bg-canvas) .memory-container,
+html[data-theme="light"] body:has(#bg-canvas) .puzzle-container {
+  color: #18243a !important;
+  background: rgba(255,255,255,.94) !important;
+  border-color: #dfe6f0 !important;
+}
+html[data-theme="light"] body:has(#bg-canvas) h1,
+html[data-theme="light"] body:has(#bg-canvas) h2,
+html[data-theme="light"] body:has(#bg-canvas) h3,
+html[data-theme="light"] body:has(#bg-canvas) p {
+  color: inherit;
+}
+.cq-global-theme-toggle {
+  position: fixed;
+  z-index: 10001;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid rgba(145,160,195,.3);
+  border-radius: 999px;
+  color: #f3f6ff;
+  background: rgba(17,24,43,.94);
+  box-shadow: 0 10px 28px rgba(0,0,0,.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font: 700 13px/1.2 "Cairo", "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+.cq-global-theme-toggle i { font-size: 18px; }
+.cq-global-theme-toggle:focus-visible {
+  outline: 3px solid #8b7cf0;
+  outline-offset: 4px;
+}
+html[data-theme="light"] .cq-global-theme-toggle {
+  color: #26354d;
+  background: rgba(255,255,255,.96);
+  border-color: #d7dfeb;
+  box-shadow: 0 10px 28px rgba(30,50,80,.12);
+}
+@media (max-width: 520px) {
+  .cq-global-theme-toggle { min-height: 43px; padding: 9px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cq-global-theme-toggle { transition: none !important; }
+}
