@@ -47,7 +47,10 @@ const USER_RATE_LIMITS = Object.freeze({
   saveLessonProgress: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
   runCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 }),
   verifyJavaChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 }),
-  verifyPythonChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 })
+  verifyPythonChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 }),
+  purchaseStoreItem: Object.freeze({ windowMs: 60 * 1000, maxRequests: 5 }),
+  createParentLinkCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 3 }),
+  claimParentLinkCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 })
 });
 
 async function enforceUserRateLimit(uid, action) {
@@ -566,6 +569,7 @@ exports.purchaseStoreItem = onCall(
   CALL_OPTIONS,
   async request => {
     const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "purchaseStoreItem");
     const itemId = request.data?.itemId;
 
     if (
@@ -2289,6 +2293,7 @@ function hashParentLinkCode(code) {
 
 exports.createParentLinkCode = onCall(CALL_OPTIONS, async request => {
   const childUid = requireAuth(request);
+  await enforceUserRateLimit(childUid, "createParentLinkCode");
   const code = crypto.randomBytes(8).toString("hex");
   const codeHash = hashParentLinkCode(code);
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
@@ -2310,6 +2315,7 @@ exports.createParentLinkCode = onCall(CALL_OPTIONS, async request => {
 
 exports.claimParentLinkCode = onCall(CALL_OPTIONS, async request => {
   const parentUid = requireAuth(request);
+  await enforceUserRateLimit(parentUid, "claimParentLinkCode");
   const code = String(request.data?.code || "").trim().toLowerCase();
 
   if (!/^[a-f0-9]{16}$/.test(code)) {
