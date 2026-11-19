@@ -2,7 +2,8 @@
 const CURRICULUM_FILES = Object.freeze({
   python: "./json/python_curriculum.json",
   javascript: "./json/js_curriculum.json",
-  cpp: "./json/cpp_curriculum.json"
+  cpp: "./json/cpp_curriculum.json",
+  java: "./json/java_curriculum.json"
 });
 
 export const curriculum = Object.create(null);
