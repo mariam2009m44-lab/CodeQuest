@@ -288,7 +288,10 @@ form?.addEventListener("submit", async event => {
     setStatus("تم الرد", "success");
     playCodyEmotion("happy");
   } catch (error) {
-    const message = error?.name === "AbortError"
+    // A sign-out or account switch intentionally aborts the old account's request.
+    if (currentUser?.uid !== requestUser.uid) return;
+
+    const message = error?.name === "AbortError" || error?.name === "TimeoutError"
       ? "تأخر رد كودي أكثر من المتوقع. جرّب سؤالًا أقصر ثم أعد المحاولة."
       : error instanceof TypeError
         ? "تعذّر الاتصال بخدمة كودي. تحقّق من الإنترنت وحاول مجددًا."
