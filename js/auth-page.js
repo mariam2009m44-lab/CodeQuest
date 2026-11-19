@@ -20,12 +20,10 @@ if (!form) {
     if (!themeButton) return;
     const dark = document.documentElement.dataset.theme !== "light";
     const icon = themeButton.querySelector("i");
-    const label = themeButton.querySelector(".auth-theme-label");
-    const nextLabel = dark ? "الوضع الفاتح" : "الوضع الداكن";
-    themeButton.setAttribute("aria-label", `تفعيل ${nextLabel}`);
-    themeButton.title = `تفعيل ${nextLabel}`;
+    const nextLabel = dark ? "المظهر الفاتح" : "المظهر الداكن";
+    themeButton.setAttribute("aria-label", `التبديل إلى ${nextLabel}`);
+    themeButton.title = `التبديل إلى ${nextLabel}`;
     if (icon) icon.className = dark ? "ri-sun-line" : "ri-moon-line";
-    if (label) label.textContent = nextLabel;
   }
 
   themeButton?.addEventListener("click", () => {
