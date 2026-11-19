@@ -121,7 +121,7 @@ if (!form) {
 
   function displayExistingAccountMessage() {
     displayMessage(
-      "هذا البريد الإلكتروني لديه حساب بالفعل. لا تحتاجين إلى إنشاء حساب آخر؛ انتقلي إلى تسجيل الدخول. إذا نسيتِ كلمة المرور، استخدمي خيار «نسيت كلمة المرور؟» هناك.",
+      "هذا البريد الإلكتروني مسجّل بالفعل. لا حاجة إلى إنشاء حساب آخر؛ انتقل إلى تسجيل الدخول. إذا لم تتذكر كلمة المرور، استخدم خيار «نسيت كلمة المرور؟» هناك.",
       true
     );
 
@@ -147,15 +147,15 @@ if (!form) {
       : "";
 
     if (error?.accountCreated) {
-      if (error.profileStage === "profile") {
-        return `تم إنشاء حساب الدخول، لكن تعذر تحديث اسم الحساب. لا تعيدي إنشاء الحساب؛ حاولي تسجيل الدخول، ويمكن تعديل الاسم لاحقًا من الملف الشخصي.${code}`;
+      if (error.profileStage === "auth-profile") {
+        return `تم إنشاء حساب الدخول، لكن تعذر حفظ اسم العرض في Firebase Authentication. لا تنشئ حسابًا آخر؛ سجّل الدخول، ويمكن إعادة ضبط اسم العرض لاحقًا. ${code}`;
       }
 
       const stage = error.profileStage === "read"
         ? "قراءة ملف التعلّم"
         : "حفظ ملف التعلّم";
 
-      return `تم إنشاء حساب الدخول بالفعل، لكن تعذرت ${stage} في Firestore. لا تعيدي إنشاء الحساب؛ حاولي تسجيل الدخول مرة أخرى. إذا استمرت المشكلة، يجب مراجعة قواعد Firestore المنشورة. ${code}`;
+      return `تم إنشاء حساب الدخول بالفعل، لكن تعذرت ${stage} في Firestore. لا تنشئ حسابًا آخر؛ سجّل الدخول مرة أخرى. إذا استمرت المشكلة، يجب مراجعة قواعد Firestore المنشورة. ${code}`;
     }
 
     if (error?.code === "auth/invalid-credential") {
@@ -238,7 +238,7 @@ if (!form) {
     const email = emailInput.value.trim();
     if (!email || !emailInput.checkValidity()) {
       emailInput.reportValidity();
-      displayMessage("اكتبي البريد الإلكتروني المستخدم في الحساب أولًا.", true);
+      displayMessage("أدخل البريد الإلكتروني المستخدم في الحساب أولًا.", true);
       return;
     }
 
@@ -249,7 +249,7 @@ if (!form) {
     try {
       await resetPassword(email);
       displayMessage(
-        "تم طلب إرسال رابط إعادة التعيين. افحصي صندوق الوارد والرسائل غير المرغوب فيها (Spam)، ثم افتحي الرابط وعيّني كلمة مرور جديدة."
+        "تم طلب إرسال رابط إعادة التعيين. افحص صندوق الوارد والرسائل غير المرغوب فيها (Spam)، ثم افتح الرابط وعيّن كلمة مرور جديدة."
       );
     } catch (error) {
       displayMessage(getErrorMessage(error), true);
