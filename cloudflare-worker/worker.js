@@ -809,7 +809,11 @@ export default {
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: systemInstruction }] },
               contents,
-              generationConfig: { temperature: 0.4, maxOutputTokens: 1000 }
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 2048,
+                thinkingConfig: { thinkingLevel: "low" }
+              }
             }),
             signal: AbortSignal.timeout(40000)
           }
