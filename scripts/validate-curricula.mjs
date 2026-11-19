@@ -187,6 +187,45 @@ for (let chapterId = 1; chapterId <= 12; chapterId += 1) {
   });
 }
 
+// Java has a compact index curriculum: lesson content and quizzes live in java-lessons.html.
+// Validate its chapter/lesson map separately without requiring the richer JSON lesson schema.
+const javaFile = "json/java_curriculum.json";
+try {
+  const java = JSON.parse(fs.readFileSync(path.resolve(javaFile), "utf8"));
+  if (java?.language !== "java" || !Array.isArray(java.chapters) || java.chapters.length !== 8) {
+    fail(`${javaFile}: expected the Java curriculum to contain exactly 8 chapters`);
+  } else {
+    const javaIds = new Set();
+    let javaLessonCount = 0;
+    java.chapters.forEach((chapter, chapterIndex) => {
+      if (chapter?.id !== chapterIndex + 1 || typeof chapter.title !== "string" || !chapter.title.trim()) {
+        fail(`${javaFile}: invalid Java chapter ${chapterIndex + 1} metadata`);
+      }
+      if (!Array.isArray(chapter.lessons) || chapter.lessons.length !== 2) {
+        fail(`${javaFile}: Java chapter ${chapterIndex + 1} must contain exactly 2 lessons`);
+        return;
+      }
+      chapter.lessons.forEach((lesson, lessonIndex) => {
+        javaLessonCount += 1;
+        const expectedId = `java-${chapterIndex + 1}-${lessonIndex + 1}`;
+        if (lesson?.id !== expectedId || javaIds.has(lesson.id)) {
+          fail(`${javaFile}: expected a unique lesson ID ${expectedId}`);
+        }
+        javaIds.add(lesson?.id);
+        if (typeof lesson?.title !== "string" || !lesson.title.trim()) {
+          fail(`${javaFile}: ${expectedId} is missing its title`);
+        }
+      });
+    });
+    if (javaLessonCount !== 16 || javaIds.size !== 16) {
+      fail(`${javaFile}: expected 16 unique Java lessons, found ${javaIds.size}`);
+    }
+    summary.push({ language: "java", chapters: java.chapters.length, lessons: javaIds.size });
+  }
+} catch (error) {
+  fail(`${javaFile}: cannot read valid JSON (${error.message})`);
+}
+
 summary.push({
   language: "python-active",
   chapters: 12,
