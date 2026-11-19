@@ -567,10 +567,27 @@
         }
 
         const chapter = chapters[record.chapter];
-        if (
-          !Array.isArray(chapter?.lessons) ||
-          record.lesson >= chapter.lessons.length
-        ) {
+        if (!Array.isArray(chapter?.lessons)) {
+          continue;
+        }
+
+        // Legacy Python chapter exams use lesson index 104.
+        // Passing the exam represents completion of every lesson in that chapter.
+        if (record.language === "python" && record.lesson === 104) {
+          for (let lessonIndex = 0; lessonIndex < chapter.lessons.length; lessonIndex++) {
+            unique.set(
+              `${record.chapter}:${lessonIndex}`,
+              {
+                ...record,
+                lesson: lessonIndex,
+                completed: true
+              }
+            );
+          }
+          continue;
+        }
+
+        if (record.lesson >= chapter.lessons.length) {
           continue;
         }
 
