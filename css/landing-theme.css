@@ -95,20 +95,21 @@ html[data-theme="dark"] .cq-signature__bottom {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  width: 43px;
+  height: 43px;
   min-height: 43px;
-  padding: 9px 13px;
+  padding: 0;
   border: 1px solid var(--border, #dbe3f1);
   border-radius: 24px;
   background: var(--surface, #fff);
   color: var(--text, #182235);
   font: inherit;
-  font-size: 13px;
-  font-weight: 800;
   cursor: pointer;
-  white-space: nowrap;
+  transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
 }
-.landing-theme-toggle i { font-size: 17px; }
+.landing-theme-toggle i { font-size: 20px; line-height: 1; }
+.landing-theme-toggle:hover { transform: translateY(-2px) rotate(-7deg); box-shadow: 0 8px 20px rgba(40,50,90,.14); }
+.landing-theme-toggle:active { transform: scale(.94); }
 .landing-theme-toggle:focus-visible {
   outline: 3px solid #8877ee;
   outline-offset: 3px;
@@ -119,7 +120,7 @@ html[data-theme="dark"] .landing-theme-toggle {
   border-color: rgba(169, 185, 226, .22);
 }
 @media (max-width: 650px) {
-  .landing-theme-toggle { margin-inline-start: auto; }
+  .landing-theme-toggle { margin-inline-start: auto; flex: 0 0 43px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-theme] .blob,
