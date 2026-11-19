@@ -41,6 +41,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js for Firebase Functions tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Firebase Functions test dependencies
+        working-directory: functions
+        run: npm install --no-package-lock --no-audit --no-fund
+
+      - name: Run Firebase Functions integrity tests
+        working-directory: functions
+        run: npm test
+
       - name: Check Firebase Functions syntax
         run: node --check functions/index.js
 
