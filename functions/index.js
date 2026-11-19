@@ -50,7 +50,9 @@ const USER_RATE_LIMITS = Object.freeze({
   verifyPythonChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 }),
   purchaseStoreItem: Object.freeze({ windowMs: 60 * 1000, maxRequests: 5 }),
   createParentLinkCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 3 }),
-  claimParentLinkCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 })
+  claimParentLinkCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 }),
+  syncExistingLessonRewards: Object.freeze({ windowMs: 60 * 1000, maxRequests: 2 }),
+  claimGameReward: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 })
 });
 
 async function enforceUserRateLimit(uid, action) {
@@ -1239,6 +1241,7 @@ exports.syncExistingLessonRewards = onCall(
   },
   async request => {
     const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "syncExistingLessonRewards");
 
     const progressSnapshot = await db
       .collection("users")
@@ -1292,6 +1295,7 @@ exports.claimGameReward = onCall(
   CALL_OPTIONS,
   async request => {
     const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "claimGameReward");
     const data = request.data || {};
 
     const GAME_ID = "code-puzzle-hello-world";
