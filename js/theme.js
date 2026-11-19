@@ -157,16 +157,14 @@
     button.id = "cqGlobalThemeToggle";
     button.className = "cq-global-theme-toggle";
     button.setAttribute("aria-label", "تغيير مظهر المنصة");
-    button.innerHTML = '<i aria-hidden="true"></i><span></span>';
+    button.innerHTML = '<i aria-hidden="true"></i>';
 
     const icon = button.querySelector("i");
-    const label = button.querySelector("span");
 
     function syncControl() {
       const dark = root.dataset.theme !== "light";
       icon.className = dark ? "ri-sun-line" : "ri-moon-line";
-      label.textContent = dark ? "الوضع الفاتح" : "الوضع الداكن";
-      button.title = dark ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن";
+      button.title = dark ? "تغيير إلى المظهر الفاتح" : "تغيير إلى المظهر الداكن";
       button.setAttribute("aria-label", button.title);
     }
 
