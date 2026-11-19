@@ -136,6 +136,10 @@ if (!form) {
       return `تم إنشاء حساب الدخول بالفعل، لكن تعذرت ${stage} في Firestore. لا تعيدي إنشاء الحساب؛ حاولي تسجيل الدخول مرة أخرى. إذا استمرت المشكلة، يجب مراجعة قواعد Firestore المنشورة. ${code}`;
     }
 
+    if (error?.code === "auth/invalid-credential") {
+      return "الحساب موجود، لكن Firebase رفض بيانات الدخول. راجعي كلمة المرور، أو استخدمي زر إعادة تعيين كلمة المرور لإعداد كلمة مرور جديدة.";
+    }
+
     if (error?.code) {
       return `${authError(error)}${code}`;
     }
@@ -202,35 +206,34 @@ if (!form) {
 
   const resetButton = document.getElementById("resetPassword");
 
+  async function sendResetLink(button) {
+    if (!emailInput || button.disabled) return;
+
+    const email = emailInput.value.trim();
+    if (!email || !emailInput.checkValidity()) {
+      emailInput.reportValidity();
+      displayMessage("اكتبي البريد الإلكتروني المستخدم في الحساب أولًا.", true);
+      return;
+    }
+
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = "جارٍ إرسال الرابط...";
+
+    try {
+      await resetPassword(email);
+      displayMessage(
+        "تم طلب إرسال رابط إعادة التعيين. افحصي صندوق الوارد والرسائل غير المرغوب فيها (Spam)، ثم افتحي الرابط وعيّني كلمة مرور جديدة."
+      );
+    } catch (error) {
+      displayMessage(getErrorMessage(error), true);
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
   if (resetButton && !isSignup) {
-    resetButton.addEventListener("click", async () => {
-      if (!emailInput || resetButton.disabled) {
-        return;
-      }
-
-      if (!emailInput.value.trim() || !emailInput.checkValidity()) {
-        emailInput.reportValidity();
-        displayMessage("اكتبي بريدًا إلكترونيًا صحيحًا أولًا.", true);
-        return;
-      }
-
-      const originalText = resetButton.textContent;
-
-      resetButton.disabled = true;
-      resetButton.textContent = "جارٍ الإرسال...";
-
-      try {
-        await resetPassword(emailInput.value.trim());
-
-        displayMessage(
-          "لو البريد مسجل، هتوصلك رسالة لإعادة تعيين كلمة المرور."
-        );
-      } catch (error) {
-        displayMessage(getErrorMessage(error), true);
-      } finally {
-        resetButton.disabled = false;
-        resetButton.textContent = originalText;
-      }
-    });
+    resetButton.addEventListener("click", () => sendResetLink(resetButton));
   }
 }
