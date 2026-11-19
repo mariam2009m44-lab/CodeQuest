@@ -749,7 +749,22 @@ export default {
       }
 
       try {
-        const prediction = classifyCodyQuestion(body.question);
+        // The classifier is advisory only. A classifier/training-data issue
+        // must never prevent Cody from answering an otherwise valid question.
+        let prediction = {
+          category: "lesson_help",
+          confidence: 0,
+          needs_review: true
+        };
+        try {
+          prediction = classifyCodyQuestion(body.question);
+        } catch (classifierError) {
+          console.warn(
+            "Cody classifier unavailable; continuing with general response:",
+            classifierError?.message || "CLASSIFIER_ERROR"
+          );
+        }
+
         const history = Array.isArray(body.history) ? body.history.slice(-10) : [];
         const contents = [];
 
