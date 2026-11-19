@@ -138,47 +138,20 @@
     { once: true }
   );
 
-  function installSharedThemeControl() {
-    if (!document.getElementById("cqThemeEnhancements")) {
-      const stylesheet = document.createElement("link");
-      stylesheet.id = "cqThemeEnhancements";
-      stylesheet.rel = "stylesheet";
-      stylesheet.href = THEME_ENHANCEMENTS_URL;
-      document.head.append(stylesheet);
-    }
-
-    const existingControl = document.querySelector(
-      "#authThemeToggle, #landingThemeToggle, #darkModeToggle, .theme-toggle, [data-theme-toggle]"
-    );
-    if (existingControl || document.getElementById("cqGlobalThemeToggle")) return;
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.id = "cqGlobalThemeToggle";
-    button.className = "cq-global-theme-toggle";
-    button.setAttribute("aria-label", "تغيير مظهر المنصة");
-    button.innerHTML = '<i aria-hidden="true"></i>';
-
-    const icon = button.querySelector("i");
-
-    function syncControl() {
-      const dark = root.dataset.theme !== "light";
-      icon.className = dark ? "ri-sun-line" : "ri-moon-line";
-      button.title = dark ? "تغيير إلى المظهر الفاتح" : "تغيير إلى المظهر الداكن";
-      button.setAttribute("aria-label", button.title);
-    }
-
-    button.addEventListener("click", toggleTheme);
-    document.addEventListener("cq:themechange", syncControl);
-    syncControl();
-    document.body.append(button);
+  function installThemeEnhancements() {
+    if (document.getElementById("cqThemeEnhancements")) return;
+    const stylesheet = document.createElement("link");
+    stylesheet.id = "cqThemeEnhancements";
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = THEME_ENHANCEMENTS_URL;
+    document.head.append(stylesheet);
   }
 
-  // Add a consistent theme switch to pages that do not already provide one.
+  // Keep shared theme styling without injecting a control into every page.
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", installSharedThemeControl, { once: true });
+    document.addEventListener("DOMContentLoaded", installThemeEnhancements, { once: true });
   } else {
-    installSharedThemeControl();
+    installThemeEnhancements();
   }
 
   // مزامنة الإعدادات بين تبويبات المتصفح.
