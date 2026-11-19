@@ -813,26 +813,38 @@ export default {
           return jsonResponse({ success: false, message: "إعداد نموذج Gemini غير صالح." }, 503, origin);
         }
 
-        const upstream = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": env.GEMINI_API_KEY
-            },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemInstruction }] },
-              contents,
-              generationConfig: {
-                temperature: 0.4,
-                maxOutputTokens: 2048,
-                thinkingConfig: { thinkingLevel: "low" }
-              }
-            }),
-            signal: AbortSignal.timeout(40000)
+        const generationRequest = {
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents,
+          generationConfig: {
+            maxOutputTokens: 2048,
+            thinkingConfig: { thinkingLevel: "low" }
           }
-        );
+        };
+
+        // Gemini may return a temporary 5xx during capacity fluctuations.
+        // Retry only transient server errors; never repeat quota/auth/client errors.
+        let upstream;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          upstream = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": env.GEMINI_API_KEY
+              },
+              body: JSON.stringify(generationRequest),
+              signal: AbortSignal.timeout(12000)
+            }
+          );
+
+          const transientFailure = [500, 502, 503, 504].includes(upstream.status);
+          if (!transientFailure || attempt === 2) break;
+
+          await upstream.body?.cancel().catch(() => {});
+          await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+        }
 
         const data = await upstream.json().catch(() => ({}));
         if (upstream.status === 429) {
