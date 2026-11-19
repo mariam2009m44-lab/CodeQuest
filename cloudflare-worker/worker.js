@@ -663,7 +663,7 @@ export default {
         configured,
         quotaAvailable,
         ready: configured && quotaAvailable,
-        model: env.GEMINI_MODEL || "gemini-2.5-flash"
+        model: env.GEMINI_MODEL || "gemini-3.8-flash"
       }, 200, origin);
     }
 
