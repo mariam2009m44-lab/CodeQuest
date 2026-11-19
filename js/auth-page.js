@@ -114,9 +114,31 @@ if (!form) {
   form.insertAdjacentElement("afterend", message);
 
   function displayMessage(text, isError = false) {
-    message.textContent = text;
+    message.replaceChildren(document.createTextNode(text));
     message.setAttribute("role", isError ? "alert" : "status");
     message.style.color = isError ? "#b91c1c" : "#166534";
+  }
+
+  function displayExistingAccountMessage() {
+    displayMessage(
+      "هذا البريد الإلكتروني لديه حساب بالفعل. لا تحتاجين إلى إنشاء حساب آخر؛ انتقلي إلى تسجيل الدخول. إذا نسيتِ كلمة المرور، استخدمي خيار «نسيت كلمة المرور؟» هناك.",
+      true
+    );
+
+    const actions = document.createElement("div");
+    actions.style.display = "flex";
+    actions.style.flexWrap = "wrap";
+    actions.style.gap = "12px";
+    actions.style.marginTop = "10px";
+
+    const loginLink = document.createElement("a");
+    loginLink.href = "login.html";
+    loginLink.textContent = "الانتقال إلى تسجيل الدخول";
+    loginLink.style.fontWeight = "800";
+    loginLink.style.color = "#4f46e5";
+
+    actions.append(loginLink);
+    message.append(actions);
   }
 
   function getErrorMessage(error) {
@@ -195,7 +217,11 @@ if (!form) {
         message: error?.message || String(error)
       });
 
-      displayMessage(getErrorMessage(error), true);
+      if (isSignup && error?.code === "auth/email-already-in-use") {
+        displayExistingAccountMessage();
+      } else {
+        displayMessage(getErrorMessage(error), true);
+      }
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
