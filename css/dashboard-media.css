@@ -878,3 +878,219 @@ html[data-theme="light"] .cody-from-bot {
     transition: none;
   }
 }
+
+
+/* Cody chat — accessible, responsive conversation polish. */
+.cody-chat-panel {
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-color: color-mix(in srgb, var(--border) 78%, #7c70ff 22%);
+  isolation: isolate;
+}
+
+.cody-chat-header {
+  min-height: 66px;
+  gap: 12px;
+}
+
+.cody-chat-header > div {
+  min-width: 0;
+}
+
+.cody-chat-header strong {
+  font-size: 1rem;
+  letter-spacing: .01em;
+}
+
+.cody-chat-header small {
+  margin-top: 3px;
+}
+
+.cody-chat-header button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .18s ease, transform .18s ease;
+}
+
+.cody-chat-header button:hover {
+  background: rgba(255,255,255,.14);
+}
+
+.cody-chat-header button:active {
+  transform: scale(.94);
+}
+
+.cody-chat-messages {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+
+.cody-chat-message {
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
+  box-shadow: 0 4px 14px rgba(0,0,0,.07);
+}
+
+.cody-from-bot {
+  border-start-start-radius: 6px;
+}
+
+.cody-from-user {
+  border-start-end-radius: 6px;
+}
+
+.cody-chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 12px 10px;
+}
+
+.cody-chat-suggestions[hidden] {
+  display: none !important;
+}
+
+.cody-chat-suggestion {
+  max-width: 100%;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  background: var(--surface-glass);
+  font: inherit;
+  font-size: .7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.cody-chat-suggestion:hover {
+  border-color: var(--cyan);
+  background: var(--theme-hover-bg, var(--surface-raised));
+}
+
+.cody-chat-suggestion:active {
+  transform: scale(.97);
+}
+
+.cody-chat-form {
+  align-items: center;
+  padding: 11px 12px;
+  padding-bottom: max(11px, env(safe-area-inset-bottom));
+  background: var(--surface-raised, #10182b);
+}
+
+.cody-chat-form input {
+  min-height: 46px;
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.cody-chat-form input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 17%, transparent);
+}
+
+.cody-chat-form input:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.cody-chat-form button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  cursor: pointer;
+  transition: filter .18s ease, transform .18s ease, opacity .18s ease;
+}
+
+.cody-chat-form button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.cody-chat-form button:active:not(:disabled) {
+  transform: scale(.94);
+}
+
+.cody-chat-form button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.cody-chat-status {
+  padding-inline: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.cody-chat-launcher {
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.cody-chat-launcher:hover {
+  transform: translateY(-3px);
+  border-color: rgba(115, 220, 255, .7);
+  box-shadow: 0 13px 34px rgba(0,0,0,.34), 0 0 0 5px rgba(92,119,232,.15);
+}
+
+.cody-chat-launcher[aria-expanded="true"] {
+  border-color: var(--cyan);
+}
+
+.cody-chat-header button:focus-visible,
+.cody-chat-suggestion:focus-visible,
+.cody-chat-form input:focus-visible,
+.cody-chat-form button:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .cody-chat-panel {
+    inset-inline: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: calc(138px + env(safe-area-inset-bottom));
+    width: auto;
+    height: min(560px, calc(100dvh - 180px - env(safe-area-inset-bottom)));
+    border-radius: 20px;
+  }
+
+  .cody-chat-messages {
+    padding: 12px;
+  }
+
+  .cody-chat-message {
+    max-width: 94%;
+    font-size: .82rem;
+  }
+
+  .cody-chat-suggestions {
+    gap: 6px;
+    padding-inline: 10px;
+  }
+
+  .cody-chat-suggestion {
+    font-size: .66rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cody-chat-header button,
+  .cody-chat-suggestion,
+  .cody-chat-form input,
+  .cody-chat-form button,
+  .cody-chat-launcher {
+    transition: none !important;
+  }
+}
