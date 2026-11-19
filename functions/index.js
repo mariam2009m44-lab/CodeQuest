@@ -225,7 +225,7 @@ async function readJudge0Response(response) {
 }
 
 /*
- * تشغيل أكواد Python وJavaScript وC++.
+ * تشغيل أكواد Python وJavaScript وC++ وJava.
  */
 exports.runCode = onCall(
   CALL_OPTIONS,
