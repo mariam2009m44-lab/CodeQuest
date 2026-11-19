@@ -255,7 +255,38 @@
         font-size: .8rem;
       }
     }
-  </style>
+  
+    .settings-theme-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      padding: 0;
+      border: 1px solid var(--border-soft);
+      border-radius: 50%;
+      background: var(--bg-panel);
+      color: var(--primary);
+      box-shadow: 0 5px 18px rgba(0, 0, 0, .12);
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease, color .2s ease;
+    }
+    .settings-theme-icon i { font-size: 21px; line-height: 1; }
+    .settings-theme-icon:hover { transform: translateY(-2px); box-shadow: 0 9px 24px rgba(0,0,0,.18); }
+    .settings-theme-icon:active { transform: scale(.94); }
+    .settings-theme-icon:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+    .visually-hidden-theme-state-wrap {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+    }
+    @media (max-width: 520px) {
+      .settings-theme-icon { width: 42px; height: 42px; flex-basis: 42px; }
+    }
+</style>
 
   <!-- يجب أن يكون بعد تنسيقات الصفحة -->
   <link rel="stylesheet" href="css/theme.css">
@@ -266,6 +297,10 @@
 
     <header class="header">
       <h1>الإعدادات</h1>
+
+      <button type="button" class="settings-theme-icon" id="settingsThemeIcon" aria-label="التبديل إلى المظهر الفاتح" title="التبديل إلى المظهر الفاتح">
+        <i class="ri-sun-line" aria-hidden="true"></i>
+      </button>
 
       <a href="dashboard.html" class="btn-secondary">
         <i class="ri-home-5-line" aria-hidden="true"></i>
@@ -281,46 +316,12 @@
         المظهر والعرض
       </div>
 
-      <div class="setting-row">
-        <div class="setting-info">
-          <h3>الوضع الداكن</h3>
-          <p>تفعيل المظهر الداكن أو الفاتح في صفحات المنصة.</p>
-        </div>
-
-        <label class="toggle-switch">
-          <input
+      <div class="visually-hidden-theme-state-wrap" aria-hidden="true">
+        <input class="visually-hidden-theme-state"
             type="checkbox"
             id="darkModeToggle"
-            aria-label="تفعيل الوضع الداكن"
+            aria-label="حالة المظهر" tabindex="-1"
           >
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="setting-row">
-        <div class="setting-info">
-          <h3>تأثيرات الحركة</h3>
-          <p>التحكم في الأنيميشن وتأثيرات الواجهة.</p>
-        </div>
-
-        <label class="toggle-switch">
-          <input
-            type="checkbox"
-            id="motionToggle"
-            aria-label="تفعيل تأثيرات الحركة"
-          >
-          <span class="slider"></span>
-        </label>
-      </div>
-
-    </section>
-
-    <!-- الإشعارات والصوت -->
-    <section class="settings-group" aria-labelledby="notificationsTitle">
-
-      <div class="settings-group-title" id="notificationsTitle">
-        <i class="ri-notification-3-line" aria-hidden="true"></i>
-        الإشعارات والأصوات
       </div>
 
       <div class="setting-row">
@@ -514,6 +515,7 @@
 
     const elements = {
       dark: document.getElementById("darkModeToggle"),
+      themeIcon: document.getElementById("settingsThemeIcon"),
       sound: document.getElementById("soundToggle"),
       music: document.getElementById("musicToggle"),
       soundVolume: document.getElementById("soundVolume"),
@@ -645,6 +647,23 @@
         showToast(message, "success");
       });
     }
+
+    function syncSettingsThemeIcon() {
+      if (!elements.themeIcon) return;
+      const dark = document.documentElement.dataset.theme !== "light";
+      const icon = elements.themeIcon.querySelector("i");
+      const nextLabel = dark ? "المظهر الفاتح" : "المظهر الداكن";
+      if (icon) icon.className = dark ? "ri-sun-line" : "ri-moon-line";
+      elements.themeIcon.title = "التبديل إلى " + nextLabel;
+      elements.themeIcon.setAttribute("aria-label", elements.themeIcon.title);
+    }
+
+    elements.themeIcon?.addEventListener("click", () => {
+      elements.dark.checked = !elements.dark.checked;
+      elements.dark.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    document.addEventListener("cq:themechange", syncSettingsThemeIcon);
+    syncSettingsThemeIcon();
 
     bindToggle(
       elements.dark,
