@@ -2,7 +2,7 @@ import { auth } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const API_URL = "https://codequest.mariam2009m44.workers.dev/api/cody/chat";
-const HEALTH_URL = API_URL.replace(/\/chat$/, "/health");
+const HEALTH_URL = API_URL.slice(0, API_URL.lastIndexOf("/")) + "/health";
 const launcher = document.getElementById("codyChatLauncher");
 const heroLauncher = document.getElementById("codyHeroLauncher");
 const panel = document.getElementById("codyChatPanel");
