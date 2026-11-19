@@ -243,6 +243,7 @@ export async function registerUser(name, email, password) {
   validatePassword(password);
 
   let credential = null;
+  let registrationStage = "auth-profile";
 
   try {
     credential = await createUserWithEmailAndPassword(
@@ -251,10 +252,12 @@ export async function registerUser(name, email, password) {
       password
     );
 
+    registrationStage = "auth-profile";
     await updateProfile(credential.user, {
       displayName: cleanName
     });
 
+    registrationStage = "firestore-profile";
     await ensureUserProfile(credential.user);
 
     return credential.user;
@@ -266,7 +269,7 @@ export async function registerUser(name, email, password) {
     // loginUser() retries ensureUserProfile() for the authenticated account.
     if (credential?.user?.uid) {
       normalized.accountCreated = true;
-      normalized.profileStage = normalized.profileStage || "profile";
+      normalized.profileStage = normalized.profileStage || registrationStage;
     }
 
     throw normalized;
