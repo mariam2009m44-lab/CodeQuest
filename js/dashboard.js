@@ -8,12 +8,21 @@ import {
 
 const select = selector => document.querySelector(selector);
 
-const CURRICULUM_TOTALS = Object.freeze({
-  python: 48,
-  javascript: 26,
-  cpp: 23,
-  java: 16
+const CURRICULUM_SHAPE = Object.freeze({
+  python: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+  javascript: [3, 4, 4, 3, 3, 4, 3, 2],
+  cpp: [5, 3, 3, 3, 3, 4, 2],
+  java: [2, 2, 2, 2, 2, 2, 2, 2]
 });
+
+const CURRICULUM_TOTALS = Object.freeze(
+  Object.fromEntries(
+    Object.entries(CURRICULUM_SHAPE).map(([language, chapters]) => [
+      language,
+      chapters.reduce((sum, count) => sum + count, 0)
+    ])
+  )
+);
 
 function safeNumber(value) {
   const number = Number(value);
@@ -69,12 +78,16 @@ function getValidProgressCounts(snapshot) {
       continue;
     }
 
+    const chapterShape = CURRICULUM_SHAPE[language];
+
     if (
       data.completed !== true ||
       !Number.isSafeInteger(data.chapter) ||
       !Number.isSafeInteger(data.lesson) ||
       data.chapter < 0 ||
-      data.lesson < 0
+      data.chapter >= chapterShape.length ||
+      data.lesson < 0 ||
+      data.lesson >= chapterShape[data.chapter]
     ) {
       continue;
     }
