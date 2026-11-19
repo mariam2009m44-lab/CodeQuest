@@ -486,8 +486,8 @@
         <a href="#about">حول كودي</a>
       </div>
 
-      <button class="landing-theme-toggle" id="landingThemeToggle" type="button" aria-label="تفعيل الوضع الداكن" title="تغيير المظهر">
-        <i class="ri-moon-line" aria-hidden="true"></i><span>الوضع الداكن</span>
+      <button class="landing-theme-toggle" id="landingThemeToggle" type="button" aria-label="التبديل إلى المظهر الداكن" title="التبديل إلى المظهر الداكن">
+        <i class="ri-moon-line" aria-hidden="true"></i>
       </button>
       <a class="login" href="login.html">تسجيل الدخول ♟</a>
     </nav>
@@ -975,14 +975,12 @@
       const button = document.getElementById("landingThemeToggle");
       if (!button || !window.CodyTheme) return;
       const icon = button.querySelector("i");
-      const label = button.querySelector("span");
       const sync = () => {
         const dark = document.documentElement.dataset.theme !== "light";
-        const next = dark ? "الوضع الفاتح" : "الوضع الداكن";
-        button.setAttribute("aria-label", "تفعيل " + next);
-        button.title = "تفعيل " + next;
+        const next = dark ? "المظهر الفاتح" : "المظهر الداكن";
+        button.setAttribute("aria-label", "التبديل إلى " + next);
+        button.title = "التبديل إلى " + next;
         if (icon) icon.className = dark ? "ri-sun-line" : "ri-moon-line";
-        if (label) label.textContent = next;
       };
       button.addEventListener("click", () => {
         window.CodyTheme.toggle();
