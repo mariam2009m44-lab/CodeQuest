@@ -95,7 +95,10 @@ const CURRICULUM_URLS = Object.freeze({
     "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/python_curriculum.json",
 
   cpp:
-    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/cpp_curriculum.json"
+    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/cpp_curriculum.json",
+
+  java:
+    "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/java_curriculum.json"
 });
 
 const STORE_ITEMS = Object.freeze({
