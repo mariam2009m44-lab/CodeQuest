@@ -62,6 +62,7 @@ CURRICULUM_FILES = {
     "python": "python_curriculum.json",
     "javascript": "js_curriculum.json",
     "cpp": "cpp_curriculum.json",
+    "java": "java_curriculum.json",
 }
 
 
@@ -82,6 +83,7 @@ LANGUAGE_IDS = {
     "javascript": 63,
     "python": 71,
     "cpp": 54,
+    "java": 62,
 }
 
 
