@@ -509,6 +509,7 @@ exports.verifyJavaQuizAnswer = onCall(
   CALL_OPTIONS,
   async request => {
     const uid = requireAuth(request);
+    await enforceUserRateLimit(uid, "quizAnswer");
     const { chapter, lesson, selectedIndex } = request.data || {};
 
     if (!Number.isInteger(chapter) || chapter < 0 || chapter >= 8) {
