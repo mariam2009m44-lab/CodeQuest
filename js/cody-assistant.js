@@ -80,6 +80,9 @@ async function getServiceHealth() {
     }).then(async response => {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error("تعذر فحص خدمة كودي.");
+      // Keep a successful ready result for this page session, but recheck
+      // unavailable configuration on the next open after the owner fixes it.
+      if (data.ready !== true) healthPromise = null;
       return data;
     }).catch(error => {
       healthPromise = null;
@@ -136,7 +139,7 @@ async function openChat() {
   try {
     const health = await getServiceHealth();
     if (health.configured === false) {
-      setStatus("مفتاح Gemini غير مضبوط على خادم كودي. يلزم إضافته كـ Secret في Cloudflare.", "error");
+      setStatus("كودي غير متاح حاليًا: إعداد تشغيل الذكاء الاصطناعي غير مكتمل على خادم المنصة. المشكلة من إعدادات الخادم وليست من حسابك أو جهازك.", "error");
     } else if (health.quotaAvailable === false) {
       setStatus("حماية الاستخدام اليومي غير مفعّلة على الخادم؛ الإرسال متوقف لحماية الخدمة.", "error");
     } else if (health.ready === true) {
