@@ -46,6 +46,7 @@ function updateDashboard(data) {
 
   setText(".js-user-name", data.displayName || "بطل البرمجة");
   setText(".js-user-xp", xp);
+  setText(".js-user-stars", safeNumber(data.stars));
   setText(".js-user-coins", safeNumber(data.coins));
   setText(".js-user-level", level);
 
