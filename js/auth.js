@@ -320,7 +320,12 @@ export async function loginUser(email, password) {
   const cleanEmail = normalizeEmail(email);
 
   validateEmail(cleanEmail);
-  validatePassword(password);
+
+  // Login must validate presence only. Password length policies belong to
+  // account creation; older accounts may have a different configured policy.
+  if (typeof password !== "string" || password.length === 0) {
+    throw new Error("أدخل كلمة المرور.");
+  }
 
   try {
     const credential = await signInWithEmailAndPassword(
