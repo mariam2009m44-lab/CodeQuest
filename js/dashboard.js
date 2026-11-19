@@ -89,6 +89,13 @@ function updateDashboard(data) {
       progress.cpp
     );
   }
+
+  if (Object.prototype.hasOwnProperty.call(progress, "java")) {
+    setProgress(
+      ".course-java .course-progress",
+      progress.java
+    );
+  }
 }
 
 let unsubscribeProfile = null;
