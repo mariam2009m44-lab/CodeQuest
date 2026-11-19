@@ -167,7 +167,21 @@ document.addEventListener("keydown", event => {
   if (event.key === "Escape" && panel && !panel.hidden) closeChat();
 });
 
+let activeRequestController = null;
+let previousAuthUid = null;
+
 onAuthStateChanged(auth, user => {
+  const nextUid = user?.uid || null;
+  const accountChanged = previousAuthUid !== nextUid;
+
+  if (accountChanged) {
+    // Never carry one account's private conversation into another account.
+    activeRequestController?.abort();
+    history = [];
+    messages?.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
+    previousAuthUid = nextUid;
+  }
+
   currentUser = user;
   authReady = true;
 
@@ -175,6 +189,8 @@ onAuthStateChanged(auth, user => {
     setStatus("كودي جاهز لاستقبال أسئلتك.", "success");
   } else if (panel && !panel.hidden) {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
+  } else {
+    setStatus("");
   }
 });
 
@@ -205,9 +221,12 @@ form?.addEventListener("submit", async event => {
   setStatus("كودي بيجهّز الإجابة...", "loading");
   playCodyEmotion("encourage");
 
+  const requestUser = currentUser;
+  const controller = new AbortController();
+  activeRequestController = controller;
+
   try {
-    const token = await currentUser.getIdToken();
-    const controller = new AbortController();
+    const token = await requestUser.getIdToken();
     const timeoutId = window.setTimeout(() => controller.abort(), 48000);
     let response;
 
@@ -237,6 +256,8 @@ form?.addEventListener("submit", async event => {
     }
 
     const data = await response.json().catch(() => ({}));
+
+    if (currentUser?.uid !== requestUser.uid) return;
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -276,6 +297,7 @@ form?.addEventListener("submit", async event => {
     setStatus(message, "error");
     if (input) input.value = question;
   } finally {
+    if (activeRequestController === controller) activeRequestController = null;
     sending = false;
     if (submit) submit.disabled = false;
     if (input) {
