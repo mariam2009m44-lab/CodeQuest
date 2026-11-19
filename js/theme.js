@@ -8,6 +8,7 @@
   const DEFAULT_MOTION = "on";
 
   const root = document.documentElement;
+  const THEME_ENHANCEMENTS_URL = new URL("../css/theme-enhancements.css", document.currentScript.src).href;
 
   function readStorage(key, fallback) {
     try {
@@ -142,7 +143,7 @@
       const stylesheet = document.createElement("link");
       stylesheet.id = "cqThemeEnhancements";
       stylesheet.rel = "stylesheet";
-      stylesheet.href = new URL("../css/theme-enhancements.css", document.currentScript?.src || window.location.href).href;
+      stylesheet.href = THEME_ENHANCEMENTS_URL;
       document.head.append(stylesheet);
     }
 
