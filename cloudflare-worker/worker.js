@@ -651,6 +651,23 @@ export default {
     }
 
     if (
+      url.pathname === "/api/cody/health" &&
+      request.method === "GET"
+    ) {
+      const configured = Boolean(env.GEMINI_API_KEY);
+      const quotaAvailable = Boolean(env.CODE_EXECUTION_LIMITER);
+
+      return jsonResponse({
+        success: true,
+        service: "Cody Chat",
+        configured,
+        quotaAvailable,
+        ready: configured && quotaAvailable,
+        model: env.GEMINI_MODEL || "gemini-2.5-flash"
+      }, 200, origin);
+    }
+
+    if (
       url.pathname === "/api/session" &&
       request.method === "GET"
     ) {
