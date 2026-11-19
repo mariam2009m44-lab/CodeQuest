@@ -822,30 +822,43 @@ export default {
           }
         };
 
-        // Gemini may return a temporary 5xx during capacity fluctuations.
-        // Retry only transient server errors; never repeat quota/auth/client errors.
-        let upstream;
+        // Retry brief network interruptions and transient upstream responses.
+        // Do not retry 429: it may represent an exhausted daily/model quota.
+        let upstream = null;
+        let networkError = null;
         for (let attempt = 0; attempt < 3; attempt++) {
-          upstream = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-goog-api-key": env.GEMINI_API_KEY
-              },
-              body: JSON.stringify(generationRequest),
-              signal: AbortSignal.timeout(12000)
-            }
-          );
+          try {
+            upstream = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-goog-api-key": env.GEMINI_API_KEY
+                },
+                body: JSON.stringify(generationRequest),
+                signal: AbortSignal.timeout(12000)
+              }
+            );
+            networkError = null;
+          } catch (error) {
+            networkError = error;
+            if (error?.name === "AbortError" || attempt === 2) throw error;
+          }
 
-          const transientFailure = [500, 502, 503, 504].includes(upstream.status);
-          if (!transientFailure || attempt === 2) break;
+          if (upstream) {
+            const transientFailure = [408, 500, 502, 503, 504].includes(upstream.status);
+            if (!transientFailure || attempt === 2) break;
+            await upstream.body?.cancel().catch(() => {});
+            upstream = null;
+          }
 
-          await upstream.body?.cancel().catch(() => {});
-          await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+          // Exponential backoff with a small jitter to avoid synchronized retries.
+          const delay = 500 * (2 ** attempt) + Math.floor(Math.random() * 250);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
 
+        if (!upstream) throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
         const data = await upstream.json().catch(() => ({}));
         if (upstream.status === 429) {
           return jsonResponse({ success: false, message: "كودي عليه ضغط حاليًا أو تم بلوغ حد Gemini المجاني. حاول بعد قليل." }, 429, origin);
