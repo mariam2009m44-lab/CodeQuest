@@ -14,6 +14,26 @@ if (!form) {
   console.error("لم يتم العثور على نموذج تسجيل الدخول أو إنشاء الحساب.");
 } else {
   const isSignup = form.id === "signupForm";
+  const themeButton = document.getElementById("authThemeToggle");
+
+  function syncAuthThemeControl() {
+    if (!themeButton) return;
+    const dark = document.documentElement.dataset.theme !== "light";
+    const icon = themeButton.querySelector("i");
+    const label = themeButton.querySelector(".auth-theme-label");
+    const nextLabel = dark ? "الوضع الفاتح" : "الوضع الداكن";
+    themeButton.setAttribute("aria-label", `تفعيل ${nextLabel}`);
+    themeButton.title = `تفعيل ${nextLabel}`;
+    if (icon) icon.className = dark ? "ri-sun-line" : "ri-moon-line";
+    if (label) label.textContent = nextLabel;
+  }
+
+  themeButton?.addEventListener("click", () => {
+    if (window.CodyTheme?.toggle) window.CodyTheme.toggle();
+    syncAuthThemeControl();
+  });
+  document.addEventListener("cq:themechange", syncAuthThemeControl);
+  syncAuthThemeControl();
   const submitButton = form.querySelector('[type="submit"]');
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -115,8 +135,9 @@ if (!form) {
 
   function displayMessage(text, isError = false) {
     message.replaceChildren(document.createTextNode(text));
+    message.classList.toggle("is-error", Boolean(isError) && Boolean(text));
+    message.classList.toggle("is-success", Boolean(text) && !isError);
     message.setAttribute("role", isError ? "alert" : "status");
-    message.style.color = isError ? "#b91c1c" : "#166534";
   }
 
   function displayExistingAccountMessage() {
