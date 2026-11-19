@@ -137,6 +137,51 @@
     { once: true }
   );
 
+  function installSharedThemeControl() {
+    if (!document.getElementById("cqThemeEnhancements")) {
+      const stylesheet = document.createElement("link");
+      stylesheet.id = "cqThemeEnhancements";
+      stylesheet.rel = "stylesheet";
+      stylesheet.href = new URL("../css/theme-enhancements.css", document.currentScript?.src || window.location.href).href;
+      document.head.append(stylesheet);
+    }
+
+    const existingControl = document.querySelector(
+      "#authThemeToggle, #landingThemeToggle, #darkModeToggle, .theme-toggle, [data-theme-toggle]"
+    );
+    if (existingControl || document.getElementById("cqGlobalThemeToggle")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = "cqGlobalThemeToggle";
+    button.className = "cq-global-theme-toggle";
+    button.setAttribute("aria-label", "تغيير مظهر المنصة");
+    button.innerHTML = '<i aria-hidden="true"></i><span></span>';
+
+    const icon = button.querySelector("i");
+    const label = button.querySelector("span");
+
+    function syncControl() {
+      const dark = root.dataset.theme !== "light";
+      icon.className = dark ? "ri-sun-line" : "ri-moon-line";
+      label.textContent = dark ? "الوضع الفاتح" : "الوضع الداكن";
+      button.title = dark ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن";
+      button.setAttribute("aria-label", button.title);
+    }
+
+    button.addEventListener("click", toggleTheme);
+    document.addEventListener("cq:themechange", syncControl);
+    syncControl();
+    document.body.append(button);
+  }
+
+  // Add a consistent theme switch to pages that do not already provide one.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installSharedThemeControl, { once: true });
+  } else {
+    installSharedThemeControl();
+  }
+
   // مزامنة الإعدادات بين تبويبات المتصفح.
   window.addEventListener("storage", function (event) {
     if (event.key === THEME_KEY) {
