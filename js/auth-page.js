@@ -159,14 +159,14 @@ if (!form) {
     }
 
     if (error?.code === "auth/invalid-credential") {
-      return `Firebase رفض بيانات الدخول لهذا البريد. تأكدي من أن مزوّد الحساب هو Email/Password، ثم أعيدي تعيين كلمة المرور إذا لزم الأمر. لا يمكن تحديد هل السبب البريد أم كلمة المرور من هذا الرمز وحده.${code}`;
+      return `رفض Firebase بيانات تسجيل الدخول. تحقّق من أن مزوّد الحساب هو Email/Password، ثم استخدم خيار «نسيت كلمة المرور؟» إذا لزم الأمر. لا يحدد هذا الرمز وحده ما إذا كان السبب البريد الإلكتروني أم كلمة المرور.${code}`;
     }
 
     if (error?.code) {
       return `${authError(error)}${code}`;
     }
 
-    return error?.message || "حدث خطأ غير متوقع. حاولي مرة أخرى.";
+    return error?.message || "حدث خطأ غير متوقع. حاول مرة أخرى.";
   }
 
   form.addEventListener("submit", async event => {
