@@ -2,6 +2,7 @@ import { auth } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const API_URL = "https://codequest.mariam2009m44.workers.dev/api/cody/chat";
+const HEALTH_URL = API_URL.replace(/\\/chat$/, "/health");
 const launcher = document.getElementById("codyChatLauncher");
 const heroLauncher = document.getElementById("codyHeroLauncher");
 const panel = document.getElementById("codyChatPanel");
@@ -15,6 +16,7 @@ let currentUser = null;
 let authReady = false;
 let sending = false;
 let history = [];
+let healthPromise = null;
 
 const CODY_EMOTION_CLASSES = [
   "is-waving",
@@ -69,23 +71,84 @@ function addMessage(text, role) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-function openChat() {
+async function getServiceHealth() {
+  if (!healthPromise) {
+    healthPromise = fetch(HEALTH_URL, {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+      cache: "no-store"
+    }).then(async response => {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error("تعذر فحص خدمة كودي.");
+      return data;
+    }).catch(error => {
+      healthPromise = null;
+      throw error;
+    });
+  }
+  return healthPromise;
+}
+
+function createSuggestions() {
+  if (!panel || !form || panel.querySelector(".cody-chat-suggestions")) return;
+  const container = document.createElement("div");
+  container.className = "cody-chat-suggestions";
+  container.setAttribute("aria-label", "أسئلة مقترحة");
+
+  [
+    "اشرحلي فكرة صعبة ببساطة",
+    "ساعدني أفهم مسألة رياضيات",
+    "راجع الكود ده معايا",
+    "عايز أعرف معلومة جديدة"
+  ].forEach(label => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "cody-chat-suggestion";
+    button.textContent = label;
+    button.addEventListener("click", () => {
+      if (!input || sending) return;
+      input.value = label;
+      input.focus();
+    });
+    container.append(button);
+  });
+
+  form.before(container);
+}
+
+async function openChat() {
   if (!panel) return;
   panel.hidden = false;
   launcher?.setAttribute("aria-expanded", "true");
   playCodyEmotion("wave");
+  createSuggestions();
 
   if (!authReady) {
     setStatus("جارٍ التحقق من جلسة الحساب...", "info");
-  } else if (!currentUser) {
+    return;
+  }
+  if (!currentUser) {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
-  } else {
-    setStatus("اسأل كودي عن البرمجة أو الدراسة أو أي موضوع عام مناسب.", "info");
+    return;
   }
 
   input?.focus();
+  try {
+    const health = await getServiceHealth();
+    if (health.configured === false) {
+      setStatus("مفتاح Gemini غير مضبوط على خادم كودي. يلزم إضافته كـ Secret في Cloudflare.", "error");
+    } else if (health.quotaAvailable === false) {
+      setStatus("حماية الاستخدام اليومي غير مفعّلة على الخادم؛ الإرسال متوقف لحماية الخدمة.", "error");
+    } else if (health.ready === true) {
+      setStatus("كودي متصل وجاهز لاستقبال أسئلتك.", "success");
+    } else {
+      setStatus("الخدمة استجابت، لكن إعداداتها تحتاج إلى مراجعة.", "info");
+    }
+  } catch {
+    setStatus("لم نتمكن من فحص حالة كودي الآن. يمكنك المحاولة، وسنوضح لك أي مشكلة تظهر.", "info");
+  }
+  input?.focus();
 }
-
 function closeChat() {
   if (!panel) return;
   panel.hidden = true;
@@ -141,7 +204,12 @@ form?.addEventListener("submit", async event => {
 
   try {
     const token = await currentUser.getIdToken();
-    const response = await fetch(API_URL, {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 48000);
+    let response;
+
+    try {
+      response = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -153,9 +221,17 @@ form?.addEventListener("submit", async event => {
           role: item.role,
           text: String(item.text || "").slice(0, 1500)
         })),
-        page_context: "CodeQuest learning platform. The student may ask about programming, school subjects, mathematics, science, languages, writing, study skills, technology, or general knowledge."
-      })
-    });
+        page_context: [
+          document.title,
+          location.pathname,
+          "CodeQuest learning platform. Answer general safe questions as well as programming, school subjects, mathematics, science, languages, writing, study skills, technology, and general knowledge."
+        ].join(" | ")
+      }),
+      signal: controller.signal
+      });
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
     const data = await response.json().catch(() => ({}));
 
@@ -188,9 +264,11 @@ form?.addEventListener("submit", async event => {
     setStatus("تم الرد", "success");
     playCodyEmotion("happy");
   } catch (error) {
-    const message = error instanceof TypeError
-      ? "تعذّر الاتصال بخدمة كودي. تحقّق من الإنترنت وحاول مجددًا."
-      : (error?.message || "حدث خطأ غير متوقع أثناء إرسال السؤال.");
+    const message = error?.name === "AbortError"
+      ? "تأخر رد كودي أكثر من المتوقع. جرّب سؤالًا أقصر ثم أعد المحاولة."
+      : error instanceof TypeError
+        ? "تعذّر الاتصال بخدمة كودي. تحقّق من الإنترنت وحاول مجددًا."
+        : (error?.message || "حدث خطأ غير متوقع أثناء إرسال السؤال.");
 
     setStatus(message, "error");
     if (input) input.value = question;
