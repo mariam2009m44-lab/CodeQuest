@@ -2329,30 +2329,56 @@ html[data-theme="light"] .sidebar-mission {
 }
 
 
-/* JavaScript course mark: keep both JS letters visible inside the tile. */
+/* JavaScript course mark: balanced square tile and consistently centered letters. */
 .course-javascript .course-planet-visual {
   box-sizing: border-box;
-  overflow: visible;
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  min-width: 104px;
+  min-height: 104px;
+  padding: 0;
+  overflow: hidden;
+  background: linear-gradient(145deg, #ffe66b 0%, #f4d34f 58%, #e8bd32 100%);
+  border: 1px solid rgba(255, 245, 190, .72);
+  border-radius: 23px;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .48),
+    inset 0 -3px 0 rgba(140, 100, 0, .12);
 }
 
 .course-javascript .javascript-mark {
-  display: inline-block;
-  min-width: 1.35em;
-  color: #323330;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 0 2px;
+  color: #24251f;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 3.35rem;
+  font-size: 2.75rem;
   font-weight: 900;
   line-height: 1;
-  letter-spacing: -0.055em;
+  letter-spacing: -.075em;
   white-space: nowrap;
   text-align: center;
   direction: ltr;
   unicode-bidi: isolate;
-  text-shadow: 0 1px 0 rgba(255,255,255,.08);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .2);
 }
 
 @media (max-width: 600px) {
+  .course-javascript .course-planet-visual {
+    width: 96px;
+    height: 96px;
+    min-width: 96px;
+    min-height: 96px;
+    border-radius: 21px;
+  }
+
   .course-javascript .javascript-mark {
-    font-size: 3.15rem;
+    font-size: 2.55rem;
   }
 }
