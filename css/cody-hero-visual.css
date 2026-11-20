@@ -1,6 +1,8 @@
 /* CodeQuest — immersive Cody hero visual */
 .character-area {
   min-height: clamp(390px, 42vw, 540px);
+  display: grid;
+  place-items: center;
   overflow: visible;
   isolation: isolate;
   perspective: 1100px;
@@ -39,20 +41,30 @@
   position: relative;
   z-index: 2;
   display: block;
-  width: min(112%, 620px);
-  max-height: 520px;
+  width: min(100%, 570px);
+  max-height: clamp(340px, 42vw, 510px);
   height: auto;
+  margin-inline: auto;
   object-fit: contain;
+  object-position: center;
   opacity: 0;
   transform: translateY(18px) scale(.96);
-  filter: drop-shadow(0 24px 42px rgba(44, 49, 140, .18));
-  transition: opacity .55s ease, transform .7s cubic-bezier(.2,.75,.25,1);
+  filter: drop-shadow(0 22px 38px rgba(44, 49, 140, .16));
+  transition: opacity .55s ease, transform .7s cubic-bezier(.2,.75,.25,1), filter .5s ease;
   pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 .character-area.has-generated-art .cody-hero-art {
   opacity: 1;
   transform: translateY(0) scale(1);
   animation: hero-art-float 6s ease-in-out infinite;
+}
+.character-area.has-generated-art .hero-visual-glow {
+  opacity: .9;
+}
+.character-area.has-generated-art .hero-visual-orbit {
+  opacity: .72;
 }
 .character-area.has-generated-art .blob,
 .character-area.has-generated-art .cody {
@@ -90,11 +102,11 @@
 }
 @media (max-width: 900px) {
   .character-area { min-height: clamp(330px, 65vw, 450px); }
-  .cody-hero-art { width: min(108%, 520px); max-height: 440px; }
+  .cody-hero-art { width: min(100%, 500px); max-height: 420px; }
 }
 @media (max-width: 650px) {
   .character-area { min-height: 320px; margin-top: 8px; }
-  .cody-hero-art { width: min(112%, 440px); max-height: 350px; }
+  .cody-hero-art { width: min(100%, 410px); max-height: 340px; }
   .hero-visual-orbit { width: min(94%, 340px); }
   .hero-visual-orbit--two { width: min(80%, 290px); }
 }
