@@ -1,0 +1,33 @@
+/* Shared polish for the existing CodeQuest mini-games. */
+:root{--cq-game-border:rgba(148,163,184,.2);--cq-game-focus:#56d9f4}
+body{isolation:isolate}
+.top-nav,.top-bar{gap:12px}
+.back-btn,.back-link{min-height:44px;justify-content:center}
+.score-board,.stat-box,.global-score{border:1px solid var(--cq-game-border);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.level-box,.game-card{border:1px solid var(--cq-game-border);box-shadow:0 18px 48px rgba(0,0,0,.22)}
+.level-box{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.level-box h2{line-height:1.5}
+.lvl-btn{min-height:62px;gap:12px;text-align:right}
+.lvl-btn:focus-visible,.btn:focus-visible,.btn-check:focus-visible,.btn-restart:focus-visible,.btn-back:focus-visible,.back-btn:focus-visible,.back-link:focus-visible{outline:3px solid var(--cq-game-focus);outline-offset:3px}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.code-box,.drop-zone,.target-zone{border-radius:16px}
+.code-block,.line,.piece{line-height:1.65}
+.result-box{padding:clamp(18px,4vw,34px)}
+.result-message{line-height:1.9}
+.btn-check,.btn-restart,.btn-back{min-height:50px}
+.btn-check:hover,.btn-restart:hover,.btn-back:hover,.lvl-btn:hover{filter:brightness(1.06)}
+@media(max-width:640px){
+ body{padding-inline:12px}
+ .top-nav,.top-bar{align-items:stretch}
+ .back-btn,.back-link{flex:1}
+ .score-board{white-space:nowrap}
+ .level-box{padding:clamp(15px,4vw,23px)!important;border-radius:19px}
+ .lvl-btn{width:100%;min-height:58px;font-size:1rem}
+ .code-block,.line,.piece{max-width:100%;overflow-wrap:anywhere}
+ .result-emoji{font-size:4rem}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+html[data-theme="light"] .level-box,html[data-theme="light"] .game-card{box-shadow:0 12px 34px rgba(25,45,80,.09)}
+html[data-theme="light"] .code-box{box-shadow:0 8px 22px rgba(25,45,80,.12)}
