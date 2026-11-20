@@ -1,0 +1,122 @@
+/* Shared Cody image mascot: one consistent character across CodeQuest. */
+.cody-character--image {
+  position: relative;
+  display: block;
+  width: 150px;
+  height: 190px;
+  transform-origin: 50% 82%;
+  animation: cody-image-float 4.2s ease-in-out infinite;
+  filter: drop-shadow(0 12px 15px rgba(2, 8, 28, .34));
+  will-change: transform;
+}
+.cody-character--image .cody-character__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.mascot-card .cody-mascot {
+  width: 180px;
+  height: 198px;
+}
+.mascot-card .cody-character--image {
+  width: 178px;
+  height: 198px;
+}
+.cody-chat-orb .cody-character--image {
+  width: 66px;
+  height: 70px;
+  animation-duration: 3.5s;
+}
+.cody-chat-avatar--image {
+  display: grid !important;
+  place-items: center;
+  overflow: hidden;
+}
+.cody-chat-avatar--image img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 3px 7px rgba(34, 211, 238, .24));
+}
+.cody-character--image.is-waving {
+  animation: cody-image-wave 1.2s ease-in-out 1, cody-image-float 4.2s ease-in-out 1.2s infinite;
+}
+.cody-character--image.is-happy,
+.cody-character--image.is-celebrating {
+  animation: cody-image-celebrate .65s ease-in-out 3, cody-image-float 4.2s ease-in-out 1.95s infinite;
+}
+.cody-character--image.is-thinking,
+.cody-character--image.is-encouraging {
+  animation: cody-image-think 2.1s ease-in-out infinite;
+}
+.cody-character--image.is-celebrating::before,
+.cody-character--image.is-celebrating::after {
+  position: absolute;
+  z-index: 2;
+  color: #ffd66b;
+  font-size: 22px;
+  line-height: 1;
+  content: "✦";
+  pointer-events: none;
+  text-shadow: 0 0 12px rgba(255, 214, 107, .85);
+  animation: cody-image-sparkle .8s ease-in-out 3;
+}
+.cody-character--image.is-celebrating::before { top: 18%; left: 2%; }
+.cody-character--image.is-celebrating::after { top: 38%; right: 0; color: #42ddf4; animation-delay: .15s; }
+.cody-tutor-mascot .cody-character--image {
+  width: 112px;
+  height: 132px;
+}
+@keyframes cody-image-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(-1.5deg); }
+}
+@keyframes cody-image-wave {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-5deg); }
+  55% { transform: translateY(-8px) rotate(4deg); }
+  80% { transform: translateY(-3px) rotate(-2deg); }
+}
+@keyframes cody-image-celebrate {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0); }
+  35% { transform: translateY(-12px) scale(1.035) rotate(-3deg); }
+  70% { transform: translateY(-5px) scale(1.015) rotate(3deg); }
+}
+@keyframes cody-image-think {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}
+@keyframes cody-image-sparkle {
+  0%, 100% { opacity: 0; transform: scale(.55) rotate(-20deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(18deg); }
+}
+.mascot-card:hover .cody-character--image {
+  filter: drop-shadow(0 15px 20px rgba(66, 221, 244, .3));
+}
+.cody-chat-launcher:hover .cody-character--image {
+  animation: cody-image-celebrate .55s ease-in-out 1;
+}
+@media (max-width: 600px) {
+  .mascot-card .cody-mascot { transform: scale(.78); }
+  .cody-tutor-mascot .cody-character--image { width: 92px; height: 112px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cody-character--image,
+  .cody-character--image.is-waving,
+  .cody-character--image.is-happy,
+  .cody-character--image.is-celebrating,
+  .cody-character--image.is-thinking,
+  .cody-character--image.is-encouraging,
+  .cody-character--image::before,
+  .cody-character--image::after {
+    animation: none !important;
+    will-change: auto;
+  }
+}
