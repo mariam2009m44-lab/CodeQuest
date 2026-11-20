@@ -100,12 +100,7 @@ const CURRICULUM_URLS = Object.freeze({
     "https://raw.githubusercontent.com/mariam2009m44-lab/CodeQuest/main/json/cpp_curriculum.json"
 });
 
-const STORE_ITEMS = Object.freeze({
-  astronaut: 150,
-  fox: 200,
-  robot: 300,
-  dragon: 500
-});
+const STORE_ITEMS = Object.freeze({});
 
 const LESSON_REWARD = Object.freeze({
   xp: 10,

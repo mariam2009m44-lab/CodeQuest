@@ -406,14 +406,7 @@ However, game reward claims currently require trusted server-side game-result ve
 
 The store functionality includes server-side purchase handling.
 
-Configured example store items include:
-
-| Item | Price |
-|---|---:|
-| Astronaut | 150 |
-| Fox | 200 |
-| Robot | 300 |
-| Dragon | 500 |
+The character shop is currently disabled; the eight illustrated student avatars are available directly from the avatar selection page.
 
 ---
 
