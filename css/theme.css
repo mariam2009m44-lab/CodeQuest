@@ -509,37 +509,3 @@ html[data-theme="light"] .auth-card .input-field {
   color: #182235;
   background: #F8FAFC;
 }
-
-
-/* Unified Cody artwork across the homepage and every learning screen. */
-body:not(:has(.cody-character--image))::after {
-  content:"";
-  position:fixed;
-  z-index:70;
-  right:max(16px,env(safe-area-inset-right));
-  bottom:max(18px,env(safe-area-inset-bottom));
-  width:92px;
-  height:112px;
-  pointer-events:none;
-  background:url("../a4845a93-494a-4896-9601-6127e452b9ef%20(1).jpg") center bottom / contain no-repeat;
-  filter:drop-shadow(0 9px 14px rgba(4,10,35,.3));
-  animation:cody-global-float 4s ease-in-out infinite;
-}
-.character-area .cody {
-  background:url("../a4845a93-494a-4896-9601-6127e452b9ef%20(1).jpg") center / contain no-repeat;
-  animation:cody-global-float 4.2s ease-in-out infinite;
-}
-.character-area .cody > * { visibility:hidden !important; }
-@keyframes cody-global-float {
-  0%,100% { transform:translateY(0) rotate(0); }
-  50% { transform:translateY(-7px) rotate(-1.5deg); }
-}
-@media(max-width:600px) {
-  body:not(:has(.cody-character--image))::after {
-    width:66px;height:82px;right:9px;bottom:78px;
-  }
-}
-@media(prefers-reduced-motion:reduce) {
-  body:not(:has(.cody-character--image))::after,
-  .character-area .cody { animation:none !important; }
-}
