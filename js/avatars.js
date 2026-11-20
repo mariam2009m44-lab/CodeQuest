@@ -1,57 +1,50 @@
-
 const AVATARS = [
   {
     id: "cody",
-    name: "Cody",
-    hair: "#26365f",
-    skin: "#f2c6a5",
-    clothes: "#39c9e8",
-    accent: "#8cecff",
+    name: "آدم",
+    image: "file_00000000bbf88210834d4e591659d62b.png",
     style: "boy"
   },
   {
     id: "layla",
-    name: "Layla",
-    hair: "#302044",
-    skin: "#e9b995",
-    clothes: "#a78bfa",
-    accent: "#d8c8ff",
+    name: "ليلى",
+    image: "file_00000000d13081f4be3e24aee3c0d04b.png",
     style: "girl"
   },
   {
     id: "omar",
-    name: "Omar",
-    hair: "#503020",
-    skin: "#c98d68",
-    clothes: "#42c99a",
-    accent: "#a0ffdc",
+    name: "عمر",
+    image: "file_000000005ff081f4996abff133614eaf.png",
     style: "boy"
   },
   {
     id: "sara",
-    name: "Sara",
-    hair: "#6a3150",
-    skin: "#f0c5aa",
-    clothes: "#ff8db5",
-    accent: "#ffc6dc",
+    name: "سارة",
+    image: "file_00000000892481f499eef90fadd992c8.png",
     style: "girl"
   },
   {
     id: "robo",
-    name: "Robo",
-    hair: "#7c91a8",
-    skin: "#b9d8e8",
-    clothes: "#637bff",
-    accent: "#aabaff",
-    style: "robot"
+    name: "ياسين",
+    image: "file_0000000098cc8243a22c913069ac838c.png",
+    style: "boy"
   },
   {
     id: "nova",
-    name: "Nova",
-    hair: "#263b79",
-    skin: "#d9b6a8",
-    clothes: "#ffbd59",
-    accent: "#ffe0a0",
+    name: "جنى",
+    image: "file_00000000f55881f48d535befd2ef6069.png",
+    style: "girl"
+  },
+  {
+    id: "yazan",
+    name: "زياد",
+    image: "file_000000000a9081f4b24b676bf0ea7135.png",
+    style: "boy"
+  },
+  {
+    id: "malak",
+    name: "ميرا",
+    image: "file_00000000b9c481f4b536d309fb5088aa.png",
     style: "girl"
   },
   {
@@ -113,152 +106,15 @@ function escapeAttribute(value) {
 }
 
 function getAvatar(avatarId) {
-  return AVATARS.find(avatar => avatar.id === avatarId)
-    || AVATARS[0];
+  return AVATARS.find(avatar => avatar.id === avatarId) || AVATARS[0];
 }
 
 function createAvatarSVG(avatar) {
-  if (avatar.emoji) {
-    return `
-      <svg class="anime-avatar-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 155 190" role="img" aria-label="${escapeAttribute(avatar.name)}">
-        <text x="77.5" y="130" text-anchor="middle" font-size="112">${escapeAttribute(avatar.emoji)}</text>
-      </svg>
-    `;
-  }
-
-  const hair = escapeAttribute(avatar.hair);
-  const skin = escapeAttribute(avatar.skin);
-  const clothes = escapeAttribute(avatar.clothes);
-  const accent = escapeAttribute(avatar.accent);
-
-  const isGirl = avatar.style === "girl";
-  const isRobot = avatar.style === "robot";
-
-  const hairShape = isGirl
-    ? `
-      <path d="M39 65 Q31 20 75 17 Q119 18 112 67
-        L111 119 Q102 139 96 112
-        L94 63 Q75 83 52 65
-        L48 119 Q34 137 32 105 Z"
-        fill="${hair}"/>
-      <path d="M42 52 Q49 15 79 22 Q103 20 111 49
-        Q91 39 79 45 Q59 35 42 52Z"
-        fill="${hair}"/>
-    `
-    : `
-      <path d="M37 64 Q35 20 77 20
-        Q113 20 114 61
-        L105 53 Q91 42 78 46
-        Q56 40 42 59Z"
-        fill="${hair}"/>
-      <path d="M43 47 Q54 19 78 25
-        Q94 24 106 43 Q82 37 67 47
-        Q53 54 43 47Z"
-        fill="${hair}"/>
-    `;
-
-  const robotHead = `
-    <rect x="39" y="29" width="77" height="83"
-      rx="23" fill="${skin}" stroke="${accent}" stroke-width="4"/>
-    <rect x="48" y="52" width="59" height="29"
-      rx="12" fill="#17243f"/>
-    <circle cx="65" cy="66" r="5" fill="${accent}"/>
-    <circle cx="91" cy="66" r="5" fill="${accent}"/>
-    <path d="M66 91 Q78 98 91 91"
-      stroke="#34445d" stroke-width="4"
-      fill="none" stroke-linecap="round"/>
-    <path d="M39 60 H29 M116 60 H126"
-      stroke="${accent}" stroke-width="5"
-      stroke-linecap="round"/>
-    <circle cx="77" cy="22" r="5" fill="${accent}"/>
-  `;
-
-  const humanHead = `
-    <ellipse cx="77" cy="72" rx="34" ry="42"
-      fill="${skin}"/>
-
-    ${hairShape}
-
-    <path d="M59 72 Q66 66 72 72"
-      stroke="#49312f" stroke-width="3"
-      fill="none" stroke-linecap="round"/>
-
-    <path d="M84 72 Q91 66 97 72"
-      stroke="#49312f" stroke-width="3"
-      fill="none" stroke-linecap="round"/>
-
-    <ellipse cx="66" cy="81" rx="4" ry="5"
-      fill="#263047"/>
-
-    <ellipse cx="90" cy="81" rx="4" ry="5"
-      fill="#263047"/>
-
-    <path d="M73 99 Q78 103 83 99"
-      stroke="#a75c62" stroke-width="3"
-      fill="none" stroke-linecap="round"/>
-
-    <ellipse cx="54" cy="91" rx="7" ry="4"
-      fill="#f39b9b" opacity=".35"/>
-
-    <ellipse cx="100" cy="91" rx="7" ry="4"
-      fill="#f39b9b" opacity=".35"/>
-  `;
-
+  const emoji = escapeAttribute(avatar.emoji || "✨");
   return `
-    <svg
-      class="anime-avatar-svg"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 155 190"
-      role="img"
-      aria-label="شخصية Cody Academy"
-    >
-      <defs>
-        <linearGradient id="body-${avatar.id}" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${accent}"/>
-          <stop offset="100%" stop-color="${clothes}"/>
-        </linearGradient>
-      </defs>
-
-      <ellipse cx="77" cy="178" rx="42" ry="7"
-        fill="#000" opacity=".18"/>
-
-      <rect x="66" y="105" width="23" height="25"
-        rx="9" fill="${skin}"/>
-
-      <path
-        d="M45 126 Q77 112 109 126
-        Q125 142 127 177
-        L27 177 Q30 142 45 126Z"
-        fill="url(#body-${avatar.id})"
-      />
-
-      <path
-        d="M64 128 L77 145 L91 128"
-        fill="none"
-        stroke="#ffffff"
-        stroke-width="3"
-        opacity=".75"
-      />
-
-      <circle cx="77" cy="155" r="4"
-        fill="${accent}" opacity=".9"/>
-
-      <path d="M42 137 L29 161"
-        stroke="${clothes}" stroke-width="13"
-        stroke-linecap="round"/>
-
-      <path d="M112 137 L125 161"
-        stroke="${clothes}" stroke-width="13"
-        stroke-linecap="round"/>
-
-      ${isRobot ? robotHead : humanHead}
-
-      <circle cx="123" cy="34" r="4"
-        fill="${accent}" opacity=".9"/>
-
-      <path d="M24 39 L27 47 L35 50 L27 53 L24 61
-        L21 53 L13 50 L21 47Z"
-        fill="${accent}" opacity=".8"/>
+    <svg class="anime-avatar-svg" xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 155 190" role="img" aria-label="${escapeAttribute(avatar.name)}">
+      <text x="77.5" y="130" text-anchor="middle" font-size="112">${emoji}</text>
     </svg>
   `;
 }
@@ -269,19 +125,21 @@ export function getAllAvatars() {
 
 export function renderAvatar(avatarId = DEFAULT_AVATAR) {
   const avatar = getAvatar(avatarId);
+  const art = avatar.image
+    ? `<img class="anime-avatar-image" src="${escapeAttribute(avatar.image)}"
+        alt="${escapeAttribute(avatar.name)}" loading="lazy" decoding="async"
+        draggable="false">`
+    : createAvatarSVG(avatar);
 
   return `
-    <div class="anime-avatar" data-avatar="${avatar.id}">
-      <div class="anime-character">
-        ${createAvatarSVG(avatar)}
-      </div>
+    <div class="anime-avatar" data-avatar="${escapeAttribute(avatar.id)}">
+      <div class="anime-character">${art}</div>
     </div>
   `;
 }
 
 export function renderAvatarCard(avatarId = DEFAULT_AVATAR) {
   const avatar = getAvatar(avatarId);
-
   return `
     <div class="avatar-art-container">
       ${renderAvatar(avatar.id)}
@@ -290,13 +148,10 @@ export function renderAvatarCard(avatarId = DEFAULT_AVATAR) {
 }
 
 export function installAvatarStyles() {
-  if (document.getElementById("cody-avatar-styles")) {
-    return;
-  }
+  if (document.getElementById("cody-avatar-styles")) return;
 
   const style = document.createElement("style");
   style.id = "cody-avatar-styles";
-
   style.textContent = `
     .anime-avatar {
       position: relative;
@@ -305,7 +160,7 @@ export function installAvatarStyles() {
       justify-content: center;
       width: 100%;
       height: 235px;
-      overflow: visible;
+      overflow: hidden;
     }
 
     .anime-character {
@@ -315,6 +170,18 @@ export function installAvatarStyles() {
       width: 100%;
       height: 100%;
       transform-origin: center bottom;
+    }
+
+    .anime-avatar-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 260px;
+      object-fit: contain;
+      object-position: center bottom;
+      filter: drop-shadow(0 9px 14px rgba(0, 0, 0, .22));
+      user-select: none;
+      -webkit-user-drag: none;
     }
 
     .anime-avatar-svg {
@@ -330,14 +197,16 @@ export function installAvatarStyles() {
       align-items: center;
       justify-content: center;
       width: 100%;
+      min-width: 0;
     }
 
     .avatar-card .anime-avatar {
       min-height: 190px;
+      height: clamp(180px, 22vw, 250px);
     }
 
-    .avatar-card .anime-avatar-svg {
-      max-width: 220px;
+    .avatar-card .anime-avatar-image {
+      max-width: 100%;
     }
 
     .avatar-container .anime-avatar {
@@ -345,13 +214,21 @@ export function installAvatarStyles() {
       height: 100%;
     }
 
-    .avatar-container .anime-avatar-svg {
-      max-width: 180px;
+    .avatar-container .anime-avatar-image {
+      max-width: 100%;
     }
 
     @media (max-width: 700px) {
-      .avatar-card .anime-avatar-svg {
-        max-width: 190px;
+      .avatar-card .anime-avatar {
+        height: clamp(155px, 48vw, 205px);
+        min-height: 155px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .avatar-card .anime-avatar {
+        height: 150px;
+        min-height: 150px;
       }
     }
 
@@ -362,6 +239,5 @@ export function installAvatarStyles() {
       }
     }
   `;
-
   document.head.appendChild(style);
 }
