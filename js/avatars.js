@@ -129,7 +129,7 @@ export function renderAvatar(avatarId = DEFAULT_AVATAR) {
   // This keeps the images working on GitHub Pages project paths (/CodeQuest/)
   // as well as when the same component is rendered from other site pages.
   const imageUrl = avatar.image
-    ? new URL(`../${avatar.image}`, import.meta.url).href
+    ? new URL(`../assets/avatars/${avatar.image}`, import.meta.url).href
     : null;
 
   const art = imageUrl
