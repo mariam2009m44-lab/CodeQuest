@@ -372,11 +372,18 @@ export async function signInWithGoogle() {
  */
 export async function completeGoogleRedirect() {
   try {
+    // getRedirectResult may return null when Firebase has already restored
+    // the persisted session (for example, after a browser storage hand-off).
+    // Wait until Auth has finished its initial session check before deciding
+    // that the learner is not signed in.
     const result = await getRedirectResult(auth);
-    if (!result?.user) return null;
+    await auth.authStateReady();
 
-    await ensureUserProfile(result.user);
-    return result.user;
+    const user = result?.user || auth.currentUser;
+    if (!user?.uid) return null;
+
+    await ensureUserProfile(user);
+    return user;
   } catch (error) {
     throw normalizeError(error);
   }
