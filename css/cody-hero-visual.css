@@ -1,0 +1,105 @@
+/* CodeQuest — immersive Cody hero visual */
+.character-area {
+  min-height: clamp(390px, 42vw, 540px);
+  overflow: visible;
+  isolation: isolate;
+  perspective: 1100px;
+}
+.hero-visual-glow {
+  position: absolute;
+  z-index: -2;
+  width: min(92%, 490px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(93, 79, 255, .22) 0 22%, rgba(34, 211, 238, .13) 42%, transparent 70%);
+  filter: blur(16px);
+  animation: hero-glow-pulse 7s ease-in-out infinite;
+}
+.hero-visual-orbit {
+  position: absolute;
+  z-index: -1;
+  width: min(88%, 440px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(91, 116, 255, .22);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero-visual-orbit--one {
+  transform: rotateX(68deg) rotateZ(-18deg);
+  animation: hero-orbit-spin 28s linear infinite;
+}
+.hero-visual-orbit--two {
+  width: min(76%, 380px);
+  border-color: rgba(34, 211, 238, .22);
+  transform: rotateY(66deg) rotateZ(35deg);
+  animation: hero-orbit-spin-reverse 34s linear infinite;
+}
+.cody-hero-art {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: min(112%, 620px);
+  max-height: 520px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0;
+  transform: translateY(18px) scale(.96);
+  filter: drop-shadow(0 24px 42px rgba(44, 49, 140, .18));
+  transition: opacity .55s ease, transform .7s cubic-bezier(.2,.75,.25,1);
+  pointer-events: none;
+}
+.character-area.has-generated-art .cody-hero-art {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: hero-art-float 6s ease-in-out infinite;
+}
+.character-area.has-generated-art .blob,
+.character-area.has-generated-art .cody {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.character-area.has-generated-art .floating-code,
+.character-area.has-generated-art .floating-game,
+.character-area.has-generated-art .spark {
+  opacity: 0;
+  visibility: hidden;
+}
+.character-area .blob {
+  transition: opacity .35s ease, visibility .35s ease;
+}
+.character-area .spark,
+.character-area .floating-code,
+.character-area .floating-game {
+  transition: opacity .35s ease, visibility .35s ease;
+}
+@keyframes hero-art-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-9px) scale(1.012); }
+}
+@keyframes hero-glow-pulse {
+  0%, 100% { opacity: .65; transform: scale(.94); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+@keyframes hero-orbit-spin {
+  to { transform: rotateX(68deg) rotateZ(342deg); }
+}
+@keyframes hero-orbit-spin-reverse {
+  to { transform: rotateY(66deg) rotateZ(-325deg); }
+}
+@media (max-width: 900px) {
+  .character-area { min-height: clamp(330px, 65vw, 450px); }
+  .cody-hero-art { width: min(108%, 520px); max-height: 440px; }
+}
+@media (max-width: 650px) {
+  .character-area { min-height: 320px; margin-top: 8px; }
+  .cody-hero-art { width: min(112%, 440px); max-height: 350px; }
+  .hero-visual-orbit { width: min(94%, 340px); }
+  .hero-visual-orbit--two { width: min(80%, 290px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-visual-glow,
+  .hero-visual-orbit,
+  .cody-hero-art { animation: none !important; transition: none !important; }
+}
