@@ -37,8 +37,18 @@ function playCodyEmotion(emotion = "wave") {
   const characters = document.querySelectorAll(".cody-character");
   if (!characters.length) return;
 
+  const imageByEmotion = {
+    wave: "a4845a93-494a-4896-9601-6127e452b9ef%20(1).jpg",
+    happy: "a4845a93-494a-4896-9601-6127e452b9ef%20(1).jpg",
+    celebrate: "bcaecfa6-7939-4a20-bbf4-78150b2e7d4f.jpg",
+    encourage: "f5d2bea2-2ec3-44c9-bce5-a61c2a613c4b.jpg"
+  };
   characters.forEach(character => {
     character.classList.remove(...CODY_EMOTION_CLASSES);
+    const image = character.querySelector("[data-cody-image]");
+    if (image && image.getAttribute("src") !== imageByEmotion[emotion] && imageByEmotion[emotion]) {
+      image.setAttribute("src", imageByEmotion[emotion]);
+    }
     void character.offsetWidth;
     character.classList.add(className);
   });
