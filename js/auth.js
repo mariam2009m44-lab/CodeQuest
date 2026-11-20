@@ -5,7 +5,10 @@ import {
   sendPasswordResetEmail,
   signOut,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 import {
@@ -108,6 +111,10 @@ export function authError(error) {
     "auth/internal-error":
       "حدث خطأ داخلي أثناء الاتصال بخدمة تسجيل الدخول. حاولي مرة أخرى.",
     "auth/user-disabled": "هذا الحساب غير مفعّل.",
+    "auth/account-exists-with-different-credential":
+      "هذا البريد مرتبط بالفعل بطريقة تسجيل دخول أخرى. سجّلي الدخول بالطريقة القديمة أولًا؛ لن ننشئ حسابًا جديدًا حتى لا نفقد تقدمك.",
+    "auth/cancelled-popup-request":
+      "تم إلغاء طلب تسجيل الدخول. حاولي مرة أخرى.",
     "auth/invalid-action-code":
       "الرابط غير صالح أو انتهت صلاحيته.",
     "auth/expired-action-code":
@@ -340,6 +347,36 @@ export async function loginUser(email, password) {
     await ensureUserProfile(credential.user);
 
     return credential.user;
+  } catch (error) {
+    throw normalizeError(error);
+  }
+}
+
+/**
+ * بدء تسجيل الدخول باستخدام Google عبر إعادة التوجيه، وهو المسار الأنسب
+ * لتفادي قيود النوافذ المنبثقة على متصفحات الهاتف.
+ */
+export async function signInWithGoogle() {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    await signInWithRedirect(auth, provider);
+  } catch (error) {
+    throw normalizeError(error);
+  }
+}
+
+/**
+ * استكمال نتيجة Google بعد العودة من صفحة Google.
+ * لا ننشئ ملفًا جديدًا إذا كان ملف UID موجودًا بالفعل، وبذلك يبقى التقدم كما هو.
+ */
+export async function completeGoogleRedirect() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result?.user) return null;
+
+    await ensureUserProfile(result.user);
+    return result.user;
   } catch (error) {
     throw normalizeError(error);
   }
