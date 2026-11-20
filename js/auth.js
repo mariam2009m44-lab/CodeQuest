@@ -8,6 +8,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithRedirect,
+  signInWithPopup,
   getRedirectResult
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
@@ -360,7 +361,27 @@ export async function signInWithGoogle() {
   try {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
-    await signInWithRedirect(auth, provider);
+
+    // Prefer a popup: it returns the credential directly to this page and
+    // avoids redirect-helper storage restrictions on hosted subdomains.
+    try {
+      const credential = await signInWithPopup(auth, provider);
+      await ensureUserProfile(credential.user);
+      return credential.user;
+    } catch (popupError) {
+      const fallbackCodes = new Set([
+        "auth/popup-blocked",
+        "auth/operation-not-supported-in-this-environment"
+      ]);
+
+      if (!fallbackCodes.has(popupError?.code)) {
+        throw popupError;
+      }
+
+      // Some mobile/in-app browsers block popups. Keep redirect as fallback.
+      await signInWithRedirect(auth, provider);
+      return null;
+    }
   } catch (error) {
     throw normalizeError(error);
   }
