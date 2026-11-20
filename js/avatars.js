@@ -46,50 +46,6 @@ const AVATARS = [
     name: "ميرا",
     image: "file_00000000b9c481f4b536d309fb5088aa.png",
     style: "girl"
-  },
-  {
-    id: "astronaut",
-    name: "رائد الفضاء",
-    emoji: "👩‍🚀",
-    hair: "#26365f",
-    skin: "#d9eaff",
-    clothes: "#4b83d1",
-    accent: "#b9e5ff",
-    style: "robot",
-    storeItem: true
-  },
-  {
-    id: "fox",
-    name: "الثعلب الذكي",
-    emoji: "🦊",
-    hair: "#8c4b25",
-    skin: "#ffe0bf",
-    clothes: "#e88a43",
-    accent: "#ffd29a",
-    style: "boy",
-    storeItem: true
-  },
-  {
-    id: "robot",
-    name: "الروبوت المتقدم",
-    emoji: "🤖",
-    hair: "#607b9b",
-    skin: "#b9d8e8",
-    clothes: "#637bff",
-    accent: "#aabaff",
-    style: "robot",
-    storeItem: true
-  },
-  {
-    id: "dragon",
-    name: "تنين الكود",
-    emoji: "🐉",
-    hair: "#315d45",
-    skin: "#b7e4c7",
-    clothes: "#398c68",
-    accent: "#b6ffd8",
-    style: "robot",
-    storeItem: true
   }
 ];
 
