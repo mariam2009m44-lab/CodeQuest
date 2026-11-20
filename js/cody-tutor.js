@@ -1,15 +1,4 @@
-const CODY_IMAGES = {
- wave: "a4845a93-494a-4896-9601-6127e452b9ef%20(1).jpg",
- celebrate: "bcaecfa6-7939-4a20-bbf4-78150b2e7d4f.jpg",
- think: "f5d2bea2-2ec3-44c9-bce5-a61c2a613c4b.jpg"
-};
-const MASCOT = `<span class="cody-character cody-character--image is-waving"><img class="cody-character__image" src="__CODY_IMAGE__" alt="" aria-hidden="true" decoding="async"></span>`;
-function ensureCodyMascotStyles(){
- if(document.querySelector('link[data-cody-mascot-styles]'))return;
- const link=document.createElement("link");
- link.rel="stylesheet";link.href="css/cody-mascot.css";link.dataset.codyMascotStyles="true";
- document.head.append(link);
-}
+const MASCOT = `<span class="cody-character is-waving"><span class="cody-character__antenna"></span><span class="cody-character__head"><span class="cody-character__eye cody-character__eye--left"></span><span class="cody-character__eye cody-character__eye--right"></span><span class="cody-character__mouth"></span></span><span class="cody-character__body"><span class="cody-character__core">✦</span></span><span class="cody-character__arm cody-character__arm--left"></span><span class="cody-character__arm cody-character__arm--right"></span><span class="cody-character__leg cody-character__leg--left"></span><span class="cody-character__leg cody-character__leg--right"></span></span>`;
 function clean(value){return typeof value==="string"?value.trim():"";}
 function makeSteps(lesson){
  const steps=[];
@@ -31,7 +20,6 @@ function makeSteps(lesson){
 }
 export function mountCodyTutor(lesson,language="اللغة الحالية"){
  if(!lesson||typeof document==="undefined")return;
- ensureCodyMascotStyles();
  const host=document.querySelector("#lessonContent .content-grid")||document.querySelector("#lessonContent .workspace")||document.querySelector(".content-grid")||document.querySelector(".workspace");
  if(!host)return;
  document.getElementById("codyInteractiveTutor")?.remove();
@@ -43,7 +31,7 @@ export function mountCodyTutor(lesson,language="اللغة الحالية"){
  host.parentNode.insertBefore(panel,host);
  const title=panel.querySelector(".cody-tutor-step-title"),count=panel.querySelector(".cody-tutor-step-count"),message=panel.querySelector(".cody-tutor-message"),code=panel.querySelector(".cody-tutor-code"),bar=panel.querySelector(".cody-tutor-progress span"),back=panel.querySelector(".cody-tutor-back"),next=panel.querySelector(".cody-tutor-next"),mascot=panel.querySelector(".cody-tutor-mascot");
  let index=0,finished=false;
- function render(){const step=steps[index];title.textContent=step.label;count.textContent="خطوة "+(index+1)+" من "+steps.length;message.textContent=step.message;code.hidden=!step.code;code.textContent=step.code||"";bar.style.width=((index+1)/steps.length*100)+"%";back.disabled=index===0;next.textContent=index===steps.length-1?"ابدأ التطبيق العملي ↓":"متابعة ←";panel.dataset.mood=step.mood||"talk";mascot.className="cody-tutor-mascot";const codyImage=step.mood==="think"?CODY_IMAGES.think:step.mood==="happy"?CODY_IMAGES.celebrate:CODY_IMAGES.wave;const codyState=step.mood==="think"?"is-thinking":step.mood==="happy"?"is-happy":"is-waving";mascot.innerHTML=MASCOT.replace("__CODY_IMAGE__",codyImage).replace("is-waving",codyState);}
+ function render(){const step=steps[index];title.textContent=step.label;count.textContent="خطوة "+(index+1)+" من "+steps.length;message.textContent=step.message;code.hidden=!step.code;code.textContent=step.code||"";bar.style.width=((index+1)/steps.length*100)+"%";back.disabled=index===0;next.textContent=index===steps.length-1?"ابدأ التطبيق العملي ↓":"متابعة ←";panel.dataset.mood=step.mood||"talk";mascot.className="cody-tutor-mascot";mascot.innerHTML=MASCOT.replace("is-waving",step.mood==="happy"?"is-happy":"is-waving");mascot.classList.toggle("is-thinking",step.mood==="think");}
  back.addEventListener("click",()=>{if(index>0){index--;finished=false;render()}});
  next.addEventListener("click",()=>{if(finished){index=0;finished=false;render();return}if(index<steps.length-1){index++;render();return}const target=document.querySelector("#codeEditor,#pythonCodeInput,.editor-card,.editor-panel,.task-card");target?.scrollIntoView({behavior:"smooth",block:"center"});const editor=document.querySelector("#codeEditor,#pythonCodeInput");editor?.focus({preventScroll:true});finished=true;next.textContent="راجع الشرح مرة أخرى"});
  render();
