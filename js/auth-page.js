@@ -259,10 +259,11 @@ if (!form) {
   if (googleButton) {
     googleButton.addEventListener("click", async () => {
       if (googleButton.disabled) return;
-      const originalText = googleButton.textContent.trim();
+      const googleLabel = googleButton.querySelector("span:last-child");
+      const originalLabel = googleLabel?.textContent || "المتابعة باستخدام Google";
       googleButton.disabled = true;
       googleButton.setAttribute("aria-busy", "true");
-      googleButton.textContent = "جارٍ الانتقال إلى Google...";
+      if (googleLabel) googleLabel.textContent = "جارٍ الاتصال بـ Google...";
       displayMessage("");
 
       try {
@@ -278,7 +279,7 @@ if (!form) {
         displayMessage(getErrorMessage(error), true);
         googleButton.disabled = false;
         googleButton.removeAttribute("aria-busy");
-        googleButton.textContent = originalText;
+        if (googleLabel) googleLabel.textContent = originalLabel;
       }
     });
   }
@@ -297,7 +298,8 @@ if (!form) {
       if (googleButton) {
         googleButton.disabled = false;
         googleButton.removeAttribute("aria-busy");
-        googleButton.textContent = "المتابعة باستخدام Google";
+        const label = googleButton.querySelector("span:last-child");
+        if (label) label.textContent = "المتابعة باستخدام Google";
       }
     });
 
