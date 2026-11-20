@@ -266,7 +266,10 @@ if (!form) {
       displayMessage("");
 
       try {
-        await signInWithGoogle();
+        const user = await signInWithGoogle();
+        if (user?.uid) {
+          window.location.replace(getNextPage());
+        }
       } catch (error) {
         console.error("CodeQuest Google sign-in failed:", {
           code: error?.code || null,
