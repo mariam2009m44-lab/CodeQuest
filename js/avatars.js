@@ -1,9 +1,9 @@
 const AVATARS = [
   {
     id: "cody",
-    name: "آدم",
+    name: "نور",
     image: "file_00000000bbf88210834d4e591659d62b.png",
-    style: "boy"
+    style: "girl"
   },
   {
     id: "layla",
