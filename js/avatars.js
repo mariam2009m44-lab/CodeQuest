@@ -125,9 +125,16 @@ export function getAllAvatars() {
 
 export function renderAvatar(avatarId = DEFAULT_AVATAR) {
   const avatar = getAvatar(avatarId);
-  const art = avatar.image
-    ? `<img class="anime-avatar-image" src="${escapeAttribute(avatar.image)}"
-        alt="${escapeAttribute(avatar.name)}" loading="lazy" decoding="async"
+  // Resolve image assets relative to this module, not the current page URL.
+  // This keeps the images working on GitHub Pages project paths (/CodeQuest/)
+  // as well as when the same component is rendered from other site pages.
+  const imageUrl = avatar.image
+    ? new URL(`../${avatar.image}`, import.meta.url).href
+    : null;
+
+  const art = imageUrl
+    ? `<img class="anime-avatar-image" src="${escapeAttribute(imageUrl)}"
+        alt="${escapeAttribute(avatar.name)}" loading="eager" decoding="async"
         draggable="false">`
     : createAvatarSVG(avatar);
 
