@@ -598,7 +598,7 @@ CodeQuest/
 ├── game-memory.html
 ├── game-quiz.html
 ├── game-speed.html
-├── game-3d.html
+├── game-image-puzzle.html
 │
 ├── profile.html
 ├── progress.html
