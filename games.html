@@ -96,6 +96,67 @@
       .header h1 { font-size: 2rem; }
       .games-grid { grid-template-columns: 1fr; gap: 20px; }
     }
+  
+    /* CodeQuest game hub — refined visual system */
+    body { padding: clamp(16px, 3vw, 34px) 18px 48px; background:
+      radial-gradient(ellipse at 12% 8%, rgba(99,102,241,.20), transparent 34%),
+      radial-gradient(ellipse at 88% 18%, rgba(34,211,238,.13), transparent 30%),
+      linear-gradient(160deg,#070b18 0%,#0a1022 55%,#080d1b 100%); }
+    .top-bar { max-width: 1180px; margin-bottom: clamp(28px,5vw,54px); }
+    .logo-area { letter-spacing: .3px; }
+    .header { max-width: 720px; margin: 0 auto clamp(28px,4vw,46px); }
+    .header h1 { font-size: clamp(2rem,5vw,3.15rem); line-height:1.25;
+      background:linear-gradient(100deg,#fff 18%,#9eeeff 52%,#c4b5fd 88%);
+      -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none; }
+    .header p { max-width:580px;margin:12px auto 0;line-height:1.9;font-size:clamp(.92rem,2vw,1.08rem); }
+    .games-grid { max-width:1180px; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px; }
+    .game-card { min-height:320px;padding:22px 21px 20px;border-radius:24px;
+      background:linear-gradient(155deg,rgba(22,32,58,.92),rgba(10,17,34,.94));
+      border-color:rgba(148,163,184,.17);backdrop-filter:blur(18px);
+      box-shadow:0 12px 34px rgba(0,0,0,.18); }
+    .game-card::after { content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+      background:linear-gradient(135deg,rgba(255,255,255,.075),transparent 38%,transparent 70%,rgba(255,255,255,.025)); }
+    .game-card:hover { transform:translateY(-7px);box-shadow:0 22px 48px rgba(0,0,0,.32),0 0 28px var(--card-glow); }
+    .icon-wrapper { width:100%;height:124px;border-radius:18px;margin-bottom:19px;font-size:3.7rem;
+      background:radial-gradient(circle at 50% 20%,rgba(255,255,255,.2),transparent 48%),
+      linear-gradient(135deg,var(--icon-color1),var(--icon-color2));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 14px 28px rgba(0,0,0,.25);
+      position:relative;overflow:hidden; }
+    .icon-wrapper::before,.icon-wrapper::after { content:"";position:absolute;border:1px solid rgba(255,255,255,.19);border-radius:50%;pointer-events:none; }
+    .icon-wrapper::before { width:150px;height:150px;top:-100px;right:-25px; }
+    .icon-wrapper::after { width:100px;height:100px;bottom:-76px;left:-20px; }
+    .game-card h3 { font-size:1.28rem;margin-bottom:7px; }
+    .game-card p { font-size:.91rem;line-height:1.8;margin-bottom:18px; }
+    .btn-play { min-height:48px;border-radius:13px;font-size:.96rem;background:rgba(255,255,255,.055); }
+    .game-card:focus-visible { outline-offset:5px; }
+    .c-quiz .icon-wrapper { background:linear-gradient(135deg,#087fba,#4f46e5); }
+    .c-memory .icon-wrapper { background:linear-gradient(135deg,#7c3aed,#be4bdb); }
+    .c-build .icon-wrapper { background:linear-gradient(135deg,#087f78,#16a878); }
+    .c-bug .icon-wrapper { background:linear-gradient(135deg,#c24162,#7c2d75); }
+    .c-speed .icon-wrapper { background:linear-gradient(135deg,#b45309,#eab308); }
+    .c-image .icon-wrapper { background:linear-gradient(135deg,#5145cd,#a855f7); }
+    html[data-theme="light"] body { background:radial-gradient(ellipse at 12% 8%,#e7eafe,transparent 34%),linear-gradient(160deg,#f6f8ff,#edf3fb); }
+    html[data-theme="light"] .game-card { background:linear-gradient(155deg,#fff,#f7f9ff);box-shadow:0 12px 30px rgba(31,51,84,.08); }
+    html[data-theme="light"] .game-card::after { background:linear-gradient(135deg,rgba(255,255,255,.5),transparent 45%); }
+    @media(max-width:768px) {
+      body { padding:14px 13px 34px; }
+      .top-bar { flex-direction:row;flex-wrap:wrap;justify-content:space-between;margin-bottom:26px; }
+      .logo-area { order:-1;width:100%;justify-content:center;font-size:1.55rem; }
+      .global-score { font-size:1rem;padding:9px 12px; }
+      .games-grid { grid-template-columns:repeat(2,minmax(0,1fr));gap:13px; }
+      .game-card { min-height:290px;padding:15px 13px;border-radius:19px; }
+      .icon-wrapper { height:104px;font-size:3rem;margin-bottom:14px;border-radius:15px; }
+      .game-card h3 { font-size:1.05rem; }
+      .game-card p { font-size:.82rem;line-height:1.65; }
+      .btn-play { font-size:.84rem;padding:10px 8px; }
+    }
+    @media(max-width:420px) {
+      .games-grid { grid-template-columns:1fr;max-width:390px; }
+      .game-card { min-height:0; }
+      .icon-wrapper { height:116px; }
+      .game-card p { min-height:0; }
+    }
+
   </style>
   <link rel="stylesheet" href="css/theme.css">
   <style>
