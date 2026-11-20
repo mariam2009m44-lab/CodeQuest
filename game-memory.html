@@ -166,7 +166,13 @@
       let cols = pairsCount === 15 ? 5 : 4;
       gameGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       const selected = allPairs.slice(0, pairsCount);
-      const cards = [...selected, ...selected].map(item => ({ id: item.id, text: Math.random() < 0.5 ? item.term : item.def })).sort(() => Math.random() - 0.5);
+      // Each pair must contain one term card and one definition card.
+      // Randomizing the label independently could previously create two terms
+      // (or two definitions), while the ID-only matcher still accepted them.
+      const cards = selected.flatMap(item => [
+        { id: item.id, type: "term", text: item.term },
+        { id: item.id, type: "definition", text: item.def }
+      ]).sort(() => Math.random() - 0.5);
       gameGrid.innerHTML = '';
       cards.forEach(cardData => {
         const cardEl = document.createElement('div'); cardEl.classList.add('card'); cardEl.dataset.id = cardData.id;
@@ -183,7 +189,10 @@
 
     function checkMatch() {
       lock = true; const [c1, c2] = flippedCards;
-      if (c1.data.id === c2.data.id) {
+      if (
+        c1.data.id === c2.data.id &&
+        c1.data.type !== c2.data.type
+      ) {
         c1.el.classList.add('matched'); c2.el.classList.add('matched');
         matchedCount++; score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
         flippedCards = []; lock = false;
