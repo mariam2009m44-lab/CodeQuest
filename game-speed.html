@@ -112,6 +112,7 @@
     }
 </style>
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/codequest-games.css">
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
@@ -178,7 +179,7 @@
       document.getElementById('gameScreen').classList.add('active');
       let count = level === 'easy' ? 10 : level === 'medium' ? 15 : 20;
       let timePerQ = level === 'easy' ? 30 : level === 'medium' ? 40 : 50;
-      maxTime = timePerQ * 10; time = maxTime;
+      maxTime = timePerQ * count; time = maxTime;
       currentQs = allQs.sort(() => Math.random() - 0.5).slice(0, count);
       curr = 0; score = 0; scoreEl.textContent = score;
       fill.style.width = '100%'; load(); startTimer();
@@ -197,10 +198,11 @@
     }
 
     function startTimer() {
+      clearInterval(int);
       int = setInterval(() => {
         time -= 1; fill.style.width = `${(time / maxTime) * 100}%`;
         if (time <= 0) end();
-      }, 100);
+      }, 1000);
     }
 
     function end() {
