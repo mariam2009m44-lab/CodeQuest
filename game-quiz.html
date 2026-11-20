@@ -211,10 +211,19 @@
     let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy';
     const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), progressEl = document.getElementById('progress');
 
+    function shuffleQuestions(items) {
+      const shuffled = [...items];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
     function startGame(level) {
       currentLevel = level;
-      let qs = questionBank[level];
-      currentQs = qs.sort(() => Math.random() - 0.5).slice(0, (level === 'easy' ? 10 : level === 'medium' ? 15 : 20));
+      const qs = questionBank[level];
+      currentQs = shuffleQuestions(qs).slice(0, (level === 'easy' ? 10 : level === 'medium' ? 15 : 20));
       curr = 0; score = 0; streak = 0; scoreEl.textContent = 0; comboEl.textContent = 0;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
@@ -235,6 +244,8 @@
       qEl.textContent = q.q;
       optsEl.innerHTML = '';
       progressEl.style.width = `${(curr / currentQs.length) * 100}%`;
+      progressEl.parentElement.setAttribute('aria-valuenow', String(curr));
+      progressEl.parentElement.setAttribute('aria-valuemax', String(currentQs.length));
       q.opts.forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.className = 'opt-btn';

@@ -27,7 +27,7 @@
     .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255,212,138,0.15); transform: scale(1.02); }
     .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255,145,169,0.15); transform: scale(1.02); }
     .memory-grid { display: grid; gap: 12px; margin-top: 20px; }
-    .card { position: relative; width: 100%; aspect-ratio: 1; cursor: pointer; perspective: 1000px; }
+    .card { position: relative; width: 100%; aspect-ratio: 1; cursor: pointer; perspective: 1000px; padding:0; border:0; background:transparent; color:inherit; font:inherit; min-height:0; }
     .card-inner { position: absolute; inset: 0; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
     .card.flipped .card-inner, .card.matched .card-inner { transform: rotateY(180deg); }
     .card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 2px solid var(--border); }
@@ -130,7 +130,7 @@
   </div>
   <div class="screen" id="gameScreen">
     <div class="level-box">
-      <div id="gameGrid" class="memory-grid"></div>
+      <div id="gameGrid" class="memory-grid" role="group" aria-label="بطاقات لعبة الذاكرة"></div>
       <div id="winScreen" class="win-screen">
         <div class="result-emoji" id="resultEmoji">🏆</div>
         <h2 id="resultTitle">أحسنت! لقد أكملت اللعبة 🎉</h2>
@@ -173,18 +173,31 @@
       const cards = selected.flatMap(item => [
         { id: item.id, type: "term", text: item.term },
         { id: item.id, type: "definition", text: item.def }
-      ]).sort(() => Math.random() - 0.5);
+      ]);
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
       gameGrid.innerHTML = '';
       cards.forEach(cardData => {
-        const cardEl = document.createElement('div'); cardEl.classList.add('card'); cardEl.dataset.id = cardData.id;
-        cardEl.innerHTML = `<div class="card-inner"><div class="card-front">?</div><div class="card-back">${cardData.text}</div></div>`;
-        cardEl.addEventListener('click', () => flipCard(cardEl, cardData)); gameGrid.appendChild(cardEl);
+        const cardEl = document.createElement('button');
+        cardEl.type = 'button';
+        cardEl.classList.add('card');
+        cardEl.dataset.id = cardData.id;
+        cardEl.setAttribute('aria-label', 'بطاقة مخفية');
+        cardEl.setAttribute('aria-pressed', 'false');
+        cardEl.innerHTML = `<span class="card-inner"><span class="card-front" aria-hidden="true">?</span><span class="card-back" aria-hidden="true">${cardData.text}</span></span>`;
+        cardEl.addEventListener('click', () => flipCard(cardEl, cardData));
+        gameGrid.appendChild(cardEl);
       });
     }
 
     function flipCard(cardEl, cardData) {
       if (lock || cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
-      cardEl.classList.add('flipped'); flippedCards.push({ el: cardEl, data: cardData });
+      cardEl.classList.add('flipped');
+      cardEl.setAttribute('aria-label', cardData.type === 'term' ? cardData.text : `تعريف: ${cardData.text}`);
+      cardEl.setAttribute('aria-pressed', 'true');
+      flippedCards.push({ el: cardEl, data: cardData });
       if (flippedCards.length === 2) checkMatch();
     }
 
@@ -195,6 +208,7 @@
         c1.data.type !== c2.data.type
       ) {
         c1.el.classList.add('matched'); c2.el.classList.add('matched');
+        c1.el.disabled = true; c2.el.disabled = true;
         matchedCount++; score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
         flippedCards = []; lock = false;
         if (matchedCount === totalPairs) {
@@ -210,6 +224,10 @@
         score = Math.max(0, score - 5); scoreDisplay.textContent = score;
         setTimeout(() => {
           c1.el.classList.remove('flipped'); c2.el.classList.remove('flipped');
+          c1.el.setAttribute('aria-label', 'بطاقة مخفية');
+          c2.el.setAttribute('aria-label', 'بطاقة مخفية');
+          c1.el.setAttribute('aria-pressed', 'false');
+          c2.el.setAttribute('aria-pressed', 'false');
           flippedCards = []; lock = false;
         }, 800);
       }
