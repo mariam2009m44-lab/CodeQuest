@@ -3,6 +3,8 @@ import {
   loginUser,
   registerUser,
   resetPassword,
+  signInWithGoogle,
+  completeGoogleRedirect,
   authError
 } from "./auth.js";
 
@@ -33,6 +35,7 @@ if (!form) {
   document.addEventListener("cq:themechange", syncAuthThemeControl);
   syncAuthThemeControl();
   const submitButton = form.querySelector('[type="submit"]');
+  const googleButton = document.getElementById("googleSignIn");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const nameInput = document.getElementById("name");
@@ -177,6 +180,10 @@ if (!form) {
       return `تم إنشاء حساب الدخول بالفعل، لكن تعذرت ${stage} في Firestore. لا تنشئ حسابًا آخر؛ سجّل الدخول مرة أخرى. إذا استمرت المشكلة، يجب مراجعة قواعد Firestore المنشورة. ${code}`;
     }
 
+    if (error?.code === "auth/account-exists-with-different-credential") {
+      return "هذا البريد مستخدم في حساب موجود بطريقة تسجيل دخول أخرى. ادخلي أولًا بالطريقة التي أنشأتِ بها الحساب حتى نحافظ على تقدمك؛ لا تنشئي حسابًا جديدًا.";
+    }
+
     if (error?.code === "auth/invalid-credential") {
       return `رفض Firebase بيانات تسجيل الدخول. تحقّق من أن مزوّد الحساب هو Email/Password، ثم استخدم خيار «نسيت كلمة المرور؟» إذا لزم الأمر. لا يحدد هذا الرمز وحده ما إذا كان السبب البريد الإلكتروني أم كلمة المرور.${code}`;
     }
@@ -248,6 +255,48 @@ if (!form) {
       }
     }
   });
+
+  if (googleButton) {
+    googleButton.addEventListener("click", async () => {
+      if (googleButton.disabled) return;
+      const originalText = googleButton.textContent.trim();
+      googleButton.disabled = true;
+      googleButton.setAttribute("aria-busy", "true");
+      googleButton.textContent = "جارٍ الانتقال إلى Google...";
+      displayMessage("");
+
+      try {
+        await signInWithGoogle();
+      } catch (error) {
+        console.error("CodeQuest Google sign-in failed:", {
+          code: error?.code || null,
+          message: error?.message || String(error)
+        });
+        displayMessage(getErrorMessage(error), true);
+        googleButton.disabled = false;
+        googleButton.removeAttribute("aria-busy");
+        googleButton.textContent = originalText;
+      }
+    });
+  }
+
+  // عند العودة من Google، استخرج النتيجة ثم أنشئ ملف Firestore فقط إذا لم يكن موجودًا.
+  completeGoogleRedirect()
+    .then(user => {
+      if (user) window.location.replace(getNextPage());
+    })
+    .catch(error => {
+      console.error("CodeQuest Google redirect completion failed:", {
+        code: error?.code || null,
+        message: error?.message || String(error)
+      });
+      displayMessage(getErrorMessage(error), true);
+      if (googleButton) {
+        googleButton.disabled = false;
+        googleButton.removeAttribute("aria-busy");
+        googleButton.textContent = "المتابعة باستخدام Google";
+      }
+    });
 
   const resetButton = document.getElementById("resetPassword");
 
