@@ -15,7 +15,7 @@
     .top-nav { width: 100%; max-width: 650px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; position: relative; z-index: 10; }
     .back-btn { display: flex; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: 0.3s; backdrop-filter: blur(10px); }
     .back-btn:hover { background: rgba(255,255,255,0.15); transform: translateX(-3px); }
-    .score-board { background: var(--glass); border: 1px solid var(--border); padding: 10px 18px; border-radius: 12px; font-weight: 900; color: var(--gold); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(255, 212, 138, 0.1); }
+    .memory-stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.memory-stats .score-board{font-size:.88rem;padding:9px 12px}.score-board { background: var(--glass); border: 1px solid var(--border); padding: 10px 18px; border-radius: 12px; font-weight: 900; color: var(--gold); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(255, 212, 138, 0.1); }
     .screen { display: none; width: 100%; max-width: 650px; position: relative; z-index: 10; }
     .screen.active { display: block; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
@@ -116,7 +116,7 @@
   <canvas id="bg-canvas"></canvas>
   <div class="top-nav">
     <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
-    <div class="score-board">النقاط: <span id="scoreDisplay">0</span></div>
+    <div class="memory-stats"><div class="score-board">النقاط: <span id="scoreDisplay">0</span></div><div class="score-board">الوقت: <span id="memoryTime">0:00</span></div><div class="score-board">المحاولات: <span id="memoryMoves">0</span></div></div>
   </div>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
@@ -148,8 +148,11 @@
       { id: 10, term: 'Variable', def: 'متغير' }, { id: 11, term: 'API', def: 'واجهة برمجة' }, { id: 12, term: 'Git', def: 'إصدارات' },
       { id: 13, term: 'SQL', def: 'قواعد بيانات' }, { id: 14, term: 'C++', def: 'لغة عالية الأداء' }, { id: 15, term: 'Java', def: 'كائنية التوجه' }
     ];
-    let flippedCards = [], matchedCount = 0, totalPairs = 0, score = 0, lock = false, currentPairs = 0;
+    let flippedCards = [], matchedCount = 0, totalPairs = 0, score = 0, lock = false, currentPairs = 0, memoryMoves = 0, memorySeconds = 0, memoryTimer = null;
     const scoreDisplay = document.getElementById('scoreDisplay'), gameGrid = document.getElementById('gameGrid'), winScreen = document.getElementById('winScreen');
+    function formatMemoryTime(seconds){return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');}
+    function stopMemoryTimer(){if(memoryTimer){clearInterval(memoryTimer);memoryTimer=null;}}
+    function startMemoryTimer(){stopMemoryTimer();memorySeconds=0;document.getElementById('memoryTime').textContent='0:00';memoryTimer=setInterval(()=>{memorySeconds++;document.getElementById('memoryTime').textContent=formatMemoryTime(memorySeconds);},1000);}
 
     function updateGlobalScore(points) {
       let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
@@ -159,11 +162,11 @@
     }
 
     function startGame(pairsCount) {
-      currentPairs = pairsCount; totalPairs = pairsCount; score = 0; scoreDisplay.textContent = score;
+      stopMemoryTimer(); currentPairs = pairsCount; totalPairs = pairsCount; score = 0; memoryMoves = 0; document.getElementById('memoryMoves').textContent='0'; scoreDisplay.textContent = score;
       flippedCards = []; matchedCount = 0; lock = false;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
-      winScreen.style.display = 'none'; gameGrid.style.display = 'grid';
+      winScreen.style.display = 'none'; gameGrid.style.display = 'grid'; startMemoryTimer();
       let cols = pairsCount === 15 ? 5 : 4;
       gameGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       const selected = allPairs.slice(0, pairsCount);
@@ -202,7 +205,7 @@
     }
 
     function checkMatch() {
-      lock = true; const [c1, c2] = flippedCards;
+      lock = true; memoryMoves++; document.getElementById('memoryMoves').textContent=memoryMoves; const [c1, c2] = flippedCards;
       if (
         c1.data.id === c2.data.id &&
         c1.data.type !== c2.data.type
@@ -213,10 +216,15 @@
         flippedCards = []; lock = false;
         if (matchedCount === totalPairs) {
           setTimeout(() => {
+            stopMemoryTimer();
+            const bestKey='codequest-memory-best-'+currentPairs;
+            const previousBest=Number(localStorage.getItem(bestKey))||0;
+            const isBest=!previousBest||memorySeconds<previousBest;
+            if(isBest)localStorage.setItem(bestKey,String(memorySeconds));
             winScreen.style.display = 'block'; gameGrid.style.display = 'none';
             document.getElementById('resultEmoji').textContent = '🏆';
             document.getElementById('resultTitle').textContent = 'رائع! لقد أكملت اللعبة!';
-            document.getElementById('resultMessage').textContent = `لقد جمعت ${score} نقطة.`;
+            document.getElementById('resultMessage').textContent = `النقاط: ${score} • الوقت: ${formatMemoryTime(memorySeconds)} • المحاولات: ${memoryMoves} • أفضل وقت: ${formatMemoryTime(Number(localStorage.getItem(bestKey))||memorySeconds)}${isBest?' • رقم قياسي جديد!':''}`;
             window.CodeQuestExperience?.reward({ gems: 0, title: 'ذاكرة خارقة!', message: 'طابقت كل البطاقات وأكملت المرحلة بنجاح.' });
           }, 500);
         }
@@ -233,6 +241,7 @@
       }
     }
     function restartCurrentLevel() { startGame(currentPairs); }
+    window.addEventListener('pagehide',stopMemoryTimer);
 
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
