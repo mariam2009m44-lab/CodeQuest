@@ -824,102 +824,151 @@ export default {
           }
         };
 
-        // Retry brief network interruptions and transient upstream responses.
-        // Do not retry 429: it may represent an exhausted daily/model quota.
+        // Use the primary model first. If its model-specific quota is exhausted,
+        // make one attempt with the supported lightweight fallback model.
+        const fallbackModel = (env.GEMINI_FALLBACK_MODEL || "gemini-3.5-flash-lite").trim();
+        const modelsToTry = [model];
+        if (
+          fallbackModel !== model &&
+          /^[a-zA-Z0-9._-]{1,100}$/.test(fallbackModel)
+        ) {
+          modelsToTry.push(fallbackModel);
+        }
+
         let upstream = null;
+        let data = {};
+        let modelUsed = model;
         let networkError = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            upstream = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "x-goog-api-key": env.GEMINI_API_KEY
-                },
-                body: JSON.stringify(generationRequest),
-                signal: AbortSignal.timeout(35000)
-              }
-            );
-            networkError = null;
-          } catch (error) {
-            networkError = error;
-            if (error?.name === "AbortError" || attempt === 2) throw error;
+        let lastProviderError = null;
+
+        for (let modelIndex = 0; modelIndex < modelsToTry.length; modelIndex++) {
+          const candidateModel = modelsToTry[modelIndex];
+          let candidateResponse = null;
+
+          // Retry only transient server/network failures. A 429 is handled
+          // separately because it may mean a model-specific quota is exhausted.
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              candidateResponse = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidateModel)}:generateContent`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": env.GEMINI_API_KEY
+                  },
+                  body: JSON.stringify(generationRequest),
+                  signal: AbortSignal.timeout(35000)
+                }
+              );
+              networkError = null;
+            } catch (error) {
+              networkError = error;
+              if (error?.name === "AbortError" || attempt === 1) throw error;
+            }
+
+            if (candidateResponse) {
+              const transientFailure = [408, 500, 502, 503, 504].includes(candidateResponse.status);
+              if (!transientFailure || attempt === 1) break;
+              await candidateResponse.body?.cancel().catch(() => {});
+              candidateResponse = null;
+            }
+
+            if (attempt === 0) {
+              await new Promise(resolve => setTimeout(resolve, 600));
+            }
           }
 
-          if (upstream) {
-            const transientFailure = [408, 500, 502, 503, 504].includes(upstream.status);
-            if (!transientFailure || attempt === 2) break;
-            await upstream.body?.cancel().catch(() => {});
-            upstream = null;
+          if (!candidateResponse) throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
+
+          const candidateData = await candidateResponse.json().catch(() => ({}));
+          if (candidateResponse.ok) {
+            upstream = candidateResponse;
+            data = candidateData;
+            modelUsed = candidateModel;
+            break;
           }
 
-          // Exponential backoff with a small jitter to avoid synchronized retries.
-          const delay = 500 * (2 ** attempt) + Math.floor(Math.random() * 250);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          const providerError = candidateData?.error || {};
+          const providerDetails = Array.isArray(providerError.details) ? providerError.details : [];
+          const providerMessage = typeof providerError.message === "string"
+            ? providerError.message.slice(0, 500)
+            : "No provider message";
+          const quotaReasons = providerDetails
+            .map(detail => detail?.reason || detail?.metadata?.quotaId || "")
+            .filter(Boolean)
+            .join(",");
+          const quotaMetric = providerDetails
+            .flatMap(detail => Array.isArray(detail?.violations) ? detail.violations : [])
+            .map(item => item?.quotaMetric || item?.quotaId || "")
+            .filter(Boolean)
+            .join(",");
+
+          console.error("Gemini API request failed:", JSON.stringify({
+            httpStatus: candidateResponse.status,
+            providerStatus: typeof providerError.status === "string" ? providerError.status : "UNKNOWN",
+            providerMessage,
+            quotaReasons: quotaReasons.slice(0, 200),
+            quotaMetric: quotaMetric.slice(0, 200),
+            model: candidateModel
+          }));
+
+          lastProviderError = {
+            status: candidateResponse.status,
+            message: providerMessage,
+            quotaReasons,
+            quotaMetric
+          };
+
+          if (candidateResponse.status === 429 && modelIndex < modelsToTry.length - 1) {
+            await candidateResponse.body?.cancel().catch(() => {});
+            continue;
+          }
+
+          upstream = candidateResponse;
+          data = candidateData;
+          modelUsed = candidateModel;
+          break;
         }
 
-        if (!upstream) throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
-        const data = await upstream.json().catch(() => ({}));
+        if (!upstream) {
+          return jsonResponse({
+            success: false,
+            errorCode: "GEMINI_UPSTREAM_UNAVAILABLE",
+            message: lastProviderError?.status === 429
+              ? "وصل نموذج كودي الأساسي والاحتياطي إلى حد الاستخدام الحالي. جرّب مرة أخرى بعد تجدد الحصة."
+              : "خدمة Gemini غير متاحة حاليًا. حاول مرة أخرى بعد قليل."
+          }, lastProviderError?.status === 429 ? 429 : 503, origin);
+        }
+
         if (upstream.status === 429) {
-          return jsonResponse({ success: false, message: "كودي عليه ضغط حاليًا أو تم بلوغ حد Gemini المجاني. حاول بعد قليل." }, 429, origin);
+          const providerError = data?.error || {};
+          const providerDetails = Array.isArray(providerError.details) ? providerError.details : [];
+          const isQuotaExhausted = providerDetails.some(detail =>
+            detail?.reason === "QUOTA_EXHAUSTED" ||
+            (Array.isArray(detail?.violations) && detail.violations.length > 0)
+          );
+          return jsonResponse({
+            success: false,
+            errorCode: isQuotaExhausted ? "GEMINI_QUOTA_EXHAUSTED" : "GEMINI_RATE_LIMITED",
+            message: isQuotaExhausted
+              ? "استهلك نموذج كودي المتاح حاليًا من Gemini. جرّب بعد تجدد الحصة."
+              : "طلبات Gemini كثيرة حاليًا. انتظر قليلًا ثم أعد المحاولة."
+          }, 429, origin);
         }
+
         if (upstream.status === 401 || upstream.status === 403) {
           console.error("Gemini authentication/permission error:", upstream.status);
           return jsonResponse({ success: false, message: "تعذر التحقق من إعداد Gemini. راجعي المفتاح وصلاحية النموذج في Cloudflare." }, 503, origin);
         }
+
         if (!upstream.ok) {
-          const providerError = data?.error || {};
-          const providerStatus = typeof providerError.status === "string"
-            ? providerError.status
-            : "UNKNOWN";
-          const providerMessage = typeof providerError.message === "string"
-            ? providerError.message.slice(0, 500)
-            : "No provider message";
-
-          // Keep provider diagnostics in Cloudflare logs, but never expose
-          // raw upstream details, request data, or credentials to learners.
-          console.error("Gemini API request failed:", JSON.stringify({
-            httpStatus: upstream.status,
-            providerStatus,
-            providerMessage,
-            model
-          }));
-
-          let message = "خدمة Gemini واجهت مشكلة مؤقتة. حاول مرة أخرى بعد قليل.";
-          if (upstream.status === 400) {
-            message = "إعدادات طلب كودي غير متوافقة مع نموذج Gemini. تم تسجيل تفاصيل المشكلة لمراجعتها.";
-          } else if (upstream.status === 404) {
-            message = "نموذج Gemini المحدد غير متاح لهذا المفتاح أو المشروع. راجع إعداد GEMINI_MODEL في Cloudflare.";
-          } else if (upstream.status === 429) {
-            message = "وصلت خدمة Gemini إلى حد الاستخدام الحالي. حاول مرة أخرى لاحقًا.";
-          }
-
           return jsonResponse({
             success: false,
             errorCode: "GEMINI_UPSTREAM_ERROR",
-            message
+            message: "خدمة Gemini واجهت مشكلة مؤقتة. حاول مرة أخرى بعد قليل."
           }, 502, origin);
         }
-
-        const answer = (data?.candidates?.[0]?.content?.parts || [])
-          .filter(part => part && typeof part.text === "string")
-          .map(part => part.text)
-          .join("\n")
-          .trim();
-
-        if (!answer) {
-          return jsonResponse({ success: false, message: "كودي لم يتمكن من تكوين إجابة واضحة." }, 502, origin);
-        }
-
-        return jsonResponse({
-          success: true,
-          answer: answer.slice(0, 12000),
-          category: prediction.category,
-          confidence: prediction.confidence,
-          needs_review: prediction.needs_review
-        }, 200, origin);
       } catch (error) {
         const errorName = typeof error?.name === "string" ? error.name : "UnknownError";
         const errorMessage = typeof error?.message === "string"
