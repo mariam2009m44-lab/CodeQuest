@@ -969,6 +969,25 @@ export default {
             message: "خدمة Gemini واجهت مشكلة مؤقتة. حاول مرة أخرى بعد قليل."
           }, 502, origin);
         }
+
+        const answer = (data?.candidates?.[0]?.content?.parts || [])
+          .filter(part => part && typeof part.text === "string")
+          .map(part => part.text)
+          .join("\n")
+          .trim();
+
+        if (!answer) {
+          return jsonResponse({ success: false, message: "كودي لم يتمكن من تكوين إجابة واضحة." }, 502, origin);
+        }
+
+        return jsonResponse({
+          success: true,
+          answer: answer.slice(0, 12000),
+          category: prediction.category,
+          confidence: prediction.confidence,
+          needs_review: prediction.needs_review,
+          model: modelUsed
+        }, 200, origin);
       } catch (error) {
         const errorName = typeof error?.name === "string" ? error.name : "UnknownError";
         const errorMessage = typeof error?.message === "string"
