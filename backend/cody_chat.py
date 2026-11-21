@@ -198,9 +198,8 @@ async def chat_with_cody(
         },
         "contents": prepare_history(request.history, question),
         "generationConfig": {
-            "temperature": 0.45,
-            "topP": 0.9,
-            "maxOutputTokens": 3072
+            "maxOutputTokens": 3072,
+            "thinkingConfig": {"thinkingLevel": "medium"}
         }
     }
 
