@@ -1102,7 +1102,7 @@ export class CodeExecutionLimiter {
     const isCodyRefund = quotaAction === "/cody-refund";
     const today = new Date().toISOString().slice(0, 10);
     const key = isCody || isCodyRefund ? `cody:${uid}` : `user:${uid}`;
-    const dailyLimit = isCody || isCodyRefund ? 20 : 30;
+    const dailyLimit = isCody || isCodyRefund ? 100 : 30;
 
     if (isCodyRefund) {
       const refunded = await this.state.storage.transaction(async transaction => {
@@ -1134,7 +1134,7 @@ export class CodeExecutionLimiter {
       return Response.json({
         allowed: false,
         count: result.count,
-        message: isCody ? "وصلت إلى الحد اليومي المسموح به (20 سؤالًا لكودي). حاول غدًا." : "وصلت إلى الحد اليومي المسموح به (30 تشغيلًا). حاول غدًا."
+        message: isCody ? "وصلت إلى الحد اليومي المسموح به (100 سؤال لكودي). حاول غدًا." : "وصلت إلى الحد اليومي المسموح به (30 تشغيلًا). حاول غدًا."
       }, { status: 429 });
     }
 
