@@ -1004,20 +1004,26 @@
     <span class="cody-character__leg cody-character__leg--left"></span><span class="cody-character__leg cody-character__leg--right"></span>
   </span>
 </span></button>
-<section class="cody-chat-panel" id="codyChatPanel" aria-label="محادثة كودي" aria-live="polite" hidden>
+<section class="cody-chat-panel" id="codyChatPanel" role="dialog" aria-modal="true" aria-labelledby="codyChatTitle" aria-label="محادثة كودي" hidden>
   <header class="cody-chat-header">
     <div class="cody-chat-identity">
       <span class="cody-chat-avatar" aria-hidden="true"><i class="ri-robot-2-line"></i></span>
-      <div><strong>كودي</strong><small>مساعدك الذكي في CodeQuest</small></div>
+      <div>
+        <strong id="codyChatTitle">كودي</strong>
+        <small>مساحة المحادثة الذكية · اسأل براحتك</small>
+      </div>
     </div>
-    <button type="button" id="codyChatClose" aria-label="إغلاق المحادثة">×</button>
+    <button type="button" id="codyChatClose" aria-label="إغلاق المحادثة" title="إغلاق المحادثة">×</button>
   </header>
   <div class="cody-chat-messages" id="codyChatMessages" aria-live="polite" aria-relevant="additions">
     <div class="cody-chat-message cody-from-bot" dir="auto">أهلًا! أنا كودي. اسألني عن أي موضوع مناسب ليك: دراسة، علوم، رياضيات، لغات، كتابة، تقنية، أفكار، أو معلومات عامة. هفهم سؤالك وأساعدك خطوة بخطوة.</div>
   </div>
   <form class="cody-chat-form" id="codyChatForm">
-    <input id="codyChatInput" maxlength="3000" autocomplete="off" placeholder="اسأل كودي عن أي موضوع..." aria-label="اسأل كودي عن أي موضوع" required>
-    <button type="submit" aria-label="إرسال السؤال"><i class="ri-send-plane-fill" aria-hidden="true"></i></button>
+    <div class="cody-composer-field">
+      <textarea id="codyChatInput" maxlength="3000" rows="1" autocomplete="off" placeholder="اكتب سؤالك لكودي..." aria-label="اكتب سؤالك لكودي" required></textarea>
+      <small class="cody-composer-hint">Enter للإرسال · Shift + Enter لسطر جديد</small>
+    </div>
+    <button type="submit" aria-label="إرسال السؤال" title="إرسال السؤال"><i class="ri-send-plane-fill" aria-hidden="true"></i></button>
   </form>
   <p class="cody-chat-status" id="codyChatStatus" role="status" aria-live="polite"></p>
 </section>
