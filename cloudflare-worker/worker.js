@@ -106,6 +106,22 @@ function getAllowedOrigin(request, env) {
   return null;
 }
 
+async function refundCodyQuestionQuota(env, uid) {
+  if (!env.CODE_EXECUTION_LIMITER || typeof uid !== "string" || !uid) return;
+
+  try {
+    const limiterId = env.CODE_EXECUTION_LIMITER.idFromName("global-code-run-quota");
+    const limiter = env.CODE_EXECUTION_LIMITER.get(limiterId);
+    await limiter.fetch("https://quota.internal/cody-refund", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid })
+    });
+  } catch (error) {
+    console.warn("Cody quota refund failed:", error?.message || "REFUND_FAILED");
+  }
+}
+
 async function verifyFirebaseUser(request, env) {
   const authorization =
     request.headers.get("Authorization") || "";
@@ -942,6 +958,7 @@ export default {
         }
 
         if (upstream.status === 429) {
+          await refundCodyQuestionQuota(env, authenticatedUser.uid);
           const providerError = data?.error || {};
           const providerDetails = Array.isArray(providerError.details) ? providerError.details : [];
           const isQuotaExhausted = providerDetails.some(detail =>
@@ -958,11 +975,13 @@ export default {
         }
 
         if (upstream.status === 401 || upstream.status === 403) {
+          await refundCodyQuestionQuota(env, authenticatedUser.uid);
           console.error("Gemini authentication/permission error:", upstream.status);
           return jsonResponse({ success: false, message: "تعذر التحقق من إعداد Gemini. راجعي المفتاح وصلاحية النموذج في Cloudflare." }, 503, origin);
         }
 
         if (!upstream.ok) {
+          await refundCodyQuestionQuota(env, authenticatedUser.uid);
           return jsonResponse({
             success: false,
             errorCode: "GEMINI_UPSTREAM_ERROR",
@@ -977,6 +996,7 @@ export default {
           .trim();
 
         if (!answer) {
+          await refundCodyQuestionQuota(env, authenticatedUser.uid);
           return jsonResponse({ success: false, message: "كودي لم يتمكن من تكوين إجابة واضحة." }, 502, origin);
         }
 
@@ -989,6 +1009,7 @@ export default {
           model: modelUsed
         }, 200, origin);
       } catch (error) {
+        await refundCodyQuestionQuota(env, authenticatedUser.uid);
         const errorName = typeof error?.name === "string" ? error.name : "UnknownError";
         const errorMessage = typeof error?.message === "string"
           ? error.message.slice(0, 300)
@@ -1076,10 +1097,23 @@ export class CodeExecutionLimiter {
       return Response.json({ allowed: false, message: "Invalid user." }, { status: 400 });
     }
 
-    const isCody = new URL(request.url).pathname === "/cody-check";
+    const quotaAction = new URL(request.url).pathname;
+    const isCody = quotaAction === "/cody-check";
+    const isCodyRefund = quotaAction === "/cody-refund";
     const today = new Date().toISOString().slice(0, 10);
-    const key = isCody ? `cody:${uid}` : `user:${uid}`;
-    const dailyLimit = isCody ? 20 : 30;
+    const key = isCody || isCodyRefund ? `cody:${uid}` : `user:${uid}`;
+    const dailyLimit = isCody || isCodyRefund ? 20 : 30;
+
+    if (isCodyRefund) {
+      const refunded = await this.state.storage.transaction(async transaction => {
+        const current = await transaction.get(key);
+        if (!current || current.day !== today || current.count <= 0) return false;
+        current.count -= 1;
+        await transaction.put(key, current);
+        return true;
+      });
+      return Response.json({ refunded });
+    }
 
     const result = await this.state.storage.transaction(async transaction => {
       const current = await transaction.get(key);
