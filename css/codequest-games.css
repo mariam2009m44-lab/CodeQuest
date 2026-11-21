@@ -1,0 +1,103 @@
+/* CodeQuest — shared mini-game experience layer */
+:root {
+  --cq-game-bg:#080e20;
+  --cq-game-panel:rgba(17,27,51,.88);
+  --cq-game-border:rgba(148,163,184,.18);
+  --cq-game-cyan:#67e8f9;
+  --cq-game-violet:#a78bfa;
+}
+body {
+  background:
+    radial-gradient(ellipse at 8% 0%,rgba(99,102,241,.16),transparent 34%),
+    radial-gradient(ellipse at 92% 12%,rgba(34,211,238,.10),transparent 30%),
+    linear-gradient(155deg,#070b18 0%,#0b1328 56%,#080d1b 100%);
+  background-attachment:fixed;
+}
+.top-nav,.top,.top-bar {
+  gap:12px;
+}
+.back-btn,.back-link,.back,.back-btn a,.back-link a {
+  border-radius:14px;
+  transition:background .2s ease,border-color .2s ease,transform .2s ease;
+}
+.back-btn:hover,.back-link:hover { transform:translateY(-1px); }
+.score-board,.stats,.stat-box,.stat {
+  border:1px solid var(--cq-game-border);
+  background:rgba(15,23,42,.72);
+  border-radius:15px;
+  backdrop-filter:blur(14px);
+}
+.screen.active { animation:cqGameEnter .28s ease-out both; }
+@keyframes cqGameEnter {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.level-box,.game-card,.panel,.game-card,.reward,.target-zone,.board-wrap,.side-box {
+  border-color:var(--cq-game-border);
+  box-shadow:0 18px 48px rgba(0,0,0,.22);
+}
+.level-box {
+  background:linear-gradient(150deg,rgba(23,34,62,.94),rgba(10,17,34,.96));
+  border-radius:24px;
+}
+.level-box h2,.game-title,.section-title { letter-spacing:-.02em; }
+.lvl-btn,.btn-restart,.btn-back,.btn-check,.action-button,.primary,.secondary,
+button.opt-btn,button.quiz-opt-btn,button.speed-opt-btn {
+  min-height:48px;
+  border-radius:14px;
+  font-family:inherit;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.lvl-btn:hover,.btn-restart:hover,.btn-check:hover,.action-button:hover,.primary:hover {
+  transform:translateY(-2px);
+}
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible {
+  outline:3px solid var(--cq-game-cyan);
+  outline-offset:3px;
+}
+.code-box,.drop-zone,.target-zone,.target-slot,.bug-code,.speed-question,.quiz-question {
+  border-radius:17px;
+}
+.code-block,.match-item,.drag-piece,.opt-btn,.quiz-opt-btn,.speed-opt-btn {
+  border-radius:13px;
+}
+.memory-grid { gap:clamp(8px,2vw,13px); }
+.memory-card { min-width:0; }
+.card-front,.card-back { border-radius:15px; }
+.result-emoji { filter:drop-shadow(0 8px 18px rgba(103,232,249,.18)); }
+@media(max-width:640px) {
+  body { padding:14px; }
+  .top-nav { margin-bottom:16px; }
+  .level-box { padding:clamp(16px,4vw,24px); border-radius:19px; }
+  .lvl-btn { min-height:58px; font-size:1rem; }
+  .code-box { overflow-x:auto; }
+  .line { min-width:max-content; }
+  .match-board { gap:8px; }
+  .match-item { min-height:58px; padding:10px 6px; font-size:clamp(10px,2.7vw,13px); }
+  .memory-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .screen.active { animation:none; }
+  *,*::before,*::after { scroll-behavior:auto!important; transition-duration:.01ms!important; }
+}
+
+/* Performance and input polish */
+.code-block { cursor:pointer; }
+.code-block:focus-visible { outline:3px solid var(--cq-game-cyan); outline-offset:3px; }
+#buildFeedback { min-height:1.5em; line-height:1.7; }
+@media (hover:none) { .lvl-btn:hover,.btn-check:hover,.primary:hover { transform:none; } }
+
+/* Native button reset for interactive code rows */
+button.code-block,button.line {
+  font:inherit;
+  color:inherit;
+  text-align:inherit;
+  cursor:pointer;
+  -webkit-appearance:none;
+  appearance:none;
+}
+button.code-block { width:100%; }
+button.line { display:block; width:100%; border:0; background:transparent; }
+button.code-block:disabled,button.line:disabled { cursor:default; }

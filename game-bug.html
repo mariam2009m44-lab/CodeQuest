@@ -110,6 +110,7 @@
     }
 </style>
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/codequest-games.css">
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
@@ -145,11 +146,11 @@
   </div>
   <script>
     const levels = {
-      easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, msg: 'إجابة صحيحة! الخطأ هو reslt 🎯' },
-      medium: { lines: ['let x = 10;', 'let y = "5";', 'let sum = x + y;', 'console.log(sum);'], bugIndex: 1, msg: 'إجابة صحيحة! الخطأ هو خلط النوع 🎯' },
-      hard: { lines: ['function findMax(arr) {', '  let max = 0;', '  for (let i = 0; i <= arr.length; i++) {', '    if (arr[i] > max) max = arr[i];', '  }', '  return max;', '}'], bugIndex: 2, msg: 'إجابة صحيحة! الخطأ هو i <= arr.length 🎯' }
+      easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, hint:'راجع اسم المتغير في سطر الإرجاع؛ هل يطابق الاسم الذي تم إنشاؤه؟', explanation:'تم إنشاء المتغير باسم result، لكن سطر الإرجاع يستخدم reslt. أسماء المتغيرات يجب أن تتطابق تمامًا.' },
+      medium: { lines: ['let x = 10;', 'let y = "5";', 'let sum = x + y;', 'console.log(sum);'], bugIndex: 2, hint:'انتبه لاختلاف نوع البيانات: أحد المتغيرين رقم والآخر نص.', explanation:'في JavaScript، استخدام + مع رقم ونص قد يؤدي إلى دمج النصوص بدل الجمع الحسابي. حوّل النص إلى رقم عند الحاجة.' },
+      hard: { lines: ['function findMax(arr) {', '  let max = 0;', '  for (let i = 0; i <= arr.length; i++) {', '    if (arr[i] > max) max = arr[i];', '  }', '  return max;', '}'], bugIndex: 2, hint:'تذكّر أن آخر فهرس في المصفوفة يساوي طولها ناقص واحد.', explanation:'الفهارس تبدأ من صفر؛ لذلك يجب أن يتوقف الشرط قبل arr.length. استخدام <= يجعل الحلقة تصل إلى فهرس غير موجود.' }
     };
-    let ended = false, score = 0, currentLevel = 'easy';
+    let ended = false, score = 0, currentLevel = 'easy', attempts = 0;
     const scoreDisplay = document.getElementById('scoreDisplay'), codeContainer = document.getElementById('codeContainer'), msg = document.getElementById('msg');
 
     function updateGlobalScore(points) {
@@ -159,13 +160,13 @@
     }
 
     function startGame(level) {
-      currentLevel = level; ended = false; score = 0; scoreDisplay.textContent = score;
+      currentLevel = level; ended = false; attempts = 0; score = 0; scoreDisplay.textContent = score;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
       const lvl = levels[level]; codeContainer.innerHTML = ''; msg.textContent = '';
       lvl.lines.forEach((line, index) => {
-        const lineEl = document.createElement('div'); lineEl.className = 'line';
+        const lineEl = document.createElement('button'); lineEl.type = 'button'; lineEl.className = 'line'; lineEl.setAttribute('aria-label','فحص السطر '+(index+1));
         lineEl.innerHTML = `<span class="num">${index + 1}</span> ${line}`;
         lineEl.onclick = () => check(index, lineEl); codeContainer.appendChild(lineEl);
       });
@@ -174,19 +175,19 @@
     function check(index, lineEl) {
       if (ended) return;
       if (index === levels[currentLevel].bugIndex) {
-        lineEl.classList.add('correct'); msg.textContent = levels[currentLevel].msg;
+        lineEl.classList.add('correct'); msg.textContent = 'صحيح! ' + levels[currentLevel].explanation;
         msg.style.color = 'var(--green)'; ended = true;
         score += 30; scoreDisplay.textContent = score; updateGlobalScore(30);
         setTimeout(() => {
           document.getElementById('gameScreen').classList.remove('active');
           document.getElementById('resultScreen').classList.add('active');
           document.getElementById('resultEmoji').textContent = '🏆';
-          document.getElementById('resultTitle').textContent = 'رائع! لقد وجدت الخطأ!';
+          document.getElementById('resultTitle').textContent = 'تم اكتشاف الخطأ!';
           document.getElementById('resultMessage').textContent = `لقد جمعت ${score} نقطة.`;
           window.CodeQuestExperience?.reward({ gems: 0, title: 'تم اصطياد الخطأ!', message: 'اكتشفت المشكلة وحليتها بنجاح. برافو!' });
         }, 1000);
       } else {
-        lineEl.classList.add('wrong'); msg.textContent = 'خطأ! حاول في سطر آخر.';
+        attempts++; lineEl.classList.add('wrong'); msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود وحاول مرة أخرى.';
         msg.style.color = 'var(--red)';
         setTimeout(() => lineEl.classList.remove('wrong'), 800);
       }
@@ -217,7 +218,13 @@
         drops[i]++;
       }
     }
-    setInterval(draw, 100);
+    let animationFrame = 0;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let matrixTimer = null;
+    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }
+    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }
+    startMatrix();
+    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;

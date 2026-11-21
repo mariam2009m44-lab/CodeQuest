@@ -115,6 +115,7 @@
     }
 </style>
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/codequest-games.css">
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
@@ -207,14 +208,23 @@
         { q: "ما هو الـ Git؟", opts: ["لغة برمجة", "نظام تحكم في الإصدارات", "قاعدة بيانات", "محرر نصوص"], a: 1 }
       ]
     };
-    let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy';
+    let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy', answerLocked = false;
     const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), progressEl = document.getElementById('progress');
+
+    function shuffleQuestions(items) {
+      const shuffled = [...items];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
 
     function startGame(level) {
       currentLevel = level;
-      let qs = questionBank[level];
-      currentQs = qs.sort(() => Math.random() - 0.5).slice(0, (level === 'easy' ? 10 : level === 'medium' ? 15 : 20));
-      curr = 0; score = 0; streak = 0; scoreEl.textContent = 0; comboEl.textContent = 0;
+      const qs = questionBank[level];
+      currentQs = shuffleQuestions(qs).slice(0, (level === 'easy' ? 10 : level === 'medium' ? 15 : 20));
+      curr = 0; score = 0; streak = 0; answerLocked = false; scoreEl.textContent = 0; comboEl.textContent = 0;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
@@ -234,6 +244,9 @@
       qEl.textContent = q.q;
       optsEl.innerHTML = '';
       progressEl.style.width = `${(curr / currentQs.length) * 100}%`;
+      progressEl.setAttribute('aria-label',`السؤال ${curr+1} من ${currentQs.length}`);
+      progressEl.parentElement.setAttribute('aria-valuenow', String(curr + 1));
+      progressEl.parentElement.setAttribute('aria-valuemax', String(currentQs.length));
       q.opts.forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.className = 'opt-btn';
@@ -245,6 +258,8 @@
     }
 
     function checkAns(i, btn) {
+      if (answerLocked) return;
+      answerLocked = true;
       clearInterval(timerInt);
       const correctIndex = currentQs[curr].a;
       document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
@@ -262,7 +277,7 @@
         streak = 0;
         comboEl.textContent = streak;
       }
-      setTimeout(() => { curr++; loadQ(); }, 1500);
+      setTimeout(() => { curr++; answerLocked = false; loadQ(); }, 1700);
     }
 
     function startTimer() {
@@ -270,11 +285,13 @@
       timerInt = setInterval(() => {
         timeLeft--; timeEl.textContent = timeLeft;
         if (timeLeft <= 0) {
+          if (answerLocked) return;
+          answerLocked = true;
           clearInterval(timerInt);
           document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
           optsEl.children[currentQs[curr].a].classList.add('correct');
           streak = 0; comboEl.textContent = streak;
-          setTimeout(() => { curr++; loadQ(); }, 1500);
+          setTimeout(() => { curr++; answerLocked = false; loadQ(); }, 1700);
         }
       }, 1000);
     }
@@ -318,7 +335,12 @@
         drops[i]++;
       }
     }
-    setInterval(draw, 100);
+    let matrixTimer = null;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }
+    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }
+    startMatrix();
+    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;

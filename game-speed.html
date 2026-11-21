@@ -26,7 +26,9 @@
     .lvl-easy { color: var(--green); border-color: var(--green); } .lvl-easy:hover { background: rgba(118,233,192,0.15); transform: scale(1.02); }
     .lvl-med { color: var(--gold); border-color: var(--gold); } .lvl-med:hover { background: rgba(255,212,138,0.15); transform: scale(1.02); }
     .lvl-hard { color: var(--red); border-color: var(--red); } .lvl-hard:hover { background: rgba(255,145,169,0.15); transform: scale(1.02); }
-    .timer-bar { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 25px; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+    .timer-bar { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+    .timer-meta { display:flex; justify-content:space-between; gap:12px; margin:0 0 22px; color:var(--muted); font-size:.95rem; font-weight:800; }
+    .timer-meta span[aria-live] { color:var(--gold); font-variant-numeric:tabular-nums; }
     .fill { height: 100%; background: linear-gradient(90deg, var(--gold), #f7971e); width: 100%; transition: width 0.1s linear; box-shadow: 0 0 15px var(--gold); }
     .question { font-size: 1.5rem; font-weight: 900; margin-bottom: 30px; min-height: 100px; display: flex; align-items: center; justify-content: center; line-height: 1.5; }
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -35,6 +37,7 @@
     .btn-true:hover { background: var(--green); color: #000; box-shadow: 0 0 20px rgba(118,233,192,0.4); }
     .btn-false { background: rgba(255,145,169,0.1); color: var(--red); border-color: var(--red); }
     .btn-false:hover { background: var(--red); color: #000; box-shadow: 0 0 20px rgba(255,145,169,0.4); }
+    .btn:disabled { opacity:.58; cursor:default; transform:none; box-shadow:none; }
     .result-box { text-align: center; }
     .result-emoji { font-size: 5rem; margin-bottom: 15px; animation: bounce 1s infinite alternate; }
     @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
@@ -112,6 +115,7 @@
     }
 </style>
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/codequest-games.css">
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
@@ -131,8 +135,9 @@
   </div>
   <div class="screen" id="gameScreen">
     <div class="level-box">
-      <div class="timer-bar"><div class="fill" id="fill"></div></div>
-      <div class="question" id="qText">...</div>
+      <div class="timer-bar" role="progressbar" aria-label="الوقت المتبقي" aria-valuemin="0" aria-valuemax="50" aria-valuenow="30"><div class="fill" id="fill"></div></div>
+      <div class="timer-meta"><span id="timerText" aria-live="off">الوقت المتبقي: 30 ثانية</span><span id="questionProgress">السؤال 1 من 10</span></div>
+      <div class="question" id="qText" aria-live="polite">...</div>
       <div class="actions">
         <button class="btn btn-true" onclick="ans(true)">صح</button>
         <button class="btn btn-false" onclick="ans(false)">خطأ</button>
@@ -163,6 +168,24 @@
       { q: "هل يمكن استخدام دالة كمتغير؟", a: true }, { q: "هل OOP تعني البرمجة الكائنية؟", a: true }
     ];
     let curr = 0, score = 0, maxTime = 0, time = 0, int, currentQs = [], currentLevel = 'easy';
+    let answerLocked = false, gameEnded = false;
+    const timerText = document.getElementById('timerText');
+    const questionProgress = document.getElementById('questionProgress');
+    const timerBar = document.querySelector('.timer-bar');
+
+    function shuffleQuestions(items) {
+      const shuffled = [...items];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function updateTimerDisplay() {
+      timerText.textContent = `الوقت المتبقي: ${time} ثانية`;
+      timerBar.setAttribute('aria-valuenow', String(time));
+    }
     const fill = document.getElementById('fill'), qText = document.getElementById('qText'), scoreEl = document.getElementById('score');
 
     function updateGlobalScore(points) {
@@ -177,33 +200,46 @@
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
       let count = level === 'easy' ? 10 : level === 'medium' ? 15 : 20;
-      let timePerQ = level === 'easy' ? 30 : level === 'medium' ? 40 : 50;
-      maxTime = timePerQ * 10; time = maxTime;
-      currentQs = allQs.sort(() => Math.random() - 0.5).slice(0, count);
-      curr = 0; score = 0; scoreEl.textContent = score;
-      fill.style.width = '100%'; load(); startTimer();
+      maxTime = level === 'easy' ? 30 : level === 'medium' ? 40 : 50;
+      time = maxTime;
+      timerBar.setAttribute('aria-valuemax', String(maxTime));
+      currentQs = shuffleQuestions(allQs).slice(0, count);
+      curr = 0; score = 0; answerLocked = false; gameEnded = false; scoreEl.textContent = score;
+      fill.style.width = '100%'; updateTimerDisplay(); load(); startTimer();
     }
 
     function load() {
       if (curr >= currentQs.length) return end();
+      answerLocked = false;
+      document.querySelectorAll('.actions .btn').forEach(button => { button.disabled = false; });
       qText.textContent = currentQs[curr].q;
+      questionProgress.textContent = `السؤال ${curr + 1} من ${currentQs.length}`;
     }
 
     function ans(choice) {
+      if (answerLocked || gameEnded || curr >= currentQs.length) return;
+      answerLocked = true;
+      document.querySelectorAll('.actions .btn').forEach(button => { button.disabled = true; });
       if (choice === currentQs[curr].a) {
         score += 10; scoreEl.textContent = score; updateGlobalScore(10);
       }
-      curr++; load();
+      curr++;
+      load();
     }
 
     function startTimer() {
+      clearInterval(int);
       int = setInterval(() => {
-        time -= 1; fill.style.width = `${(time / maxTime) * 100}%`;
+        time = Math.max(0, time - 1);
+        fill.style.width = `${(time / maxTime) * 100}%`;
+        updateTimerDisplay();
         if (time <= 0) end();
-      }, 100);
+      }, 1000);
     }
 
     function end() {
+      if (gameEnded) return;
+      gameEnded = true;
       clearInterval(int);
       document.getElementById('gameScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.add('active');

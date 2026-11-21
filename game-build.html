@@ -111,6 +111,7 @@
     }
 </style>
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/codequest-games.css">
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
@@ -131,6 +132,7 @@
   <div class="screen" id="gameScreen">
     <div class="level-box">
       <div class="task" id="taskText">المهمة هنا...</div>
+      <p id="buildFeedback" class="hint" role="status" aria-live="polite"></p>
       <div class="drop-zone" id="dropZone"></div>
       <div class="drop-zone" id="sourceZone"></div>
       <button class="btn-check" onclick="check()" id="btn" disabled>تحقق من الترتيب</button>
@@ -148,10 +150,10 @@
   <script>
     const puzzles = {
       easy: { task: "رتب الكود لطباعة 'Hello'", correct: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'], options: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'] },
-      medium: { task: "رتب دالة ترحب بالمستخدم", correct: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True'], options: ['def greet(name):', '    print("Hello " + name)', 'greet("Cody")', 'return True'] },
+      medium: { task: "رتب دالة ترحب بالمستخدم", correct: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'], options: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'] },
       hard: { task: "رتب كلاس بسيط للسيارة", correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'], options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'] }
     };
-    let seq = [], correctSeq = [], score = 0, currentLevel = 'easy';
+    let seq = [], correctSeq = [], score = 0, currentLevel = 'easy', attempts = 0;
     const drop = document.getElementById('dropZone'), source = document.getElementById('sourceZone'), btn = document.getElementById('btn'), scoreDisplay = document.getElementById('scoreDisplay'), taskText = document.getElementById('taskText');
 
     function updateGlobalScore(points) {
@@ -161,19 +163,20 @@
     }
 
     function startGame(level) {
-      currentLevel = level; score = 0; scoreDisplay.textContent = 0;
+      currentLevel = level; score = 0; attempts = 0; scoreDisplay.textContent = 0; document.getElementById('buildFeedback').textContent = '';
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
       const p = puzzles[level]; correctSeq = p.correct; taskText.textContent = p.task;
-      const shuffled = [...p.options].sort(() => Math.random() - 0.5);
+      const shuffled = [...p.options];
+      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
       source.innerHTML = ''; drop.innerHTML = ''; seq = []; btn.disabled = true;
       btn.textContent = 'تحقق من الترتيب';
       btn.style.background = 'var(--green)';
       drop.style.borderColor = '';
       drop.style.background = '';
       shuffled.forEach(opt => {
-        const el = document.createElement('div'); el.className = 'code-block';
+        const el = document.createElement('button'); el.type = 'button'; el.className = 'code-block'; el.setAttribute('aria-label','إضافة سطر الكود: '+opt);
         el.textContent = opt; el.onclick = () => select(el, opt); source.appendChild(el);
       });
     }
@@ -184,7 +187,7 @@
       el.classList.add('selected');
       el.setAttribute('aria-disabled', 'true');
       seq.push(code);
-      const newEl = document.createElement('div'); newEl.className = 'code-block';
+      const newEl = document.createElement('button'); newEl.type = 'button'; newEl.className = 'code-block'; newEl.setAttribute('aria-label','إزالة السطر من الترتيب');
       newEl.textContent = code;
       newEl.dataset.sourceIndex = String(sourceIndex);
       newEl.onclick = () => remove(newEl, code);
@@ -209,6 +212,7 @@
 
     function check() {
       if (seq.every((v, i) => v === correctSeq[i])) {
+        document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! لاحظ كيف تعتمد كل خطوة على السطر الذي يسبقها.';
         btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
         score += 50; scoreDisplay.textContent = score; updateGlobalScore(50);
         drop.style.borderColor = 'var(--green)'; drop.style.background = 'rgba(118,233,192,0.1)';
@@ -216,11 +220,12 @@
           document.getElementById('gameScreen').classList.remove('active');
           document.getElementById('resultScreen').classList.add('active');
           document.getElementById('resultEmoji').textContent = '🏆';
-          document.getElementById('resultTitle').textContent = 'رائع! لقد حللت البازل!';
+          document.getElementById('resultTitle').textContent = 'اكتمل ترتيب الكود!';
           document.getElementById('resultMessage').textContent = `لقد جمعت ${score} نقطة.`;
           window.CodeQuestExperience?.reward({ gems: 0, title: 'البازل اكتمل!', message: 'رتبت الكود بشكل صحيح! كودي فخور بيك.' });
         }, 800);
       } else {
+        document.getElementById('buildFeedback').textContent = attempts >= 1 ? 'تلميح: ابدأ بتعريف الدالة أو الكلاس، ثم أضف الأوامر الداخلية، واجعل استدعاء الدالة بعد تعريفها.' : 'الترتيب غير صحيح. افحص بداية البنية ثم ترتيب الأوامر داخلها.'; attempts++;
         btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
         setTimeout(() => { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; }, 1500);
       }
@@ -251,7 +256,12 @@
         drops[i]++;
       }
     }
-    setInterval(draw, 100);
+    let matrixTimer = null;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }
+    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }
+    startMatrix();
+    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;

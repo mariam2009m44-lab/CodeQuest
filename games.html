@@ -96,6 +96,67 @@
       .header h1 { font-size: 2rem; }
       .games-grid { grid-template-columns: 1fr; gap: 20px; }
     }
+  
+    /* CodeQuest game hub — refined visual system */
+    body { padding: clamp(16px, 3vw, 34px) 18px 48px; background:
+      radial-gradient(ellipse at 12% 8%, rgba(99,102,241,.20), transparent 34%),
+      radial-gradient(ellipse at 88% 18%, rgba(34,211,238,.13), transparent 30%),
+      linear-gradient(160deg,#070b18 0%,#0a1022 55%,#080d1b 100%); }
+    .top-bar { max-width: 1180px; margin-bottom: clamp(28px,5vw,54px); }
+    .logo-area { letter-spacing: .3px; }
+    .header { max-width: 720px; margin: 0 auto clamp(28px,4vw,46px); }
+    .header h1 { font-size: clamp(2rem,5vw,3.15rem); line-height:1.25;
+      background:linear-gradient(100deg,#fff 18%,#9eeeff 52%,#c4b5fd 88%);
+      -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none; }
+    .header p { max-width:580px;margin:12px auto 0;line-height:1.9;font-size:clamp(.92rem,2vw,1.08rem); }
+    .games-grid { max-width:1180px; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px; }
+    .game-card { min-height:320px;padding:22px 21px 20px;border-radius:24px;
+      background:linear-gradient(155deg,rgba(22,32,58,.92),rgba(10,17,34,.94));
+      border-color:rgba(148,163,184,.17);backdrop-filter:blur(18px);
+      box-shadow:0 12px 34px rgba(0,0,0,.18); }
+    .game-card::after { content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+      background:linear-gradient(135deg,rgba(255,255,255,.075),transparent 38%,transparent 70%,rgba(255,255,255,.025)); }
+    .game-card:hover { transform:translateY(-7px);box-shadow:0 22px 48px rgba(0,0,0,.32),0 0 28px var(--card-glow); }
+    .icon-wrapper { width:100%;height:124px;border-radius:18px;margin-bottom:19px;font-size:3.7rem;
+      background:radial-gradient(circle at 50% 20%,rgba(255,255,255,.2),transparent 48%),
+      linear-gradient(135deg,var(--icon-color1),var(--icon-color2));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 14px 28px rgba(0,0,0,.25);
+      position:relative;overflow:hidden; }
+    .icon-wrapper::before,.icon-wrapper::after { content:"";position:absolute;border:1px solid rgba(255,255,255,.19);border-radius:50%;pointer-events:none; }
+    .icon-wrapper::before { width:150px;height:150px;top:-100px;right:-25px; }
+    .icon-wrapper::after { width:100px;height:100px;bottom:-76px;left:-20px; }
+    .game-card h3 { font-size:1.28rem;margin-bottom:7px; }
+    .game-card p { font-size:.91rem;line-height:1.8;margin-bottom:18px; }
+    .btn-play { min-height:48px;border-radius:13px;font-size:.96rem;background:rgba(255,255,255,.055); }
+    .game-card:focus-visible { outline-offset:5px; }
+    .c-quiz .icon-wrapper { background:linear-gradient(135deg,#087fba,#4f46e5); }
+    .c-memory .icon-wrapper { background:linear-gradient(135deg,#7c3aed,#be4bdb); }
+    .c-build .icon-wrapper { background:linear-gradient(135deg,#087f78,#16a878); }
+    .c-bug .icon-wrapper { background:linear-gradient(135deg,#c24162,#7c2d75); }
+    .c-speed .icon-wrapper { background:linear-gradient(135deg,#b45309,#eab308); }
+    .c-image .icon-wrapper { background:linear-gradient(135deg,#5145cd,#a855f7); }
+    html[data-theme="light"] body { background:radial-gradient(ellipse at 12% 8%,#e7eafe,transparent 34%),linear-gradient(160deg,#f6f8ff,#edf3fb); }
+    html[data-theme="light"] .game-card { background:linear-gradient(155deg,#fff,#f7f9ff);box-shadow:0 12px 30px rgba(31,51,84,.08); }
+    html[data-theme="light"] .game-card::after { background:linear-gradient(135deg,rgba(255,255,255,.5),transparent 45%); }
+    @media(max-width:768px) {
+      body { padding:14px 13px 34px; }
+      .top-bar { flex-direction:row;flex-wrap:wrap;justify-content:space-between;margin-bottom:26px; }
+      .logo-area { order:-1;width:100%;justify-content:center;font-size:1.55rem; }
+      .global-score { font-size:1rem;padding:9px 12px; }
+      .games-grid { grid-template-columns:repeat(2,minmax(0,1fr));gap:13px; }
+      .game-card { min-height:290px;padding:15px 13px;border-radius:19px; }
+      .icon-wrapper { height:104px;font-size:3rem;margin-bottom:14px;border-radius:15px; }
+      .game-card h3 { font-size:1.05rem; }
+      .game-card p { font-size:.82rem;line-height:1.65; }
+      .btn-play { font-size:.84rem;padding:10px 8px; }
+    }
+    @media(max-width:420px) {
+      .games-grid { grid-template-columns:1fr;max-width:390px; }
+      .game-card { min-height:0; }
+      .icon-wrapper { height:116px; }
+      .game-card p { min-height:0; }
+    }
+
   </style>
   <link rel="stylesheet" href="css/theme.css">
   <style>
@@ -132,6 +193,13 @@
       background: #F1F4F9;
       border-color: #DCE3EF;
     }
+
+    .icon-wrapper { height:148px; border-radius:20px; padding:8px; background:radial-gradient(circle at 50% 20%,rgba(255,255,255,.18),transparent 60%),linear-gradient(145deg,rgba(35,57,103,.72),rgba(10,18,39,.92)); }
+    .game-art { width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 12px 18px rgba(0,0,0,.28));transition:transform .35s ease; }
+    .game-card:hover .game-art { transform:scale(1.07) rotate(-2deg); }
+    .game-card { gap:0; }
+    @media(max-width:768px){ .icon-wrapper {height:118px;padding:5px;} }
+    @media(prefers-reduced-motion:reduce){ .game-art {transition:none;} }
   </style>
 </head>
 <body>
@@ -147,49 +215,49 @@
   </div>
   <div class="header">
     <h1>مركز الألعاب 🎮</h1>
-    <p>اختاري تحديك، طوّري مهاراتك، واجمعي النقاط مع كل إنجاز.</p>
+    <p>اختر تحديك، طوّر مهاراتك، واجمع النقاط مع كل إنجاز.</p>
   </div>
   <section class="games-grid">
     <a href="game-image-puzzle.html" class="game-card c-image">
-      <div class="icon-wrapper"><i class="ri-image-edit-line"></i></div>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/puzzle-reference.webp" alt="" loading="lazy" decoding="async"></div>
       <h3>بازل صور البرمجة</h3>
-      <p>اختاري رسمة تقنية، ثم أعيدي تركيب أجزائها في تحدٍ بصري ممتع بثلاث درجات صعوبة.</p>
-      <span class="btn-play">اختاري صورة وابدئي <i class="ri-arrow-left-line"></i></span>
+      <p>ركّب الصورة قطعةً قطعة، وطوّر مهارات الملاحظة وحل المشكلات عبر ثلاثة مستويات.</p>
+      <span class="btn-play">ابدأ البازل <i class="ri-arrow-left-line"></i></span>
     </a>
     <a href="game-quiz.html" class="game-card c-quiz">
-      <div class="icon-wrapper"><i class="ri-question-fill"></i></div>
-      <h3>سيد الأسئلة</h3>
-      <p>أسئلة برمجية متدرجة لاكتشاف عبقرية التفكير.</p>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/game-quiz.svg" alt="" loading="lazy" decoding="async"></div>
+      <h3>تحدي المعرفة</h3>
+      <p>أسئلة برمجية متدرجة لتنمية التفكير المنطقي.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
     <a href="game-memory.html" class="game-card c-memory">
-      <div class="icon-wrapper"><i class="ri-brain-fill"></i></div>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/game-memory.svg" alt="" loading="lazy" decoding="async"></div>
       <h3>لعبة الذاكرة</h3>
       <p>طابق المصطلحات مع معانيها واختبر تركيزك.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
     <a href="game-build.html" class="game-card c-build">
-      <div class="icon-wrapper"><i class="ri-puzzle-2-fill"></i></div>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/game-build.svg" alt="" loading="lazy" decoding="async"></div>
       <h3>بازل الأكواد</h3>
       <p>رتّب القطع لبناء كود سليم خطوة بخطوة.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
     <a href="game-match.html" class="game-card c-build">
-      <div class="icon-wrapper"><i class="ri-code-box-fill"></i></div>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/game-match.svg" alt="" loading="lazy" decoding="async"></div>
       <h3>تحدي ترتيب الكود</h3>
       <p>رتّب أجزاء الكود بالترتيب الصحيح، ثم تحقّق من الحل للحصول على مكافأة الحساب بعد التحقق.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
     <a href="game-bug.html" class="game-card c-bug">
-      <div class="icon-wrapper"><i class="ri-bug-2-fill"></i></div>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/game-bug.svg" alt="" loading="lazy" decoding="async"></div>
       <h3>صائد الأخطاء</h3>
       <p>ابحث عن الخطأ البرمجي الخفي وأصلحه.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
     <a href="game-speed.html" class="game-card c-speed">
-      <div class="icon-wrapper"><i class="ri-flashlight-fill"></i></div>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/game-speed.svg" alt="" loading="lazy" decoding="async"></div>
       <h3>تحدي السرعة</h3>
-      <p>أسئلة سريعة وضغط وقت عالي، هل تصمد؟</p>
+      <p>أسئلة سريعة واختبر سرعة التفكير ودقة الإجابة.</p>
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
   </section>
