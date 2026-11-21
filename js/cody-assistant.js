@@ -299,7 +299,6 @@ async function openChat() {
   if (!panel) return;
   if (panel.hidden) focusBeforeChat = document.activeElement;
   panel.hidden = false;
-  document.body.classList.add("cody-chat-open");
   launcher?.setAttribute("aria-expanded", "true");
   playCodyEmotion("wave");
   createSuggestions();
@@ -339,7 +338,6 @@ async function openChat() {
 function closeChat() {
   if (!panel) return;
   panel.hidden = true;
-  document.body.classList.remove("cody-chat-open");
   launcher?.setAttribute("aria-expanded", "false");
   playCodyEmotion("wave");
   const target = focusBeforeChat && document.contains(focusBeforeChat) ? focusBeforeChat : launcher;
@@ -351,28 +349,7 @@ heroLauncher?.addEventListener("click", openChat);
 launcher?.addEventListener("click", openChat);
 closeButton?.addEventListener("click", closeChat);
 
-document.addEventListener("keydown", event => {
-  if (!panel || panel.hidden) return;
-  if (event.key === "Escape") {
-    event.preventDefault();
-    closeChat();
-    return;
-  }
-  if (event.key === "Tab") {
-    const focusable = [...panel.querySelectorAll('button:not(:disabled), textarea:not(:disabled), input:not(:disabled), [href], [tabindex]:not([tabindex="-1"])')]
-      .filter(element => element.offsetParent !== null);
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-});
+document.addEventListener("keydown", event => {\n  if (event.key === "Escape" && panel && !panel.hidden) closeChat();\n});
 
 let activeRequestController = null;
 let previousAuthUid = null;
