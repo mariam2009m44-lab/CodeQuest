@@ -147,7 +147,7 @@ body{background:radial-gradient(ellipse at 50% -12%,#252033 0%,#15131d 46%,#0d0c
  .side{grid-template-columns:1fr}
 }
 @media(max-width:390px){
- .board{aspect-ratio:1.02}
+
  .tray{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}
  .free-piece{width:min(100%,70px)!important}
 }
@@ -157,8 +157,7 @@ body{background:radial-gradient(ellipse at 50% -12%,#252033 0%,#15131d 46%,#0d0c
 /* Reference match v2: large clean board + overlapping loose-piece table */
 .puzzle-stage{display:flex;flex-direction:column;gap:14px;min-width:0}
 .board{
-  width:min(100%,720px)!important;
-  aspect-ratio:1.48!important;
+  width:min(calc(100% - 30px),650px)!important;
   margin:0 auto!important;
   padding:0!important;
   border:3px dashed rgba(218,207,230,.25)!important;
@@ -227,8 +226,8 @@ body{background:radial-gradient(ellipse at 50% -12%,#252033 0%,#15131d 46%,#0d0c
   .hero p{font-size:.82rem!important;line-height:1.75}
   .game-layout{grid-template-columns:minmax(0,1fr)!important;gap:10px!important;margin-top:10px!important}
   .board-wrap{padding:10px 9px 13px!important;border-radius:19px!important}
-  .board{width:100%!important;aspect-ratio:1.43!important;border-radius:12px!important}
-  .side{display:none!important}
+  .board{width:min(calc(100% - 30px),650px)!important;border-radius:12px!important}
+  .side{display:grid!important}
   .tray{
     grid-template-columns:repeat(4,minmax(0,1fr))!important;
     grid-auto-rows:clamp(68px,19vw,86px)!important;
