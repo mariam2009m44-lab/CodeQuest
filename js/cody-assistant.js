@@ -140,13 +140,19 @@ async function openChat() {
   try {
     const health = await getServiceHealth();
     if (health.configured === false) {
-      setStatus("كودي غير متاح حاليًا: إعداد تشغيل الذكاء الاصطناعي غير مكتمل على خادم المنصة. المشكلة من إعدادات الخادم وليست من حسابك أو جهازك.", "error");
+      const message = "كودي غير متاح حاليًا لأن مفتاح Gemini غير مضبوط على خادم المنصة. دي مشكلة إعدادات في الخادم، مش في سؤالك.";
+      setStatus(message, "error");
+      addMessage(message, "model");
     } else if (health.quotaAvailable === false) {
-      setStatus("حماية الاستخدام اليومي غير مفعّلة على الخادم؛ الإرسال متوقف لحماية الخدمة.", "error");
+      const message = "كودي متوقف مؤقتًا لأن حماية الاستخدام اليومي غير مفعّلة على الخادم.";
+      setStatus(message, "error");
+      addMessage(message, "model");
     } else if (health.ready === true) {
       setStatus("كودي متصل وجاهز لاستقبال أسئلتك.", "success");
     } else {
-      setStatus("الخدمة استجابت، لكن إعداداتها تحتاج إلى مراجعة.", "info");
+      const message = "خدمة كودي استجابت، لكن إعداداتها غير مكتملة حتى الآن.";
+      setStatus(message, "info");
+      addMessage(message, "model");
     }
   } catch {
     setStatus("لم نتمكن من فحص حالة كودي الآن. يمكنك المحاولة، وسنوضح لك أي مشكلة تظهر.", "info");
@@ -299,6 +305,9 @@ form?.addEventListener("submit", async event => {
         : (error?.message || "حدث خطأ غير متوقع أثناء إرسال السؤال.");
 
     setStatus(message, "error");
+    // Show failures in the conversation itself, not only in the small status line.
+    // This makes missing Worker/Gemini configuration visible to the learner.
+    addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model");
     if (input) input.value = question;
   } finally {
     if (activeRequestController === controller) activeRequestController = null;

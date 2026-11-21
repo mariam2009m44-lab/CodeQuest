@@ -149,6 +149,17 @@ if (!codeRunner.includes('Number(result.statusId) === 13') ||
     !codeRunner.includes('"JUDGE0_INTERNAL_ERROR"')) {
   throw new Error("Code runner must recognize Judge0 status 13.");
 }
+const javaLessons = fs.readFileSync("java-lessons.html", "utf8");
+if (!javaLessons.includes("previous.disabled = index <= 0;") ||
+    !javaLessons.includes("next.disabled = index < 0 || index >= allLessons.length - 1;") ||
+    javaLessons.includes("next.disabled = index < 0 || index >= allLessons.length - 1 || !done") ||
+    javaLessons.includes("targetIndex > firstIncompleteIndex && !isCompleted")) {
+  throw new Error("Java previous/next navigation must work independently of lesson completion while preserving first/last boundaries.");
+}
+if (!codyAssistant.includes("addMessage(message, \"model\")") ||
+    !codyAssistant.includes("addMessage(\"مش قادر أرد على السؤال دلوقتي: \" + message, \"model\")")) {
+  throw new Error("Cody health and request errors must be visible inside the conversation, not only in the status line.");
+}
 const functionsSource = fs.readFileSync("functions/index.js", "utf8");
 if (!functionsSource.includes("exports.getMyParentLinks") ||
     !functionsSource.includes("exports.removeParentLinkAsChild")) {
