@@ -3,6 +3,7 @@ import { db } from "./firebase-config.js";
 import {
   logoutUser,
   requireUser,
+  getCurrentUser,
   ensureUserProfile
 } from "./auth.js";
 
@@ -281,7 +282,8 @@ async function loadCurriculumTotals() {
     Object.entries(LANGUAGES).map(async ([language, config]) => {
       try {
         const response = await fetch(config.file, {
-          cache: "no-store"
+          cache: "no-store",
+          signal: AbortSignal.timeout(5000)
         });
 
         if (!response.ok) {
@@ -355,7 +357,7 @@ function isValidCompletedLesson(item, totals) {
 /*
  * Python legacy curriculum:
  * 12 chapters × 4 lessons = 48 lessons.
- * lesson === 104 means the chapter exam was passed.
+ * Exam records (104 and 105) are not individual lesson completions.
  *
  * JavaScript and C++:
  * Use their JSON curriculum lesson counts.
@@ -387,17 +389,6 @@ function calculateLessonStats(documents, totals) {
         chapter < 0 ||
         chapter >= 12
       ) {
-        continue;
-      }
-
-      // Chapter exam passed: count all 4 lessons.
-      if (lesson === 104) {
-        for (let i = 0; i < 4; i++) {
-          completedByLanguage.python.add(
-            `${chapter}:${i}`
-          );
-        }
-
         continue;
       }
 
@@ -612,12 +603,54 @@ export const App = {
       return;
     }
 
-    try {
-      await ensureUserProfile(user);
+    this.currentUid = user.uid;
+    const isCurrent = () => this.currentUid === user.uid && getCurrentUser()?.uid === user.uid;
 
-      this.currentUid = user.uid;
+    try {
+      // Do not gate device-local progress on a Firestore profile read/write.
+      // Existing profiles are still read by the listener below; creating a
+      // missing profile is a separate, best-effort operation here.
+      void ensureUserProfile(user).catch(error => {
+        if (!isCurrent()) return;
+        console.warn("Profile initialization error:", error);
+        showToast("تعذر تهيئة ملف الحساب السحابي.", "warning");
+      });
 
       this.curriculumTotals = await loadCurriculumTotals();
+      if (!isCurrent()) return;
+
+      const updateProgress = (cloudDocuments, source) => {
+        if (!isCurrent()) return;
+        const merged = new Map();
+        const keyFor = item => `${item.language}:${item.chapter}:${item.lesson}`;
+        for (const item of readLocalLessonProgress(user.uid)) {
+          merged.set(keyFor(item), item);
+        }
+        for (const item of cloudDocuments) {
+          if (item?.completed === true) merged.set(keyFor(item), { ...item, localOnly: false });
+        }
+
+        const records = [...merged.values()];
+        this.lessonStats = calculateLessonStats(records, this.curriculumTotals);
+        this.updateLessonProgressUI();
+
+        const localCount = calculateLessonStats(
+          records.filter(item => item.localOnly), this.curriculumTotals
+        ).completedTotal;
+        const incomplete = Object.values(this.lessonStats.percentages).includes(null);
+        const messages = {
+          loading: "جارٍ تحميل تقدم الحساب؛ يُعرض ما حُفظ على هذا الجهاز إن وُجد.",
+          cache: "عرض آخر بيانات متاحة على الجهاز؛ المزامنة غير مؤكدة.",
+          error: "تعذر تحميل تقدم الحساب؛ يُعرض ما حُفظ على هذا الجهاز إن وُجد.",
+          server: localCount
+            ? "يشمل العدد دروسًا محفوظة على هذا الجهاز فقط."
+            : !incomplete && this.lessonStats.completedTotal === 0 ? "لا توجد دروس مكتملة بعد." : ""
+        };
+        setText(".js-lesson-progress-status", [messages[source],
+          incomplete ? "تعذر تحميل بعض المناهج؛ قد يكون العدد غير مكتمل." : ""
+        ].filter(Boolean).join(" "));
+      };
+      updateProgress([], "loading");
 
       // Prevent duplicate listeners if initialization is repeated.
       this.unsubscribeProfile?.();
@@ -632,10 +665,7 @@ export const App = {
         doc(db, "users", user.uid),
 
         snapshot => {
-          if (!snapshot.exists()) {
-            showToast("ملف الحساب غير موجود.", "error");
-            return;
-          }
+          if (!isCurrent() || !snapshot.exists()) return;
 
           const data = snapshot.data();
 
@@ -671,6 +701,7 @@ export const App = {
         },
 
         error => {
+          if (!isCurrent()) return;
           console.error(
             "Profile subscription error:",
             error
@@ -698,6 +729,7 @@ export const App = {
         ),
 
         snapshot => {
+          if (!isCurrent()) return;
           setText(
             ".js-completed-projects",
             snapshot.size
@@ -705,6 +737,7 @@ export const App = {
         },
 
         error => {
+          if (!isCurrent()) return;
           console.error(
             "Saved projects subscription error:",
             error
@@ -729,54 +762,22 @@ export const App = {
           "lessonProgress"
         ),
 
+        { includeMetadataChanges: true },
         snapshot => {
-          const cloudDocuments = snapshot.docs.map(item => ({
-            id: item.id,
-            ...item.data()
-          }));
-          const localDocuments = readLocalLessonProgress(user.uid);
-          const merged = new Map();
-
-          // Local progress keeps the dashboard useful when cloud sync is
-          // unavailable. A matching Firestore record always takes precedence.
-          for (const item of [...localDocuments, ...cloudDocuments]) {
-            if (item?.completed !== true) continue;
-            merged.set(
-              `${item.language}:${item.chapter}:${item.lesson}`,
-              item
-            );
-          }
-
-          this.lessonStats = calculateLessonStats(
-            [...merged.values()],
-            this.curriculumTotals || {}
-          );
-
-          this.updateLessonProgressUI();
+          const cloudDocuments = snapshot.docs.map(item => item.data());
+          const unconfirmed = snapshot.metadata.fromCache || snapshot.metadata.hasPendingWrites;
+          updateProgress(cloudDocuments, unconfirmed ? "cache" : "server");
         },
 
         error => {
-          console.error(
-            "Lesson progress error:",
-            error
-          );
-
-          // Keep locally saved progress visible, but never label it as
-          // cloud-synced or use it to grant XP/stars.
-          this.lessonStats = calculateLessonStats(
-            readLocalLessonProgress(user.uid),
-            this.curriculumTotals || {}
-          );
-          this.updateLessonProgressUI();
-
-          showToast(
-            "تعذر تحميل التقدم السحابي؛ نعرض التقدم المحفوظ على هذا الجهاز.",
-            "warning"
-          );
+          if (!isCurrent()) return;
+          console.error("Lesson progress error:", error);
+          updateProgress([], "error");
         }
       );
 
     } catch (error) {
+      if (!isCurrent()) return;
       console.error(
         "Profile initialization error:",
         error

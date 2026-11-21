@@ -163,7 +163,9 @@ service cloud.firestore {
 
       match /lessonProgress/{lessonId} {
         function hasVerifiedQuizResult(uid, data) {
-          let resultPath = /databases/$(database)/documents/users/$(uid)/quizResults/lesson_$(data.language)_$(data.chapter)_$(data.lesson);
+          // A rules path can interpolate a whole segment, not fragments of it.
+          let resultId = 'lesson_' + data.language + '_' + string(data.chapter) + '_' + string(data.lesson);
+          let resultPath = /databases/$(database)/documents/users/$(uid)/quizResults/$(resultId);
 
           return exists(resultPath)
             && get(resultPath).data.verificationVersion == 1
