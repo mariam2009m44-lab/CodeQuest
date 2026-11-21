@@ -819,10 +819,8 @@ export default {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           contents,
           generationConfig: {
-            temperature: 0.45,
-            topP: 0.9,
             maxOutputTokens: 3072,
-            thinkingConfig: { thinkingLevel: "low" }
+            thinkingConfig: { thinkingLevel: "medium" }
           }
         };
 
