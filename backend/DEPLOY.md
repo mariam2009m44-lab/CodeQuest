@@ -9,17 +9,25 @@
 - مفتاح Gemini API مع تفعيل نموذج متاح في حساب AI Studio.
 - ربط Durable Object الحالي `CODE_EXECUTION_LIMITER` كما هو موضح في `wrangler.toml`.
 
-## إعداد النشر التلقائي من GitHub
+## النشر التلقائي من GitHub
 
-إذا كان Worker مربوطًا بمستودع GitHub من لوحة Cloudflare، اضبطي إعدادات البناء والنشر كالتالي:
+أُضيف سير عمل GitHub Actions باسم **Deploy CodeQuest Cloudflare Worker**. بعد دمجه في `main`، سيعيد نشر Worker تلقائيًا عند تغيير أي ملف داخل `cloudflare-worker/`، ثم يفحص نقطة صحة كودي للتأكد من جاهزية إعداد Gemini وحماية الاستخدام.
 
-- **Root directory:** `cloudflare-worker`
-- **Build command:** اتركيه فارغًا
-- **Deploy command:** `npx wrangler deploy`
+يتطلب سير العمل وجود GitHub Actions secrets التالية في إعدادات المستودع:
 
-لا تستخدمي `npx wrangler preview` في خانة Deploy command؛ هذا أمر معاينة محلي وليس أمر نشر Worker، وقد يفشل في بيئة البناء بسبب إعدادات المعاينة.
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
 
-بعد حفظ الإعدادات، أعيدي نشر آخر commit. يجب أن يقرأ Wrangler ملف `wrangler.toml` الموجود داخل `cloudflare-worker`.
+لا تضعي القيم في ملفات المستودع أو المحادثات. يجب أن يمتلك رمز Cloudflare صلاحية نشر Workers وإدارة الموارد المرتبطة الموجودة في إعداد Wrangler.
+
+بعد النشر، يتحقق سير العمل من:
+- `configured: true` لوجود مفتاح Gemini في Cloudflare.
+- `quotaAvailable: true` لوجود Durable Object الخاص بحدود الاستخدام.
+- `ready: true` قبل اعتبار كودي جاهزًا.
+
+إذا فشل فحص الصحة بعد النشر، راجعي Secret باسم `GEMINI_API_KEY` داخل Cloudflare Worker وإعدادات `GEMINI_MODEL` وربط `CODE_EXECUTION_LIMITER`. لا يطبع سير العمل أي مفاتيح سرية.
+
+يمكن تشغيل سير العمل يدويًا من تبويب **Actions** باستخدام **Deploy CodeQuest Cloudflare Worker → Run workflow**.
 
 ## إضافة مفتاح Gemini بأمان
 
