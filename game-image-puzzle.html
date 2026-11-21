@@ -97,8 +97,7 @@ body{background:radial-gradient(ellipse at 50% -12%,#252033 0%,#15131d 46%,#0d0c
  .side{grid-template-columns:1fr 1fr}
 }
 @media(max-width:430px){
- .side{grid-template-columns:1fr} .board{aspect-ratio:1.04}
- .tray{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .side{grid-template-columns:1fr} .board{aspect-ratio:1.04} .tray{grid-template-columns:repeat(3,minmax(0,1fr))}
  .free-piece{width:min(27vw,76px)!important;height:min(27vw,76px)!important}
  .game-head{align-items:flex-start;flex-wrap:wrap}
 }
@@ -197,8 +196,7 @@ body{background:radial-gradient(ellipse at 50% -12%,#252033 0%,#15131d 46%,#0d0c
   position:relative!important;
   width:min(100%,94px)!important;
   height:auto!important;  aspect-ratio:1!important;
-  margin-top:-13px!important;
-  padding:0!important;
+  margin-top:-13px!important;  padding:0!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
@@ -297,8 +295,7 @@ html[data-theme="light"] .pro-choice-trigger i{color:#7254b8}
 html[data-theme="light"] .pro-choice-menu{background:rgba(255,255,255,.98);border-color:#d8dced;box-shadow:0 16px 38px rgba(44,55,90,.18)}
 html[data-theme="light"] .pro-choice-menu button{color:#273149}html[data-theme="light"] .pro-choice-menu button b{color:#7254b8}
 html[data-theme="light"] .pro-choice-menu button[aria-selected="true"],html[data-theme="light"] .pro-choice-menu button:hover{background:linear-gradient(100deg,#e5f7fb,#eee8fc);color:#20283b}
-.board[data-assistance="hidden"] .board-ghost{display:none!important}
-.board[data-assistance="preview"] .board-ghost img{opacity:.32!important;filter:saturate(.9) brightness(.88)!important}
+.board[data-assistance="hidden"] .board-ghost{display:none!important}.board[data-assistance="preview"] .board-ghost img{opacity:.32!important;filter:saturate(.9) brightness(.88)!important}
 
 
 /* Keep lifted jigsaw pieces cut out: never show a rectangular button behind them. */
@@ -397,8 +394,7 @@ const artworks=[
       "title": "كيف يعمل الروبوت؟",
       "intro": "الروبوت آلة يمكن برمجتها لتنفيذ مهام. بعض الروبوتات تستخدم حساسات لفهم ما حولها ومحركات للحركة.",      "facts": [
         [
-          "الحساسات",
-          "تلتقط معلومات مثل المسافة أو الضوء أو الحرارة."
+          "الحساسات",          "تلتقط معلومات مثل المسافة أو الضوء أو الحرارة."
         ],
         [
           "المتحكم",
@@ -497,8 +493,7 @@ const artworks=[
           "شريحة صغيرة يمكن برمجتها للتحكم في الدائرة."        ],
         [
           "المقاومة",
-          "تحد من مقدار التيار الكهربائي في الدائرة."
-        ],
+          "تحد من مقدار التيار الكهربائي في الدائرة."        ],
         [
           "LED",
           "مصباح صغير يضيء عند مرور التيار في الاتجاه المناسب."
@@ -597,8 +592,7 @@ function makeEdges(){
 function clearTargetHint(){document.querySelector('.target-hint')?.remove();clearTimeout(window.__puzzleHintTimer);}
 function showTargetHint(index){clearTargetHint();if(index===null||!pieces[index])return;const p=pieces[index],mark=document.createElement('div');mark.className='target-hint';mark.setAttribute('aria-hidden','true');mark.style.left=(p.col*cellW)+'px';mark.style.top=(p.row*cellH)+'px';mark.style.width=cellW+'px';mark.style.height=cellH+'px';$('board').appendChild(mark);window.__puzzleHintTimer=setTimeout(clearTargetHint,2600);}
 
-function drawBoardGuides(){const board=$('board');board.querySelector('.board-guides')?.remove();const canvas=document.createElement('canvas');canvas.className='board-guides';const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cellW*size*dpr);canvas.height=Math.round(cellH*size*dpr);canvas.style.width=(cellW*size)+'px';canvas.style.height=(cellH*size)+'px';const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.lineWidth=1.25;ctx.strokeStyle='rgba(226,211,245,.34)';ctx.fillStyle='rgba(255,255,255,.012)';ctx.setLineDash([]);for(let i=0;i<size*size;i++){const row=Math.floor(i/size),col=i%size,edges={top:-HE[row][col],right:VE[row][col+1],bottom:HE[row+1][col],left:-VE[row][col]};ctx.save();ctx.translate(col*cellW,row*cellH);piecePath(ctx,cellW,cellH,0,edges);ctx.fill();ctx.stroke();ctx.restore();}board.appendChild(canvas);}
-function dimensions(){const board=$('board'),host=board.parentElement,hostWidth=host.getBoundingClientRect().width||host.clientWidth||window.innerWidth,available=Math.max(1,Math.min(hostWidth,650)),ratio=sourceImage.naturalWidth/sourceImage.naturalHeight;cellW=available/size;cellH=cellW/ratio;tab=Math.max(8,Math.ceil(Math.min(cellW,cellH)*.32));const width=cellW*size,height=cellH*size;board.style.setProperty('width',width+'px','important');board.style.setProperty('height',height+'px','important');board.style.setProperty('max-width','100%','important');board.style.setProperty('aspect-ratio',ratio+'','important');board.style.setProperty('border','0','important');board.style.setProperty('box-sizing','border-box','important');board.style.setProperty('outline','3px dashed rgba(218,207,230,.25)','important');board.style.setProperty('outline-offset','-3px','important');board.style.setProperty('--cell-w',cellW+'px');board.style.setProperty('--cell-h',cellH+'px');}
+function drawBoardGuides(){const board=$('board');board.querySelector('.board-guides')?.remove();const canvas=document.createElement('canvas');canvas.className='board-guides';const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cellW*size*dpr);canvas.height=Math.round(cellH*size*dpr);canvas.style.width=(cellW*size)+'px';canvas.style.height=(cellH*size)+'px';const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.lineWidth=1.25;ctx.strokeStyle='rgba(226,211,245,.34)';ctx.fillStyle='rgba(255,255,255,.012)';ctx.setLineDash([]);for(let i=0;i<size*size;i++){const row=Math.floor(i/size),col=i%size,edges={top:-HE[row][col],right:VE[row][col+1],bottom:HE[row+1][col],left:-VE[row][col]};ctx.save();ctx.translate(col*cellW,row*cellH);piecePath(ctx,cellW,cellH,0,edges);ctx.fill();ctx.stroke();ctx.restore();}board.appendChild(canvas);}function dimensions(){const board=$('board'),host=board.parentElement,hostWidth=host.getBoundingClientRect().width||host.clientWidth||window.innerWidth,available=Math.max(1,Math.min(hostWidth,650)),ratio=sourceImage.naturalWidth/sourceImage.naturalHeight;cellW=available/size;cellH=cellW/ratio;tab=Math.max(8,Math.ceil(Math.min(cellW,cellH)*.32));const width=cellW*size,height=cellH*size;board.style.setProperty('width',width+'px','important');board.style.setProperty('height',height+'px','important');board.style.setProperty('max-width','100%','important');board.style.setProperty('aspect-ratio',ratio+'','important');board.style.setProperty('border','0','important');board.style.setProperty('box-sizing','border-box','important');board.style.setProperty('outline','3px dashed rgba(218,207,230,.25)','important');board.style.setProperty('outline-offset','-3px','important');board.style.setProperty('--cell-w',cellW+'px');board.style.setProperty('--cell-h',cellH+'px');}
 function makePiece(index){const row=Math.floor(index/size),col=index%size,m=tab+3,w=cellW,h=cellH,dpr=2,canvas=document.createElement('canvas');canvas.width=Math.ceil((w+2*m)*dpr);canvas.height=Math.ceil((h+2*m)*dpr);canvas.style.width=(w+2*m)+'px';canvas.style.height=(h+2*m)+'px';const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);const edges={top:-HE[row][col],right:VE[row][col+1],bottom:HE[row+1][col],left:-VE[row][col]};piecePath(ctx,w,h,m,edges);ctx.save();ctx.shadowColor='rgba(0,0,0,.38)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;ctx.fillStyle='#f8fafc';ctx.fill();ctx.restore();piecePath(ctx,w,h,m,edges);ctx.save();ctx.clip();ctx.drawImage(normalizedImage,m-col*w,m-row*h,w*size,h*size);ctx.restore();piecePath(ctx,w,h,m,edges);ctx.strokeStyle='rgba(28,20,39,.58)';ctx.lineWidth=1.35;ctx.stroke();piecePath(ctx,w,h,m,edges);ctx.strokeStyle='rgba(255,255,255,.42)';ctx.lineWidth=.7;ctx.stroke();return canvas;}
 let normalizedImage=null;
 function buildPieces(){const off=document.createElement('canvas');off.width=Math.round(cellW*size);off.height=Math.round(cellH*size);off.getContext('2d').drawImage(sourceImage,0,0,off.width,off.height);normalizedImage=off;pieces=Array.from({length:size*size},(_,index)=>({index,row:Math.floor(index/size),col:index%size,canvas:makePiece(index),state:'pool',groupId:index,x:0,y:0,el:null}));}
@@ -606,7 +600,7 @@ function bestKey(){return 'codeQuestPuzzleBest_'+selectedArt.id+'_'+size;}
 function bestRecord(){try{return JSON.parse(localStorage.getItem(bestKey())||'{}');}catch{return {};}}
 function isEdgePiece(p){return p.row===0||p.col===0||p.row===size-1||p.col===size-1;}
 function syncPieceReturnButton(){const p=selectedPiece===null?null:pieces[selectedPiece];$('returnPieceBtn').disabled=!p||p.state!=='loose';}
-function returnSelectedPiece(){if(selectedPiece===null||finished)return;const p=pieces[selectedPiece];if(!p||p.state!=='loose')return;const members=groupMembers(p.groupId).filter(q=>q.state==='loose');members.forEach(q=>{q.state='pool';q.groupId=q.index;q.x=0;q.y=0;q.el=null;});selectedPiece=null;document.querySelectorAll('.free-piece,.board-piece').forEach(el=>el.classList.remove('chosen'));renderPool();updateProgress();syncPieceReturnButton();$('message').textContent=members.length>1?'رجّعنا المجموعة المتشابكة للصينية. تقدر ترتبها من جديد.':'رجّعنا القطعة للصينية. تقدر تحطها في مكان تاني.';}
+function returnSelectedPiece(){if(selectedPiece===null||finished)return;const p=pieces[selectedPiece];if(!p||p.state!=='loose')return;const members=groupMembers(p.groupId).filter(q=>q.state==='loose');members.forEach(q=>{q.el?.remove();q.state='pool';q.groupId=q.index;q.x=0;q.y=0;q.el=null;});selectedPiece=null;document.querySelectorAll('.free-piece,.board-piece').forEach(el=>el.classList.remove('chosen'));renderPool();updateProgress();syncPieceReturnButton();$('message').textContent=members.length>1?'رجّعنا المجموعة المتشابكة للصينية. تقدر ترتبها من جديد.':'رجّعنا القطعة للصينية. تقدر تحطها في مكان تاني.';}
 function renderPool(){const tray=$('tray');tray.innerHTML='';poolPieces=shuffle(pieces.filter(p=>p.state==='pool'));if($('pieceOrder')?.value==='edges')poolPieces.sort((a,b)=>Number(isEdgePiece(b))-Number(isEdgePiece(a)));poolPieces.forEach(p=>{const b=document.createElement('button');b.type='button';b.className='free-piece';b.dataset.edge=String(isEdgePiece(p));b.setAttribute('aria-label',(isEdgePiece(p)?'قطعة حافة ':'قطعة داخلية ')+(p.index+1));b.dataset.piece=String(p.index);const img=document.createElement('img');img.alt='';img.src=p.canvas.toDataURL();b.appendChild(img);b.addEventListener('pointerdown',startDrag);b.addEventListener('click',()=>{if(finished)return;selectedPiece=p.index;document.querySelectorAll('.free-piece,.board-piece').forEach(el=>el.classList.toggle('chosen',Number(el.dataset.piece)===selectedPiece));syncPieceReturnButton();$('message').textContent='تم اختيار القطعة. طابق شكلها مع حدود اللوحة، أو اضغط «ساعدني» لعرض مكانها.';});tray.appendChild(b);p.el=b;});$('poolCount').textContent=poolPieces.length+' قطعة متبقية';}
 
 function groupMembers(groupId){return pieces.filter(piece=>piece.groupId===groupId);}
@@ -621,7 +615,7 @@ function renderBoardPiece(p,correct=false){
  el.style.width=(cellW+2*(tab+3))+'px';el.style.height=(cellH+2*(tab+3))+'px';
  el.style.transform='';
  if(!el.dataset.dragBound){el.addEventListener('pointerdown',startDrag);el.dataset.dragBound='1';}
- if(!el.dataset.clickBound){el.addEventListener('click',()=>{if(finished||p.state==='placed')return;selectedPiece=p.index;document.querySelectorAll('.free-piece,.board-piece').forEach(e=>e.classList.toggle('chosen',Number(e.dataset.piece)===selectedPiece));});el.dataset.clickBound='1';}
+ if(!el.dataset.clickBound){el.addEventListener('click',()=>{if(finished||p.state==='placed')return;selectedPiece=p.index;document.querySelectorAll('.free-piece,.board-piece').forEach(e=>e.classList.toggle('chosen',Number(e.dataset.piece)===selectedPiece));syncPieceReturnButton();});el.dataset.clickBound='1';}
  board.appendChild(el);p.el=el;
  el.style.pointerEvents=correct?'none':'auto';
  el.setAttribute('aria-label',correct?'قطعة صحيحة '+(p.index+1):'قطعة قابلة للتحريك '+(p.index+1));
@@ -697,8 +691,7 @@ function finishDrag(e,cancelled=false){
  if(!dragState)return; const d=dragState;dragState=null;
  window.removeEventListener('pointermove',moveDrag);window.removeEventListener('pointercancel',cancelDrag);
  const ghostRect=d.ghost.getBoundingClientRect();d.ghost.remove();d.source.style.visibility='';
- const {p,members,fromBoard,initial,moved,grabX,grabY}=d;
- for(const q of members)if(q.el)q.el.style.transform='';
+ const {p,members,fromBoard,initial,moved,grabX,grabY}=d; for(const q of members)if(q.el)q.el.style.transform='';
  if(!moved){
   selectedPiece=p.index;
   document.querySelectorAll('.free-piece,.board-piece').forEach(el=>el.classList.toggle('chosen',Number(el.dataset.piece)===selectedPiece));syncPieceReturnButton();
