@@ -870,8 +870,37 @@ export default {
           return jsonResponse({ success: false, message: "تعذر التحقق من إعداد Gemini. راجعي المفتاح وصلاحية النموذج في Cloudflare." }, 503, origin);
         }
         if (!upstream.ok) {
-          console.error("Gemini API error:", upstream.status, data?.error?.status || "unknown");
-          return jsonResponse({ success: false, message: "تعذر على كودي إنشاء إجابة الآن. حاول مرة أخرى." }, 502, origin);
+          const providerError = data?.error || {};
+          const providerStatus = typeof providerError.status === "string"
+            ? providerError.status
+            : "UNKNOWN";
+          const providerMessage = typeof providerError.message === "string"
+            ? providerError.message.slice(0, 500)
+            : "No provider message";
+
+          // Keep provider diagnostics in Cloudflare logs, but never expose
+          // raw upstream details, request data, or credentials to learners.
+          console.error("Gemini API request failed:", JSON.stringify({
+            httpStatus: upstream.status,
+            providerStatus,
+            providerMessage,
+            model
+          }));
+
+          let message = "خدمة Gemini واجهت مشكلة مؤقتة. حاول مرة أخرى بعد قليل.";
+          if (upstream.status === 400) {
+            message = "إعدادات طلب كودي غير متوافقة مع نموذج Gemini. تم تسجيل تفاصيل المشكلة لمراجعتها.";
+          } else if (upstream.status === 404) {
+            message = "نموذج Gemini المحدد غير متاح لهذا المفتاح أو المشروع. راجع إعداد GEMINI_MODEL في Cloudflare.";
+          } else if (upstream.status === 429) {
+            message = "وصلت خدمة Gemini إلى حد الاستخدام الحالي. حاول مرة أخرى لاحقًا.";
+          }
+
+          return jsonResponse({
+            success: false,
+            errorCode: "GEMINI_UPSTREAM_ERROR",
+            message
+          }, 502, origin);
         }
 
         const answer = (data?.candidates?.[0]?.content?.parts || [])
