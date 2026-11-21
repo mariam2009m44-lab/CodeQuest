@@ -208,7 +208,7 @@
         { q: "ما هو الـ Git؟", opts: ["لغة برمجة", "نظام تحكم في الإصدارات", "قاعدة بيانات", "محرر نصوص"], a: 1 }
       ]
     };
-    let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy';
+    let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy', answerLocked = false;
     const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), progressEl = document.getElementById('progress');
 
     function shuffleQuestions(items) {
@@ -224,7 +224,7 @@
       currentLevel = level;
       const qs = questionBank[level];
       currentQs = shuffleQuestions(qs).slice(0, (level === 'easy' ? 10 : level === 'medium' ? 15 : 20));
-      curr = 0; score = 0; streak = 0; scoreEl.textContent = 0; comboEl.textContent = 0;
+      curr = 0; score = 0; streak = 0; answerLocked = false; scoreEl.textContent = 0; comboEl.textContent = 0;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
@@ -243,7 +243,7 @@
       const q = currentQs[curr];
       qEl.textContent = q.q;
       optsEl.innerHTML = '';
-      progressEl.style.width = `${(curr / currentQs.length) * 100}%`;
+      progressEl.style.width = `${(curr / currentQs.length) * 100}%`;\n      progressEl.setAttribute('aria-label',`السؤال ${curr+1} من ${currentQs.length}`);
       progressEl.parentElement.setAttribute('aria-valuenow', String(curr));
       progressEl.parentElement.setAttribute('aria-valuemax', String(currentQs.length));
       q.opts.forEach((opt, i) => {
@@ -274,7 +274,7 @@
         streak = 0;
         comboEl.textContent = streak;
       }
-      setTimeout(() => { curr++; loadQ(); }, 1500);
+      setTimeout(() => { curr++; answerLocked = false; loadQ(); }, 1700);
     }
 
     function startTimer() {
@@ -286,7 +286,7 @@
           document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
           optsEl.children[currentQs[curr].a].classList.add('correct');
           streak = 0; comboEl.textContent = streak;
-          setTimeout(() => { curr++; loadQ(); }, 1500);
+          setTimeout(() => { curr++; answerLocked = false; loadQ(); }, 1700);
         }
       }, 1000);
     }
@@ -330,7 +330,7 @@
         drops[i]++;
       }
     }
-    setInterval(draw, 100);
+    let matrixTimer = null;\n    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;\n    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }\n    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }\n    startMatrix();\n    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
