@@ -22,9 +22,40 @@
   } catch {}
   const read = key => { try { return localStorage.getItem(key) === "on"; } catch { return false; } };
   const save = (key, value) => { try { localStorage.setItem(key, value ? "on" : "off"); } catch {} };
+  let masterBus = null, musicBus = null, soundBus = null, delayNode = null;
+  let delayFeedback = null, delayWet = null, compressor = null, noiseBuffer = null;
   function getContext() {
     if (!AudioContextClass) return null;
-    if (!context) context = new AudioContextClass();
+    if (!context) {
+      context = new AudioContextClass();
+      masterBus = context.createGain();
+      masterBus.gain.value = 0.82;
+      musicBus = context.createGain();
+      musicBus.gain.value = musicEnabled ? musicVolume * 0.72 : 0;
+      soundBus = context.createGain();
+      soundBus.gain.value = soundVolume;
+      compressor = context.createDynamicsCompressor();
+      compressor.threshold.value = -18;
+      compressor.knee.value = 16;
+      compressor.ratio.value = 3;
+      compressor.attack.value = 0.012;
+      compressor.release.value = 0.22;
+      delayNode = context.createDelay(0.6);
+      delayNode.delayTime.value = 0.29;
+      delayFeedback = context.createGain();
+      delayFeedback.gain.value = 0.16;
+      delayWet = context.createGain();
+      delayWet.gain.value = 0.13;
+      musicBus.connect(masterBus);
+      musicBus.connect(delayNode);
+      delayNode.connect(delayFeedback);
+      delayFeedback.connect(delayNode);
+      delayNode.connect(delayWet);
+      delayWet.connect(masterBus);
+      soundBus.connect(masterBus);
+      masterBus.connect(compressor);
+      compressor.connect(context.destination);
+    }
     return context;
   }
   function note(frequency, duration, volume, offset = 0, type = "sine", channel = "music") {
@@ -39,7 +70,8 @@
     const channelVolume = channel === "sound" ? soundVolume : musicVolume;
     gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * channelVolume), start + 0.04);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    oscillator.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    oscillator.connect(filter); filter.connect(gain);
+    gain.connect(channel === "sound" ? soundBus : musicBus);
     oscillator.start(start); oscillator.stop(start + duration + 0.03);
   }
   function play(name = "tap") {
@@ -54,36 +86,175 @@
     };
     (patterns[name] || patterns.tap).forEach((item, index) => note(item[0], item[1], item[2], index * .085, "sine", "sound"));
   }
-  const chords = [[261.63,329.63,392],[220,261.63,329.63],[174.61,220,261.63],[196,246.94,293.66]];
+  // Original CodeQuest soundtrack: a gentle, uplifting 92 BPM game-world theme.
+  // Four-bar harmonic loop, warm pads, a soft bass pulse, glassy plucks and restrained percussion.
+  const MUSIC_BPM = 92;
+  const STEP_SECONDS = 60 / MUSIC_BPM / 4;
+  const STEPS_PER_BAR = 16;
+  const BAR_SECONDS = STEP_SECONDS * STEPS_PER_BAR;
+  const PROGRESSION = [
+    { root: 130.81, chord: [130.81, 164.81, 196.00, 246.94], melody: [523.25, 659.25, 783.99, 659.25, 587.33, 659.25, 783.99, 1046.50] },
+    { root: 110.00, chord: [110.00, 130.81, 164.81, 196.00], melody: [523.25, 659.25, 880.00, 783.99, 659.25, 587.33, 659.25, 523.25] },
+    { root: 87.31, chord: [87.31, 110.00, 130.81, 164.81], melody: [523.25, 698.46, 880.00, 783.99, 698.46, 659.25, 587.33, 523.25] },
+    { root: 98.00, chord: [98.00, 123.47, 146.83, 196.00], melody: [587.33, 783.99, 987.77, 880.00, 783.99, 698.46, 659.25, 587.33] }
+  ];
   let musicStep = 0;
-  function musicBar() {
-    if (!musicEnabled || document.hidden) return;
-    const chord = chords[musicStep % chords.length];
-    chord.forEach((frequency,index) => {
-      note(frequency,1.9,.035,index*.11,"triangle");
-      note(frequency*2,.62,.014,.42+index*.13);
-    });
-    note([523.25,587.33,659.25,783.99,659.25,587.33][musicStep%6],.42,.02,.2);
-    // A steady soft beat makes the original loop feel like a real game soundtrack.
-    note(110,.16,.045,0,"sine");
-    note(165,.09,.025,.55,"triangle");
-    note(6200,.025,.012,.27,"square");
-    note(6200,.025,.012,.82,"square");
-    musicStep++;
+  let nextMusicStepTime = 0;
+
+  function makeNoiseBuffer() {
+    const ctx = getContext();
+    if (!ctx) return null;
+    if (!noiseBuffer) {
+      noiseBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.5), ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.7;
+    }
+    return noiseBuffer;
   }
+
+  function scheduleVoice(frequency, duration, volume, when, options = {}) {
+    const ctx = getContext();
+    if (!ctx || ctx.state !== "running") return;
+    const oscillator = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const envelope = ctx.createGain();
+    const startFrequency = Math.max(20, frequency);
+    oscillator.type = options.type || "triangle";
+    oscillator.frequency.setValueAtTime(startFrequency, when);
+    if (options.endFrequency) {
+      oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, options.endFrequency), when + duration);
+    }
+    oscillator.detune.setValueAtTime(options.detune || 0, when);
+    filter.type = options.filterType || "lowpass";
+    filter.frequency.setValueAtTime(options.cutoff || 2600, when);
+    filter.Q.value = options.q || 0.55;
+    const attack = Math.min(options.attack || 0.035, duration * 0.35);
+    const releaseStart = Math.max(when + attack + 0.01, when + duration * (options.sustain || 0.72));
+    envelope.gain.setValueAtTime(0.0001, when);
+    envelope.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), when + attack);
+    envelope.gain.setValueAtTime(Math.max(0.0002, volume * (options.hold || 0.72)), releaseStart);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+    oscillator.connect(filter);
+    filter.connect(envelope);
+    envelope.connect(options.channel === "sound" ? soundBus : musicBus);
+    oscillator.start(when);
+    oscillator.stop(when + duration + 0.025);
+  }
+
+  function scheduleNoise(when, duration, volume, cutoff = 6500) {
+    const ctx = getContext();
+    const buffer = makeNoiseBuffer();
+    if (!ctx || !buffer || ctx.state !== "running") return;
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const envelope = ctx.createGain();
+    source.buffer = buffer;
+    filter.type = "highpass";
+    filter.frequency.setValueAtTime(cutoff, when);
+    envelope.gain.setValueAtTime(0.0001, when);
+    envelope.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), when + 0.004);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+    source.connect(filter);
+    filter.connect(envelope);
+    envelope.connect(musicBus);
+    source.start(when);
+    source.stop(when + duration + 0.02);
+  }
+
+  function scheduleMusicStep(step, when) {
+    const stepInLoop = step % 64;
+    const bar = Math.floor(stepInLoop / STEPS_PER_BAR);
+    const beatStep = stepInLoop % STEPS_PER_BAR;
+    const harmony = PROGRESSION[bar];
+    const beat = beatStep % 4 === 0;
+
+    if (beatStep === 0) {
+      harmony.chord.forEach((frequency, index) => {
+        scheduleVoice(frequency, BAR_SECONDS * 0.94, 0.012, when + index * 0.018, {
+          type: "triangle", cutoff: 1500 + index * 220, attack: 0.32, sustain: 0.84, hold: 0.58
+        });
+        if (index === 0 || index === 2) {
+          scheduleVoice(frequency * 2, BAR_SECONDS * 0.78, 0.0038, when + 0.05, {
+            type: "sine", cutoff: 2100, attack: 0.4, sustain: 0.8, hold: 0.5
+          });
+        }
+      });
+    }
+
+    if (beatStep === 0 || beatStep === 8) {
+      scheduleVoice(harmony.root * 0.5, 0.42, 0.032, when, {
+        type: "sine", endFrequency: harmony.root * 0.46, cutoff: 420, attack: 0.018, sustain: 0.3, hold: 0.3
+      });
+      // Soft low-frequency kick, with no sharp transient.
+      scheduleVoice(92, 0.2, 0.042, when, {
+        type: "sine", endFrequency: 48, cutoff: 180, attack: 0.006, sustain: 0.14, hold: 0.2
+      });
+    }
+
+    if (beatStep === 4 || beatStep === 12) {
+      scheduleNoise(when, 0.105, 0.009, 1800);
+      scheduleVoice(185, 0.12, 0.009, when, {
+        type: "triangle", endFrequency: 130, cutoff: 600, attack: 0.004, sustain: 0.18, hold: 0.2
+      });
+    }
+
+    if (beatStep % 4 === 2) scheduleNoise(when, 0.035, 0.0035, 7200);
+    if (beatStep % 4 === 0 && beatStep !== 0) scheduleNoise(when, 0.028, 0.0025, 8200);
+
+    if (beatStep % 2 === 0) {
+      const melodyIndex = beatStep / 2;
+      scheduleVoice(harmony.melody[melodyIndex], 0.34, 0.014, when + 0.018, {
+        type: "sine", cutoff: 4200, attack: 0.012, sustain: 0.34, hold: 0.34
+      });
+      if (melodyIndex === 3 || melodyIndex === 7) {
+        scheduleVoice(harmony.melody[melodyIndex] * 2, 0.22, 0.0035, when + 0.035, {
+          type: "sine", cutoff: 5200, attack: 0.01, sustain: 0.25, hold: 0.25
+        });
+      }
+    }
+  }
+
+  function scheduleMusic() {
+    const ctx = getContext();
+    if (!ctx || !musicEnabled || document.hidden || ctx.state !== "running") return;
+    const horizon = ctx.currentTime + 0.22;
+    while (nextMusicStepTime < horizon) {
+      scheduleMusicStep(musicStep, nextMusicStepTime);
+      nextMusicStepTime += STEP_SECONDS;
+      musicStep = (musicStep + 1) % 64;
+    }
+  }
+
   async function startMusic() {
     const ctx = getContext();
     if (!ctx) return;
     try { await ctx.resume(); } catch { return; }
-    musicEnabled = true; save(MUSIC_KEY,true); musicBar();
+    musicEnabled = true;
+    save(MUSIC_KEY, true);
+    const now = ctx.currentTime;
+    musicBus.gain.cancelScheduledValues(now);
+    musicBus.gain.setValueAtTime(musicBus.gain.value, now);
+    musicBus.gain.linearRampToValueAtTime(musicVolume * 0.72, now + 1.1);
     if (musicTimer) clearInterval(musicTimer);
-    musicTimer = setInterval(musicBar,2100);
+    musicStep = 0;
+    nextMusicStepTime = now + 0.08;
+    scheduleMusic();
+    musicTimer = setInterval(scheduleMusic, 45);
   }
+
   function stopMusic() {
-    musicEnabled = false; save(MUSIC_KEY,false);
+    musicEnabled = false;
+    save(MUSIC_KEY, false);
     if (musicTimer) clearInterval(musicTimer);
     musicTimer = null;
+    if (musicBus && context?.state === "running") {
+      const now = context.currentTime;
+      musicBus.gain.cancelScheduledValues(now);
+      musicBus.gain.setValueAtTime(musicBus.gain.value, now);
+      musicBus.gain.linearRampToValueAtTime(0, now + 0.45);
+    }
   }
+
   function setGemBalance(value) {
     if (!Number.isFinite(Number(value))) return;
     const amount = String(Math.max(0, Math.floor(Number(value))));
@@ -98,6 +269,17 @@
     if (Number.isFinite(Number(next.music))) {
       musicVolume = Math.min(1, Math.max(0, Number(next.music)));
       try { localStorage.setItem("cq_music_volume", String(musicVolume)); } catch {}
+    }
+    if (context?.state === "running") {
+      const now = context.currentTime;
+      if (soundBus) {
+        soundBus.gain.cancelScheduledValues(now);
+        soundBus.gain.setTargetAtTime(soundVolume, now, 0.045);
+      }
+      if (musicBus) {
+        musicBus.gain.cancelScheduledValues(now);
+        musicBus.gain.setTargetAtTime(musicEnabled ? musicVolume * 0.72 : 0, now, 0.08);
+      }
     }
     return { sound: soundVolume, music: musicVolume };
   }
@@ -206,15 +388,15 @@
     const target=event.target;
     if(!(target instanceof Element)||!target.closest("button,.choice-btn,.piece,.code-block,.match-item,.bug-line,.drag-piece,input,select"))return;
     const ctx=getContext();
-    if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer){musicBar();musicTimer=setInterval(musicBar,2100)}}).catch(()=>{});else if(soundEnabled)play("tap");
+    if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer)startMusic()}).catch(()=>{});else if(soundEnabled)play("tap");
   }
   document.addEventListener("pointerdown",onInteraction,{passive:true});
   document.addEventListener("keydown",onInteraction);
   document.addEventListener("DOMContentLoaded",mountControls,{once:true});
   if(document.readyState!=="loading")mountControls();
-  window.addEventListener("storage",event=>{if(event.key===SOUND_KEY)soundEnabled=read(SOUND_KEY);if(event.key===MUSIC_KEY){if(read(MUSIC_KEY))musicEnabled=true;else stopMusic();}});
+  window.addEventListener("storage",event=>{if(event.key===SOUND_KEY){soundEnabled=read(SOUND_KEY);setVolumes({sound:soundVolume})}if(event.key===MUSIC_KEY){if(read(MUSIC_KEY)){musicEnabled=true;if(context?.state==="running")startMusic()}else stopMusic()}});
   document.addEventListener("cq:audio-settings-change",()=>{soundEnabled=read(SOUND_KEY);if(read(MUSIC_KEY))startMusic();else stopMusic();});
-  document.addEventListener("visibilitychange",()=>{if(document.hidden&&context?.state==="running")context.suspend().catch(()=>{});else if(!document.hidden&&musicEnabled&&context?.state==="suspended")context.resume().then(()=>{if(!musicTimer){musicBar();musicTimer=setInterval(musicBar,2100)}}).catch(()=>{})});
+  document.addEventListener("visibilitychange",()=>{if(document.hidden){if(musicTimer)clearInterval(musicTimer);musicTimer=null;if(context?.state==="running")context.suspend().catch(()=>{})}else if(musicEnabled&&context?.state==="suspended")startMusic()});
   soundEnabled=read(SOUND_KEY);
   musicEnabled=read(MUSIC_KEY);
   window.CodeQuestAudio=Object.freeze({play,refreshGemBalance,setGemBalance,setVolumes});
