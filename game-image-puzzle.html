@@ -302,6 +302,11 @@ html[data-theme="light"] .pro-choice-menu button[aria-selected="true"],html[data
 .board[data-assistance="hidden"] .board-ghost{display:none!important}
 .board[data-assistance="preview"] .board-ghost img{opacity:.32!important;filter:saturate(.9) brightness(.88)!important}
 
+
+/* Keep lifted jigsaw pieces cut out: never show a rectangular button behind them. */
+.drag-ghost{display:grid!important;place-items:center!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important;outline:0!important;appearance:none!important;-webkit-appearance:none!important;overflow:visible!important;filter:drop-shadow(0 12px 15px rgba(0,0,0,.48))!important}
+.drag-ghost img{display:block!important;width:100%!important;height:100%!important;background:transparent!important;border:0!important;border-radius:0!important;object-fit:fill!important;box-shadow:none!important;outline:0!important;pointer-events:none!important}
+.free-piece.chosen,.board-piece.chosen{outline:0!important;border:0!important;border-radius:0!important;filter:drop-shadow(0 0 7px rgba(255,212,119,.95)) drop-shadow(0 7px 8px rgba(0,0,0,.5))!important}
 </style>
 <link rel="stylesheet" href="css/codequest-icons.css">
 </head>
@@ -671,7 +676,7 @@ function startDrag(e){
  const fromBoard=p.state==='loose',members=fromBoard?groupMembers(p.groupId):[p];
  const rect=source.getBoundingClientRect(),ghost=source.cloneNode(true),pieceW=cellW+2*(tab+3),pieceH=cellH+2*(tab+3),ghostW=fromBoard?rect.width:pieceW,ghostH=fromBoard?rect.height:pieceH,scaleX=ghostW/Math.max(1,rect.width),scaleY=ghostH/Math.max(1,rect.height);
  ghost.classList.remove('free-piece','board-piece','chosen');ghost.classList.add('drag-ghost');
- Object.assign(ghost.style,{position:'fixed',left:(e.clientX-(e.clientX-rect.left)*scaleX)+'px',top:(e.clientY-(e.clientY-rect.top)*scaleY)+'px',width:ghostW+'px',height:ghostH+'px',minWidth:ghostW+'px',minHeight:ghostH+'px',margin:'0',padding:'0',zIndex:'10000',pointerEvents:'none',transform:'none',opacity:'1',overflow:'visible'});
+ Object.assign(ghost.style,{position:'fixed',left:(e.clientX-(e.clientX-rect.left)*scaleX)+'px',top:(e.clientY-(e.clientY-rect.top)*scaleY)+'px',width:ghostW+'px',height:ghostH+'px',minWidth:ghostW+'px',minHeight:ghostH+'px',margin:'0',padding:'0',zIndex:'10000',pointerEvents:'none',transform:'none',opacity:'1',overflow:'visible',background:'transparent',border:'0',borderRadius:'0',appearance:'none',boxShadow:'none',outline:'none'});
  const ghostImage=ghost.querySelector('img');if(ghostImage)Object.assign(ghostImage.style,{display:'block',width:'100%',height:'100%',objectFit:'fill'});
  document.body.appendChild(ghost);source.style.visibility='hidden';
  const initial=new Map(members.map(q=>[q.index,{x:q.x,y:q.y,rect:q.el?.getBoundingClientRect()}]));
