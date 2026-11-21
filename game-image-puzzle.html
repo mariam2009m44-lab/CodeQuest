@@ -51,7 +51,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#1b3153 0%,#101b31 42%,#080e1b
 <body><main class="wrap">
 <header class="top"><a class="back" href="games.html"><i class="ri-arrow-right-line"></i> مركز الألعاب</a><div class="brand"><i class="ri-code-s-slash-line"></i> CodeQuest · تحدي الصور</div><div class="stats"><div class="stat"><i class="ri-trophy-line"></i> <span id="score">0</span> نقطة</div><div class="stat"><i class="ri-timer-line"></i> <span id="timer">00:00</span></div></div></header>
 <section class="hero"><span class="eyebrow"><i class="ri-shapes-line"></i> لاحظ · رتّب · اكتشف</span><h1>بازل صور البرمجة</h1><p>اختر صورة، ثم اسحب القطع المتشابكة إلى أماكنها الصحيحة.<br>كل صورة مكتملة تمنحك نقاطًا جديدة!</p></section>
-<section class="panel" id="setupPanel"><div class="gallery-heading"><h2 class="section-title"><i class="ri-gallery-line"></i> اختر الصورة</h2><button class="secondary upload-photo-btn" type="button" id="uploadPhotoBtn"><i class="ri-image-add-line"></i> ارفع صورة من جهازك</button><input id="customPhotoInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif" hidden></div><p class="gallery-note">اختر من مكتبة CodeQuest أو استخدم صورة خاصة بك. الصور الكبيرة تُجهّز تلقائيًا لتناسب لوحة البازل.</p><div class="gallery" id="gallery"></div><div class="setup">
+<section class="panel" id="setupPanel"><div class="gallery-heading"><h2 class="section-title"><i class="ri-gallery-line"></i> اختر الصورة</h2><button class="secondary upload-photo-btn" type="button" id="uploadPhotoBtn"><i class="ri-image-add-line"></i> ارفع صورة من جهازك</button><input id="customPhotoInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif" hidden></div><p class="gallery-note">اختر من مكتبة CodeQuest أو استخدم صورة خاصة بك. الصور الكبيرة تُجهّز تلقائيًا لتناسب لوحة البازل.</p><p class="gallery-note" id="galleryUploadStatus" role="status" aria-live="polite">يمكنك رفع صورة JPG أو PNG أو WebP أو AVIF بحجم يصل إلى 12 ميجابايت.</p><div class="gallery" id="gallery"></div><div class="setup">
 <div class="field"><label for="difficulty">مستوى الصعوبة</label><select id="difficulty"><option value="2" selected>بداية سهلة · 2 × 2</option><option value="3">سهل · 3 × 3</option><option value="4">متوسط · 4 × 4</option><option value="5">تحدي متقدم · 5 × 5</option></select></div>
 <div class="field"><label for="mode">مساعدة بصرية</label><select id="mode"><option value="preview">إظهار الصورة الأصلية</option><option value="hidden">إخفاء الصورة الأصلية</option></select></div>
 <button class="primary" id="startBtn"><i class="ri-play-fill"></i> بدء البازل</button></div></section>
@@ -100,12 +100,12 @@ $('customPhotoInput').addEventListener('change',async e=>{
   const file=e.target.files?.[0];
   if(!file)return;
   if(!/^image\/(jpeg|png|webp|avif)$/.test(file.type)){
-    $('message').textContent='اختار صورة بصيغة JPG أو PNG أو WebP أو AVIF.';
+    $('galleryUploadStatus').textContent='اختار صورة بصيغة JPG أو PNG أو WebP أو AVIF.';
     e.target.value='';
     return;
   }
   if(file.size>12*1024*1024){
-    $('message').textContent='حجم الصورة أكبر من 12 ميجابايت. اختار صورة أصغر.';
+    $('galleryUploadStatus').textContent='حجم الصورة أكبر من 12 ميجابايت. اختار صورة أصغر.';
     e.target.value='';
     return;
   }
@@ -114,7 +114,7 @@ $('customPhotoInput').addEventListener('change',async e=>{
     const image=await loadImage(nextUrl);
     if(image.naturalWidth<240||image.naturalHeight<180){
       URL.revokeObjectURL(nextUrl);
-      $('message').textContent='الصورة صغيرة جدًا. استخدم صورة أبعادها 240×180 بكسل على الأقل.';
+      $('galleryUploadStatus').textContent='الصورة صغيرة جدًا. استخدم صورة أبعادها 240×180 بكسل على الأقل.';
       e.target.value='';
       return;
     }
@@ -126,10 +126,10 @@ $('customPhotoInput').addEventListener('change',async e=>{
     artworks.unshift(customArt);
     selectedArt=customArt;
     renderGallery();
-    $('message').textContent='تمت إضافة صورتك واختيارها. اضغط «بدء البازل» للعب.';
+    $('galleryUploadStatus').textContent='تمت إضافة صورتك واختيارها. اضغط «بدء البازل» للعب.';
   }catch(error){
     URL.revokeObjectURL(nextUrl);
-    $('message').textContent='تعذر فتح الصورة. جرّب ملف صورة آخر.';
+    $('galleryUploadStatus').textContent='تعذر فتح الصورة. جرّب ملف صورة آخر.';
   }finally{
     e.target.value='';
   }
