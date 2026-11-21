@@ -241,12 +241,12 @@
     <p>عوالم تفاعلية لتعلّم البرمجة بالتجربة والاكتشاف والتحدي.</p>
   </div>
   <section class="games-grid">
-    <a href="game-image-puzzle.html" class="game-card c-image">
-      <div class="icon-wrapper"><img class="game-art puzzle-photo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Close_up_of_Hand_Cut_Jigsaw_Puzzle.JPG/1280px-Close_up_of_Hand_Cut_Jigsaw_Puzzle.JPG" alt="صورة فوتوغرافية لقطع بازل خشبية حقيقية متشابكة" loading="eager" fetchpriority="high" decoding="async"></div>
+    <article class="game-card c-image">
+      <div class="icon-wrapper"><img class="game-art puzzle-photo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Close_up_of_Hand_Cut_Jigsaw_Puzzle.JPG/1280px-Close_up_of_Hand_Cut_Jigsaw_Puzzle.JPG" alt="قطع بازل خشبية حقيقية متشابكة" loading="eager" fetchpriority="high" decoding="async"><a class="photo-source-icon" href="https://commons.wikimedia.org/wiki/File:Close_up_of_Hand_Cut_Jigsaw_Puzzle.JPG" target="_blank" rel="noopener noreferrer" title="مصدر الصورة واسم المصور وترخيص الاستخدام" aria-label="معلومات مصدر صورة البازل: Charles Hamm، Wikimedia Commons، ترخيص CC BY 3.0"><i class="ri-information-line"></i></a></div>
       <span class="game-tag">تفكير بصري</span><span class="game-levels">4 مستويات · من 2×2 إلى 5×5</span><h3>بازل صور البرمجة</h3>
       <p>ركّب الصورة قطعةً قطعة، وطوّر مهارات الملاحظة وحل المشكلات عبر أربعة مستويات.</p>
-      <span class="btn-play">ابدأ البازل <i class="ri-arrow-left-line"></i></span>
-    </a>
+      <a href="game-image-puzzle.html" class="btn-play">ابدأ البازل <i class="ri-arrow-left-line"></i></a>
+    </article>
     <a href="game-quiz.html" class="game-card c-quiz">
       <div class="icon-wrapper"><img class="game-art" src="assets/games/game-quiz.svg" alt="رسم توضيحي لتحدي الأسئلة" loading="lazy" decoding="async"></div>
       <span class="game-tag">اختبر معلوماتك</span><span class="game-levels">3 مستويات · 10 إلى 20 سؤالًا</span><h3>تحدي المعرفة</h3>
@@ -284,7 +284,7 @@
       <span class="btn-play">ابدأ التحدي <i class="ri-arrow-left-line"></i></span>
     </a>
   </section>
-  <p class="photo-credit-global">صورة البازل: “Close up of Hand Cut Jigsaw Puzzle” — Charles Hamm / Wikimedia Commons · <a href="https://commons.wikimedia.org/wiki/File:Close_up_of_Hand_Cut_Jigsaw_Puzzle.JPG" target="_blank" rel="noopener noreferrer">مصدر الصورة</a> · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">ترخيص CC BY 3.0</a></p>
+  
   <script>
     function updateGlobalScore() {
       const score = parseInt(localStorage.getItem('codyTotalScore')) || 0;
@@ -356,6 +356,11 @@ body {
  .game-card .game-tag,.game-card .game-levels,.game-card h3,.game-card p{width:100%;text-align:right}
  .game-card p{min-height:0!important}
 }
+
+.photo-source-icon{position:absolute;top:10px;inset-inline-start:10px;z-index:3;width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.55);border-radius:50%;background:rgba(7,12,27,.78);color:#fff;text-decoration:none;font-size:1.05rem;box-shadow:0 3px 12px rgba(0,0,0,.25);backdrop-filter:blur(8px);transition:transform .2s ease,background .2s ease}
+.photo-source-icon:hover,.photo-source-icon:focus-visible{transform:scale(1.08);background:#18284a;outline:2px solid #9eeeff;outline-offset:2px}
+.game-card.c-image{cursor:default}
+.game-card.c-image .btn-play{text-decoration:none}
 </style>
 </body>
 </html>
