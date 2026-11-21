@@ -1,0 +1,85 @@
+/* Cody Chat Pro — focused visual layer */
+.cody-chat-panel{
+  width:min(470px,calc(100vw - 32px));
+  height:min(700px,calc(100dvh - 120px));
+  border-radius:26px;
+  border:1px solid color-mix(in srgb,var(--cyan) 22%,var(--border));
+  background:var(--surface-raised,#10182b);
+  box-shadow:0 28px 90px rgba(0,0,0,.42),0 0 0 1px rgba(169,154,255,.08);
+}
+.cody-chat-header{
+  min-height:78px;padding:14px 17px;
+  background:linear-gradient(118deg,#392b78 0%,#28518b 54%,#087b91 100%);
+  position:relative;isolation:isolate;
+}
+.cody-chat-header::after{
+  content:"";position:absolute;inset:0;z-index:-1;opacity:.22;pointer-events:none;
+  background:radial-gradient(circle at 82% 10%,#fff 0 1px,transparent 2px),
+  radial-gradient(circle at 68% 70%,#fff 0 1px,transparent 2px);
+  background-size:34px 34px,48px 48px;
+}
+.cody-chat-identity{gap:12px}
+.cody-chat-avatar{width:46px;height:46px;flex-basis:46px;border-radius:15px;background:rgba(255,255,255,.16);font-size:1.5rem}
+.cody-chat-header strong{font-size:1.05rem;font-weight:900}
+.cody-chat-header small{font-size:.74rem}
+.cody-chat-header button{width:40px;height:40px;flex-basis:40px;border:1px solid rgba(255,255,255,.2);border-radius:13px;font-size:1.45rem}
+.cody-chat-messages{
+  gap:15px;padding:18px 15px 16px;
+  background:radial-gradient(ellipse at 15% 0%,rgba(107,232,255,.045),transparent 42%);
+  scroll-padding-block:16px;
+}
+.cody-chat-message{
+  position:relative;max-width:min(92%,39rem);
+  padding:12px 15px;border-radius:18px;
+  font-family:"Cairo",sans-serif;font-size:.9rem;line-height:1.95;
+  letter-spacing:0;white-space:normal;overflow-wrap:anywhere;
+  box-shadow:0 5px 18px rgba(0,0,0,.08);
+}
+.cody-from-bot{
+  align-self:flex-start;background:var(--surface-glass);
+  border:1px solid var(--border);border-start-start-radius:6px;
+}
+.cody-from-user{
+  align-self:flex-end;color:#fff;
+  background:linear-gradient(135deg,#6550c8 0%,#287eaa 100%);
+  border:1px solid rgba(255,255,255,.12);border-start-end-radius:6px;
+}
+.cody-message-meta{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:.67rem;font-weight:800;opacity:.72}
+.cody-message-meta i{font-size:.8rem}
+.cody-message-body p{margin:0 0 9px}
+.cody-message-body p:last-child{margin-bottom:0}
+.cody-message-body h2,.cody-message-body h3,.cody-message-body h4{margin:13px 0 7px;line-height:1.55;font-weight:900;color:var(--cyan)}
+.cody-message-body h2{font-size:1.08rem}.cody-message-body h3{font-size:.98rem}.cody-message-body h4{font-size:.92rem}
+.cody-message-body ul,.cody-message-body ol{margin:7px 0 10px;padding-inline-start:23px}
+.cody-message-body li{padding-inline-start:3px;margin:4px 0}
+.cody-message-body blockquote{margin:9px 0;padding:7px 12px;border-inline-start:3px solid var(--purple);background:rgba(169,154,255,.08);border-radius:8px;color:var(--muted)}
+.cody-message-body strong{font-weight:900;color:inherit}
+.cody-message-body code{direction:ltr;unicode-bidi:isolate;display:inline-block;padding:1px 6px;border-radius:6px;background:rgba(107,232,255,.11);color:var(--cyan);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.88em}
+.cody-code-block{position:relative;margin:11px 0;padding:13px 14px;overflow:auto;direction:ltr;text-align:left;background:#080d1b;border:1px solid rgba(140,160,210,.2);border-radius:13px}
+.cody-code-block code{display:block;padding:0;background:none;color:#dce8ff;white-space:pre;line-height:1.7;font-size:.82rem}
+.cody-code-language{display:block;margin-bottom:8px;color:#8edff0;font:700 .68rem "Cairo",sans-serif;text-transform:uppercase;letter-spacing:.06em}
+.cody-message-body a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
+.cody-message-body hr{border:0;border-top:1px solid var(--border);margin:12px 0}
+.cody-chat-suggestions{gap:8px;padding:2px 14px 12px}
+.cody-chat-suggestion{min-height:36px;padding:7px 12px;font-size:.73rem;border-radius:12px}
+.cody-chat-form{gap:9px;padding:12px 13px;background:var(--surface-raised);border-top:1px solid var(--border)}
+.cody-chat-form input{min-height:50px;padding:12px 15px;border-radius:15px;font-size:16px;line-height:1.5}
+.cody-chat-form input::placeholder{color:var(--subtle);opacity:1}
+.cody-chat-form button{width:50px;height:50px;flex-basis:50px;border-radius:15px;font-size:1.2rem}
+.cody-chat-status{min-height:25px;padding:2px 15px 9px;font-size:.72rem}
+.cody-chat-typing{display:flex;align-items:center;gap:5px;width:max-content;padding:12px 15px;border:1px solid var(--border);border-radius:16px;border-start-start-radius:6px;background:var(--surface-glass)}
+.cody-chat-typing span{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:codyTyping 1s infinite ease-in-out}
+.cody-chat-typing span:nth-child(2){animation-delay:.15s}.cody-chat-typing span:nth-child(3){animation-delay:.3s}
+@keyframes codyTyping{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-5px);opacity:1}}
+html[data-theme="light"] .cody-chat-panel{background:#f8faff}
+html[data-theme="light"] .cody-chat-messages{background:radial-gradient(ellipse at 15% 0%,rgba(8,140,174,.06),transparent 42%)}
+html[data-theme="light"] .cody-from-bot{background:#fff;border-color:#e2e8f2}
+html[data-theme="light"] .cody-code-block{background:#111a2c}
+@media(max-width:600px){
+ .cody-chat-panel{width:auto;max-width:none;left:10px;right:10px;height:min(680px,calc(100dvh - 155px));border-radius:21px}
+ .cody-chat-message{max-width:95%;font-size:.87rem;padding:11px 13px}
+ .cody-chat-messages{padding:14px 11px;gap:12px}
+ .cody-chat-header{min-height:68px;padding:11px 13px}
+ .cody-chat-form{padding:9px}
+}
+@media(prefers-reduced-motion:reduce){.cody-chat-typing span{animation:none}}
