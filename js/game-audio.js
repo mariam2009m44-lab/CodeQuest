@@ -7,7 +7,7 @@
   const SCRIPT_URL = document.currentScript?.src || new URL("js/game-audio.js", location.href).href;
   let context = null, soundEnabled = false, musicEnabled = false, musicTimer = null;
   let soundVolume = 0.9;
-  let musicVolume = 0.9;
+  let musicVolume = 0.62;
   try {
     const rawSoundVolume = localStorage.getItem("cq_sound_volume");
     const rawMusicVolume = localStorage.getItem("cq_music_volume");
