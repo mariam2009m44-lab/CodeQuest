@@ -136,7 +136,8 @@
     <div class="level-box">
       <p style="font-weight: 800; text-align: center; color: var(--red); margin-bottom: 20px; font-size: 1.1rem;">اضغط على السطر الذي يحتوي على الخطأ!</p>
       <div class="code-box" id="codeContainer"></div>
-      <div class="msg" id="msg"></div>
+      <p id="attemptStatus" class="attempt-status" aria-live="polite">المحاولات: 0</p>
+      <div class="msg" id="msg" role="status" aria-live="polite"></div>
     </div>
   </div>
   <div class="screen" id="resultScreen">
@@ -148,6 +149,13 @@
       <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
     </div>
   </div>
+  <style>
+    .attempt-status{margin:12px 0;text-align:center;color:var(--cyan);font-weight:800}
+    .line{transition:background .18s,border-color .18s,transform .18s}
+    .line.wrong{border-color:var(--red)!important;background:rgba(251,113,133,.13)!important;transform:translateX(-2px)}
+    .line.correct{border-color:var(--green)!important;background:rgba(52,211,153,.16)!important}
+    .line:disabled{opacity:1;cursor:default}
+  </style>
   <script>
     const levels = {
       easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, hint:'راجع اسم المتغير في سطر الإرجاع؛ هل يطابق الاسم الذي تم إنشاؤه؟', explanation:'تم إنشاء المتغير باسم result، لكن سطر الإرجاع يستخدم reslt. أسماء المتغيرات يجب أن تتطابق تمامًا.' },
@@ -164,7 +172,7 @@
     }
 
     function startGame(level) {
-      currentLevel = level; ended = false; attempts = 0; score = 0; scoreDisplay.textContent = score;
+      currentLevel = level; ended = false; attempts = 0; score = 0; scoreDisplay.textContent = score; document.getElementById('attemptStatus').textContent = 'المحاولات: 0';
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
@@ -177,21 +185,31 @@
     }
 
     function check(index, lineEl) {
-      if (ended) return;
+      if (ended || lineEl.disabled) return;
       if (index === levels[currentLevel].bugIndex) {
-        lineEl.classList.add('correct'); msg.textContent = 'صحيح! ' + levels[currentLevel].explanation;
-        msg.style.color = 'var(--green)'; ended = true;
-        score += 30; scoreDisplay.textContent = score; updateGlobalScore(30);
+        ended = true;
+        lineEl.classList.add('correct');
+        codeContainer.querySelectorAll('.line').forEach(button => { button.disabled = true; });
+        msg.textContent = 'صحيح! ' + levels[currentLevel].explanation;
+        msg.style.color = 'var(--green)';
+        const earned = Math.max(10, 30 - Math.max(0, attempts - 1) * 5);
+        score += earned;
+        scoreDisplay.textContent = score;
+        updateGlobalScore(earned);
+        document.getElementById('attemptStatus').textContent = 'تم اكتشاف الخطأ بعد ' + (attempts + 1) + ' محاولة';
         setTimeout(() => {
           document.getElementById('gameScreen').classList.remove('active');
           document.getElementById('resultScreen').classList.add('active');
           document.getElementById('resultEmoji').textContent = '🏆';
           document.getElementById('resultTitle').textContent = 'تم اكتشاف الخطأ!';
-          document.getElementById('resultMessage').textContent = `لقد جمعت ${score} نقطة.`;
+          document.getElementById('resultMessage').textContent = `حصلت على ${earned} نقطة. ` + levels[currentLevel].explanation;
           window.CodeQuestExperience?.reward({ gems: 0, title: 'تم اصطياد الخطأ!', message: 'اكتشفت المشكلة وحليتها بنجاح. برافو!' });
         }, 1000);
       } else {
-        attempts++; lineEl.classList.add('wrong'); msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود وحاول مرة أخرى.';
+        attempts++;
+        document.getElementById('attemptStatus').textContent = 'المحاولات: ' + attempts;
+        lineEl.classList.add('wrong');
+        msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود وحاول مرة أخرى.';
         msg.style.color = 'var(--red)';
         setTimeout(() => lineEl.classList.remove('wrong'), 800);
       }
