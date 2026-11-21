@@ -921,8 +921,40 @@ export default {
           needs_review: prediction.needs_review
         }, 200, origin);
       } catch (error) {
-        console.error("Cody chat failed:", error);
-        return jsonResponse({ success: false, message: "حدث خطأ أثناء تشغيل كودي. حاول مرة أخرى." }, 503, origin);
+        const errorName = typeof error?.name === "string" ? error.name : "UnknownError";
+        const errorMessage = typeof error?.message === "string"
+          ? error.message.slice(0, 300)
+          : "No error message";
+
+        // Log only technical failure metadata. Never log prompts, tokens,
+        // API keys, or Firebase user information.
+        console.error("Cody request failed:", JSON.stringify({
+          errorName,
+          errorMessage,
+          model: (env.GEMINI_MODEL || "gemini-3.8-flash").trim()
+        }));
+
+        if (errorName === "TimeoutError" || errorName === "AbortError") {
+          return jsonResponse({
+            success: false,
+            errorCode: "CODY_PROVIDER_TIMEOUT",
+            message: "اتأخر رد خدمة الذكاء الاصطناعي. جرّب مرة أخرى بعد قليل."
+          }, 504, origin);
+        }
+
+        if (errorName === "TypeError") {
+          return jsonResponse({
+            success: false,
+            errorCode: "CODY_PROVIDER_CONNECTION",
+            message: "تعذر اتصال خادم كودي بخدمة الذكاء الاصطناعي. تحقق من إعدادات الاتصال وحاول لاحقًا."
+          }, 502, origin);
+        }
+
+        return jsonResponse({
+          success: false,
+          errorCode: "CODY_INTERNAL_ERROR",
+          message: "حصل خطأ داخلي أثناء تجهيز إجابة كودي. تم تسجيل تفاصيل تقنية للمراجعة."
+        }, 503, origin);
       }
     }
 
