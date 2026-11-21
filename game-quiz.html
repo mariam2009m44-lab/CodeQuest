@@ -284,8 +284,11 @@
       setTimeout(() => { curr++; answerLocked = false; loadQ(); }, 1700);
     }
 
-    function startTimer() {
-      clearInterval(timerInt); timeLeft = 20; timeEl.textContent = timeLeft;
+    function startTimer(reset = true) {
+      clearInterval(timerInt);
+      if (document.hidden || answerLocked) return;
+      if (reset) timeLeft = 20;
+      timeEl.textContent = timeLeft;
       timerInt = setInterval(() => {
         timeLeft--; timeEl.textContent = timeLeft;
         if (timeLeft <= 0) {
@@ -341,10 +344,13 @@
     }
     let matrixTimer = null;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }
+    function startMatrix(){ if(reducedMotion || matrixTimer || document.hidden) return; matrixTimer = setInterval(draw, 120); }
     function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }
     startMatrix();
-    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden){clearInterval(timerInt);stopMatrix();}
+      else {if(document.getElementById('gameScreen').classList.contains('active')&&!answerLocked)startTimer(false);startMatrix();}
+    });
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
