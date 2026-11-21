@@ -29,6 +29,16 @@
 
 يمكن تشغيل سير العمل يدويًا من تبويب **Actions** باستخدام **Deploy CodeQuest Cloudflare Worker → Run workflow**.
 
+## نشر Firebase Functions تلقائيًا
+
+أُضيف سير عمل **Deploy Firebase Functions** لنشر دوال التحقق وحفظ التقدم عند تحديث مجلد `functions/`. يتطلب إضافة Secret واحد إلى إعدادات GitHub Actions:
+
+- `FIREBASE_SERVICE_ACCOUNT_CODEQUEST`: محتوى JSON لمفتاح حساب خدمة مخصص للمشروع `codequest-6350a`، بصلاحيات نشر Firebase Functions اللازمة.
+
+أضيفي القيمة من إعدادات المستودع: **Settings → Secrets and variables → Actions → New repository secret**. لا تضعي JSON في ملفات المشروع أو في المحادثات، ولا ترسليه لأي شخص. يجب أن يكون حساب الخدمة مفعّلًا في مشروع Firebase وأن يمتلك أدوار النشر المطلوبة في Google Cloud.
+
+بعد إضافة السر، يمكن تشغيل **Actions → Deploy Firebase Functions → Run workflow** يدويًا. وعند تعديل ملفات `functions/` مستقبلًا، سيعمل النشر تلقائيًا. لا يمنح فشل الاتصال بالدالة إثبات إكمال محليًا؛ إثبات Firebase لا يُنشأ إلا من الدالة المنشورة بعد التحقق من الحل.
+
 ## إضافة مفتاح Gemini بأمان
 
 من Cloudflare Dashboard:
