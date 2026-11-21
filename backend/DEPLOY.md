@@ -18,7 +18,23 @@
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-لا تضعي القيم في ملفات المستودع أو المحادثات. يجب أن يمتلك رمز Cloudflare صلاحية نشر Workers وإدارة الموارد المرتبطة الموجودة في إعداد Wrangler.
+لا تضعي القيم في ملفات المستودع أو المحادثات.
+
+**مهم: صلاحيات رمز Cloudflare**
+
+فشل آخر نشر في خطوة `wrangler deploy` برسالة `No access to the specified service` عند محاولة الوصول إلى Worker باسم `codequest`. هذا يعني أن بيانات الاعتماد موجودة، لكن الرمز الحالي لا يملك صلاحية تعديل هذا الـ Worker أو أنه تابع لحساب Cloudflare مختلف.
+
+لإصلاحه، أنشئي رمز API مخصصًا للنشر أو عدّلي صلاحيات الرمز الحالي، مع التأكد من اختيار حساب Cloudflare الذي يحتوي على Worker `codequest`:
+
+- النطاق: **Workers**، ويفضل تقييده بالـ Worker الحالي `codequest` إن كان متاحًا.
+- الدور: **Editor** على هذا الـ Worker. وإذا لم يكن موجودًا بعد، يلزم دور **Admin** على مستوى Workers لإنشائه.
+- لا تمنحي صلاحيات عامة لا تحتاجها عملية النشر.
+
+بعد ذلك حدّثي GitHub Actions secret المسمى `CLOUDFLARE_API_TOKEN` بالقيمة الجديدة، وتأكدي أن `CLOUDFLARE_ACCOUNT_ID` هو معرّف الحساب نفسه. ثم شغّلي **Actions → Deploy CodeQuest Cloudflare Worker → Run workflow**.
+
+إذا استمرت رسالة الرفض، راجعي أن الرمز لم يُقيّد بحساب أو Worker آخر. لا تشاركي قيمة الرمز أو لقطة شاشة تكشفه.
+
+توضح وثائق Cloudflare أن نشر Worker موجود يتطلب دور Editor على مستوى Worker أو منتج Workers: https://developers.cloudflare.com/workers/authorization/
 
 بعد النشر، يتحقق سير العمل من:
 - `configured: true` لوجود مفتاح Gemini في Cloudflare.
