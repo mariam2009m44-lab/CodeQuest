@@ -839,7 +839,7 @@ export default {
                   "x-goog-api-key": env.GEMINI_API_KEY
                 },
                 body: JSON.stringify(generationRequest),
-                signal: AbortSignal.timeout(12000)
+                signal: AbortSignal.timeout(35000)
               }
             );
             networkError = null;
