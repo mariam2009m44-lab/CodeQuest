@@ -712,15 +712,17 @@ function finishDrag(e,cancelled=false){
  const clamped=boardClampDelta(members,dx,dy);dx=clamped.x;dy=clamped.y;
  const positions=new Map(members.map(q=>[q.index,{x:q.x+dx,y:q.y+dy}]));
  const snap=findGroupSnap(members,positions);
- if(snap){dx+=snap.dx;dy+=snap.dy;}
- const finalClamp=boardClampDelta(members,dx,dy);dx=finalClamp.x;dy=finalClamp.y;
+ const requestedDx=dx+(snap?snap.dx:0),requestedDy=dy+(snap?snap.dy:0);
+ const finalClamp=boardClampDelta(members,requestedDx,requestedDy);
+ dx=finalClamp.x;dy=finalClamp.y;
+ const snapApplied=!!snap&&Math.abs(dx-requestedDx)<0.5&&Math.abs(dy-requestedDy)<0.5;
  for(const q of members){q.x+=dx;q.y+=dy;}
  moves++;
- if(snap&&snap.type==='join'){
+ if(snapApplied&&snap.type==='join'){
   const joinedId=snap.other.groupId;
   for(const q of members)q.groupId=joinedId;
   $('message').textContent='اتشبكوا! القطع المتصلة هتتحرك مع بعض دلوقتي.';
- }else if(snap&&snap.type==='board'){
+ }else if(snapApplied&&snap.type==='board'){
   for(const q of members){q.x=q.col*cellW-(tab+3);q.y=q.row*cellH-(tab+3);q.state='placed';}
   $('message').textContent='ممتاز! المجموعة وصلت لمكانها الصحيح.';
  }else{
