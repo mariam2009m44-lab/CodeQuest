@@ -2106,14 +2106,18 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const complete = document.getElementById("completeLesson");
       const counter = document.getElementById("lessonChapter");
 
-      const currentProgress = readProgress()[currentLessonId];
-      const done = currentProgress?.completed === true && currentProgress.localOnly !== true;
-      if (previous) previous.disabled = index <= 0;
+      // التنقل بين الدروس لا يعتمد على إكمال التحدي.
+      // يظل اعتماد الإنجاز والمكافآت منفصلًا ويتطلب التحقق الخادمي.
+      if (previous) {
+        previous.disabled = index <= 0;
+        previous.setAttribute("aria-label", "الانتقال إلى الدرس السابق");
+      }
       if (next) {
-        next.disabled = index < 0 || index >= allLessons.length - 1 || !done;
+        next.disabled = index < 0 || index >= allLessons.length - 1;
         next.textContent = index >= allLessons.length - 1
           ? "وصلت لنهاية الدروس"
           : "الدرس التالي ←";
+        next.setAttribute("aria-label", "الانتقال إلى الدرس التالي");
       }
 
       if (complete) {
@@ -2141,18 +2145,17 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
 
     function navigateLesson(id) {
       const lesson = findLesson(id);
-      if (!lesson) return;
-      const progress = readProgress();
-      const firstIncompleteIndex = allLessons.findIndex(item =>
-        progress[item.id]?.completed !== true || progress[item.id]?.localOnly === true
-      );
-      const targetIndex = allLessons.findIndex(item => item.id === id);
-      const isCompleted = progress[id]?.completed === true && progress[id]?.localOnly !== true;
-      if (firstIncompleteIndex >= 0 && targetIndex > firstIncompleteIndex && !isCompleted) {
-        showNotice("كمّل الدرس الحالي واجتز التحدي قبل فتح الخطوة التالية.", "info");
+      if (!lesson) {
+        showNotice("تعذر العثور على الدرس المطلوب.", "error");
         return;
       }
+
+      // السماح بالتنقل الحر بين الدروس؛ لا يؤدي فتح درس إلى اعتماده أو منحه مكافأة.
       renderLesson(lesson);
+      document.getElementById("lessonContent")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     }
 
     function moveLesson(direction) {
