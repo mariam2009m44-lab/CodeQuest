@@ -285,7 +285,7 @@ const artworks=[
 {id:"art-egypt",name:"أسرار مصر القديمة",sub:"رحلة إلى الحضارة المصرية",category:"culture",src:"assets/games/puzzle-egypt.svg"}
 ];
 const $=id=>document.getElementById(id),imageFor=art=>art.src||'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(art.svg);
-let selectedArt=artworks[0],size=3,seconds=0,timerId=null,moves=0,finished=false,edgeV=[],edgeH=[],cellW=0,cellH=0,tab=0,sourceImage=null,dragState=null,pieces=[],selectedPiece=null;
+let selectedArt=artworks[0],size=3,seconds=0,timerId=null,moves=0,finished=false,VE=[],HE=[],cellW=0,cellH=0,tab=0,sourceImage=null,dragState=null,pieces=[],selectedPiece=null;
 let poolPieces=[];
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const shuffle=a=>{const v=a.slice();for(let i=v.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[v[i],v[j]]=[v[j],v[i]];}return v;};
@@ -333,28 +333,43 @@ $('customPhotoInput').addEventListener('change',async e=>{
     e.target.value='';
   }
 });
+const TAB=[
+  [[.42,0],[.40,.08],[.37,.14]],
+  [[.30,.26],[.40,.34],[.50,.34]],
+  [[.60,.34],[.70,.26],[.63,.14]],
+  [[.60,.08],[.58,0],[.65,0]]
+];
 function edge(ctx,x0,y0,x1,y1,bulge,depth){
+  if(!bulge){ctx.lineTo(x1,y1);return;}
   const dx=x1-x0,dy=y1-y0,len=Math.hypot(dx,dy)||1;
   const nx=dy/len,ny=-dx/len;
-  if(!bulge){ctx.lineTo(x1,y1);return;}
-  const point=(t,offset=0)=>({x:x0+dx*t+nx*depth*bulge*offset,y:y0+dy*t+ny*depth*bulge*offset});
-  const p0=point(.30),a1=point(.36,0),a2=point(.35,.88),a3=point(.44,.88);
-  ctx.lineTo(p0.x,p0.y);
-  ctx.bezierCurveTo(a1.x,a1.y,a2.x,a2.y,a3.x,a3.y);
-  const b1=point(.48,1.08),b2=point(.52,1.08),b3=point(.56,.88);
-  ctx.bezierCurveTo(b1.x,b1.y,b2.x,b2.y,b3.x,b3.y);
-  const c1=point(.65,.88),c2=point(.64,0),c3=point(.70,0);
-  ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,c3.x,c3.y);
+  const Q=(u,t)=>({x:x0+dx*u+nx*t*depth*bulge,y:y0+dy*u+ny*t*depth*bulge});
+  const start=Q(.35,0);ctx.lineTo(start.x,start.y);
+  for(const segment of TAB){
+    const a=segment.map(([u,t])=>Q(u,t));
+    ctx.bezierCurveTo(a[0].x,a[0].y,a[1].x,a[1].y,a[2].x,a[2].y);
+  }
   ctx.lineTo(x1,y1);
 }
-function piecePath(ctx,w,h,m,edges){const depth=Math.min(w,h)*.235;ctx.beginPath();ctx.moveTo(m,m);edge(ctx,m,m,m+w,m,edges.top,depth);edge(ctx,m+w,m,m+w,m+h,edges.right,depth);edge(ctx,m+w,m+h,m,m+h,edges.bottom,depth);edge(ctx,m,m+h,m,m,edges.left,depth);ctx.closePath();}
-function makeEdges(){edgeV=Array.from({length:size},()=>Array.from({length:size-1},()=>Math.random()>.5?1:-1));edgeH=Array.from({length:size-1},()=>Array.from({length:size},()=>Math.random()>.5?1:-1));}
+function piecePath(ctx,w,h,m,edges){
+  const S=Math.min(w,h);ctx.beginPath();ctx.moveTo(m,m);
+  edge(ctx,m,m,m+w,m,edges.top,S);
+  edge(ctx,m+w,m,m+w,m+h,edges.right,S);
+  edge(ctx,m+w,m+h,m,m+h,edges.bottom,S);
+  edge(ctx,m,m+h,m,m,edges.left,S);
+  ctx.closePath();
+}
+function makeEdges(){
+  const randomSign=()=>Math.random()<.5?1:-1;
+  HE=Array.from({length:size+1},(_,r)=>Array.from({length:size},()=>r===0||r===size?0:randomSign()));
+  VE=Array.from({length:size},()=>Array.from({length:size+1},(_,c)=>c===0||c===size?0:randomSign()));
+}
 function clearTargetHint(){document.querySelector('.target-hint')?.remove();clearTimeout(window.__puzzleHintTimer);}
 function showTargetHint(index){clearTargetHint();if(index===null||!pieces[index])return;const p=pieces[index],mark=document.createElement('div');mark.className='target-hint';mark.setAttribute('aria-hidden','true');mark.style.left=(p.col*cellW)+'px';mark.style.top=(p.row*cellH)+'px';mark.style.width=cellW+'px';mark.style.height=cellH+'px';$('board').appendChild(mark);window.__puzzleHintTimer=setTimeout(clearTargetHint,2600);}
 
-function drawBoardGuides(){const board=$('board');board.querySelector('.board-guides')?.remove();const canvas=document.createElement('canvas');canvas.className='board-guides';const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cellW*size*dpr);canvas.height=Math.round(cellH*size*dpr);canvas.style.width=(cellW*size)+'px';canvas.style.height=(cellH*size)+'px';const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.lineWidth=2.2;ctx.strokeStyle='rgba(8,8,20,.58)';ctx.fillStyle='rgba(12,12,28,.035)';ctx.setLineDash([]);for(let i=0;i<size*size;i++){const row=Math.floor(i/size),col=i%size,edges={top:row===0?0:-edgeH[row-1][col],right:col===size-1?0:edgeV[row][col],bottom:row===size-1?0:edgeH[row][col],left:col===0?0:-edgeV[row][col-1]};ctx.save();ctx.translate(col*cellW,row*cellH);piecePath(ctx,cellW,cellH,0,edges);ctx.fill();ctx.stroke();ctx.restore();}board.appendChild(canvas);}
-function dimensions(){const board=$('board'),max=Math.min(board.parentElement.clientWidth-30,650),ratio=sourceImage.naturalWidth/sourceImage.naturalHeight;cellW=Math.max(1,max/size);cellH=cellW/ratio;tab=Math.max(14,Math.min(36,Math.min(cellW,cellH)*.235));board.style.width=(cellW*size)+'px';board.style.height=(cellH*size)+'px';board.style.aspectRatio=ratio;board.style.setProperty('--cell-w',cellW+'px');board.style.setProperty('--cell-h',cellH+'px');}
-function makePiece(index){const row=Math.floor(index/size),col=index%size,m=tab+3,w=cellW,h=cellH,dpr=2,canvas=document.createElement('canvas');canvas.width=Math.ceil((w+2*m)*dpr);canvas.height=Math.ceil((h+2*m)*dpr);canvas.style.width=(w+2*m)+'px';canvas.style.height=(h+2*m)+'px';const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);const edges={top:row===0?0:-edgeH[row-1][col],right:col===size-1?0:edgeV[row][col],bottom:row===size-1?0:edgeH[row][col],left:col===0?0:-edgeV[row][col-1]};piecePath(ctx,w,h,m,edges);ctx.save();ctx.shadowColor='rgba(0,0,0,.38)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;ctx.fillStyle='#f8fafc';ctx.fill();ctx.restore();piecePath(ctx,w,h,m,edges);ctx.save();ctx.clip();ctx.drawImage(normalizedImage,m-col*w,m-row*h,w*size,h*size);ctx.restore();piecePath(ctx,w,h,m,edges);ctx.strokeStyle='rgba(8,8,20,.94)';ctx.lineWidth=3;ctx.stroke();piecePath(ctx,w,h,m,edges);ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1;ctx.stroke();return canvas;}
+function drawBoardGuides(){const board=$('board');board.querySelector('.board-guides')?.remove();const canvas=document.createElement('canvas');canvas.className='board-guides';const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cellW*size*dpr);canvas.height=Math.round(cellH*size*dpr);canvas.style.width=(cellW*size)+'px';canvas.style.height=(cellH*size)+'px';const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.lineWidth=2.2;ctx.strokeStyle='rgba(8,8,20,.58)';ctx.fillStyle='rgba(12,12,28,.035)';ctx.setLineDash([]);for(let i=0;i<size*size;i++){const row=Math.floor(i/size),col=i%size,edges={top:row===0?0:-HE[row-1][col],right:col===size-1?0:VE[row][col],bottom:row===size-1?0:HE[row][col],left:col===0?0:-VE[row][col-1]};ctx.save();ctx.translate(col*cellW,row*cellH);piecePath(ctx,cellW,cellH,0,edges);ctx.fill();ctx.stroke();ctx.restore();}board.appendChild(canvas);}
+function dimensions(){const board=$('board'),max=Math.min(board.parentElement.clientWidth-30,650),ratio=sourceImage.naturalWidth/sourceImage.naturalHeight;cellW=Math.max(1,max/size);cellH=cellW/ratio;tab=Math.max(8,Math.ceil(Math.min(cellW,cellH)*.4));board.style.width=(cellW*size)+'px';board.style.height=(cellH*size)+'px';board.style.aspectRatio=ratio;board.style.setProperty('--cell-w',cellW+'px');board.style.setProperty('--cell-h',cellH+'px');}
+function makePiece(index){const row=Math.floor(index/size),col=index%size,m=tab+3,w=cellW,h=cellH,dpr=2,canvas=document.createElement('canvas');canvas.width=Math.ceil((w+2*m)*dpr);canvas.height=Math.ceil((h+2*m)*dpr);canvas.style.width=(w+2*m)+'px';canvas.style.height=(h+2*m)+'px';const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);const edges={top:-HE[row][col],right:VE[row][col+1],bottom:HE[row+1][col],left:-VE[row][col]};piecePath(ctx,w,h,m,edges);ctx.save();ctx.shadowColor='rgba(0,0,0,.38)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;ctx.fillStyle='#f8fafc';ctx.fill();ctx.restore();piecePath(ctx,w,h,m,edges);ctx.save();ctx.clip();ctx.drawImage(normalizedImage,m-col*w,m-row*h,w*size,h*size);ctx.restore();piecePath(ctx,w,h,m,edges);ctx.strokeStyle='rgba(8,8,20,.94)';ctx.lineWidth=3;ctx.stroke();piecePath(ctx,w,h,m,edges);ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1;ctx.stroke();return canvas;}
 let normalizedImage=null;
 function buildPieces(){const off=document.createElement('canvas');off.width=Math.round(cellW*size);off.height=Math.round(cellH*size);off.getContext('2d').drawImage(sourceImage,0,0,off.width,off.height);normalizedImage=off;pieces=Array.from({length:size*size},(_,index)=>({index,row:Math.floor(index/size),col:index%size,canvas:makePiece(index),state:'pool',x:0,y:0,el:null}));}
 function bestKey(){return 'codeQuestPuzzleBest_'+selectedArt.id+'_'+size;}
