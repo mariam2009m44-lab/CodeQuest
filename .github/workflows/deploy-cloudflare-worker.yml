@@ -1,0 +1,98 @@
+name: Deploy CodeQuest Cloudflare Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "cloudflare-worker/**"
+      - ".github/workflows/deploy-cloudflare-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codequest-cloudflare-worker-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy and verify production Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check deployment credentials are configured
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || {
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_API_TOKEN."
+            exit 1
+          }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || {
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_ACCOUNT_ID."
+            exit 1
+          }
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Worker dependencies
+        working-directory: cloudflare-worker
+        run: npm install --no-audit --no-fund
+
+      - name: Deploy production Worker
+        working-directory: cloudflare-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config wrangler.toml
+
+      - name: Verify Cody service health
+        env:
+          CODY_HEALTH_URL: https://codequest.mariam2009m44.workers.dev/api/cody/health
+          CODY_ALLOWED_ORIGIN: https://mariam2009m44-lab.github.io
+        run: |
+          for attempt in $(seq 1 8); do
+            response="$(curl --silent --show-error --fail \
+              --max-time 10 \
+              -H "Origin: $CODY_ALLOWED_ORIGIN" \
+              "$CODY_HEALTH_URL" 2>/dev/null || true)"
+
+            if [ -n "$response" ] && printf '%s' "$response" | node -e '
+              let data = "";
+              process.stdin.on("data", chunk => data += chunk);
+              process.stdin.on("end", () => {
+                try {
+                  const health = JSON.parse(data);
+                  console.log(JSON.stringify({
+                    service: health.service,
+                    configured: health.configured,
+                    quotaAvailable: health.quotaAvailable,
+                    ready: health.ready,
+                    model: health.model
+                  }));
+                  process.exit(health.ready === true ? 0 : 1);
+                } catch {
+                  console.error("Health endpoint returned invalid JSON.");
+                  process.exit(1);
+                }
+              });
+            '; then
+              echo "Cody health check passed."
+              exit 0
+            fi
+
+            echo "Cody is not ready yet (attempt $attempt/8). Retrying..."
+            sleep 5
+          done
+
+          echo "::error::Worker deployed, but Cody is not reporting ready. Check the Cloudflare GEMINI_API_KEY secret, GEMINI_MODEL, and CODE_EXECUTION_LIMITER binding."
+          exit 1
