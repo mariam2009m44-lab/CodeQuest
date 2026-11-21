@@ -103,6 +103,55 @@ body{background:radial-gradient(ellipse at 50% -12%,#252033 0%,#15131d 46%,#0d0c
  .game-head{align-items:flex-start;flex-wrap:wrap}
 }
 
+
+/* Reference-inspired mobile puzzle layout refinement */
+.puzzle-stage{gap:18px}
+.board{background:
+ radial-gradient(ellipse at 50% 105%,rgba(145,76,145,.22),transparent 48%),
+ linear-gradient(180deg,#211b30 0%,#302139 52%,#171522 100%)!important;
+ border:3px dashed rgba(211,190,226,.24)!important;
+ box-shadow:inset 0 0 42px rgba(0,0,0,.46),0 16px 36px rgba(0,0,0,.28)!important}
+.board-ghost img{opacity:.23!important;filter:saturate(.9) brightness(.8)!important}
+.piece-pool{position:relative}
+.pool-head{padding:2px 3px 8px}
+.tray{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;max-height:390px;min-height:170px;padding:13px 4px 9px;align-content:start}
+.free-piece{width:min(100%,88px)!important;height:auto!important;aspect-ratio:1!important;filter:drop-shadow(0 8px 7px rgba(0,0,0,.5));}
+.free-piece:nth-child(4n+1){transform:rotate(-4deg) translateY(3px)}
+.free-piece:nth-child(4n+2){transform:rotate(3deg) translateY(-2px)}
+.free-piece:nth-child(4n+3){transform:rotate(-2deg) translateY(5px)}
+.free-piece:nth-child(4n){transform:rotate(4deg) translateY(1px)}
+.free-piece.chosen{transform:scale(1.12) rotate(0)!important;z-index:8}
+.game-head .stat{border-radius:999px}
+.actions .secondary{transition:transform .16s ease,background .16s ease}
+.actions .secondary:active{transform:scale(.97)}
+@media(max-width:740px){
+ body{padding:10px 9px 86px}
+ .wrap{width:100%}
+ .top{gap:8px}
+ .top .back{padding:7px 10px}
+ .stats{gap:6px}
+ .stat{padding:7px 9px;font-size:.82rem}
+ .hero{margin:9px auto 14px;padding:0 8px}
+ .hero h1{font-size:1.55rem}
+ .hero p{font-size:.82rem;line-height:1.75}
+ .game-layout{margin-top:12px}
+ .board-wrap{padding:10px 9px 13px}
+ .board{width:100%!important;aspect-ratio:1.08;border-radius:12px}
+ .tray{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;max-height:360px;min-height:190px;padding:12px 1px 8px}
+ .free-piece{width:min(100%,78px)!important;height:auto!important}
+ .piece-pool{padding:10px 8px;border-radius:17px}
+ .pool-head strong{font-size:.9rem}
+ .pool-head span{font-size:.75rem}
+ .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .actions #restartBtn{grid-column:1/-1}
+ .side{grid-template-columns:1fr}
+}
+@media(max-width:390px){
+ .board{aspect-ratio:1.02}
+ .tray{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}
+ .free-piece{width:min(100%,70px)!important}
+}
+
 </style>
 </head>
 <body><main class="wrap">
