@@ -349,7 +349,9 @@ heroLauncher?.addEventListener("click", openChat);
 launcher?.addEventListener("click", openChat);
 closeButton?.addEventListener("click", closeChat);
 
-document.addEventListener("keydown", event => {\n  if (event.key === "Escape" && panel && !panel.hidden) closeChat();\n});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && panel && !panel.hidden) closeChat();
+});
 
 let activeRequestController = null;
 let previousAuthUid = null;
