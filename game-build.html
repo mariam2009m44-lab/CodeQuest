@@ -137,6 +137,7 @@
     <div class="level-box">
       <div class="task" id="taskText">المهمة هنا...</div>
       <p id="buildFeedback" class="hint" role="status" aria-live="polite"></p>
+      <p id="buildAttempts" class="build-attempts" aria-live="polite">المحاولات: 0</p>
       <div class="drop-zone" id="dropZone"></div>
       <div class="drop-zone" id="sourceZone"></div>
       <button class="btn-check" onclick="check()" id="btn" disabled>تحقق من الترتيب</button>
@@ -151,6 +152,11 @@
       <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
     </div>
   </div>
+  <style>
+    .build-attempts{margin:8px 0;text-align:center;color:var(--cyan);font-weight:800}
+    .code-block.build-wrong{border-color:var(--red)!important;background:rgba(251,113,133,.15)!important;box-shadow:0 0 0 2px rgba(251,113,133,.12)}
+    .code-block.selected{opacity:.55}
+  </style>
   <script>
     const puzzles = {
       easy: { task: "رتب الكود لطباعة 'Hello'", correct: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'], options: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'] },
@@ -167,7 +173,7 @@
     }
 
     function startGame(level) {
-      currentLevel = level; score = 0; attempts = 0; scoreDisplay.textContent = 0; document.getElementById('buildFeedback').textContent = '';
+      currentLevel = level; score = 0; attempts = 0; scoreDisplay.textContent = 0; document.getElementById('buildFeedback').textContent = ''; document.getElementById('buildAttempts').textContent = 'المحاولات: 0';
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
@@ -190,6 +196,7 @@
       const sourceIndex = Array.prototype.indexOf.call(source.children, el);
       el.classList.add('selected');
       el.setAttribute('aria-disabled', 'true');
+      drop.querySelectorAll('.build-wrong').forEach(item => item.classList.remove('build-wrong'));
       seq.push(code);
       const newEl = document.createElement('button'); newEl.type = 'button'; newEl.className = 'code-block'; newEl.setAttribute('aria-label','إزالة السطر من الترتيب');
       newEl.textContent = code;
@@ -215,21 +222,32 @@
     }
 
     function check() {
-      if (seq.every((v, i) => v === correctSeq[i])) {
-        document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! لاحظ كيف تعتمد كل خطوة على السطر الذي يسبقها.';
+      const firstWrong = seq.findIndex((value, index) => value !== correctSeq[index]);
+      if (firstWrong === -1 && seq.length === correctSeq.length) {
+        const earned = Math.max(20, 50 - attempts * 5);
+        document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! كل سطر في مكانه، وأصبح الكود جاهزًا للتنفيذ.';
         btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
-        score += 50; scoreDisplay.textContent = score; updateGlobalScore(50);
+        drop.querySelectorAll('.code-block').forEach(item => { item.disabled = true; });
+        score += earned; scoreDisplay.textContent = score; updateGlobalScore(earned);
         drop.style.borderColor = 'var(--green)'; drop.style.background = 'rgba(118,233,192,0.1)';
+        document.getElementById('buildAttempts').textContent = 'نجحت بعد ' + (attempts + 1) + ' محاولة — +' + earned + ' نقطة';
         setTimeout(() => {
           document.getElementById('gameScreen').classList.remove('active');
           document.getElementById('resultScreen').classList.add('active');
           document.getElementById('resultEmoji').textContent = '🏆';
           document.getElementById('resultTitle').textContent = 'اكتمل ترتيب الكود!';
-          document.getElementById('resultMessage').textContent = `لقد جمعت ${score} نقطة.`;
+          document.getElementById('resultMessage').textContent = `لقد حصلت على ${earned} نقطة.`;
           window.CodeQuestExperience?.reward({ gems: 0, title: 'البازل اكتمل!', message: 'رتبت الكود بشكل صحيح! كودي فخور بيك.' });
         }, 800);
       } else {
-        document.getElementById('buildFeedback').textContent = attempts >= 1 ? 'تلميح: ابدأ بتعريف الدالة أو الكلاس، ثم أضف الأوامر الداخلية، واجعل استدعاء الدالة بعد تعريفها.' : 'الترتيب غير صحيح. افحص بداية البنية ثم ترتيب الأوامر داخلها.'; attempts++;
+        attempts++;
+        document.getElementById('buildAttempts').textContent = 'المحاولات: ' + attempts;
+        drop.querySelectorAll('.build-wrong').forEach(item => item.classList.remove('build-wrong'));
+        const wrongBlock = drop.children[firstWrong >= 0 ? firstWrong : drop.children.length - 1];
+        if (wrongBlock) wrongBlock.classList.add('build-wrong');
+        document.getElementById('buildFeedback').textContent = firstWrong >= 0
+          ? 'راجع السطر المميز؛ أول اختلاف في الترتيب يبدأ من هنا.'
+          : 'ما زال هناك سطر ناقص. أكمل ترتيب كل الأجزاء أولًا.';
         btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
         setTimeout(() => { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; }, 1500);
       }
