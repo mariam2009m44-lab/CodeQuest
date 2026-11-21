@@ -156,6 +156,14 @@ if (!javaLessons.includes("previous.disabled = index <= 0;") ||
     javaLessons.includes("targetIndex > firstIncompleteIndex && !isCompleted")) {
   throw new Error("Java previous/next navigation must work independently of lesson completion while preserving first/last boundaries.");
 }
+if (!javaLessons.includes("const done = currentRecord?.completed === true && currentRecord?.localOnly !== true;") ||
+    javaLessons.includes("if (locked) return;") ||
+    !javaLessons.includes("if (requested && findLesson(requested)) return requested;") ||
+    !javaLessons.includes("function draftStorageKey()") ||
+    !javaLessons.includes('editor.on("change", instance => saveCurrentDraft(instance.getValue()))') ||
+    !javaLessons.includes('textarea.addEventListener("input", () => saveCurrentDraft(textarea.value))')) {
+  throw new Error("Java lessons must avoid the undefined completion flag, allow free navigation, and autosave code drafts.");
+}
 if (!codyAssistant.includes("addMessage(message, \"model\")") ||
     !codyAssistant.includes("addMessage(\"مش قادر أرد على السؤال دلوقتي: \" + message, \"model\")")) {
   throw new Error("Cody health and request errors must be visible inside the conversation, not only in the status line.");
