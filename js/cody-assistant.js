@@ -17,6 +17,7 @@ let authReady = false;
 let sending = false;
 let history = [];
 let healthPromise = null;
+let focusBeforeChat = null;
 
 const CODY_EMOTION_CLASSES = [
   "is-waving",
@@ -204,6 +205,26 @@ function addMessage(text, role) {
   body.className = "cody-message-body";
   renderFormattedMessage(body, text);
   node.append(meta, body);
+  if (role !== "user") {
+    const actions = document.createElement("div");
+    actions.className = "cody-message-actions";
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.className = "cody-copy-response";
+    copyButton.innerHTML = '<i class="ri-file-copy-line" aria-hidden="true"></i><span>نسخ الرد</span>';
+    copyButton.setAttribute("aria-label", "نسخ رد كودي");
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(String(text));
+        copyButton.querySelector("span").textContent = "تم النسخ";
+        copyButton.querySelector("i").className = "ri-check-line";
+      } catch {
+        copyButton.querySelector("span").textContent = "تعذر النسخ";
+      }
+    });
+    actions.append(copyButton);
+    node.append(actions);
+  }
   messages.append(node);
   messages.scrollTo({ top: messages.scrollHeight, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 }
@@ -247,7 +268,7 @@ async function getServiceHealth() {
 }
 
 function createSuggestions() {
-  if (!panel || !form || panel.querySelector(".cody-chat-suggestions")) return;
+  if (!panel || !form || history.length || panel.querySelector(".cody-chat-suggestions")) return;
   const container = document.createElement("div");
   container.className = "cody-chat-suggestions";
   container.setAttribute("aria-label", "أسئلة مقترحة");
@@ -276,7 +297,9 @@ function createSuggestions() {
 
 async function openChat() {
   if (!panel) return;
+  if (panel.hidden) focusBeforeChat = document.activeElement;
   panel.hidden = false;
+  document.body.classList.add("cody-chat-open");
   launcher?.setAttribute("aria-expanded", "true");
   playCodyEmotion("wave");
   createSuggestions();
@@ -316,8 +339,12 @@ async function openChat() {
 function closeChat() {
   if (!panel) return;
   panel.hidden = true;
+  document.body.classList.remove("cody-chat-open");
   launcher?.setAttribute("aria-expanded", "false");
   playCodyEmotion("wave");
+  const target = focusBeforeChat && document.contains(focusBeforeChat) ? focusBeforeChat : launcher;
+  target?.focus?.();
+  focusBeforeChat = null;
 }
 
 heroLauncher?.addEventListener("click", openChat);
@@ -325,7 +352,26 @@ launcher?.addEventListener("click", openChat);
 closeButton?.addEventListener("click", closeChat);
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && panel && !panel.hidden) closeChat();
+  if (!panel || panel.hidden) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeChat();
+    return;
+  }
+  if (event.key === "Tab") {
+    const focusable = [...panel.querySelectorAll('button:not(:disabled), textarea:not(:disabled), input:not(:disabled), [href], [tabindex]:not([tabindex="-1"])')]
+      .filter(element => element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 });
 
 let activeRequestController = null;
@@ -352,6 +398,19 @@ onAuthStateChanged(auth, user => {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
   } else {
     setStatus("");
+  }
+});
+
+function resizeComposer() {
+  if (!input) return;
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 150) + "px";
+}
+input?.addEventListener("input", resizeComposer);
+input?.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+    event.preventDefault();
+    form?.requestSubmit();
   }
 });
 
@@ -447,7 +506,7 @@ form?.addEventListener("submit", async event => {
     );
     history = history.slice(-10);
 
-    if (input) input.value = "";
+    if (input) { input.value = ""; input.style.height = "auto"; }
     setStatus("تم الرد", "success");
     playCodyEmotion("happy");
   } catch (error) {
@@ -464,7 +523,7 @@ form?.addEventListener("submit", async event => {
     // Show failures in the conversation itself, not only in the small status line.
     // This makes missing Worker/Gemini configuration visible to the learner.
     addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model");
-    if (input) input.value = question;
+    if (input) { input.value = question; resizeComposer(); }
   } finally {
     hideTyping();
     if (activeRequestController === controller) activeRequestController = null;
