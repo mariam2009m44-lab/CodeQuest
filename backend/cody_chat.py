@@ -2,6 +2,8 @@
 import os
 import sys
 import json
+import asyncio
+import threading
 from pathlib import Path
 from typing import Literal
 
@@ -37,6 +39,7 @@ MAX_HISTORY_TEXT_LENGTH = 3000
 MAX_CONTEXT_LENGTH = 1500
 
 _classifier = None
+_classifier_lock = threading.Lock()
 
 
 class ChatMessage(BaseModel):
@@ -65,9 +68,12 @@ def get_classifier():
         return _classifier
 
     try:
-        classifier = CodyQuestionClassifier()
-        classifier.train()
-        _classifier = classifier
+        with _classifier_lock:
+            if _classifier is None:
+                classifier = CodyQuestionClassifier()
+                classifier.train()
+                _classifier = classifier
+
         return _classifier
 
     except Exception:
@@ -174,10 +180,10 @@ async def chat_with_cody(
             detail="Cody AI provider is not configured."
         )
 
-    classifier = get_classifier()
+    classifier = await asyncio.to_thread(get_classifier)
 
     try:
-        prediction = classifier.predict(question)
+        prediction = await asyncio.to_thread(classifier.predict, question)
         category = prediction["category"]
 
     except Exception:
