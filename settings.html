@@ -345,7 +345,7 @@
       <div class="setting-row">
         <div class="setting-info">
           <h3>موسيقى كودي</h3>
-          <p>مقطوعة أصلية بإيقاع حماسي للرحلة التعليمية، وتعمل فقط عند تفعيلها.</p>
+          <p>موسيقى أصلية هادئة بطبقات لحنية وإيقاع ناعم، وتعمل فقط عند تفعيلها.</p>
         </div>
         <label class="toggle-switch">
           <input type="checkbox" id="musicToggle" aria-label="تفعيل موسيقى كودي">
@@ -366,8 +366,8 @@
         <div class="setting-info">
           <h3>مستوى صوت الموسيقى</h3>
           <p>ارفعي صوت المقطوعة أو اخفضيه حسب رغبتك.</p>
-          <input id="musicVolume" type="range" min="0" max="100" step="1" value="90" style="width:min(100%,280px);accent-color:var(--primary);margin-top:12px" aria-label="مستوى صوت الموسيقى">
-          <output id="musicVolumeValue" for="musicVolume">90%</output>
+          <input id="musicVolume" type="range" min="0" max="100" step="1" value="62" style="width:min(100%,280px);accent-color:var(--primary);margin-top:12px" aria-label="مستوى صوت الموسيقى">
+          <output id="musicVolumeValue" for="musicVolume">62%</output>
         </div>
       </div>
 
@@ -622,7 +622,7 @@
       elements.sound.checked = sound !== "off";
       elements.music.checked = music === "on";
       elements.soundVolume.value = Math.round(Number(readSetting(STORAGE_KEYS.soundVolume, "0.9")) * 100);
-      elements.musicVolume.value = Math.round(Number(readSetting(STORAGE_KEYS.musicVolume, "0.9")) * 100);
+      elements.musicVolume.value = Math.round(Number(readSetting(STORAGE_KEYS.musicVolume, "0.62")) * 100);
       document.getElementById("soundVolumeValue").textContent = elements.soundVolume.value + "%";
       document.getElementById("musicVolumeValue").textContent = elements.musicVolume.value + "%";
       window.CodeQuestAudio?.setVolumes({ sound: Number(elements.soundVolume.value) / 100, music: Number(elements.musicVolume.value) / 100 });

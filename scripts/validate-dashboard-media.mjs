@@ -123,6 +123,24 @@ if (progressPage.includes(String.raw`const match = /^(\\d+)_(\\d+)$/.exec(String
 }
 const worker = fs.readFileSync("cloudflare-worker/worker.js", "utf8");
 const codeRunner = fs.readFileSync("js/code-runner.js", "utf8");
+const codyAssistant = fs.readFileSync("js/cody-assistant.js", "utf8");
+const codyBackend = fs.readFileSync("backend/cody_chat.py", "utf8");
+if (!worker.includes("general-purpose learning companion") ||
+    !worker.includes("classifier is only a weak hint") ||
+    !worker.includes("Do not make every answer about programming") ||
+    !codyBackend.includes("general-purpose learning companion") ||
+    !codyBackend.includes("Classification helps with analytics and context only") ||
+    !codyAssistant.includes("اقترحلي فكرة مشروع إبداعي")) {
+  throw new Error("Cody must support broad general questions without depending on its classifier.");
+}
+if (!gameAudio.includes("MUSIC_BPM = 92") ||
+    !gameAudio.includes("scheduleMusicStep") ||
+    !gameAudio.includes("createDynamicsCompressor") ||
+    !gameAudio.includes("linearRampToValueAtTime") ||
+    !gameAudio.includes("createDelay") ||
+    !settings.includes('value="62"')) {
+  throw new Error("The original background soundtrack must use a layered, mixed, smoothly controlled audio engine.");
+}
 if (!worker.includes('statusId: Number.isInteger(judgeStatusId)') ||
     !worker.includes('"JUDGE0_INTERNAL_ERROR"')) {
   throw new Error("Worker must expose structured Judge0 status diagnostics.");
