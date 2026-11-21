@@ -265,6 +265,7 @@
 
     function startTimer() {
       clearInterval(int);
+      if (document.hidden || gameEnded) return;
       int = setInterval(() => {
         time = Math.max(0, time - 1);
         fill.style.width = `${(time / maxTime) * 100}%`;
@@ -272,6 +273,12 @@
         if (time <= 0) end();
       }, 1000);
     }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearInterval(int);
+      else if (document.getElementById('gameScreen').classList.contains('active') && !gameEnded && time > 0) startTimer();
+      startMatrix();
+    });
 
     function end() {
       if (gameEnded) return;
@@ -314,11 +321,14 @@
         drops[i]++;
       }
     }
-    setInterval(draw, 100);
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    let matrixTimer = null;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function startMatrix(){if(reducedMotion||matrixTimer||document.hidden)return;matrixTimer=setInterval(draw,120);}
+    function stopMatrix(){if(matrixTimer){clearInterval(matrixTimer);matrixTimer=null;}}
+    startMatrix();
+    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
+    window.addEventListener('pagehide',stopMatrix);
+    window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
   </script>
 <script type="module" src="js/route-guard.js"></script>
   <script src="js/game-audio.js"></script>
