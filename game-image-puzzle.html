@@ -344,9 +344,14 @@ function edge(ctx,x0,y0,x1,y1,bulge,depth){
   const dx=x1-x0,dy=y1-y0,len=Math.hypot(dx,dy)||1;
   const nx=dy/len,ny=-dx/len;
   const Q=(u,t)=>({x:x0+dx*u+nx*t*depth*bulge,y:y0+dy*u+ny*t*depth*bulge});
-  const start=Q(.35,0);ctx.lineTo(start.x,start.y);
-  for(const segment of TAB){
-    const a=segment.map(([u,t])=>Q(u,t));
+  // Adjacent pieces traverse their shared edge in opposite directions.
+  // Reverse both the segment order and control points so the curves coincide exactly.
+  const reversed=dx<0||dy<0;
+  const start=Q(reversed?.65:.35,0);ctx.lineTo(start.x,start.y);
+  const segments=reversed?[...TAB].reverse():TAB;
+  for(const segment of segments){
+    const points=reversed?[...segment].reverse():segment;
+    const a=points.map(([u,t])=>Q(reversed?1-u:u,t));
     ctx.bezierCurveTo(a[0].x,a[0].y,a[1].x,a[1].y,a[2].x,a[2].y);
   }
   ctx.lineTo(x1,y1);
