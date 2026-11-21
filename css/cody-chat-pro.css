@@ -3,7 +3,7 @@
   --cody-accent:#8b78ff;
   --cody-cyan:#63d8ed;
 }
-body.cody-chat-open{overflow:hidden!important;touch-action:none}
+body.cody-chat-open{overflow:hidden!important}
 body.cody-chat-open::before{
   content:"";position:fixed;inset:0;z-index:10015;
   background:rgba(4,8,22,.72);
@@ -231,3 +231,14 @@ html[data-theme="light"] .cody-code-block{background:#111a2c}
   .cody-chat-typing span{animation:none}
   .cody-chat-header button,.cody-chat-suggestion,.cody-chat-form button{transition:none}
 }
+
+.cody-message-actions{display:flex;align-items:center;gap:8px;margin-top:8px}
+.cody-copy-response{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 10px;border:1px solid var(--border);border-radius:9px;
+  color:var(--muted);background:transparent;
+  font:700 .7rem "Cairo",sans-serif;cursor:pointer;
+  transition:color .18s ease,border-color .18s ease,background .18s ease
+}
+.cody-copy-response:hover{color:var(--cyan);border-color:var(--cody-accent);background:rgba(139,120,255,.07)}
+.cody-copy-response i{font-size:.85rem}
