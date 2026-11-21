@@ -245,7 +245,7 @@
       optsEl.innerHTML = '';
       progressEl.style.width = `${(curr / currentQs.length) * 100}%`;
       progressEl.setAttribute('aria-label',`السؤال ${curr+1} من ${currentQs.length}`);
-      progressEl.parentElement.setAttribute('aria-valuenow', String(curr));
+      progressEl.parentElement.setAttribute('aria-valuenow', String(curr + 1));
       progressEl.parentElement.setAttribute('aria-valuemax', String(currentQs.length));
       q.opts.forEach((opt, i) => {
         const btn = document.createElement('button');
@@ -258,6 +258,8 @@
     }
 
     function checkAns(i, btn) {
+      if (answerLocked) return;
+      answerLocked = true;
       clearInterval(timerInt);
       const correctIndex = currentQs[curr].a;
       document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
@@ -283,6 +285,8 @@
       timerInt = setInterval(() => {
         timeLeft--; timeEl.textContent = timeLeft;
         if (timeLeft <= 0) {
+          if (answerLocked) return;
+          answerLocked = true;
           clearInterval(timerInt);
           document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
           optsEl.children[currentQs[curr].a].classList.add('correct');
