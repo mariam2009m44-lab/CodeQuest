@@ -1391,6 +1391,19 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       localStorage.setItem(progressStorageKey(), JSON.stringify(progress));
     }
 
+    function draftStorageKey() {
+      return `cody_java_draft_${currentUserId}_${currentLessonId}`;
+    }
+
+    function saveCurrentDraft(code) {
+      if (!currentUserId || !currentLessonId) return;
+      try {
+        localStorage.setItem(draftStorageKey(), String(code ?? ""));
+      } catch (error) {
+        console.warn("تعذر حفظ مسودة كود Java:", error);
+      }
+    }
+
     function updateStats() {
       const xpElement = document.getElementById("xpCount");
       if (xpElement) xpElement.textContent = getXP();
@@ -1427,9 +1440,6 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       if (!sidebar) return;
 
       const progress = readProgress();
-      const firstIncompleteIndex = allLessons.findIndex(lesson =>
-        progress[lesson.id]?.completed !== true || progress[lesson.id]?.localOnly === true
-      );
       sidebar.replaceChildren();
 
       CURRICULUM.forEach(chapter => {
@@ -1457,21 +1467,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             button.textContent += " ✓";
           }
 
-          const lessonOrder = allLessons.findIndex(item => item.id === lesson.id);
-          const locked = firstIncompleteIndex >= 0 &&
-            lessonOrder > firstIncompleteIndex &&
-            progress[lesson.id]?.completed !== true;
-          if (locked) {
-            button.disabled = true;
-            button.classList.add("locked");
-            button.setAttribute("aria-disabled", "true");
-            button.textContent = "🔒 " + lesson.title;
-          }
-
-          button.addEventListener("click", () => {
-            if (locked) return;
-            navigateLesson(lesson.id);
-          });
+          // يمكن استكشاف أي درس بحرية؛ الإكمال والمكافآت لهما تحقق منفصل.
+          button.addEventListener("click", () => navigateLesson(lesson.id));
           chapterElement.appendChild(button);
         });
 
@@ -1508,7 +1505,14 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
         return;
       }
 
-      textarea.value = starter || "";
+      let initialCode = starter || "";
+      try {
+        const savedDraft = localStorage.getItem(draftStorageKey());
+        if (savedDraft !== null) initialCode = savedDraft;
+      } catch (error) {
+        console.warn("تعذر استعادة مسودة Java:", error);
+      }
+      textarea.value = initialCode;
 
       if (typeof CodeMirror !== "undefined") {
         try {
@@ -1533,6 +1537,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
             }
           });
 
+          editor.on("change", instance => saveCurrentDraft(instance.getValue()));
           editor.setSize("100%", null);
           requestAnimationFrame(() => editor?.refresh());
           return;
@@ -1541,6 +1546,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
         }
       }
 
+      textarea.addEventListener("input", () => saveCurrentDraft(textarea.value));
       textarea.style.display = "block";
       textarea.style.width = "100%";
       textarea.style.minHeight = "clamp(280px, 46svh, 480px)";
@@ -1603,6 +1609,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       } else if (textarea) {
         textarea.value = code || "";
       }
+      saveCurrentDraft(code || "");
     }
 
     function renderQuiz(quiz) {
@@ -2105,6 +2112,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const next = document.getElementById("nextLesson");
       const complete = document.getElementById("completeLesson");
       const counter = document.getElementById("lessonChapter");
+      const currentRecord = currentLessonId ? readProgress()[currentLessonId] : null;
+      const done = currentRecord?.completed === true && currentRecord?.localOnly !== true;
 
       // التنقل بين الدروس لا يعتمد على إكمال التحدي.
       // يظل اعتماد الإنجاز والمكافآت منفصلًا ويتطلب التحقق الخادمي.
@@ -2208,17 +2217,12 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
       const requested = params.get("lesson");
 
       const progress = readProgress();
+      // افتح الدرس المطلوب مباشرة، حتى لو لم تكتمل الدروس السابقة.
+      if (requested && findLesson(requested)) return requested;
       const firstIncompleteIndex = allLessons.findIndex(lesson => {
         const record = progress[lesson.id];
         return record?.completed !== true || record.localOnly === true;
       });
-      if (requested && findLesson(requested)) {
-        const requestedIndex = allLessons.findIndex(lesson => lesson.id === requested);
-        const requestedCompleted = progress[requested]?.completed === true && progress[requested]?.localOnly !== true;
-        if (requestedCompleted || firstIncompleteIndex < 0 || requestedIndex <= firstIncompleteIndex) {
-          return requested;
-        }
-      }
       return allLessons[firstIncompleteIndex]?.id || allLessons[0]?.id || null;
     }
 
