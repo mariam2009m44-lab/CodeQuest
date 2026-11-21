@@ -67,8 +67,7 @@
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(3200, start);
     gain.gain.setValueAtTime(0.0001, start);
-    const channelVolume = channel === "sound" ? soundVolume : musicVolume;
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * channelVolume), start + 0.04);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), start + 0.04);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(filter); filter.connect(gain);
     gain.connect(channel === "sound" ? soundBus : musicBus);
