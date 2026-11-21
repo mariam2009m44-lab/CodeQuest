@@ -826,7 +826,9 @@ Open the application at:
 http://localhost:5500
 ```
 
-The frontend and FastAPI backend run on separate ports.
+The frontend and FastAPI backend run on separate ports. The root HTML pages are the main frontend served by GitHub Pages under `/CodeQuest/`; the Vite build in `CodeQuest/` is a separate workspace and does not build those pages. Serving the files locally does not switch the browser’s Firebase configuration to an emulator. Do not use the default browser configuration for tests that create or change accounts unless it is explicitly connected to a test project.
+
+Student dashboard and profile show device-local lesson progress separately from the synchronization status. Python chapter and final exams are not individual lesson completions. Local-only records do not grant XP or stars. This does not guarantee that a page can be opened for the first time without connectivity.
 
 ### 6. Run the React/Vite Workspace
 
@@ -934,6 +936,27 @@ python -m pytest cody-ml-engine/tests -q
 ```bash
 python -m pytest backend/tests cody-ml-engine/tests -q
 ```
+
+### Browser and Firestore Regression Tests
+
+From the repository root, with Node.js 22:
+
+```bash
+npm --prefix tests/browser ci
+npm --prefix tests/browser exec -- playwright install chromium
+npm --prefix tests/browser test
+```
+
+On a fresh Linux runner use `playwright install --with-deps chromium` if required. These tests load the actual dashboard and profile at `/CodeQuest/` in Chromium with fake accounts and Firestore responses. They cover device-local progress, reload, server/cache status, and exam exclusion. They do not test account signup, the code execution service, or real offline navigation.
+
+To compile the checked-in Firestore rules and exercise profile creation, verified lesson completion and concurrent rewards in an isolated local project (requires Java 21):
+
+```bash
+npm --prefix functions install --no-package-lock
+npx --yes firebase-tools@15.37.0 emulators:exec --only firestore --project demo-codequest-audit "npm --prefix functions test"
+```
+
+Do not substitute the production project ID. Without the emulator, the emulator-only tests are skipped. External code execution, live Cody replies, and deployment still require their own services.
 
 ### GitHub Actions
 
