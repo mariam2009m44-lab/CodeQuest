@@ -165,3 +165,25 @@ body {
 @media(prefers-reduced-motion:reduce) {
  .tray-piece,.art-card,.primary,.secondary { transition:none!important; }
 }
+
+/* Responsive game shell and dimensional artwork */
+html,body { max-width:100%; overflow-x:hidden; }
+img,svg,canvas,video { max-width:100%; }
+.game-art { transform-style:preserve-3d; filter:drop-shadow(0 16px 16px rgba(0,0,0,.32)); }
+.game-card { transform-style:preserve-3d; }
+@media(max-width:768px) {
+  .game-layout { grid-template-columns:minmax(0,1fr)!important; }
+  .side { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .panel,.level-box { min-width:0; }
+  .stats,.score-board { flex-wrap:wrap; }
+}
+@media(max-width:520px) {
+  body { max-width:100%; overflow-x:hidden; }
+  .side { grid-template-columns:minmax(0,1fr); }
+  .game-card { min-width:0; }
+  .code-box,.bug-code,.question-box,.quiz-question { max-width:100%; overflow-x:auto; overscroll-behavior-x:contain; }
+  button,a,select { touch-action:manipulation; }
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference) {
+  .game-card:hover .game-art { transform:translateY(-4px) scale(1.06) rotateY(-5deg); }
+}
