@@ -132,6 +132,7 @@
   <div class="screen" id="gameScreen">
     <div class="level-box">
       <div class="task" id="taskText">المهمة هنا...</div>
+      <p id="buildFeedback" class="hint" role="status" aria-live="polite"></p>
       <div class="drop-zone" id="dropZone"></div>
       <div class="drop-zone" id="sourceZone"></div>
       <button class="btn-check" onclick="check()" id="btn" disabled>تحقق من الترتيب</button>
@@ -167,14 +168,15 @@
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
       const p = puzzles[level]; correctSeq = p.correct; taskText.textContent = p.task;
-      const shuffled = [...p.options];\n      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
+      const shuffled = [...p.options];
+      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
       source.innerHTML = ''; drop.innerHTML = ''; seq = []; btn.disabled = true;
       btn.textContent = 'تحقق من الترتيب';
       btn.style.background = 'var(--green)';
       drop.style.borderColor = '';
       drop.style.background = '';
       shuffled.forEach(opt => {
-        const el = document.createElement('div'); el.className = 'code-block';
+        const el = document.createElement('button'); el.type = 'button'; el.className = 'code-block'; el.setAttribute('aria-label','إضافة سطر الكود: '+opt);
         el.textContent = opt; el.onclick = () => select(el, opt); source.appendChild(el);
       });
     }
@@ -209,7 +211,8 @@
     }
 
     function check() {
-      if (seq.every((v, i) => v === correctSeq[i])) {\n        document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! لاحظ كيف تعتمد كل خطوة على السطر الذي يسبقها.';
+      if (seq.every((v, i) => v === correctSeq[i])) {
+        document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! لاحظ كيف تعتمد كل خطوة على السطر الذي يسبقها.';
         btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
         score += 50; scoreDisplay.textContent = score; updateGlobalScore(50);
         drop.style.borderColor = 'var(--green)'; drop.style.background = 'rgba(118,233,192,0.1)';
@@ -222,7 +225,7 @@
           window.CodeQuestExperience?.reward({ gems: 0, title: 'البازل اكتمل!', message: 'رتبت الكود بشكل صحيح! كودي فخور بيك.' });
         }, 800);
       } else {
-        btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
+        document.getElementById('buildFeedback').textContent = attempts >= 1 ? 'تلميح: ابدأ بتعريف الدالة أو الكلاس، ثم أضف الأوامر الداخلية، واجعل استدعاء الدالة بعد تعريفها.' : 'الترتيب غير صحيح. افحص بداية البنية ثم ترتيب الأوامر داخلها.'; attempts++;\n        btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
         setTimeout(() => { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; }, 1500);
       }
     }
@@ -252,7 +255,12 @@
         drops[i]++;
       }
     }
-    let matrixTimer = null;\n    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;\n    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }\n    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }\n    startMatrix();\n    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
+    let matrixTimer = null;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }
+    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }
+    startMatrix();
+    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;

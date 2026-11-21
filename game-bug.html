@@ -166,7 +166,7 @@
       document.getElementById('gameScreen').classList.add('active');
       const lvl = levels[level]; codeContainer.innerHTML = ''; msg.textContent = '';
       lvl.lines.forEach((line, index) => {
-        const lineEl = document.createElement('div'); lineEl.className = 'line';
+        const lineEl = document.createElement('button'); lineEl.type = 'button'; lineEl.className = 'line'; lineEl.setAttribute('aria-label','فحص السطر '+(index+1));
         lineEl.innerHTML = `<span class="num">${index + 1}</span> ${line}`;
         lineEl.onclick = () => check(index, lineEl); codeContainer.appendChild(lineEl);
       });
@@ -175,7 +175,7 @@
     function check(index, lineEl) {
       if (ended) return;
       if (index === levels[currentLevel].bugIndex) {
-        lineEl.classList.add('correct'); msg.textContent = levels[currentLevel].msg;
+        lineEl.classList.add('correct'); msg.textContent = 'صحيح! ' + levels[currentLevel].explanation;
         msg.style.color = 'var(--green)'; ended = true;
         score += 30; scoreDisplay.textContent = score; updateGlobalScore(30);
         setTimeout(() => {
@@ -187,7 +187,7 @@
           window.CodeQuestExperience?.reward({ gems: 0, title: 'تم اصطياد الخطأ!', message: 'اكتشفت المشكلة وحليتها بنجاح. برافو!' });
         }, 1000);
       } else {
-        lineEl.classList.add('wrong'); msg.textContent = 'خطأ! حاول في سطر آخر.';
+        attempts++; lineEl.classList.add('wrong'); msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود وحاول مرة أخرى.';
         msg.style.color = 'var(--red)';
         setTimeout(() => lineEl.classList.remove('wrong'), 800);
       }
@@ -218,7 +218,13 @@
         drops[i]++;
       }
     }
-    let animationFrame = 0;\n    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;\n    let matrixTimer = null;\n    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }\n    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }\n    startMatrix();\n    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
+    let animationFrame = 0;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let matrixTimer = null;
+    function startMatrix(){ if(reducedMotion || matrixTimer) return; matrixTimer = setInterval(draw, 120); }
+    function stopMatrix(){ if(matrixTimer){ clearInterval(matrixTimer); matrixTimer = null; } }
+    startMatrix();
+    document.addEventListener('visibilitychange',()=>document.hidden?stopMatrix():startMatrix());
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
