@@ -15,10 +15,12 @@
 
 يتطلب سير العمل وجود GitHub Actions secrets التالية في إعدادات المستودع:
 
-- `CLOUDFLARE_API_TOKEN`
+أنشئي رمزًا مستقلًا للنشر بصلاحية **Workers Editor** على Worker `codequest` فقط (أو على مستوى Workers في الحساب)، ثم خزّنيه في `CLOUDFLARE_DEPLOY_API_TOKEN`. اتركي `CLOUDFLARE_API_TOKEN` الحالي دون تغيير لأنه مستخدم في سير عمل رفع إجابات الاختبارات إلى KV.
+
+- `CLOUDFLARE_DEPLOY_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-لا تضعي القيم في ملفات المستودع أو المحادثات. يجب أن يمتلك رمز Cloudflare صلاحية نشر Workers وإدارة الموارد المرتبطة الموجودة في إعداد Wrangler.
+لا تضعي القيم في ملفات المستودع أو المحادثات. يجب أن يمتلك رمز النشر صلاحية Workers Editor على الخدمة الحالية.
 
 بعد النشر، يتحقق سير العمل من:
 - `configured: true` لوجود مفتاح Gemini في Cloudflare.
