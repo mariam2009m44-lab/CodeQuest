@@ -117,6 +117,13 @@
 /* CodeQuest 2026 game-wide polish */
 :root{color-scheme:dark}body{background-color:#080e1c;background-image:radial-gradient(ellipse at 10% 0%,rgba(75,105,190,.18),transparent 36%),radial-gradient(ellipse at 90% 12%,rgba(27,181,190,.11),transparent 32%),linear-gradient(155deg,#080e1c,#0c1427 58%,#080e1b)!important;background-attachment:fixed}main,.level-box,.game-card,.game-container,.result-box,.panel{border-color:rgba(151,177,218,.19)}button{font-family:inherit;-webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible{outline:3px solid #75e2ef!important;outline-offset:3px!important}button:disabled{cursor:not-allowed;filter:saturate(.65)}.level-box,.game-card,.result-box{box-shadow:0 18px 48px rgba(0,0,0,.22)}.lvl-btn,.btn,.opt-btn,.line,.piece{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}.lvl-btn:active,.btn:active,.opt-btn:active,.line:active,.piece:active{transform:scale(.985)}.progress,.timer-bar{overflow:hidden;border-radius:999px}.progress>span,.timer-bar>span{transition:width .25s ease}.result-emoji{filter:drop-shadow(0 8px 18px rgba(111,190,255,.2))}@media(max-width:640px){body{background-attachment:scroll!important}.level-box,.game-card,.result-box{width:min(100%,100%)!important;max-width:100%!important}.actions{gap:10px}.btn-restart,.btn-back{min-height:48px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
+  <style>
+    .answer-feedback{min-height:1.8em;margin:14px 0 0;text-align:center;font-weight:800;color:var(--cyan)}
+    .actions .btn.answer-correct{border-color:#34d399!important;background:rgba(52,211,153,.18)!important;box-shadow:0 0 0 2px rgba(52,211,153,.12)}
+    .actions .btn.answer-wrong{border-color:#fb7185!important;background:rgba(251,113,133,.16)!important}
+    .actions .btn:disabled{opacity:1}
+    #streakText{color:#fbbf24;font-weight:800}
+  </style>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/codequest-games.css">
 </head>
@@ -140,12 +147,13 @@
   <div class="screen" id="gameScreen">
     <div class="level-box">
       <div class="timer-bar" role="progressbar" aria-label="الوقت المتبقي" aria-valuemin="0" aria-valuemax="50" aria-valuenow="30"><div class="fill" id="fill"></div></div>
-      <div class="timer-meta"><span id="timerText" aria-live="off">الوقت المتبقي: 30 ثانية</span><span id="questionProgress">السؤال 1 من 10</span></div>
+      <div class="timer-meta"><span id="timerText" aria-live="off">الوقت المتبقي: 30 ثانية</span><span id="questionProgress">السؤال 1 من 10</span><span id="streakText" aria-live="polite">سلسلة: 0</span></div>
       <div class="question" id="qText" aria-live="polite">...</div>
       <div class="actions">
-        <button class="btn btn-true" onclick="ans(true)">صح</button>
-        <button class="btn btn-false" onclick="ans(false)">خطأ</button>
+        <button class="btn btn-true" id="trueAnswer" onclick="ans(true)">صح</button>
+        <button class="btn btn-false" id="falseAnswer" onclick="ans(false)">خطأ</button>
       </div>
+      <p id="answerFeedback" class="answer-feedback" role="status" aria-live="polite"></p>
     </div>
   </div>
   <div class="screen" id="resultScreen">
@@ -172,7 +180,7 @@
       { q: "هل يمكن استخدام دالة كمتغير؟", a: true }, { q: "هل OOP تعني البرمجة الكائنية؟", a: true }
     ];
     let curr = 0, score = 0, maxTime = 0, time = 0, int, currentQs = [], currentLevel = 'easy';
-    let answerLocked = false, gameEnded = false;
+    let answerLocked = false, gameEnded = false, answerStreak = 0;
     const timerText = document.getElementById('timerText');
     const questionProgress = document.getElementById('questionProgress');
     const timerBar = document.querySelector('.timer-bar');
@@ -208,7 +216,7 @@
       time = maxTime;
       timerBar.setAttribute('aria-valuemax', String(maxTime));
       currentQs = shuffleQuestions(allQs).slice(0, count);
-      curr = 0; score = 0; answerLocked = false; gameEnded = false; scoreEl.textContent = score;
+      curr = 0; score = 0; answerStreak = 0; answerLocked = false; gameEnded = false; scoreEl.textContent = score; document.getElementById('streakText').textContent = 'سلسلة: 0'; document.getElementById('answerFeedback').textContent = ''; document.getElementById('trueAnswer').classList.remove('answer-correct','answer-wrong'); document.getElementById('falseAnswer').classList.remove('answer-correct','answer-wrong');
       fill.style.width = '100%'; updateTimerDisplay(); load(); startTimer();
     }
 
@@ -218,17 +226,41 @@
       document.querySelectorAll('.actions .btn').forEach(button => { button.disabled = false; });
       qText.textContent = currentQs[curr].q;
       questionProgress.textContent = `السؤال ${curr + 1} من ${currentQs.length}`;
+      document.getElementById('answerFeedback').textContent = '';
+      document.getElementById('trueAnswer').classList.remove('answer-correct','answer-wrong');
+      document.getElementById('falseAnswer').classList.remove('answer-correct','answer-wrong');
     }
 
     function ans(choice) {
       if (answerLocked || gameEnded || curr >= currentQs.length) return;
       answerLocked = true;
-      document.querySelectorAll('.actions .btn').forEach(button => { button.disabled = true; });
-      if (choice === currentQs[curr].a) {
-        score += 10; scoreEl.textContent = score; updateGlobalScore(10);
+      const correct = choice === currentQs[curr].a;
+      const correctChoice = currentQs[curr].a;
+      const trueButton = document.getElementById('trueAnswer');
+      const falseButton = document.getElementById('falseAnswer');
+      trueButton.disabled = true;
+      falseButton.disabled = true;
+      if (correct) {
+        answerStreak++;
+        const points = 10 + Math.min(answerStreak * 2, 10);
+        score += points;
+        scoreEl.textContent = score;
+        updateGlobalScore(points);
+        document.getElementById('streakText').textContent = 'سلسلة: ' + answerStreak;
+        document.getElementById('answerFeedback').textContent = 'إجابة صحيحة! +' + points + ' نقطة';
+        (choice ? trueButton : falseButton).classList.add('answer-correct');
+      } else {
+        answerStreak = 0;
+        document.getElementById('streakText').textContent = 'سلسلة: 0';
+        document.getElementById('answerFeedback').textContent = 'مش بالضبط! الإجابة الصحيحة: ' + (correctChoice ? 'صح' : 'خطأ');
+        (choice ? trueButton : falseButton).classList.add('answer-wrong');
+        (correctChoice ? trueButton : falseButton).classList.add('answer-correct');
       }
-      curr++;
-      load();
+      window.setTimeout(() => {
+        if (gameEnded) return;
+        curr++;
+        load();
+      }, 520);
     }
 
     function startTimer() {
