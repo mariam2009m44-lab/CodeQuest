@@ -242,7 +242,7 @@
   </div>
   <section class="games-grid">
     <a href="game-image-puzzle.html" class="game-card c-image">
-      <div class="icon-wrapper"><img class="game-art" src="assets/games/puzzle-reference.webp" alt="رسم توضيحي لبازل الصور" loading="lazy" decoding="async"></div>
+      <div class="icon-wrapper"><img class="game-art" src="assets/games/game-puzzle.svg" alt="رسم توضيحي لبازل الصور" loading="lazy" decoding="async"></div>
       <span class="game-tag">تفكير بصري</span><span class="game-levels">4 مستويات · من 2×2 إلى 5×5</span><h3>بازل صور البرمجة</h3>
       <p>ركّب الصورة قطعةً قطعة، وطوّر مهارات الملاحظة وحل المشكلات عبر ثلاثة مستويات.</p>
       <span class="btn-play">ابدأ البازل <i class="ri-arrow-left-line"></i></span>
@@ -334,6 +334,27 @@ body {
   background-attachment: fixed;
 }
 @media (max-width: 700px) { body { background-position: center top; background-attachment: scroll; } }
+
+/* Restore game hub card proportions with a full-width illustrated banner. */
+.game-card .icon-wrapper{
+ width:100%!important;max-width:100%!important;height:auto!important;aspect-ratio:16/9!important;
+ margin:0 0 18px!important;border-radius:18px!important;overflow:hidden!important;
+ background:linear-gradient(135deg,#17294a,#111a31)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 26px rgba(0,0,0,.22)!important;
+}
+.game-card .icon-wrapper .game-art{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important}
+.game-card{gap:0}
+.game-card .game-tag,.game-card .game-levels,.game-card h3,.game-card p,.game-card .btn-play{width:100%;text-align:right}
+.game-card .game-tag{margin-bottom:7px}
+.game-card h3{margin:2px 0 8px}
+.game-card p{min-height:0;margin:0 0 18px;line-height:1.9}
+.game-card .btn-play{margin-top:auto;text-align:center}
+@media(max-width:768px){
+ .game-card{padding:18px!important;border-radius:22px!important}
+ .game-card .icon-wrapper{aspect-ratio:16/9!important;margin-bottom:14px!important}
+ .game-card .game-tag,.game-card .game-levels,.game-card h3,.game-card p{width:100%;text-align:right}
+ .game-card p{min-height:0!important}
+}
 </style>
 </body>
 </html>
