@@ -59,16 +59,170 @@ function setStatus(message = "", state = "info") {
   status.dataset.state = state;
 }
 
+function appendInlineFormatting(parent, source) {
+  const pattern = /(\*\*([^*]+)\*\*|`([^`]+)`|\*([^*]+)\*|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))/g;
+  let cursor = 0;
+  let match;
+  while ((match = pattern.exec(source))) {
+    if (match.index > cursor) parent.append(document.createTextNode(source.slice(cursor, match.index)));
+    let element;
+    if (match[2] !== undefined) {
+      element = document.createElement("strong");
+      element.textContent = match[2];
+    } else if (match[3] !== undefined) {
+      element = document.createElement("code");
+      element.textContent = match[3];
+    } else if (match[4] !== undefined) {
+      element = document.createElement("em");
+      element.textContent = match[4];
+    } else {
+      element = document.createElement("a");
+      element.textContent = match[5];
+      element.href = match[6];
+      element.target = "_blank";
+      element.rel = "noopener noreferrer";
+    }
+    parent.append(element);
+    cursor = pattern.lastIndex;
+  }
+  if (cursor < source.length) parent.append(document.createTextNode(source.slice(cursor)));
+}
+
+function renderFormattedMessage(container, source) {
+  const lines = String(source || "").replace(/\r\n?/g, "\n").split("\n");
+  let paragraph = [];
+  let list = null;
+  let codeLines = null;
+  let codeLanguage = "";
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    const p = document.createElement("p");
+    appendInlineFormatting(p, paragraph.join(" "));
+    container.append(p);
+    paragraph = [];
+  };
+  const flushList = () => { list = null; };
+  const addListItem = (kind, content) => {
+    flushParagraph();
+    const tag = kind === "ol" ? "ol" : "ul";
+    if (!list || list.tagName.toLowerCase() !== tag) {
+      flushList();
+      list = document.createElement(tag);
+      container.append(list);
+    }
+    const li = document.createElement("li");
+    appendInlineFormatting(li, content);
+    list.append(li);
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const fence = trimmed.match(/^```\s*([\w+-]*)/);
+    if (fence && !codeLines) {
+      flushParagraph(); flushList();
+      codeLines = [];
+      codeLanguage = fence[1] || "code";
+      continue;
+    }
+    if (trimmed.startsWith("```") && codeLines) {
+      const pre = document.createElement("pre");
+      pre.className = "cody-code-block";
+      if (codeLanguage) {
+        const label = document.createElement("span");
+        label.className = "cody-code-language";
+        label.textContent = codeLanguage;
+        pre.append(label);
+      }
+      const code = document.createElement("code");
+      code.textContent = codeLines.join("\n");
+      pre.append(code);
+      container.append(pre);
+      codeLines = null;
+      codeLanguage = "";
+      continue;
+    }
+    if (codeLines) { codeLines.push(line); continue; }
+    if (!trimmed) { flushParagraph(); flushList(); continue; }
+    const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph(); flushList();
+      const h = document.createElement(heading[1].length === 1 ? "h2" : heading[1].length === 2 ? "h3" : "h4");
+      appendInlineFormatting(h, heading[2]);
+      container.append(h);
+      continue;
+    }
+    const bullet = trimmed.match(/^[-*•]\s+(.+)$/);
+    if (bullet) { addListItem("ul", bullet[1]); continue; }
+    const numbered = trimmed.match(/^\d+[.)、]\s+(.+)$/);
+    if (numbered) { addListItem("ol", numbered[1]); continue; }
+    if (trimmed.startsWith(">")) {
+      flushParagraph(); flushList();
+      const quote = document.createElement("blockquote");
+      appendInlineFormatting(quote, trimmed.replace(/^>\s?/, ""));
+      container.append(quote);
+      continue;
+    }
+    if (/^---+$/.test(trimmed)) {
+      flushParagraph(); flushList();
+      container.append(document.createElement("hr"));
+      continue;
+    }
+    flushList();
+    paragraph.push(trimmed);
+  }
+  if (codeLines) {
+    const pre = document.createElement("pre");
+    pre.className = "cody-code-block";
+    const code = document.createElement("code");
+    code.textContent = codeLines.join("\n");
+    pre.append(code);
+    container.append(pre);
+  }
+  flushParagraph();
+}
+
 function addMessage(text, role) {
   if (!messages) return;
-  const node = document.createElement("div");
-  node.className = "cody-chat-message " +
-    (role === "user" ? "cody-from-user" : "cody-from-bot");
-  node.textContent = text;
+  const node = document.createElement("article");
+  node.className = "cody-chat-message " + (role === "user" ? "cody-from-user" : "cody-from-bot");
   node.dir = "auto";
   node.lang = /[\u0600-\u06FF]/.test(text) ? "ar" : "en";
+
+  const meta = document.createElement("div");
+  meta.className = "cody-message-meta";
+  const icon = document.createElement("i");
+  icon.className = role === "user" ? "ri-user-3-line" : "ri-robot-2-line";
+  icon.setAttribute("aria-hidden", "true");
+  const label = document.createElement("span");
+  label.textContent = role === "user" ? "أنت" : "كودي";
+  const time = document.createElement("time");
+  time.dateTime = new Date().toISOString();
+  time.textContent = new Intl.DateTimeFormat("ar-EG", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+  meta.append(icon, label, time);
+
+  const body = document.createElement("div");
+  body.className = "cody-message-body";
+  renderFormattedMessage(body, text);
+  node.append(meta, body);
   messages.append(node);
+  messages.scrollTo({ top: messages.scrollHeight, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
+function showTyping() {
+  if (!messages || messages.querySelector(".cody-chat-typing")) return;
+  const typing = document.createElement("div");
+  typing.className = "cody-chat-typing";
+  typing.setAttribute("role", "status");
+  typing.setAttribute("aria-label", "كودي يكتب الآن");
+  typing.innerHTML = "<span></span><span></span><span></span>";
+  messages.append(typing);
+  panel?.setAttribute("aria-busy", "true");
   messages.scrollTop = messages.scrollHeight;
+}
+
+function hideTyping() {
+  messages?.querySelector(".cody-chat-typing")?.remove();
+  panel?.removeAttribute("aria-busy");
 }
 
 async function getServiceHealth() {
@@ -224,7 +378,9 @@ form?.addEventListener("submit", async event => {
   if (submit) submit.disabled = true;
   if (input) input.disabled = true;
 
+  panel?.querySelector(".cody-chat-suggestions")?.remove();
   addMessage(question, "user");
+  showTyping();
   setStatus("كودي بيجهّز الإجابة...", "loading");
   playCodyEmotion("encourage");
 
@@ -310,6 +466,7 @@ form?.addEventListener("submit", async event => {
     addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model");
     if (input) input.value = question;
   } finally {
+    hideTyping();
     if (activeRequestController === controller) activeRequestController = null;
     sending = false;
     if (submit) submit.disabled = false;
