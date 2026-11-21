@@ -237,4 +237,12 @@ img,svg,canvas,video { max-width:100%; }
 .puzzle-stage,.piece-pool,.board { min-width:0; }
 
 /* The puzzle's own page styles load after the shared sheet */
-.tray { display:flex!important; grid-template-columns:none!important; }
+.tray { display:grid!important; grid-template-columns:repeat(auto-fill,minmax(58px,1fr))!important; align-items:center; justify-items:center; }
+
+
+/* Premium illustrated game headers */
+.game-art-banner{width:min(100%,920px);height:clamp(112px,21vw,188px);margin:18px auto 24px;display:grid;place-items:center;position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(148,190,226,.24);border-radius:24px;background:radial-gradient(ellipse at 50% 15%,rgba(96,218,235,.2),transparent 55%),linear-gradient(135deg,rgba(23,43,76,.94),rgba(12,20,42,.98));box-shadow:0 18px 44px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.08)}
+.game-art-banner:before,.game-art-banner:after{content:"";position:absolute;z-index:-1;border:1px solid rgba(178,214,255,.12);border-radius:50%;pointer-events:none}.game-art-banner:before{width:260px;height:260px;right:-80px;top:-190px}.game-art-banner:after{width:190px;height:190px;left:-60px;bottom:-150px}
+.game-art-banner img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.28));}
+@media(max-width:560px){.game-art-banner{height:112px;margin:12px auto 18px;border-radius:18px}.game-art-banner img{max-width:100%}}
+@media(prefers-reduced-motion:reduce){.game-art-banner img{transition:none}}
