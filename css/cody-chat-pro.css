@@ -515,3 +515,11 @@ html[data-theme="light"] .cody-history-item{color:#25314a}
   width:8px;
   height:8px;
 }
+
+/* ChatGPT-like response toolbar: stable wrapping and clear tap targets. */
+#codyChatPanel .cody-message-actions.has-followups{width:100%;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:8px}
+#codyChatPanel .cody-message-actions .cody-followup-action,
+#codyChatPanel .cody-message-actions .cody-copy-response{min-height:38px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#codyChatPanel .cody-message-actions .cody-followup-action{white-space:nowrap}
+#codyChatPanel .cody-message-actions button:focus-visible{outline:2px solid var(--cody-accent);outline-offset:3px}
+@media(max-width:600px){#codyChatPanel .cody-message-actions.has-followups{gap:7px}#codyChatPanel .cody-message-actions .cody-followup-action,#codyChatPanel .cody-message-actions .cody-copy-response{min-height:40px}}
