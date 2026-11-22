@@ -812,7 +812,7 @@ export default {
         const currentQuestion = body.question.trim();
         const combinedQuestion = [...pendingUserParts, currentQuestion]
           .filter(Boolean)
-          .join("\\n\\nمتابعة من الطالب:\\n")
+          .join("\n\nمتابعة من الطالب:\n")
           .slice(-6000);
         contents.push({ role: "user", parts: [{ text: combinedQuestion }] });
 
