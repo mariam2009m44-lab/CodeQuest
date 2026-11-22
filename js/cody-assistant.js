@@ -8,6 +8,7 @@ const launcher = document.getElementById("codyChatLauncher");
 const heroLauncher = document.getElementById("codyHeroLauncher");
 const panel = document.getElementById("codyChatPanel");
 const closeButton = document.getElementById("codyChatClose");
+const expandButton = document.getElementById("codyChatExpand");
 const form = document.getElementById("codyChatForm");
 const input = document.getElementById("codyChatInput");
 const messages = document.getElementById("codyChatMessages");
@@ -357,6 +358,15 @@ function closeChat() {
 heroLauncher?.addEventListener("click", openChat);
 launcher?.addEventListener("click", openChat);
 closeButton?.addEventListener("click", closeChat);
+expandButton?.addEventListener("click", () => {
+  if (!panel) return;
+  const expanded = panel.classList.toggle("is-expanded");
+  expandButton.setAttribute("aria-pressed", String(expanded));
+  expandButton.setAttribute("aria-label", expanded ? "تصغير نافذة المحادثة" : "تكبير نافذة المحادثة");
+  expandButton.setAttribute("title", expanded ? "تصغير نافذة المحادثة" : "تكبير نافذة المحادثة");
+  const icon = expandButton.querySelector("i");
+  if (icon) icon.className = expanded ? "ri-fullscreen-exit-line" : "ri-fullscreen-line";
+});
 historyButton?.addEventListener("click", () => {
   if (!historyPanel) return;
   historyPanel.hidden = !historyPanel.hidden;
