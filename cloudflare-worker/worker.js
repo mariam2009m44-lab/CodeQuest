@@ -725,7 +725,7 @@ export default {
 
       let body;
       try {
-        body = await readBoundedJson(request, 49152);
+        body = await readBoundedJson(request, 131072);
       } catch {
         return jsonResponse({ success: false, message: "بيانات المحادثة غير صالحة." }, 400, origin);
       }
@@ -880,7 +880,10 @@ export default {
               networkError = null;
             } catch (error) {
               networkError = error;
-              if (error?.name === "AbortError" || attempt === 1) throw error;
+              if (error?.name === "AbortError" || attempt === 1) {
+                if (modelIndex < modelsToTry.length - 1) break;
+                throw error;
+              }
             }
 
             if (candidateResponse) {
@@ -895,7 +898,13 @@ export default {
             }
           }
 
-          if (!candidateResponse) throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
+          if (!candidateResponse) {
+            if (modelIndex < modelsToTry.length - 1) {
+              console.warn("Gemini primary model connection failed; trying fallback:", candidateModel);
+              continue;
+            }
+            throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
+          }
 
           const candidateData = await candidateResponse.json().catch(() => ({}));
           if (candidateResponse.ok) {
@@ -936,7 +945,22 @@ export default {
             quotaMetric
           };
 
-          if (candidateResponse.status === 429 && modelIndex < modelsToTry.length - 1) {
+          const modelUnavailable =
+            candidateResponse.status === 404 ||
+            (
+              candidateResponse.status === 400 &&
+              /model.{0,80}(not found|not supported|does not exist)|(?:not found|not supported).{0,80}model/i.test(providerMessage)
+            );
+          const shouldTryFallback =
+            modelUnavailable ||
+            [408, 429, 500, 502, 503, 504].includes(candidateResponse.status);
+
+          if (shouldTryFallback && modelIndex < modelsToTry.length - 1) {
+            console.warn("Gemini primary model unavailable; trying fallback:", JSON.stringify({
+              status: candidateResponse.status,
+              model: candidateModel,
+              reason: modelUnavailable ? "MODEL_UNAVAILABLE" : "TRANSIENT_OR_QUOTA"
+            }));
             await candidateResponse.body?.cancel().catch(() => {});
             continue;
           }
