@@ -6,7 +6,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 
 import {
-  getAuth
+  getAuth,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 import {
@@ -32,6 +34,17 @@ export const firebaseApp = getApps().length
   : initializeApp(firebaseConfig);
 
 export const auth = getAuth(firebaseApp);
+
+// Keep the learner signed in across refreshes and browser restarts.
+// Firebase Auth already defaults to local persistence, but setting it explicitly
+// prevents a page or environment from silently using session-only persistence.
+export const authPersistenceReady = setPersistence(
+  auth,
+  browserLocalPersistence
+).catch(error => {
+  console.warn("CodeQuest local auth persistence could not be confirmed:", error?.code || error);
+  return false;
+});
 export const db = getFirestore(firebaseApp);
 
 export const functions = getFunctions(
