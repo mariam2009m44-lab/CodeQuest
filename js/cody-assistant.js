@@ -709,16 +709,29 @@ function activateCodySend(event) {
     return;
   }
   setStatus("جارٍ إرسال سؤالك إلى كودي...", "loading");
-  void handleCodySubmit(event);
+  void handleCodySubmit(event).catch(error => {
+    console.error("Cody submit handler failed unexpectedly:", error);
+    sending = false;
+    if (sendButton) sendButton.disabled = false;
+    if (input) input.disabled = false;
+    hideTyping();
+    const message = "حصل خطأ غير متوقع أثناء بدء الإرسال. جرّب مرة أخرى.";
+    setStatus(message, "error");
+    addMessage(message, "model");
+  });
 }
 
 sendButton?.addEventListener("click", activateCodySend);
-sendButton?.addEventListener("pointerup", event => {
-  // pointerup gives Android touch users an immediate path to the same action.
-  // handleCodySubmit flips sending synchronously, so the following click
-  // event cannot submit the same question twice.
+sendButton?.addEventListener("pointerup", activateCodySend);
+
+// Older Android WebViews may deliver touch events without a reliable
+// compatibility click. Capture touchend at document level as a fallback.
+document.addEventListener("touchend", event => {
+  const target = event.target instanceof Element ? event.target : null;
+  const button = target?.closest("#codyChatForm button[type='submit']");
+  if (!button) return;
   activateCodySend(event);
-});
+}, { capture: true, passive: false });
 
 
 if (launcher) {
