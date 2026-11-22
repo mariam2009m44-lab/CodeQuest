@@ -705,7 +705,11 @@ form?.addEventListener("submit", event => {
     if (sendButton) sendButton.disabled = false;
     if (input) input.disabled = false;
     hideTyping();
-    const message = "حصل خطأ غير متوقع أثناء إرسال السؤال. حاول مرة أخرى.";
+    const detail = error instanceof Error
+      ? (error.name + ": " + error.message)
+      : String(error || "Unknown error");
+    console.error("Cody submission root cause:", error);
+    const message = "تعذر بدء إرسال السؤال: " + detail;
     setStatus(message, "error");
     addMessage(message, "model");
   });
