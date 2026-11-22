@@ -385,7 +385,7 @@
   function onInteraction(event) {
     if(!event.isTrusted||(!soundEnabled&&!musicEnabled))return;
     const target=event.target;
-    if(!(target instanceof Element)||!target.closest("button,.choice-btn,.piece,.code-block,.match-item,.bug-line,.drag-piece,input,select"))return;
+    if(!(target instanceof Element)||!target.closest("button,a[href],[role=\"button\"],.mobile-nav-item,.activity-card,.course-card,.choice-btn,.piece,.code-block,.match-item,.bug-line,.drag-piece,input,select,summary"))return;
     const ctx=getContext();
     if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer)startMusic()}).catch(()=>{});else if(soundEnabled)play("tap");
   }
