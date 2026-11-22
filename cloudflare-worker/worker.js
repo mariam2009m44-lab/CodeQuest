@@ -734,13 +734,9 @@ export default {
         !body ||
         typeof body.question !== "string" ||
         !body.question.trim() ||
-        body.question.length > 3000 ||
-        (body.imageData !== undefined &&
-          (typeof body.imageData !== "string" ||
-           body.imageData.length > 520000 ||
-           !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(body.imageData)))
+        body.question.length > 3000
       ) {
-        return jsonResponse({ success: false, message: "اكتب سؤالًا صالحًا وأرفق صورة مدعومة بحجم مناسب." }, 400, origin);
+        return jsonResponse({ success: false, message: "اكتب سؤالًا صالحًا لا يتجاوز 3000 حرف." }, 400, origin);
       }
 
       if (env.CODE_EXECUTION_LIMITER) {
@@ -805,20 +801,7 @@ export default {
         while (contents.length && contents[contents.length - 1].role === "user") {
           contents.pop();
         }
-        const currentParts = [{ text: body.question.trim() }];
-        if (body.imageData) {
-          const imageMatch = body.imageData.match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+=*)$/);
-          if (!imageMatch) {
-            return jsonResponse({ success: false, message: "صيغة الصورة المرفقة غير مدعومة." }, 400, origin);
-          }
-          currentParts.push({
-            inlineData: {
-              mimeType: imageMatch[1],
-              data: imageMatch[2]
-            }
-          });
-        }
-        contents.push({ role: "user", parts: currentParts });
+        contents.push({ role: "user", parts: [{ text: body.question.trim() }] });
 
         const pageContext = typeof body.page_context === "string"
           ? body.page_context.trim().slice(0, 1500)
