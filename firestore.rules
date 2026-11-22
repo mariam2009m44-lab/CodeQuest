@@ -227,7 +227,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly([
             'role',
             'text',
-            'imageData',
+            'conversationId',
             'createdAt'
           ])
           && request.resource.data.role in ['user', 'model']
@@ -235,12 +235,10 @@ service cloud.firestore {
           && request.resource.data.text.size() <= 5000
           && request.resource.data.createdAt is timestamp
           && (
-            !request.resource.data.keys().hasAny(['imageData'])
+            !request.resource.data.keys().hasAny(['conversationId'])
             || (
-              request.resource.data.imageData is string
-              && request.resource.data.imageData.size() <= 520000
-              && request.resource.data.imageData.matches('^data:image/(jpeg|png|webp);base64,')
-              && request.resource.data.role == 'user'
+              request.resource.data.conversationId is string
+              && request.resource.data.conversationId.size() <= 80
             )
           );
         allow update: if false;
