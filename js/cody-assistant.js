@@ -537,7 +537,9 @@ function rememberConversationMessage(conversationId, role, text) {
 
 function loadChatHistory(user) {
   if (!messages || !user) return Promise.resolve();
-  if (conversationLoadUid === user.uid && conversationLoadPromise) return conversationLoadPromise;
+  if (conversationLoadUid === user.uid) {
+    return conversationLoadPromise || Promise.resolve();
+  }
   conversationLoadUid = user.uid;
   const task = performLoadChatHistory(user);
   conversationLoadPromise = task.finally(() => {
