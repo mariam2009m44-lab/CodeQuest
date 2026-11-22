@@ -1,5 +1,6 @@
-import { auth } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { addDoc, collection, getDocs, limit, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const API_URL = "https://codequest.mariam2009m44.workers.dev/api/cody/chat";
 const HEALTH_URL = API_URL.slice(0, API_URL.lastIndexOf("/")) + "/health";
@@ -11,6 +12,10 @@ const form = document.getElementById("codyChatForm");
 const input = document.getElementById("codyChatInput");
 const messages = document.getElementById("codyChatMessages");
 const status = document.getElementById("codyChatStatus");
+const imageInput = document.getElementById("codyChatImage");
+const imageButton = document.getElementById("codyChatImageButton");
+const imagePreview = document.getElementById("codyChatImagePreview");
+let selectedImageData = null;
 
 let currentUser = null;
 let authReady = false;
@@ -182,7 +187,7 @@ function renderFormattedMessage(container, source) {
   flushParagraph();
 }
 
-function addMessage(text, role) {
+function addMessage(text, role, imageData = null) {
   if (!messages) return;
   const node = document.createElement("article");
   node.className = "cody-chat-message " + (role === "user" ? "cody-from-user" : "cody-from-bot");
@@ -204,6 +209,14 @@ function addMessage(text, role) {
   const body = document.createElement("div");
   body.className = "cody-message-body";
   renderFormattedMessage(body, text);
+  if (imageData && /^data:image\\/(png|jpeg|webp);base64,/.test(imageData)) {
+    const image = document.createElement("img");
+    image.className = "cody-message-image";
+    image.src = imageData;
+    image.alt = role === "user" ? "الصورة المرسلة إلى كودي" : "صورة مرفقة في المحادثة";
+    image.loading = "lazy";
+    body.append(image);
+  }
   node.append(meta, body);
   if (role !== "user") {
     const actions = document.createElement("div");
@@ -355,6 +368,48 @@ document.addEventListener("keydown", event => {
 
 let activeRequestController = null;
 let previousAuthUid = null;
+let conversationLoadUid = null;
+
+async function persistChatMessage(uid, role, text, imageData = null) {
+  const payload = {
+    role,
+    text: String(text || "").slice(0, 5000),
+    createdAt: serverTimestamp()
+  };
+  if (imageData) payload.imageData = imageData;
+  await addDoc(collection(db, "users", uid, "codyMessages"), payload);
+}
+
+async function loadChatHistory(user) {
+  if (!messages || !user || conversationLoadUid === user.uid) return;
+  conversationLoadUid = user.uid;
+  setStatus("جارٍ تحميل محادثاتك السابقة...", "info");
+  try {
+    const saved = await getDocs(query(
+      collection(db, "users", user.uid, "codyMessages"),
+      orderBy("createdAt", "desc"),
+      limit(50)
+    ));
+    if (currentUser?.uid !== user.uid) return;
+    messages.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
+    history = [];
+    const records = saved.docs.map(item => item.data()).reverse();
+    if (!records.length) {
+      addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
+    }
+    for (const item of records) {
+      if (!["user", "model"].includes(item.role) || typeof item.text !== "string") continue;
+      addMessage(item.text, item.role, item.imageData || null);
+      history.push({ role: item.role, text: item.text });
+    }
+    history = history.slice(-10);
+    setStatus("محادثاتك محفوظة على حسابك.", "success");
+    createSuggestions();
+  } catch (error) {
+    console.warn("Could not load Cody conversation history:", error?.code || error);
+    setStatus("تعذر تحميل السجل الآن. يمكنك متابعة المحادثة، وسنحاول الحفظ عند الإرسال.", "info");
+  }
+}
 
 onAuthStateChanged(auth, user => {
   const nextUid = user?.uid || null;
@@ -364,6 +419,9 @@ onAuthStateChanged(auth, user => {
     // Never carry one account's private conversation into another account.
     activeRequestController?.abort();
     history = [];
+    conversationLoadUid = null;
+    selectedImageData = null;
+    if (imagePreview) imagePreview.replaceChildren();
     messages?.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
     previousAuthUid = nextUid;
   }
@@ -373,11 +431,67 @@ onAuthStateChanged(auth, user => {
 
   if (user) {
     setStatus("كودي جاهز لاستقبال أسئلتك.", "success");
+    loadChatHistory(user);
   } else if (panel && !panel.hidden) {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
   } else {
     setStatus("");
   }
+});
+
+
+async function prepareChatImage(file) {
+  if (!file || !/^image\\/(png|jpeg|webp)$/.test(file.type)) {
+    setStatus("اختار صورة بصيغة PNG أو JPG أو WebP.", "error");
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    setStatus("حجم الصورة الأصلي يجب ألا يتجاوز 5 ميجابايت.", "error");
+    return;
+  }
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d", { alpha: false });
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    let quality = 0.78;
+    let dataUrl = canvas.toDataURL("image/jpeg", quality);
+    while (dataUrl.length > 520000 && quality > 0.42) {
+      quality -= 0.08;
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+    }
+    if (dataUrl.length > 520000) throw new Error("IMAGE_TOO_LARGE");
+    selectedImageData = dataUrl;
+    if (imagePreview) {
+      imagePreview.replaceChildren();
+      const image = document.createElement("img");
+      image.src = dataUrl;
+      image.alt = "معاينة الصورة المرفقة";
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "إزالة الصورة";
+      remove.addEventListener("click", () => {
+        selectedImageData = null;
+        imagePreview.replaceChildren();
+        if (imageInput) imageInput.value = "";
+      });
+      imagePreview.append(image, remove);
+    }
+    setStatus("الصورة جاهزة للإرسال إلى كودي.", "success");
+  } catch (error) {
+    console.warn("Image preparation failed:", error);
+    setStatus("تعذر تجهيز الصورة. جرّب صورة أخرى.", "error");
+  }
+}
+imageButton?.addEventListener("click", () => imageInput?.click());
+imageInput?.addEventListener("change", () => {
+  const file = imageInput.files?.[0];
+  if (file) prepareChatImage(file);
+  imageInput.value = "";
 });
 
 function resizeComposer() {
@@ -399,7 +513,7 @@ form?.addEventListener("submit", async event => {
   if (sending) return;
 
   const question = input?.value.trim() || "";
-  if (!question) return;
+  if (!question && !selectedImageData) return;
 
   if (!authReady) {
     setStatus("لحظة واحدة، جارٍ التحقق من الحساب.", "info");
@@ -417,7 +531,8 @@ form?.addEventListener("submit", async event => {
   if (input) input.disabled = true;
 
   panel?.querySelector(".cody-chat-suggestions")?.remove();
-  addMessage(question, "user");
+  const imageForRequest = selectedImageData;
+  addMessage(question || "ممكن تشرحلي الصورة دي؟", "user", imageForRequest);
   showTyping();
   setStatus("كودي بيجهّز الإجابة...", "loading");
   playCodyEmotion("encourage");
@@ -439,7 +554,8 @@ form?.addEventListener("submit", async event => {
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        question,
+        question: question || "حلّل الصورة المرفقة واشرح ما يظهر فيها بطريقة واضحة.",
+        imageData: imageForRequest || undefined,
         history: history.slice(-10).map(item => ({
           role: item.role,
           text: String(item.text || "").slice(0, 1500)
@@ -479,14 +595,25 @@ form?.addEventListener("submit", async event => {
     }
 
     addMessage(data.answer.trim(), "model");
+    const userText = question || "ممكن تشرحلي الصورة دي؟";
     history.push(
-      { role: "user", text: question },
+      { role: "user", text: userText },
       { role: "model", text: data.answer.trim() }
     );
+    try {
+      await persistChatMessage(requestUser.uid, "user", userText, imageForRequest);
+      await persistChatMessage(requestUser.uid, "model", data.answer.trim());
+      setStatus("تم الرد وحفظ المحادثة على حسابك.", "success");
+    } catch (saveError) {
+      console.warn("Cody reply succeeded but chat history could not be saved:", saveError?.code || saveError);
+      setStatus("تم الرد، لكن تعذر حفظ المحادثة الآن.", "info");
+    }
+    selectedImageData = null;
+    if (imagePreview) imagePreview.replaceChildren();
     history = history.slice(-10);
 
     if (input) { input.value = ""; input.style.height = "auto"; }
-    setStatus("تم الرد", "success");
+    if (!status?.textContent.includes("تعذر حفظ")) setStatus("تم الرد", "success");
     playCodyEmotion("happy");
   } catch (error) {
     // A sign-out or account switch intentionally aborts the old account's request.
