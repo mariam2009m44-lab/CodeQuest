@@ -1039,6 +1039,20 @@
     onAuthStateChanged(auth, user => {
       currentUser = user;
 
+      const accountLink = document.querySelector("header .login");
+      if (accountLink) {
+        accountLink.href = user ? "dashboard.html" : "login.html";
+        accountLink.textContent = user ? "لوحة التحكم ←" : "تسجيل الدخول";
+      }
+
+      document.querySelectorAll('a.primary-button[href^="login.html"]').forEach(link => {
+        link.href = user ? "dashboard.html" : "login.html?next=dashboard.html";
+        const label = link.querySelector("span");
+        if (label) label.textContent = user ? "←" : "←";
+        const textNode = [...link.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+        if (textNode) textNode.textContent = user ? " افتح المنصة " : " ابدأ رحلتك ";
+      });
+
       if (!authInitialized) {
         authInitialized = true;
         resolveAuthReady();
