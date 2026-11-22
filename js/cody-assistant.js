@@ -13,6 +13,7 @@ const form = document.getElementById("codyChatForm");
 const input = document.getElementById("codyChatInput");
 const messages = document.getElementById("codyChatMessages");
 const status = document.getElementById("codyChatStatus");
+const sendButton = form?.querySelector('button[type="submit"]') || null;
 
 let currentUser = null;
 let authReady = false;
@@ -537,6 +538,21 @@ function resizeComposer() {
   input.style.height = Math.min(input.scrollHeight, 150) + "px";
 }
 input?.addEventListener("input", resizeComposer);
+
+// Explicit mobile-tap handling: route the paper-plane button through the same
+// form submit handler, including browsers where a nested fixed chat panel can
+// interfere with the default submit activation.
+sendButton?.addEventListener("click", event => {
+  event.preventDefault();
+  if (sending || sendButton.disabled) return;
+  if (!input?.value.trim()) {
+    setStatus("اكتب سؤالك أولًا ثم اضغط إرسال.", "info");
+    input?.focus();
+    return;
+  }
+  setStatus("جارٍ إرسال سؤالك إلى كودي...", "loading");
+  form?.requestSubmit();
+});
 input?.addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
     event.preventDefault();
