@@ -694,44 +694,39 @@ async function handleCodySubmit(event) {
   }
 }
 
-// The form submit event supports Enter and accessible keyboard submission.
-form?.addEventListener("submit", handleCodySubmit);
-
-// Bind directly to the real send control. A direct listener is more reliable
-// on mobile than delegated click matching through nested icon elements.
-function activateCodySend(event) {
-  event?.preventDefault?.();
-  event?.stopPropagation?.();
-  if (sending || sendButton?.disabled) return;
-  if (!input?.value.trim()) {
-    setStatus("اكتب سؤالك أولًا ثم اضغط إرسال.", "info");
-    input?.focus();
-    return;
-  }
-  setStatus("جارٍ إرسال سؤالك إلى كودي...", "loading");
+// Keep one submission path for every input method.
+// The send button explicitly dispatches the form's submit event; Enter keeps
+// using the same form handler. Avoid pointerup/touchend fallbacks because they
+// can cancel the browser's click activation on Android and create racey submits.
+form?.addEventListener("submit", event => {
   void handleCodySubmit(event).catch(error => {
     console.error("Cody submit handler failed unexpectedly:", error);
     sending = false;
     if (sendButton) sendButton.disabled = false;
     if (input) input.disabled = false;
     hideTyping();
-    const message = "حصل خطأ غير متوقع أثناء بدء الإرسال. جرّب مرة أخرى.";
+    const message = "حصل خطأ غير متوقع أثناء إرسال السؤال. حاول مرة أخرى.";
     setStatus(message, "error");
     addMessage(message, "model");
   });
-}
+});
 
-sendButton?.addEventListener("click", activateCodySend);
-sendButton?.addEventListener("pointerup", activateCodySend);
+sendButton?.addEventListener("click", event => {
+  event.preventDefault();
+  if (!form || sending || sendButton.disabled) return;
+  if (!input?.value.trim()) {
+    setStatus("اكتب سؤالك أولًا ثم اضغط إرسال.", "info");
+    input?.focus();
+    return;
+  }
 
-// Older Android WebViews may deliver touch events without a reliable
-// compatibility click. Capture touchend at document level as a fallback.
-document.addEventListener("touchend", event => {
-  const target = event.target instanceof Element ? event.target : null;
-  const button = target?.closest("#codyChatForm button[type='submit']");
-  if (!button) return;
-  activateCodySend(event);
-}, { capture: true, passive: false });
+  // Dispatch a real, cancelable submit event so the exact same handler runs
+  // on mobile, desktop, and keyboard without relying on requestSubmit support.
+  form.dispatchEvent(new Event("submit", {
+    bubbles: true,
+    cancelable: true
+  }));
+});
 
 
 if (launcher) {
