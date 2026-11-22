@@ -523,3 +523,44 @@ html[data-theme="light"] .cody-history-item{color:#25314a}
 #codyChatPanel .cody-message-actions .cody-followup-action{white-space:nowrap}
 #codyChatPanel .cody-message-actions button:focus-visible{outline:2px solid var(--cody-accent);outline-offset:3px}
 @media(max-width:600px){#codyChatPanel .cody-message-actions.has-followups{gap:7px}#codyChatPanel .cody-message-actions .cody-followup-action,#codyChatPanel .cody-message-actions .cody-copy-response{min-height:40px}}
+
+
+/* Cody professional controls: stop generation and responsive response actions. */
+.cody-chat-form .cody-chat-stop{
+  display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;
+  border:1px solid rgba(255,125,140,.32);border-radius:13px;
+  color:#ff9aa8;background:rgba(255,105,125,.10);
+  box-shadow:none;font-size:1.05rem;cursor:pointer;
+}
+.cody-chat-form .cody-chat-stop:hover{border-color:rgba(255,125,140,.7);background:rgba(255,105,125,.17)}
+.cody-chat-form .cody-chat-stop:disabled{opacity:.55;cursor:wait}
+.cody-chat-form .cody-chat-stop[hidden]{display:none!important}
+.cody-message-actions.has-followups{
+  display:flex;width:100%;flex-wrap:wrap;align-items:center;
+  justify-content:flex-start;gap:7px;margin-top:10px;
+}
+.cody-message-actions .cody-followup-action,
+.cody-message-actions .cody-copy-response{
+  min-height:38px;max-width:100%;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.cody-message-actions .cody-followup-action{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:6px 12px;border:1px solid color-mix(in srgb,var(--cody-accent) 48%,var(--border));
+  border-radius:999px;background:color-mix(in srgb,var(--cody-accent) 9%,transparent);
+  color:var(--text);font:800 .7rem "Cairo",system-ui,sans-serif;
+  white-space:nowrap;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+.cody-message-actions .cody-followup-action:hover{
+  border-color:var(--cody-accent);background:color-mix(in srgb,var(--cody-accent) 17%,transparent);
+}
+.cody-message-actions button:active{transform:scale(.97)}
+.cody-message-actions button:focus-visible{outline:2px solid var(--cody-accent);outline-offset:3px}
+.cody-chat-message{overflow-wrap:anywhere}
+.cody-message-body pre,.cody-message-body .cody-code-block{max-width:100%;overflow:auto}
+@media(max-width:600px){
+  .cody-chat-form .cody-chat-stop{flex-basis:40px;width:40px;height:40px}
+  .cody-message-actions.has-followups{gap:6px}
+  .cody-message-actions .cody-followup-action,
+  .cody-message-actions .cody-copy-response{min-height:40px}
+}
