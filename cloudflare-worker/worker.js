@@ -943,13 +943,23 @@ export default {
             quotaMetric
           };
 
-          // If the primary model is rate-limited OR temporarily unavailable,
-          // try the fallback model instead of returning a generic failure.
-          const shouldTryFallback = [408, 429, 500, 502, 503, 504].includes(candidateResponse.status);
+          // Fall back when the configured model is unavailable as well as
+          // when Gemini is rate-limited or temporarily unavailable.
+          const modelUnavailable =
+            candidateResponse.status === 404 ||
+            (
+              candidateResponse.status === 400 &&
+              /model.{0,80}(not found|not supported|does not exist)|(?:not found|not supported).{0,80}model/i.test(providerMessage)
+            );
+          const shouldTryFallback =
+            modelUnavailable ||
+            [408, 429, 500, 502, 503, 504].includes(candidateResponse.status);
+
           if (shouldTryFallback && modelIndex < modelsToTry.length - 1) {
             console.warn("Gemini primary model unavailable; trying fallback:", JSON.stringify({
               status: candidateResponse.status,
-              model: candidateModel
+              model: candidateModel,
+              reason: modelUnavailable ? "MODEL_UNAVAILABLE" : "TRANSIENT_OR_QUOTA"
             }));
             await candidateResponse.body?.cancel().catch(() => {});
             continue;
@@ -962,12 +972,17 @@ export default {
         }
 
         if (!upstream) {
+          const providerDiagnostic = String(lastProviderError?.message || "No provider response")
+            .replace(/AIza[0-9A-Za-z_-]{20,}/g, "[hidden]")
+            .slice(0, 220);
           return jsonResponse({
             success: false,
-            errorCode: "GEMINI_UPSTREAM_UNAVAILABLE",
+            errorCode: lastProviderError?.status === 429
+              ? "GEMINI_QUOTA_OR_RATE_LIMIT"
+              : "GEMINI_UPSTREAM_UNAVAILABLE",
             message: lastProviderError?.status === 429
               ? "وصل نموذج كودي الأساسي والاحتياطي إلى حد الاستخدام الحالي. جرّب مرة أخرى بعد تجدد الحصة."
-              : "خدمة Gemini غير متاحة حاليًا. حاول مرة أخرى بعد قليل."
+              : "Gemini لم يُكمل الاتصال بالنموذج. " + providerDiagnostic
           }, lastProviderError?.status === 429 ? 429 : 503, origin);
         }
 
@@ -991,15 +1006,29 @@ export default {
         if (upstream.status === 401 || upstream.status === 403) {
           await refundCodyQuestionQuota(env, authenticatedUser.uid);
           console.error("Gemini authentication/permission error:", upstream.status);
-          return jsonResponse({ success: false, message: "تعذر التحقق من إعداد Gemini. راجعي المفتاح وصلاحية النموذج في Cloudflare." }, 503, origin);
+          return jsonResponse({
+            success: false,
+            errorCode: upstream.status === 401 ? "GEMINI_INVALID_KEY" : "GEMINI_PERMISSION_DENIED",
+            message: upstream.status === 401
+              ? "مفتاح Gemini المضاف إلى Cloudflare غير صالح أو لم يعد نشطًا."
+              : "مفتاح Gemini لا يملك صلاحية استخدام النموذج أو Gemini API. راجع إعدادات المفتاح والمشروع."
+          }, 503, origin);
         }
 
         if (!upstream.ok) {
           await refundCodyQuestionQuota(env, authenticatedUser.uid);
+          const providerMessage = String(data?.error?.message || "No provider message")
+            .replace(/AIza[0-9A-Za-z_-]{20,}/g, "[hidden]")
+            .slice(0, 220);
+          const message = upstream.status === 404
+            ? "نموذج Gemini المحدد غير متاح: " + providerMessage
+            : upstream.status === 400
+              ? "Gemini رفض إعدادات الطلب: " + providerMessage
+              : "Gemini أعاد خطأ HTTP " + upstream.status + ": " + providerMessage;
           return jsonResponse({
             success: false,
             errorCode: "GEMINI_UPSTREAM_ERROR",
-            message: "خدمة Gemini واجهت مشكلة مؤقتة. حاول مرة أخرى بعد قليل."
+            message
           }, 502, origin);
         }
 
