@@ -183,7 +183,7 @@ function renderFormattedMessage(container, source) {
   flushParagraph();
 }
 
-function addMessage(text, role, createdAt = null) {
+function addMessage(text, role, createdAt = null, options = {}) {
   if (!messages) return null;
   const node = document.createElement("article");
   node.className = "cody-chat-message " + (role === "user" ? "cody-from-user" : "cody-from-bot");
@@ -225,6 +225,28 @@ function addMessage(text, role, createdAt = null) {
       }
     });
     actions.append(copyButton);
+
+    if (options.followups === true) {
+      const followups = [
+        { label: "بسّط الشرح", prompt: "ممكن تبسّط الشرح السابق أكثر، وتقسمه لخطوات قصيرة؟" },
+        { label: "مثال عملي", prompt: "اديني مثالًا عمليًا واضحًا على الفكرة اللي شرحتها." },
+        { label: "اختبر فهمي", prompt: "اعمل لي سؤالًا واحدًا قصيرًا عن الشرح السابق، واستنى إجابتي قبل ما تقول الحل." }
+      ];
+      followups.forEach(item => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "cody-followup-action";
+        button.textContent = item.label;
+        button.addEventListener("click", () => {
+          if (!input || !form || sending) return;
+          input.value = item.prompt;
+          form.requestSubmit();
+        });
+        actions.append(button);
+      });
+      actions.classList.add("has-followups");
+    }
+
     node.append(actions);
   }
   messages.append(node);
@@ -539,7 +561,7 @@ form?.addEventListener("submit", async event => {
       throw new Error("وصل رد غير مكتمل من كودي. حاول إرسال السؤال مرة أخرى.");
     }
 
-    addMessage(data.answer.trim(), "model");
+    addMessage(data.answer.trim(), "model", null, { followups: true });
     const userText = question || "ممكن تشرحلي الصورة دي؟";
     history.push(
       { role: "user", text: userText },
