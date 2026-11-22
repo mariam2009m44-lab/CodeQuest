@@ -798,10 +798,23 @@ export default {
           else contents.push({ role, parts: [{ text }] });
         }
 
+        // Preserve unanswered student turns when a follow-up arrives
+        // before Cody has produced a response.
+        const pendingUserParts = [];
         while (contents.length && contents[contents.length - 1].role === "user") {
-          contents.pop();
+          const pending = contents.pop();
+          for (const part of pending.parts || []) {
+            if (typeof part.text === "string" && part.text.trim()) {
+              pendingUserParts.unshift(part.text.trim());
+            }
+          }
         }
-        contents.push({ role: "user", parts: [{ text: body.question.trim() }] });
+        const currentQuestion = body.question.trim();
+        const combinedQuestion = [...pendingUserParts, currentQuestion]
+          .filter(Boolean)
+          .join("\\n\\nمتابعة من الطالب:\\n")
+          .slice(-6000);
+        contents.push({ role: "user", parts: [{ text: combinedQuestion }] });
 
         const pageContext = typeof body.page_context === "string"
           ? body.page_context.trim().slice(0, 1500)
@@ -813,7 +826,7 @@ export default {
           "The question classifier is only a weak hint. Never reject, narrow, or give a low-quality answer just because the detected category does not match the question.",
           "Support Arabic and English. Match the student's language. When they write in Arabic, use natural, clear Egyptian Arabic unless they ask for Modern Standard Arabic or another language.",
           "Answer the actual question first. Then explain the reasoning in a clear, age-appropriate way. Use examples, numbered steps, short definitions, or a small table only when they make the answer easier to understand.",
-          "Be conversational and remember the previous turns in this chat. Resolve references such as 'اشرح دي أكتر' or 'طب وماذا عن...' using the recent conversation. Do not restart the conversation unnecessarily.",
+          "Be conversational and remember the previous turns in this chat. Resolve references such as 'اشرح دي أكتر' or 'طب وماذا عن...' using the recent conversation. Do not restart the conversation unnecessarily. If the student sends an incomplete fragment or an unclear one-letter message, ask one brief, kind clarification question instead of inventing intent or giving a long generic reply.",
           "For writing requests, help brainstorm, outline, rewrite, or draft suitable text. For translations, preserve meaning and tone. For math and science, show the important steps and units. For code, explain logic and debugging without claiming to run code.",
           "Do not make every answer about programming or force every conversation back to the curriculum. If the student asks a general question, answer it as a general question.",
           "For time-sensitive facts, current events, live prices, or changing information, be transparent that you do not have live browsing in this chat. Give stable background when useful and recommend checking a current reliable source.",
