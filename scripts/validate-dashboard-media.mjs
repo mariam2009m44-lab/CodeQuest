@@ -156,10 +156,12 @@ if (!javaLessons.includes("previous.disabled = index <= 0;") ||
     javaLessons.includes("targetIndex > firstIncompleteIndex && !isCompleted")) {
   throw new Error("Java previous/next navigation must work independently of lesson completion while preserving first/last boundaries.");
 }
-if (!codyAssistant.includes("addMessage(message, \"model\")") ||
-    !codyAssistant.includes("addMessage(\"مش قادر أرد على السؤال دلوقتي: \" + message, \"model\")")) {
-  throw new Error("Cody health and request errors must be visible inside the conversation, not only in the status line.");
+if (!codyAssistant.includes("addMessage(message, \\"model\\")") ||
+    !codyAssistant.includes("addMessage(\\"مش قادر أرد على السؤال دلوقتي: \\" + message, \\"model\\"") ||
+    !codyAssistant.includes("retryText: question")) {
+  throw new Error("Cody errors must remain visible and failed questions must offer a one-tap retry.");
 }
+
 const functionsSource = fs.readFileSync("functions/index.js", "utf8");
 if (!functionsSource.includes("exports.getMyParentLinks") ||
     !functionsSource.includes("exports.removeParentLinkAsChild")) {
