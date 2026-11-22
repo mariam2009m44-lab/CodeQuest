@@ -235,6 +235,19 @@ function addMessage(text, role, createdAt = null, options = {}) {
     });
     actions.append(copyButton);
 
+    if (typeof options.retryText === "string" && options.retryText.trim()) {
+      const retryButton = document.createElement("button");
+      retryButton.type = "button";
+      retryButton.className = "cody-followup-action cody-retry-action";
+      retryButton.innerHTML = '<i class="ri-refresh-line" aria-hidden="true"></i><span>إعادة المحاولة</span>';
+      retryButton.addEventListener("click", () => {
+        if (!input || !form || sending) return;
+        input.value = options.retryText;
+        form.requestSubmit();
+      });
+      actions.append(retryButton);
+    }
+
     if (options.followups === true) {
       const followups = [
         { label: "بسّط الشرح", prompt: "ممكن تبسّط الشرح السابق أكثر، وتقسمه لخطوات قصيرة؟" },
@@ -679,7 +692,9 @@ async function handleCodySubmit(event) {
     setStatus(message, "error");
     // Show failures in the conversation itself, not only in the small status line.
     // This makes missing Worker/Gemini configuration visible to the learner.
-    addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model");
+    addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model", null, {
+      retryText: question
+    });
     // Retain unanswered questions so a later follow-up keeps its context.
     const lastTurn = history[history.length - 1];
     if (!(lastTurn?.role === "user" && lastTurn.text === question)) {
