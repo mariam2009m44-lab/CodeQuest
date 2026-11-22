@@ -94,6 +94,41 @@ function appendInlineFormatting(parent, source) {
   if (cursor < source.length) parent.append(document.createTextNode(source.slice(cursor)));
 }
 
+function appendCodeBlock(container, source, language = "") {
+  const shell = document.createElement("section");
+  shell.className = "cody-code-shell";
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "cody-code-toolbar";
+  const languageLabel = document.createElement("span");
+  languageLabel.className = "cody-code-language";
+  languageLabel.textContent = language || "code";
+
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "cody-code-copy";
+  copyButton.innerHTML = '<i class="ri-file-copy-line" aria-hidden="true"></i><span>نسخ الكود</span>';
+  copyButton.setAttribute("aria-label", "نسخ الكود");
+  copyButton.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(String(source));
+      copyButton.querySelector("span").textContent = "تم النسخ";
+      copyButton.querySelector("i").className = "ri-check-line";
+    } catch {
+      copyButton.querySelector("span").textContent = "تعذر النسخ";
+    }
+  });
+
+  const pre = document.createElement("pre");
+  pre.className = "cody-code-block";
+  const code = document.createElement("code");
+  code.textContent = source;
+  pre.append(code);
+  toolbar.append(languageLabel, copyButton);
+  shell.append(toolbar, pre);
+  container.append(shell);
+}
+
 function renderFormattedMessage(container, source) {
   const lines = String(source || "").replace(/\r\n?/g, "\n").split("\n");
   let paragraph = [];
@@ -131,18 +166,7 @@ function renderFormattedMessage(container, source) {
       continue;
     }
     if (trimmed.startsWith("```") && codeLines) {
-      const pre = document.createElement("pre");
-      pre.className = "cody-code-block";
-      if (codeLanguage) {
-        const label = document.createElement("span");
-        label.className = "cody-code-language";
-        label.textContent = codeLanguage;
-        pre.append(label);
-      }
-      const code = document.createElement("code");
-      code.textContent = codeLines.join("\n");
-      pre.append(code);
-      container.append(pre);
+      appendCodeBlock(container, codeLines.join("\n"), codeLanguage);
       codeLines = null;
       codeLanguage = "";
       continue;
@@ -177,12 +201,7 @@ function renderFormattedMessage(container, source) {
     paragraph.push(trimmed);
   }
   if (codeLines) {
-    const pre = document.createElement("pre");
-    pre.className = "cody-code-block";
-    const code = document.createElement("code");
-    code.textContent = codeLines.join("\n");
-    pre.append(code);
-    container.append(pre);
+    appendCodeBlock(container, codeLines.join("\n"), codeLanguage);
   }
   flushParagraph();
 }
