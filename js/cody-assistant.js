@@ -200,7 +200,13 @@ function addMessage(text, role, createdAt = null, options = {}) {
   const label = document.createElement("span");
   label.textContent = role === "user" ? "أنت" : "كودي";
   const time = document.createElement("time");
-  const messageDate = createdAt?.toDate?.() || (createdAt instanceof Date ? createdAt : new Date());
+  let messageDate;
+  try {
+    messageDate = createdAt?.toDate?.() || (createdAt instanceof Date ? createdAt : createdAt ? new Date(createdAt) : new Date());
+    if (!(messageDate instanceof Date) || Number.isNaN(messageDate.getTime())) messageDate = new Date();
+  } catch {
+    messageDate = new Date();
+  }
   time.dateTime = messageDate.toISOString();
   time.textContent = new Intl.DateTimeFormat("ar-EG", { dateStyle: "short", hour: "2-digit", minute: "2-digit" }).format(messageDate);
   meta.append(icon, label, time);
@@ -440,17 +446,39 @@ async function restoreConversation(uid, loadVersion) {
       )
       .reverse();
 
-    history = saved.slice(-10).map(item => ({ role: item.role, text: item.text }));
     messages.querySelectorAll(
       ".cody-chat-message:not(#codyWelcomeMessage), .cody-chat-typing"
     ).forEach(node => node.remove());
 
     const welcome = messages.querySelector("#codyWelcomeMessage");
-    if (saved.length) {
+    let renderedCount = 0;
+    for (const item of saved) {
+      try {
+        const rendered = addMessage(
+          item.text,
+          item.role,
+          item.createdAt,
+          { followups: item.role === "model" }
+        );
+        if (rendered) renderedCount += 1;
+      } catch (renderError) {
+        console.warn("A saved Cody message could not be displayed:", renderError);
+      }
+    }
+
+    // Never leave the transcript empty: retain the welcome bubble if history
+    // is empty or an older/corrupt record cannot be rendered.
+    if (renderedCount > 0) {
       welcome?.remove();
-      saved.forEach(item => addMessage(item.text, item.role, item.createdAt, { followups: item.role === "model" }));
-    } else if (welcome) {
-      welcome.hidden = false;
+      history = saved.slice(-10).map(item => ({ role: item.role, text: item.text }));
+    } else {
+      history = [];
+      if (welcome) {
+        welcome.hidden = false;
+        welcome.textContent = "أهلًا! أنا كودي. اكتب سؤالك في الأسفل واضغط زر الإرسال، وسأساعدك خطوة بخطوة.";
+      } else {
+        addMessage("أهلًا! أنا كودي. اكتب سؤالك في الأسفل واضغط زر الإرسال، وسأساعدك خطوة بخطوة.", "model");
+      }
     }
     if (!history.length) createSuggestions();
   } catch (error) {
