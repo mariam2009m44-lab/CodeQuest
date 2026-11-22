@@ -1,6 +1,5 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { collection, doc, getDoc, getDocs, limit, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const API_URL = "https://codequest.mariam2009m44.workers.dev/api/cody/chat";
 const HEALTH_URL = API_URL.slice(0, API_URL.lastIndexOf("/")) + "/health";
@@ -13,7 +12,6 @@ const form = document.getElementById("codyChatForm");
 const input = document.getElementById("codyChatInput");
 const messages = document.getElementById("codyChatMessages");
 const status = document.getElementById("codyChatStatus");
-const newChatButton = document.getElementById("codyNewChatButton");
 
 let currentUser = null;
 let authReady = false;
@@ -361,76 +359,15 @@ expandButton?.addEventListener("click", () => {
   const icon = expandButton.querySelector("i");
   if (icon) icon.className = expanded ? "ri-fullscreen-exit-line" : "ri-fullscreen-line";
 });
-newChatButton?.addEventListener("click", startNewConversation);
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && panel && !panel.hidden) {
-    if (historyPanel && !historyPanel.hidden) {
-      historyPanel.hidden = true;
-      historyButton?.setAttribute("aria-expanded", "false");
-    } else closeChat();
+    closeChat();
   }
 });
 
 let activeRequestController = null;
 let previousAuthUid = null;
-
-let studentContextCache = new Map();
-
-async function getStudentPlatformContext(user) {
-  if (!user) return "";
-  if (studentContextCache.has(user.uid)) return studentContextCache.get(user.uid);
-  const task = (async () => {
-    const results = await Promise.allSettled([
-      getDoc(doc(db, "users", user.uid)),
-      getDocs(query(collection(db, "users", user.uid, "lessonProgress"), limit(40))),
-      getDocs(query(collection(db, "projects"), where("userId", "==", user.uid), limit(8)))
-    ]);
-    const profile = results[0].status === "fulfilled" && results[0].value.exists()
-      ? results[0].value.data()
-      : {};
-    const lessonDocs = results[1].status === "fulfilled" ? results[1].value.docs : [];
-    const projectDocs = results[2].status === "fulfilled" ? results[2].value.docs : [];
-    const completedLessons = lessonDocs.filter(item => item.data()?.completed === true).length;
-    const languageProgress = profile.languageProgress && typeof profile.languageProgress === "object"
-      ? Object.entries(profile.languageProgress)
-          .map(([language, value]) => language + ": " + Math.max(0, Math.min(100, Number(value) || 0)) + "%")
-          .join("، ")
-      : "غير متاح";
-    const projectNames = projectDocs
-      .map(item => String(item.data()?.name || "").trim())
-      .filter(Boolean)
-      .slice(0, 5);
-    return [
-      "بيانات الطالب الحالية من CodeQuest (استخدمها فقط عند ارتباط السؤال بالتعلم أو التقدم):",
-      profile.displayName ? "اسم العرض: " + String(profile.displayName).slice(0, 50) : "",
-      Number.isFinite(Number(profile.level)) ? "المستوى: " + profile.level : "",
-      Number.isFinite(Number(profile.xp)) ? "نقاط الخبرة XP: " + profile.xp : "",
-      Number.isFinite(Number(profile.completedLessons)) ? "الدروس المكتملة المسجلة: " + profile.completedLessons : "الدروس المكتملة في سجل التقدم: " + completedLessons,
-      Number.isFinite(Number(profile.completedProjects)) ? "المشاريع المكتملة: " + profile.completedProjects : "",
-      Number.isFinite(Number(profile.streak)) ? "أيام الاستمرار: " + profile.streak : "",
-      "تقدم اللغات: " + languageProgress,
-      projectNames.length ? "أسماء مشروعات الطالب: " + projectNames.join("، ") : ""
-    ].filter(Boolean).join("\n").slice(0, 1050);
-  })();
-  studentContextCache.set(user.uid, task);
-  try {
-    return await task;
-  } catch {
-    studentContextCache.delete(user.uid);
-    return "";
-  }
-}
-
-function startNewConversation() {
-  if (!messages) return;
-  history = [];
-  messages.querySelectorAll(".cody-chat-message, .cody-chat-typing").forEach(node => node.remove());
-  addMessage("أهلًا! أنا كودي. اكتب سؤالك، وهنفكر فيه مع بعض خطوة بخطوة.", "model");
-  createSuggestions();
-  setStatus("بدأت محادثة جديدة.", "success");
-  input?.focus();
-}
 
 onAuthStateChanged(auth, user => {
   const nextUid = user?.uid || null;
@@ -526,10 +463,8 @@ form?.addEventListener("submit", async event => {
       requestUser.getIdToken(),
       timeoutPromise
     ]);
-    const studentContext = await Promise.race([
-      getStudentPlatformContext(requestUser),
-      timeoutPromise
-    ]);
+    // Cody no longer waits for optional Firestore profile or lesson reads.
+    // Conversation context remains in memory for this active page session.
 
     const response = await Promise.race([
       fetch(API_URL, {
@@ -548,7 +483,6 @@ form?.addEventListener("submit", async event => {
             document.title,
             location.pathname,
             "CodeQuest learning platform. Answer general safe questions as well as programming, school subjects, mathematics, science, languages, writing, study skills, technology, and general knowledge.",
-            studentContext
           ].filter(Boolean).join(" | ").slice(0, 1450)
         }),
         signal: controller.signal
