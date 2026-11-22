@@ -187,7 +187,7 @@ function renderFormattedMessage(container, source) {
   flushParagraph();
 }
 
-function addMessage(text, role, imageData = null) {
+function addMessage(text, role, imageData = null, createdAt = null) {
   if (!messages) return;
   const node = document.createElement("article");
   node.className = "cody-chat-message " + (role === "user" ? "cody-from-user" : "cody-from-bot");
@@ -202,8 +202,9 @@ function addMessage(text, role, imageData = null) {
   const label = document.createElement("span");
   label.textContent = role === "user" ? "أنت" : "كودي";
   const time = document.createElement("time");
-  time.dateTime = new Date().toISOString();
-  time.textContent = new Intl.DateTimeFormat("ar-EG", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+  const messageDate = createdAt?.toDate?.() || (createdAt instanceof Date ? createdAt : new Date());
+  time.dateTime = messageDate.toISOString();
+  time.textContent = new Intl.DateTimeFormat("ar-EG", { dateStyle: "short", hour: "2-digit", minute: "2-digit" }).format(messageDate);
   meta.append(icon, label, time);
 
   const body = document.createElement("div");
@@ -324,6 +325,7 @@ async function openChat() {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
     return;
   }
+  if (conversationLoadUid !== currentUser.uid) await loadChatHistory(currentUser);
 
   input?.focus();
   try {
@@ -399,15 +401,16 @@ async function loadChatHistory(user) {
     }
     for (const item of records) {
       if (!["user", "model"].includes(item.role) || typeof item.text !== "string") continue;
-      addMessage(item.text, item.role, item.imageData || null);
+      addMessage(item.text, item.role, item.imageData || null, item.createdAt || null);
       history.push({ role: item.role, text: item.text });
     }
     history = history.slice(-10);
     setStatus("محادثاتك محفوظة على حسابك.", "success");
     createSuggestions();
   } catch (error) {
+    conversationLoadUid = null;
     console.warn("Could not load Cody conversation history:", error?.code || error);
-    setStatus("تعذر تحميل السجل الآن. يمكنك متابعة المحادثة، وسنحاول الحفظ عند الإرسال.", "info");
+    setStatus("تعذر تحميل السجل الآن. افتح كودي مرة أخرى للمحاولة مجددًا.", "info");
   }
 }
 
