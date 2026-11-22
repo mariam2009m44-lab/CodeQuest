@@ -459,6 +459,8 @@ async function prepareChatImage(file) {
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));
     canvas.height = Math.max(1, Math.round(bitmap.height * scale));
     const context = canvas.getContext("2d", { alpha: false });
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close?.();
     let quality = 0.78;
@@ -529,8 +531,9 @@ form?.addEventListener("submit", async event => {
   }
 
   sending = true;
-  const submit = form.querySelector('button[type="submit"], button');
+  const submit = form.querySelector('button[type="submit"]');
   if (submit) submit.disabled = true;
+  if (imageButton) imageButton.disabled = true;
   if (input) input.disabled = true;
 
   panel?.querySelector(".cody-chat-suggestions")?.remove();
@@ -638,6 +641,7 @@ form?.addEventListener("submit", async event => {
     if (activeRequestController === controller) activeRequestController = null;
     sending = false;
     if (submit) submit.disabled = false;
+    if (imageButton) imageButton.disabled = false;
     if (input) {
       input.disabled = false;
       input.focus();
