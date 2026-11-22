@@ -880,7 +880,11 @@ export default {
               networkError = null;
             } catch (error) {
               networkError = error;
-              if (error?.name === "AbortError" || attempt === 1) throw error;
+              if (error?.name === "AbortError") {
+                if (modelIndex < modelsToTry.length - 1) break;
+                throw error;
+              }
+              if (attempt === 1) break;
             }
 
             if (candidateResponse) {
@@ -895,7 +899,13 @@ export default {
             }
           }
 
-          if (!candidateResponse) throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
+          if (!candidateResponse) {
+            if (modelIndex < modelsToTry.length - 1) {
+              console.warn("Gemini primary model network failure; trying fallback:", candidateModel);
+              continue;
+            }
+            throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
+          }
 
           const candidateData = await candidateResponse.json().catch(() => ({}));
           if (candidateResponse.ok) {
@@ -936,7 +946,14 @@ export default {
             quotaMetric
           };
 
-          if (candidateResponse.status === 429 && modelIndex < modelsToTry.length - 1) {
+          // If the primary model is rate-limited OR temporarily unavailable,
+          // try the fallback model instead of returning a generic failure.
+          const shouldTryFallback = [408, 429, 500, 502, 503, 504].includes(candidateResponse.status);
+          if (shouldTryFallback && modelIndex < modelsToTry.length - 1) {
+            console.warn("Gemini primary model unavailable; trying fallback:", JSON.stringify({
+              status: candidateResponse.status,
+              model: candidateModel
+            }));
             await candidateResponse.body?.cancel().catch(() => {});
             continue;
           }
