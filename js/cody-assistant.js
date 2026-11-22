@@ -374,8 +374,6 @@ document.addEventListener("keydown", event => {
 
 let activeRequestController = null;
 let previousAuthUid = null;
-let conversationLoadUid = null;
-let conversationLoadPromise = null;
 
 let studentContextCache = new Map();
 
