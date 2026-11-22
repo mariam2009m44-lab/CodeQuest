@@ -255,6 +255,25 @@ function addMessage(text, role, createdAt = null, options = {}) {
     });
     actions.append(copyButton);
 
+    if (typeof options.regenerateText === "string" && options.regenerateText.trim()) {
+      const regenerateButton = document.createElement("button");
+      regenerateButton.type = "button";
+      regenerateButton.className = "cody-followup-action cody-regenerate-action";
+      regenerateButton.innerHTML = '<i class="ri-refresh-line" aria-hidden="true"></i><span>إعادة توليد الرد</span>';
+      regenerateButton.addEventListener("click", () => {
+        if (!input || !form || sending) return;
+        const question = options.regenerateText.trim();
+        const turnIndex = history.map(item => item.role === "user" && item.text === question)
+          .lastIndexOf(true);
+        if (turnIndex >= 0) history = history.slice(0, turnIndex);
+        input.value = question;
+        resizeComposer();
+        form.requestSubmit();
+      });
+      actions.append(regenerateButton);
+      actions.classList.add("has-followups");
+    }
+
     if (typeof options.retryText === "string" && options.retryText.trim()) {
       const retryButton = document.createElement("button");
       retryButton.type = "button";
@@ -501,7 +520,12 @@ async function restoreConversation(uid, loadVersion) {
           item.text,
           item.role,
           item.createdAt,
-          { followups: item.role === "model" }
+          {
+            followups: item.role === "model",
+            regenerateText: item.role === "model" && saved[saved.indexOf(item) - 1]?.role === "user"
+              ? saved[saved.indexOf(item) - 1].text
+              : ""
+          }
         );
         if (rendered) renderedCount += 1;
       } catch (renderError) {
@@ -698,7 +722,7 @@ async function handleCodySubmit(event) {
       throw new Error("وصل رد غير مكتمل من كودي. حاول إرسال السؤال مرة أخرى.");
     }
 
-    addMessage(data.answer.trim(), "model", null, { followups: true });
+    addMessage(data.answer.trim(), "model", null, { followups: true, regenerateText: question });
     void persistConversationMessage(requestUser.uid, "model", data.answer.trim());
     const userText = question || "ممكن تشرحلي الصورة دي؟";
     history.push(
