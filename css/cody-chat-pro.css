@@ -698,3 +698,171 @@ html[data-theme="light"] .cody-history-item{color:#25314a}
   border-color:var(--cody-cyan);
   background:rgba(99,216,237,.15);
 }
+
+/* 2026-11-22: polished conversation layout based on mobile screenshot. */
+#codyChatPanel{
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-sizing:border-box;
+  background:#10182b;
+}
+#codyChatPanel[hidden]{display:none!important}
+#codyChatPanel .cody-chat-header{
+  position:relative;
+  z-index:4;
+  flex:0 0 auto;
+  min-height:66px;
+  box-sizing:border-box;
+}
+#codyChatPanel .cody-chat-messages{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex:1 1 0%;
+  flex-direction:column;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:18px clamp(12px,3vw,24px) 22px;
+  gap:16px;
+  scroll-padding-top:18px;
+  scroll-padding-bottom:24px;
+}
+#codyChatPanel .cody-chat-message{
+  box-sizing:border-box;
+  max-width:min(94%,760px);
+  font-size:15px;
+  line-height:1.85;
+  overflow-wrap:anywhere;
+}
+#codyChatPanel .cody-from-bot{
+  align-self:flex-start;
+  width:100%;
+  max-width:100%;
+  padding:15px 16px;
+  border:1px solid rgba(151,135,255,.2);
+  border-radius:17px 7px 17px 17px;
+  background:linear-gradient(145deg,rgba(30,43,72,.88),rgba(20,30,53,.96));
+  color:#edf2ff;
+  box-shadow:0 7px 22px rgba(0,0,0,.12);
+}
+#codyChatPanel .cody-from-user{
+  align-self:flex-end;
+  max-width:min(86%,640px);
+  padding:11px 15px;
+  border-radius:17px 7px 17px 17px;
+}
+#codyChatPanel .cody-message-body{
+  width:100%;
+  max-width:72ch;
+  margin-inline-start:auto;
+  font-size:inherit;
+  line-height:inherit;
+}
+#codyChatPanel .cody-message-body p{margin:0 0 11px}
+#codyChatPanel .cody-message-body p:last-child{margin-bottom:0}
+#codyChatPanel .cody-message-body ol,
+#codyChatPanel .cody-message-body ul{
+  padding-inline-start:1.45em;
+  margin:10px 0 13px;
+}
+#codyChatPanel .cody-message-body li{padding-inline-start:.2em;margin:7px 0}
+#codyChatPanel .cody-message-body h2,
+#codyChatPanel .cody-message-body h3,
+#codyChatPanel .cody-message-body h4{
+  margin:17px 0 8px;
+  line-height:1.5;
+}
+#codyChatPanel .cody-message-actions{
+  position:relative;
+  z-index:1;
+  padding-top:9px;
+  margin-top:13px;
+  border-top:1px solid rgba(164,177,215,.12);
+}
+#codyChatPanel .cody-chat-form{
+  position:relative;
+  z-index:5;
+  flex:0 0 auto;
+  box-sizing:border-box;
+  padding:11px 13px calc(11px + env(safe-area-inset-bottom));
+}
+#codyChatPanel .cody-composer-field{
+  flex:1 1 auto;
+  min-width:0;
+}
+#codyChatPanel .cody-chat-form textarea{
+  width:100%;
+  min-width:0;
+  max-height:130px;
+  overflow-y:auto;
+  font-size:16px;
+}
+#codyChatPanel .cody-chat-status{
+  position:relative;
+  z-index:5;
+  flex:0 0 auto;
+  margin:0;
+  padding:4px 14px 8px;
+  background:rgba(15,23,44,.98);
+}
+@media(max-width:600px){
+  #codyChatPanel .cody-chat-header{
+    min-height:64px;
+    padding:9px 12px;
+  }
+  #codyChatPanel .cody-chat-header small{
+    max-width:34vw;
+    line-height:1.45;
+  }
+  #codyChatPanel .cody-chat-messages{
+    padding:13px 11px 18px;
+    gap:12px;
+  }
+  #codyChatPanel .cody-chat-message{
+    font-size:14px;
+    line-height:1.82;
+  }
+  #codyChatPanel .cody-from-bot{
+    padding:12px 12px;
+    border-radius:15px 6px 15px 15px;
+  }
+  #codyChatPanel .cody-from-user{
+    max-width:88%;
+    padding:10px 12px;
+  }
+  #codyChatPanel .cody-message-body{max-width:100%}
+  #codyChatPanel .cody-message-actions{
+    gap:6px;
+    padding-top:8px;
+    margin-top:11px;
+  }
+  #codyChatPanel .cody-message-actions button{
+    font-size:.68rem;
+    min-height:38px;
+  }
+  #codyChatPanel .cody-chat-form{
+    gap:8px;
+    padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  }
+  #codyChatPanel .cody-composer-field{
+    min-height:56px;
+    border-radius:17px;
+  }
+  #codyChatPanel .cody-composer-hint{font-size:.58rem}
+}
+@media(max-width:380px){
+  #codyChatPanel .cody-chat-header small{max-width:30vw;font-size:.6rem}
+  #codyChatPanel .cody-chat-message{font-size:13.5px}
+}
+html[data-theme="light"] #codyChatPanel .cody-from-bot{
+  color:#202b40;
+  background:linear-gradient(145deg,#fff,#f5f7ff);
+  border-color:#e2e7f1;
+}
+html[data-theme="light"] #codyChatPanel .cody-chat-status{
+  background:rgba(248,250,255,.98);
+}
