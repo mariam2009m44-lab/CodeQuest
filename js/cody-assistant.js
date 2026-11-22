@@ -680,6 +680,12 @@ async function handleCodySubmit(event) {
     // Show failures in the conversation itself, not only in the small status line.
     // This makes missing Worker/Gemini configuration visible to the learner.
     addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model");
+    // Retain unanswered questions so a later follow-up keeps its context.
+    const lastTurn = history[history.length - 1];
+    if (!(lastTurn?.role === "user" && lastTurn.text === question)) {
+      history.push({ role: "user", text: question });
+      history = history.slice(-10);
+    }
     if (input) { input.value = question; resizeComposer(); }
   } finally {
     window.clearTimeout(timeoutId);
