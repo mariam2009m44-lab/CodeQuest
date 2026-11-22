@@ -694,25 +694,31 @@ async function handleCodySubmit(event) {
   }
 }
 
+// The form submit event supports Enter and accessible keyboard submission.
 form?.addEventListener("submit", handleCodySubmit);
 
-// Delegated capture listener is resilient to the icon inside the send button
-// and to late DOM changes. It invokes the send routine directly, not through
-// a second synthetic click or requestSubmit call.
-document.addEventListener("click", event => {
-  const target = event.target instanceof Element ? event.target : null;
-  const button = target?.closest("#codyChatForm button[type='submit']");
-  if (!button) return;
-  event.preventDefault();
-  event.stopPropagation();
-  if (sending || button.disabled) return;
+// Bind directly to the real send control. A direct listener is more reliable
+// on mobile than delegated click matching through nested icon elements.
+function activateCodySend(event) {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  if (sending || sendButton?.disabled) return;
   if (!input?.value.trim()) {
     setStatus("اكتب سؤالك أولًا ثم اضغط إرسال.", "info");
     input?.focus();
     return;
   }
+  setStatus("جارٍ إرسال سؤالك إلى كودي...", "loading");
   void handleCodySubmit(event);
-}, true);
+}
+
+sendButton?.addEventListener("click", activateCodySend);
+sendButton?.addEventListener("pointerup", event => {
+  // pointerup gives Android touch users an immediate path to the same action.
+  // handleCodySubmit flips sending synchronously, so the following click
+  // event cannot submit the same question twice.
+  activateCodySend(event);
+});
 
 
 if (launcher) {
