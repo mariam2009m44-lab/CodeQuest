@@ -320,7 +320,7 @@ async function openChat() {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
     return;
   }
-  if (conversationLoadUid !== currentUser.uid) await loadChatHistory(currentUser);
+  await loadChatHistory(currentUser);
 
   input?.focus();
   try {
@@ -387,6 +387,7 @@ document.addEventListener("keydown", event => {
 let activeRequestController = null;
 let previousAuthUid = null;
 let conversationLoadUid = null;
+let conversationLoadPromise = null;
 
 let studentContextCache = new Map();
 
@@ -534,9 +535,19 @@ function rememberConversationMessage(conversationId, role, text) {
   renderConversationList();
 }
 
-async function loadChatHistory(user) {
-  if (!messages || !user || conversationLoadUid === user.uid) return;
+function loadChatHistory(user) {
+  if (!messages || !user) return Promise.resolve();
+  if (conversationLoadUid === user.uid && conversationLoadPromise) return conversationLoadPromise;
   conversationLoadUid = user.uid;
+  const task = performLoadChatHistory(user);
+  conversationLoadPromise = task.finally(() => {
+    if (conversationLoadUid === user.uid) conversationLoadPromise = null;
+  });
+  return conversationLoadPromise;
+}
+
+async function performLoadChatHistory(user) {
+  if (!messages || !user) return;
   setStatus("جارٍ تحميل كل محادثاتك السابقة...", "info");
   try {
     const saved = await getDocs(query(
@@ -572,9 +583,12 @@ async function loadChatHistory(user) {
       createSuggestions();
     }
   } catch (error) {
-    conversationLoadUid = null;
+    if (conversationLoadUid === user.uid) conversationLoadUid = null;
     console.warn("Could not load Cody conversation history:", error?.code || error);
-    setStatus("تعذر تحميل السجل الآن. افتح كودي مرة أخرى للمحاولة مجددًا.", "info");
+    if (!messages.querySelector(".cody-chat-message")) {
+      addMessage("أهلًا! أنا كودي. اكتب سؤالك، وهساعدك خطوة بخطوة. تعذّر تحميل المحادثات السابقة، لكن تقدر تبدأ محادثة جديدة الآن.", "model");
+    }
+    setStatus("تعذر تحميل السجل السابق، لكن تقدر تستخدم كودي وتبدأ محادثة جديدة.", "info");
   }
 }
 
@@ -587,6 +601,7 @@ onAuthStateChanged(auth, user => {
     activeRequestController?.abort();
     history = [];
     conversationLoadUid = null;
+    conversationLoadPromise = null;
     currentConversationId = null;
     savedConversations = [];
     messages?.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
