@@ -481,3 +481,37 @@ html[data-theme="light"] .cody-history-item{color:#25314a}
   touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;
 }
+
+/* Fix the typing label: keep it on one line instead of inheriting dot sizing. */
+#codyChatPanel .cody-chat-typing .cody-typing-label{
+  display:inline-block;
+  flex:0 0 auto;
+  width:auto;
+  min-width:max-content;
+  height:auto;
+  margin:0 5px 0 0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--text);
+  white-space:nowrap;
+  line-height:1.5;
+  font:800 .78rem/1.5 "Cairo",system-ui,sans-serif;
+  animation:none;
+  transform:none;
+}
+#codyChatPanel .cody-chat-typing{
+  display:inline-flex;
+  align-self:flex-start;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  direction:rtl;
+  flex-wrap:nowrap;
+}
+#codyChatPanel .cody-chat-typing span:not(.cody-typing-label){
+  flex:0 0 8px;
+  width:8px;
+  height:8px;
+}
