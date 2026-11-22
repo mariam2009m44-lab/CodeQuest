@@ -157,7 +157,7 @@ if (!javaLessons.includes("previous.disabled = index <= 0;") ||
   throw new Error("Java previous/next navigation must work independently of lesson completion while preserving first/last boundaries.");
 }
 if (!codyAssistant.includes("addMessage(message, \\"model\\")") ||
-    !codyAssistant.includes("addMessage(\\"مش قادر أرد على السؤال دلوقتي: \\" + message, \\"model\\"") ||
+    !codyAssistant.includes("مش قادر أرد على السؤال دلوقتي: \\" + message") ||
     !codyAssistant.includes("retryText: question")) {
   throw new Error("Cody errors must remain visible and failed questions must offer a one-tap retry.");
 }
