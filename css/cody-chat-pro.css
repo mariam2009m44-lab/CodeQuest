@@ -269,3 +269,23 @@ html[data-theme="light"] .cody-chat-suggestion{background:#fff;border-color:#e2e
 @media(prefers-reduced-motion:reduce){
   .cody-chat-header button,.cody-chat-suggestion,.cody-chat-form button{transition:none}
 }
+
+
+/* Cody chat: persistent image attachment experience */
+.cody-chat-form .cody-attach-button{
+ flex:0 0 42px;width:42px;height:42px;border:1px solid var(--border);
+ border-radius:13px;color:var(--text);background:var(--surface-glass);
+ font-size:1.05rem;box-shadow:none
+}
+.cody-chat-form .cody-attach-button:hover{border-color:var(--cody-accent);background:rgba(139,120,255,.1)}
+.cody-chat-image-preview{display:flex;align-items:center;gap:10px;padding:0 13px;background:var(--surface-raised,#10182b)}
+.cody-chat-image-preview:empty{display:none}
+.cody-chat-image-preview img{width:62px;height:62px;object-fit:cover;border-radius:10px;border:1px solid var(--border);margin:8px 0}
+.cody-chat-image-preview button{border:0;background:transparent;color:var(--muted);font:600 .7rem "Cairo",sans-serif;cursor:pointer}
+.cody-message-image{display:block;max-width:min(100%,300px);max-height:260px;object-fit:contain;margin-top:9px;border:1px solid var(--border);border-radius:12px;background:#fff}
+html[data-theme="light"] .cody-chat-image-preview{background:#f8faff}
+@media(max-width:600px){
+ .cody-chat-form{gap:6px;padding:8px}
+ .cody-chat-form .cody-attach-button{flex-basis:38px;width:38px;height:40px}
+ .cody-chat-form button[type="submit"]{flex-basis:40px;width:40px;height:40px}
+}
