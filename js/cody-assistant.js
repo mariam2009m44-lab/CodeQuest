@@ -209,7 +209,7 @@ function addMessage(text, role, imageData = null) {
   const body = document.createElement("div");
   body.className = "cody-message-body";
   renderFormattedMessage(body, text);
-  if (imageData && /^data:image\\/(png|jpeg|webp);base64,/.test(imageData)) {
+  if (imageData && /^data:image\/(png|jpeg|webp);base64,/.test(imageData)) {
     const image = document.createElement("img");
     image.className = "cody-message-image";
     image.src = imageData;
@@ -441,7 +441,7 @@ onAuthStateChanged(auth, user => {
 
 
 async function prepareChatImage(file) {
-  if (!file || !/^image\\/(png|jpeg|webp)$/.test(file.type)) {
+  if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) {
     setStatus("اختار صورة بصيغة PNG أو JPG أو WebP.", "error");
     return;
   }
