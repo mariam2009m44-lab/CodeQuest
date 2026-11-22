@@ -271,3 +271,90 @@ html[data-theme="light"] .cody-chat-suggestion{background:#fff;border-color:#e2e
 }
 
 
+
+
+/* Cody readability and visible response state */
+.cody-chat-panel{
+  width:min(460px,calc(100vw - 28px))!important;
+  height:min(650px,calc(100dvh - 130px))!important;
+}
+.cody-chat-messages{
+  gap:15px;
+  padding:18px 16px 20px;
+}
+.cody-chat-message{
+  font-size:1rem;
+  line-height:1.95;
+  padding:13px 15px;
+}
+.cody-from-bot{
+  align-self:stretch;
+  max-width:100%;
+  padding:13px 15px;
+  border:1px solid color-mix(in srgb,var(--cody-accent) 24%,var(--border));
+  border-radius:16px;
+  border-start-start-radius:6px;
+  background:var(--surface-glass);
+}
+.cody-from-user{
+  max-width:90%;
+  font-size:.98rem;
+}
+.cody-message-meta{font-size:.76rem;margin-bottom:9px}
+.cody-message-meta i{font-size:1rem}
+.cody-message-body p{margin-bottom:12px}
+.cody-message-body h2{font-size:1.22rem}
+.cody-message-body h3{font-size:1.12rem}
+.cody-message-body h4{font-size:1.04rem}
+.cody-message-body ul,.cody-message-body ol{margin:10px 0 13px;padding-inline-start:25px}
+.cody-message-body li{margin:7px 0}
+.cody-code-block code{font-size:.9rem}
+.cody-chat-typing{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:46px;
+  padding:10px 15px;
+  border:1px solid color-mix(in srgb,var(--cody-accent) 30%,var(--border));
+  border-radius:14px;
+  background:var(--surface-glass);
+}
+.cody-typing-label{
+  margin-inline-end:5px;
+  color:var(--text);
+  font:800 .92rem "Cairo",system-ui,sans-serif;
+}
+.cody-chat-typing .cody-typing-dot{
+  display:block;
+  flex:0 0 9px;
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--cyan);
+  animation:codyTyping 1s infinite ease-in-out;
+}
+.cody-chat-typing .cody-typing-dot:nth-of-type(1){animation-delay:0s}
+.cody-chat-typing .cody-typing-dot:nth-of-type(2){animation-delay:.16s}
+.cody-chat-typing .cody-typing-dot:nth-of-type(3){animation-delay:.32s}
+.cody-chat-status{font-size:.78rem;max-height:none;line-height:1.6}
+.cody-chat-suggestion{font-size:.78rem;min-height:38px}
+.cody-chat-form textarea{font-size:17px;line-height:1.7}
+@media(max-width:600px){
+  .cody-chat-panel{
+    left:9px!important;
+    right:9px!important;
+    bottom:calc(145px + env(safe-area-inset-bottom))!important;
+    width:auto!important;
+    height:min(570px,70dvh,calc(100dvh - 170px - env(safe-area-inset-bottom)))!important;
+    min-height:300px;
+    max-height:calc(100dvh - 135px - env(safe-area-inset-bottom));
+  }
+  .cody-chat-messages{padding:14px 12px 16px;gap:13px}
+  .cody-chat-message{font-size:1rem;line-height:1.9;padding:12px 13px}
+  .cody-from-bot{padding:12px 13px}
+  .cody-message-meta{font-size:.72rem}
+  .cody-message-body h2{font-size:1.18rem}
+  .cody-message-body h3{font-size:1.1rem}
+  .cody-message-body h4{font-size:1.02rem}
+  .cody-chat-status{font-size:.75rem}
+}
