@@ -22,7 +22,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-import { auth, db, functions } from "./firebase-config.js";
+import { auth, db, functions, authPersistenceReady } from "./firebase-config.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 
 const USERS_COLLECTION = "users";
@@ -249,6 +249,7 @@ export async function ensureUserProfile(user) {
  * إنشاء حساب جديد.
  */
 export async function registerUser(name, email, password) {
+  await authPersistenceReady;
   const cleanName = normalizeName(name);
   const cleanEmail = normalizeEmail(email);
 
@@ -334,6 +335,7 @@ export async function updateCurrentUserName(name, expectedUid = null) {
  * تسجيل الدخول.
  */
 export async function loginUser(email, password) {
+  await authPersistenceReady;
   const cleanEmail = normalizeEmail(email);
 
   validateEmail(cleanEmail);
@@ -364,6 +366,7 @@ export async function loginUser(email, password) {
  * لتفادي قيود النوافذ المنبثقة على متصفحات الهاتف.
  */
 export async function signInWithGoogle() {
+  await authPersistenceReady;
   try {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
@@ -398,6 +401,7 @@ export async function signInWithGoogle() {
  * لا ننشئ ملفًا جديدًا إذا كان ملف UID موجودًا بالفعل، وبذلك يبقى التقدم كما هو.
  */
 export async function completeGoogleRedirect() {
+  await authPersistenceReady;
   try {
     // getRedirectResult may return null when Firebase has already restored
     // the persisted session (for example, after a browser storage hand-off).
@@ -461,7 +465,8 @@ export async function logoutUser() {
 /**
  * انتظار تأكيد حالة تسجيل الدخول.
  */
-export function requireUser() {
+export async function requireUser() {
+  await authPersistenceReady;
   return new Promise((resolve, reject) => {
     let unsubscribe = null;
     let settled = false;
