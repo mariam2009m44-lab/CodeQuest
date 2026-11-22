@@ -880,7 +880,7 @@ export default {
 
           // Retry only transient server/network failures. A 429 is handled
           // separately because it may mean a model-specific quota is exhausted.
-          for (let attempt = 0; attempt < 2; attempt++) {
+          for (let attempt = 0; attempt < 1; attempt++) {
             try {
               candidateResponse = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidateModel)}:generateContent`,
@@ -891,7 +891,7 @@ export default {
                     "x-goog-api-key": env.GEMINI_API_KEY
                   },
                   body: JSON.stringify(generationRequest),
-                  signal: AbortSignal.timeout(35000)
+                  signal: AbortSignal.timeout(20000)
                 }
               );
               networkError = null;
@@ -911,9 +911,6 @@ export default {
               candidateResponse = null;
             }
 
-            if (attempt === 0) {
-              await new Promise(resolve => setTimeout(resolve, 600));
-            }
           }
 
           if (!candidateResponse) {
