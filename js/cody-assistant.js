@@ -243,8 +243,7 @@ function showTyping() {
   typing.className = "cody-chat-typing";
   typing.setAttribute("role", "status");
   typing.setAttribute("aria-label", "كودي يكتب الآن");
-  typing.setAttribute("aria-live", "polite");
-  typing.innerHTML = '<strong class="cody-typing-label">كودي بيكتب</strong><span class="cody-typing-dot" aria-hidden="true"></span><span class="cody-typing-dot" aria-hidden="true"></span><span class="cody-typing-dot" aria-hidden="true"></span>';
+  typing.innerHTML = '<span class="cody-typing-label">كودي بيكتب</span><span></span><span></span><span></span>';
   messages.append(typing);
   panel?.setAttribute("aria-busy", "true");
   messages.scrollTop = messages.scrollHeight;
@@ -427,21 +426,13 @@ async function getStudentPlatformContext(user) {
 }
 
 async function persistChatMessage(uid, role, text, conversationId) {
-  const marker = "\u2063CQCHAT:" + String(conversationId || "").slice(0, 80) + "\u2063";
   const payload = {
     role,
-    text: marker + String(text || "").slice(0, 4900),
+    text: String(text || "").slice(0, 5000),
+    conversationId: String(conversationId || "").slice(0, 80),
     createdAt: serverTimestamp()
   };
   await addDoc(collection(db, "users", uid, "codyMessages"), payload);
-}
-
-function parseStoredConversationMessage(item) {
-  const match = String(item.text || "").match(/^\u2063CQCHAT:([A-Za-z0-9_-]{1,80})\u2063/);
-  return {
-    id: match?.[1] || null,
-    text: match ? String(item.text).slice(match[0].length) : String(item.text || "")
-  };
 }
 
 function createConversationId() {
@@ -538,17 +529,10 @@ async function loadChatHistory(user) {
   conversationLoadUid = user.uid;
   setStatus("جارٍ تحميل كل محادثاتك السابقة...", "info");
   try {
-    const messagesRef = collection(db, "users", user.uid, "codyMessages");
-    let saved;
-
-    try {
-      saved = await getDocs(query(messagesRef, orderBy("createdAt", "asc")));
-    } catch (orderedReadError) {
-      // Older Firestore deployments or legacy documents may not support the
-      // ordered query. Retry a plain owner-scoped read and sort locally.
-      console.warn("Ordered Cody history read failed; retrying without orderBy:", orderedReadError?.code || orderedReadError);
-      saved = await getDocs(messagesRef);
-    }
+    const saved = await getDocs(query(
+      collection(db, "users", user.uid, "codyMessages"),
+      orderBy("createdAt", "asc")
+    ));
     if (currentUser?.uid !== user.uid) return;
     messages.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
     history = [];
@@ -556,19 +540,11 @@ async function loadChatHistory(user) {
     for (const snapshot of saved.docs) {
       const item = snapshot.data();
       if (!["user", "model"].includes(item.role) || typeof item.text !== "string") continue;
-      const parsed = parseStoredConversationMessage(item);
-      let id = parsed.id;
-      if (!id) {
-        const previousId = grouped.size ? Array.from(grouped.keys()).filter(key => key.startsWith("legacy-conversation-")).pop() : null;
-        const previousMessages = previousId ? grouped.get(previousId) : null;
-        const previousTime = previousMessages?.length ? conversationTimestamp(previousMessages[previousMessages.length - 1]) : 0;
-        const currentTime = conversationTimestamp(item);
-        id = !previousId || (currentTime && previousTime && currentTime - previousTime > 4 * 60 * 60 * 1000)
-          ? "legacy-conversation-" + (grouped.size + 1)
-          : previousId;
-      }
+      const id = typeof item.conversationId === "string" && item.conversationId
+        ? item.conversationId
+        : "legacy-conversation";
       if (!grouped.has(id)) grouped.set(id, []);
-      grouped.get(id).push({ role: item.role, text: parsed.text, createdAt: item.createdAt || null });
+      grouped.get(id).push({ role: item.role, text: item.text, createdAt: item.createdAt || null });
     }
     savedConversations = Array.from(grouped, ([id, records]) => ({ id, messages: records }))
       .sort((a, b) =>
@@ -588,13 +564,7 @@ async function loadChatHistory(user) {
   } catch (error) {
     conversationLoadUid = null;
     console.warn("Could not load Cody conversation history:", error?.code || error);
-    const code = String(error?.code || "");
-    const message = code === "permission-denied"
-      ? "تعذر الوصول إلى سجل كودي. راجع صلاحيات قراءة codyMessages في Firestore."
-      : code === "unavailable" || code === "deadline-exceeded"
-        ? "الاتصال بقاعدة البيانات غير مستقر الآن. حاول فتح كودي مرة أخرى."
-        : "تعذر تحميل سجل كودي الآن (" + (code || "خطأ غير معروف") + "). يمكنك بدء محادثة جديدة، ولن نحذف أي سجل محفوظ.";
-    setStatus(message, "error");
+    setStatus("تعذر تحميل السجل الآن. افتح كودي مرة أخرى للمحاولة مجددًا.", "info");
   }
 }
 
