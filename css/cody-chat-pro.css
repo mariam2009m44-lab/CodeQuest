@@ -461,3 +461,26 @@ html[data-theme="light"] .cody-history-item{color:#25314a}
 .cody-followup-action:hover{background:color-mix(in srgb,var(--cody-accent) 20%,transparent);border-color:var(--cody-accent);transform:translateY(-1px)}
 .cody-followup-action:focus-visible{outline:2px solid var(--cody-accent);outline-offset:2px}
 @media(max-width:600px){.cody-message-actions.has-followups{gap:6px}.cody-followup-action{padding:6px 9px;font-size:.68rem}}
+
+
+/* Mobile send control: keep the composer above panel overlays and tap-ready. */
+.cody-chat-panel .cody-chat-form{
+  position:relative;
+  z-index:3;
+  isolation:isolate;
+}
+.cody-chat-panel .cody-chat-form button[type="submit"]{
+  position:relative;
+  z-index:4;
+  flex:0 0 44px;
+  pointer-events:auto;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+@media(max-width:600px){
+  .cody-chat-panel .cody-chat-form button[type="submit"]{
+    width:44px;
+    min-width:44px;
+    min-height:44px;
+  }
+}
