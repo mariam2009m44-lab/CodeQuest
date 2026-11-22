@@ -537,10 +537,17 @@ async function loadChatHistory(user) {
   conversationLoadUid = user.uid;
   setStatus("جارٍ تحميل كل محادثاتك السابقة...", "info");
   try {
-    const saved = await getDocs(query(
-      collection(db, "users", user.uid, "codyMessages"),
-      orderBy("createdAt", "asc")
-    ));
+    const messagesRef = collection(db, "users", user.uid, "codyMessages");
+    let saved;
+
+    try {
+      saved = await getDocs(query(messagesRef, orderBy("createdAt", "asc")));
+    } catch (orderedReadError) {
+      // Older Firestore deployments or legacy documents may not support the
+      // ordered query. Retry a plain owner-scoped read and sort locally.
+      console.warn("Ordered Cody history read failed; retrying without orderBy:", orderedReadError?.code || orderedReadError);
+      saved = await getDocs(messagesRef);
+    }
     if (currentUser?.uid !== user.uid) return;
     messages.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
     history = [];
@@ -580,7 +587,13 @@ async function loadChatHistory(user) {
   } catch (error) {
     conversationLoadUid = null;
     console.warn("Could not load Cody conversation history:", error?.code || error);
-    setStatus("تعذر تحميل السجل الآن. افتح كودي مرة أخرى للمحاولة مجددًا.", "info");
+    const code = String(error?.code || "");
+    const message = code === "permission-denied"
+      ? "تعذر الوصول إلى سجل كودي. راجع صلاحيات قراءة codyMessages في Firestore."
+      : code === "unavailable" || code === "deadline-exceeded"
+        ? "الاتصال بقاعدة البيانات غير مستقر الآن. حاول فتح كودي مرة أخرى."
+        : "تعذر تحميل سجل كودي الآن (" + (code || "خطأ غير معروف") + "). يمكنك بدء محادثة جديدة، ولن نحذف أي سجل محفوظ.";
+    setStatus(message, "error");
   }
 }
 
