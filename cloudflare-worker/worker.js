@@ -725,7 +725,7 @@ export default {
 
       let body;
       try {
-        body = await readBoundedJson(request, 700000);
+        body = await readBoundedJson(request, 49152);
       } catch {
         return jsonResponse({ success: false, message: "بيانات المحادثة غير صالحة." }, 400, origin);
       }
@@ -863,7 +863,7 @@ export default {
 
           // Retry only transient server/network failures. A 429 is handled
           // separately because it may mean a model-specific quota is exhausted.
-          for (let attempt = 0; attempt < 1; attempt++) {
+          for (let attempt = 0; attempt < 2; attempt++) {
             try {
               candidateResponse = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidateModel)}:generateContent`,
@@ -874,17 +874,13 @@ export default {
                     "x-goog-api-key": env.GEMINI_API_KEY
                   },
                   body: JSON.stringify(generationRequest),
-                  signal: AbortSignal.timeout(20000)
+                  signal: AbortSignal.timeout(35000)
                 }
               );
               networkError = null;
             } catch (error) {
               networkError = error;
-              if (error?.name === "AbortError") {
-                if (modelIndex < modelsToTry.length - 1) break;
-                throw error;
-              }
-              if (attempt === 1) break;
+              if (error?.name === "AbortError" || attempt === 1) throw error;
             }
 
             if (candidateResponse) {
@@ -894,15 +890,12 @@ export default {
               candidateResponse = null;
             }
 
+            if (attempt === 0) {
+              await new Promise(resolve => setTimeout(resolve, 600));
+            }
           }
 
-          if (!candidateResponse) {
-            if (modelIndex < modelsToTry.length - 1) {
-              console.warn("Gemini primary model network failure; trying fallback:", candidateModel);
-              continue;
-            }
-            throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
-          }
+          if (!candidateResponse) throw networkError || new Error("GEMINI_UPSTREAM_UNAVAILABLE");
 
           const candidateData = await candidateResponse.json().catch(() => ({}));
           if (candidateResponse.ok) {
@@ -943,14 +936,7 @@ export default {
             quotaMetric
           };
 
-          // If the primary model is rate-limited OR temporarily unavailable,
-          // try the fallback model instead of returning a generic failure.
-          const shouldTryFallback = [408, 429, 500, 502, 503, 504].includes(candidateResponse.status);
-          if (shouldTryFallback && modelIndex < modelsToTry.length - 1) {
-            console.warn("Gemini primary model unavailable; trying fallback:", JSON.stringify({
-              status: candidateResponse.status,
-              model: candidateModel
-            }));
+          if (candidateResponse.status === 429 && modelIndex < modelsToTry.length - 1) {
             await candidateResponse.body?.cancel().catch(() => {});
             continue;
           }
