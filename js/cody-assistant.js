@@ -426,13 +426,21 @@ async function getStudentPlatformContext(user) {
 }
 
 async function persistChatMessage(uid, role, text, conversationId) {
+  const marker = "\u2063CQCHAT:" + String(conversationId || "").slice(0, 80) + "\u2063";
   const payload = {
     role,
-    text: String(text || "").slice(0, 5000),
-    conversationId: String(conversationId || "").slice(0, 80),
+    text: marker + String(text || "").slice(0, 4900),
     createdAt: serverTimestamp()
   };
   await addDoc(collection(db, "users", uid, "codyMessages"), payload);
+}
+
+function parseStoredConversationMessage(item) {
+  const match = String(item.text || "").match(/^\u2063CQCHAT:([A-Za-z0-9_-]{1,80})\u2063/);
+  return {
+    id: match?.[1] || null,
+    text: match ? String(item.text).slice(match[0].length) : String(item.text || "")
+  };
 }
 
 function createConversationId() {
@@ -540,11 +548,19 @@ async function loadChatHistory(user) {
     for (const snapshot of saved.docs) {
       const item = snapshot.data();
       if (!["user", "model"].includes(item.role) || typeof item.text !== "string") continue;
-      const id = typeof item.conversationId === "string" && item.conversationId
-        ? item.conversationId
-        : "legacy-conversation";
+      const parsed = parseStoredConversationMessage(item);
+      let id = parsed.id;
+      if (!id) {
+        const previousId = grouped.size ? Array.from(grouped.keys()).filter(key => key.startsWith("legacy-conversation-")).pop() : null;
+        const previousMessages = previousId ? grouped.get(previousId) : null;
+        const previousTime = previousMessages?.length ? conversationTimestamp(previousMessages[previousMessages.length - 1]) : 0;
+        const currentTime = conversationTimestamp(item);
+        id = !previousId || (currentTime && previousTime && currentTime - previousTime > 4 * 60 * 60 * 1000)
+          ? "legacy-conversation-" + (grouped.size + 1)
+          : previousId;
+      }
       if (!grouped.has(id)) grouped.set(id, []);
-      grouped.get(id).push({ role: item.role, text: item.text, createdAt: item.createdAt || null });
+      grouped.get(id).push({ role: item.role, text: parsed.text, createdAt: item.createdAt || null });
     }
     savedConversations = Array.from(grouped, ([id, records]) => ({ id, messages: records }))
       .sort((a, b) =>
