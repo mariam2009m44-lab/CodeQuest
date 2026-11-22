@@ -378,6 +378,9 @@ onAuthStateChanged(auth, user => {
     activeRequestController?.abort();
     history = [];
     messages?.querySelectorAll(".cody-chat-message, .cody-chat-typing").forEach(node => node.remove());
+    // Always seed the new session with a visible welcome message. This also
+    // prevents an empty transcript after Firebase restores or changes auth.
+    addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
     previousAuthUid = nextUid;
   }
 
@@ -388,8 +391,8 @@ onAuthStateChanged(auth, user => {
     setStatus("كودي جاهز لاستقبال أسئلتك.", "success");
     if (messages && !messages.querySelector(".cody-chat-message")) {
       addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
-      createSuggestions();
     }
+    if (!history.length) createSuggestions();
   } else if (panel && !panel.hidden) {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
   } else {
