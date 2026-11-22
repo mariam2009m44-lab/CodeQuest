@@ -317,3 +317,63 @@ html[data-theme="light"] .cody-history-item{color:#25314a}
  .cody-chat-header-actions{gap:5px}
  .cody-chat-header-actions button{width:32px;height:32px;flex-basis:32px}
 }
+
+/* Cody conversation history and typing indicator polish */
+.cody-chat-header-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.cody-chat-header-actions button{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(255,255,255,.2);border-radius:11px;background:rgba(255,255,255,.1);color:#fff;font-size:1rem;cursor:pointer;transition:background .18s ease,transform .18s ease}
+.cody-chat-header-actions button:hover{background:rgba(255,255,255,.22)}
+.cody-chat-header-actions button:active{transform:scale(.94)}
+.cody-chat-history{position:absolute;z-index:5;inset:66px 10px auto 10px;max-height:min(390px,calc(100% - 150px));display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--surface-raised,#10182b);box-shadow:0 14px 40px rgba(0,0,0,.28)}
+.cody-chat-history[hidden]{display:none!important}
+.cody-chat-history-heading{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.cody-chat-history-heading strong{font-size:.83rem;color:var(--text);font-weight:900}
+.cody-chat-history-heading span{font-size:.65rem;color:var(--muted)}
+.cody-chat-history-list{overflow:auto;padding:7px;display:flex;flex-direction:column;gap:5px}
+.cody-history-item{display:flex;flex-direction:column;gap:3px;width:100%;padding:9px 11px;text-align:right;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--text);cursor:pointer;font-family:"Cairo",sans-serif}
+.cody-history-item:hover,.cody-history-item.is-active{border-color:color-mix(in srgb,var(--cody-accent) 40%,var(--border));background:color-mix(in srgb,var(--cody-accent) 10%,transparent)}
+.cody-history-item strong{font-size:.74rem;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cody-history-item small{font-size:.62rem;color:var(--muted)}
+.cody-history-empty{margin:0;padding:15px 12px;color:var(--muted);font-size:.72rem;text-align:center;line-height:1.8}
+.cody-chat-typing{gap:5px;min-height:37px}
+.cody-chat-typing .cody-typing-label{margin-inline-end:4px;color:var(--muted);font:700 .68rem "Cairo",sans-serif}
+.cody-chat-typing span:not(.cody-typing-label){width:6px;height:6px;flex:0 0 6px}
+html[data-theme="light"] .cody-chat-history{background:#fff;border-color:#e2e7f1}
+html[data-theme="light"] .cody-history-item{color:#25314a}
+@media(max-width:600px){
+ .cody-chat-history{inset:62px 8px auto 8px;max-height:min(340px,calc(100% - 130px))}
+ .cody-chat-header-actions{gap:5px}
+ .cody-chat-header-actions button{width:32px;height:32px;flex-basis:32px}
+}
+
+/* Cody: accessible expand / restore behavior */
+.cody-chat-header-actions .cody-chat-expand{
+ display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;
+ border:1px solid rgba(255,255,255,.22);border-radius:11px;
+ background:rgba(255,255,255,.11);color:#fff;font-size:1rem;cursor:pointer;
+ transition:background .18s ease,transform .18s ease;
+}
+.cody-chat-header-actions .cody-chat-expand:hover{background:rgba(255,255,255,.22)}
+.cody-chat-panel.is-expanded{
+ left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;
+ width:min(760px,calc(100vw - 48px))!important;
+ height:min(820px,calc(100dvh - 48px))!important;
+ min-height:360px;max-height:calc(100dvh - 48px);
+ transform:translate(-50%,-50%)!important;
+ border-radius:24px!important;
+ box-shadow:0 30px 100px rgba(0,0,0,.48),0 0 0 9999px rgba(5,10,24,.38);
+}
+.cody-chat-panel.is-expanded .cody-chat-messages{padding:22px 22px 24px;gap:16px}
+.cody-chat-panel.is-expanded .cody-chat-message{font-size:.94rem;line-height:1.95;max-width:88%;padding:13px 16px}
+.cody-chat-panel.is-expanded .cody-from-bot{align-self:flex-start;max-width:88%;background:var(--surface-glass);border:1px solid var(--border);border-start-start-radius:6px}
+.cody-chat-panel.is-expanded .cody-chat-form{padding:14px 16px}
+@media(max-width:600px){
+ .cody-chat-header-actions .cody-chat-expand{width:32px;height:32px;flex-basis:32px}
+ .cody-chat-panel.is-expanded{
+  left:10px!important;right:10px!important;top:10px!important;bottom:10px!important;
+  width:auto!important;height:auto!important;min-height:0;max-height:none;
+  transform:none!important;border-radius:18px!important;
+ }
+ .cody-chat-panel.is-expanded .cody-chat-messages{padding:14px 12px;gap:11px}
+ .cody-chat-panel.is-expanded .cody-chat-message{max-width:96%;font-size:.87rem;padding:10px 12px}
+ .cody-chat-panel.is-expanded .cody-from-bot{max-width:96%}
+}
