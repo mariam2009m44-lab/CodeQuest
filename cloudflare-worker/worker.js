@@ -738,7 +738,7 @@ export default {
         (body.imageData !== undefined &&
           (typeof body.imageData !== "string" ||
            body.imageData.length > 520000 ||
-           !/^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(body.imageData)))
+           !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(body.imageData)))
       ) {
         return jsonResponse({ success: false, message: "اكتب سؤالًا صالحًا وأرفق صورة مدعومة بحجم مناسب." }, 400, origin);
       }
@@ -807,7 +807,7 @@ export default {
         }
         const currentParts = [{ text: body.question.trim() }];
         if (body.imageData) {
-          const imageMatch = body.imageData.match(/^data:(image\\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+=*)$/);
+          const imageMatch = body.imageData.match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+=*)$/);
           if (!imageMatch) {
             return jsonResponse({ success: false, message: "صيغة الصورة المرفقة غير مدعومة." }, 400, origin);
           }
