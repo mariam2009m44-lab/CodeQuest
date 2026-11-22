@@ -1013,15 +1013,20 @@
         <small>مساحة المحادثة الذكية · اسأل براحتك</small>
       </div>
     </div>
-    <button type="button" id="codyChatClose" aria-label="إغلاق المحادثة" title="إغلاق المحادثة">×</button>
+    <div class="cody-chat-header-actions">
+      <button type="button" id="codyChatHistoryButton" aria-label="المحادثات السابقة" title="المحادثات السابقة" aria-expanded="false"><i class="ri-history-line" aria-hidden="true"></i></button>
+      <button type="button" id="codyNewChatButton" aria-label="محادثة جديدة" title="محادثة جديدة"><i class="ri-add-line" aria-hidden="true"></i></button>
+      <button type="button" id="codyChatClose" aria-label="إغلاق المحادثة" title="إغلاق المحادثة">×</button>
+    </div>
   </header>
+  <aside class="cody-chat-history" id="codyChatHistoryPanel" hidden aria-label="المحادثات السابقة">
+    <div class="cody-chat-history-heading"><strong>محادثاتك السابقة</strong><span>اختار محادثة للرجوع ليها</span></div>
+    <div class="cody-chat-history-list" id="codyChatHistoryList"></div>
+  </aside>
   <div class="cody-chat-messages" id="codyChatMessages" aria-live="polite" aria-relevant="additions">
     <div class="cody-chat-message cody-from-bot" dir="auto">أهلًا! أنا كودي. اسألني عن أي موضوع مناسب ليك: دراسة، علوم، رياضيات، لغات، كتابة، تقنية، أفكار، أو معلومات عامة. هفهم سؤالك وأساعدك خطوة بخطوة.</div>
   </div>
-  <div class="cody-chat-image-preview" id="codyChatImagePreview" aria-live="polite"></div>
   <form class="cody-chat-form" id="codyChatForm">
-    <button class="cody-attach-button" id="codyChatImageButton" type="button" aria-label="إرفاق صورة" title="إرفاق صورة"><i class="ri-image-add-line" aria-hidden="true"></i></button>
-    <input id="codyChatImage" type="file" accept="image/png,image/jpeg,image/webp" hidden>
     <div class="cody-composer-field">
       <textarea id="codyChatInput" maxlength="3000" rows="1" autocomplete="off" placeholder="اكتب سؤالك لكودي..." aria-label="اكتب سؤالك لكودي"></textarea>
       <small class="cody-composer-hint">Enter للإرسال · Shift + Enter لسطر جديد</small>
