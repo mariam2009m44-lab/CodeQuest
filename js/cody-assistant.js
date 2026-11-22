@@ -1,4 +1,5 @@
 import { auth, db } from "./firebase-config.js";
+import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const API_URL = "https://codequest.mariam2009m44.workers.dev/api/cody/chat";
@@ -19,6 +20,7 @@ let sending = false;
 let history = [];
 let healthPromise = null;
 let focusBeforeChat = null;
+let conversationLoadVersion = 0;
 
 const CODY_EMOTION_CLASSES = [
   "is-waving",
@@ -405,18 +407,74 @@ document.addEventListener("keydown", event => {
 let activeRequestController = null;
 let previousAuthUid = null;
 
-onAuthStateChanged(auth, user => {
+async function persistConversationMessage(uid, role, text) {
+  if (!uid || !["user", "model"].includes(role) || !String(text || "").trim()) return;
+  try {
+    await addDoc(collection(db, "users", uid, "codyMessages"), {
+      role,
+      text: String(text).slice(0, 5000),
+      createdAt: serverTimestamp()
+    });
+  } catch (error) {
+    // Chat remains usable if optional conversation history cannot be saved.
+    console.warn("Cody conversation history could not be saved:", error?.code || error);
+  }
+}
+
+async function restoreConversation(uid, loadVersion) {
+  try {
+    const messagesQuery = query(
+      collection(db, "users", uid, "codyMessages"),
+      orderBy("createdAt", "desc"),
+      limit(20)
+    );
+    const snapshot = await getDocs(messagesQuery);
+    if (loadVersion !== conversationLoadVersion || currentUser?.uid !== uid || !messages) return;
+
+    const saved = snapshot.docs
+      .map(doc => doc.data())
+      .filter(item =>
+        ["user", "model"].includes(item.role) &&
+        typeof item.text === "string" &&
+        item.text.trim()
+      )
+      .reverse();
+
+    history = saved.slice(-10).map(item => ({ role: item.role, text: item.text }));
+    messages.querySelectorAll(
+      ".cody-chat-message:not(#codyWelcomeMessage), .cody-chat-typing"
+    ).forEach(node => node.remove());
+
+    const welcome = messages.querySelector("#codyWelcomeMessage");
+    if (saved.length) {
+      welcome?.remove();
+      saved.forEach(item => addMessage(item.text, item.role, item.createdAt));
+    } else if (welcome) {
+      welcome.hidden = false;
+    }
+    if (!history.length) createSuggestions();
+  } catch (error) {
+    console.warn("Cody conversation history could not be restored:", error?.code || error);
+    if (loadVersion === conversationLoadVersion && currentUser?.uid === uid) {
+      setStatus("كودي جاهز. تعذّر استرجاع المحادثة السابقة، لكن يمكنك بدء محادثة جديدة.", "info");
+      if (!history.length) createSuggestions();
+    }
+  }
+}
+
+onAuthStateChanged(auth, async user => {
   const nextUid = user?.uid || null;
   const accountChanged = previousAuthUid !== nextUid;
 
   if (accountChanged) {
-    // Never carry one account's private conversation into another account.
+    // Invalidate pending restores and isolate every learner's private chat.
+    conversationLoadVersion += 1;
     activeRequestController?.abort();
     history = [];
+    messages?.querySelectorAll(
+      ".cody-chat-message:not(#codyWelcomeMessage), .cody-chat-typing"
+    ).forEach(node => node.remove());
 
-    // Keep the server-rendered welcome message in the DOM. Removing every
-    // message here caused a blank transcript during Firebase auth restore.
-    messages?.querySelectorAll(".cody-chat-message:not(#codyWelcomeMessage), .cody-chat-typing").forEach(node => node.remove());
     const welcome = messages?.querySelector("#codyWelcomeMessage");
     if (welcome) {
       welcome.hidden = false;
@@ -424,6 +482,7 @@ onAuthStateChanged(auth, user => {
     } else if (messages && !messages.querySelector(".cody-chat-message")) {
       addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
     }
+    panel?.querySelector(".cody-chat-suggestions")?.remove();
     previousAuthUid = nextUid;
   }
 
@@ -431,11 +490,11 @@ onAuthStateChanged(auth, user => {
   authReady = true;
 
   if (user) {
+    const loadVersion = conversationLoadVersion;
+    setStatus("كودي جاهز. جارٍ استرجاع محادثتك السابقة...", "info");
+    await restoreConversation(user.uid, loadVersion);
+    if (loadVersion !== conversationLoadVersion || currentUser?.uid !== user.uid) return;
     setStatus("كودي جاهز لاستقبال أسئلتك.", "success");
-    if (messages && !messages.querySelector(".cody-chat-message")) {
-      addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
-    }
-    if (!history.length) createSuggestions();
   } else if (panel && !panel.hidden) {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
   } else {
@@ -482,6 +541,7 @@ form?.addEventListener("submit", async event => {
 
   panel?.querySelector(".cody-chat-suggestions")?.remove();
   addMessage(question, "user");
+  void persistConversationMessage(currentUser.uid, "user", question);
   showTyping();
   setStatus("كودي بيجهّز الإجابة...", "loading");
   playCodyEmotion("encourage");
@@ -562,6 +622,7 @@ form?.addEventListener("submit", async event => {
     }
 
     addMessage(data.answer.trim(), "model", null, { followups: true });
+    void persistConversationMessage(requestUser.uid, "model", data.answer.trim());
     const userText = question || "ممكن تشرحلي الصورة دي؟";
     history.push(
       { role: "user", text: userText },
