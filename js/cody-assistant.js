@@ -209,7 +209,7 @@ function addMessage(text, role, createdAt = null, options = {}) {
     messageDate = new Date();
   }
   time.dateTime = messageDate.toISOString();
-  time.textContent = new Intl.DateTimeFormat("ar-EG", { dateStyle: "short", hour: "2-digit", minute: "2-digit" }).format(messageDate);
+  time.textContent = new Intl.DateTimeFormat("ar-EG", { dateStyle: "short", timeStyle: "short" }).format(messageDate);
   meta.append(icon, label, time);
 
   const body = document.createElement("div");
