@@ -539,20 +539,9 @@ function resizeComposer() {
 }
 input?.addEventListener("input", resizeComposer);
 
-// Explicit mobile-tap handling: route the paper-plane button through the same
-// form submit handler, including browsers where a nested fixed chat panel can
-// interfere with the default submit activation.
-sendButton?.addEventListener("click", event => {
-  event.preventDefault();
-  if (sending || sendButton.disabled) return;
-  if (!input?.value.trim()) {
-    setStatus("اكتب سؤالك أولًا ثم اضغط إرسال.", "info");
-    input?.focus();
-    return;
-  }
-  setStatus("جارٍ إرسال سؤالك إلى كودي...", "loading");
-  form?.requestSubmit();
-});
+// Capture the actual tap before the browser's native form activation.
+// This avoids relying on requestSubmit(), which can be inconsistent in some
+// embedded Android browsers. The same handler is also used by keyboard submit.
 input?.addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
     event.preventDefault();
@@ -560,7 +549,7 @@ input?.addEventListener("keydown", event => {
   }
 });
 
-form?.addEventListener("submit", async event => {
+async function handleCodySubmit(event) {
   event.preventDefault();
 
   if (sending) return;
@@ -703,7 +692,28 @@ form?.addEventListener("submit", async event => {
       input.focus();
     }
   }
-});
+}
+
+form?.addEventListener("submit", handleCodySubmit);
+
+// Delegated capture listener is resilient to the icon inside the send button
+// and to late DOM changes. It invokes the send routine directly, not through
+// a second synthetic click or requestSubmit call.
+document.addEventListener("click", event => {
+  const target = event.target instanceof Element ? event.target : null;
+  const button = target?.closest("#codyChatForm button[type='submit']");
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  if (sending || button.disabled) return;
+  if (!input?.value.trim()) {
+    setStatus("اكتب سؤالك أولًا ثم اضغط إرسال.", "info");
+    input?.focus();
+    return;
+  }
+  void handleCodySubmit(event);
+}, true);
+
 
 if (launcher) {
   launcher.setAttribute("aria-controls", "codyChatPanel");
