@@ -243,7 +243,7 @@ function showTyping() {
   typing.className = "cody-chat-typing";
   typing.setAttribute("role", "status");
   typing.setAttribute("aria-label", "كودي يكتب الآن");
-  typing.innerHTML = '<span class="cody-typing-label">كودي بيكتب</span><span></span><span></span><span></span>';
+  typing.innerHTML = '<strong class="cody-typing-label">كودي بيكتب</strong><span></span><span></span><span></span>';
   messages.append(typing);
   panel?.setAttribute("aria-busy", "true");
   messages.scrollTop = messages.scrollHeight;
