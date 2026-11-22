@@ -344,7 +344,7 @@ async function openChat() {
     } else {
       const message = "خدمة كودي استجابت، لكن إعداداتها غير مكتملة حتى الآن.";
       setStatus(message, "info");
-      addMessage(message, "model");
+      addServiceNotice(message);
     }
   } catch {
     setStatus("لم نتمكن من فحص حالة كودي الآن. يمكنك المحاولة، وسنوضح لك أي مشكلة تظهر.", "info");
