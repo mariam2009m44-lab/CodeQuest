@@ -594,39 +594,60 @@ form?.addEventListener("submit", async event => {
   const controller = new AbortController();
   activeRequestController = controller;
 
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      controller.abort();
+      const timeoutError = new Error("انتهت مهلة الاتصال بخدمة كودي.");
+      timeoutError.name = "TimeoutError";
+      reject(timeoutError);
+    }, 48000);
+  });
+
   try {
-    const token = await requestUser.getIdToken();
-    const timeoutId = window.setTimeout(() => controller.abort(), 48000);
-    let response;
+    // Apply one end-to-end deadline to token refresh, Firestore context,
+    // the Worker request, and reading its response body. Previously the
+    // timer was cleared as soon as fetch returned headers, which could leave
+    // the chat stuck forever while waiting for JSON/body data.
+    const token = await Promise.race([
+      requestUser.getIdToken(),
+      timeoutPromise
+    ]);
+    const studentContext = await Promise.race([
+      getStudentPlatformContext(requestUser),
+      timeoutPromise
+    ]);
 
-    try {
-      response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        question: question || "حلّل الصورة المرفقة واشرح ما يظهر فيها بطريقة واضحة.",
-        imageData: imageForRequest || undefined,
-        history: history.slice(-10).map(item => ({
-          role: item.role,
-          text: String(item.text || "").slice(0, 1500)
-        })),
-        page_context: [
-          document.title,
-          location.pathname,
-          "CodeQuest learning platform. Answer general safe questions as well as programming, school subjects, mathematics, science, languages, writing, study skills, technology, and general knowledge.",
-          await getStudentPlatformContext(requestUser)
-        ].filter(Boolean).join(" | ").slice(0, 1450)
+    const response = await Promise.race([
+      fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          question: question || "حلّل الصورة المرفقة واشرح ما يظهر فيها بطريقة واضحة.",
+          imageData: imageForRequest || undefined,
+          history: history.slice(-10).map(item => ({
+            role: item.role,
+            text: String(item.text || "").slice(0, 1500)
+          })),
+          page_context: [
+            document.title,
+            location.pathname,
+            "CodeQuest learning platform. Answer general safe questions as well as programming, school subjects, mathematics, science, languages, writing, study skills, technology, and general knowledge.",
+            studentContext
+          ].filter(Boolean).join(" | ").slice(0, 1450)
+        }),
+        signal: controller.signal
       }),
-      signal: controller.signal
-      });
-    } finally {
-      window.clearTimeout(timeoutId);
-    }
+      timeoutPromise
+    ]);
 
-    const data = await response.json().catch(() => ({}));
+    const data = await Promise.race([
+      response.json().catch(() => ({})),
+      timeoutPromise
+    ]);
 
     if (currentUser?.uid !== requestUser.uid) return;
 
@@ -685,6 +706,7 @@ form?.addEventListener("submit", async event => {
     addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model");
     if (input) { input.value = question; resizeComposer(); }
   } finally {
+    window.clearTimeout(timeoutId);
     hideTyping();
     if (activeRequestController === controller) activeRequestController = null;
     sending = false;
