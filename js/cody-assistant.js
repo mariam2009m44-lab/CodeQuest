@@ -448,7 +448,7 @@ async function restoreConversation(uid, loadVersion) {
     const welcome = messages.querySelector("#codyWelcomeMessage");
     if (saved.length) {
       welcome?.remove();
-      saved.forEach(item => addMessage(item.text, item.role, item.createdAt));
+      saved.forEach(item => addMessage(item.text, item.role, item.createdAt, { followups: item.role === "model" }));
     } else if (welcome) {
       welcome.hidden = false;
     }
