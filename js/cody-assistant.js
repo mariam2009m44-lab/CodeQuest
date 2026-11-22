@@ -294,9 +294,10 @@ function createSuggestions() {
     button.className = "cody-chat-suggestion";
     button.textContent = label;
     button.addEventListener("click", () => {
-      if (!input || sending) return;
+      if (!input || !form || sending) return;
       input.value = label;
-      input.focus();
+      // Suggested questions should submit immediately through the normal flow.
+      form.requestSubmit();
     });
     container.append(button);
   });
