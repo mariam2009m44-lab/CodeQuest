@@ -12,15 +12,17 @@ const form = document.getElementById("codyChatForm");
 const input = document.getElementById("codyChatInput");
 const messages = document.getElementById("codyChatMessages");
 const status = document.getElementById("codyChatStatus");
-const imageInput = document.getElementById("codyChatImage");
-const imageButton = document.getElementById("codyChatImageButton");
-const imagePreview = document.getElementById("codyChatImagePreview");
-let selectedImageData = null;
+const historyButton = document.getElementById("codyChatHistoryButton");
+const historyPanel = document.getElementById("codyChatHistoryPanel");
+const historyList = document.getElementById("codyChatHistoryList");
+const newChatButton = document.getElementById("codyNewChatButton");
 
 let currentUser = null;
 let authReady = false;
 let sending = false;
 let history = [];
+let currentConversationId = null;
+let savedConversations = [];
 let healthPromise = null;
 let focusBeforeChat = null;
 
@@ -187,7 +189,7 @@ function renderFormattedMessage(container, source) {
   flushParagraph();
 }
 
-function addMessage(text, role, imageData = null, createdAt = null) {
+function addMessage(text, role, createdAt = null) {
   if (!messages) return;
   const node = document.createElement("article");
   node.className = "cody-chat-message " + (role === "user" ? "cody-from-user" : "cody-from-bot");
@@ -210,14 +212,6 @@ function addMessage(text, role, imageData = null, createdAt = null) {
   const body = document.createElement("div");
   body.className = "cody-message-body";
   renderFormattedMessage(body, text);
-  if (imageData && /^data:image\/(png|jpeg|webp);base64,/.test(imageData)) {
-    const image = document.createElement("img");
-    image.className = "cody-message-image";
-    image.src = imageData;
-    image.alt = role === "user" ? "الصورة المرسلة إلى كودي" : "صورة مرفقة في المحادثة";
-    image.loading = "lazy";
-    body.append(image);
-  }
   node.append(meta, body);
   if (role !== "user") {
     const actions = document.createElement("div");
@@ -249,7 +243,7 @@ function showTyping() {
   typing.className = "cody-chat-typing";
   typing.setAttribute("role", "status");
   typing.setAttribute("aria-label", "كودي يكتب الآن");
-  typing.innerHTML = "<span></span><span></span><span></span>";
+  typing.innerHTML = '<span class="cody-typing-label">كودي بيكتب</span><span></span><span></span><span></span>';
   messages.append(typing);
   panel?.setAttribute("aria-busy", "true");
   messages.scrollTop = messages.scrollHeight;
@@ -363,9 +357,21 @@ function closeChat() {
 heroLauncher?.addEventListener("click", openChat);
 launcher?.addEventListener("click", openChat);
 closeButton?.addEventListener("click", closeChat);
+historyButton?.addEventListener("click", () => {
+  if (!historyPanel) return;
+  historyPanel.hidden = !historyPanel.hidden;
+  historyButton?.setAttribute("aria-expanded", String(!historyPanel.hidden));
+  if (!historyPanel.hidden) renderConversationList();
+});
+newChatButton?.addEventListener("click", startNewConversation);
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && panel && !panel.hidden) closeChat();
+  if (event.key === "Escape" && panel && !panel.hidden) {
+    if (historyPanel && !historyPanel.hidden) {
+      historyPanel.hidden = true;
+      historyButton?.setAttribute("aria-expanded", "false");
+    } else closeChat();
+  }
 });
 
 let activeRequestController = null;
@@ -419,41 +425,142 @@ async function getStudentPlatformContext(user) {
   }
 }
 
-async function persistChatMessage(uid, role, text, imageData = null) {
+async function persistChatMessage(uid, role, text, conversationId) {
   const payload = {
     role,
     text: String(text || "").slice(0, 5000),
+    conversationId: String(conversationId || "").slice(0, 80),
     createdAt: serverTimestamp()
   };
-  if (imageData) payload.imageData = imageData;
   await addDoc(collection(db, "users", uid, "codyMessages"), payload);
+}
+
+function createConversationId() {
+  return window.crypto?.randomUUID?.() || ("chat-" + Date.now() + "-" + Math.random().toString(36).slice(2, 9));
+}
+
+function conversationTimestamp(message) {
+  const value = message?.createdAt;
+  if (value?.toMillis) return value.toMillis();
+  if (value?.toDate) return value.toDate().getTime();
+  if (value instanceof Date) return value.getTime();
+  return 0;
+}
+
+function conversationTitle(conversation) {
+  const firstQuestion = conversation.messages.find(item => item.role === "user")?.text || "محادثة جديدة";
+  return firstQuestion.replace(/\s+/g, " ").trim().slice(0, 46) || "محادثة جديدة";
+}
+
+function renderConversationList() {
+  if (!historyList) return;
+  historyList.replaceChildren();
+  if (!savedConversations.length) {
+    const empty = document.createElement("p");
+    empty.className = "cody-history-empty";
+    empty.textContent = "لسه مفيش محادثات محفوظة. ابدأ محادثة جديدة.";
+    historyList.append(empty);
+    return;
+  }
+  savedConversations.forEach(conversation => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "cody-history-item";
+    if (conversation.id === currentConversationId) button.classList.add("is-active");
+    const title = document.createElement("strong");
+    title.textContent = conversationTitle(conversation);
+    const meta = document.createElement("small");
+    const lastMessage = conversation.messages[conversation.messages.length - 1];
+    const timestamp = conversationTimestamp(lastMessage);
+    const date = new Date(timestamp);
+    meta.textContent = timestamp
+      ? conversation.messages.length + " رسالة · " + new Intl.DateTimeFormat("ar-EG", { dateStyle: "medium" }).format(date)
+      : conversation.messages.length + " رسالة";
+    button.append(title, meta);
+    button.addEventListener("click", () => openSavedConversation(conversation.id));
+    historyList.append(button);
+  });
+}
+
+function openSavedConversation(conversationId) {
+  const conversation = savedConversations.find(item => item.id === conversationId);
+  if (!conversation || !messages) return;
+  currentConversationId = conversation.id;
+  history = conversation.messages.map(item => ({ role: item.role, text: item.text })).slice(-10);
+  messages.querySelectorAll(".cody-chat-message, .cody-chat-typing").forEach(node => node.remove());
+  conversation.messages.forEach(item => addMessage(item.text, item.role, item.createdAt || null));
+  if (historyPanel) historyPanel.hidden = true;
+  historyButton?.setAttribute("aria-expanded", "false");
+  renderConversationList();
+  setStatus("فتحت المحادثة المحفوظة.", "success");
+  input?.focus();
+}
+
+function startNewConversation() {
+  if (!messages) return;
+  currentConversationId = createConversationId();
+  history = [];
+  messages.querySelectorAll(".cody-chat-message, .cody-chat-typing").forEach(node => node.remove());
+  addMessage("أهلًا! أنا كودي. اكتب سؤالك، وهنفكر فيه مع بعض خطوة بخطوة.", "model");
+  if (historyPanel) historyPanel.hidden = true;
+  historyButton?.setAttribute("aria-expanded", "false");
+  renderConversationList();
+  createSuggestions();
+  setStatus("بدأت محادثة جديدة.", "success");
+  input?.focus();
+}
+
+function rememberConversationMessage(conversationId, role, text) {
+  let conversation = savedConversations.find(item => item.id === conversationId);
+  if (!conversation) {
+    conversation = { id: conversationId, messages: [] };
+    savedConversations.unshift(conversation);
+  }
+  conversation.messages.push({ role, text, createdAt: new Date() });
+  savedConversations.sort((a, b) =>
+    conversationTimestamp(b.messages[b.messages.length - 1]) -
+    conversationTimestamp(a.messages[a.messages.length - 1])
+  );
+  renderConversationList();
 }
 
 async function loadChatHistory(user) {
   if (!messages || !user || conversationLoadUid === user.uid) return;
   conversationLoadUid = user.uid;
-  setStatus("جارٍ تحميل محادثاتك السابقة...", "info");
+  setStatus("جارٍ تحميل كل محادثاتك السابقة...", "info");
   try {
     const saved = await getDocs(query(
       collection(db, "users", user.uid, "codyMessages"),
-      orderBy("createdAt", "desc"),
-      limit(50)
+      orderBy("createdAt", "asc")
     ));
     if (currentUser?.uid !== user.uid) return;
     messages.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
     history = [];
-    const records = saved.docs.map(item => item.data()).reverse();
-    if (!records.length) {
-      addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
-    }
-    for (const item of records) {
+    const grouped = new Map();
+    for (const snapshot of saved.docs) {
+      const item = snapshot.data();
       if (!["user", "model"].includes(item.role) || typeof item.text !== "string") continue;
-      addMessage(item.text, item.role, item.imageData || null, item.createdAt || null);
-      history.push({ role: item.role, text: item.text });
+      const id = typeof item.conversationId === "string" && item.conversationId
+        ? item.conversationId
+        : "legacy-conversation";
+      if (!grouped.has(id)) grouped.set(id, []);
+      grouped.get(id).push({ role: item.role, text: item.text, createdAt: item.createdAt || null });
     }
-    history = history.slice(-10);
-    setStatus("محادثاتك محفوظة على حسابك.", "success");
-    createSuggestions();
+    savedConversations = Array.from(grouped, ([id, records]) => ({ id, messages: records }))
+      .sort((a, b) =>
+        conversationTimestamp(b.messages[b.messages.length - 1]) -
+        conversationTimestamp(a.messages[a.messages.length - 1])
+      );
+    renderConversationList();
+    if (savedConversations.length) {
+      openSavedConversation(savedConversations[0].id);
+      setStatus("كل محادثاتك السابقة محفوظة على حسابك.", "success");
+    } else {
+      currentConversationId = createConversationId();
+      addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
+      setStatus("ابدأ أول محادثة، وهتفضل محفوظة على حسابك.", "success");
+      createSuggestions();
+    }
   } catch (error) {
     conversationLoadUid = null;
     console.warn("Could not load Cody conversation history:", error?.code || error);
@@ -470,9 +577,10 @@ onAuthStateChanged(auth, user => {
     activeRequestController?.abort();
     history = [];
     conversationLoadUid = null;
-    selectedImageData = null;
-    if (imagePreview) imagePreview.replaceChildren();
+    currentConversationId = null;
+    savedConversations = [];
     messages?.querySelectorAll(".cody-chat-message").forEach(node => node.remove());
+    renderConversationList();
     previousAuthUid = nextUid;
   }
 
@@ -489,62 +597,6 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-
-async function prepareChatImage(file) {
-  if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) {
-    setStatus("اختار صورة بصيغة PNG أو JPG أو WebP.", "error");
-    return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    setStatus("حجم الصورة الأصلي يجب ألا يتجاوز 5 ميجابايت.", "error");
-    return;
-  }
-  try {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const context = canvas.getContext("2d", { alpha: false });
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close?.();
-    let quality = 0.78;
-    let dataUrl = canvas.toDataURL("image/jpeg", quality);
-    while (dataUrl.length > 520000 && quality > 0.42) {
-      quality -= 0.08;
-      dataUrl = canvas.toDataURL("image/jpeg", quality);
-    }
-    if (dataUrl.length > 520000) throw new Error("IMAGE_TOO_LARGE");
-    selectedImageData = dataUrl;
-    if (imagePreview) {
-      imagePreview.replaceChildren();
-      const image = document.createElement("img");
-      image.src = dataUrl;
-      image.alt = "معاينة الصورة المرفقة";
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.textContent = "إزالة الصورة";
-      remove.addEventListener("click", () => {
-        selectedImageData = null;
-        imagePreview.replaceChildren();
-        if (imageInput) imageInput.value = "";
-      });
-      imagePreview.append(image, remove);
-    }
-    setStatus("الصورة جاهزة للإرسال إلى كودي.", "success");
-  } catch (error) {
-    console.warn("Image preparation failed:", error);
-    setStatus("تعذر تجهيز الصورة. جرّب صورة أخرى.", "error");
-  }
-}
-imageButton?.addEventListener("click", () => imageInput?.click());
-imageInput?.addEventListener("change", () => {
-  const file = imageInput.files?.[0];
-  if (file) prepareChatImage(file);
-  imageInput.value = "";
-});
 
 function resizeComposer() {
   if (!input) return;
@@ -565,7 +617,7 @@ form?.addEventListener("submit", async event => {
   if (sending) return;
 
   const question = input?.value.trim() || "";
-  if (!question && !selectedImageData) return;
+  if (!question) return;
 
   if (!authReady) {
     setStatus("لحظة واحدة، جارٍ التحقق من الحساب.", "info");
@@ -580,12 +632,12 @@ form?.addEventListener("submit", async event => {
   sending = true;
   const submit = form.querySelector('button[type="submit"]');
   if (submit) submit.disabled = true;
-  if (imageButton) imageButton.disabled = true;
   if (input) input.disabled = true;
 
   panel?.querySelector(".cody-chat-suggestions")?.remove();
-  const imageForRequest = selectedImageData;
-  addMessage(question || "ممكن تشرحلي الصورة دي؟", "user", imageForRequest);
+  if (!currentConversationId) currentConversationId = createConversationId();
+  const conversationIdForRequest = currentConversationId;
+  addMessage(question, "user");
   showTyping();
   setStatus("كودي بيجهّز الإجابة...", "loading");
   playCodyEmotion("encourage");
@@ -626,8 +678,7 @@ form?.addEventListener("submit", async event => {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          question: question || "حلّل الصورة المرفقة واشرح ما يظهر فيها بطريقة واضحة.",
-          imageData: imageForRequest || undefined,
+          question,
           history: history.slice(-10).map(item => ({
             role: item.role,
             text: String(item.text || "").slice(0, 1500)
@@ -676,15 +727,15 @@ form?.addEventListener("submit", async event => {
       { role: "model", text: data.answer.trim() }
     );
     try {
-      await persistChatMessage(requestUser.uid, "user", userText, imageForRequest);
-      await persistChatMessage(requestUser.uid, "model", data.answer.trim());
+      await persistChatMessage(requestUser.uid, "user", userText, conversationIdForRequest);
+      await persistChatMessage(requestUser.uid, "model", data.answer.trim(), conversationIdForRequest);
+      rememberConversationMessage(conversationIdForRequest, "user", userText);
+      rememberConversationMessage(conversationIdForRequest, "model", data.answer.trim());
       setStatus("تم الرد وحفظ المحادثة على حسابك.", "success");
     } catch (saveError) {
       console.warn("Cody reply succeeded but chat history could not be saved:", saveError?.code || saveError);
       setStatus("تم الرد، لكن تعذر حفظ المحادثة الآن.", "info");
     }
-    selectedImageData = null;
-    if (imagePreview) imagePreview.replaceChildren();
     history = history.slice(-10);
 
     if (input) { input.value = ""; input.style.height = "auto"; }
@@ -711,7 +762,6 @@ form?.addEventListener("submit", async event => {
     if (activeRequestController === controller) activeRequestController = null;
     sending = false;
     if (submit) submit.disabled = false;
-    if (imageButton) imageButton.disabled = false;
     if (input) {
       input.disabled = false;
       input.focus();
