@@ -184,7 +184,7 @@ function renderFormattedMessage(container, source) {
 }
 
 function addMessage(text, role, createdAt = null) {
-  if (!messages) return;
+  if (!messages) return null;
   const node = document.createElement("article");
   node.className = "cody-chat-message " + (role === "user" ? "cody-from-user" : "cody-from-bot");
   node.dir = "auto";
@@ -229,6 +229,19 @@ function addMessage(text, role, createdAt = null) {
   }
   messages.append(node);
   messages.scrollTo({ top: messages.scrollHeight, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  return node;
+}
+
+function addServiceNotice(message) {
+  if (!messages) return;
+  const existing = messages.querySelector('[data-cody-service-notice="true"]');
+  if (existing) {
+    const body = existing.querySelector(".cody-message-body");
+    if (body) body.textContent = message;
+    return;
+  }
+  const notice = addMessage(message, "model");
+  notice?.setAttribute("data-cody-service-notice", "true");
 }
 
 function showTyping() {
@@ -304,7 +317,6 @@ async function openChat() {
   panel.hidden = false;
   launcher?.setAttribute("aria-expanded", "true");
   playCodyEmotion("wave");
-  createSuggestions();
 
   if (!authReady) {
     setStatus("جارٍ التحقق من جلسة الحساب...", "info");
@@ -314,17 +326,19 @@ async function openChat() {
     setStatus("سجّل الدخول أولًا لاستخدام كودي.", "error");
     return;
   }
+
+  createSuggestions();
   input?.focus();
   try {
     const health = await getServiceHealth();
     if (health.configured === false) {
       const message = "كودي غير متاح حاليًا لأن مفتاح Gemini غير مضبوط على خادم المنصة. دي مشكلة إعدادات في الخادم، مش في سؤالك.";
       setStatus(message, "error");
-      addMessage(message, "model");
+      addServiceNotice(message);
     } else if (health.quotaAvailable === false) {
       const message = "كودي متوقف مؤقتًا لأن حماية الاستخدام اليومي غير مفعّلة على الخادم.";
       setStatus(message, "error");
-      addMessage(message, "model");
+      addServiceNotice(message);
     } else if (health.ready === true) {
       setStatus("كودي متصل وجاهز لاستقبال أسئلتك.", "success");
     } else {
