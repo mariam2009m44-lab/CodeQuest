@@ -377,10 +377,17 @@ onAuthStateChanged(auth, user => {
     // Never carry one account's private conversation into another account.
     activeRequestController?.abort();
     history = [];
-    messages?.querySelectorAll(".cody-chat-message, .cody-chat-typing").forEach(node => node.remove());
-    // Always seed the new session with a visible welcome message. This also
-    // prevents an empty transcript after Firebase restores or changes auth.
-    addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
+
+    // Keep the server-rendered welcome message in the DOM. Removing every
+    // message here caused a blank transcript during Firebase auth restore.
+    messages?.querySelectorAll(".cody-chat-message:not(#codyWelcomeMessage), .cody-chat-typing").forEach(node => node.remove());
+    const welcome = messages?.querySelector("#codyWelcomeMessage");
+    if (welcome) {
+      welcome.hidden = false;
+      welcome.textContent = "أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.";
+    } else if (messages && !messages.querySelector(".cody-chat-message")) {
+      addMessage("أهلًا! أنا كودي. اسألني عن الدراسة أو العلوم أو الرياضيات أو اللغات أو البرمجة أو أي فكرة مناسبة، وهنفكر فيها مع بعض خطوة بخطوة.", "model");
+    }
     previousAuthUid = nextUid;
   }
 
