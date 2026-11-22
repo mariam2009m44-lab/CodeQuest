@@ -695,7 +695,12 @@ async function handleCodySubmit(event) {
     // A sign-out or account switch intentionally aborts the old account's request.
     if (currentUser?.uid !== requestUser.uid) return;
     if (stopRequested && error?.name === "AbortError") {
-      setStatus("تم إيقاف الرد. السؤال ما زال محفوظًا في المحادثة.", "info");
+      const lastTurn = history[history.length - 1];
+      if (!(lastTurn?.role === "user" && lastTurn.text === question)) {
+        history.push({ role: "user", text: question });
+        history = history.slice(-10);
+      }
+      setStatus("تم إيقاف الرد. تقدر تكمل بسؤال جديد.", "info");
       return;
     }
 
