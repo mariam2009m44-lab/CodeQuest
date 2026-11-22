@@ -14,6 +14,7 @@ const input = document.getElementById("codyChatInput");
 const messages = document.getElementById("codyChatMessages");
 const status = document.getElementById("codyChatStatus");
 const sendButton = form?.querySelector('button[type="submit"]') || null;
+const stopButton = document.getElementById("codyChatStop");
 
 let currentUser = null;
 let authReady = false;
@@ -425,7 +426,16 @@ document.addEventListener("keydown", event => {
 });
 
 let activeRequestController = null;
+let stopRequested = false;
 let previousAuthUid = null;
+
+stopButton?.addEventListener("click", () => {
+  if (!sending || !activeRequestController) return;
+  stopRequested = true;
+  setStatus("تم إيقاف الرد. تقدر تسأل كودي سؤالًا آخر.", "info");
+  activeRequestController.abort();
+  stopButton.disabled = true;
+});
 
 async function persistConversationMessage(uid, role, text) {
   if (!uid || !["user", "model"].includes(role) || !String(text || "").trim()) return;
@@ -581,8 +591,10 @@ async function handleCodySubmit(event) {
   }
 
   sending = true;
+  stopRequested = false;
   const submit = form.querySelector('button[type="submit"]');
   if (submit) submit.disabled = true;
+  if (stopButton) { stopButton.hidden = false; stopButton.disabled = false; }
   if (input) input.disabled = true;
 
   panel?.querySelector(".cody-chat-suggestions")?.remove();
@@ -682,6 +694,10 @@ async function handleCodySubmit(event) {
   } catch (error) {
     // A sign-out or account switch intentionally aborts the old account's request.
     if (currentUser?.uid !== requestUser.uid) return;
+    if (stopRequested && error?.name === "AbortError") {
+      setStatus("تم إيقاف الرد. السؤال ما زال محفوظًا في المحادثة.", "info");
+      return;
+    }
 
     const message = error?.name === "AbortError" || error?.name === "TimeoutError"
       ? "تأخر رد كودي أكثر من المتوقع. جرّب سؤالًا أقصر ثم أعد المحاولة."
@@ -707,6 +723,8 @@ async function handleCodySubmit(event) {
     hideTyping();
     if (activeRequestController === controller) activeRequestController = null;
     sending = false;
+    stopRequested = false;
+    if (stopButton) { stopButton.hidden = true; stopButton.disabled = false; }
     if (submit) submit.disabled = false;
     if (input) {
       input.disabled = false;
