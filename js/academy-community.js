@@ -72,10 +72,13 @@ async function loadGroups(){
  if(!items.length){empty(groupDirectory,"لا توجد مجموعات منشورة حاليًا.");return;}
  for(const group of items){
   const card=el("article","community-card");card.append(el("h3","",group.name),el("p","community-meta","المدرّس: "+group.instructorName+" · الأعضاء: "+group.memberCount),el("p","",""+(group.description||"")),tags([group.topic].filter(Boolean)));
-  const actions=el("div","community-actions");
-  const join=el("button","","طلب الانضمام");join.type="button";
-  join.addEventListener("click",async()=>{join.disabled=true;try{await calls.requestJoin({groupId:group.id});join.textContent="تم إرسال الطلب";}catch(error){join.disabled=false;join.textContent="طلب الانضمام";setMessage(state,error.message||"تعذر إرسال الطلب.",true);}});
-  actions.append(join);card.append(actions);groupDirectory.append(card);
+  if(!isInstructor){
+   const actions=el("div","community-actions");
+   const join=el("button","","طلب الانضمام");join.type="button";
+   join.addEventListener("click",async()=>{join.disabled=true;try{await calls.requestJoin({groupId:group.id});join.textContent="تم إرسال الطلب";}catch(error){join.disabled=false;join.textContent="طلب الانضمام";setMessage(state,error.message||"تعذر إرسال الطلب.",true);}});
+   actions.append(join);card.append(actions);
+  }
+  groupDirectory.append(card);
  }
 }
 async function loadMyGroups(){
@@ -87,7 +90,7 @@ async function loadMyGroups(){
   if(data.role==="instructor"){
    card.append(el("p","community-meta","طلبات الانضمام المعلقة: "+(group.pendingRequests||0)));
    const requestWrap=el("div","");
-   const button=el("button","community-actions","عرض طلبات الانضمام");button.type="button";
+   const button=el("button","community-manage-button","عرض طلبات الانضمام");button.type="button";
    button.addEventListener("click",async()=>{
     button.disabled=true;requestWrap.replaceChildren(el("p","community-meta","جارٍ تحميل الطلبات…"));
     try{
