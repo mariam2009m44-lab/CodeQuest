@@ -3,7 +3,8 @@ const { getAuth } = require("firebase-admin/auth");
 
 const {
   getFirestore,
-  FieldValue
+  FieldValue,
+  FieldPath
 } = require("firebase-admin/firestore");
 
 const {
@@ -3424,6 +3425,100 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
     }))
   };
+});
+
+exports.listAcademyAdminRecords = onCall({ region: "europe-west1", timeoutSeconds: 60 }, async request => {
+  requireLiveAdmin(request);
+  const type = String(request.data?.type || "");
+  const cursorId = String(request.data?.cursorId || "");
+  const pageSize = Math.min(25, Math.max(5, Number(request.data?.pageSize || 25)));
+  const config = {
+    students: ["academyStudentProfiles", "updatedAt", null],
+    instructors: ["instructorApplications", "updatedAt", null],
+    pendingInstructors: ["instructorApplications", "updatedAt", "pending"],
+    classes: ["liveClasses", "createdAt", null],
+    groups: ["teacherGroups", "createdAt", null],
+    posts: ["instructorPosts", "createdAt", null],
+    auditLogs: ["academyAuditLogs", "createdAt", null]
+  }[type];
+  if (!config || (cursorId && !/^[A-Za-z0-9_-]{1,150}$/.test(cursorId))) {
+    throw new HttpsError("invalid-argument", "نوع السجلات أو مؤشر الصفحة غير صالح.");
+  }
+  const [collectionName, sortField, statusFilter] = config;
+  const collection = db.collection(collectionName);
+  let query = collection;
+  if (statusFilter) query = query.where("status", "==", statusFilter);
+  query = query.orderBy(sortField, "desc").orderBy(FieldPath.documentId(), "desc");
+  if (cursorId) {
+    const cursor = await collection.doc(cursorId).get();
+    if (!cursor.exists) throw new HttpsError("failed-precondition", "تعذر استكمال الصفحة؛ حدّثي القائمة وحاولي مرة أخرى.");
+    query = query.startAfter(cursor);
+  }
+  const snapshot = await query.limit(pageSize + 1).get();
+  const hasMore = snapshot.docs.length > pageSize;
+  const docs = snapshot.docs.slice(0, pageSize);
+  const records = await Promise.all(docs.map(async doc => {
+    const data = doc.data();
+    if (type === "students") return {
+      uid: doc.id, displayName: String(data.displayName || "متعلّم"), email: String(data.email || ""),
+      ageBand: String(data.ageBand || ""), grade: String(data.grade || ""), skillLevel: String(data.skillLevel || ""),
+      interests: Array.isArray(data.interests) ? data.interests : [], learningGoals: String(data.learningGoals || ""),
+      learningNeeds: String(data.learningNeeds || ""), preferredSchedule: String(data.preferredSchedule || ""),
+      guardianConsent: data.guardianConsent === true, guardianConsentVerified: data.guardianConsentVerified === true,
+      status: String(data.status || "active"), createdAt: data.createdAt?.toDate?.().toISOString() || null,
+      updatedAt: data.updatedAt?.toDate?.().toISOString() || null, cursorId: doc.id
+    };
+    if (type === "instructors" || type === "pendingInstructors") {
+      const account = await getAuth().getUser(doc.id).catch(() => null);
+      return {
+        uid: doc.id, fullName: String(data.fullName || ""), email: String(data.email || ""),
+        emailVerified: account?.emailVerified === true, specialties: Array.isArray(data.specialties) ? data.specialties : [],
+        experience: String(data.experience || ""), bio: String(data.bio || ""), portfolioUrl: String(data.portfolioUrl || ""),
+        linkedinUrl: String(data.linkedinUrl || ""), introVideoUrl: String(data.introVideoUrl || ""),
+        teachingDemoUrl: String(data.teachingDemoUrl || ""), qualifications: String(data.qualifications || ""),
+        teachingExperience: String(data.teachingExperience || ""), teachingStyles: Array.isArray(data.teachingStyles) ? data.teachingStyles : [],
+        ageGroups: Array.isArray(data.ageGroups) ? data.ageGroups : [], teachingLevels: Array.isArray(data.teachingLevels) ? data.teachingLevels : [],
+        sampleWorkLinks: Array.isArray(data.sampleWorkLinks) ? data.sampleWorkLinks : [], availability: String(data.availability || ""),
+        status: String(data.status || "pending"), submittedAt: data.submittedAt?.toDate?.().toISOString() || null,
+        updatedAt: data.updatedAt?.toDate?.().toISOString() || null, cursorId: doc.id
+      };
+    }
+    if (type === "classes") {
+      const enrollmentSnapshot = await doc.ref.collection("enrollments").orderBy("enrolledAt", "asc").limit(50).get();
+      const roster = await Promise.all(enrollmentSnapshot.docs.map(async enrollment => {
+        const user = await db.collection("users").doc(enrollment.id).get();
+        return {
+          uid: enrollment.id, displayName: String(user.data()?.displayName || "طالب"),
+          status: String(enrollment.data()?.status || "enrolled"),
+          enrolledAt: enrollment.data()?.enrolledAt?.toDate?.().toISOString() || null
+        };
+      }));
+      return {
+        id: doc.id, title: String(data.title || ""), instructorName: String(data.instructorName || ""),
+        instructorUid: String(data.instructorUid || ""), status: String(data.status || "scheduled"),
+        startsAt: data.startsAt?.toDate?.().toISOString() || null, durationMinutes: Number(data.durationMinutes || 60),
+        capacity: Number(data.capacity || 12), enrollmentCount: Number(data.enrollmentCount ?? roster.filter(student => student.status === "enrolled").length),
+        students: roster, cursorId: doc.id
+      };
+    }
+    if (type === "groups") return {
+      id: doc.id, name: String(data.name || ""), topic: String(data.topic || ""),
+      instructorUid: String(data.instructorUid || ""), instructorName: String(data.instructorName || ""),
+      memberCount: Number(data.memberCount || 0), status: String(data.status || ""),
+      createdAt: data.createdAt?.toDate?.().toISOString() || null, cursorId: doc.id
+    };
+    if (type === "posts") return {
+      id: doc.id, instructorUid: String(data.instructorUid || ""), instructorName: String(data.instructorName || ""),
+      text: String(data.text || "").slice(0, 500), status: String(data.status || ""),
+      createdAt: data.createdAt?.toDate?.().toISOString() || null, cursorId: doc.id
+    };
+    return {
+      id: doc.id, actorUid: String(data.actorUid || ""), action: String(data.action || ""),
+      targetUid: String(data.targetUid || ""), targetId: String(data.targetId || ""),
+      createdAt: data.createdAt?.toDate?.().toISOString() || null, cursorId: doc.id
+    };
+  }));
+  return { success: true, type, records, hasMore, nextCursorId: hasMore ? docs[docs.length - 1]?.id || null : null };
 });
 
 exports.manageAcademyLiveClass = onCall({ region: "europe-west1", secrets: [REALTIMEKIT_API_TOKEN] }, async request => {
