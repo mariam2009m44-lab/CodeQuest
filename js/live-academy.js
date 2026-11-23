@@ -8,6 +8,7 @@ const createPanel = document.getElementById("createPanel");
 const adminPanel = document.getElementById("adminPanel");
 const bootstrapButton = document.getElementById("bootstrapAdmin");
 const approveForm = document.getElementById("approveInstructorForm");
+const approveSelfButton = document.getElementById("approveSelfButton");
 const adminFeedback = document.getElementById("adminFeedback");
 const createForm = document.getElementById("createClassForm");
 const feedback = document.getElementById("createFeedback");
@@ -106,6 +107,12 @@ bootstrapButton.addEventListener("click",async()=>{
     location.reload();
   }catch(error){showMessage(account,error?.message||"تعذر إعداد المسؤول. تأكدي من إعداد بريد المالك على الخادم.",true);}
   finally{bootstrapButton.disabled=false;}
+});
+approveSelfButton.addEventListener("click",async()=>{
+  approveSelfButton.disabled=true;
+  try{await approveInstructor({instructorUid:currentUser.uid});await currentUser.getIdToken(true);showMessage(adminFeedback,"تم اعتماد حسابك كمدرّب. حدّثي الصفحة.");location.reload();}
+  catch(error){showMessage(adminFeedback,error?.message||"تعذر اعتماد الحساب.",true);}
+  finally{approveSelfButton.disabled=false;}
 });
 approveForm.addEventListener("submit",async event=>{
   event.preventDefault();
