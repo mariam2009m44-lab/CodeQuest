@@ -38,8 +38,14 @@ onAuthStateChanged(auth,async user=>{
   const student=state.data?.studentProfile;const instructor=state.data?.instructorApplication;
   accountState.textContent="تم تسجيل الدخول باسم "+(user.displayName||"حساب CodeQuest")+". "+(user.emailVerified?"البريد الإلكتروني موثّق.":"يمكنك إكمال ملف الطالب أو طلب المدرب الآن؛ توثيق البريد مطلوب قبل اعتماد المدرب.");
   verifyButton.hidden=Boolean(user.emailVerified);
-  if(student){studentForm.elements.ageBand.value=student.ageBand||"";studentForm.elements.grade.value=student.grade||"";studentForm.elements.skillLevel.value=student.skillLevel||"beginner";(student.interests||[]).forEach(v=>{const input=studentForm.querySelector('input[value="'+v+'"]');if(input)input.checked=true;});const consentInput=studentForm.elements.guardianConsent;if(consentInput)consentInput.checked=student.guardianConsent===true;updateConsent();setFeedback(studentFeedback,"ملف الطالب محفوظ بالفعل. يمكنك تحديث بياناتك وإعادة الحفظ.");}
-  if(instructor){const labels={pending:"طلبك قيد المراجعة من إدارة CodeQuest.",approved:"تم اعتماد حسابك كمدرب. يمكنك إنشاء الفصول مباشرة.",rejected:"لم تتم الموافقة على الطلب السابق. يمكنك تحديث البيانات وإعادة التقديم."};setFeedback(instructorFeedback,labels[instructor.status]||"حالة الطلب: "+instructor.status,instructor.status==="rejected");}
+  if(student){studentForm.elements.ageBand.value=student.ageBand||"";studentForm.elements.grade.value=student.grade||"";studentForm.elements.skillLevel.value=student.skillLevel||"beginner";studentForm.elements.learningGoals.value=student.learningGoals||"";studentForm.elements.learningNeeds.value=student.learningNeeds||"";studentForm.elements.preferredSchedule.value=student.preferredSchedule||"";(student.interests||[]).forEach(v=>{const input=studentForm.querySelector('input[value="'+v+'"]');if(input)input.checked=true;});const consentInput=studentForm.elements.guardianConsent;if(consentInput)consentInput.checked=student.guardianConsent===true;updateConsent();setFeedback(studentFeedback,"ملف الطالب محفوظ بالفعل. يمكنك تحديث بياناتك وإعادة الحفظ.");}
+  if(instructor){
+   const labels={pending:"طلبك قيد المراجعة من إدارة CodeQuest.",approved:"تم اعتماد حسابك كمدرب. يمكنك إنشاء الفصول مباشرة.",rejected:"لم تتم الموافقة على الطلب السابق. يمكنك تحديث البيانات وإعادة التقديم."};
+   setFeedback(instructorFeedback,labels[instructor.status]||"حالة الطلب: "+instructor.status,instructor.status==="rejected");
+   ["fullName","experience","bio","portfolioUrl","availability","linkedinUrl","introVideoUrl","teachingDemoUrl","qualifications","teachingExperience"].forEach(name=>{if(instructorForm.elements[name])instructorForm.elements[name].value=instructor[name]||"";});
+   ["specialties","teachingStyles","ageGroups","teachingLevels"].forEach(name=>(instructor[name]||[]).forEach(value=>{const input=instructorForm.querySelector('input[name="'+name+'"][value="'+value+'"]');if(input)input.checked=true;}));
+   instructorForm.elements.sampleWorkLinks.value=(instructor.sampleWorkLinks||[]).join("\\n");
+  }
  }catch(error){accountState.textContent="تعذر تحميل حالة التسجيل. "+(error.message||"حاولي مرة أخرى.");}
 });
 verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتحي الرسالة ثم أعيدي تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
@@ -49,7 +55,7 @@ studentForm.addEventListener("submit",async event=>{
  try{
   const interests=checkedValues(studentForm,"interests");
   if(!interests.length)throw new Error("اختاري مجالًا واحدًا على الأقل.");
-  await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked});
+  await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked,learningGoals:studentForm.elements.learningGoals.value.trim(),learningNeeds:studentForm.elements.learningNeeds.value.trim(),preferredSchedule:studentForm.elements.preferredSchedule.value.trim()});
   setFeedback(studentFeedback,"تم حفظ ملف الطالب بنجاح. يمكنك الآن حجز مقعد في الفصول المتاحة.");
  }catch(error){setFeedback(studentFeedback,error.message||"تعذر حفظ البيانات.",true);}
  finally{button.disabled=false;}
@@ -60,7 +66,17 @@ instructorForm.addEventListener("submit",async event=>{
  try{
   const specialties=checkedValues(instructorForm,"specialties");
   if(!specialties.length)throw new Error("اختاري تخصصًا واحدًا على الأقل.");
-  await submitInstructor({fullName:instructorForm.elements.fullName.value.trim(),specialties,experience:instructorForm.elements.experience.value.trim(),bio:instructorForm.elements.bio.value.trim(),portfolioUrl:instructorForm.elements.portfolioUrl.value.trim(),availability:instructorForm.elements.availability.value.trim()});
+  const sampleWorkLinks=instructorForm.elements.sampleWorkLinks.value.split(/\\r?\\n/).map(value=>value.trim()).filter(Boolean);
+  await submitInstructor({
+   fullName:instructorForm.elements.fullName.value.trim(),specialties,
+   experience:instructorForm.elements.experience.value.trim(),bio:instructorForm.elements.bio.value.trim(),
+   portfolioUrl:instructorForm.elements.portfolioUrl.value.trim(),availability:instructorForm.elements.availability.value.trim(),
+   linkedinUrl:instructorForm.elements.linkedinUrl.value.trim(),introVideoUrl:instructorForm.elements.introVideoUrl.value.trim(),
+   teachingDemoUrl:instructorForm.elements.teachingDemoUrl.value.trim(),qualifications:instructorForm.elements.qualifications.value.trim(),
+   teachingExperience:instructorForm.elements.teachingExperience.value.trim(),
+   teachingStyles:checkedValues(instructorForm,"teachingStyles"),ageGroups:checkedValues(instructorForm,"ageGroups"),
+   teachingLevels:checkedValues(instructorForm,"teachingLevels"),sampleWorkLinks
+  });
   if(!currentUser.emailVerified){try{await sendEmailVerification(currentUser);}catch{}}
   setFeedback(instructorFeedback,currentUser.emailVerified?"تم إرسال طلبك إلى إدارة CodeQuest للمراجعة.":"تم إرسال طلبك، وأرسلنا رابط توثيق البريد. يجب توثيق البريد قبل اعتماد حسابك.");
  }catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال الطلب.",true);}
