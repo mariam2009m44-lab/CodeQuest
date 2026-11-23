@@ -16,6 +16,7 @@ const getOverview=httpsCallable(functions,"getAcademyAdminOverview");
 const review=httpsCallable(functions,"reviewInstructorApplication");
 const moderate=httpsCallable(functions,"moderateAcademyContent");
 const manageClass=httpsCallable(functions,"manageAcademyLiveClass");
+const reviewGuardian=httpsCallable(functions,"reviewStudentGuardianConsent");
 let allowed=false;
 function node(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;}
 function message(text,error=false){state.textContent=text;state.style.color=error?"#dc626e":"#25ad84";}
@@ -25,7 +26,32 @@ function renderPending(items){pending.replaceChildren();if(!items.length){pendin
 for(const [label,value] of [["المؤهلات",item.qualifications],["الخبرة التعليمية",item.teachingExperience],["أساليب التدريس",(item.teachingStyles||[]).join("، ")],["الفئات العمرية",(item.ageGroups||[]).join("، ")],["المستويات",(item.teachingLevels||[]).join("، ")]])if(value)details.append(node("p","",label+": "+value));
 for(const [label,value] of [["Portfolio",item.portfolioUrl],["LinkedIn",item.linkedinUrl],["الفيديو التعريفي",item.introVideoUrl],["عينة الدرس",item.teachingDemoUrl],...((item.sampleWorkLinks||[]).map((url,index)=>["عينة عمل "+(index+1),url]))])if(value){const a=node("a","admin-link","فتح "+label);a.href=value;a.target="_blank";a.rel="noopener noreferrer";details.append(a);}const actions=node("div","admin-actions");const approveButton=makeAction("اعتماد المدرب","approve",item.uid);approveButton.disabled=!item.emailVerified;approveButton.title=item.emailVerified?"":"يجب توثيق البريد قبل الاعتماد";actions.append(approveButton,makeAction("رفض الطلب","reject",item.uid));card.append(head,details,actions);pending.append(card);}}
 function dateLabel(value){return value?new Intl.DateTimeFormat("ar-EG",{dateStyle:"medium",timeStyle:"short"}).format(new Date(value)):"غير مسجل";}
-function renderStudents(items){students.replaceChildren();if(!items.length){students.append(node("p","admin-empty","لا توجد ملفات طلاب حتى الآن."));return;}for(const item of items){const card=node("article","admin-student");const head=node("div","admin-application-head");head.append(node("h3","",item.displayName),node("span","admin-status",item.ageBand||"الفئة العمرية غير محددة"));const details=node("div","admin-details");details.append(node("p","","البريد الإلكتروني: "+(item.email||"غير متاح")),node("p","","المرحلة الدراسية: "+(item.grade||"غير محددة")),node("p","","المستوى: "+({beginner:"مبتدئ",basic:"أساسي",intermediate:"متوسط"}[item.skillLevel]||"غير محدد")),node("p","","الاهتمامات: "+(item.interests||[]).join("، ")),node("p","","الأهداف التعليمية: "+(item.learningGoals||"غير محددة")),node("p","","احتياجات التعلم: "+(item.learningNeeds||"غير محددة")),node("p","","المواعيد المناسبة: "+(item.preferredSchedule||"غير محددة")),node("p","","موافقة ولي الأمر: "+(item.ageBand==="18+"?"غير مطلوبة (18+)":item.guardianConsent?"تم التأكيد":"غير مسجلة — يلزم التحقق")),node("p","","حالة الملف: "+(item.status||"غير محددة")),node("p","","تاريخ التسجيل: "+dateLabel(item.createdAt)),node("p","","آخر تحديث: "+dateLabel(item.updatedAt)));card.append(head,details);students.append(card);}}
+function renderStudents(items){
+ students.replaceChildren();
+ if(!items.length){students.append(node("p","admin-empty","لا توجد ملفات طلاب حتى الآن."));return;}
+ for(const item of items){
+  const card=node("article","admin-student");
+  const head=node("div","admin-application-head");
+  head.append(node("h3","",item.displayName),node("span","admin-status",item.ageBand||"الفئة العمرية غير محددة"));
+  const details=node("div","admin-details");
+  const consentLabel=item.ageBand==="18+"?"غير مطلوبة (18+)":item.guardianConsentVerified?"تم التحقق إداريًا":item.guardianConsent?"إقرار ذاتي — بانتظار تحقق الإدارة":"لم يُسجل إقرار";
+  details.append(node("p","","البريد الإلكتروني: "+(item.email||"غير متاح")),node("p","","المرحلة الدراسية: "+(item.grade||"غير محددة")),node("p","","المستوى: "+({beginner:"مبتدئ",basic:"أساسي",intermediate:"متوسط"}[item.skillLevel]||"غير محدد")),node("p","","الاهتمامات: "+(item.interests||[]).join("، ")),node("p","","الأهداف التعليمية: "+(item.learningGoals||"غير محددة")),node("p","","احتياجات التعلم: "+(item.learningNeeds||"غير محددة")),node("p","","المواعيد المناسبة: "+(item.preferredSchedule||"غير محددة")),node("p","","موافقة ولي الأمر: "+consentLabel),node("p","","حالة الملف: "+(item.status||"غير محددة")),node("p","","تاريخ التسجيل: "+dateLabel(item.createdAt)),node("p","","آخر تحديث: "+dateLabel(item.updatedAt)));
+  card.append(head,details);
+  if(item.ageBand!=="18+"&&!item.guardianConsentVerified&&item.guardianConsent===true){
+   const actions=node("div","admin-actions");
+   const verify=node("button","admin-action","تأكيد الموافقة بعد التحقق");
+   verify.type="button";
+   verify.addEventListener("click",async()=>{
+    if(!window.confirm("لا تستخدمي هذا الإجراء إلا بعد التحقق فعليًا من موافقة ولي الأمر خارج المنصة. هل تم التحقق؟"))return;
+    verify.disabled=true;
+    try{await reviewGuardian({studentUid:item.uid,decision:"verify"});await load();}
+    catch(error){message(error.message||"تعذر تحديث حالة الموافقة.",true);verify.disabled=false;}
+   });
+   actions.append(verify);card.append(actions);
+  }
+  students.append(card);
+ }
+}
 function renderInstructors(items){instructors.replaceChildren();if(!items.length){instructors.append(node("p","admin-empty","لا توجد طلبات مدربين حتى الآن."));return;}const labels={pending:"قيد المراجعة",approved:"معتمد",rejected:"مرفوض"};for(const item of items){const card=node("article","admin-student");const head=node("div","admin-application-head");head.append(node("h3","",item.fullName||"مدرب بدون اسم"),node("span","admin-status",labels[item.status]||item.status));const details=node("div","admin-details");details.append(node("p","","البريد الإلكتروني: "+(item.email||"غير متاح")),node("p","","توثيق البريد: "+(item.emailVerified?"موثّق":"غير موثّق")),node("p","","التخصصات: "+(item.specialties||[]).join("، ")),node("p","","الخبرة أو المؤهل: "+(item.experience||"غير محدد")),node("p","","نبذة المدرب: "+(item.bio||"غير متاحة")),node("p","","المواعيد المتاحة: "+(item.availability||"غير محددة")),node("p","","المؤهلات: "+(item.qualifications||"غير محددة")),node("p","","الخبرة التعليمية: "+(item.teachingExperience||"غير محددة")),node("p","","أساليب التدريس: "+(item.teachingStyles||[]).join("، ")),node("p","","الفئات العمرية: "+(item.ageGroups||[]).join("، ")),node("p","","المستويات: "+(item.teachingLevels||[]).join("، ")),node("p","","تاريخ التقديم: "+dateLabel(item.submittedAt)),node("p","","آخر تحديث: "+dateLabel(item.updatedAt)));for(const [label,value] of [["Portfolio",item.portfolioUrl],["LinkedIn",item.linkedinUrl],["الفيديو التعريفي",item.introVideoUrl],["عينة الدرس",item.teachingDemoUrl],...((item.sampleWorkLinks||[]).map((url,index)=>["عينة عمل "+(index+1),url]))])if(value){const a=node("a","admin-link","فتح "+label);a.href=value;a.target="_blank";a.rel="noopener noreferrer";details.append(a);}card.append(head,details);instructors.append(card);}}
 function localDateTime(value){if(!value)return "";const date=new Date(value);const offset=date.getTimezoneOffset();return new Date(date.getTime()-offset*60000).toISOString().slice(0,16);}
 function renderClasses(items){
