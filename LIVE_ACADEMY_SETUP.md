@@ -158,3 +158,14 @@ The Academy marketplace is backed by callable Cloud Functions and Firestore coll
 The code and GitHub Pages interface are not equivalent to a deployed Firebase backend. Deploy the latest `functions/index.js`, `firestore.rules`, and `firestore.indexes.json` to the intended Firebase project only after confirming the active billing plan and required provider setup. Do not enable billing or purchase a provider service without the owner's explicit approval.
 
 The current instructor/student registration form includes a guardian-awareness confirmation checkbox, not an independently verified guardian identity or legally verified consent record. Before onboarding younger learners at scale, add a guardian verification workflow and define retention/deletion policies. Community posts and groups are not a substitute for active moderation; keep broad student-to-student direct messaging disabled.
+
+
+## Group-linked live classes and enrollment enforcement
+
+- Approved instructors can optionally link a scheduled live class to one of their active learning groups from the Live Academy form.
+- The backend verifies group ownership and active status before creating the meeting and stores the group's ID and name on the class record.
+- A learner can request group membership from the Academy Community page; only that group's approved instructor can accept the request.
+- For a group-linked class, the enrollment callable checks the learner's active Academy profile and active student membership in that exact group inside the Firestore transaction before reserving a seat.
+- Seat capacity remains transactionally enforced. Existing enrollment records are required to have status `enrolled` before a student receives a live-room token.
+- Classes without a linked group remain open to any signed-in learner with an active Academy profile, subject to seat availability.
+- This is a class-level group restriction, not a payment or attendance system. No payment collection is implemented.
