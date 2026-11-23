@@ -1,5 +1,5 @@
 import { auth, functions, authPersistenceReady } from "./firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
 const accountState=document.getElementById("accountState");
 const studentForm=document.getElementById("studentForm");
@@ -12,6 +12,7 @@ const studentPanel=document.getElementById("studentPanel");
 const instructorPanel=document.getElementById("instructorPanel");
 const consentRow=document.getElementById("guardianConsentRow");
 const ageSelect=studentForm.elements.ageBand;
+const verifyButton=document.getElementById("verifyEmailButton");
 const submitStudent=httpsCallable(functions,"submitStudentAcademyProfile");
 const submitInstructor=httpsCallable(functions,"submitInstructorApplication");
 const getStatus=httpsCallable(functions,"getMyAcademyRegistrationStatus");
@@ -35,11 +36,13 @@ onAuthStateChanged(auth,async user=>{
  try{
   const state=await getStatus({});
   const student=state.data?.studentProfile;const instructor=state.data?.instructorApplication;
-  accountState.textContent="تم تسجيل الدخول باسم "+(user.displayName||"حساب CodeQuest")+". "+(user.emailVerified?"البريد الإلكتروني موثّق.":"يجب توثيق البريد الإلكتروني قبل إرسال البيانات.");
+  accountState.textContent="تم تسجيل الدخول باسم "+(user.displayName||"حساب CodeQuest")+". "+(user.emailVerified?"البريد الإلكتروني موثّق.":"يمكنك إكمال ملف الطالب أو طلب المدرب الآن؛ توثيق البريد مطلوب قبل اعتماد المدرب.");
+  verifyButton.hidden=Boolean(user.emailVerified);
   if(student){studentForm.elements.ageBand.value=student.ageBand||"";studentForm.elements.grade.value=student.grade||"";studentForm.elements.skillLevel.value=student.skillLevel||"beginner";(student.interests||[]).forEach(v=>{const input=studentForm.querySelector('input[value="'+v+'"]');if(input)input.checked=true;});updateConsent();setFeedback(studentFeedback,"ملف الطالب محفوظ بالفعل. يمكنك تحديث بياناتك وإعادة الحفظ.");}
   if(instructor){const labels={pending:"طلبك قيد المراجعة من إدارة CodeQuest.",approved:"تم اعتماد حسابك كمدرب. يمكنك إنشاء الفصول مباشرة.",rejected:"لم تتم الموافقة على الطلب السابق. يمكنك تحديث البيانات وإعادة التقديم."};setFeedback(instructorFeedback,labels[instructor.status]||"حالة الطلب: "+instructor.status,instructor.status==="rejected");}
  }catch(error){accountState.textContent="تعذر تحميل حالة التسجيل. "+(error.message||"حاولي مرة أخرى.");}
 });
+verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتحي الرسالة ثم أعيدي تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
 studentForm.addEventListener("submit",async event=>{
  event.preventDefault();if(!currentUser)return;
  const button=studentForm.querySelector('button[type="submit"]');button.disabled=true;
@@ -58,7 +61,8 @@ instructorForm.addEventListener("submit",async event=>{
   const specialties=checkedValues(instructorForm,"specialties");
   if(!specialties.length)throw new Error("اختاري تخصصًا واحدًا على الأقل.");
   await submitInstructor({fullName:instructorForm.elements.fullName.value.trim(),specialties,experience:instructorForm.elements.experience.value.trim(),bio:instructorForm.elements.bio.value.trim(),portfolioUrl:instructorForm.elements.portfolioUrl.value.trim(),availability:instructorForm.elements.availability.value.trim()});
-  setFeedback(instructorFeedback,"تم إرسال طلبك. سيظهر عند إدارة CodeQuest للمراجعة، وستصلك حالة الطلب داخل هذه الصفحة.");
+  if(!currentUser.emailVerified){try{await sendEmailVerification(currentUser);}catch{}}
+  setFeedback(instructorFeedback,currentUser.emailVerified?"تم إرسال طلبك إلى إدارة CodeQuest للمراجعة.":"تم إرسال طلبك، وأرسلنا رابط توثيق البريد. يجب توثيق البريد قبل اعتماد حسابك.");
  }catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال الطلب.",true);}
  finally{button.disabled=false;}
 });
