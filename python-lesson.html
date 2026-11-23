@@ -3072,6 +3072,19 @@ html[data-theme="light"] .bottom-action {
   }
 
 
+  // Keep CodeMirror dimensions in sync when the lesson workspace changes size.
+  let editorResizeFrame = 0;
+  window.addEventListener("resize", () => {
+    if (!editor || editorResizeFrame) return;
+    editorResizeFrame = requestAnimationFrame(() => {
+      editorResizeFrame = 0;
+      const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
+      if (!codeArea || !document.getElementById("pythonEditorWrapper")) return;
+      editor.setSize("100%", `${Math.max(210, Math.round(codeArea.getBoundingClientRect().height))}px`);
+      editor.refresh();
+    });
+  }, { passive: true });
+
   function setPythonEditorHeight(height) {
     const codeArea = document.querySelector("#pythonEditorWrapper .code-area");
     const maxHeight = Math.min(720, Math.max(220, Math.floor(window.innerHeight * 0.7)));
