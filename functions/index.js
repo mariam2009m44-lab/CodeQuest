@@ -3083,11 +3083,15 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
   const skillLevel = String(request.data?.skillLevel || "");
   const interests = Array.isArray(request.data?.interests) ? [...new Set(request.data.interests.map(String))] : [];
   const guardianConsent = request.data?.guardianConsent === true;
+  const learningGoals = String(request.data?.learningGoals || "").trim();
+  const learningNeeds = String(request.data?.learningNeeds || "").trim();
+  const preferredSchedule = String(request.data?.preferredSchedule || "").trim();
   const allowedAges = ["10-12", "13-15", "16-17", "18+"];
   const allowedLevels = ["beginner", "basic", "intermediate"];
   const allowedInterests = ["python", "javascript", "cpp", "java", "web"];
   if (!allowedAges.includes(ageBand) || grade.length > 60 || !allowedLevels.includes(skillLevel) ||
-      interests.length < 1 || interests.length > 5 || interests.some(value => !allowedInterests.includes(value))) {
+      interests.length < 1 || interests.length > 5 || interests.some(value => !allowedInterests.includes(value)) ||
+      learningGoals.length > 500 || learningNeeds.length > 500 || preferredSchedule.length > 200) {
     throw new HttpsError("invalid-argument", "راجعي بيانات الطالب واختياراته.");
   }
   if (ageBand !== "18+" && !guardianConsent) throw new HttpsError("failed-precondition", "يلزم تأكيد موافقة ولي الأمر للطلاب دون 18 عامًا.");
@@ -3101,7 +3105,7 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
       uid,
       displayName: String(profile.data()?.displayName || user.displayName || "متعلّم").slice(0, 50),
       email: String(user.email || "").slice(0, 254),
-      ageBand, grade, skillLevel, interests,
+      ageBand, grade, skillLevel, interests, learningGoals, learningNeeds, preferredSchedule,
       guardianConsent: ageBand === "18+" ? null : true,
       status: "active",
       updatedAt: FieldValue.serverTimestamp(),
@@ -3119,14 +3123,31 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
   const bio = String(request.data?.bio || "").trim();
   const portfolioUrl = String(request.data?.portfolioUrl || "").trim();
   const availability = String(request.data?.availability || "").trim();
+  const linkedinUrl = String(request.data?.linkedinUrl || "").trim();
+  const introVideoUrl = String(request.data?.introVideoUrl || "").trim();
+  const teachingDemoUrl = String(request.data?.teachingDemoUrl || "").trim();
+  const qualifications = String(request.data?.qualifications || "").trim();
+  const teachingExperience = String(request.data?.teachingExperience || "").trim();
+  const teachingStyles = Array.isArray(request.data?.teachingStyles) ? [...new Set(request.data.teachingStyles.map(String))] : [];
+  const ageGroups = Array.isArray(request.data?.ageGroups) ? [...new Set(request.data.ageGroups.map(String))] : [];
+  const teachingLevels = Array.isArray(request.data?.teachingLevels) ? [...new Set(request.data.teachingLevels.map(String))] : [];
+  const sampleWorkLinks = Array.isArray(request.data?.sampleWorkLinks) ? [...new Set(request.data.sampleWorkLinks.map(value => String(value).trim()).filter(Boolean))] : [];
   const allowed = ["python", "javascript", "cpp", "java", "web", "ai"];
-  if (fullName.length < 3 || fullName.length > 80 || specialties.length < 1 || specialties.length > 5 ||
+  const allowedStyles = ["projects", "interactive", "problem-solving", "visual", "discussion"];
+  const allowedAgeGroups = ["10-12", "13-15", "16-17", "18+"];
+  const allowedLevels = ["beginner", "basic", "intermediate", "advanced"];
+  const validHttpsUrl = value => !value || (value.length <= 500 && /^https:\/\//i.test(value));
+  if (fullName.length < 3 || fullName.length > 80 || specialties.length < 1 || specialties.length > 6 ||
       specialties.some(value => !allowed.includes(value)) || experience.length > 120 ||
-      bio.length < 30 || bio.length > 1200 || availability.length > 300) {
-    throw new HttpsError("invalid-argument", "راجعي بيانات طلب المدرب. النبذة مطلوبة من 30 إلى 1200 حرف.");
-  }
-  if (portfolioUrl && (!portfolioUrl.startsWith("https://") || portfolioUrl.length > 300)) {
-    throw new HttpsError("invalid-argument", "رابط الأعمال يجب أن يبدأ بـ https://");
+      bio.length < 30 || bio.length > 1200 || availability.length > 300 ||
+      qualifications.length > 500 || teachingExperience.length > 800 ||
+      teachingStyles.length > 5 || teachingStyles.some(value => !allowedStyles.includes(value)) ||
+      ageGroups.length > 4 || ageGroups.some(value => !allowedAgeGroups.includes(value)) ||
+      teachingLevels.length > 4 || teachingLevels.some(value => !allowedLevels.includes(value)) ||
+      sampleWorkLinks.length > 5 || sampleWorkLinks.some(value => !validHttpsUrl(value)) ||
+      !validHttpsUrl(portfolioUrl) || !validHttpsUrl(linkedinUrl) ||
+      !validHttpsUrl(introVideoUrl) || !validHttpsUrl(teachingDemoUrl)) {
+    throw new HttpsError("invalid-argument", "راجعي بيانات طلب المدرب والروابط والتخصصات.");
   }
   const user = await getAuth().getUser(uid);
   if (user.disabled) throw new HttpsError("permission-denied", "هذا الحساب غير مفعّل.");
@@ -3135,9 +3156,14 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
   await db.collection("instructorApplications").doc(uid).set({
     uid, fullName, email: String(user.email || "").slice(0, 254),
     emailVerified: user.emailVerified === true, specialties,
-    experience, bio, portfolioUrl, availability, status: "pending",
-    submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+    experience, bio, portfolioUrl, availability, linkedinUrl, introVideoUrl, teachingDemoUrl,
+    qualifications, teachingExperience, teachingStyles, ageGroups, teachingLevels, sampleWorkLinks,
+    status: "pending", submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
   }, { merge: true });
+  await db.collection("academyAuditLogs").add({
+    actorUid: uid, action: "instructor_application_submitted", targetUid: uid,
+    createdAt: FieldValue.serverTimestamp()
+  });
   return { success: true, status: "pending" };
 });
 
@@ -3246,7 +3272,37 @@ exports.reviewInstructorApplication = onCall({ region: "europe-west1" }, async r
     await db.collection("liveInstructorApprovals").doc(uid).set({
       uid, approvedBy: request.auth.uid, approvedAt: FieldValue.serverTimestamp(), status: "approved"
     });
+    const applicationData = application.data();
+    await db.collection("publicInstructorProfiles").doc(uid).set({
+      uid,
+      displayName: String(applicationData.fullName || "مدرّب CodeQuest").slice(0, 80),
+      bio: String(applicationData.bio || "").slice(0, 1200),
+      specialties: Array.isArray(applicationData.specialties) ? applicationData.specialties : [],
+      experience: String(applicationData.experience || "").slice(0, 120),
+      qualifications: String(applicationData.qualifications || "").slice(0, 500),
+      teachingExperience: String(applicationData.teachingExperience || "").slice(0, 800),
+      portfolioUrl: String(applicationData.portfolioUrl || ""),
+      linkedinUrl: String(applicationData.linkedinUrl || ""),
+      introVideoUrl: String(applicationData.introVideoUrl || ""),
+      teachingDemoUrl: String(applicationData.teachingDemoUrl || ""),
+      sampleWorkLinks: Array.isArray(applicationData.sampleWorkLinks) ? applicationData.sampleWorkLinks : [],
+      teachingStyles: Array.isArray(applicationData.teachingStyles) ? applicationData.teachingStyles : [],
+      ageGroups: Array.isArray(applicationData.ageGroups) ? applicationData.ageGroups : [],
+      teachingLevels: Array.isArray(applicationData.teachingLevels) ? applicationData.teachingLevels : [],
+      availability: String(applicationData.availability || ""),
+      approvedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+      visibility: "public"
+    });
+  } else {
+    await db.collection("publicInstructorProfiles").doc(uid).delete().catch(() => {});
   }
+  await db.collection("academyAuditLogs").add({
+    actorUid: request.auth.uid,
+    action: decision === "approve" ? "instructor_application_approved" : "instructor_application_rejected",
+    targetUid: uid,
+    createdAt: FieldValue.serverTimestamp()
+  });
   await applicationRef.set({
     status: decision === "approve" ? "approved" : "rejected",
     reviewedBy: request.auth.uid, reviewedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
@@ -3298,4 +3354,195 @@ exports.getMyAcademyRegistrationStatus = onCall({ region: "europe-west1" }, asyn
       submittedAt: instructor.data()?.submittedAt?.toDate?.().toISOString() || null
     } : null
   };
+});
+
+
+// Production Academy marketplace and group backend.
+// All marketplace records are accessed through callable functions; browser clients
+// never receive direct write access to private application, membership, or audit data.
+function validateAcademyText(value, min, max, fieldName) {
+  const text = String(value || "").trim();
+  if (text.length < min || text.length > max) {
+    throw new HttpsError("invalid-argument", "حقل " + fieldName + " غير صالح.");
+  }
+  return text;
+}
+
+exports.listApprovedInstructors = onCall({ region: "europe-west1" }, async request => {
+  requireAuth(request);
+  const snapshot = await db.collection("publicInstructorProfiles")
+    .where("visibility", "==", "public").orderBy("approvedAt", "desc").limit(60).get();
+  return {
+    success: true,
+    instructors: snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        uid: doc.id, displayName: String(data.displayName || ""),
+        bio: String(data.bio || ""), specialties: Array.isArray(data.specialties) ? data.specialties : [],
+        experience: String(data.experience || ""), qualifications: String(data.qualifications || ""),
+        portfolioUrl: String(data.portfolioUrl || ""), linkedinUrl: String(data.linkedinUrl || ""),
+        introVideoUrl: String(data.introVideoUrl || ""), teachingDemoUrl: String(data.teachingDemoUrl || ""),
+        sampleWorkLinks: Array.isArray(data.sampleWorkLinks) ? data.sampleWorkLinks : [],
+        teachingStyles: Array.isArray(data.teachingStyles) ? data.teachingStyles : [],
+        ageGroups: Array.isArray(data.ageGroups) ? data.ageGroups : [],
+        teachingLevels: Array.isArray(data.teachingLevels) ? data.teachingLevels : [],
+        availability: String(data.availability || "")
+      };
+    })
+  };
+});
+
+exports.createInstructorPost = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireApprovedLiveInstructor(request);
+  const text = validateAcademyText(request.data?.text, 1, 3000, "المنشور");
+  const links = Array.isArray(request.data?.links) ? [...new Set(request.data.links.map(value => String(value).trim()).filter(Boolean))] : [];
+  if (links.length > 3 || links.some(value => value.length > 500 || !/^https:\/\//i.test(value))) {
+    throw new HttpsError("invalid-argument", "روابط المنشور غير صالحة.");
+  }
+  const profile = await db.collection("publicInstructorProfiles").doc(uid).get();
+  if (!profile.exists || profile.data()?.visibility !== "public") {
+    throw new HttpsError("failed-precondition", "يجب أن يكون ملف المدرّس معتمدًا ومنشورًا.");
+  }
+  const ref = await db.collection("instructorPosts").add({
+    instructorUid: uid, instructorName: String(profile.data()?.displayName || "مدرّب"),
+    text, links, status: "published", createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp()
+  });
+  await db.collection("academyAuditLogs").add({
+    actorUid: uid, action: "instructor_post_created", targetId: ref.id,
+    createdAt: FieldValue.serverTimestamp()
+  });
+  return { success: true, postId: ref.id };
+});
+
+exports.listInstructorPosts = onCall({ region: "europe-west1" }, async request => {
+  requireAuth(request);
+  const instructorUid = String(request.data?.instructorUid || "");
+  if (!/^[A-Za-z0-9_-]{20,128}$/.test(instructorUid)) {
+    throw new HttpsError("invalid-argument", "معرّف المدرّس غير صالح.");
+  }
+  const profile = await db.collection("publicInstructorProfiles").doc(instructorUid).get();
+  if (!profile.exists || profile.data()?.visibility !== "public") {
+    throw new HttpsError("not-found", "ملف المدرّس غير متاح.");
+  }
+  const snapshot = await db.collection("instructorPosts").where("instructorUid", "==", instructorUid)
+    .where("status", "==", "published").orderBy("createdAt", "desc").limit(30).get();
+  return { success: true, posts: snapshot.docs.map(doc => ({
+    id: doc.id, instructorUid, instructorName: String(doc.data().instructorName || ""),
+    text: String(doc.data().text || ""), links: Array.isArray(doc.data().links) ? doc.data().links : [],
+    createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
+  })) };
+});
+
+exports.createTeacherGroup = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireApprovedLiveInstructor(request);
+  const name = validateAcademyText(request.data?.name, 3, 80, "اسم المجموعة");
+  const description = String(request.data?.description || "").trim();
+  const topic = String(request.data?.topic || "").trim();
+  if (description.length > 600 || topic.length > 80) {
+    throw new HttpsError("invalid-argument", "وصف المجموعة أو موضوعها أطول من المسموح.");
+  }
+  const profile = await db.collection("publicInstructorProfiles").doc(uid).get();
+  if (!profile.exists) throw new HttpsError("failed-precondition", "ملف المدرّس العام غير منشور.");
+  const ref = await db.collection("teacherGroups").add({
+    instructorUid: uid, instructorName: String(profile.data()?.displayName || ""),
+    name, description, topic, status: "active", visibility: "listed",
+    memberCount: 0, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+  });
+  await ref.collection("members").doc(uid).set({
+    uid, role: "instructor", status: "active", joinedAt: FieldValue.serverTimestamp()
+  });
+  return { success: true, groupId: ref.id };
+});
+
+exports.requestTeacherGroupMembership = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  const groupId = String(request.data?.groupId || "");
+  if (!/^[A-Za-z0-9]{20,40}$/.test(groupId)) throw new HttpsError("invalid-argument", "معرّف المجموعة غير صالح.");
+  const student = await db.collection("academyStudentProfiles").doc(uid).get();
+  if (!student.exists || student.data()?.status !== "active") {
+    throw new HttpsError("failed-precondition", "أكملي ملف الطالب أولًا قبل طلب الانضمام.");
+  }
+  const groupRef = db.collection("teacherGroups").doc(groupId);
+  const requestRef = groupRef.collection("membershipRequests").doc(uid);
+  const group = await groupRef.get();
+  if (!group.exists || group.data()?.status !== "active" || group.data()?.visibility !== "listed") {
+    throw new HttpsError("not-found", "المجموعة غير متاحة.");
+  }
+  if (group.data()?.instructorUid === uid) throw new HttpsError("failed-precondition", "أنتِ صاحبة هذه المجموعة.");
+  await requestRef.set({
+    uid, status: "pending", requestedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+  });
+  return { success: true, status: "pending" };
+});
+
+exports.reviewTeacherGroupMembership = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  const groupId = String(request.data?.groupId || "");
+  const studentUid = String(request.data?.studentUid || "");
+  const decision = String(request.data?.decision || "");
+  if (!/^[A-Za-z0-9]{20,40}$/.test(groupId) || !/^[A-Za-z0-9_-]{20,128}$/.test(studentUid) ||
+      !["approve", "reject"].includes(decision)) {
+    throw new HttpsError("invalid-argument", "بيانات مراجعة طلب العضوية غير صحيحة.");
+  }
+  const groupRef = db.collection("teacherGroups").doc(groupId);
+  const requestRef = groupRef.collection("membershipRequests").doc(studentUid);
+  const memberRef = groupRef.collection("members").doc(studentUid);
+  await db.runTransaction(async transaction => {
+    const [group, joinRequest, member] = await Promise.all([
+      transaction.get(groupRef), transaction.get(requestRef), transaction.get(memberRef)
+    ]);
+    if (!group.exists || group.data()?.instructorUid !== uid ||
+        request.auth.token.liveRole !== "instructor" || request.auth.token.liveInstructorApproved !== true) {
+      throw new HttpsError("permission-denied", "فقط مدرّس المجموعة المعتمد يمكنه مراجعة الطلب.");
+    }
+    if (!joinRequest.exists || joinRequest.data()?.status !== "pending") {
+      throw new HttpsError("not-found", "طلب الانضمام غير موجود أو تمت مراجعته.");
+    }
+    if (decision === "approve" && !member.exists) {
+      transaction.create(memberRef, {
+        uid: studentUid, role: "student", status: "active", joinedAt: FieldValue.serverTimestamp()
+      });
+      transaction.update(groupRef, { memberCount: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() });
+    }
+    transaction.update(requestRef, {
+      status: decision === "approve" ? "approved" : "rejected",
+      reviewedBy: uid, reviewedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+    });
+  });
+  return { success: true, status: decision === "approve" ? "approved" : "rejected" };
+});
+
+exports.listMyTeacherGroups = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  const isInstructor = request.auth.token.liveRole === "instructor" && request.auth.token.liveInstructorApproved === true;
+  if (isInstructor) {
+    const snapshot = await db.collection("teacherGroups").where("instructorUid", "==", uid)
+      .where("status", "==", "active").orderBy("createdAt", "desc").limit(50).get();
+    const groups = await Promise.all(snapshot.docs.map(async doc => {
+      const requests = await doc.ref.collection("membershipRequests").where("status", "==", "pending").limit(50).get();
+      return { id: doc.id, ...doc.data(), pendingRequests: requests.size };
+    }));
+    return { success: true, role: "instructor", groups };
+  }
+  const memberships = await db.collectionGroup("members").where("uid", "==", uid)
+    .where("role", "==", "student").where("status", "==", "active").limit(50).get();
+  const groups = await Promise.all(memberships.map(async member => {
+    const groupRef = member.ref.parent.parent;
+    const group = await groupRef.get();
+    return group.exists ? { id: group.id, name: group.data().name, description: group.data().description,
+      topic: group.data().topic, instructorName: group.data().instructorName } : null;
+  }));
+  return { success: true, role: "student", groups: groups.filter(Boolean) };
+});
+
+exports.listPublicTeacherGroups = onCall({ region: "europe-west1" }, async request => {
+  requireAuth(request);
+  const snapshot = await db.collection("teacherGroups").where("status", "==", "active")
+    .where("visibility", "==", "listed").orderBy("createdAt", "desc").limit(60).get();
+  return { success: true, groups: snapshot.docs.map(doc => ({
+    id: doc.id, name: String(doc.data().name || ""), description: String(doc.data().description || ""),
+    topic: String(doc.data().topic || ""), instructorName: String(doc.data().instructorName || ""),
+    memberCount: Number(doc.data().memberCount || 0)
+  })) };
 });
