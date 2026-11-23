@@ -171,3 +171,13 @@ The current instructor/student registration form includes a guardian-awareness c
 - This is a class-level group restriction, not a payment or attendance system. No payment collection is implemented.
 
 - Learners can cancel their own upcoming enrollment while the class is still scheduled; the backend marks the enrollment cancelled and releases the seat transactionally. Cancelled records are excluded from the active instructor roster.
+
+
+## Academy administration and student consent workflow
+
+- The administrator console now supports rescheduling scheduled classes, changing duration/capacity within server-validated limits, and cancelling a scheduled class. Cancellation releases active seats, marks active enrollments as cancelled, deactivates the provider meeting, and writes an audit event.
+- A learner can re-enroll after cancelling their own booking; the server reactivates the existing enrollment record and increments the seat count transactionally, subject to capacity and group membership.
+- Student profiles for learners under 18 are stored with `status: pending_guardian` until an administrator records a guardian-consent verification. Class enrollment and group-membership requests are blocked until the verification is complete.
+- The registration checkbox is only a learner declaration that a guardian is aware; it is not proof of guardian identity or independently verified consent. Administrators must only mark consent verified after confirming it with the guardian through an appropriate separate process. The platform does not collect guardian phone numbers in this flow.
+- Adult profiles do not require guardian review. Changing an adult profile back to a minor age band does not carry over the adult approval.
+- The admin overview exposes private learner details only through the admin-only callable. Public instructor profiles remain separate from private applications and are published only after approval.
