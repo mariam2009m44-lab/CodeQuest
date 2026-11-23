@@ -38,7 +38,7 @@ onAuthStateChanged(auth,async user=>{
   const student=state.data?.studentProfile;const instructor=state.data?.instructorApplication;
   accountState.textContent="تم تسجيل الدخول باسم "+(user.displayName||"حساب CodeQuest")+". "+(user.emailVerified?"البريد الإلكتروني موثّق.":"يمكنك إكمال ملف الطالب أو طلب المدرب الآن؛ توثيق البريد مطلوب قبل اعتماد المدرب.");
   verifyButton.hidden=Boolean(user.emailVerified);
-  if(student){studentForm.elements.ageBand.value=student.ageBand||"";studentForm.elements.grade.value=student.grade||"";studentForm.elements.skillLevel.value=student.skillLevel||"beginner";studentForm.elements.learningGoals.value=student.learningGoals||"";studentForm.elements.learningNeeds.value=student.learningNeeds||"";studentForm.elements.preferredSchedule.value=student.preferredSchedule||"";(student.interests||[]).forEach(v=>{const input=studentForm.querySelector('input[value="'+v+'"]');if(input)input.checked=true;});const consentInput=studentForm.elements.guardianConsent;if(consentInput)consentInput.checked=student.guardianConsent===true;updateConsent();setFeedback(studentFeedback,"ملف الطالب محفوظ بالفعل. يمكنك تحديث بياناتك وإعادة الحفظ.");}
+  if(student){studentForm.elements.ageBand.value=student.ageBand||"";studentForm.elements.grade.value=student.grade||"";studentForm.elements.skillLevel.value=student.skillLevel||"beginner";studentForm.elements.learningGoals.value=student.learningGoals||"";studentForm.elements.learningNeeds.value=student.learningNeeds||"";studentForm.elements.preferredSchedule.value=student.preferredSchedule||"";(student.interests||[]).forEach(v=>{const input=studentForm.querySelector('input[value="'+v+'"]');if(input)input.checked=true;});const consentInput=studentForm.elements.guardianConsent;if(consentInput)consentInput.checked=student.guardianConsent===true;updateConsent();setFeedback(studentFeedback,student.ageBand!=="18+"&&!student.guardianConsentVerified?"ملفك محفوظ، وسيظل التسجيل في الفصول المباشرة معلقًا حتى تتحقق الإدارة من موافقة ولي الأمر.":"ملف الطالب محفوظ بالفعل. يمكنك تحديث بياناتك وإعادة الحفظ.");}
   if(instructor){
    const labels={pending:"طلبك قيد المراجعة من إدارة CodeQuest.",approved:"تم اعتماد حسابك كمدرب. يمكنك إنشاء الفصول مباشرة.",rejected:"لم تتم الموافقة على الطلب السابق. يمكنك تحديث البيانات وإعادة التقديم."};
    setFeedback(instructorFeedback,labels[instructor.status]||"حالة الطلب: "+instructor.status,instructor.status==="rejected");
@@ -55,8 +55,8 @@ studentForm.addEventListener("submit",async event=>{
  try{
   const interests=checkedValues(studentForm,"interests");
   if(!interests.length)throw new Error("اختاري مجالًا واحدًا على الأقل.");
-  await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked,learningGoals:studentForm.elements.learningGoals.value.trim(),learningNeeds:studentForm.elements.learningNeeds.value.trim(),preferredSchedule:studentForm.elements.preferredSchedule.value.trim()});
-  setFeedback(studentFeedback,"تم حفظ ملف الطالب بنجاح. يمكنك الآن حجز مقعد في الفصول المتاحة.");
+  const saved=await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked,learningGoals:studentForm.elements.learningGoals.value.trim(),learningNeeds:studentForm.elements.learningNeeds.value.trim(),preferredSchedule:studentForm.elements.preferredSchedule.value.trim()});
+  setFeedback(studentFeedback,saved.data?.status==="pending_guardian"?"تم حفظ الملف. سيظل التسجيل في الفصول المباشرة معلقًا حتى تتحقق الإدارة من موافقة ولي الأمر.":"تم حفظ ملف الطالب وتفعيله بنجاح.");
  }catch(error){setFeedback(studentFeedback,error.message||"تعذر حفظ البيانات.",true);}
  finally{button.disabled=false;}
 });
