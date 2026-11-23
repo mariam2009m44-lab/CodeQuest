@@ -48,7 +48,18 @@ for page in sorted(pages):
             continue
 
         if target_text.startswith("/"):
-            target = (ROOT / target_text.lstrip("/")).resolve()
+            # Vite treats root-relative asset/module paths as relative to its
+            # configured project root. CodeQuest/app.html is built with
+            # CodeQuest/ as that root, not the repository root.
+            page_parts = page.relative_to(ROOT).parts
+            vite_root = (
+                ROOT / page_parts[0]
+                if page_parts
+                and page_parts[0] == "CodeQuest"
+                and (ROOT / "CodeQuest" / "package.json").is_file()
+                else ROOT
+            )
+            target = (vite_root / target_text.lstrip("/")).resolve()
         else:
             target = (page.parent / target_text).resolve()
 
