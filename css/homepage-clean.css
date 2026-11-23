@@ -773,3 +773,97 @@ html[data-theme="light"] .nav-links a.active{
 @media (prefers-reduced-motion:reduce){
   .cody-hero-image{animation:none}
 }
+
+
+/* =========================================================
+   Screenshot-driven correction: tablet/mobile hero + true light surfaces
+   ========================================================= */
+
+/* Many Android browsers report a CSS viewport around 760–820px.
+   Treat that range as compact/tablet instead of leaving a desktop-sized hero. */
+@media (min-width:701px) and (max-width:900px){
+  .hero.container{
+    min-height:0 !important;
+    margin:12px auto 14px !important;
+    padding:20px 24px 10px !important;
+    gap:12px !important;
+    align-items:center;
+  }
+  .character-area{
+    min-height:225px !important;
+    height:225px;
+    padding:0 !important;
+    margin:0 !important;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+  }
+  .cody-hero-image{
+    width:min(100%,310px) !important;
+    max-height:225px !important;
+  }
+  .learning-section{
+    margin-top:0 !important;
+    padding:34px 0 42px !important;
+  }
+}
+
+/* Compact phones: remove the dead space below Cody, not the content itself. */
+@media (max-width:700px){
+  .hero.container{
+    min-height:0 !important;
+    margin:10px auto 10px !important;
+    padding:20px 16px 6px !important;
+    gap:5px !important;
+  }
+  .character-area{
+    min-height:clamp(170px,48vw,215px) !important;
+    height:auto;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+  }
+  .cody-hero-image{
+    width:min(100%,300px) !important;
+    max-height:clamp(180px,50vw,220px) !important;
+  }
+  .learning-section{
+    margin-top:0 !important;
+    padding:28px 0 38px !important;
+  }
+}
+
+/* Light theme: remove the dark tinted gradient visible in the paths section. */
+html[data-theme="light"] body .learning-section{
+  background:#f5f7fc !important;
+  border-top:1px solid #e5eaf2 !important;
+  border-bottom:1px solid #e5eaf2 !important;
+}
+html[data-theme="light"] body .learning-section .section-heading h2{
+  color:#182235 !important;
+}
+html[data-theme="light"] body .learning-section .section-heading p{
+  color:#64748b !important;
+}
+html[data-theme="light"] body .character-area{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+html[data-theme="light"] body .hero-visual-glow{
+  opacity:.45;
+}
+html[data-theme="light"] body .card{
+  background:#fff !important;
+  color:#182235 !important;
+  border:1px solid #e4e9f2 !important;
+  box-shadow:0 8px 22px rgba(36,51,83,.055) !important;
+}
+html[data-theme="light"] body .card p{
+  color:#64748b !important;
+}
+html[data-theme="light"] body .cq-cody-intro__visual{
+  background:linear-gradient(145deg,#fff 0%,#f5f6ff 100%) !important;
+  border:1px solid #e3e8f3 !important;
+  box-shadow:0 12px 30px rgba(43,55,98,.07) !important;
+}
