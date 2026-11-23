@@ -12,8 +12,8 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-ML_SRC_DIR = BASE_DIR / "cody-ml-engine" / "src"
+BASE_DIR = Path(__file__).resolve().parent
+ML_SRC_DIR = BASE_DIR / "cody_ml_engine" / "src"
 
 if not ML_SRC_DIR.is_dir():
     raise RuntimeError("Cody ML Engine source directory was not found.")
