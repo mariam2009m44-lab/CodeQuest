@@ -2779,6 +2779,7 @@ exports.createLiveClass = onCall(
     const description = String(request.data?.description || "").trim();
     const startsAtValue = String(request.data?.startsAt || "");
     const durationMinutes = Number(request.data?.durationMinutes || 60);
+    const capacity = Number(request.data?.capacity || 12);
     const startsAtDate = new Date(startsAtValue);
     const now = Date.now();
 
@@ -2795,6 +2796,9 @@ exports.createLiveClass = onCall(
     }
     if (!Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 180) {
       throw new HttpsError("invalid-argument", "مدة الفصل يجب أن تكون بين 15 و180 دقيقة.");
+    }
+    if (!Number.isInteger(capacity) || capacity < 1 || capacity > 30) {
+      throw new HttpsError("invalid-argument", "عدد المقاعد يجب أن يكون من 1 إلى 30.");
     }
 
     const instructorProfile = await db.collection("users").doc(instructorUid).get();
@@ -2828,6 +2832,7 @@ exports.createLiveClass = onCall(
         instructorName,
         startsAt: startTimestamp,
         durationMinutes,
+        capacity,
         status: "scheduled",
         enrollmentCount: 0,
         createdAt: FieldValue.serverTimestamp(),
@@ -2873,6 +2878,9 @@ exports.listLiveClasses = onCall(
         durationMinutes: Number(data.durationMinutes || 60),
         status: data.status === "live" ? "live" : "scheduled",
         enrollmentCount: Number(data.enrollmentCount || 0),
+        capacity: Number(data.capacity || 12),
+        seatsRemaining: Math.max(0, Number(data.capacity || 12) - Number(data.enrollmentCount || 0)),
+        isFull: Number(data.enrollmentCount || 0) >= Number(data.capacity || 12),
         isInstructor,
         isAdmin,
         isEnrolled: enrollment.exists
@@ -2903,6 +2911,15 @@ exports.enrollInLiveClass = onCall(
       }
       if (classSnapshot.data()?.instructorUid === uid) {
         throw new HttpsError("failed-precondition", "المدرّب لا يحتاج إلى التسجيل في فصله.");
+      }
+      const studentProfile = await db.collection("academyStudentProfiles").doc(uid).get();
+      if (!studentProfile.exists) {
+        throw new HttpsError("failed-precondition", "أكملي ملف الطالب أولًا قبل حجز مقعد في الفصل.");
+      }
+      const capacity = Number(classSnapshot.data()?.capacity || 12);
+      const enrolledCount = Number(classSnapshot.data()?.enrollmentCount || 0);
+      if (!enrollmentSnapshot.exists && enrolledCount >= capacity) {
+        throw new HttpsError("resource-exhausted", "اكتملت مقاعد هذا الفصل. اختاري فصلًا آخر.");
       }
       if (!enrollmentSnapshot.exists) {
         transaction.create(enrollmentRef, {
@@ -3052,3 +3069,164 @@ exports.joinLiveClass = onCall(
     };
   }
 );
+
+ 
+// CodeQuest Academy registration and owner monitoring.
+exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  if (request.auth.token.email_verified !== true) throw new HttpsError("failed-precondition", "تحققي من بريدك الإلكتروني أولًا.");
+  const ageBand = String(request.data?.ageBand || "");
+  const grade = String(request.data?.grade || "").trim();
+  const skillLevel = String(request.data?.skillLevel || "");
+  const interests = Array.isArray(request.data?.interests) ? [...new Set(request.data.interests.map(String))] : [];
+  const guardianConsent = request.data?.guardianConsent === true;
+  const allowedAges = ["10-12", "13-15", "16-17", "18+"];
+  const allowedLevels = ["beginner", "basic", "intermediate"];
+  const allowedInterests = ["python", "javascript", "cpp", "java", "web"];
+  if (!allowedAges.includes(ageBand) || grade.length > 60 || !allowedLevels.includes(skillLevel) ||
+      interests.length < 1 || interests.length > 5 || interests.some(value => !allowedInterests.includes(value))) {
+    throw new HttpsError("invalid-argument", "راجعي بيانات الطالب واختياراته.");
+  }
+  if (ageBand !== "18+" && !guardianConsent) throw new HttpsError("failed-precondition", "يلزم تأكيد موافقة ولي الأمر للطلاب دون 18 عامًا.");
+  const user = await getAuth().getUser(uid);
+  const profile = await db.collection("users").doc(uid).get();
+  await db.collection("academyStudentProfiles").doc(uid).set({
+    uid,
+    displayName: String(profile.data()?.displayName || user.displayName || "متعلّم").slice(0, 50),
+    email: String(user.email || "").slice(0, 254),
+    ageBand, grade, skillLevel, interests,
+    guardianConsent: ageBand === "18+" ? null : true,
+    status: "active",
+    updatedAt: FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+  return { success: true, status: "active" };
+});
+
+exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  if (request.auth.token.email_verified !== true) throw new HttpsError("failed-precondition", "تحقّق من بريدك الإلكتروني قبل تقديم طلب التدريب.");
+  const fullName = String(request.data?.fullName || "").trim();
+  const specialties = Array.isArray(request.data?.specialties) ? [...new Set(request.data.specialties.map(String))] : [];
+  const experience = String(request.data?.experience || "").trim();
+  const bio = String(request.data?.bio || "").trim();
+  const portfolioUrl = String(request.data?.portfolioUrl || "").trim();
+  const availability = String(request.data?.availability || "").trim();
+  const allowed = ["python", "javascript", "cpp", "java", "web", "ai"];
+  if (fullName.length < 3 || fullName.length > 80 || specialties.length < 1 || specialties.length > 5 ||
+      specialties.some(value => !allowed.includes(value)) || experience.length > 120 ||
+      bio.length < 30 || bio.length > 1200 || availability.length > 300) {
+    throw new HttpsError("invalid-argument", "راجعي بيانات طلب المدرب. النبذة مطلوبة من 30 إلى 1200 حرف.");
+  }
+  if (portfolioUrl && (!portfolioUrl.startsWith("https://") || portfolioUrl.length > 300)) {
+    throw new HttpsError("invalid-argument", "رابط الأعمال يجب أن يبدأ بـ https://");
+  }
+  const user = await getAuth().getUser(uid);
+  if (user.disabled) throw new HttpsError("permission-denied", "هذا الحساب غير مفعّل.");
+  const approval = await db.collection("liveInstructorApprovals").doc(uid).get();
+  if (approval.exists && approval.data()?.status === "approved") throw new HttpsError("already-exists", "هذا الحساب معتمد بالفعل كمدرب.");
+  await db.collection("instructorApplications").doc(uid).set({
+    uid, fullName, email: String(user.email || "").slice(0, 254), specialties,
+    experience, bio, portfolioUrl, availability, status: "pending",
+    submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+  return { success: true, status: "pending" };
+});
+
+exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSeconds: 60 }, async request => {
+  requireLiveAdmin(request);
+  const [studentCount, approvedCount, pendingSnapshot, classSnapshot] = await Promise.all([
+    db.collection("academyStudentProfiles").count().get(),
+    db.collection("liveInstructorApprovals").where("status", "==", "approved").count().get(),
+    db.collection("instructorApplications").where("status", "==", "pending").limit(50).get(),
+    db.collection("liveClasses").orderBy("createdAt", "desc").limit(50).get()
+  ]);
+  const pendingInstructors = pendingSnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      uid: doc.id, fullName: String(data.fullName || ""), email: String(data.email || ""),
+      specialties: Array.isArray(data.specialties) ? data.specialties : [],
+      experience: String(data.experience || ""), bio: String(data.bio || ""),
+      portfolioUrl: String(data.portfolioUrl || ""), availability: String(data.availability || ""),
+      submittedAt: data.submittedAt?.toDate?.().toISOString() || null
+    };
+  });
+  const classes = await Promise.all(classSnapshot.docs.map(async doc => {
+    const data = doc.data();
+    const enrollments = await doc.ref.collection("enrollments").orderBy("enrolledAt", "asc").limit(50).get();
+    const students = await Promise.all(enrollments.docs.map(async enrollment => {
+      const profile = await db.collection("users").doc(enrollment.id).get();
+      return {
+        uid: enrollment.id,
+        displayName: String(profile.data()?.displayName || "طالب"),
+        status: String(enrollment.data()?.status || "enrolled"),
+        enrolledAt: enrollment.data()?.enrolledAt?.toDate?.().toISOString() || null
+      };
+    }));
+    return {
+      id: doc.id, title: String(data.title || ""), instructorName: String(data.instructorName || ""),
+      instructorUid: String(data.instructorUid || ""), status: String(data.status || "scheduled"),
+      startsAt: data.startsAt?.toDate?.().toISOString() || null,
+      capacity: Number(data.capacity || 12), enrollmentCount: Number(data.enrollmentCount || students.length), students
+    };
+  }));
+  return {
+    success: true,
+    stats: {
+      students: studentCount.data().count,
+      approvedInstructors: approvedCount.data().count,
+      pendingInstructors: pendingSnapshot.size,
+      classes: classSnapshot.size
+    },
+    pendingInstructors, classes
+  };
+});
+
+exports.reviewInstructorApplication = onCall({ region: "europe-west1" }, async request => {
+  requireLiveAdmin(request);
+  const uid = String(request.data?.instructorUid || "");
+  const decision = String(request.data?.decision || "");
+  if (!/^[A-Za-z0-9_-]{20,128}$/.test(uid) || !["approve", "reject"].includes(decision)) {
+    throw new HttpsError("invalid-argument", "بيانات مراجعة الطلب غير صحيحة.");
+  }
+  const applicationRef = db.collection("instructorApplications").doc(uid);
+  const application = await applicationRef.get();
+  if (!application.exists || application.data()?.status !== "pending") throw new HttpsError("not-found", "طلب المدرب غير موجود أو تمت مراجعته بالفعل.");
+  if (decision === "approve") {
+    const auth = getAuth();
+    const instructor = await auth.getUser(uid);
+    if (!instructor.emailVerified || instructor.disabled) throw new HttpsError("failed-precondition", "يجب أن يكون حساب المدرب مفعّلًا وبريده موثقًا.");
+    await auth.setCustomUserClaims(uid, { ...(instructor.customClaims || {}), liveRole: "instructor", liveInstructorApproved: true });
+    await db.collection("liveInstructorApprovals").doc(uid).set({
+      uid, approvedBy: request.auth.uid, approvedAt: FieldValue.serverTimestamp(), status: "approved"
+    });
+  }
+  await applicationRef.set({
+    status: decision === "approve" ? "approved" : "rejected",
+    reviewedBy: request.auth.uid, reviewedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+  return { success: true, status: decision === "approve" ? "approved" : "rejected" };
+});
+
+exports.listInstructorClassRoster = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  const classId = String(request.data?.classId || "");
+  if (!/^[A-Za-z0-9_-]{10,128}$/.test(classId)) throw new HttpsError("invalid-argument", "معرّف الفصل غير صالح.");
+  const classRef = db.collection("liveClasses").doc(classId);
+  const snapshot = await classRef.get();
+  if (!snapshot.exists) throw new HttpsError("not-found", "الفصل غير موجود.");
+  const data = snapshot.data();
+  const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
+  const isOwner = data.instructorUid === uid && request.auth.token.liveRole === "instructor" && request.auth.token.liveInstructorApproved === true;
+  if (!isAdmin && !isOwner) throw new HttpsError("permission-denied", "لا تملكين صلاحية عرض قائمة هذا الفصل.");
+  const enrollments = await classRef.collection("enrollments").orderBy("enrolledAt", "asc").limit(100).get();
+  const students = await Promise.all(enrollments.docs.map(async item => {
+    const profile = await db.collection("users").doc(item.id).get();
+    return {
+      uid: item.id, displayName: String(profile.data()?.displayName || "طالب"),
+      enrolledAt: item.data()?.enrolledAt?.toDate?.().toISOString() || null,
+      status: String(item.data()?.status || "enrolled")
+    };
+  }));
+  return { success: true, students, count: students.length, capacity: Number(data.capacity || 12) };
+});
