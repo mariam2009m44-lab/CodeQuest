@@ -3654,3 +3654,56 @@ exports.listTeacherGroupJoinRequests = onCall({ region: "europe-west1" }, async 
   }));
   return { success: true, requests };
 });
+
+
+/*
+ * Admin moderation for academy community content.
+ * Only academy administrators can hide or restore public posts and groups.
+ */
+exports.moderateAcademyContent = onCall({ region: "europe-west1" }, async request => {
+  const adminUid = requireLiveAdmin(request);
+  const type = String(request.data?.type || "");
+  const contentId = String(request.data?.contentId || "");
+  const decision = String(request.data?.decision || "");
+  const reason = String(request.data?.reason || "").trim().slice(0, 500);
+  if (!["post", "group"].includes(type) ||
+      !/^[A-Za-z0-9_-]{10,40}$/.test(contentId) ||
+      !["hide", "restore"].includes(decision)) {
+    throw new HttpsError("invalid-argument", "بيانات إجراء الإشراف غير صحيحة.");
+  }
+  const collection = type === "post" ? "instructorPosts" : "teacherGroups";
+  const ref = db.collection(collection).doc(contentId);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) throw new HttpsError("not-found", "المحتوى المطلوب غير موجود.");
+  const previousStatus = String(snapshot.data()?.status || "");
+  const nextStatus = decision === "hide"
+    ? (type === "post" ? "hidden" : "suspended")
+    : (type === "post" ? "published" : "active");
+  if (previousStatus === nextStatus) {
+    return { success: true, status: nextStatus, unchanged: true };
+  }
+  await db.runTransaction(async transaction => {
+    const latest = await transaction.get(ref);
+    if (!latest.exists) throw new HttpsError("not-found", "المحتوى لم يعد متاحًا.");
+    transaction.update(ref, {
+      status: nextStatus,
+      visibility: decision === "hide" && type === "group" ? "hidden" : (type === "group" ? "listed" : latest.data()?.visibility || "public"),
+      moderatedAt: FieldValue.serverTimestamp(),
+      moderatedBy: adminUid,
+      moderationReason: reason,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+  });
+  await db.collection("academyAuditLogs").add({
+    actorUid: adminUid,
+    action: type === "post"
+      ? (decision === "hide" ? "instructor_post_hidden" : "instructor_post_restored")
+      : (decision === "hide" ? "teacher_group_suspended" : "teacher_group_restored"),
+    targetId: contentId,
+    reason,
+    previousStatus,
+    nextStatus,
+    createdAt: FieldValue.serverTimestamp()
+  });
+  return { success: true, status: nextStatus };
+});
