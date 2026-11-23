@@ -2945,20 +2945,35 @@ exports.enrollInLiveClass = onCall(
       }
       const capacity = Number(classSnapshot.data()?.capacity || 12);
       const enrolledCount = Number(classSnapshot.data()?.enrollmentCount || 0);
-      if (!enrollmentSnapshot.exists && enrolledCount >= capacity) {
+      const existingStatus = enrollmentSnapshot.exists
+        ? String(enrollmentSnapshot.data()?.status || "")
+        : "";
+      if (existingStatus === "enrolled") return;
+      if (existingStatus && existingStatus !== "cancelled") {
+        throw new HttpsError("failed-precondition", "حالة التسجيل الحالية لا تسمح بحجز مقعد جديد.");
+      }
+      if (enrolledCount >= capacity) {
         throw new HttpsError("resource-exhausted", "اكتملت مقاعد هذا الفصل. اختاري فصلًا آخر.");
       }
-      if (!enrollmentSnapshot.exists) {
+      if (enrollmentSnapshot.exists) {
+        transaction.update(enrollmentRef, {
+          uid,
+          status: "enrolled",
+          enrolledAt: FieldValue.serverTimestamp(),
+          cancelledAt: null,
+          updatedAt: FieldValue.serverTimestamp()
+        });
+      } else {
         transaction.create(enrollmentRef, {
           uid,
           status: "enrolled",
           enrolledAt: FieldValue.serverTimestamp()
         });
-        transaction.update(classRef, {
-          enrollmentCount: FieldValue.increment(1),
-          updatedAt: FieldValue.serverTimestamp()
-        });
       }
+      transaction.update(classRef, {
+        enrollmentCount: FieldValue.increment(1),
+        updatedAt: FieldValue.serverTimestamp()
+      });
     });
     return { success: true };
   }
