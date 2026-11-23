@@ -15,6 +15,7 @@ const feedback = document.getElementById("createFeedback");
 const refreshButton = document.getElementById("refreshClasses");
 const listClasses = httpsCallable(functions, "listLiveClasses");
 const enrollClass = httpsCallable(functions, "enrollInLiveClass");
+const cancelEnrollment = httpsCallable(functions, "cancelLiveClassEnrollment");
 const createClass = httpsCallable(functions, "createLiveClass");
 const setClassStatus = httpsCallable(functions, "setLiveClassStatus");
 const bootstrapAdmin = httpsCallable(functions, "bootstrapLiveAcademyAdmin");
@@ -72,6 +73,7 @@ function renderClass(item) {
     if (item.status === "live") actions.append(makeButton("انضم للفصل",()=>location.assign("live-classroom.html?classId="+encodeURIComponent(item.id))));
     else {
       const wait = document.createElement("span"); wait.className="live-pill"; wait.textContent="تم تسجيلك — انتظر بدء الفصل"; actions.append(wait);
+      actions.append(makeButton("إلغاء التسجيل",async()=>runAction(async()=>{if(!confirm("هل تريدين إلغاء تسجيلك في هذا الفصل؟"))return;await cancelEnrollment({classId:item.id});await loadClasses();}),true));
     }
   } else if (item.status === "scheduled") {
     if (item.isFull) {
