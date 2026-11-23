@@ -2855,23 +2855,26 @@ exports.listLiveClasses = onCall(
       .limit(30)
       .get();
 
-    return {
-      success: true,
-      classes: snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          title: String(data.title || ""),
-          description: String(data.description || ""),
-          instructorName: String(data.instructorName || "مدرّب CodeQuest"),
-          instructorUid: String(data.instructorUid || ""),
-          startsAt: data.startsAt?.toDate?.().toISOString() || null,
-          durationMinutes: Number(data.durationMinutes || 60),
-          status: data.status === "live" ? "live" : "scheduled",
-          enrollmentCount: Number(data.enrollmentCount || 0)
-        };
-      })
-    };
+    const classes = await Promise.all(snapshot.docs.map(async doc => {
+      const data = doc.data();
+      const isInstructor = data.instructorUid === request.auth.uid;
+      const enrollment = isInstructor
+        ? { exists: true }
+        : await doc.ref.collection("enrollments").doc(request.auth.uid).get();
+      return {
+        id: doc.id,
+        title: String(data.title || ""),
+        description: String(data.description || ""),
+        instructorName: String(data.instructorName || "مدرّب CodeQuest"),
+        startsAt: data.startsAt?.toDate?.().toISOString() || null,
+        durationMinutes: Number(data.durationMinutes || 60),
+        status: data.status === "live" ? "live" : "scheduled",
+        enrollmentCount: Number(data.enrollmentCount || 0),
+        isInstructor,
+        isEnrolled: enrollment.exists
+      };
+    }));
+    return { success: true, classes };
   }
 );
 
@@ -2932,10 +2935,12 @@ exports.setLiveClassStatus = onCall(
       throw new HttpsError("not-found", "الفصل غير موجود.");
     }
     const classData = classSnapshot.data();
-    if (classData.instructorUid !== uid &&
-        request.auth.token.liveRole !== "admin" &&
-        request.auth.token.admin !== true) {
-      throw new HttpsError("permission-denied", "فقط مدرّب الفصل أو مسؤول الأكاديمية يمكنه تغيير حالته.");
+    const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
+    const isApprovedInstructor =
+      request.auth.token.liveRole === "instructor" &&
+      request.auth.token.liveInstructorApproved === true;
+    if (!isAdmin && (!isApprovedInstructor || classData.instructorUid !== uid)) {
+      throw new HttpsError("permission-denied", "فقط مدرّب الفصل المعتمد أو مسؤول الأكاديمية يمكنه تغيير حالته.");
     }
     if (classData.status === "ended") {
       throw new HttpsError("failed-precondition", "انتهى هذا الفصل بالفعل.");
