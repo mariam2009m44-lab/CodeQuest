@@ -86,7 +86,9 @@ if (!form) {
     "parent.html",
     "achievements.html",
     "course-path.html",
-    "instructor-portal.html"
+    "instructor-portal.html",
+    "academy-registration.html",
+    "academy-admin.html"
   ]);
 
   function getNextPage() {
