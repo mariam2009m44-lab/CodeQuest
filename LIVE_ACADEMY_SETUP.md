@@ -71,3 +71,31 @@ The owner can then use **اعتماد حسابي كمدرّب** or approve anoth
 ## Current boundary
 
 The repository code now contains the class directory, enrollment flow, server-issued meeting tokens, and RealtimeKit classroom page. These are not live in production until the RealtimeKit app/presets/secrets are configured and the Firebase Functions and Firestore rules are deployed. The shared collaborative code editor, whiteboard, and Cody-in-session assistant are later features; they are not represented as working controls yet.
+
+
+## Academy registration and direct publishing
+
+The academy now includes a separate registration page at `academy-registration.html` while keeping the existing CodeQuest Authentication account:
+
+- Learners sign in with their existing CodeQuest account and submit an academy learner profile. For users under 18, the current form requires confirmation that a guardian is aware and agrees; it deliberately does not collect a guardian phone number or private contact details.
+- Instructor applicants submit a separate application with teaching specialties, experience, a short bio, optional portfolio URL, and availability.
+- Instructor applications are stored in `instructorApplications/{uid}`. Only an academy administrator can review and approve/reject them. Approval grants the instructor custom claims through the server; applicants cannot self-assign instructor privileges.
+- Email verification is required before an instructor can be approved. Applicants can request a verification email from the registration page.
+- Once approved, instructors can create classes directly. New classes appear in the public signed-in class directory without a second admin publication step.
+- Each class has a server-enforced seat capacity (1–30, default 12). Enrollment uses a Firestore transaction to prevent overselling. Students must complete their academy learner profile before booking.
+- `academy-admin.html` is a private admin-only console for pending instructor applications, class status, seat counts, and enrolled learner display names.
+- The instructor-facing class directory shows current enrollment versus capacity.
+
+New callable functions:
+- `submitStudentAcademyProfile`
+- `submitInstructorApplication`
+- `getMyAcademyRegistrationStatus`
+- `getAcademyAdminOverview`
+- `reviewInstructorApplication`
+- `listInstructorClassRoster`
+
+## Deployment boundary
+
+The new HTML/CSS/JavaScript files are published with GitHub Pages automatically. The callable functions in `functions/index.js` require a Firebase Functions deployment before the new registration, admin review, and seat-capacity flows can work. The Firestore data is accessed through callable functions and remains denied to direct browser reads/writes by the existing default-deny rules. No paid service has been enabled or purchased by these changes.
+
+The collaborative shared code editor is still a separate future implementation; the current RealtimeKit meeting does not by itself synchronize CodeMirror content between participants.
