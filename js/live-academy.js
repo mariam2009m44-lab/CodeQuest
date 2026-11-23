@@ -58,8 +58,8 @@ function renderClass(item) {
   meta.append(date,instructor,count);
   const actions = document.createElement("div");
   actions.className = "live-actions";
-  if (item.isInstructor) {
-    if (item.status === "scheduled") actions.append(makeButton("ابدأ الفصل",async()=>runAction(async()=>{await setClassStatus({classId:item.id,status:"live"});await loadClasses();})));
+  if (item.isInstructor || item.isAdmin) {
+    if (item.status === "scheduled") actions.append(makeButton(item.isAdmin && !item.isInstructor ? "بدء الفصل كمسؤول" : "ابدأ الفصل",async()=>runAction(async()=>{await setClassStatus({classId:item.id,status:"live"});await loadClasses();})));
     if (item.status === "live") {
       actions.append(makeButton("دخول الفصل",()=>location.assign("live-classroom.html?classId="+encodeURIComponent(item.id))));
       actions.append(makeButton("إنهاء الفصل",async()=>runAction(async()=>{await setClassStatus({classId:item.id,status:"ended"});await loadClasses();}),true));
