@@ -3298,7 +3298,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
     db.collection("academyStudentProfiles").count().get(),
     db.collection("academyStudentProfiles").orderBy("updatedAt", "desc").limit(100).get(),
     db.collection("liveInstructorApprovals").where("status", "==", "approved").count().get(),
-    db.collection("instructorApplications").where("status", "==", "pending").limit(50).get(),
+    db.collection("instructorApplications").where("status", "==", "pending").orderBy("updatedAt", "desc").limit(50).get(),
     db.collection("instructorApplications").orderBy("updatedAt", "desc").limit(100).get(),
     db.collection("liveClasses").orderBy("createdAt", "desc").limit(50).get(),
     db.collection("teacherGroups").where("status", "==", "active").count().get(),
