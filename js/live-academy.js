@@ -54,7 +54,7 @@ function renderClass(item) {
   const instructor = document.createElement("span");
   instructor.textContent = "المدرّب: " + item.instructorName;
   const count = document.createElement("span");
-  count.textContent = "المسجلون: " + item.enrollmentCount;
+  count.textContent = "المقاعد: " + item.enrollmentCount + " / " + (item.capacity || 12);
   meta.append(date,instructor,count);
   const actions = document.createElement("div");
   actions.className = "live-actions";
@@ -70,7 +70,14 @@ function renderClass(item) {
       const wait = document.createElement("span"); wait.className="live-pill"; wait.textContent="تم تسجيلك — انتظر بدء الفصل"; actions.append(wait);
     }
   } else if (item.status === "scheduled") {
-    actions.append(makeButton("سجّل في الفصل",async()=>runAction(async()=>{await enrollClass({classId:item.id});await loadClasses();})));
+    if (item.isFull) {
+      const full = document.createElement("span");
+      full.className = "live-pill";
+      full.textContent = "اكتملت المقاعد";
+      actions.append(full);
+    } else {
+      actions.append(makeButton("سجّل في الفصل",async()=>runAction(async()=>{await enrollClass({classId:item.id});await loadClasses();})));
+    }
   }
   card.append(top,title,description,meta,actions);
   return card;
@@ -138,7 +145,8 @@ createForm.addEventListener("submit",async event=>{
       title:String(form.get("title")||"").trim(),
       description:String(form.get("description")||"").trim(),
       startsAt:startsAt.toISOString(),
-      durationMinutes:Number(form.get("durationMinutes")||60)
+      durationMinutes:Number(form.get("durationMinutes")||60),
+      capacity:Number(form.get("capacity")||12)
     });
     createForm.reset();
     showMessage(feedback,"تم إنشاء الفصل وغرفة البث. سيظهر الفصل في القائمة.");
