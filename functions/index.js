@@ -3205,6 +3205,15 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       experience: String(data.experience || ""),
       bio: String(data.bio || ""),
       portfolioUrl: String(data.portfolioUrl || ""),
+      linkedinUrl: String(data.linkedinUrl || ""),
+      introVideoUrl: String(data.introVideoUrl || ""),
+      teachingDemoUrl: String(data.teachingDemoUrl || ""),
+      qualifications: String(data.qualifications || ""),
+      teachingExperience: String(data.teachingExperience || ""),
+      teachingStyles: Array.isArray(data.teachingStyles) ? data.teachingStyles : [],
+      ageGroups: Array.isArray(data.ageGroups) ? data.ageGroups : [],
+      teachingLevels: Array.isArray(data.teachingLevels) ? data.teachingLevels : [],
+      sampleWorkLinks: Array.isArray(data.sampleWorkLinks) ? data.sampleWorkLinks : [],
       availability: String(data.availability || ""),
       status: String(data.status || "pending"),
       submittedAt: data.submittedAt?.toDate?.().toISOString() || null,
@@ -3220,6 +3229,13 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       specialties: Array.isArray(data.specialties) ? data.specialties : [],
       experience: String(data.experience || ""), bio: String(data.bio || ""),
       portfolioUrl: String(data.portfolioUrl || ""), availability: String(data.availability || ""),
+      linkedinUrl: String(data.linkedinUrl || ""), introVideoUrl: String(data.introVideoUrl || ""),
+      teachingDemoUrl: String(data.teachingDemoUrl || ""), qualifications: String(data.qualifications || ""),
+      teachingExperience: String(data.teachingExperience || ""),
+      teachingStyles: Array.isArray(data.teachingStyles) ? data.teachingStyles : [],
+      ageGroups: Array.isArray(data.ageGroups) ? data.ageGroups : [],
+      teachingLevels: Array.isArray(data.teachingLevels) ? data.teachingLevels : [],
+      sampleWorkLinks: Array.isArray(data.sampleWorkLinks) ? data.sampleWorkLinks : [],
       submittedAt: data.submittedAt?.toDate?.().toISOString() || null
     };
   }));
@@ -3347,7 +3363,10 @@ exports.getMyAcademyRegistrationStatus = onCall({ region: "europe-west1" }, asyn
       ageBand: String(student.data()?.ageBand || ""),
       grade: String(student.data()?.grade || ""),
       skillLevel: String(student.data()?.skillLevel || ""),
-      interests: Array.isArray(student.data()?.interests) ? student.data().interests : []
+      interests: Array.isArray(student.data()?.interests) ? student.data().interests : [],
+      learningGoals: String(student.data()?.learningGoals || ""),
+      learningNeeds: String(student.data()?.learningNeeds || ""),
+      preferredSchedule: String(student.data()?.preferredSchedule || "")
     } : null,
     instructorApplication: instructor.exists ? {
       status: String(instructor.data()?.status || "pending"),
@@ -3527,7 +3546,7 @@ exports.listMyTeacherGroups = onCall({ region: "europe-west1" }, async request =
   }
   const memberships = await db.collectionGroup("members").where("uid", "==", uid)
     .where("role", "==", "student").where("status", "==", "active").limit(50).get();
-  const groups = await Promise.all(memberships.map(async member => {
+  const groups = await Promise.all(memberships.docs.map(async member => {
     const groupRef = member.ref.parent.parent;
     const group = await groupRef.get();
     return group.exists ? { id: group.id, name: group.data().name, description: group.data().description,
