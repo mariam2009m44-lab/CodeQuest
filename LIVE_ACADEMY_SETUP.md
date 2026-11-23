@@ -181,3 +181,16 @@ The current instructor/student registration form includes a guardian-awareness c
 - The registration checkbox is only a learner declaration that a guardian is aware; it is not proof of guardian identity or independently verified consent. Administrators must only mark consent verified after confirming it with the guardian through an appropriate separate process. The platform does not collect guardian phone numbers in this flow.
 - Adult profiles do not require guardian review. Changing an adult profile back to a minor age band does not carry over the adult approval.
 - The admin overview exposes private learner details only through the admin-only callable. Public instructor profiles remain separate from private applications and are published only after approval.
+
+
+## Academy admin pagination
+
+The administrator overview loads a bounded first page for each directory to keep the initial dashboard responsive. The admin-only callable `listAcademyAdminRecords` provides cursor-based pagination (25 records per request) for:
+- learner profiles
+- instructor applications (including pending review)
+- scheduled and historical classes
+- teacher groups
+- instructor posts
+- admin audit events
+
+The cursor is a Firestore document snapshot ID and the server enforces the admin claim before returning private learner or instructor details. The pending-instructor query uses a composite index on `status` and descending `updatedAt`; deploy `firestore:indexes` with the Functions before relying on this endpoint. The dashboard exposes a consistent “load more” control under each section. Initial counts are separate aggregate queries; the first page size is not the total record count.
