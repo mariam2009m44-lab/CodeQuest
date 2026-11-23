@@ -2667,7 +2667,7 @@ function requireApprovedLiveInstructor(request) {
   return uid;
 }
 
-async async function realtimeKitRequest(path, method, body, token) {
+async function realtimeKitRequest(path, method, body, token) {
   const accountId = CLOUDFLARE_ACCOUNT_ID.value();
   const appId = REALTIMEKIT_APP_ID.value();
   if (!accountId || !appId || !token) {
