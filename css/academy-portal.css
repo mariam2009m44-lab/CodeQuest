@@ -7,3 +7,36 @@ html[data-theme=light] .admin-stat,html[data-theme=light] .admin-application,htm
 .admin-students{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}.admin-student{padding:16px;border:1px solid var(--academy-border,#dfe2ef);border-radius:14px;background:var(--academy-card,#fff)}.admin-student h3{margin:0;font-size:15px}.admin-student .admin-details p{overflow-wrap:anywhere}
 
 .admin-student{min-width:0}.admin-student .admin-details p{line-height:1.8;overflow-wrap:anywhere}.admin-students{align-items:stretch}.admin-student .admin-application-head{gap:10px;flex-wrap:wrap}.admin-student .admin-status{white-space:nowrap}
+
+
+/* Refined responsive admin workspace */
+.admin-wrap{width:min(1240px,calc(100% - 36px));padding-top:42px}
+.admin-wrap .academy-intro{max-width:780px}
+.admin-stats{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.admin-stat{position:relative;overflow:hidden;min-height:112px;padding:18px 16px;border-radius:18px;background:linear-gradient(145deg,var(--surface-card,rgba(22,27,57,.9)),rgba(121,85,232,.055));box-shadow:0 12px 32px rgba(0,0,0,.08)}
+.admin-stat:after{content:"";position:absolute;inset:auto -18px -28px auto;width:86px;height:86px;border-radius:50%;background:rgba(121,85,232,.09);pointer-events:none}
+.admin-stat strong{font-size:clamp(24px,3vw,34px);line-height:1.2}
+.admin-stat span{display:block;margin-top:8px;line-height:1.5}
+.admin-section{padding:clamp(18px,3vw,30px);border-radius:22px}
+.admin-section-title{align-items:flex-start;flex-wrap:wrap}
+.admin-section-title h2{margin-bottom:6px}
+.admin-section-title p{margin:6px 0 0;color:var(--text-secondary,#aeb8d0);font-size:12px;line-height:1.8}
+.admin-application,.admin-class,.admin-student{border-radius:18px;padding:20px;box-shadow:0 10px 28px rgba(0,0,0,.045)}
+.admin-application-head h3{line-height:1.6}
+.admin-details{font-size:13px}
+.admin-class-actions{display:grid;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border-soft,#30395a)}
+.admin-reschedule-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;align-items:end;gap:10px}
+.admin-reschedule-form label{display:grid;gap:6px;color:var(--text-secondary,#aeb8d0);font-size:11px;font-weight:800}
+.admin-reschedule-form input{width:100%;min-width:0;min-height:40px;padding:8px 10px;border:1px solid var(--border-soft,#3b4568);border-radius:10px;background:var(--surface-input,rgba(5,10,28,.35));color:var(--text-primary,#f4f5ff);font:600 12px Cairo,sans-serif}
+.admin-reschedule-form button{white-space:nowrap}
+.admin-class-actions>.admin-action-danger{justify-self:start;border-color:rgba(220,90,110,.35);color:#e58c98}
+.admin-class-feedback{margin:0;color:#39c99e;font-size:12px;line-height:1.7}
+.admin-roster{margin-top:12px;padding:12px 14px;border:1px solid var(--border-soft,#30395a);border-radius:12px}
+.admin-roster summary{cursor:pointer;color:var(--text-primary,#f4f5ff);font-size:12px;font-weight:800}
+.admin-roster ul{margin:10px 0 0;padding-inline-start:22px;color:var(--text-secondary,#aeb8d0);font-size:12px;line-height:2}
+html[data-theme=light] .admin-stat,html[data-theme=light] .admin-application,html[data-theme=light] .admin-class,html[data-theme=light] .admin-student{background:#fff;border-color:#e4e9f2;box-shadow:0 10px 28px rgba(34,50,90,.045)}
+html[data-theme=light] .admin-reschedule-form label,html[data-theme=light] .admin-section-title p{color:#64728b}
+html[data-theme=light] .admin-reschedule-form input{background:#f8faff;color:#1d2940;border-color:#dce4f0}
+html[data-theme=light] .admin-roster summary{color:#1c2942}
+@media(max-width:1050px){.admin-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-reschedule-form{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-reschedule-form button{min-height:42px}}
+@media(max-width:620px){.admin-wrap{width:calc(100% - 20px);padding-top:28px}.admin-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.admin-stat{min-height:96px;padding:14px}.admin-section{padding:16px}.admin-section-title{flex-direction:column}.admin-reschedule-form{grid-template-columns:1fr}.admin-reschedule-form button{width:100%}.admin-application,.admin-class,.admin-student{padding:15px}}
