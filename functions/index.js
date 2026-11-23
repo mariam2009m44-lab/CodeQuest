@@ -3,8 +3,7 @@ const { getAuth } = require("firebase-admin/auth");
 
 const {
   getFirestore,
-  FieldValue,
-  FieldPath
+  FieldValue
 } = require("firebase-admin/firestore");
 
 const {
@@ -3452,7 +3451,7 @@ exports.listAcademyAdminRecords = onCall({ region: "europe-west1", timeoutSecond
   const collection = db.collection(collectionName);
   let query = collection;
   if (statusFilter) query = query.where("status", "==", statusFilter);
-  query = query.orderBy(sortField, "desc").orderBy(FieldPath.documentId(), "desc");
+  query = query.orderBy(sortField, "desc");
   if (cursorId) {
     const cursor = await collection.doc(cursorId).get();
     if (!cursor.exists) throw new HttpsError("failed-precondition", "تعذر استكمال الصفحة؛ حدّثي القائمة وحاولي مرة أخرى.");
