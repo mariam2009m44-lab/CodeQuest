@@ -15,7 +15,7 @@
 <body>
   <header class="live-topbar">
     <a class="live-brand" href="index.html"><span class="live-brand__mark">&lt;/&gt;</span><span>CodeQuest</span></a>
-    <nav><a href="index.html">الرئيسية</a><a href="dashboard.html">مساحة التعلّم</a></nav>
+    <nav><a href="index.html">الرئيسية</a><a href="dashboard.html">مساحة التعلّم</a><a href="academy-registration.html">تسجيل الطالب / المدرب</a></nav>
   </header>
   <main class="live-shell">
     <section class="live-heading">
@@ -27,7 +27,7 @@
     </section>
 
     <section class="live-create" id="adminPanel" hidden>
-      <div><span class="live-kicker">ACADEMY ADMIN</span><h2>إدارة اعتماد المدرّبين</h2><p>اعتمدي المدرّبين بعد مراجعة هويتهم ومؤهلاتهم خارج المنصة.</p></div>
+      <div><span class="live-kicker">ACADEMY ADMIN</span><h2>إدارة الأكاديمية</h2><p>تابعي طلبات المدربين والطلاب والفصول وأعداد المقاعد من لوحة الإدارة.</p><a class="live-button" href="academy-admin.html">فتح لوحة إدارة الأكاديمية</a></div>
       <form id="approveInstructorForm"><button class="live-button" id="approveSelfButton" type="button">اعتماد حسابي كمدرّب</button><label>معرّف حساب المدرّب<input name="instructorUid" required minlength="20" maxlength="128" placeholder="Firebase user UID"></label><button class="live-button" type="submit">اعتماد المدرّب</button><p class="live-feedback" id="adminFeedback" aria-live="polite"></p></form>
     </section>
     <section class="live-create" id="createPanel" hidden>
@@ -37,6 +37,7 @@
         <label>وصف مختصر<textarea name="description" maxlength="700" rows="2" placeholder="إيه اللي هيتعلمه الطلاب؟"></textarea></label>
         <div class="live-form-row">
           <label>موعد البداية<input name="startsAt" type="datetime-local" required></label>
+          <label>عدد المقاعد<select name="capacity"><option value="1">طالب واحد</option><option value="5">5 طلاب</option><option value="8">8 طلاب</option><option value="12" selected>12 طالبًا</option><option value="15">15 طالبًا</option><option value="20">20 طالبًا</option><option value="30">30 طالبًا</option></select></label>
           <label>المدة<select name="durationMinutes"><option value="30">30 دقيقة</option><option value="45">45 دقيقة</option><option value="60" selected>ساعة</option><option value="90">90 دقيقة</option><option value="120">ساعتان</option></select></label>
         </div>
         <button class="live-button" type="submit">إنشاء الفصل</button>
