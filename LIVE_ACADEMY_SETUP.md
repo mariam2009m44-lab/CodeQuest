@@ -169,3 +169,5 @@ The current instructor/student registration form includes a guardian-awareness c
 - Seat capacity remains transactionally enforced. Existing enrollment records are required to have status `enrolled` before a student receives a live-room token.
 - Classes without a linked group remain open to any signed-in learner with an active Academy profile, subject to seat availability.
 - This is a class-level group restriction, not a payment or attendance system. No payment collection is implemented.
+
+- Learners can cancel their own upcoming enrollment while the class is still scheduled; the backend marks the enrollment cancelled and releases the seat transactionally. Cancelled records are excluded from the active instructor roster.
