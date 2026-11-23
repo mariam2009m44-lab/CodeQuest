@@ -13,10 +13,60 @@ const posts=document.getElementById("adminPosts");
 const audit=document.getElementById("adminAudit");
 const refresh=document.getElementById("refreshAdmin");
 const getOverview=httpsCallable(functions,"getAcademyAdminOverview");
+const listAdminRecords=httpsCallable(functions,"listAcademyAdminRecords");
 const review=httpsCallable(functions,"reviewInstructorApplication");
 const moderate=httpsCallable(functions,"moderateAcademyContent");
 const manageClass=httpsCallable(functions,"manageAcademyLiveClass");
 const reviewGuardian=httpsCallable(functions,"reviewStudentGuardianConsent");
+
+const pageState={};
+const pageTargets={
+ students:{element:students,type:"students",render:renderStudents,initialSize:100},
+ instructors:{element:instructors,type:"instructors",render:renderInstructors,initialSize:100},
+ pendingInstructors:{element:pending,type:"pendingInstructors",render:renderPending,initialSize:50},
+ classes:{element:classes,type:"classes",render:renderClasses,initialSize:50},
+ groups:{element:groups,type:"groups",render:renderGroups,initialSize:50},
+ posts:{element:posts,type:"posts",render:renderPosts,initialSize:50},
+ auditLogs:{element:audit,type:"auditLogs",render:renderAudit,initialSize:50}
+};
+function setupPagers(){
+ for(const [key,config] of Object.entries(pageTargets)){
+  if(config.button)continue;
+  const button=node("button","admin-load-more","تحميل المزيد");
+  button.type="button";button.hidden=true;
+  button.addEventListener("click",()=>loadNextPage(key));
+  config.element.insertAdjacentElement("afterend",button);
+  config.button=button;
+ }
+}
+async function loadNextPage(key){
+ const config=pageTargets[key],current=pageState[key];
+ if(!current?.cursorId||!config)return;
+ config.button.disabled=true;config.button.textContent="جارٍ تحميل المزيد…";
+ try{
+  const response=await listAdminRecords({type:config.type,cursorId:current.cursorId,pageSize:25});
+  const result=response.data||{};
+  const combined=[...current.items,...(result.records||[])];
+  pageState[key]={items:combined,cursorId:result.nextCursorId||null,hasMore:result.hasMore===true};
+  config.render(combined);
+  config.button.hidden=!pageState[key].hasMore;
+  config.button.textContent=pageState[key].hasMore?"تحميل المزيد":"تم عرض كل النتائج";
+  message("تم تحميل "+(result.records||[]).length+" سجل إضافي.");
+ }catch(error){
+  message(error.message||"تعذر تحميل بقية السجلات.",true);
+  config.button.textContent="إعادة المحاولة";
+ }finally{config.button.disabled=false;}
+}
+function initializePage(key,items){
+ const config=pageTargets[key],list=Array.isArray(items)?items:[];
+ const last=list[list.length-1];
+ const hasMore=list.length>=config.initialSize;
+ pageState[key]={items:list,cursorId:last?.cursorId||null,hasMore};
+ config.render(list);
+ config.button.hidden=!hasMore||!last?.cursorId;
+ config.button.textContent="تحميل المزيد";
+}
+
 let allowed=false;
 function node(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;}
 function message(text,error=false){state.textContent=text;state.style.color=error?"#dc626e":"#25ad84";}
@@ -104,7 +154,7 @@ function moderationButton(type,item,decision,label){const button=node("button","
 function renderGroups(items){groups.replaceChildren();if(!items.length){groups.append(node("p","admin-empty","لا توجد مجموعات حتى الآن."));return;}for(const item of items){const card=node("article","admin-student");const head=node("div","admin-application-head");head.append(node("h3","",item.name),node("span","admin-status",item.status));const details=node("div","admin-details");details.append(node("p","","المدرّس: "+item.instructorName),node("p","","الموضوع: "+(item.topic||"غير محدد")),node("p","","عدد الأعضاء: "+item.memberCount),node("p","","تاريخ الإنشاء: "+dateLabel(item.createdAt)),node("p","","معرّف المجموعة: "+item.id));const actions=node("div","admin-actions");actions.append(item.status==="active"?moderationButton("group",item,"hide","إيقاف ظهور المجموعة"):moderationButton("group",item,"restore","إعادة نشر المجموعة"));card.append(head,details,actions);groups.append(card);}}
 function renderPosts(items){posts.replaceChildren();if(!items.length){posts.append(node("p","admin-empty","لا توجد منشورات حتى الآن."));return;}for(const item of items){const card=node("article","admin-student");card.append(node("h3","",item.instructorName),node("p","",""+item.text),node("p","admin-class-meta","الحالة: "+item.status+" · "+dateLabel(item.createdAt)),node("p","admin-class-meta","معرّف المنشور: "+item.id));const actions=node("div","admin-actions");actions.append(item.status==="published"?moderationButton("post",item,"hide","إخفاء المنشور"):moderationButton("post",item,"restore","إعادة نشر المنشور"));card.append(actions);posts.append(card);}}
 function renderAudit(items){audit.replaceChildren();if(!items.length){audit.append(node("p","admin-empty","لا توجد عمليات مسجلة بعد."));return;}const labels={instructor_application_submitted:"إرسال طلب مدرّس",instructor_application_approved:"اعتماد مدرّس",instructor_application_rejected:"رفض طلب مدرّس",instructor_post_created:"نشر تحديث",instructor_post_hidden:"إخفاء منشور",instructor_post_restored:"إعادة نشر منشور",teacher_group_suspended:"إيقاف مجموعة",teacher_group_restored:"إعادة نشر مجموعة"};for(const item of items){const row=node("article","admin-student");row.append(node("strong","",labels[item.action]||item.action),node("p","admin-class-meta","المنفذ: "+(item.actorUid||"غير معروف")),node("p","admin-class-meta","المستهدف: "+(item.targetUid||item.targetId||"غير محدد")),node("p","admin-class-meta",dateLabel(item.createdAt)));audit.append(row);}}
-async function load(){if(!allowed)return;refresh.disabled=true;message("جارٍ تحميل بيانات الأكاديمية…");try{const response=await getOverview({});const data=response.data||{};renderStats(data.stats||{});renderPending(data.pendingInstructors||[]);renderStudents(data.students||[]);renderInstructors(data.instructors||[]);renderClasses(data.classes||[]);renderGroups(data.groups||[]);renderPosts(data.posts||[]);renderAudit(data.auditLogs||[]);message("تم تحديث بيانات الأكاديمية.");}catch(error){message(error.message||"تعذر تحميل بيانات الإدارة.",true);}finally{refresh.disabled=false;}}
+async function load(){if(!allowed)return;refresh.disabled=true;message("جارٍ تحميل بيانات الأكاديمية…");try{const response=await getOverview({});const data=response.data||{};renderStats(data.stats||{});initializePage("pendingInstructors",data.pendingInstructors||[]);initializePage("students",data.students||[]);initializePage("instructors",data.instructors||[]);initializePage("classes",data.classes||[]);initializePage("groups",data.groups||[]);initializePage("posts",data.posts||[]);initializePage("auditLogs",data.auditLogs||[]);message("تم تحديث بيانات الأكاديمية.");}catch(error){message(error.message||"تعذر تحميل بيانات الإدارة.",true);}finally{refresh.disabled=false;}}
 refresh.addEventListener("click",load);
 await authPersistenceReady;
-onAuthStateChanged(auth,async user=>{content.hidden=true;if(!user){message("سجّلي الدخول بحساب الإدارة أولًا.",true);const a=node("a","","تسجيل الدخول");a.href="login.html?next=academy-admin.html";state.append(" ",a);return;}try{const token=await user.getIdTokenResult();allowed=token.claims.liveRole==="admin"||token.claims.admin===true;if(!allowed){message("هذا القسم مخصص لمسؤول الأكاديمية فقط.",true);return;}content.hidden=false;await load();}catch(error){message("تعذر التحقق من صلاحيات الإدارة.",true);}});
+onAuthStateChanged(auth,async user=>{content.hidden=true;if(!user){message("سجّلي الدخول بحساب الإدارة أولًا.",true);const a=node("a","","تسجيل الدخول");a.href="login.html?next=academy-admin.html";state.append(" ",a);return;}try{const token=await user.getIdTokenResult();allowed=token.claims.liveRole==="admin"||token.claims.admin===true;if(!allowed){message("هذا القسم مخصص لمسؤول الأكاديمية فقط.",true);return;}content.hidden=false;setupPagers();await load();}catch(error){message("تعذر التحقق من صلاحيات الإدارة.",true);}});
