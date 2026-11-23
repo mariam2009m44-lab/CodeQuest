@@ -21,17 +21,10 @@
   },
   "rewrites": [
     {
-      "source": "/app",
+      "source": "/app/:path*",
       "destination": {
         "service": "react-app",
-        "path": "/"
-      }
-    },
-    {
-      "source": "/app/(.*)",
-      "destination": {
-        "service": "react-app",
-        "path": "/$1"
+        "path": "/:path*"
       }
     },
     {
