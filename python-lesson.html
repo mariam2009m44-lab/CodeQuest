@@ -1168,6 +1168,60 @@
       .editor-container { display: contents; }
     }
 
+
+    /* Desktop lesson workspace refinement */
+    @media (min-width: 901px) {
+      .content-wrapper {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        min-height: calc(100dvh - 112px);
+      }
+      .chat-container {
+        flex: 0 1 50%;
+        width: 50%;
+        max-width: 50%;
+        min-width: 0;
+        padding: 22px clamp(16px, 2vw, 30px);
+      }
+      .editor-container:empty {
+        display: none !important;
+      }
+      .editor-container:not(:empty) {
+        display: flex;
+        flex: 1 1 50%;
+        width: 50%;
+        max-width: 50%;
+        min-width: 0;
+        align-self: stretch;
+        padding: 0 12px 18px 18px;
+      }
+      .editor-container:not(:empty) > .editor-wrapper.show {
+        display: flex !important;
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        min-height: 520px;
+        height: auto;
+        margin: 12px 0;
+        align-self: stretch;
+      }
+      .editor-container:not(:empty) > .editor-wrapper.show .code-area {
+        flex: 1 1 340px;
+        min-height: 300px;
+        max-height: none;
+      }
+      .editor-container:not(:empty) > .editor-wrapper.show .CodeMirror,
+      .editor-container:not(:empty) > .editor-wrapper.show .code-fallback {
+        min-height: 300px;
+      }
+    }
+    @media (max-width: 900px) {
+      .editor-container:empty { display: contents; }
+      .editor-container:not(:empty) { display: contents; }
+    }
+
     /* Responsive editor hints and exam layout */
     .editor-wrapper,
     .exam-view,
