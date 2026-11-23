@@ -2780,6 +2780,7 @@ exports.createLiveClass = onCall(
     const startsAtValue = String(request.data?.startsAt || "");
     const durationMinutes = Number(request.data?.durationMinutes || 60);
     const capacity = Number(request.data?.capacity || 12);
+    const groupId = String(request.data?.groupId || "").trim();
     const startsAtDate = new Date(startsAtValue);
     const now = Date.now();
 
@@ -2801,6 +2802,15 @@ exports.createLiveClass = onCall(
       throw new HttpsError("invalid-argument", "عدد المقاعد يجب أن يكون من 1 إلى 30.");
     }
 
+    let linkedGroup = null;
+    if (groupId) {
+      if (!/^[A-Za-z0-9_-]{10,40}$/.test(groupId)) throw new HttpsError("invalid-argument", "المجموعة المختارة غير صالحة.");
+      const groupSnapshot = await db.collection("teacherGroups").doc(groupId).get();
+      if (!groupSnapshot.exists || groupSnapshot.data()?.instructorUid !== instructorUid || groupSnapshot.data()?.status !== "active") {
+        throw new HttpsError("permission-denied", "يمكن ربط الفصل بمجموعة نشطة تملكينها فقط.");
+      }
+      linkedGroup = { id: groupId, name: String(groupSnapshot.data()?.name || "") };
+    }
     const instructorProfile = await db.collection("users").doc(instructorUid).get();
     const instructorName = String(instructorProfile.data()?.displayName || "مدرّب CodeQuest").slice(0, 50);
     const meeting = await realtimeKitRequest(
@@ -2830,6 +2840,8 @@ exports.createLiveClass = onCall(
         description,
         instructorUid,
         instructorName,
+        groupId: linkedGroup?.id || null,
+        groupName: linkedGroup?.name || "",
         startsAt: startTimestamp,
         durationMinutes,
         capacity,
@@ -2877,6 +2889,8 @@ exports.listLiveClasses = onCall(
         id: doc.id,
         title: String(data.title || ""),
         description: String(data.description || ""),
+        groupId: String(data.groupId || ""),
+        groupName: String(data.groupName || ""),
         instructorName: String(data.instructorName || "مدرّب CodeQuest"),
         startsAt: data.startsAt?.toDate?.().toISOString() || null,
         durationMinutes: Number(data.durationMinutes || 60),
@@ -2905,10 +2919,12 @@ exports.enrollInLiveClass = onCall(
 
     const classRef = db.collection("liveClasses").doc(classId);
     const enrollmentRef = classRef.collection("enrollments").doc(uid);
+    const studentRef = db.collection("academyStudentProfiles").doc(uid);
     await db.runTransaction(async transaction => {
-      const [classSnapshot, enrollmentSnapshot] = await Promise.all([
+      const [classSnapshot, enrollmentSnapshot, studentSnapshot] = await Promise.all([
         transaction.get(classRef),
-        transaction.get(enrollmentRef)
+        transaction.get(enrollmentRef),
+        transaction.get(studentRef)
       ]);
       if (!classSnapshot.exists || classSnapshot.data()?.status !== "scheduled") {
         throw new HttpsError("not-found", "الفصل غير متاح للتسجيل حاليًا.");
@@ -2916,9 +2932,16 @@ exports.enrollInLiveClass = onCall(
       if (classSnapshot.data()?.instructorUid === uid) {
         throw new HttpsError("failed-precondition", "المدرّب لا يحتاج إلى التسجيل في فصله.");
       }
-      const studentProfile = await db.collection("academyStudentProfiles").doc(uid).get();
-      if (!studentProfile.exists) {
+      if (!studentSnapshot.exists || studentSnapshot.data()?.status !== "active") {
         throw new HttpsError("failed-precondition", "أكملي ملف الطالب أولًا قبل حجز مقعد في الفصل.");
+      }
+      const linkedGroupId = String(classSnapshot.data()?.groupId || "");
+      if (linkedGroupId) {
+        const membershipRef = db.collection("teacherGroups").doc(linkedGroupId).collection("members").doc(uid);
+        const membership = await transaction.get(membershipRef);
+        if (!membership.exists || membership.data()?.status !== "active" || membership.data()?.role !== "student") {
+          throw new HttpsError("permission-denied", "هذا الفصل مخصص لأعضاء المجموعة المعتمدة فقط. قدّمي طلب انضمام للمجموعة أولًا.");
+        }
       }
       const capacity = Number(classSnapshot.data()?.capacity || 12);
       const enrolledCount = Number(classSnapshot.data()?.enrollmentCount || 0);
@@ -3027,7 +3050,7 @@ exports.joinLiveClass = onCall(
       request.auth.token.liveRole === "instructor" &&
       request.auth.token.liveInstructorApproved === true;
     const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
-    if (!isInstructor && !isAdmin && !enrollmentSnapshot.exists) {
+    if (!isInstructor && !isAdmin && (!enrollmentSnapshot.exists || enrollmentSnapshot.data()?.status !== "enrolled")) {
       throw new HttpsError("permission-denied", "سجّلي في الفصل أولًا قبل الانضمام.");
     }
     if (classData.status !== "live") {
