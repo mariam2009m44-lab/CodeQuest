@@ -54,7 +54,7 @@ function renderClass(item) {
   const instructor = document.createElement("span");
   instructor.textContent = "المدرّب: " + item.instructorName;
   const count = document.createElement("span");
-  count.textContent = "المقاعد: " + item.enrollmentCount + " / " + (item.capacity || 12);
+  count.textContent = "المقاعد: " + item.enrollmentCount + " / " + (item.capacity || 12) + " · المتاح: " + (item.seatsRemaining ?? Math.max(0,(item.capacity || 12)-item.enrollmentCount));
   meta.append(date,instructor,count);
   const actions = document.createElement("div");
   actions.className = "live-actions";
