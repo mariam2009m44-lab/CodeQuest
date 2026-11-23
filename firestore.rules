@@ -299,6 +299,7 @@ service cloud.firestore {
           );
         allow list: if signedIn()
           && request.auth.token.liveRole == 'instructor'
+          && request.auth.token.liveInstructorApproved == true
           && get(/databases/$(database)/documents/liveClasses/$(classId)).data.instructorUid == request.auth.uid;
         allow create, update, delete: if false;
       }
