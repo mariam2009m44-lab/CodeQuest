@@ -11,6 +11,7 @@ function loadValidator() {
     require(name) {
       if (name === "crypto") return require("node:crypto");
       if (name === "firebase-admin/app") return { initializeApp() {} };
+      if (name === "firebase-admin/auth") return { getAuth: () => ({}) };
       if (name === "firebase-admin/firestore") return {
         getFirestore: () => ({}),
         FieldValue: { serverTimestamp: () => "SERVER_TIMESTAMP" }
@@ -20,7 +21,8 @@ function loadValidator() {
         HttpsError: class extends Error {}
       };
       if (name === "firebase-functions/params") return {
-        defineString: (_name, options) => ({ value: () => options.default })
+        defineString: (_name, options = {}) => ({ value: () => options.default || "" }),
+        defineSecret: (_name) => ({ value: () => "" })
       };
       if (name === "firebase-functions/v2/firestore") return {
         onDocumentWritten: (_options, handler) => handler
