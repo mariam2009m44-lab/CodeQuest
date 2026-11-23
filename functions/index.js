@@ -3093,16 +3093,21 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
   if (ageBand !== "18+" && !guardianConsent) throw new HttpsError("failed-precondition", "يلزم تأكيد موافقة ولي الأمر للطلاب دون 18 عامًا.");
   const user = await getAuth().getUser(uid);
   const profile = await db.collection("users").doc(uid).get();
-  await db.collection("academyStudentProfiles").doc(uid).set({
-    uid,
-    displayName: String(profile.data()?.displayName || user.displayName || "متعلّم").slice(0, 50),
-    email: String(user.email || "").slice(0, 254),
-    ageBand, grade, skillLevel, interests,
-    guardianConsent: ageBand === "18+" ? null : true,
-    status: "active",
-    updatedAt: FieldValue.serverTimestamp(),
-    createdAt: FieldValue.serverTimestamp()
-  }, { merge: true });
+  const studentRef = db.collection("academyStudentProfiles").doc(uid);
+  await db.runTransaction(async transaction => {
+    const existing = await transaction.get(studentRef);
+    const existingCreatedAt = existing.exists ? existing.data()?.createdAt : null;
+    transaction.set(studentRef, {
+      uid,
+      displayName: String(profile.data()?.displayName || user.displayName || "متعلّم").slice(0, 50),
+      email: String(user.email || "").slice(0, 254),
+      ageBand, grade, skillLevel, interests,
+      guardianConsent: ageBand === "18+" ? null : true,
+      status: "active",
+      updatedAt: FieldValue.serverTimestamp(),
+      createdAt: existingCreatedAt || FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
   return { success: true, status: "active" };
 });
 
