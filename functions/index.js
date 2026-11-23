@@ -3583,3 +3583,32 @@ exports.listPublicTeacherGroups = onCall({ region: "europe-west1" }, async reque
     memberCount: Number(doc.data().memberCount || 0)
   })) };
 });
+
+
+exports.listTeacherGroupJoinRequests = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireApprovedLiveInstructor(request);
+  const groupId = String(request.data?.groupId || "");
+  if (!/^[A-Za-z0-9]{20,40}$/.test(groupId)) throw new HttpsError("invalid-argument", "معرّف المجموعة غير صالح.");
+  const groupRef = db.collection("teacherGroups").doc(groupId);
+  const group = await groupRef.get();
+  if (!group.exists || group.data()?.instructorUid !== uid) {
+    throw new HttpsError("permission-denied", "لا يمكنك عرض طلبات مجموعة لا تملكينها.");
+  }
+  const snapshot = await groupRef.collection("membershipRequests")
+    .where("status", "==", "pending").orderBy("requestedAt", "asc").limit(50).get();
+  const requests = await Promise.all(snapshot.docs.map(async item => {
+    const [profile, authUser] = await Promise.all([
+      db.collection("academyStudentProfiles").doc(item.id).get(),
+      getAuth().getUser(item.id).catch(() => null)
+    ]);
+    return {
+      uid: item.id,
+      displayName: String(profile.data()?.displayName || authUser?.displayName || "طالب"),
+      ageBand: String(profile.data()?.ageBand || ""),
+      skillLevel: String(profile.data()?.skillLevel || ""),
+      interests: Array.isArray(profile.data()?.interests) ? profile.data().interests : [],
+      requestedAt: item.data()?.requestedAt?.toDate?.().toISOString() || null
+    };
+  }));
+  return { success: true, requests };
+});
