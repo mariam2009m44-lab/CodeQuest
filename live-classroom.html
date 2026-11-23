@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111319"><title>الفصل المباشر · CodeQuest</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
 <link rel="stylesheet" href="css/live-classroom.css">
 <script src="https://cdn.jsdelivr.net/npm/@cloudflare/realtimekit@latest/dist/browser.js"></script>
 <script type="module">
@@ -15,6 +17,7 @@ defineCustomElements();
 <main>
 <div class="room-intro"><span>LIVE CLASSROOM</span><h1>الفصل المباشر</h1><p id="roomStatus" role="status">جارٍ تأمين اتصالك وتجهيز غرفة الفصل…</p></div>
 <div class="room-shell"><rtk-meeting id="classroom" mode="fill" show-setup-screen="true"></rtk-meeting></div>
+<section class="shared-workspace" aria-labelledby="workspaceTitle"><div class="workspace-head"><div><span>COLLABORATIVE CODING</span><h2 id="workspaceTitle">محرر الأكواد المشترك</h2><p>اكتبوا الكود معًا؛ سيظهر التحديث لدى المشاركين في الفصل.</p></div><label>لغة البرمجة<select id="workspaceLanguage" disabled><option value="python">Python</option><option value="javascript">JavaScript</option><option value="cpp">C++</option><option value="java">Java</option></select></label></div><div class="workspace-toolbar"><span id="workspaceSync" role="status">بانتظار التحقق من صلاحية الفصل…</span><span id="workspaceMembers">محرر مشترك للفصل</span></div><textarea id="sharedCodeEditor" spellcheck="false" aria-label="محرر الأكواد المشترك" disabled>// سيظهر كود الفصل هنا بعد التحقق من التسجيل</textarea><p class="workspace-note">المحرر يزامن محتوى الملف بين المشاركين المسجلين. احفظوا نسخًا مهمة من العمل خارج الجلسة أيضًا.</p></section>
 <p class="room-note">هذه جلسة جماعية داخل CodeQuest. لا تشاركي رابط الفصل أو رمز الدخول خارج المنصة.</p>
 </main>
 <script type="module" src="js/live-classroom.js"></script>
