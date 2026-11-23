@@ -5,6 +5,10 @@ import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
 const account = document.getElementById("liveAccount");
 const list = document.getElementById("classList");
 const createPanel = document.getElementById("createPanel");
+const adminPanel = document.getElementById("adminPanel");
+const bootstrapButton = document.getElementById("bootstrapAdmin");
+const approveForm = document.getElementById("approveInstructorForm");
+const adminFeedback = document.getElementById("adminFeedback");
 const createForm = document.getElementById("createClassForm");
 const feedback = document.getElementById("createFeedback");
 const refreshButton = document.getElementById("refreshClasses");
@@ -12,6 +16,8 @@ const listClasses = httpsCallable(functions, "listLiveClasses");
 const enrollClass = httpsCallable(functions, "enrollInLiveClass");
 const createClass = httpsCallable(functions, "createLiveClass");
 const setClassStatus = httpsCallable(functions, "setLiveClassStatus");
+const bootstrapAdmin = httpsCallable(functions, "bootstrapLiveAcademyAdmin");
+const approveInstructor = httpsCallable(functions, "approveLiveInstructor");
 let currentUser = null;
 let isInstructor = false;
 
@@ -91,6 +97,26 @@ async function loadClasses() {
   }
 }
 refreshButton.addEventListener("click",loadClasses);
+bootstrapButton.addEventListener("click",async()=>{
+  bootstrapButton.disabled=true;
+  try{
+    await bootstrapAdmin();
+    await currentUser.getIdToken(true);
+    showMessage(account,"تم إعداد صلاحية مسؤول الأكاديمية. حدّثي الصفحة إذا لم تظهر أدوات الإدارة.");
+    location.reload();
+  }catch(error){showMessage(account,error?.message||"تعذر إعداد المسؤول. تأكدي من إعداد بريد المالك على الخادم.",true);}
+  finally{bootstrapButton.disabled=false;}
+});
+approveForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const button=approveForm.querySelector("button");button.disabled=true;
+  try{
+    const instructorUid=String(new FormData(approveForm).get("instructorUid")||"").trim();
+    await approveInstructor({instructorUid});
+    approveForm.reset();showMessage(adminFeedback,"تم اعتماد حساب المدرّب. يجب عليه تسجيل الخروج والدخول لتحديث صلاحياته.");
+  }catch(error){showMessage(adminFeedback,error?.message||"تعذر اعتماد المدرّب.",true);}
+  finally{button.disabled=false;}
+});
 createForm.addEventListener("submit",async event=>{
   event.preventDefault();
   if(!isInstructor)return;
@@ -125,8 +151,11 @@ onAuthStateChanged(auth,async user=>{
   try {
     const token=await user.getIdTokenResult();
     isInstructor=token.claims.liveRole==="instructor"&&token.claims.liveInstructorApproved===true;
+    const isAdmin=token.claims.liveRole==="admin"||token.claims.admin===true;
     createPanel.hidden=!isInstructor;
-    account.textContent=isInstructor?"تم التحقق من حساب المدرّب المعتمد.":"أهلًا بك في أكاديمية CodeQuest المباشرة.";
+    adminPanel.hidden=!isAdmin;
+    bootstrapButton.hidden=Boolean(isInstructor||isAdmin)||!user.emailVerified;
+    account.textContent=isAdmin?"تم التحقق من صلاحيات مسؤول الأكاديمية.":isInstructor?"تم التحقق من حساب المدرّب المعتمد.":"أهلًا بك في أكاديمية CodeQuest المباشرة.";
     await loadClasses();
   } catch(error) {
     account.textContent="تعذر التحقق من صلاحيات الحساب. حدّثي الصفحة بعد قليل.";
