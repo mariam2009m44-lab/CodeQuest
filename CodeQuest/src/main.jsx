@@ -4,9 +4,9 @@ import { HashRouter } from "react-router-dom";
 
 import App from "../App.jsx";
 
-import "../../css/variables.css";
-import "../../css/global.css";
-import "../../src/styles/global.css";
+import "./styles/shared/variables.css";
+import "./styles/shared/global.css";
+import "./styles/shared/root-global.css";
 
 const rootElement = document.getElementById("root");
 
