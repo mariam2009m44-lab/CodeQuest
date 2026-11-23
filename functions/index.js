@@ -3527,13 +3527,22 @@ exports.requestTeacherGroupMembership = onCall({ region: "europe-west1" }, async
   }
   const groupRef = db.collection("teacherGroups").doc(groupId);
   const requestRef = groupRef.collection("membershipRequests").doc(uid);
-  const group = await groupRef.get();
-  if (!group.exists || group.data()?.status !== "active" || group.data()?.visibility !== "listed") {
-    throw new HttpsError("not-found", "المجموعة غير متاحة.");
-  }
-  if (group.data()?.instructorUid === uid) throw new HttpsError("failed-precondition", "أنتِ صاحبة هذه المجموعة.");
-  await requestRef.set({
-    uid, status: "pending", requestedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+  const memberRef = groupRef.collection("members").doc(uid);
+  await db.runTransaction(async transaction => {
+    const [group, existingRequest, member] = await Promise.all([
+      transaction.get(groupRef), transaction.get(requestRef), transaction.get(memberRef)
+    ]);
+    if (!group.exists || group.data()?.status !== "active" || group.data()?.visibility !== "listed") {
+      throw new HttpsError("not-found", "المجموعة غير متاحة.");
+    }
+    if (group.data()?.instructorUid === uid) throw new HttpsError("failed-precondition", "أنتِ صاحبة هذه المجموعة.");
+    if (member.exists && member.data()?.status === "active") {
+      throw new HttpsError("already-exists", "أنتِ عضوة بالفعل في هذه المجموعة.");
+    }
+    if (existingRequest.exists && existingRequest.data()?.status === "pending") return;
+    transaction.set(requestRef, {
+      uid, status: "pending", requestedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
+    });
   });
   return { success: true, status: "pending" };
 });
