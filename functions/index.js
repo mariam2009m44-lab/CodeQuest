@@ -3171,40 +3171,36 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
   const user = await getAuth().getUser(uid);
   const profile = await db.collection("users").doc(uid).get();
   const studentRef = db.collection("academyStudentProfiles").doc(uid);
+  let profileStatus = ageBand === "18+" ? "active" : "pending_guardian";
   await db.runTransaction(async transaction => {
     const existing = await transaction.get(studentRef);
-    const existingCreatedAt = existing.exists ? existing.data()?.createdAt : null;
+    const existingData = existing.exists ? existing.data() : {};
+    const existingCreatedAt = existingData.createdAt || null;
+    const guardianConsentVerified = ageBand === "18+" || (
+      existingData.ageBand !== "18+" &&
+      existingData.guardianConsentVerified === true &&
+      guardianConsent === true
+    );
+    profileStatus = guardianConsentVerified ? "active" : "pending_guardian";
     transaction.set(studentRef, {
       uid,
       displayName: String(profile.data()?.displayName || user.displayName || "متعلّم").slice(0, 50),
       email: String(user.email || "").slice(0, 254),
       ageBand, grade, skillLevel, interests, learningGoals, learningNeeds, preferredSchedule,
       guardianConsent: ageBand === "18+" ? null : guardianConsent,
-      guardianConsentVerified: ageBand === "18+" ? true : (
-        existing.data()?.ageBand !== "18+" &&
-        existing.data()?.guardianConsentVerified === true &&
-        guardianConsent === true
-      ),
+      guardianConsentVerified,
       guardianConsentVerifiedAt: ageBand === "18+" ? FieldValue.serverTimestamp() : (
-        existing.data()?.ageBand !== "18+" && existing.data()?.guardianConsentVerified === true && guardianConsent === true
-          ? existing.data()?.guardianConsentVerifiedAt || null
-          : null
+        guardianConsentVerified ? existingData.guardianConsentVerifiedAt || null : null
       ),
       guardianConsentVerifiedBy: ageBand === "18+" ? null : (
-        existing.data()?.ageBand !== "18+" && existing.data()?.guardianConsentVerified === true && guardianConsent === true
-          ? existing.data()?.guardianConsentVerifiedBy || null
-          : null
+        guardianConsentVerified ? existingData.guardianConsentVerifiedBy || null : null
       ),
-      status: ageBand === "18+" || (
-        existing.data()?.ageBand !== "18+" &&
-        existing.data()?.guardianConsentVerified === true &&
-        guardianConsent === true
-      ) ? "active" : "pending_guardian",
+      status: profileStatus,
       updatedAt: FieldValue.serverTimestamp(),
       createdAt: existingCreatedAt || FieldValue.serverTimestamp()
     }, { merge: true });
   });
-  return { success: true, status: "active" };
+  return { success: true, status: profileStatus };
 });
 
 exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async request => {
