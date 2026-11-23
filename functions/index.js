@@ -3337,6 +3337,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       id: doc.id, title: String(data.title || ""), instructorName: String(data.instructorName || ""),
       instructorUid: String(data.instructorUid || ""), status: String(data.status || "scheduled"),
       startsAt: data.startsAt?.toDate?.().toISOString() || null,
+      durationMinutes: Number(data.durationMinutes || 60),
       capacity: Number(data.capacity || 12), enrollmentCount: Number(data.enrollmentCount || students.length), students
     };
   }));
@@ -3371,7 +3372,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
   };
 });
 
-exports.manageAcademyLiveClass = onCall({ region: "europe-west1" }, async request => {
+exports.manageAcademyLiveClass = onCall({ region: "europe-west1", secrets: [REALTIMEKIT_API_TOKEN] }, async request => {
   requireLiveAdmin(request);
   const classId = String(request.data?.classId || "");
   const action = String(request.data?.action || "");
@@ -3380,6 +3381,7 @@ exports.manageAcademyLiveClass = onCall({ region: "europe-west1" }, async reques
   }
   const classRef = db.collection("liveClasses").doc(classId);
   const enrollmentQuery = classRef.collection("enrollments").where("status", "==", "enrolled");
+  const privateMeeting = action === "cancel" ? await db.collection("liveClassPrivate").doc(classId).get() : null;
   let auditDetails = {};
   await db.runTransaction(async transaction => {
     const classSnapshot = await transaction.get(classRef);
@@ -3429,6 +3431,14 @@ exports.manageAcademyLiveClass = onCall({ region: "europe-west1" }, async reques
       capacity
     };
   });
+  if (action === "cancel" && privateMeeting?.exists && privateMeeting.data()?.providerMeetingId) {
+    await realtimeKitRequest(
+      `/meetings/${encodeURIComponent(privateMeeting.data().providerMeetingId)}`,
+      "PATCH",
+      { status: "INACTIVE" },
+      REALTIMEKIT_API_TOKEN.value()
+    );
+  }
   await db.collection("academyAuditLogs").add({
     actorUid: request.auth.uid,
     action: action === "cancel" ? "live_class_cancelled_by_admin" : "live_class_rescheduled_by_admin",
