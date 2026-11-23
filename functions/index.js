@@ -2838,6 +2838,10 @@ exports.createLiveClass = onCall(
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp()
       });
+      transaction.set(classRef.collection("workspace").doc("shared"), {
+        code: "", language: "python", updatedBy: instructorUid,
+        updatedAt: FieldValue.serverTimestamp()
+      });
       transaction.set(db.collection("liveClassPrivate").doc(classRef.id), {
         provider: "cloudflare-realtimekit",
         providerMeetingId: meeting.id,
@@ -3124,7 +3128,8 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
   const approval = await db.collection("liveInstructorApprovals").doc(uid).get();
   if (approval.exists && approval.data()?.status === "approved") throw new HttpsError("already-exists", "هذا الحساب معتمد بالفعل كمدرب.");
   await db.collection("instructorApplications").doc(uid).set({
-    uid, fullName, email: String(user.email || "").slice(0, 254), specialties,
+    uid, fullName, email: String(user.email || "").slice(0, 254),
+    emailVerified: user.emailVerified === true, specialties,
     experience, bio, portfolioUrl, availability, status: "pending",
     submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp()
   }, { merge: true });
