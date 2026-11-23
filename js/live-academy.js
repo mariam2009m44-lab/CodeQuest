@@ -20,6 +20,8 @@ const setClassStatus = httpsCallable(functions, "setLiveClassStatus");
 const bootstrapAdmin = httpsCallable(functions, "bootstrapLiveAcademyAdmin");
 const approveInstructor = httpsCallable(functions, "approveLiveInstructor");
 const listRoster = httpsCallable(functions, "listInstructorClassRoster");
+const listMyGroups = httpsCallable(functions, "listMyTeacherGroups");
+const groupSelect = document.getElementById("classGroupSelect");
 let currentUser = null;
 let isInstructor = false;
 
@@ -57,6 +59,7 @@ function renderClass(item) {
   const count = document.createElement("span");
   count.textContent = "المقاعد: " + item.enrollmentCount + " / " + (item.capacity || 12) + " · المتاح: " + (item.seatsRemaining ?? Math.max(0,(item.capacity || 12)-item.enrollmentCount));
   meta.append(date,instructor,count);
+  if(item.groupName){const group=document.createElement("span");group.textContent="المجموعة: "+item.groupName;meta.append(group);}
   const actions = document.createElement("div");
   actions.className = "live-actions";
   if (item.isInstructor || item.isAdmin) {
@@ -175,7 +178,8 @@ createForm.addEventListener("submit",async event=>{
       description:String(form.get("description")||"").trim(),
       startsAt:startsAt.toISOString(),
       durationMinutes:Number(form.get("durationMinutes")||60),
-      capacity:Number(form.get("capacity")||12)
+      capacity:Number(form.get("capacity")||12),
+      groupId:String(form.get("groupId")||"")
     });
     createForm.reset();
     showMessage(feedback,"تم إنشاء الفصل وغرفة البث. سيظهر الفصل في القائمة.");
@@ -198,6 +202,14 @@ onAuthStateChanged(auth,async user=>{
     const isAdmin=token.claims.liveRole==="admin"||token.claims.admin===true;
     createPanel.hidden=!isInstructor;
     adminPanel.hidden=!isAdmin;
+    if(isInstructor){
+      try{
+        const groupsResult=await listMyGroups();
+        const ownedGroups=groupsResult.data?.groups||[];
+        groupSelect.replaceChildren(new Option("فصل مفتوح لجميع الطلاب المسجلين",""));
+        ownedGroups.forEach(group=>groupSelect.add(new Option(group.name,group.id)));
+      }catch(error){showMessage(account,"تعذر تحميل مجموعاتك: "+(error.message||"حاولي تحديث الصفحة."),true);}
+    }
     bootstrapButton.hidden=Boolean(isInstructor||isAdmin)||!user.emailVerified;
     account.textContent=isAdmin?"تم التحقق من صلاحيات مسؤول الأكاديمية.":isInstructor?"تم التحقق من حساب المدرّب المعتمد.":"أهلًا بك في أكاديمية CodeQuest المباشرة.";
     await loadClasses();
