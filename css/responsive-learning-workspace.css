@@ -214,3 +214,108 @@ body[data-course="python"] .editor-wrapper.show{
   }
   body[data-course="python"] .editor-backdrop.show{display:block}
 }
+
+
+/* Android/iOS touch devices: ignore desktop-site CSS viewport width.
+   Some mobile browsers request a 980px/1280px layout viewport, which
+   incorrectly activates the desktop three-column workspace. */
+@media (hover: none) and (pointer: coarse) {
+  body[data-course="python"] .app-shell {
+    display:flex!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:100dvh!important;
+  }
+  body[data-course="python"] .sidebar {
+    position:fixed!important;
+    top:0!important;
+    right:-310px!important;
+    left:auto!important;
+    z-index:3000!important;
+    width:min(290px,86vw)!important;
+    min-width:0!important;
+    max-width:86vw!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    overflow-y:auto!important;
+  }
+  body[data-course="python"] .sidebar.open {
+    right:0!important;
+  }
+  body[data-course="python"] .main-area {
+    display:flex!important;
+    flex:1 1 100%!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    min-height:100dvh!important;
+  }
+  body[data-course="python"] .content-wrapper {
+    display:flex!important;
+    flex:1 1 auto!important;
+    flex-direction:column!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    gap:0!important;
+  }
+  body[data-course="python"] .chat-container {
+    display:flex!important;
+    flex:1 1 auto!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+  }
+  body[data-course="python"] .editor-container {
+    display:contents!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:0!important;
+  }
+  body[data-course="python"] .editor-wrapper.show {
+    position:fixed!important;
+    inset:auto 0 0!important;
+    z-index:2600!important;
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:min(82dvh,760px)!important;
+    min-height:0!important;
+    max-height:calc(100dvh - var(--cq-safe-top) - 12px)!important;
+    margin:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    border-radius:20px 20px 0 0!important;
+    padding-bottom:max(12px,var(--cq-safe-bottom))!important;
+    box-shadow:0 -12px 38px #0009!important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  body[data-course="python"] .editor-wrapper.show .editor-header {
+    position:sticky!important;
+    top:0!important;
+    z-index:2!important;
+    flex:0 0 auto!important;
+  }
+  body[data-course="python"] .editor-wrapper.show .code-area {
+    flex:1 1 210px!important;
+    min-height:210px!important;
+    max-height:42dvh!important;
+  }
+  body[data-course="python"] .editor-wrapper.show .CodeMirror,
+  body[data-course="python"] .editor-wrapper.show .code-fallback {
+    min-height:210px!important;
+    max-height:100%!important;
+  }
+  body[data-course="python"] .editor-backdrop.show {
+    display:block!important;
+  }
+  body[data-course="python"] .menu-btn,
+  body[data-course="python"] .close-btn {
+    display:inline-flex!important;
+  }
+}
