@@ -2932,8 +2932,9 @@ exports.enrollInLiveClass = onCall(
       if (classSnapshot.data()?.instructorUid === uid) {
         throw new HttpsError("failed-precondition", "المدرّب لا يحتاج إلى التسجيل في فصله.");
       }
-      if (!studentSnapshot.exists || studentSnapshot.data()?.status !== "active") {
-        throw new HttpsError("failed-precondition", "أكملي ملف الطالب أولًا قبل حجز مقعد في الفصل.");
+      if (!studentSnapshot.exists || studentSnapshot.data()?.status !== "active" ||
+          (studentSnapshot.data()?.ageBand !== "18+" && studentSnapshot.data()?.guardianConsentVerified !== true)) {
+        throw new HttpsError("failed-precondition", "يجب إكمال ملف الطالب والتحقق من موافقة ولي الأمر من إدارة الأكاديمية قبل حجز الفصول المباشرة.");
       }
       const linkedGroupId = String(classSnapshot.data()?.groupId || "");
       if (linkedGroupId) {
@@ -3178,8 +3179,10 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
       displayName: String(profile.data()?.displayName || user.displayName || "متعلّم").slice(0, 50),
       email: String(user.email || "").slice(0, 254),
       ageBand, grade, skillLevel, interests, learningGoals, learningNeeds, preferredSchedule,
-      guardianConsent: ageBand === "18+" ? null : true,
-      status: "active",
+      guardianConsent: ageBand === "18+" ? null : guardianConsent,
+      guardianConsentVerified: ageBand === "18+" ? true : existing.data()?.guardianConsentVerified === true,
+      guardianConsentVerifiedAt: ageBand === "18+" ? FieldValue.serverTimestamp() : (existing.data()?.guardianConsentVerifiedAt || null),
+      status: ageBand === "18+" || existing.data()?.guardianConsentVerified === true ? "active" : "pending_guardian",
       updatedAt: FieldValue.serverTimestamp(),
       createdAt: existingCreatedAt || FieldValue.serverTimestamp()
     }, { merge: true });
@@ -3239,6 +3242,41 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
   return { success: true, status: "pending" };
 });
 
+exports.reviewStudentGuardianConsent = onCall({ region: "europe-west1" }, async request => {
+  requireLiveAdmin(request);
+  const studentUid = String(request.data?.studentUid || "");
+  const decision = String(request.data?.decision || "");
+  if (!/^[A-Za-z0-9_-]{20,128}$/.test(studentUid) || !["verify", "hold"].includes(decision)) {
+    throw new HttpsError("invalid-argument", "بيانات مراجعة موافقة ولي الأمر غير صحيحة.");
+  }
+  const studentRef = db.collection("academyStudentProfiles").doc(studentUid);
+  let resultStatus = "pending_guardian";
+  await db.runTransaction(async transaction => {
+    const snapshot = await transaction.get(studentRef);
+    if (!snapshot.exists) throw new HttpsError("not-found", "ملف الطالب غير موجود.");
+    const data = snapshot.data();
+    if (data.ageBand === "18+") throw new HttpsError("failed-precondition", "هذا الطالب لا يحتاج إلى مراجعة موافقة ولي الأمر.");
+    if (decision === "verify" && data.guardianConsent !== true) {
+      throw new HttpsError("failed-precondition", "لا يوجد إقرار بموافقة ولي الأمر لمراجعته.");
+    }
+    resultStatus = decision === "verify" ? "active" : "pending_guardian";
+    transaction.update(studentRef, {
+      guardianConsentVerified: decision === "verify",
+      guardianConsentVerifiedAt: decision === "verify" ? FieldValue.serverTimestamp() : null,
+      guardianConsentVerifiedBy: decision === "verify" ? request.auth.uid : null,
+      status: resultStatus,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+  });
+  await db.collection("academyAuditLogs").add({
+    actorUid: request.auth.uid,
+    action: decision === "verify" ? "student_guardian_consent_verified" : "student_guardian_consent_held",
+    targetUid: studentUid,
+    createdAt: FieldValue.serverTimestamp()
+  });
+  return { success: true, status: resultStatus };
+});
+
 exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSeconds: 60 }, async request => {
   requireLiveAdmin(request);
   const [studentCount, studentSnapshot, approvedCount, pendingSnapshot, instructorSnapshot, classSnapshot,
@@ -3270,6 +3308,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       learningNeeds: String(data.learningNeeds || ""),
       preferredSchedule: String(data.preferredSchedule || ""),
       guardianConsent: data.guardianConsent === true,
+      guardianConsentVerified: data.guardianConsentVerified === true,
       status: String(data.status || "active"),
       createdAt: data.createdAt?.toDate?.().toISOString() || null,
       updatedAt: data.updatedAt?.toDate?.().toISOString() || null
@@ -3546,7 +3585,9 @@ exports.getMyAcademyRegistrationStatus = onCall({ region: "europe-west1" }, asyn
       interests: Array.isArray(student.data()?.interests) ? student.data().interests : [],
       learningGoals: String(student.data()?.learningGoals || ""),
       learningNeeds: String(student.data()?.learningNeeds || ""),
-      preferredSchedule: String(student.data()?.preferredSchedule || "")
+      preferredSchedule: String(student.data()?.preferredSchedule || ""),
+      guardianConsent: student.data()?.guardianConsent === true,
+      guardianConsentVerified: student.data()?.guardianConsentVerified === true
     } : null,
     instructorApplication: instructor.exists ? {
       status: String(instructor.data()?.status || "pending"),
@@ -3674,8 +3715,9 @@ exports.requestTeacherGroupMembership = onCall({ region: "europe-west1" }, async
   const groupId = String(request.data?.groupId || "");
   if (!/^[A-Za-z0-9]{20,40}$/.test(groupId)) throw new HttpsError("invalid-argument", "معرّف المجموعة غير صالح.");
   const student = await db.collection("academyStudentProfiles").doc(uid).get();
-  if (!student.exists || student.data()?.status !== "active") {
-    throw new HttpsError("failed-precondition", "أكملي ملف الطالب أولًا قبل طلب الانضمام.");
+  if (!student.exists || student.data()?.status !== "active" ||
+      (student.data()?.ageBand !== "18+" && student.data()?.guardianConsentVerified !== true)) {
+    throw new HttpsError("failed-precondition", "يجب إكمال ملف الطالب والتحقق من موافقة ولي الأمر قبل طلب الانضمام للمجموعة.");
   }
   const groupRef = db.collection("teacherGroups").doc(groupId);
   const requestRef = groupRef.collection("membershipRequests").doc(uid);
