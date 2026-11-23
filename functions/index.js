@@ -3230,3 +3230,26 @@ exports.listInstructorClassRoster = onCall({ region: "europe-west1" }, async req
   }));
   return { success: true, students, count: students.length, capacity: Number(data.capacity || 12) };
 });
+
+
+exports.getMyAcademyRegistrationStatus = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  const [student, instructor] = await Promise.all([
+    db.collection("academyStudentProfiles").doc(uid).get(),
+    db.collection("instructorApplications").doc(uid).get()
+  ]);
+  return {
+    success: true,
+    studentProfile: student.exists ? {
+      status: String(student.data()?.status || "active"),
+      ageBand: String(student.data()?.ageBand || ""),
+      grade: String(student.data()?.grade || ""),
+      skillLevel: String(student.data()?.skillLevel || ""),
+      interests: Array.isArray(student.data()?.interests) ? student.data().interests : []
+    } : null,
+    instructorApplication: instructor.exists ? {
+      status: String(instructor.data()?.status || "pending"),
+      submittedAt: instructor.data()?.submittedAt?.toDate?.().toISOString() || null
+    } : null
+  };
+});
