@@ -25,6 +25,7 @@ test("معاملة المكافأة مع طلبات متزامنة داخل ال
     require(name) {
       if (name === "crypto") return require("node:crypto");
       if (name === "firebase-admin/app") return { initializeApp() {} };
+      if (name === "firebase-admin/auth") return { getAuth: () => ({}) };
       if (name === "firebase-admin/firestore") return {
         // توحيد سياق Promise بين vm ومكتبة Firestore في أداة الاختبار.
         getFirestore: () => ({
@@ -38,7 +39,8 @@ test("معاملة المكافأة مع طلبات متزامنة داخل ال
         HttpsError: class extends Error {}
       };
       if (name === "firebase-functions/params") return {
-        defineString: (_name, options) => ({ value: () => options.default })
+        defineString: (_name, options = {}) => ({ value: () => options.default || "" }),
+        defineSecret: (_name) => ({ value: () => "" })
       };
       if (name === "firebase-functions/v2/firestore") return {
         onDocumentWritten: (_options, handler) => handler

@@ -1,4 +1,5 @@
 const { initializeApp } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
 
 const {
   getFirestore,
@@ -10,7 +11,7 @@ const {
   HttpsError
 } = require("firebase-functions/v2/https");
 
-const { defineString } = require("firebase-functions/params");
+const { defineString, defineSecret } = require("firebase-functions/params");
 
 const {
   onDocumentWritten
@@ -2629,3 +2630,425 @@ exports.removeParentLinkAsChild = onCall(CALL_OPTIONS, async request => {
   await linkRef.delete();
   return { success: true };
 });
+
+
+// -----------------------------------------------------------------------------
+// CodeQuest Live Academy — trusted instructor and real RealtimeKit meetings
+// -----------------------------------------------------------------------------
+const REALTIMEKIT_API_TOKEN = defineSecret("REALTIMEKIT_API_TOKEN");
+const LIVE_ACADEMY_OWNER_EMAIL = defineSecret("LIVE_ACADEMY_OWNER_EMAIL");
+const CLOUDFLARE_ACCOUNT_ID = defineString("CLOUDFLARE_ACCOUNT_ID");
+const REALTIMEKIT_APP_ID = defineString("REALTIMEKIT_APP_ID");
+const REALTIMEKIT_INSTRUCTOR_PRESET = defineString("REALTIMEKIT_INSTRUCTOR_PRESET", {
+  default: "webinar-host"
+});
+const REALTIMEKIT_STUDENT_PRESET = defineString("REALTIMEKIT_STUDENT_PRESET", {
+  default: "webinar-participant"
+});
+
+function requireLiveAdmin(request) {
+  if (!request.auth || (
+    request.auth.token.admin !== true &&
+    request.auth.token.liveRole !== "admin"
+  )) {
+    throw new HttpsError("permission-denied", "هذه العملية متاحة لمسؤول الأكاديمية فقط.");
+  }
+  return request.auth.uid;
+}
+
+function requireApprovedLiveInstructor(request) {
+  const uid = requireAuth(request);
+  if (
+    request.auth.token.liveRole !== "instructor" ||
+    request.auth.token.liveInstructorApproved !== true
+  ) {
+    throw new HttpsError("permission-denied", "حساب المدرّب غير معتمد للأكاديمية المباشرة.");
+  }
+  return uid;
+}
+
+async function realtimeKitRequest(path, method, body, token) {
+  const accountId = CLOUDFLARE_ACCOUNT_ID.value();
+  const appId = REALTIMEKIT_APP_ID.value();
+  if (!accountId || !appId || !token) {
+    throw new HttpsError(
+      "failed-precondition",
+      "خدمة الفصول المباشرة لم تُجهّز بعد. يلزم إعداد RealtimeKit على الخادم."
+    );
+  }
+
+  let response;
+  try {
+    response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/realtime/kit/${encodeURIComponent(appId)}${path}`,
+      {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal: AbortSignal.timeout(15000)
+      }
+    );
+  } catch {
+    throw new HttpsError("unavailable", "تعذر الاتصال بخدمة الفصول المباشرة.");
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new HttpsError("unavailable", "خدمة الفصول المباشرة أرسلت استجابة غير صالحة.");
+  }
+
+  if (!response.ok || payload?.success !== true) {
+    console.error("RealtimeKit API request failed:", {
+      status: response.status,
+      path,
+      errors: Array.isArray(payload?.errors)
+        ? payload.errors.map(item => String(item?.code || "provider_error")).slice(0, 3)
+        : []
+    });
+    throw new HttpsError("unavailable", "تعذر تنفيذ العملية في خدمة الفصول المباشرة.");
+  }
+
+  return payload.data || {};
+}
+
+exports.bootstrapLiveAcademyAdmin = onCall(
+  { region: "europe-west1", secrets: [LIVE_ACADEMY_OWNER_EMAIL] },
+  async request => {
+    const uid = requireAuth(request);
+    const configuredOwner = String(LIVE_ACADEMY_OWNER_EMAIL.value() || "").trim().toLowerCase();
+    const email = String(request.auth.token.email || "").trim().toLowerCase();
+    if (!configuredOwner || !email || email !== configuredOwner || request.auth.token.email_verified !== true) {
+      throw new HttpsError("permission-denied", "الحساب غير مخوّل لإعداد مسؤول الأكاديمية.");
+    }
+
+    const auth = getAuth();
+    const user = await auth.getUser(uid);
+    await auth.setCustomUserClaims(uid, {
+      ...(user.customClaims || {}),
+      admin: true,
+      liveRole: "admin"
+    });
+    return { success: true, refreshToken: true };
+  }
+);
+
+exports.approveLiveInstructor = onCall(
+  { region: "europe-west1" },
+  async request => {
+    requireLiveAdmin(request);
+    const instructorUid = String(request.data?.instructorUid || "");
+    if (!/^[A-Za-z0-9_-]{20,128}$/.test(instructorUid)) {
+      throw new HttpsError("invalid-argument", "معرّف حساب المدرّب غير صالح.");
+    }
+
+    const auth = getAuth();
+    const instructor = await auth.getUser(instructorUid);
+    if (!instructor.emailVerified || instructor.disabled) {
+      throw new HttpsError("failed-precondition", "يجب أن يكون حساب المدرّب مفعّلًا وبريده الإلكتروني موثّقًا.");
+    }
+
+    await auth.setCustomUserClaims(instructorUid, {
+      ...(instructor.customClaims || {}),
+      liveRole: "instructor",
+      liveInstructorApproved: true
+    });
+    await db.collection("liveInstructorApprovals").doc(instructorUid).set({
+      uid: instructorUid,
+      approvedBy: request.auth.uid,
+      approvedAt: FieldValue.serverTimestamp(),
+      status: "approved"
+    });
+    return { success: true };
+  }
+);
+
+exports.createLiveClass = onCall(
+  {
+    region: "europe-west1",
+    timeoutSeconds: 30,
+    secrets: [REALTIMEKIT_API_TOKEN]
+  },
+  async request => {
+    const instructorUid = requireApprovedLiveInstructor(request);
+    const title = String(request.data?.title || "").trim();
+    const description = String(request.data?.description || "").trim();
+    const startsAtValue = String(request.data?.startsAt || "");
+    const durationMinutes = Number(request.data?.durationMinutes || 60);
+    const startsAtDate = new Date(startsAtValue);
+    const now = Date.now();
+
+    if (title.length < 4 || title.length > 90) {
+      throw new HttpsError("invalid-argument", "عنوان الفصل يجب أن يكون بين 4 و90 حرفًا.");
+    }
+    if (description.length > 700) {
+      throw new HttpsError("invalid-argument", "وصف الفصل طويل جدًا.");
+    }
+    if (!Number.isFinite(startsAtDate.getTime()) ||
+        startsAtDate.getTime() < now + 5 * 60 * 1000 ||
+        startsAtDate.getTime() > now + 60 * 24 * 60 * 60 * 1000) {
+      throw new HttpsError("invalid-argument", "اختاري موعدًا بعد خمس دقائق وخلال الستين يومًا القادمة.");
+    }
+    if (!Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 180) {
+      throw new HttpsError("invalid-argument", "مدة الفصل يجب أن تكون بين 15 و180 دقيقة.");
+    }
+
+    const instructorProfile = await db.collection("users").doc(instructorUid).get();
+    const instructorName = String(instructorProfile.data()?.displayName || "مدرّب CodeQuest").slice(0, 50);
+    const meeting = await realtimeKitRequest(
+      "/meetings",
+      "POST",
+      {
+        title: `CodeQuest · ${title}`,
+        status: "ACTIVE",
+        persist_chat: false,
+        record_on_start: false,
+        transcribe_on_end: false,
+        summarize_on_end: false,
+        session_keep_alive_time_in_secs: 60
+      },
+      REALTIMEKIT_API_TOKEN.value()
+    );
+
+    if (!meeting.id) {
+      throw new HttpsError("unavailable", "لم يتم إنشاء غرفة الفصل بنجاح.");
+    }
+
+    const classRef = db.collection("liveClasses").doc();
+    const startTimestamp = require("firebase-admin/firestore").Timestamp.fromDate(startsAtDate);
+    await db.runTransaction(async transaction => {
+      transaction.set(classRef, {
+        title,
+        description,
+        instructorUid,
+        instructorName,
+        startsAt: startTimestamp,
+        durationMinutes,
+        status: "scheduled",
+        enrollmentCount: 0,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp()
+      });
+      transaction.set(db.collection("liveClassPrivate").doc(classRef.id), {
+        provider: "cloudflare-realtimekit",
+        providerMeetingId: meeting.id,
+        createdBy: instructorUid,
+        createdAt: FieldValue.serverTimestamp()
+      });
+    });
+
+    return { success: true, classId: classRef.id };
+  }
+);
+
+exports.listLiveClasses = onCall(
+  { region: "europe-west1" },
+  async request => {
+    requireAuth(request);
+    const snapshot = await db.collection("liveClasses")
+      .where("status", "in", ["scheduled", "live"])
+      .orderBy("startsAt", "asc")
+      .limit(30)
+      .get();
+
+    const isAdmin =
+      request.auth.token.liveRole === "admin" ||
+      request.auth.token.admin === true;
+    const classes = await Promise.all(snapshot.docs.map(async doc => {
+      const data = doc.data();
+      const isInstructor = data.instructorUid === request.auth.uid;
+      const enrollment = isInstructor || isAdmin
+        ? { exists: true }
+        : await doc.ref.collection("enrollments").doc(request.auth.uid).get();
+      return {
+        id: doc.id,
+        title: String(data.title || ""),
+        description: String(data.description || ""),
+        instructorName: String(data.instructorName || "مدرّب CodeQuest"),
+        startsAt: data.startsAt?.toDate?.().toISOString() || null,
+        durationMinutes: Number(data.durationMinutes || 60),
+        status: data.status === "live" ? "live" : "scheduled",
+        enrollmentCount: Number(data.enrollmentCount || 0),
+        isInstructor,
+        isAdmin,
+        isEnrolled: enrollment.exists
+      };
+    }));
+    return { success: true, classes };
+  }
+);
+
+exports.enrollInLiveClass = onCall(
+  { region: "europe-west1" },
+  async request => {
+    const uid = requireAuth(request);
+    const classId = String(request.data?.classId || "");
+    if (!/^[A-Za-z0-9_-]{10,128}$/.test(classId)) {
+      throw new HttpsError("invalid-argument", "معرّف الفصل غير صالح.");
+    }
+
+    const classRef = db.collection("liveClasses").doc(classId);
+    const enrollmentRef = classRef.collection("enrollments").doc(uid);
+    await db.runTransaction(async transaction => {
+      const [classSnapshot, enrollmentSnapshot] = await Promise.all([
+        transaction.get(classRef),
+        transaction.get(enrollmentRef)
+      ]);
+      if (!classSnapshot.exists || classSnapshot.data()?.status !== "scheduled") {
+        throw new HttpsError("not-found", "الفصل غير متاح للتسجيل حاليًا.");
+      }
+      if (classSnapshot.data()?.instructorUid === uid) {
+        throw new HttpsError("failed-precondition", "المدرّب لا يحتاج إلى التسجيل في فصله.");
+      }
+      if (!enrollmentSnapshot.exists) {
+        transaction.create(enrollmentRef, {
+          uid,
+          status: "enrolled",
+          enrolledAt: FieldValue.serverTimestamp()
+        });
+        transaction.update(classRef, {
+          enrollmentCount: FieldValue.increment(1),
+          updatedAt: FieldValue.serverTimestamp()
+        });
+      }
+    });
+    return { success: true };
+  }
+);
+
+exports.setLiveClassStatus = onCall(
+  { region: "europe-west1", secrets: [REALTIMEKIT_API_TOKEN] },
+  async request => {
+    const uid = requireAuth(request);
+    const classId = String(request.data?.classId || "");
+    const nextStatus = String(request.data?.status || "");
+    if (!/^[A-Za-z0-9_-]{10,128}$/.test(classId) || !["live", "ended"].includes(nextStatus)) {
+      throw new HttpsError("invalid-argument", "بيانات الفصل غير صالحة.");
+    }
+
+    const classRef = db.collection("liveClasses").doc(classId);
+    const [classSnapshot, privateSnapshot] = await Promise.all([
+      classRef.get(),
+      db.collection("liveClassPrivate").doc(classId).get()
+    ]);
+    if (!classSnapshot.exists || !privateSnapshot.exists) {
+      throw new HttpsError("not-found", "الفصل غير موجود.");
+    }
+    const classData = classSnapshot.data();
+    const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
+    const isApprovedInstructor =
+      request.auth.token.liveRole === "instructor" &&
+      request.auth.token.liveInstructorApproved === true;
+    if (!isAdmin && (!isApprovedInstructor || classData.instructorUid !== uid)) {
+      throw new HttpsError("permission-denied", "فقط مدرّب الفصل المعتمد أو مسؤول الأكاديمية يمكنه تغيير حالته.");
+    }
+    if (classData.status === "ended") {
+      throw new HttpsError("failed-precondition", "انتهى هذا الفصل بالفعل.");
+    }
+    if (nextStatus === "live") {
+      const scheduledStart = classData.startsAt?.toDate?.()?.getTime();
+      const allowedStart = Number.isFinite(scheduledStart)
+        ? scheduledStart - 30 * 60 * 1000
+        : 0;
+      const allowedEnd = Number.isFinite(scheduledStart)
+        ? scheduledStart + Number(classData.durationMinutes || 60) * 60 * 1000 + 30 * 60 * 1000
+        : 0;
+      if (!allowedStart || Date.now() < allowedStart || Date.now() > allowedEnd) {
+        throw new HttpsError("failed-precondition", "يمكن بدء الفصل قبل موعده بنصف ساعة وحتى نصف ساعة بعد نهايته المحددة.");
+      }
+    }
+
+    if (nextStatus === "ended") {
+      await realtimeKitRequest(
+        `/meetings/${encodeURIComponent(privateSnapshot.data().providerMeetingId)}`,
+        "PATCH",
+        { status: "INACTIVE" },
+        REALTIMEKIT_API_TOKEN.value()
+      );
+    }
+    await classRef.update({
+      status: nextStatus,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+    return { success: true };
+  }
+);
+
+exports.joinLiveClass = onCall(
+  {
+    region: "europe-west1",
+    timeoutSeconds: 25,
+    secrets: [REALTIMEKIT_API_TOKEN]
+  },
+  async request => {
+    const uid = requireAuth(request);
+    const classId = String(request.data?.classId || "");
+    if (!/^[A-Za-z0-9_-]{10,128}$/.test(classId)) {
+      throw new HttpsError("invalid-argument", "معرّف الفصل غير صالح.");
+    }
+
+    const classRef = db.collection("liveClasses").doc(classId);
+    const [classSnapshot, privateSnapshot, enrollmentSnapshot] = await Promise.all([
+      classRef.get(),
+      db.collection("liveClassPrivate").doc(classId).get(),
+      classRef.collection("enrollments").doc(uid).get()
+    ]);
+    if (!classSnapshot.exists || !privateSnapshot.exists) {
+      throw new HttpsError("not-found", "الفصل غير موجود.");
+    }
+
+    const classData = classSnapshot.data();
+    const isInstructor = classData.instructorUid === uid &&
+      request.auth.token.liveRole === "instructor" &&
+      request.auth.token.liveInstructorApproved === true;
+    const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
+    if (!isInstructor && !isAdmin && !enrollmentSnapshot.exists) {
+      throw new HttpsError("permission-denied", "سجّلي في الفصل أولًا قبل الانضمام.");
+    }
+    if (classData.status !== "live") {
+      throw new HttpsError("failed-precondition", "الفصل لم يبدأ بعد أو انتهى.");
+    }
+
+    const profile = await db.collection("users").doc(uid).get();
+    const displayName = String(profile.data()?.displayName || "متعلّم").slice(0, 50);
+    const presetName = isInstructor || isAdmin
+      ? REALTIMEKIT_INSTRUCTOR_PRESET.value()
+      : REALTIMEKIT_STUDENT_PRESET.value();
+    const startDate = classData.startsAt?.toDate?.() || new Date();
+    const notBefore = new Date(startDate.getTime() - 30 * 60 * 1000);
+    const expiresOn = new Date(
+      startDate.getTime() + Number(classData.durationMinutes || 60) * 60 * 1000 + 60 * 60 * 1000
+    );
+    if (Date.now() >= expiresOn.getTime()) {
+      throw new HttpsError("failed-precondition", "انتهت نافذة الانضمام لهذا الفصل.");
+    }
+
+    const participant = await realtimeKitRequest(
+      `/meetings/${encodeURIComponent(privateSnapshot.data().providerMeetingId)}/participants`,
+      "POST",
+      {
+        custom_participant_id: uid,
+        preset_name: presetName,
+        name: displayName,
+        token: {
+          not_before: notBefore.toISOString(),
+          expires_on: expiresOn.toISOString()
+        }
+      },
+      REALTIMEKIT_API_TOKEN.value()
+    );
+    if (!participant.token) {
+      throw new HttpsError("unavailable", "لم يتم إصدار رمز انضمام صالح للفصل.");
+    }
+
+    return {
+      success: true,
+      authToken: participant.token,
+      participantId: participant.id
+    };
+  }
+);

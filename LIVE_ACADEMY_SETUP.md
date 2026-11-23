@@ -37,14 +37,23 @@ firebase functions:secrets:set REALTIMEKIT_API_TOKEN
 firebase functions:secrets:set LIVE_ACADEMY_OWNER_EMAIL
 ```
 
-Set the four non-secret parameters in the Functions environment (for the deployed project) and verify that the preset names exactly match the names configured in the RealtimeKit dashboard.
+Create or update the Functions environment file at `functions/.env.<FIREBASE_PROJECT_ID>` (replace the placeholder with the active Firebase project ID):
+
+```dotenv
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+REALTIMEKIT_APP_ID=your_realtimekit_app_id
+REALTIMEKIT_INSTRUCTOR_PRESET=webinar-host
+REALTIMEKIT_STUDENT_PRESET=webinar-participant
+```
+
+Use the exact preset names configured in the RealtimeKit dashboard. Do not commit the environment file; verify it is covered by `.gitignore`. Firebase Functions v2 loads `defineString` values from the project-specific environment file during deployment.
 
 ## Deploy
 
 From the repository root, after the Cloudflare app and Firebase settings are ready:
 
 ```bash
-firebase deploy --only functions,firestore:rules
+firebase deploy --only functions,firestore:rules,firestore:indexes
 ```
 
 Then sign in to CodeQuest with the verified owner account, open `live-academy.html`, and choose **تهيئة مسؤول الأكاديمية** once. The server checks the verified email against the private owner secret before granting the admin custom claim. Refresh the sign-in token by signing out and back in if the role does not appear immediately.
