@@ -3139,16 +3139,18 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
     db.collection("instructorApplications").where("status", "==", "pending").limit(50).get(),
     db.collection("liveClasses").orderBy("createdAt", "desc").limit(50).get()
   ]);
-  const pendingInstructors = pendingSnapshot.docs.map(doc => {
+  const pendingInstructors = await Promise.all(pendingSnapshot.docs.map(async doc => {
     const data = doc.data();
+    const account = await getAuth().getUser(doc.id).catch(() => null);
     return {
       uid: doc.id, fullName: String(data.fullName || ""), email: String(data.email || ""),
+      emailVerified: account?.emailVerified === true,
       specialties: Array.isArray(data.specialties) ? data.specialties : [],
       experience: String(data.experience || ""), bio: String(data.bio || ""),
       portfolioUrl: String(data.portfolioUrl || ""), availability: String(data.availability || ""),
       submittedAt: data.submittedAt?.toDate?.().toISOString() || null
     };
-  });
+  }));
   const classes = await Promise.all(classSnapshot.docs.map(async doc => {
     const data = doc.data();
     const enrollments = await doc.ref.collection("enrollments").orderBy("enrolledAt", "asc").limit(50).get();
