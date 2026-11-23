@@ -280,6 +280,38 @@ service cloud.firestore {
       }
     }
 
+    match /liveClasses/{classId} {
+      // Class metadata is public only to signed-in CodeQuest users.
+      // Provider meeting IDs and API credentials live in liveClassPrivate.
+      allow get, list: if signedIn()
+        && (
+          resource.data.status in ['scheduled', 'live']
+          || resource.data.instructorUid == request.auth.uid
+        );
+      allow create, update, delete: if false;
+
+      match /enrollments/{uid} {
+        allow get: if owns(uid)
+          || (
+            signedIn()
+            && request.auth.token.liveRole == 'instructor'
+            && get(/databases/$(database)/documents/liveClasses/$(classId)).data.instructorUid == request.auth.uid
+          );
+        allow list: if signedIn()
+          && request.auth.token.liveRole == 'instructor'
+          && get(/databases/$(database)/documents/liveClasses/$(classId)).data.instructorUid == request.auth.uid;
+        allow create, update, delete: if false;
+      }
+    }
+
+    match /liveClassPrivate/{classId} {
+      allow read, write: if false;
+    }
+
+    match /liveInstructorApprovals/{uid} {
+      allow read, write: if false;
+    }
+
     match /projects/{projectId} {
       allow read, delete: if signedIn()
         && resource.data.userId == request.auth.uid;
