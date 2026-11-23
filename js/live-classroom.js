@@ -21,7 +21,7 @@ let pendingLocalEdit=false;
 function setStatus(message,error=false){status.textContent=message;status.style.color=error?"#fca5a5":"#aab0bd";}
 function setSync(message,state=""){syncStatus.textContent=message;syncStatus.dataset.state=state;}
 function editorMode(language){
-  return language==="python"?"python":language==="javascript"?"javascript":"text/x-java";
+  return language==="python"?"python":language==="javascript"?"javascript":language==="cpp"?"text/x-c++src":"text/x-java";
 }
 function initializeEditor(){
   if(!window.CodeMirror)throw new Error("محرر الأكواد لم يتم تحميله.");
@@ -70,8 +70,15 @@ function connectWorkspace(){
   const workspaceRef=doc(db,"liveClasses",classId,"workspace","shared");
   stopWorkspace=onSnapshot(workspaceRef,snapshot=>{
     if(!snapshot.exists()){
-      setSync("لم يتم تجهيز مساحة الأكواد لهذا الفصل.","error");
-      editor.setOption("readOnly",true);
+      if(isInstructor){
+        setSync("جارٍ تجهيز مساحة الأكواد للفصل…");
+        setDoc(workspaceRef,{code:"",language:"python",updatedBy:currentUser.uid,updatedAt:serverTimestamp()})
+          .then(()=>setSync("تم تجهيز محرر الفصل المشترك.","ok"))
+          .catch(error=>setSync(error?.message||"تعذر تجهيز محرر الفصل.","error"));
+      }else{
+        setSync("ينتظر الفصل تجهيز مساحة الأكواد من المدرب.","error");
+        editor.setOption("readOnly",true);
+      }
       return;
     }
     const data=snapshot.data();
