@@ -3425,6 +3425,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       id: doc.id, actorUid: String(doc.data().actorUid || ""),
       action: String(doc.data().action || ""), targetUid: String(doc.data().targetUid || ""),
       targetId: String(doc.data().targetId || ""),
+      reason: String(doc.data().reason || ""),
       createdAt: doc.data().createdAt?.toDate?.().toISOString() || null, cursorId: doc.id
     }))
   };
