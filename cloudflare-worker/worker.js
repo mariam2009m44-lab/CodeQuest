@@ -794,8 +794,12 @@ export default {
           if (!text) continue;
           const role = item.role;
           const last = contents[contents.length - 1];
-          if (last && last.role === role) last.parts.push({ text });
-          else contents.push({ role, parts: [{ text }] });
+          if (last && last.role === role) {
+            // Collapse repeated taps/retries of the same unanswered question.
+            if (!last.parts.some(part => part.text === text)) last.parts.push({ text });
+          } else {
+            contents.push({ role, parts: [{ text }] });
+          }
         }
 
         // Preserve unanswered student turns when a follow-up arrives
@@ -810,10 +814,11 @@ export default {
           }
         }
         const currentQuestion = body.question.trim();
-        const combinedQuestion = [...pendingUserParts, currentQuestion]
-          .filter(Boolean)
+        const uniquePendingQuestions = [...new Set(pendingUserParts)]
+          .filter(text => text && text !== currentQuestion);
+        const combinedQuestion = [...uniquePendingQuestions, currentQuestion]
           .join("\n\nمتابعة من الطالب:\n")
-          .slice(-6000);
+          .slice(-4500);
         contents.push({ role: "user", parts: [{ text: combinedQuestion }] });
 
         const pageContext = typeof body.page_context === "string"
@@ -827,6 +832,7 @@ export default {
           "Support Arabic and English. Match the student's language. When they write in Arabic, use natural, clear Egyptian Arabic unless they ask for Modern Standard Arabic or another language.",
           "Answer the actual question first. Then explain the reasoning in a clear, age-appropriate way. Use examples, numbered steps, short definitions, or a small table only when they make the answer easier to understand.",
           "Be conversational and remember the previous turns in this chat. Resolve references such as 'اشرح دي أكتر' or 'طب وماذا عن...' using the recent conversation. Do not restart the conversation unnecessarily. If the student sends an incomplete fragment or an unclear one-letter message, ask one brief, kind clarification question instead of inventing intent or giving a long generic reply.",
+          "When asked to quiz the student, ask exactly one short question based on the previous explanation, then wait. Do not reveal the answer or ask another question until the student responds. After the student answers, give brief feedback and explain the correct answer if needed.",
           "For writing requests, help brainstorm, outline, rewrite, or draft suitable text. For translations, preserve meaning and tone. For math and science, show the important steps and units. For code, explain logic and debugging without claiming to run code.",
           "Do not make every answer about programming or force every conversation back to the curriculum. If the student asks a general question, answer it as a general question.",
           "For time-sensitive facts, current events, live prices, or changing information, be transparent that you do not have live browsing in this chat. Give stable background when useful and recommend checking a current reliable source.",
@@ -848,8 +854,8 @@ export default {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           contents,
           generationConfig: {
-            maxOutputTokens: 3072,
-            thinkingConfig: { thinkingLevel: "medium" }
+            maxOutputTokens: 2048,
+            thinkingConfig: { thinkingLevel: "low" }
           }
         };
 
@@ -876,7 +882,7 @@ export default {
 
           // Retry only transient server/network failures. A 429 is handled
           // separately because it may mean a model-specific quota is exhausted.
-          for (let attempt = 0; attempt < 1; attempt++) {
+          for (let attempt = 0; attempt < 2; attempt++) {
             try {
               candidateResponse = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidateModel)}:generateContent`,
