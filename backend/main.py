@@ -54,9 +54,10 @@ app.add_middleware(
 # مسارات المشروع
 # ==========================================
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(__file__).resolve().parent
 
-CURRICULUM_DIR = BASE_DIR / "json"
+# Keep the API service self-contained: Vercel builds each service from its own root.
+CURRICULUM_DIR = BASE_DIR / "curricula"
 
 CURRICULUM_FILES = {
     "python": "python_curriculum.json",
