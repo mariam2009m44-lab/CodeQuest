@@ -281,7 +281,14 @@ function addMessage(text, role, createdAt = null, options = {}) {
       retryButton.innerHTML = '<i class="ri-refresh-line" aria-hidden="true"></i><span>إعادة المحاولة</span>';
       retryButton.addEventListener("click", () => {
         if (!input || !form || sending) return;
-        input.value = options.retryText;
+        const question = options.retryText.trim();
+        // Remove the failed pending turn before resending it, preventing
+        // duplicate copies of the same question in the next model context.
+        const lastTurn = history[history.length - 1];
+        if (lastTurn?.role === "user" && lastTurn.text === question) {
+          history.pop();
+        }
+        input.value = question;
         form.requestSubmit();
       });
       actions.append(retryButton);
