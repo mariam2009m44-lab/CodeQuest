@@ -403,6 +403,19 @@
             color: #7955E8;
         }
 
+        .store-message strong {
+            display: block;
+            color: var(--text-main);
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .store-message p {
+            max-width: 520px;
+            margin: 8px auto 0;
+            line-height: 1.9;
+        }
+
         @media (max-width: 900px) {
             .store-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -563,7 +576,7 @@
                 </div>
 
                 <span class="items-count" id="itemsCount">
-                    4 شخصيات
+                    قريبًا
                 </span>
             </div>
 
@@ -632,7 +645,9 @@
 
         const pendingPurchases = new Set();
 
-        countElement.textContent = `${items.length} شخصيات`;
+        countElement.textContent = items.length
+            ? `${items.length} شخصيات`
+            : "قريبًا";
 
         function createElement(tag, className, text) {
             const element = document.createElement(tag);
@@ -650,6 +665,27 @@
 
         function renderStore() {
             grid.replaceChildren();
+
+            if (items.length === 0) {
+                const emptyState = createElement("div", "store-message");
+                const icon = createElement("i", "ri-store-2-line");
+                icon.setAttribute("aria-hidden", "true");
+
+                const title = createElement(
+                    "strong",
+                    "",
+                    "متجر كودي بيتجهّز!"
+                );
+                const description = createElement(
+                    "p",
+                    "",
+                    "الشخصيات الجديدة هتكون متاحة قريبًا. رصيد عملاتك محفوظ، وتقدر تكمّل التعلّم وتجميع المكافآت."
+                );
+
+                emptyState.append(icon, title, description);
+                grid.appendChild(emptyState);
+                return;
+            }
 
             items.forEach(item => {
                 const owned = currentInventory.includes(item.id);
