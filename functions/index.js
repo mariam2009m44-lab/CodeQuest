@@ -3293,7 +3293,7 @@ exports.reviewStudentGuardianConsent = onCall({ region: "europe-west1" }, async 
 exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSeconds: 60 }, async request => {
   requireLiveAdmin(request);
   const [studentCount, studentSnapshot, approvedCount, pendingSnapshot, instructorSnapshot, classSnapshot,
-    groupCount, groupSnapshot, postCount, postSnapshot, auditSnapshot, pendingCount] = await Promise.all([
+    groupCount, groupSnapshot, postCount, postSnapshot, auditSnapshot, pendingCount, pendingGuardianCount] = await Promise.all([
     db.collection("academyStudentProfiles").count().get(),
     db.collection("academyStudentProfiles").orderBy("updatedAt", "desc").limit(100).get(),
     db.collection("liveInstructorApprovals").where("status", "==", "approved").count().get(),
@@ -3305,7 +3305,8 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
     db.collection("instructorPosts").where("status", "==", "published").count().get(),
     db.collection("instructorPosts").orderBy("createdAt", "desc").limit(50).get(),
     db.collection("academyAuditLogs").orderBy("createdAt", "desc").limit(50).get(),
-    db.collection("instructorApplications").where("status", "==", "pending").count().get()
+    db.collection("instructorApplications").where("status", "==", "pending").count().get(),
+    db.collection("academyStudentProfiles").where("status", "==", "pending_guardian").count().get()
   ]);
   const students = studentSnapshot.docs.map(doc => {
     const data = doc.data();
@@ -3390,7 +3391,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       instructorUid: String(data.instructorUid || ""), status: String(data.status || "scheduled"),
       startsAt: data.startsAt?.toDate?.().toISOString() || null,
       durationMinutes: Number(data.durationMinutes || 60),
-      capacity: Number(data.capacity || 12), enrollmentCount: Number(data.enrollmentCount || students.length), students
+      capacity: Number(data.capacity || 12), enrollmentCount: Number(data.enrollmentCount ?? students.filter(student => student.status === "enrolled").length), students
     };
   }));
   return {
@@ -3399,6 +3400,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       students: studentCount.data().count,
       approvedInstructors: approvedCount.data().count,
       pendingInstructors: pendingCount.data().count,
+      pendingGuardianReviews: pendingGuardianCount.data().count,
       classes: classSnapshot.size,
       groups: groupCount.data().count,
       posts: postCount.data().count
