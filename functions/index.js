@@ -3370,6 +3370,21 @@ exports.getMyAcademyRegistrationStatus = onCall({ region: "europe-west1" }, asyn
     } : null,
     instructorApplication: instructor.exists ? {
       status: String(instructor.data()?.status || "pending"),
+      fullName: String(instructor.data()?.fullName || ""),
+      specialties: Array.isArray(instructor.data()?.specialties) ? instructor.data().specialties : [],
+      experience: String(instructor.data()?.experience || ""),
+      bio: String(instructor.data()?.bio || ""),
+      portfolioUrl: String(instructor.data()?.portfolioUrl || ""),
+      availability: String(instructor.data()?.availability || ""),
+      linkedinUrl: String(instructor.data()?.linkedinUrl || ""),
+      introVideoUrl: String(instructor.data()?.introVideoUrl || ""),
+      teachingDemoUrl: String(instructor.data()?.teachingDemoUrl || ""),
+      qualifications: String(instructor.data()?.qualifications || ""),
+      teachingExperience: String(instructor.data()?.teachingExperience || ""),
+      teachingStyles: Array.isArray(instructor.data()?.teachingStyles) ? instructor.data().teachingStyles : [],
+      ageGroups: Array.isArray(instructor.data()?.ageGroups) ? instructor.data().ageGroups : [],
+      teachingLevels: Array.isArray(instructor.data()?.teachingLevels) ? instructor.data().teachingLevels : [],
+      sampleWorkLinks: Array.isArray(instructor.data()?.sampleWorkLinks) ? instructor.data().sampleWorkLinks : [],
       submittedAt: instructor.data()?.submittedAt?.toDate?.().toISOString() || null
     } : null
   };
