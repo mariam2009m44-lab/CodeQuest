@@ -3138,12 +3138,26 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
 
 exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSeconds: 60 }, async request => {
   requireLiveAdmin(request);
-  const [studentCount, approvedCount, pendingSnapshot, classSnapshot] = await Promise.all([
+  const [studentCount, studentSnapshot, approvedCount, pendingSnapshot, classSnapshot] = await Promise.all([
     db.collection("academyStudentProfiles").count().get(),
+    db.collection("academyStudentProfiles").orderBy("updatedAt", "desc").limit(100).get(),
     db.collection("liveInstructorApprovals").where("status", "==", "approved").count().get(),
     db.collection("instructorApplications").where("status", "==", "pending").limit(50).get(),
     db.collection("liveClasses").orderBy("createdAt", "desc").limit(50).get()
   ]);
+  const students = studentSnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      uid: doc.id,
+      displayName: String(data.displayName || "متعلّم"),
+      email: String(data.email || ""),
+      ageBand: String(data.ageBand || ""),
+      grade: String(data.grade || ""),
+      skillLevel: String(data.skillLevel || ""),
+      interests: Array.isArray(data.interests) ? data.interests : [],
+      updatedAt: data.updatedAt?.toDate?.().toISOString() || null
+    };
+  });
   const pendingInstructors = await Promise.all(pendingSnapshot.docs.map(async doc => {
     const data = doc.data();
     const account = await getAuth().getUser(doc.id).catch(() => null);
@@ -3183,7 +3197,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       pendingInstructors: pendingSnapshot.size,
       classes: classSnapshot.size
     },
-    pendingInstructors, classes
+    students, pendingInstructors, classes
   };
 });
 
