@@ -3326,7 +3326,8 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       guardianConsentVerified: data.guardianConsentVerified === true,
       status: String(data.status || "active"),
       createdAt: data.createdAt?.toDate?.().toISOString() || null,
-      updatedAt: data.updatedAt?.toDate?.().toISOString() || null
+      updatedAt: data.updatedAt?.toDate?.().toISOString() || null,
+      cursorId: doc.id
     };
   });
   const instructors = await Promise.all(instructorSnapshot.docs.map(async doc => {
@@ -3353,7 +3354,8 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       availability: String(data.availability || ""),
       status: String(data.status || "pending"),
       submittedAt: data.submittedAt?.toDate?.().toISOString() || null,
-      updatedAt: data.updatedAt?.toDate?.().toISOString() || null
+      updatedAt: data.updatedAt?.toDate?.().toISOString() || null,
+      cursorId: doc.id
     };
   }));
   const pendingInstructors = await Promise.all(pendingSnapshot.docs.map(async doc => {
@@ -3372,7 +3374,8 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       ageGroups: Array.isArray(data.ageGroups) ? data.ageGroups : [],
       teachingLevels: Array.isArray(data.teachingLevels) ? data.teachingLevels : [],
       sampleWorkLinks: Array.isArray(data.sampleWorkLinks) ? data.sampleWorkLinks : [],
-      submittedAt: data.submittedAt?.toDate?.().toISOString() || null
+      submittedAt: data.submittedAt?.toDate?.().toISOString() || null,
+      cursorId: doc.id
     };
   }));
   const classes = await Promise.all(classSnapshot.docs.map(async doc => {
@@ -3392,7 +3395,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       instructorUid: String(data.instructorUid || ""), status: String(data.status || "scheduled"),
       startsAt: data.startsAt?.toDate?.().toISOString() || null,
       durationMinutes: Number(data.durationMinutes || 60),
-      capacity: Number(data.capacity || 12), enrollmentCount: Number(data.enrollmentCount ?? students.filter(student => student.status === "enrolled").length), students
+      capacity: Number(data.capacity || 12), enrollmentCount: Number(data.enrollmentCount ?? students.filter(student => student.status === "enrolled").length), students, cursorId: doc.id
     };
   }));
   return {
@@ -3411,18 +3414,18 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       id: doc.id, name: String(doc.data().name || ""), topic: String(doc.data().topic || ""),
       instructorUid: String(doc.data().instructorUid || ""), instructorName: String(doc.data().instructorName || ""),
       memberCount: Number(doc.data().memberCount || 0), status: String(doc.data().status || ""),
-      createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
+      createdAt: doc.data().createdAt?.toDate?.().toISOString() || null, cursorId: doc.id
     })),
     posts: postSnapshot.docs.map(doc => ({
       id: doc.id, instructorUid: String(doc.data().instructorUid || ""),
       instructorName: String(doc.data().instructorName || ""), text: String(doc.data().text || "").slice(0, 500),
-      status: String(doc.data().status || ""), createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
+      status: String(doc.data().status || ""), createdAt: doc.data().createdAt?.toDate?.().toISOString() || null, cursorId: doc.id
     })),
     auditLogs: auditSnapshot.docs.map(doc => ({
       id: doc.id, actorUid: String(doc.data().actorUid || ""),
       action: String(doc.data().action || ""), targetUid: String(doc.data().targetUid || ""),
       targetId: String(doc.data().targetId || ""),
-      createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
+      createdAt: doc.data().createdAt?.toDate?.().toISOString() || null, cursorId: doc.id
     }))
   };
 });
