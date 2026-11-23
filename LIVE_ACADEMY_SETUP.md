@@ -70,7 +70,7 @@ The owner can then use **اعتماد حسابي كمدرّب** or approve anoth
 
 ## Current boundary
 
-The repository code now contains the class directory, enrollment flow, server-issued meeting tokens, and RealtimeKit classroom page. These are not live in production until the RealtimeKit app/presets/secrets are configured and the Firebase Functions and Firestore rules are deployed. The shared collaborative code editor, whiteboard, and Cody-in-session assistant are later features; they are not represented as working controls yet.
+The repository code now contains the class directory, enrollment flow, server-issued meeting tokens, and RealtimeKit classroom page. These are not live in production until the RealtimeKit app/presets/secrets are configured and the Firebase Functions and Firestore rules are deployed. The shared collaborative code editor has now been added to the classroom page. Whiteboard and Cody-in-session assistant remain future features.
 
 
 ## Academy registration and direct publishing
@@ -99,3 +99,20 @@ New callable functions:
 The new HTML/CSS/JavaScript files are published with GitHub Pages automatically. The callable functions in `functions/index.js` require a Firebase Functions deployment before the new registration, admin review, and seat-capacity flows can work. The Firestore data is accessed through callable functions and remains denied to direct browser reads/writes by the existing default-deny rules. No paid service has been enabled or purchased by these changes.
 
 The collaborative shared code editor is still a separate future implementation; the current RealtimeKit meeting does not by itself synchronize CodeMirror content between participants.
+
+
+## Shared collaborative code editor
+
+- `live-classroom.html` now includes a CodeMirror editor below the meeting surface.
+- The shared document is stored at `liveClasses/{classId}/workspace/shared` and synchronized with Firestore realtime listeners.
+- A newly created class receives an empty Python workspace as part of the server-side class transaction. For older classes, the approved class instructor can initialize the workspace when opening the classroom.
+- Firestore rules permit workspace reads and code edits only for the approved class instructor, enrolled students, and academy administrators. Only the instructor or administrator may change the shared language. Unenrolled accounts cannot read or write the workspace.
+- Supported editor modes: Python, JavaScript, C++, and Java.
+- This is a shared-document editor with realtime whole-document synchronization, not a character-level CRDT editor. If two people type at exactly the same time, the latest saved document may replace the other edit. A future iteration should add operational transforms/CRDT and version history for stronger simultaneous editing.
+
+## What is published versus activated
+
+- GitHub Pages publishes the static classroom UI, registration forms, admin UI, and browser scripts.
+- The Firebase Functions and Firestore rules changes still require deployment to the configured Firebase project before the new callable functions and secure workspace can operate in production.
+- RealtimeKit requires the Cloudflare account/app identifiers, host and participant presets, and server-only API token described above. No paid plan or subscription has been purchased or activated by this repository change.
+- Before inviting students, complete a real test with one instructor account, one enrolled learner account, and an administrator account. Confirm the learner cannot open the classroom or workspace before enrollment.
