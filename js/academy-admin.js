@@ -15,6 +15,7 @@ const refresh=document.getElementById("refreshAdmin");
 const getOverview=httpsCallable(functions,"getAcademyAdminOverview");
 const review=httpsCallable(functions,"reviewInstructorApplication");
 const moderate=httpsCallable(functions,"moderateAcademyContent");
+const manageClass=httpsCallable(functions,"manageAcademyLiveClass");
 let allowed=false;
 function node(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;}
 function message(text,error=false){state.textContent=text;state.style.color=error?"#dc626e":"#25ad84";}
@@ -26,7 +27,53 @@ for(const [label,value] of [["Portfolio",item.portfolioUrl],["LinkedIn",item.lin
 function dateLabel(value){return value?new Intl.DateTimeFormat("ar-EG",{dateStyle:"medium",timeStyle:"short"}).format(new Date(value)):"غير مسجل";}
 function renderStudents(items){students.replaceChildren();if(!items.length){students.append(node("p","admin-empty","لا توجد ملفات طلاب حتى الآن."));return;}for(const item of items){const card=node("article","admin-student");const head=node("div","admin-application-head");head.append(node("h3","",item.displayName),node("span","admin-status",item.ageBand||"الفئة العمرية غير محددة"));const details=node("div","admin-details");details.append(node("p","","البريد الإلكتروني: "+(item.email||"غير متاح")),node("p","","المرحلة الدراسية: "+(item.grade||"غير محددة")),node("p","","المستوى: "+({beginner:"مبتدئ",basic:"أساسي",intermediate:"متوسط"}[item.skillLevel]||"غير محدد")),node("p","","الاهتمامات: "+(item.interests||[]).join("، ")),node("p","","الأهداف التعليمية: "+(item.learningGoals||"غير محددة")),node("p","","احتياجات التعلم: "+(item.learningNeeds||"غير محددة")),node("p","","المواعيد المناسبة: "+(item.preferredSchedule||"غير محددة")),node("p","","موافقة ولي الأمر: "+(item.ageBand==="18+"?"غير مطلوبة (18+)":item.guardianConsent?"تم التأكيد":"غير مسجلة — يلزم التحقق")),node("p","","حالة الملف: "+(item.status||"غير محددة")),node("p","","تاريخ التسجيل: "+dateLabel(item.createdAt)),node("p","","آخر تحديث: "+dateLabel(item.updatedAt)));card.append(head,details);students.append(card);}}
 function renderInstructors(items){instructors.replaceChildren();if(!items.length){instructors.append(node("p","admin-empty","لا توجد طلبات مدربين حتى الآن."));return;}const labels={pending:"قيد المراجعة",approved:"معتمد",rejected:"مرفوض"};for(const item of items){const card=node("article","admin-student");const head=node("div","admin-application-head");head.append(node("h3","",item.fullName||"مدرب بدون اسم"),node("span","admin-status",labels[item.status]||item.status));const details=node("div","admin-details");details.append(node("p","","البريد الإلكتروني: "+(item.email||"غير متاح")),node("p","","توثيق البريد: "+(item.emailVerified?"موثّق":"غير موثّق")),node("p","","التخصصات: "+(item.specialties||[]).join("، ")),node("p","","الخبرة أو المؤهل: "+(item.experience||"غير محدد")),node("p","","نبذة المدرب: "+(item.bio||"غير متاحة")),node("p","","المواعيد المتاحة: "+(item.availability||"غير محددة")),node("p","","المؤهلات: "+(item.qualifications||"غير محددة")),node("p","","الخبرة التعليمية: "+(item.teachingExperience||"غير محددة")),node("p","","أساليب التدريس: "+(item.teachingStyles||[]).join("، ")),node("p","","الفئات العمرية: "+(item.ageGroups||[]).join("، ")),node("p","","المستويات: "+(item.teachingLevels||[]).join("، ")),node("p","","تاريخ التقديم: "+dateLabel(item.submittedAt)),node("p","","آخر تحديث: "+dateLabel(item.updatedAt)));for(const [label,value] of [["Portfolio",item.portfolioUrl],["LinkedIn",item.linkedinUrl],["الفيديو التعريفي",item.introVideoUrl],["عينة الدرس",item.teachingDemoUrl],...((item.sampleWorkLinks||[]).map((url,index)=>["عينة عمل "+(index+1),url]))])if(value){const a=node("a","admin-link","فتح "+label);a.href=value;a.target="_blank";a.rel="noopener noreferrer";details.append(a);}card.append(head,details);instructors.append(card);}}
-function renderClasses(items){classes.replaceChildren();if(!items.length){classes.append(node("p","admin-empty","لا توجد فصول حتى الآن."));return;}for(const item of items){const card=node("article","admin-class");const head=node("div","admin-application-head");head.append(node("h3","",item.title),node("span","admin-status",item.status==="live"?"مباشر":item.status==="ended"?"منتهٍ":"مجدول"));const meta=node("p","admin-class-meta","المدرب: "+item.instructorName+" · الطلاب: "+item.enrollmentCount+"/"+item.capacity+" · "+(item.startsAt?new Intl.DateTimeFormat("ar-EG",{dateStyle:"medium",timeStyle:"short"}).format(new Date(item.startsAt)):"موعد غير محدد"));const roster=node("details","admin-roster");roster.append(node("summary","","قائمة الطلاب ("+(item.students||[]).length+")"));const list=node("ul","");for(const student of item.students||[]){list.append(node("li","",student.displayName+" — "+(student.status==="enrolled"?"مسجل":"غير نشط")));}if(!list.children.length)list.append(node("li","","لم يسجل أي طالب بعد."));roster.append(list);card.append(head,meta,roster);classes.append(card);}}
+function localDateTime(value){if(!value)return "";const date=new Date(value);const offset=date.getTimezoneOffset();return new Date(date.getTime()-offset*60000).toISOString().slice(0,16);}
+function renderClasses(items){
+ classes.replaceChildren();
+ if(!items.length){classes.append(node("p","admin-empty","لا توجد فصول حتى الآن."));return;}
+ for(const item of items){
+  const card=node("article","admin-class");
+  const head=node("div","admin-application-head");
+  head.append(node("h3","",item.title),node("span","admin-status",item.status==="live"?"مباشر":item.status==="ended"?"منتهٍ":item.status==="cancelled"?"ملغي":"مجدول"));
+  const meta=node("p","admin-class-meta","المدرب: "+item.instructorName+" · الطلاب: "+item.enrollmentCount+"/"+item.capacity+" · "+(item.startsAt?new Intl.DateTimeFormat("ar-EG",{dateStyle:"medium",timeStyle:"short"}).format(new Date(item.startsAt)):"موعد غير محدد"));
+  const roster=node("details","admin-roster");
+  roster.append(node("summary","","قائمة الطلاب ("+(item.students||[]).length+")"));
+  const list=node("ul","");
+  for(const student of item.students||[])list.append(node("li","",student.displayName+" — "+(student.status==="enrolled"?"مسجل":student.status==="cancelled"?"ألغى التسجيل":"غير نشط")));
+  if(!list.children.length)list.append(node("li","","لم يسجل أي طالب بعد."));
+  roster.append(list);card.append(head,meta,roster);
+  if(item.status==="scheduled"){
+   const controls=node("div","admin-class-actions");
+   const form=node("form","admin-reschedule-form");
+   const dateLabel=node("label","","الموعد الجديد");
+   const dateInput=node("input","");dateInput.type="datetime-local";dateInput.required=true;dateInput.value=localDateTime(item.startsAt);
+   dateLabel.append(dateInput);
+   const durationLabel=node("label","","المدة بالدقائق");
+   const durationInput=node("input","");durationInput.type="number";durationInput.min="15";durationInput.max="180";durationInput.step="15";durationInput.required=true;durationInput.value=String(item.durationMinutes||60);
+   durationLabel.append(durationInput);
+   const capacityLabel=node("label","","السعة القصوى");
+   const capacityInput=node("input","");capacityInput.type="number";capacityInput.min=String(Math.max(1,item.enrollmentCount||0));capacityInput.max="30";capacityInput.required=true;capacityInput.value=String(item.capacity||12);
+   capacityLabel.append(capacityInput);
+   const save=node("button","admin-action","حفظ التعديلات");save.type="submit";
+   form.append(dateLabel,durationLabel,capacityLabel,save);
+   const feedback=node("p","admin-class-feedback","");
+   form.addEventListener("submit",async event=>{
+    event.preventDefault();save.disabled=true;feedback.textContent="جارٍ تحديث بيانات الفصل…";
+    try{await manageClass({classId:item.id,action:"reschedule",startsAt:dateInput.value,durationMinutes:Number(durationInput.value),capacity:Number(capacityInput.value)});feedback.textContent="تم تحديث موعد الفصل وسعته.";await load();}
+    catch(error){feedback.textContent=error.message||"تعذر تحديث الفصل.";save.disabled=false;}
+   });
+   const cancel=node("button","admin-action admin-action-danger","إلغاء الفصل");cancel.type="button";
+   cancel.addEventListener("click",async()=>{
+    if(!window.confirm("سيتم إلغاء الفصل وإلغاء حجوزات الطلاب النشطة. هل تريد المتابعة؟"))return;
+    cancel.disabled=true;feedback.textContent="جارٍ إلغاء الفصل وتحرير المقاعد…";
+    try{await manageClass({classId:item.id,action:"cancel"});feedback.textContent="تم إلغاء الفصل وتحديث الحجوزات.";await load();}
+    catch(error){feedback.textContent=error.message||"تعذر إلغاء الفصل.";cancel.disabled=false;}
+   });
+   controls.append(form,cancel,feedback);card.append(controls);
+  }
+  classes.append(card);
+ }
+}
 function moderationButton(type,item,decision,label){const button=node("button","admin-action",label);button.type="button";button.addEventListener("click",async()=>{const enteredReason=window.prompt("سبب الإجراء (اختياري):");if(enteredReason===null)return;const reason=enteredReason.trim();button.disabled=true;try{await moderate({type,contentId:item.id,decision,reason});await load();}catch(error){message(error.message||"تعذر تنفيذ إجراء الإشراف.",true);button.disabled=false;}});return button;}
 function renderGroups(items){groups.replaceChildren();if(!items.length){groups.append(node("p","admin-empty","لا توجد مجموعات حتى الآن."));return;}for(const item of items){const card=node("article","admin-student");const head=node("div","admin-application-head");head.append(node("h3","",item.name),node("span","admin-status",item.status));const details=node("div","admin-details");details.append(node("p","","المدرّس: "+item.instructorName),node("p","","الموضوع: "+(item.topic||"غير محدد")),node("p","","عدد الأعضاء: "+item.memberCount),node("p","","تاريخ الإنشاء: "+dateLabel(item.createdAt)),node("p","","معرّف المجموعة: "+item.id));const actions=node("div","admin-actions");actions.append(item.status==="active"?moderationButton("group",item,"hide","إيقاف ظهور المجموعة"):moderationButton("group",item,"restore","إعادة نشر المجموعة"));card.append(head,details,actions);groups.append(card);}}
 function renderPosts(items){posts.replaceChildren();if(!items.length){posts.append(node("p","admin-empty","لا توجد منشورات حتى الآن."));return;}for(const item of items){const card=node("article","admin-student");card.append(node("h3","",item.instructorName),node("p","",""+item.text),node("p","admin-class-meta","الحالة: "+item.status+" · "+dateLabel(item.createdAt)),node("p","admin-class-meta","معرّف المنشور: "+item.id));const actions=node("div","admin-actions");actions.append(item.status==="published"?moderationButton("post",item,"hide","إخفاء المنشور"):moderationButton("post",item,"restore","إعادة نشر المنشور"));card.append(actions);posts.append(card);}}
