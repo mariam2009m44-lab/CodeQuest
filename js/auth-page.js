@@ -85,7 +85,8 @@ if (!form) {
     "studio.html",
     "parent.html",
     "achievements.html",
-    "course-path.html"
+    "course-path.html",
+    "instructor-portal.html"
   ]);
 
   function getNextPage() {
