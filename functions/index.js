@@ -3169,13 +3169,19 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
 
 exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSeconds: 60 }, async request => {
   requireLiveAdmin(request);
-  const [studentCount, studentSnapshot, approvedCount, pendingSnapshot, instructorSnapshot, classSnapshot] = await Promise.all([
+  const [studentCount, studentSnapshot, approvedCount, pendingSnapshot, instructorSnapshot, classSnapshot,
+    groupCount, groupSnapshot, postCount, postSnapshot, auditSnapshot] = await Promise.all([
     db.collection("academyStudentProfiles").count().get(),
     db.collection("academyStudentProfiles").orderBy("updatedAt", "desc").limit(100).get(),
     db.collection("liveInstructorApprovals").where("status", "==", "approved").count().get(),
     db.collection("instructorApplications").where("status", "==", "pending").limit(50).get(),
     db.collection("instructorApplications").orderBy("updatedAt", "desc").limit(100).get(),
-    db.collection("liveClasses").orderBy("createdAt", "desc").limit(50).get()
+    db.collection("liveClasses").orderBy("createdAt", "desc").limit(50).get(),
+    db.collection("teacherGroups").where("status", "==", "active").count().get(),
+    db.collection("teacherGroups").orderBy("createdAt", "desc").limit(50).get(),
+    db.collection("instructorPosts").where("status", "==", "published").count().get(),
+    db.collection("instructorPosts").orderBy("createdAt", "desc").limit(50).get(),
+    db.collection("academyAuditLogs").orderBy("createdAt", "desc").limit(50).get()
   ]);
   const students = studentSnapshot.docs.map(doc => {
     const data = doc.data();
@@ -3267,9 +3273,28 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       students: studentCount.data().count,
       approvedInstructors: approvedCount.data().count,
       pendingInstructors: pendingSnapshot.size,
-      classes: classSnapshot.size
+      classes: classSnapshot.size,
+      groups: groupCount.data().count,
+      posts: postCount.data().count
     },
-    students, instructors, pendingInstructors, classes
+    students, instructors, pendingInstructors, classes,
+    groups: groupSnapshot.docs.map(doc => ({
+      id: doc.id, name: String(doc.data().name || ""), topic: String(doc.data().topic || ""),
+      instructorUid: String(doc.data().instructorUid || ""), instructorName: String(doc.data().instructorName || ""),
+      memberCount: Number(doc.data().memberCount || 0), status: String(doc.data().status || ""),
+      createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
+    })),
+    posts: postSnapshot.docs.map(doc => ({
+      id: doc.id, instructorUid: String(doc.data().instructorUid || ""),
+      instructorName: String(doc.data().instructorName || ""), text: String(doc.data().text || "").slice(0, 500),
+      status: String(doc.data().status || ""), createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
+    })),
+    auditLogs: auditSnapshot.docs.map(doc => ({
+      id: doc.id, actorUid: String(doc.data().actorUid || ""),
+      action: String(doc.data().action || ""), targetUid: String(doc.data().targetUid || ""),
+      targetId: String(doc.data().targetId || ""),
+      createdAt: doc.data().createdAt?.toDate?.().toISOString() || null
+    }))
   };
 });
 
