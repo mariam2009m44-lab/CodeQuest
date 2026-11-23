@@ -24,6 +24,9 @@
 <label>الفئة العمرية<select name="ageBand" required><option value="">اختاري الفئة</option><option value="10-12">10–12 سنة</option><option value="13-15">13–15 سنة</option><option value="16-17">16–17 سنة</option><option value="18+">18 سنة فأكثر</option></select></label>
 <label>المرحلة الدراسية أو الصف<input name="grade" maxlength="60" placeholder="مثال: الصف الأول الثانوي"></label>
 <label>مستواك في البرمجة<select name="skillLevel" required><option value="beginner">مبتدئ — أبدأ من الصفر</option><option value="basic">لدي أساسيات</option><option value="intermediate">متوسط — نفذت مشروعات بسيطة</option></select></label>
+<label>أهدافك التعليمية<textarea name="learningGoals" maxlength="500" rows="3" placeholder="مثال: أتعلم Python لبناء مشروعات ذكاء اصطناعي."></textarea></label>
+<label>ما الذي يساعدك على التعلم بشكل أفضل؟ (اختياري)<textarea name="learningNeeds" maxlength="500" rows="2" placeholder="مثال: شرح تدريجي، أمثلة عملية، واجبات قصيرة..."></textarea></label>
+<label>المواعيد المناسبة لك (اختياري)<input name="preferredSchedule" maxlength="200" placeholder="مثال: الجمعة والسبت مساءً"></label>
 <fieldset><legend>المجالات التي تهتم بها</legend><div class="academy-checks">
 <label><input type="checkbox" name="interests" value="python"> Python</label><label><input type="checkbox" name="interests" value="javascript"> JavaScript</label><label><input type="checkbox" name="interests" value="cpp"> C++</label><label><input type="checkbox" name="interests" value="java"> Java</label><label><input type="checkbox" name="interests" value="web"> تصميم وتطوير الويب</label>
 </div></fieldset>
@@ -40,7 +43,32 @@
 </div></fieldset>
 <label>الخبرة أو المؤهل<input name="experience" maxlength="120" placeholder="مثال: طالب حاسبات، مطور ويب، خبرة تدريس..."></label>
 <label>نبذة عنك وخبرتك التعليمية<textarea name="bio" required minlength="30" maxlength="1200" rows="5" placeholder="اكتب نبذة واضحة عن خبرتك وطريقة شرحك وما الذي يمكن أن تقدمه للطلاب."></textarea></label>
-<label>رابط أعمالك أو GitHub أو Portfolio (اختياري)<input name="portfolioUrl" type="url" maxlength="300" placeholder="https://..."></label>
+<label>المؤهلات والشهادات<input name="qualifications" maxlength="500" placeholder="الشهادات، الدراسة، الاعتمادات أو الدورات ذات الصلة"></label>
+<label>الخبرة التعليمية<textarea name="teachingExperience" maxlength="800" rows="3" placeholder="خبرتك في التدريس أو التدريب أو شرح المحتوى."></textarea></label>
+<label>رابط LinkedIn<input name="linkedinUrl" type="url" maxlength="500" placeholder="https://www.linkedin.com/in/..."></label>
+<label>رابط Portfolio أو GitHub<input name="portfolioUrl" type="url" maxlength="500" placeholder="https://..."></label>
+<label>فيديو تعريفي قصير (رابط)<input name="introVideoUrl" type="url" maxlength="500" placeholder="رابط فيديو تعريفي عام"></label>
+<label>عينة شرح أو درس تجريبي (رابط)<input name="teachingDemoUrl" type="url" maxlength="500" placeholder="رابط فيديو أو درس تجريبي"></label>
+<fieldset><legend>أساليب التدريس</legend><div class="academy-checks">
+<label><input type="checkbox" name="teachingStyles" value="projects"> مشروعات عملية</label>
+<label><input type="checkbox" name="teachingStyles" value="interactive"> شرح تفاعلي</label>
+<label><input type="checkbox" name="teachingStyles" value="problem-solving"> حل المشكلات</label>
+<label><input type="checkbox" name="teachingStyles" value="visual"> شرح بصري</label>
+<label><input type="checkbox" name="teachingStyles" value="discussion"> نقاش وأسئلة</label>
+</div></fieldset>
+<fieldset><legend>الفئات العمرية المناسبة</legend><div class="academy-checks">
+<label><input type="checkbox" name="ageGroups" value="10-12"> 10–12</label>
+<label><input type="checkbox" name="ageGroups" value="13-15"> 13–15</label>
+<label><input type="checkbox" name="ageGroups" value="16-17"> 16–17</label>
+<label><input type="checkbox" name="ageGroups" value="18+"> 18+</label>
+</div></fieldset>
+<fieldset><legend>المستويات التي تستطيع تدريسها</legend><div class="academy-checks">
+<label><input type="checkbox" name="teachingLevels" value="beginner"> مبتدئ</label>
+<label><input type="checkbox" name="teachingLevels" value="basic"> أساسي</label>
+<label><input type="checkbox" name="teachingLevels" value="intermediate"> متوسط</label>
+<label><input type="checkbox" name="teachingLevels" value="advanced"> متقدم</label>
+</div></fieldset>
+<label>روابط أعمال إضافية (رابط في كل سطر)<textarea name="sampleWorkLinks" maxlength="2500" rows="3" placeholder="https://github.com/..."></textarea></label>
 <label>المواعيد المتاحة للتدريس<textarea name="availability" maxlength="300" rows="2" placeholder="مثال: السبت والثلاثاء مساءً"></textarea></label>
 <button class="academy-submit" type="submit">إرسال طلب المدرب</button><p class="academy-feedback" id="instructorFeedback" role="status" aria-live="polite"></p>
 </form>
