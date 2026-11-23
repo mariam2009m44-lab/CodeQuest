@@ -1134,6 +1134,40 @@
     @media(max-width:900px) { .chat-container { padding:18px 13px 135px; gap:18px; } .bubble { max-width:calc(100% - 4px); padding:13px 15px; font-size:.94rem; } .avatar { width:40px; height:40px; } .choices-container { width:100%; margin-inline:0; } .bottom-action { padding-inline:13px; } .btn-next { width:100%; } }
     @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; } }
   
+
+    /* Desktop split workspace: keep the editor as a real flex item.
+       Mobile keeps display:contents so its bottom-sheet behavior is unchanged. */
+    .editor-container { display: contents; min-width: 0; }
+    @media (min-width: 901px) {
+      .content-wrapper { align-items: stretch; }
+      .editor-container {
+        display: flex;
+        flex: 1 1 45%;
+        min-width: 0;
+        max-width: 50%;
+      }
+      .editor-container > .editor-wrapper.show {
+        display: flex !important;
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        min-height: 420px;
+        height: auto;
+        margin: 18px;
+        position: relative;
+        inset: auto;
+      }
+      .editor-container > .editor-wrapper.show .code-area {
+        flex: 1 1 auto;
+        min-height: 260px;
+        max-height: none;
+      }
+    }
+    @media (max-width: 900px) {
+      .editor-container { display: contents; }
+    }
+
     /* Responsive editor hints and exam layout */
     .editor-wrapper,
     .exam-view,
@@ -1707,7 +1741,7 @@ html[data-theme="light"] .bottom-action {
 
       <div class="chat-container" id="chatContainer"></div>
 
-      <div id="editorContainer" style="display:contents"></div>
+      <div id="editorContainer" class="editor-container"></div>
 
     </section>
 
