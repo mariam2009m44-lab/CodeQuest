@@ -3596,8 +3596,8 @@ exports.listMyTeacherGroups = onCall({ region: "europe-west1" }, async request =
       const data = doc.data();
       return {
         id: doc.id, name: String(data.name || ""), description: String(data.description || ""),
-        topic: String(data.topic || ""), status: String(data.status || ""),
-        memberCount: Number(data.memberCount || 0),
+        topic: String(data.topic || ""), instructorName: String(data.instructorName || ""),
+        status: String(data.status || ""), memberCount: Number(data.memberCount || 0),
         createdAt: data.createdAt?.toDate?.().toISOString() || null,
         pendingRequests: requests.size
       };
