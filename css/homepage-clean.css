@@ -216,3 +216,93 @@ html[data-theme="light"] .cq-brand-footer{background:#fff}
 @media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.character-area{min-height:300px}.cody-hero-robot{width:min(100%,360px)}}
 @media(max-width:460px){.cards{grid-template-columns:1fr}.card{min-height:0}.card p{min-height:0}.character-area{min-height:270px}}
+
+
+/* =========================================================
+   CodeQuest homepage — Cody mascot integration / visual polish
+   ========================================================= */
+.landing-theme-toggle{
+  position:relative;display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;
+  padding:0;border:1px solid rgba(153,143,255,.34);border-radius:50%;
+  background:linear-gradient(145deg,rgba(34,42,94,.96),rgba(16,22,57,.96));
+  color:#f7d66d;box-shadow:0 5px 18px rgba(0,0,0,.18);
+  transition:transform .22s ease,border-color .22s ease,background .22s ease;
+}
+.landing-theme-toggle:hover{transform:translateY(-2px) rotate(-8deg);border-color:#8c7aff}
+.landing-theme-toggle svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.landing-theme-toggle .theme-toggle-sun{display:none}
+.landing-theme-toggle .theme-toggle-moon{display:block;color:#c9c2ff}
+html[data-theme="light"] .landing-theme-toggle{background:#fff;color:#6e54db;border-color:#dcd7fb}
+html[data-theme="light"] .landing-theme-toggle .theme-toggle-sun{display:block;color:#e4a72c}
+html[data-theme="light"] .landing-theme-toggle .theme-toggle-moon{display:none}
+
+.hero.container{align-items:center;min-height:500px;padding-block:48px}
+.hero-content{position:relative;z-index:3}
+.hero h1{max-width:650px}
+.hero-description{max-width:540px}
+.character-area{
+  position:relative;display:grid;place-items:center;isolation:isolate;
+  min-height:440px;padding:0;overflow:visible;
+}
+.character-area:before{
+  content:"";position:absolute;z-index:-1;inset:12% 7% 7%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(65,117,255,.23),rgba(112,60,235,.12) 46%,transparent 73%);
+  filter:blur(25px);pointer-events:none;
+}
+.cody-hero-image{
+  position:relative;z-index:2;display:block;width:min(112%,560px);height:auto;
+  max-height:500px;object-fit:contain;object-position:center;
+  filter:drop-shadow(0 22px 34px rgba(45,99,255,.22));
+  animation:cody-float 6s ease-in-out infinite;
+}
+@keyframes cody-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.character-area .cody-hero-art-placeholder{display:none}
+.character-area .floating-code{
+  z-index:4;top:18%;inset-inline-start:0;padding:12px 15px;
+  border:1px solid rgba(142,115,255,.45);border-radius:13px;
+  background:rgba(13,18,54,.88);box-shadow:0 12px 30px rgba(0,0,0,.2);
+  backdrop-filter:blur(12px);font-size:11px;line-height:1.8;
+}
+.character-area .blob,.character-area .spark,.character-area .floating-game{display:none!important}
+
+.cq-cody-intro__visual{
+  position:relative;isolation:isolate;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;overflow:hidden;
+  min-height:300px;padding:22px;
+}
+.cq-cody-intro__visual:before{
+  content:"";position:absolute;z-index:-1;inset:0;
+  background:radial-gradient(ellipse at 50% 50%,rgba(82,111,255,.22),transparent 65%);
+}
+.cq-cody-intro__mascot{
+  display:block;width:min(100%,290px);height:190px;object-fit:contain;
+  object-position:center;filter:drop-shadow(0 12px 20px rgba(52,99,255,.2));
+}
+.cq-cody-intro__visual strong{margin-top:-3px}
+.cq-cody-intro__tag--one{top:15px;inset-inline-start:15px}
+.cq-cody-intro__tag--two{bottom:15px;inset-inline-end:15px}
+
+html[data-theme="light"] .landing-theme-toggle{box-shadow:0 5px 16px rgba(44,48,90,.08)}
+html[data-theme="light"] .character-area:before{background:radial-gradient(ellipse,rgba(85,139,255,.18),rgba(140,105,255,.08) 46%,transparent 73%)}
+html[data-theme="light"] .character-area .floating-code{background:rgba(255,255,255,.9);color:#283252;border-color:#dcd8fb}
+html[data-theme="light"] .cq-cody-intro__visual{background:linear-gradient(145deg,#f5f5ff,#e8edff)}
+@media(max-width:900px){
+  .hero.container{min-height:450px}
+  .character-area{min-height:380px}
+  .cody-hero-image{width:min(112%,480px);max-height:430px}
+}
+@media(max-width:700px){
+  .hero.container{min-height:0}
+  .character-area{min-height:290px;margin-top:-5px}
+  .cody-hero-image{width:min(100%,390px);max-height:330px}
+  .character-area .floating-code{top:4%;inset-inline-start:2%;font-size:9px;padding:8px 10px}
+  .cq-cody-intro__visual{min-height:250px}
+  .cq-cody-intro__mascot{height:155px;width:min(100%,240px)}
+}
+@media(max-width:460px){
+  .character-area{min-height:255px}
+  .cody-hero-image{width:min(108%,340px);max-height:285px}
+  .cq-cody-intro__visual{min-height:225px}
+  .cq-cody-intro__mascot{height:135px}
+}
+@media(prefers-reduced-motion:reduce){.cody-hero-image{animation:none}}
