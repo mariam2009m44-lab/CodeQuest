@@ -6,6 +6,10 @@
   <script src="js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#ffffff">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="CodeQuest | أكاديمية تعلّم البرمجة">
+  <meta property="og:description" content="تعلّم Python وJavaScript وC++ بالممارسة، واستكشف Cody AI والأكاديمية المباشرة.">
   <meta name="description" content="CodeQuest — أكاديمية تفاعلية لتعلّم البرمجة بالممارسة والمشاريع والتعاون.">
   <title>CodeQuest | تعلّم البرمجة واصنع مشاريعك</title>
 
@@ -20,22 +24,90 @@
 <link rel="stylesheet" href="css/landing-premium.css">
 <link rel="stylesheet" href="css/live-academy.css">
   <link rel="stylesheet" href="css/academy-entry.css">
+
+  <!-- Homepage-only accessibility and responsive enhancements -->
+  <style>
+    .cq-skip-link{position:absolute;z-index:10000;top:10px;inset-inline-start:10px;padding:10px 15px;border-radius:10px;background:#18233a;color:#fff;transform:translateY(-160%);transition:transform .2s}
+    .cq-skip-link:focus{transform:translateY(0);outline:3px solid #67e8f9;outline-offset:3px}
+    .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+    .hero-secondary-button{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:13px 22px;border:1px solid #dce3f0;border-radius:15px;background:rgba(255,255,255,.75);color:#33415c;font-size:13px;font-weight:800;transition:transform .2s,border-color .2s}
+    .hero-secondary-button:hover{transform:translateY(-2px);border-color:#9aaee8}
+    .cq-path-shortcuts{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin:-12px auto 36px}
+    .cq-path-shortcut{display:inline-flex;align-items:center;gap:10px;padding:11px 17px;border:1px solid #e4e9f2;border-radius:14px;background:#fff;color:#263653;font-size:13px;font-weight:800;box-shadow:0 6px 18px rgba(25,40,75,.04);transition:transform .2s,border-color .2s}
+    .cq-path-shortcut:hover{transform:translateY(-3px);border-color:#aebff0}
+    .cq-path-shortcut span{display:grid;place-items:center;width:27px;height:27px;border-radius:8px;background:#eef2ff;color:#5268cb;font:800 11px Arial,sans-serif;direction:ltr}
+    .cq-cody-intro{padding:clamp(58px,7vw,88px) 0;background:linear-gradient(135deg,#f5f7ff,#fff 58%,#f3fbff);border-block:1px solid #e9edf5}
+    .cq-cody-intro__inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.82fr);align-items:center;gap:42px}
+    .cq-cody-intro__eyebrow{color:#6574b4;font:800 10px Arial,sans-serif;letter-spacing:2px;direction:ltr}
+    .cq-cody-intro h2{margin:14px 0 12px;color:#18233a;font-size:clamp(27px,3.6vw,42px);font-weight:900;line-height:1.4}
+    .cq-cody-intro__copy>p{max-width:620px;color:#68758c;font-size:14px;line-height:2.1}
+    .cq-cody-intro__list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:22px 0 25px;padding:0;list-style:none}
+    .cq-cody-intro__list li{padding:10px 12px;border:1px solid #e6eaf3;border-radius:12px;background:rgba(255,255,255,.8);color:#45536d;font-size:12px;font-weight:700}
+    .cq-cody-intro__actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+    .cq-cody-intro__button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:13px;background:#18233a;color:#fff;font-size:12px;font-weight:800}
+    .cq-cody-intro__note{margin-top:12px;color:#858da0;font-size:10px;line-height:1.8}
+    .cq-cody-intro__visual{position:relative;display:grid;place-items:center;min-height:270px;padding:28px;border:1px solid #e5eaf5;border-radius:24px;background:radial-gradient(circle at 50% 35%,#fff 0,#f0f4ff 55%,#eaf7fb 100%);overflow:hidden}
+    .cq-cody-intro__orb{display:grid;place-items:center;width:142px;height:142px;border:1px solid rgba(109,119,208,.2);border-radius:38px;background:linear-gradient(145deg,#fff,#e9edff);box-shadow:0 24px 55px rgba(72,91,166,.15);color:#5269c8;font-size:58px}
+    .cq-cody-intro__visual strong{margin-top:18px;color:#283652;font-size:18px}
+    .cq-cody-intro__visual small{margin-top:4px;color:#7a879c;font-size:11px}
+    .cq-cody-intro__tag{position:absolute;padding:8px 12px;border:1px solid #e2e8f5;border-radius:11px;background:#fff;color:#64718b;font-size:10px;font-weight:800;box-shadow:0 8px 22px rgba(30,50,90,.06)}
+    .cq-cody-intro__tag--one{top:22px;inset-inline-start:18px}
+    .cq-cody-intro__tag--two{bottom:24px;inset-inline-end:18px}
+    .cq-live-academy__feature-status{display:inline-flex;margin-top:12px;padding:5px 8px;border-radius:8px;background:rgba(23,105,210,.08);color:#1769d2;font-size:9px;font-weight:800}
+    .cq-brand-footer__links{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+    .cq-brand-footer__links a{color:inherit;font-size:11px;text-decoration:none}
+    .cq-brand-footer__links a:hover{color:#1769d2}
+    a:focus-visible,button:focus-visible{outline:3px solid #35a9d6;outline-offset:4px}
+    @media(max-width:760px){
+      .cq-cody-intro__inner{grid-template-columns:1fr;gap:24px}
+      .cq-cody-intro__visual{min-height:230px}
+      .hero-actions{justify-content:center}
+      .cq-path-shortcuts{margin-top:0}
+    }
+    @media(max-width:520px){
+      .hero-actions{flex-direction:column;align-items:stretch}
+      .hero-actions a{width:100%}
+      .cq-path-shortcuts{gap:8px}
+      .cq-path-shortcut{flex:1 1 calc(50% - 8px);justify-content:center;padding:9px 10px;font-size:11px}
+      .cq-cody-intro__list{grid-template-columns:1fr}
+      .cq-cody-intro__visual{min-height:210px;padding:20px}
+      .cq-brand-footer__links{width:100%;gap:12px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .cq-skip-link,.hero-secondary-button,.cq-path-shortcut{transition:none}
+      .hero-secondary-button:hover,.cq-path-shortcut:hover{transform:none}
+    }
+    html[data-theme="dark"] .hero-secondary-button{border-color:rgba(169,185,226,.2);background:#17223b;color:#e7eaff}
+    html[data-theme="dark"] .cq-path-shortcut{border-color:rgba(169,185,226,.18);background:#151f36;color:#edf1ff}
+    html[data-theme="dark"] .cq-cody-intro{border-color:#30323a;background:linear-gradient(135deg,#111827,#111319 58%,#10202a)}
+    html[data-theme="dark"] .cq-cody-intro h2{color:#f5f5f7}
+    html[data-theme="dark"] .cq-cody-intro__copy>p,html[data-theme="dark"] .cq-cody-intro__note{color:#a4a4ad}
+    html[data-theme="dark"] .cq-cody-intro__list li{border-color:#30323a;background:#1a1c23;color:#d8dbe4}
+    html[data-theme="dark"] .cq-cody-intro__visual{border-color:#30323a;background:radial-gradient(circle at 50% 35%,#20263a 0,#171c2a 60%,#14242c 100%)}
+    html[data-theme="dark"] .cq-cody-intro__orb{border-color:#414b70;background:linear-gradient(145deg,#252e49,#1a2239);color:#b7b4ff}
+    html[data-theme="dark"] .cq-cody-intro__visual strong{color:#f1f1f4}
+    html[data-theme="dark"] .cq-cody-intro__visual small{color:#a4a4ad}
+    html[data-theme="dark"] .cq-cody-intro__tag{border-color:#30394f;background:#1c263b;color:#cbd5e1}
+    html[data-theme="dark"] .cq-cody-intro__button{background:#e9eaff;color:#18233a}
+  </style>
 </head>
 
 <body>
+  <a class="cq-skip-link" href="#main-content">تخطّي إلى المحتوى الرئيسي</a>
 
   <header class="container">
     <nav aria-label="القائمة الرئيسية">
       <a class="logo" href="index.html">CodeQuest <span>&lt;/&gt;</span></a>
 
       <div class="nav-links">
-        <a class="active" href="index.html">الرئيسية</a>
-        <a href="languages.html" data-protected>المسارات</a>
+        <a class="active" href="index.html" aria-current="page">الرئيسية</a>
+        <a href="#paths">المسارات</a>
         <a href="games.html" data-protected>الألعاب</a>
         <a href="projects.html" data-protected>المشاريع</a>
         <a href="#live-academy">الأكاديمية المباشرة</a>
+        <a href="#live-academy">الأكاديمية</a>
         <a href="instructor-portal.html">للمدرّبين</a>
-        <a href="#about">حول كودي</a>
+        <a href="#cody-ai">Cody AI</a>
       </div>
 
       <button class="landing-theme-toggle" id="landingThemeToggle" type="button" aria-label="التبديل إلى المظهر الداكن" title="التبديل إلى المظهر الداكن">
@@ -45,7 +117,7 @@
     </nav>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
 
     <!-- Hero Section -->
     <section class="hero container" id="home">
@@ -65,9 +137,14 @@
           اكتشف مسارات Python وJavaScript وC++، وتعلّم بالممارسة من خلال دروس تفاعلية وتحديات ومشروعات تناسب مستواك.
         </p>
 
-        <a href="login.html?next=dashboard.html" class="primary-button">
-          ابدأ رحلتك <span>←</span>
-        </a>
+        <div class="hero-actions">
+          <a href="login.html?next=dashboard.html" class="primary-button">
+            ابدأ رحلتك <span aria-hidden="true">←</span>
+          </a>
+          <a href="live-academy.html" class="hero-secondary-button">
+            استكشف الأكاديمية المباشرة
+          </a>
+        </div>
 
         <div class="trust-row">
           <div class="trust-item">
@@ -148,6 +225,13 @@
           <p>اختار ما يناسبك وابدأ رحلتك في عالم البرمجة.</p>
         </div>
 
+        <div class="cq-path-shortcuts" aria-label="ابدأ بمسار برمجي">
+          <a class="cq-path-shortcut" href="course-path.html?lang=python"><span>Py</span> Python</a>
+          <a class="cq-path-shortcut" href="levels.html?lang=javascript"><span>JS</span> JavaScript</a>
+          <a class="cq-path-shortcut" href="levels.html?lang=cpp"><span>C++</span> C++</a>
+          <a class="cq-path-shortcut" href="languages.html"><span>＋</span> كل المسارات</a>
+        </div>
+
         <div class="cards">
 
           <article class="card">
@@ -186,6 +270,34 @@
             </a>
           </article>
 
+        </div>
+      </div>
+    </section>
+
+    <!-- Cody AI: public introduction to the assistant available inside the learner dashboard --> 
+    <section class="cq-cody-intro" id="cody-ai" aria-labelledby="cq-cody-title">
+      <div class="container cq-cody-intro__inner">
+        <div class="cq-cody-intro__copy">
+          <span class="cq-cody-intro__eyebrow">MEET CODY · YOUR LEARNING COMPANION</span>
+          <h2 id="cq-cody-title">لما تقف في سؤال، كودي يساعدك تفهم الطريق.</h2>
+          <p>كودي مساعد تعليمي ذكي داخل مساحة المتعلّم. اسأله عن الدراسة أو العلوم أو الرياضيات أو اللغات أو الكتابة أو التقنية، واطلب شرحًا يساعدك على فهم الفكرة خطوة بخطوة.</p>
+          <ul class="cq-cody-intro__list">
+            <li>شرح المفاهيم والإجابة عن الأسئلة</li>
+            <li>مساعدة في موضوعات البرمجة والتقنية</li>
+            <li>أمثلة وتنسيق واضح للأكواد عند الحاجة</li>
+            <li>متابعة المحادثة داخل حسابك</li>
+          </ul>
+          <div class="cq-cody-intro__actions">
+            <a class="cq-cody-intro__button" href="login.html?next=dashboard.html">جرّب Cody داخل المنصة <span aria-hidden="true">←</span></a>
+          </div>
+          <p class="cq-cody-intro__note">تجربة Cody متاحة من لوحة المتعلّم بعد تسجيل الدخول، وليست نافذة محادثة مستقلة في الصفحة الرئيسية.</p>
+        </div>
+        <div class="cq-cody-intro__visual" aria-label="تصميم توضيحي لشخصية Cody">
+          <span class="cq-cody-intro__tag cq-cody-intro__tag--one">ASK · LEARN · BUILD</span>
+          <div class="cq-cody-intro__orb" aria-hidden="true">✦</div>
+          <strong>Cody AI</strong>
+          <small>مساعدك في رحلة التعلّم</small>
+          <span class="cq-cody-intro__tag cq-cody-intro__tag--two">LEARNING COMPANION</span>
         </div>
       </div>
     </section>
@@ -236,12 +348,12 @@
         <div class="cq-live-academy__features" id="cq-live-features">
           <div class="cq-live-academy__section-heading"><span>BEYOND VIDEO CALLS</span><h3>تجربة مباشرة تركّز على التطبيق</h3><p>كل ميزة لها هدف تعليمي واضح، مع مراعاة خصوصية الطلاب وسلامة التفاعل.</p></div>
           <div class="cq-live-academy__grid">
-            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">⌨</span><h4>Live Coding Studio</h4><p>محرر برمجي مشترك للتطبيق مع المدرب ومشاركة الحلول.</p></article>
-            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">✦</span><h4>Cody Live Assistant</h4><p>شرح وتلميحات مرتبطة بموضوع المحاضرة تساعد الطالب يفهم بنفسه.</p></article>
-            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">⚡</span><h4>Live Challenges</h4><p>تحديات قصيرة أثناء الشرح مع تغذية راجعة على الحل.</p></article>
-            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">◉</span><h4>Learning Pulse</h4><p>مؤشر فهم يعتمد على إجابات وأنشطة الطلاب، وليس على الكاميرا.</p></article>
-            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">♧</span><h4>Team Coding Rooms</h4><p>مساحات عمل جماعية لمشاريع صغيرة مع متابعة المدرب.</p></article>
-            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">▤</span><h4>Smart Lecture Notes</h4><p>ملخص وملفات وواجبات للمراجعة بعد انتهاء الجلسة.</p></article>
+            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">▤</span><h4>دليل الفصول</h4><p>استعراض الفصول التي ينشئها المدرّبون وتفاصيلها من صفحة الأكاديمية.</p><span class="cq-live-academy__feature-status">ضمن النظام الحالي</span></article>
+            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">✓</span><h4>التسجيل في الفصول</h4><p>يمكن للمتعلّم تسجيل الدخول والتسجيل في فصل متاح وفق حالة الحساب.</p><span class="cq-live-academy__feature-status">ضمن النظام الحالي</span></article>
+            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">♧</span><h4>بوابة المدرّبين</h4><p>إنشاء الفصول وإدارتها متاحان لحسابات المدرّبين المعتمدة.</p><span class="cq-live-academy__feature-status">صلاحيات معتمدة</span></article>
+            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">◉</span><h4>غرف الاجتماعات المباشرة</h4><p>تكامل غرفة الفصل موجود، ويحتاج إعداد مزوّد البث ونشر الإعدادات لتفعيل التشغيل.</p><span class="cq-live-academy__feature-status">يتطلب إعداد الإنتاج</span></article>
+            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">⌨</span><h4>محرر برمجي تعاوني</h4><p>مساحة كتابة مشتركة أثناء الفصل ضمن التحسينات المستقبلية للأكاديمية.</p><span class="cq-live-academy__feature-status">ضمن التطوير</span></article>
+            <article class="cq-live-academy__feature"><span class="cq-live-academy__feature-icon">✦</span><h4>مساعد Cody داخل الفصل</h4><p>مساعد مرتبط بموضوع الجلسة لم يُفعّل بعد داخل غرف الأكاديمية.</p><span class="cq-live-academy__feature-status">ضمن التطوير</span></article>
           </div>
         </div>
       </div>
@@ -306,6 +418,13 @@
         <span>CodeQuest</span>
       </a>
       <p>مساحة واحدة لتتعلّم، تجرّب، وتصنع أفكارك.</p>
+      <nav class="cq-brand-footer__links" aria-label="روابط سريعة">
+        <a href="#paths">المسارات</a>
+        <a href="#cody-ai">Cody AI</a>
+        <a href="live-academy.html">الأكاديمية المباشرة</a>
+        <a href="login.html?next=dashboard.html">مساحة المتعلّمين</a>
+        <a href="instructor-portal.html">بوابة المدرّبين</a>
+      </nav>
       <span class="cq-brand-footer__copyright">© 2026 CodeQuest</span>
       <a class="cq-brand-footer__top" href="#home">العودة للأعلى ↑</a>
     </div>
