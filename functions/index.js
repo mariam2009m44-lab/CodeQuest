@@ -3074,7 +3074,6 @@ exports.joinLiveClass = onCall(
 // CodeQuest Academy registration and owner monitoring.
 exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async request => {
   const uid = requireAuth(request);
-  if (request.auth.token.email_verified !== true) throw new HttpsError("failed-precondition", "تحققي من بريدك الإلكتروني أولًا.");
   const ageBand = String(request.data?.ageBand || "");
   const grade = String(request.data?.grade || "").trim();
   const skillLevel = String(request.data?.skillLevel || "");
@@ -3105,7 +3104,6 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
 
 exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async request => {
   const uid = requireAuth(request);
-  if (request.auth.token.email_verified !== true) throw new HttpsError("failed-precondition", "تحقّق من بريدك الإلكتروني قبل تقديم طلب التدريب.");
   const fullName = String(request.data?.fullName || "").trim();
   const specialties = Array.isArray(request.data?.specialties) ? [...new Set(request.data.specialties.map(String))] : [];
   const experience = String(request.data?.experience || "").trim();
