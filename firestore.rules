@@ -305,6 +305,40 @@ service cloud.firestore {
       }
     }
 
+      match /workspace/{workspaceId} {
+        function classRecord() {
+          return get(/databases/$(database)/documents/liveClasses/$(classId)).data;
+        }
+        function isClassInstructor() {
+          return signedIn() && classRecord().instructorUid == request.auth.uid
+            && request.auth.token.liveRole == 'instructor'
+            && request.auth.token.liveInstructorApproved == true;
+        }
+        function isClassAdmin() {
+          return signedIn() && (request.auth.token.liveRole == 'admin' || request.auth.token.admin == true);
+        }
+        function isEnrolledStudent() {
+          let enrollmentPath = /databases/$(database)/documents/liveClasses/$(classId)/enrollments/$(request.auth.uid);
+          return signedIn() && exists(enrollmentPath) && get(enrollmentPath).data.status == 'enrolled';
+        }
+        function canUseWorkspace() {
+          return isClassInstructor() || isClassAdmin() || isEnrolledStudent();
+        }
+        allow get: if workspaceId == 'shared' && canUseWorkspace();
+        allow list: if false;
+        allow create: if false;
+        allow update: if workspaceId == 'shared' && canUseWorkspace()
+          && request.resource.data.keys().hasOnly(['code', 'language', 'updatedBy', 'updatedAt'])
+          && request.resource.data.keys().hasAll(['code', 'language', 'updatedBy', 'updatedAt'])
+          && request.resource.data.code is string && request.resource.data.code.size() <= 50000
+          && request.resource.data.language in ['python', 'javascript', 'cpp', 'java']
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt is timestamp
+          && (request.resource.data.language == resource.data.language || isClassInstructor() || isClassAdmin());
+        allow delete: if false;
+      }
+    }
+
     match /liveClassPrivate/{classId} {
       allow read, write: if false;
     }
