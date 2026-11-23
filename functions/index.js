@@ -2964,6 +2964,40 @@ exports.enrollInLiveClass = onCall(
   }
 );
 
+exports.cancelLiveClassEnrollment = onCall({ region: "europe-west1" }, async request => {
+  const uid = requireAuth(request);
+  const classId = String(request.data?.classId || "");
+  if (!/^[A-Za-z0-9_-]{10,128}$/.test(classId)) {
+    throw new HttpsError("invalid-argument", "معرّف الفصل غير صالح.");
+  }
+  const classRef = db.collection("liveClasses").doc(classId);
+  const enrollmentRef = classRef.collection("enrollments").doc(uid);
+  await db.runTransaction(async transaction => {
+    const [classSnapshot, enrollmentSnapshot] = await Promise.all([
+      transaction.get(classRef),
+      transaction.get(enrollmentRef)
+    ]);
+    if (!classSnapshot.exists || classSnapshot.data()?.status !== "scheduled") {
+      throw new HttpsError("failed-precondition", "لا يمكن إلغاء التسجيل بعد بدء الفصل أو انتهائه.");
+    }
+    if (!enrollmentSnapshot.exists || enrollmentSnapshot.data()?.status !== "enrolled") {
+      throw new HttpsError("not-found", "لا يوجد تسجيل نشط لهذا الحساب في الفصل.");
+    }
+    const currentCount = Number(classSnapshot.data()?.enrollmentCount || 0);
+    transaction.update(enrollmentRef, {
+      status: "cancelled",
+      cancelledAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp()
+    });
+    transaction.update(classRef, {
+      enrollmentCount: Math.max(0, currentCount - 1),
+      updatedAt: FieldValue.serverTimestamp()
+    });
+  });
+  return { success: true, status: "cancelled" };
+});
+
+
 exports.setLiveClassStatus = onCall(
   { region: "europe-west1", secrets: [REALTIMEKIT_API_TOKEN] },
   async request => {
