@@ -75,6 +75,12 @@ test('Live Academy protects class writes, private meeting data, and enrollment l
       uid: studentUid,
       status: 'enrolled'
     });
+    await setDoc(doc(db, `${classPath}/workspace/shared`), {
+      code: '# اكتب الكود هنا',
+      language: 'python',
+      updatedBy: ownerUid,
+      updatedAt: new Date()
+    });
   });
 
   const studentDb = env.authenticatedContext(studentUid).firestore();
@@ -103,4 +109,19 @@ test('Live Academy protects class writes, private meeting data, and enrollment l
   }));
   await assertSucceeds(getDocs(collection(instructorDb, `${classPath}/enrollments`)));
   await assertFails(getDocs(collection(outsiderInstructorDb, `${classPath}/enrollments`)));
+  const workspacePath = `${classPath}/workspace/shared`;
+  await assertSucceeds(getDoc(doc(studentDb, workspacePath)));
+  await assertFails(getDoc(doc(otherDb, workspacePath)));
+  await assertSucceeds(setDoc(doc(studentDb, workspacePath), {
+    code: 'print("shared")', language: 'python', updatedBy: studentUid, updatedAt: serverTimestamp()
+  }, { merge: true }));
+  await assertFails(setDoc(doc(studentDb, workspacePath), {
+    code: 'console.log("wrong language")', language: 'javascript', updatedBy: studentUid, updatedAt: serverTimestamp()
+  }, { merge: true }));
+  await assertSucceeds(setDoc(doc(instructorDb, workspacePath), {
+    code: 'console.log("teacher update")', language: 'javascript', updatedBy: ownerUid, updatedAt: serverTimestamp()
+  }, { merge: true }));
+  await assertFails(setDoc(doc(outsiderInstructorDb, workspacePath), {
+    code: 'unauthorized', language: 'javascript', updatedBy: otherUid, updatedAt: serverTimestamp()
+  }, { merge: true }));
 });
