@@ -8,7 +8,9 @@ The repository workflow `.github/workflows/deploy-cloudflare-worker.yml` deploys
 
 Required GitHub Actions secrets:
 
-- `CLOUDFLARE_API_TOKEN`
+Create a dedicated Cloudflare API token with the **Workers Editor** role scoped to the existing `codequest` Worker, then store it as `CLOUDFLARE_DEPLOY_API_TOKEN`. Keep the existing `CLOUDFLARE_API_TOKEN` unchanged; it is used by the separate quiz-answer KV workflow.
+
+- `CLOUDFLARE_DEPLOY_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
 The Worker also requires the Cloudflare secret `GEMINI_API_KEY` for Cody responses. Keep this secret in Cloudflare **Workers & Pages → codequest → Settings → Variables and Secrets**. Never commit it to this repository.
