@@ -3180,9 +3180,26 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
       email: String(user.email || "").slice(0, 254),
       ageBand, grade, skillLevel, interests, learningGoals, learningNeeds, preferredSchedule,
       guardianConsent: ageBand === "18+" ? null : guardianConsent,
-      guardianConsentVerified: ageBand === "18+" ? true : existing.data()?.guardianConsentVerified === true,
-      guardianConsentVerifiedAt: ageBand === "18+" ? FieldValue.serverTimestamp() : (existing.data()?.guardianConsentVerifiedAt || null),
-      status: ageBand === "18+" || existing.data()?.guardianConsentVerified === true ? "active" : "pending_guardian",
+      guardianConsentVerified: ageBand === "18+" ? true : (
+        existing.data()?.ageBand !== "18+" &&
+        existing.data()?.guardianConsentVerified === true &&
+        guardianConsent === true
+      ),
+      guardianConsentVerifiedAt: ageBand === "18+" ? FieldValue.serverTimestamp() : (
+        existing.data()?.ageBand !== "18+" && existing.data()?.guardianConsentVerified === true && guardianConsent === true
+          ? existing.data()?.guardianConsentVerifiedAt || null
+          : null
+      ),
+      guardianConsentVerifiedBy: ageBand === "18+" ? null : (
+        existing.data()?.ageBand !== "18+" && existing.data()?.guardianConsentVerified === true && guardianConsent === true
+          ? existing.data()?.guardianConsentVerifiedBy || null
+          : null
+      ),
+      status: ageBand === "18+" || (
+        existing.data()?.ageBand !== "18+" &&
+        existing.data()?.guardianConsentVerified === true &&
+        guardianConsent === true
+      ) ? "active" : "pending_guardian",
       updatedAt: FieldValue.serverTimestamp(),
       createdAt: existingCreatedAt || FieldValue.serverTimestamp()
     }, { merge: true });
