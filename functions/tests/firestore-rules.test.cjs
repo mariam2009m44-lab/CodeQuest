@@ -46,7 +46,7 @@ test('student profile and lesson progress require the correct account and server
 
 
 test('Live Academy protects class writes, private meeting data, and enrollment lists', { skip: !host }, async t => {
-  assert.match(host, /^(127\\.0\\.0\\.1|localhost):\\d+$/);
+  assert.match(host, /^(127\.0\.0\.1|localhost):\d+$/);
   const env = await initializeTestEnvironment({
     projectId: 'demo-codequest-audit',
     firestore: { rules: fs.readFileSync(path.join(__dirname, '../../firestore.rules'), 'utf8') }
