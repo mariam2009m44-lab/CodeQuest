@@ -326,7 +326,13 @@ service cloud.firestore {
         }
         allow get: if workspaceId == 'shared' && canUseWorkspace();
         allow list: if false;
-        allow create: if false;
+        allow create: if workspaceId == 'shared' && isClassInstructor()
+          && request.resource.data.keys().hasOnly(['code', 'language', 'updatedBy', 'updatedAt'])
+          && request.resource.data.keys().hasAll(['code', 'language', 'updatedBy', 'updatedAt'])
+          && request.resource.data.code is string && request.resource.data.code.size() <= 50000
+          && request.resource.data.language in ['python', 'javascript', 'cpp', 'java']
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt is timestamp;
         allow update: if workspaceId == 'shared' && canUseWorkspace()
           && request.resource.data.keys().hasOnly(['code', 'language', 'updatedBy', 'updatedAt'])
           && request.resource.data.keys().hasAll(['code', 'language', 'updatedBy', 'updatedAt'])
