@@ -2850,17 +2850,18 @@ exports.listLiveClasses = onCall(
   async request => {
     requireAuth(request);
     const snapshot = await db.collection("liveClasses")
+      .where("status", "in", ["scheduled", "live"])
       .orderBy("startsAt", "asc")
-      .limit(60)
+      .limit(30)
       .get();
 
-    const visibleDocs = snapshot.docs.filter(doc =>
-      ["scheduled", "live"].includes(doc.data()?.status)
-    ).slice(0, 30);
-    const classes = await Promise.all(visibleDocs.map(async doc => {
+    const isAdmin =
+      request.auth.token.liveRole === "admin" ||
+      request.auth.token.admin === true;
+    const classes = await Promise.all(snapshot.docs.map(async doc => {
       const data = doc.data();
       const isInstructor = data.instructorUid === request.auth.uid;
-      const enrollment = isInstructor
+      const enrollment = isInstructor || isAdmin
         ? { exists: true }
         : await doc.ref.collection("enrollments").doc(request.auth.uid).get();
       return {
@@ -2873,6 +2874,7 @@ exports.listLiveClasses = onCall(
         status: data.status === "live" ? "live" : "scheduled",
         enrollmentCount: Number(data.enrollmentCount || 0),
         isInstructor,
+        isAdmin,
         isEnrolled: enrollment.exists
       };
     }));
