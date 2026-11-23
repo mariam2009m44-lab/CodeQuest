@@ -3423,8 +3423,9 @@ exports.listInstructorClassRoster = onCall({ region: "europe-west1" }, async req
   const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
   const isOwner = data.instructorUid === uid && request.auth.token.liveRole === "instructor" && request.auth.token.liveInstructorApproved === true;
   if (!isAdmin && !isOwner) throw new HttpsError("permission-denied", "لا تملكين صلاحية عرض قائمة هذا الفصل.");
-  const enrollments = await classRef.collection("enrollments").orderBy("enrolledAt", "asc").limit(100).get();
-  const students = await Promise.all(enrollments.docs.map(async item => {
+  const enrollments = await classRef.collection("enrollments").orderBy("enrolledAt", "asc").limit(150).get();
+  const activeEnrollments = enrollments.docs.filter(item => item.data()?.status === "enrolled").slice(0, 100);
+  const students = await Promise.all(activeEnrollments.map(async item => {
     const profile = await db.collection("users").doc(item.id).get();
     return {
       uid: item.id, displayName: String(profile.data()?.displayName || "طالب"),
