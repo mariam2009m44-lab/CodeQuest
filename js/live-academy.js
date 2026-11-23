@@ -19,6 +19,7 @@ const createClass = httpsCallable(functions, "createLiveClass");
 const setClassStatus = httpsCallable(functions, "setLiveClassStatus");
 const bootstrapAdmin = httpsCallable(functions, "bootstrapLiveAcademyAdmin");
 const approveInstructor = httpsCallable(functions, "approveLiveInstructor");
+const listRoster = httpsCallable(functions, "listInstructorClassRoster");
 let currentUser = null;
 let isInstructor = false;
 
@@ -80,6 +81,34 @@ function renderClass(item) {
     }
   }
   card.append(top,title,description,meta,actions);
+  if (item.isInstructor || item.isAdmin) {
+    const roster=document.createElement("details");
+    roster.className="live-roster";
+    const summary=document.createElement("summary");
+    summary.textContent="قائمة الطلاب المسجلين";
+    const rosterList=document.createElement("div");
+    rosterList.className="live-roster-list";
+    roster.append(summary,rosterList);
+    summary.addEventListener("click",async()=>{
+      if(roster.dataset.loaded==="true"||roster.dataset.loading==="true")return;
+      roster.dataset.loading="true";
+      rosterList.textContent="جارٍ تحميل القائمة…";
+      try{
+        const response=await listRoster({classId:item.id});
+        rosterList.replaceChildren();
+        const students=response.data?.students||[];
+        if(!students.length)rosterList.textContent="لم يسجل أي طالب في هذا الفصل بعد.";
+        students.forEach((student,index)=>{
+          const row=document.createElement("p");
+          row.textContent=(index+1)+". "+student.displayName;
+          rosterList.append(row);
+        });
+        roster.dataset.loaded="true";
+      }catch(error){rosterList.textContent=error?.message||"تعذر تحميل قائمة الطلاب.";}
+      finally{roster.dataset.loading="false";}
+    });
+    card.append(roster);
+  }
   return card;
 }
 async function runAction(action) {
