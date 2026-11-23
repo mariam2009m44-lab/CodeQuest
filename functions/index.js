@@ -2850,12 +2850,14 @@ exports.listLiveClasses = onCall(
   async request => {
     requireAuth(request);
     const snapshot = await db.collection("liveClasses")
-      .where("status", "in", ["scheduled", "live"])
       .orderBy("startsAt", "asc")
-      .limit(30)
+      .limit(60)
       .get();
 
-    const classes = await Promise.all(snapshot.docs.map(async doc => {
+    const visibleDocs = snapshot.docs.filter(doc =>
+      ["scheduled", "live"].includes(doc.data()?.status)
+    ).slice(0, 30);
+    const classes = await Promise.all(visibleDocs.map(async doc => {
       const data = doc.data();
       const isInstructor = data.instructorUid === request.auth.uid;
       const enrollment = isInstructor
@@ -2944,6 +2946,18 @@ exports.setLiveClassStatus = onCall(
     }
     if (classData.status === "ended") {
       throw new HttpsError("failed-precondition", "انتهى هذا الفصل بالفعل.");
+    }
+    if (nextStatus === "live") {
+      const scheduledStart = classData.startsAt?.toDate?.()?.getTime();
+      const allowedStart = Number.isFinite(scheduledStart)
+        ? scheduledStart - 30 * 60 * 1000
+        : 0;
+      const allowedEnd = Number.isFinite(scheduledStart)
+        ? scheduledStart + Number(classData.durationMinutes || 60) * 60 * 1000 + 30 * 60 * 1000
+        : 0;
+      if (!allowedStart || Date.now() < allowedStart || Date.now() > allowedEnd) {
+        throw new HttpsError("failed-precondition", "يمكن بدء الفصل قبل موعده بنصف ساعة وحتى نصف ساعة بعد نهايته المحددة.");
+      }
     }
 
     if (nextStatus === "ended") {
