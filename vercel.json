@@ -1,0 +1,50 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "web": {
+      "root": ".",
+      "framework": null,
+      "buildCommand": "node scripts/build-vercel-web.mjs",
+      "outputDirectory": "dist"
+    },
+    "react-app": {
+      "root": "CodeQuest",
+      "framework": "vite",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist"
+    },
+    "backend": {
+      "root": "backend",
+      "framework": "fastapi",
+      "entrypoint": "main:app"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/app",
+      "destination": {
+        "service": "react-app",
+        "path": "/"
+      }
+    },
+    {
+      "source": "/app/(.*)",
+      "destination": {
+        "service": "react-app",
+        "path": "/$1"
+      }
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "web"
+      }
+    }
+  ]
+}
