@@ -3371,6 +3371,74 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
   };
 });
 
+exports.manageAcademyLiveClass = onCall({ region: "europe-west1" }, async request => {
+  requireLiveAdmin(request);
+  const classId = String(request.data?.classId || "");
+  const action = String(request.data?.action || "");
+  if (!/^[A-Za-z0-9_-]{10,128}$/.test(classId) || !["reschedule", "cancel"].includes(action)) {
+    throw new HttpsError("invalid-argument", "بيانات إدارة الفصل غير صحيحة.");
+  }
+  const classRef = db.collection("liveClasses").doc(classId);
+  const enrollmentQuery = classRef.collection("enrollments").where("status", "==", "enrolled");
+  let auditDetails = {};
+  await db.runTransaction(async transaction => {
+    const classSnapshot = await transaction.get(classRef);
+    if (!classSnapshot.exists) throw new HttpsError("not-found", "الفصل غير موجود.");
+    const classData = classSnapshot.data();
+    if (classData.status !== "scheduled") {
+      throw new HttpsError("failed-precondition", "يمكن إدارة المواعيد أو إلغاء الفصول المجدولة فقط.");
+    }
+    const activeEnrollments = await transaction.get(enrollmentQuery);
+    if (action === "cancel") {
+      activeEnrollments.docs.forEach(enrollment => transaction.update(enrollment.ref, {
+        status: "cancelled",
+        cancelledAt: FieldValue.serverTimestamp(),
+        cancellationReason: "admin",
+        updatedAt: FieldValue.serverTimestamp()
+      }));
+      transaction.update(classRef, {
+        status: "cancelled",
+        enrollmentCount: 0,
+        cancelledAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp()
+      });
+      auditDetails = { previousStatus: "scheduled", newStatus: "cancelled", affectedEnrollments: activeEnrollments.size };
+      return;
+    }
+    const startsAt = new Date(String(request.data?.startsAt || ""));
+    const durationMinutes = Number(request.data?.durationMinutes || classData.durationMinutes || 60);
+    const capacity = Number(request.data?.capacity || classData.capacity || 12);
+    if (!Number.isFinite(startsAt.getTime()) || startsAt.getTime() < Date.now() + 5 * 60 * 1000 ||
+        startsAt.getTime() > Date.now() + 60 * 24 * 60 * 60 * 1000 ||
+        !Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 180 ||
+        !Number.isInteger(capacity) || capacity < 1 || capacity > 30 ||
+        capacity < activeEnrollments.size) {
+      throw new HttpsError("invalid-argument", "راجعي الموعد والمدة والسعة؛ لا يمكن تقليل المقاعد عن عدد المسجلين.");
+    }
+    transaction.update(classRef, {
+      startsAt: require("firebase-admin/firestore").Timestamp.fromDate(startsAt),
+      durationMinutes,
+      capacity,
+      updatedAt: FieldValue.serverTimestamp()
+    });
+    auditDetails = {
+      previousStatus: "scheduled",
+      newStatus: "scheduled",
+      startsAt: startsAt.toISOString(),
+      durationMinutes,
+      capacity
+    };
+  });
+  await db.collection("academyAuditLogs").add({
+    actorUid: request.auth.uid,
+    action: action === "cancel" ? "live_class_cancelled_by_admin" : "live_class_rescheduled_by_admin",
+    targetId: classId,
+    details: auditDetails,
+    createdAt: FieldValue.serverTimestamp()
+  });
+  return { success: true, action, ...auditDetails };
+});
+
 exports.reviewInstructorApplication = onCall({ region: "europe-west1" }, async request => {
   requireLiveAdmin(request);
   const uid = String(request.data?.instructorUid || "");
