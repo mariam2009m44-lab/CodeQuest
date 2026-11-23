@@ -87,10 +87,20 @@ const languageData = [
 ];
 
 const curriculumTotals = {
-  python: 24,
+  python: 48,
   javascript: 26,
   cpp: 23
 };
+
+function getLearningUrl(languageId) {
+  const routes = {
+    python: "../python-welcome.html",
+    javascript: "../levels.html?lang=javascript",
+    cpp: "../levels.html?lang=cpp"
+  };
+
+  return routes[languageId] || "../languages.html";
+}
 
 /* =========================================
    HELPERS
@@ -885,13 +895,13 @@ function LanguageCard({ language, progress }) {
         </div>
       </div>
 
-      <NavLink
-        to={`/languages?language=${language.id}`}
+      <a
+        href={getLearningUrl(language.id)}
         className="language-card-button"
       >
         ابدأ التعلم
         <ChevronLeft size={17} />
-      </NavLink>
+      </a>
     </div>
   );
 }
