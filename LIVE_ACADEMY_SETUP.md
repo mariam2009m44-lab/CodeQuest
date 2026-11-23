@@ -116,3 +116,45 @@ The collaborative shared code editor is still a separate future implementation; 
 - The Firebase Functions and Firestore rules changes still require deployment to the configured Firebase project before the new callable functions and secure workspace can operate in production.
 - RealtimeKit requires the Cloudflare account/app identifiers, host and participant presets, and server-only API token described above. No paid plan or subscription has been purchased or activated by this repository change.
 - Before inviting students, complete a real test with one instructor account, one enrolled learner account, and an administrator account. Confirm the learner cannot open the classroom or workspace before enrollment.
+
+
+## Academy marketplace backend (implemented in repository)
+
+The Academy marketplace is backed by callable Cloud Functions and Firestore collections. New browser pages call these functions; they do not write private marketplace records directly.
+
+### Data ownership and visibility
+
+- `instructorApplications/{uid}`: private application and review state. The applicant can submit/update their own application through the callable endpoint; administrators review it.
+- `publicInstructorProfiles/{uid}`: created by the server only after approval. It contains only the approved public profile fields and deliberately excludes account email and private student data.
+- `academyStudentProfiles/{uid}`: private student learning profile, including age band, grade, interests, learning goals, learning needs, and preferred schedule.
+- `instructorPosts/{postId}`: published instructor updates. Only approved instructors can create posts.
+- `teacherGroups/{groupId}`: listed learning groups owned by an approved instructor.
+- `teacherGroups/{groupId}/membershipRequests/{uid}`: private pending/approved/rejected join requests.
+- `teacherGroups/{groupId}/members/{uid}`: server-managed group membership. A student becomes a member only after the group's instructor approves the request.
+- `academyAuditLogs/{eventId}`: append-only server-created records for application submission, review, and instructor publishing actions.
+
+### Marketplace callable API
+
+- `listApprovedInstructors`: authenticated discovery of approved public profiles.
+- `createInstructorPost` / `listInstructorPosts`: create and read published instructor updates.
+- `createTeacherGroup` / `listPublicTeacherGroups`: create and discover groups.
+- `requestTeacherGroupMembership`: student requests membership after completing an active student profile.
+- `listTeacherGroupJoinRequests` / `reviewTeacherGroupMembership`: instructor reviews pending requests for their own group.
+- `listMyTeacherGroups`: returns the signed-in user's own instructor groups or approved student memberships.
+- `getAcademyAdminOverview`: administrator-only overview of student profiles, instructor applications, classes, groups, posts, and recent audit events.
+
+### Security invariants
+
+- The browser cannot set instructor/admin claims or write approval, membership, private meeting, or audit records.
+- Only a server-approved instructor can create a post or group.
+- A student must have an active academy profile before requesting a group membership.
+- Only the owner of a group can review its membership requests.
+- Public instructor profiles are created only after admin approval; rejected applications are not published.
+- Private email addresses and student profile fields are not included in the public instructor directory.
+- Firestore's final catch-all rule denies direct access unless a collection has an explicit rule. New marketplace collections intentionally remain server-only and are accessed through authenticated callable functions.
+
+### Required production activation
+
+The code and GitHub Pages interface are not equivalent to a deployed Firebase backend. Deploy the latest `functions/index.js`, `firestore.rules`, and `firestore.indexes.json` to the intended Firebase project only after confirming the active billing plan and required provider setup. Do not enable billing or purchase a provider service without the owner's explicit approval.
+
+The current instructor/student registration form includes a guardian-awareness confirmation checkbox, not an independently verified guardian identity or legally verified consent record. Before onboarding younger learners at scale, add a guardian verification workflow and define retention/deletion policies. Community posts and groups are not a substitute for active moderation; keep broad student-to-student direct messaging disabled.
