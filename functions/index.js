@@ -3138,11 +3138,12 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
 
 exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSeconds: 60 }, async request => {
   requireLiveAdmin(request);
-  const [studentCount, studentSnapshot, approvedCount, pendingSnapshot, classSnapshot] = await Promise.all([
+  const [studentCount, studentSnapshot, approvedCount, pendingSnapshot, instructorSnapshot, classSnapshot] = await Promise.all([
     db.collection("academyStudentProfiles").count().get(),
     db.collection("academyStudentProfiles").orderBy("updatedAt", "desc").limit(100).get(),
     db.collection("liveInstructorApprovals").where("status", "==", "approved").count().get(),
     db.collection("instructorApplications").where("status", "==", "pending").limit(50).get(),
+    db.collection("instructorApplications").orderBy("updatedAt", "desc").limit(100).get(),
     db.collection("liveClasses").orderBy("createdAt", "desc").limit(50).get()
   ]);
   const students = studentSnapshot.docs.map(doc => {
@@ -3155,9 +3156,30 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       grade: String(data.grade || ""),
       skillLevel: String(data.skillLevel || ""),
       interests: Array.isArray(data.interests) ? data.interests : [],
+      guardianConsent: data.guardianConsent === true,
+      status: String(data.status || "active"),
+      createdAt: data.createdAt?.toDate?.().toISOString() || null,
       updatedAt: data.updatedAt?.toDate?.().toISOString() || null
     };
   });
+  const instructors = await Promise.all(instructorSnapshot.docs.map(async doc => {
+    const data = doc.data();
+    const account = await getAuth().getUser(doc.id).catch(() => null);
+    return {
+      uid: doc.id,
+      fullName: String(data.fullName || ""),
+      email: String(data.email || ""),
+      emailVerified: account?.emailVerified === true,
+      specialties: Array.isArray(data.specialties) ? data.specialties : [],
+      experience: String(data.experience || ""),
+      bio: String(data.bio || ""),
+      portfolioUrl: String(data.portfolioUrl || ""),
+      availability: String(data.availability || ""),
+      status: String(data.status || "pending"),
+      submittedAt: data.submittedAt?.toDate?.().toISOString() || null,
+      updatedAt: data.updatedAt?.toDate?.().toISOString() || null
+    };
+  }));
   const pendingInstructors = await Promise.all(pendingSnapshot.docs.map(async doc => {
     const data = doc.data();
     const account = await getAuth().getUser(doc.id).catch(() => null);
@@ -3197,7 +3219,7 @@ exports.getAcademyAdminOverview = onCall({ region: "europe-west1", timeoutSecond
       pendingInstructors: pendingSnapshot.size,
       classes: classSnapshot.size
     },
-    students, pendingInstructors, classes
+    students, instructors, pendingInstructors, classes
   };
 });
 
