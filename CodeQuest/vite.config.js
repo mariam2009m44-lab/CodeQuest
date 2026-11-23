@@ -4,11 +4,13 @@ import { resolve } from "node:path";
 
 export default defineConfig({
   plugins: [react()],
-  base: "./",
+  // The React workspace is mounted by Vercel at /app/.
+  base: "/app/",
   build: {
     rollupOptions: {
+      // Emit the existing app.html as the service's index.html.
       input: {
-        app: resolve(process.cwd(), "app.html")
+        index: resolve(process.cwd(), "app.html")
       }
     }
   }
