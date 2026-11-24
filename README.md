@@ -117,22 +117,16 @@ The following original Devicon SVG assets are used for the language illustration
 
 ### Main Learning Tracks
 
-The main language-selection page (`languages.html`) currently provides three learning paths:
+The main language-selection page (`languages.html`) currently provides four learning paths. Each card opens `course-path.html?lang=<language>`:
 
 | Language | Main Learning Entry | Curriculum File |
 |---|---|---|
-| Python | `python-welcome.html` | `json/python_curriculum.json` |
-| JavaScript | `levels.html?lang=javascript` | `json/js_curriculum.json` |
-| C++ | `levels.html?lang=cpp` | `json/cpp_curriculum.json` |
+| Python | `course-path.html?lang=python` | `json/python_curriculum.json` |
+| JavaScript | `course-path.html?lang=javascript` | `json/js_curriculum.json` |
+| C++ | `course-path.html?lang=cpp` | `json/cpp_curriculum.json` |
+| Java | `course-path.html?lang=java` | `json/java_curriculum.json` |
 
-### Additional Java Pages
-
-The repository also contains dedicated Java learning pages:
-
-- `java-chapters.html`
-- `java-lessons.html`
-
-These are separate Java resources and are not listed as one of the three main language cards in `languages.html`.
+The repository also contains the earlier Java pages `java-chapters.html` and `java-lessons.html`.
 
 ---
 
@@ -989,6 +983,18 @@ https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html
 **GitHub Repository:**
 
 https://github.com/mariam2009m44-lab/CodeQuest
+
+### Firebase Authorized Domains
+
+Firebase Authentication only accepts sign-in requests from domains in the project's authorized domains list. If a site address (for example a Vercel or custom domain) is not on it, sign-in fails with `auth/unauthorized-domain`.
+
+For every address that serves the frontend:
+
+1. Open the Firebase console, then Authentication, then Settings.
+2. Open the Authorized domains tab.
+3. Click Add domain and enter the hostname only, without `https://`.
+
+Reference: https://firebase.google.com/codelabs/firebase-web (section "Add an authorized domain").
 
 ### FastAPI Backend
 
