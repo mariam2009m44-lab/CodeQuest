@@ -1,3 +1,5 @@
+const artifactDir = process.env.CQ_ARTIFACT_DIR || require('node:path').join(require('node:os').tmpdir(), 'codequest-test-artifacts');
+require('node:fs').mkdirSync(artifactDir, {recursive:true});
 const { test, before, after } = require('node:test');
 const { strict: assert } = require('node:assert');
 const { readFile } = require('node:fs/promises');
@@ -59,7 +61,7 @@ test('image puzzle: custom image stays usable, real tap-placement awards stars a
  const record=await page.evaluate(()=>JSON.parse(localStorage.getItem('codeQuestPuzzleBest_custom-photo_2')));
  assert.equal(record.stars,3);assert.equal(record.plays,1);
  await page.locator('#puzzleStars').scrollIntoViewIfNeeded();
- await page.screenshot({path:'/downloads/puzzle-real-win.png'});
+ await page.screenshot({path:require('node:path').join(artifactDir, 'puzzle-real-win.png')});
 });
 test('image puzzle preset: played result facts remain readable', async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-image-puzzle.html`);
@@ -78,7 +80,7 @@ test('image puzzle preset: played result facts remain readable', async t=>{
  const record=await page.evaluate(()=>JSON.parse(localStorage.getItem('codeQuestPuzzleBest_tech-computer_2')));
  assert.equal(record.stars,3);assert.equal(record.plays,1);
  await page.locator('#learningTitle').scrollIntoViewIfNeeded();
- await page.screenshot({path:'/downloads/puzzle-facts-fixed.png'});
+ await page.screenshot({path:require('node:path').join(artifactDir, 'puzzle-facts-fixed.png')});
 });
 
 test('speed: learning pauses timer, explains wrong answers, manual continue, finite round and fresh replay',async t=>{
@@ -86,9 +88,9 @@ test('speed: learning pauses timer, explains wrong answers, manual continue, fin
  assert.equal(await page.evaluate(()=>untimed),true);const code=await page.locator('#speedCode').textContent();assert.match(code,/print\(/);
  const first=await page.evaluate(()=>currentQs.map(q=>q.id));await page.evaluate(()=>ans(!currentQs[curr].a));
  assert.equal(await page.locator('#score').textContent(),'0');await page.waitForTimeout(1200);assert.equal(await page.evaluate(()=>curr),0);assert.equal(await page.evaluate(()=>time),30);
- assert.ok((await page.locator('#speedExplain').textContent()).length>40);await page.locator('#answerFeedback').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/speed-learning-preview.png'});
+ assert.ok((await page.locator('#speedExplain').textContent()).length>40);await page.locator('#answerFeedback').scrollIntoViewIfNeeded();await page.screenshot({path:require('node:path').join(artifactDir, 'speed-learning-preview.png')});
  for(let i=0;i<6;i++){if(i>0)await page.evaluate(()=>ans(currentQs[curr].a));await page.click('#continueAnswer');}
- await page.waitForSelector('#resultScreen.active');assert.equal(await page.locator('#learningReview p').count(),6);await page.locator('#learningReview').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/speed-round-review.png'});
+ await page.waitForSelector('#resultScreen.active');assert.equal(await page.locator('#learningReview p').count(),6);await page.locator('#learningReview').scrollIntoViewIfNeeded();await page.screenshot({path:require('node:path').join(artifactDir, 'speed-round-review.png')});
  await page.evaluate(()=>restartGame());await page.click('.lvl-btn[data-cq-level="easy"]');const next=await page.evaluate(()=>currentQs.map(q=>q.id));assert.equal(next.filter(x=>!first.includes(x)).length,2);
  assert.deepEqual(await page.evaluate(()=>currentQs.every(q=>q.level==='easy')),true);
 });
@@ -99,16 +101,16 @@ test('speed: timed mode does not consume thinking time while explanation is open
 test('image puzzle: eight new local programming scenes, contextual answer retry and completion',async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-image-puzzle.html`);await page.selectOption('#galleryCategory','programming');assert.equal(await page.locator('.art-card').count(),8);
  const loaded=await page.locator('.art-card img').evaluateAll(images=>Promise.all(images.map(im=>im.decode().then(()=>im.naturalWidth>0))));assert.ok(loaded.every(Boolean));
- await page.screenshot({path:'/downloads/puzzle-gallery-expanded.png'});
+ await page.screenshot({path:require('node:path').join(artifactDir, 'puzzle-gallery-expanded.png')});
  await page.locator('.art-card').first().click();await page.click('#startBtn');await page.waitForSelector('#gameLayout.visible');
  for(let i=0;i<4;i++){await page.locator(`[data-piece="${i}"]`).first().click();await page.locator('#board').scrollIntoViewIfNeeded();const xy=await page.evaluate(i=>{const r=document.getElementById('board').getBoundingClientRect();return{x:r.left+(i%2+.5)*cellW,y:r.top+(Math.floor(i/2)+.5)*cellH}},i);await page.mouse.click(xy.x,xy.y)}
  await page.waitForSelector('#successBox.visible');assert.equal(await page.locator('#learningChoices button').count(),3);await page.locator('#learningChoices button').nth(0).click();assert.match(await page.locator('#learningChoiceFeedback').textContent(),/جرّب/);assert.equal(await page.evaluate(()=>localStorage.getItem('cq-puzzle-learned-learn-variables')),null);
- await page.locator('#learningChoices button').nth(1).click();assert.match(await page.locator('#learningChoiceFeedback').textContent(),/صحيحة/);assert.equal(await page.evaluate(()=>localStorage.getItem('cq-puzzle-learned-learn-variables')),'1');await page.locator('#learningQuestion').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/puzzle-learning-check.png'});
+ await page.locator('#learningChoices button').nth(1).click();assert.match(await page.locator('#learningChoiceFeedback').textContent(),/صحيحة/);assert.equal(await page.evaluate(()=>localStorage.getItem('cq-puzzle-learned-learn-variables')),'1');await page.locator('#learningQuestion').scrollIntoViewIfNeeded();await page.screenshot({path:require('node:path').join(artifactDir, 'puzzle-learning-check.png')});
 });
 test('code puzzle: added practice has correct output and no account reward call',async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-match.html`);await page.selectOption('#matchLesson','1');
  for(const word of ['let score = 2;','score = score + 3;','console.log(score);'])await page.getByRole('button',{name:'إضافة '+word,exact:true}).click();
- await page.click('#checkButton');await page.waitForSelector('#matchLearning:not([hidden])');assert.equal(await page.locator('#matchOutput').textContent(),'5');assert.match(await page.locator('#feedback').textContent(),/لا توجد مكافأة/);assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-match-practice-1')),'1');assert.equal(await page.evaluate(()=>window.rewardCalls||0),0);await page.locator('#matchLearning').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/code-puzzle-learning.png'});
+ await page.click('#checkButton');await page.waitForSelector('#matchLearning:not([hidden])');assert.equal(await page.locator('#matchOutput').textContent(),'5');assert.match(await page.locator('#feedback').textContent(),/لا توجد مكافأة/);assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-match-practice-1')),'1');assert.equal(await page.evaluate(()=>window.rewardCalls||0),0);await page.locator('#matchLearning').scrollIntoViewIfNeeded();await page.screenshot({path:require('node:path').join(artifactDir, 'code-puzzle-learning.png')});
 });
 test('speed: guessing one answer cannot unlock the next level',async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');await page.evaluate(()=>{ans(currentQs[curr].a);end()});await page.waitForSelector('#resultScreen.active');assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-speed-stars-easy')),null);await page.evaluate(()=>restartGame());assert.equal(await page.locator('[data-cq-level="medium"]').isDisabled(),true);

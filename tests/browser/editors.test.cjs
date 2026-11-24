@@ -1,3 +1,5 @@
+const artifactDir = process.env.CQ_ARTIFACT_DIR || require('node:path').join(require('node:os').tmpdir(), 'codequest-test-artifacts');
+require('node:fs').mkdirSync(artifactDir, {recursive:true});
 const { test, before, after } = require('node:test');
 const { strict: assert } = require('node:assert');
 const { readFile } = require('node:fs/promises');
@@ -46,7 +48,7 @@ test('playground runs actual JavaScript in worker, reports errors, saves and iso
  await page.click('#runBtn');await page.waitForFunction(()=>!document.getElementById('runBtn').disabled);
  assert.equal((await page.locator('#output').textContent()).trim(),'line one\nline two');
  await page.locator('#output').scrollIntoViewIfNeeded();
- await page.screenshot({path:'/downloads/editor-real-output.png'});
+ await page.screenshot({path:require('node:path').join(artifactDir, 'editor-real-output.png')});
  await page.evaluate(()=>document.querySelector('.CodeMirror').CodeMirror.setValue('throw new Error("test-error")'));
  await page.click('#runBtn');await page.waitForFunction(()=>!document.getElementById('runBtn').disabled);assert.match(await page.locator('#output').textContent(),/test-error/);
  await page.evaluate(()=>document.querySelector('.CodeMirror').CodeMirror.setValue('console.log("saved draft")'));
@@ -63,5 +65,5 @@ test('studio real code runner prints output and blocks parent data access',async
 });
 
 test('playground: failed cloud save keeps account recovery draft across a new tab session',async t=>{
- const {page}=await newPage(t);await page.goto(`${origin}/playground.html`);await page.waitForFunction(()=>document.querySelector('.CodeMirror')?.CodeMirror);await page.evaluate(()=>{window.failSave=true;document.querySelector('.CodeMirror').CodeMirror.setValue('console.log("offline recovery")')});await page.click('#saveBtn');await page.waitForFunction(()=>document.getElementById('saveStatus').textContent.includes('تعذّر'));assert.equal(await page.locator('#saveStatus .status-dot').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(251, 113, 133)');await page.locator('#saveStatus').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/editor-save-failure.png'});assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('codequest_playground_draft_test-a')).code),'console.log("offline recovery")');await page.evaluate(()=>{sessionStorage.clear();sessionStorage.setItem('testUid','test-a')});await page.reload();await page.waitForFunction(()=>document.querySelector('.CodeMirror')?.CodeMirror?.getValue().includes('offline recovery'));assert.match(await page.locator('#saveStatus').textContent(),/استرجاع|تعديلات|مزامنة/);
+ const {page}=await newPage(t);await page.goto(`${origin}/playground.html`);await page.waitForFunction(()=>document.querySelector('.CodeMirror')?.CodeMirror);await page.evaluate(()=>{window.failSave=true;document.querySelector('.CodeMirror').CodeMirror.setValue('console.log("offline recovery")')});await page.click('#saveBtn');await page.waitForFunction(()=>document.getElementById('saveStatus').textContent.includes('تعذّر'));assert.equal(await page.locator('#saveStatus .status-dot').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(251, 113, 133)');await page.locator('#saveStatus').scrollIntoViewIfNeeded();await page.screenshot({path:require('node:path').join(artifactDir, 'editor-save-failure.png')});assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('codequest_playground_draft_test-a')).code),'console.log("offline recovery")');await page.evaluate(()=>{sessionStorage.clear();sessionStorage.setItem('testUid','test-a')});await page.reload();await page.waitForFunction(()=>document.querySelector('.CodeMirror')?.CodeMirror?.getValue().includes('offline recovery'));assert.match(await page.locator('#saveStatus').textContent(),/استرجاع|تعديلات|مزامنة/);
 });
