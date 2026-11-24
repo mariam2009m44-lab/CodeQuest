@@ -35,57 +35,11 @@ const TOAST_COLORS = Object.freeze({
   }
 });
 
-const SOUND_URLS = Object.freeze({
-  success: "https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3",
-  error: "https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"
-});
-
-const soundPlayers = {};
-
-function readSoundPreference() {
-  try {
-    return localStorage.getItem("cq_sound") !== "off";
-  } catch (error) {
-    console.warn(
-      "Cody UI: could not read sound preference.",
-      error
-    );
-    return false;
-  }
-}
-
 function playFeedbackSound(type) {
-  if (!readSoundPreference() || !SOUND_URLS[type]) {
-    return;
-  }
-
-  try {
-    if (typeof Audio === "undefined") {
-      return;
-    }
-
-    if (!soundPlayers[type]) {
-      soundPlayers[type] = new Audio(SOUND_URLS[type]);
-      soundPlayers[type].preload = "none";
-      soundPlayers[type].volume = 0.45;
-    }
-
-    const player = soundPlayers[type];
-    player.currentTime = 0;
-
-    const playback = player.play();
-
-    if (playback && typeof playback.catch === "function") {
-      playback.catch(() => {
-        // Browsers may block sound until user interaction.
-      });
-    }
-  } catch (error) {
-    console.warn(
-      "Cody UI: feedback sound unavailable.",
-      error
-    );
-  }
+  // One local engine owns mute, volume and timbre across the platform.
+  // No autoplay default or third-party audio request on a saved notification.
+  const effect = type === "success" ? "correct" : type === "error" ? "wrong" : null;
+  if (effect) window.CodeQuestAudio?.play(effect);
 }
 
 function getToastContainer() {

@@ -6,8 +6,8 @@
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   const SCRIPT_URL = document.currentScript?.src || new URL("js/game-audio.js", location.href).href;
   let context = null, soundEnabled = false, musicEnabled = false, musicTimer = null;
-  let soundVolume = 0.9;
-  let musicVolume = 0.62;
+  let soundVolume = 0.65;
+  let musicVolume = 0.45;
   try {
     const rawSoundVolume = localStorage.getItem("cq_sound_volume");
     const rawMusicVolume = localStorage.getItem("cq_music_volume");
@@ -24,6 +24,16 @@
   const save = (key, value) => { try { localStorage.setItem(key, value ? "on" : "off"); } catch {} };
   let masterBus = null, musicBus = null, soundBus = null, delayNode = null;
   let delayFeedback = null, delayWet = null, compressor = null, noiseBuffer = null;
+  let musicGeneration = 0;
+  const musicSources = new Set();
+  function trackSource(source, nodes, channel) {
+    if (channel !== "sound") musicSources.add(source);
+    source.onended = () => { musicSources.delete(source); for (const node of [source, ...nodes]) node.disconnect(); };
+  }
+  function clearMusicSources() {
+    for (const source of musicSources) { try { source.stop(); } catch {} }
+    musicSources.clear();
+  }
   function getContext() {
     if (!AudioContextClass) return null;
     if (!context) {
@@ -33,7 +43,7 @@
       musicBus = context.createGain();
       musicBus.gain.value = musicEnabled ? musicVolume * 0.72 : 0;
       soundBus = context.createGain();
-      soundBus.gain.value = soundVolume;
+      soundBus.gain.value = soundEnabled ? soundVolume : 0;
       compressor = context.createDynamicsCompressor();
       compressor.threshold.value = -18;
       compressor.knee.value = 16;
@@ -71,6 +81,7 @@
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(filter); filter.connect(gain);
     gain.connect(channel === "sound" ? soundBus : musicBus);
+    trackSource(oscillator, [filter, gain], channel);
     oscillator.start(start); oscillator.stop(start + duration + 0.03);
   }
   function play(name = "tap") {
@@ -136,6 +147,7 @@
     oscillator.connect(filter);
     filter.connect(envelope);
     envelope.connect(options.channel === "sound" ? soundBus : musicBus);
+    trackSource(oscillator, [filter, envelope], options.channel);
     oscillator.start(when);
     oscillator.stop(when + duration + 0.025);
   }
@@ -156,6 +168,7 @@
     source.connect(filter);
     filter.connect(envelope);
     envelope.connect(musicBus);
+    trackSource(source, [filter, envelope]);
     source.start(when);
     source.stop(when + duration + 0.02);
   }
@@ -216,6 +229,8 @@
   function scheduleMusic() {
     const ctx = getContext();
     if (!ctx || !musicEnabled || document.hidden || ctx.state !== "running") return;
+    // Recover from a throttled timer without scheduling a burst of old notes.
+    if (nextMusicStepTime < ctx.currentTime - STEP_SECONDS) nextMusicStepTime = ctx.currentTime + 0.025;
     const horizon = ctx.currentTime + 0.22;
     while (nextMusicStepTime < horizon) {
       scheduleMusicStep(musicStep, nextMusicStepTime);
@@ -227,8 +242,12 @@
   async function startMusic() {
     const ctx = getContext();
     if (!ctx) return;
-    try { await ctx.resume(); } catch { return; }
     musicEnabled = true;
+    const generation = ++musicGeneration;
+    try { await ctx.resume(); } catch { return; }
+    if (generation !== musicGeneration || !musicEnabled || document.hidden) return;
+    if (musicTimer) { setVolumes({}); return; }
+    clearMusicSources();
     save(MUSIC_KEY, true);
     const now = ctx.currentTime;
     musicBus.gain.cancelScheduledValues(now);
@@ -243,6 +262,7 @@
 
   function stopMusic() {
     musicEnabled = false;
+    ++musicGeneration;
     save(MUSIC_KEY, false);
     if (musicTimer) clearInterval(musicTimer);
     musicTimer = null;
@@ -273,7 +293,7 @@
       const now = context.currentTime;
       if (soundBus) {
         soundBus.gain.cancelScheduledValues(now);
-        soundBus.gain.setTargetAtTime(soundVolume, now, 0.045);
+        soundBus.gain.setTargetAtTime(soundEnabled ? soundVolume : 0, now, 0.025);
       }
       if (musicBus) {
         musicBus.gain.cancelScheduledValues(now);
@@ -387,14 +407,14 @@
     const target=event.target;
     if(!(target instanceof Element)||!target.closest("button,a[href],[role=\"button\"],.mobile-nav-item,.activity-card,.course-card,.choice-btn,.piece,.code-block,.match-item,.bug-line,.drag-piece,input,select,summary"))return;
     const ctx=getContext();
-    if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer)startMusic()}).catch(()=>{});else if(soundEnabled)play("tap");
+    if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer)startMusic()}).catch(()=>{});else {if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer)startMusic();}
   }
   document.addEventListener("pointerdown",onInteraction,{passive:true});
   document.addEventListener("keydown",onInteraction);
   document.addEventListener("DOMContentLoaded",mountControls,{once:true});
   if(document.readyState!=="loading")mountControls();
-  window.addEventListener("storage",event=>{if(event.key===SOUND_KEY){soundEnabled=read(SOUND_KEY);setVolumes({sound:soundVolume})}if(event.key===MUSIC_KEY){if(read(MUSIC_KEY)){musicEnabled=true;if(context?.state==="running")startMusic()}else stopMusic()}});
-  document.addEventListener("cq:audio-settings-change",()=>{soundEnabled=read(SOUND_KEY);if(read(MUSIC_KEY))startMusic();else stopMusic();});
+  window.addEventListener("storage",event=>{if(event.key===SOUND_KEY){soundEnabled=read(SOUND_KEY);setVolumes({sound:soundVolume})}if(event.key===MUSIC_KEY){if(read(MUSIC_KEY)){musicEnabled=true;if(context?.state==="running")startMusic()}else stopMusic()}if(event.key==="cq_sound_volume"||event.key==="cq_music_volume"){const value=Number(event.newValue);if(event.newValue!==null&&Number.isFinite(value))setVolumes(event.key==="cq_sound_volume"?{sound:value}:{music:value})}});
+  document.addEventListener("cq:audio-settings-change",()=>{soundEnabled=read(SOUND_KEY);setVolumes({});if(read(MUSIC_KEY))startMusic();else stopMusic();});
   document.addEventListener("visibilitychange",()=>{if(document.hidden){if(musicTimer)clearInterval(musicTimer);musicTimer=null;if(context?.state==="running")context.suspend().catch(()=>{})}else if(musicEnabled&&context?.state==="suspended")startMusic()});
   soundEnabled=read(SOUND_KEY);
   musicEnabled=read(MUSIC_KEY);
