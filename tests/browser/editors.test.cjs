@@ -28,7 +28,7 @@ async function newPage(t) {
     if (url.pathname === '/js/firebase-config.js') return route.fulfill({contentType:'text/javascript',body:'export const db={};'});
     if (['/js/route-guard.js', '/js/reminders.js', '/js/game-audio.js'].includes(url.pathname)) return route.fulfill({ contentType: 'application/javascript', body: '' });
     const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.json': 'application/json' };
-    try { await route.fulfill({ contentType: types[extname(url.pathname)] || 'application/octet-stream', body: await readFile(resolve(root, url.pathname.slice(1))) }); }
+    try { await route.fulfill({ contentType: types[extname(url.pathname)] || 'application/octet-stream', body: process.env.LIVE_SOURCE && url.pathname==='/playground.html' ? await (await fetch('https://codequest-mu-six.vercel.app/playground.html')).text() : await readFile(resolve(root, url.pathname.slice(1))) }); }
     catch { await route.fulfill({ status: 404, body: 'nf' }); }
   });
   const page = await context.newPage();
