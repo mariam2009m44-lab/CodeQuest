@@ -1,3 +1,4 @@
+import { mountGuidedLesson } from "./guided-lesson.js";
 import { runCodeOnServer, checkQuizAnswerOnServer } from "./code-runner.js";
 import { mountCodyTutor } from "./cody-tutor.js";
 
@@ -511,6 +512,7 @@ function renderProgress(progressData) {
 }
 
 function renderLessonContent(lesson) {
+  mountGuidedLesson(lesson);
   setText(
     "lessonNumber",
     `الدرس ${lessonIndex + 1}`
