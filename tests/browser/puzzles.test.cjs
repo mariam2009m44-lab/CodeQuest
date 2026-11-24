@@ -58,4 +58,6 @@ test('image puzzle: custom image stays usable, real tap-placement awards stars a
  assert.equal(await page.locator('#puzzleStars').textContent(),'★★★');
  const record=await page.evaluate(()=>JSON.parse(localStorage.getItem('codeQuestPuzzleBest_custom-photo_2')));
  assert.equal(record.stars,3);assert.equal(record.plays,1);
+ await page.locator('#puzzleStars').scrollIntoViewIfNeeded();
+ await page.screenshot({path:'/downloads/puzzle-real-win.png'});
 });
