@@ -40,7 +40,7 @@ async function newPage(t) {
 
 
 test('playground runs actual JavaScript in worker, reports errors, saves and isolates account drafts', {timeout:30000},async t=>{
- const{page}=await newPage(t);await page.goto(`${origin}/playground.html`);await page.waitForFunction(()=>document.querySelector('.CodeMirror')?.CodeMirror);
+ const{page}=await newPage(t);await page.setViewportSize({width:1100,height:1000});await page.goto(`${origin}/playground.html`);await page.waitForFunction(()=>document.querySelector('.CodeMirror')?.CodeMirror);
  const code='console.log("line one"); console.log("line two")';
  await page.evaluate(code=>document.querySelector('.CodeMirror').CodeMirror.setValue(code),code);
  await page.click('#runBtn');await page.waitForFunction(()=>!document.getElementById('runBtn').disabled);

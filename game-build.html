@@ -117,9 +117,10 @@
   <link rel="stylesheet" href="css/codequest-games.css">
   <link rel="stylesheet" href="css/codequest-games-pro.css">
   <link rel="stylesheet" href="css/game-3d.css">
+<link rel="stylesheet" href="css/game-space.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
 </head>
-<body class="cq-game-page" data-cq-game="build" data-cq-theme="bright">
+<body class="cq-game-page" data-cq-game="build" data-cq-theme="space">
   <canvas id="bg-canvas"></canvas>
   <div class="top-nav">
     <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
@@ -150,7 +151,7 @@
     <div class="level-box result-box">
       <div class="result-emoji" id="resultEmoji">🏆</div>
       <h2 id="resultTitle">أحسنت!</h2>
-      <p class="result-message" id="resultMessage"></p>
+      <pre id="buildLearning" dir="ltr" class="cq-code-learning"></pre><p class="result-message" id="resultMessage"></p>
       <button class="btn-restart" onclick="restartGame()">العب مستوى آخر</button>
       <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
     </div>
@@ -162,9 +163,9 @@
   </style>
   <script>
     const puzzles = {
-      easy: { task: "رتب الكود لطباعة 'Hello'", correct: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'], options: ['print("Hello")', 'console.log("Hello")', 'echo "Hello"'] },
-      medium: { task: "رتب دالة ترحب بالمستخدم", correct: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'], options: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'] },
-      hard: { task: "رتب كلاس بسيط للسيارة", correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'], options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)'] }
+      easy: { task: "Python: رتّب الكود لطباعة Hello ثم العدد 5", correct: ['message = "Hello"', 'print(message)', 'print(2 + 3)'], options: ['message = "Hello"', 'print(message)', 'print(2 + 3)'] },
+      medium: { task: "Python: رتّب دالة ترحّب بالمستخدم وتستدعيها", correct: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'], options: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'] },
+      hard: { task: "Python: رتّب كلاس سيارة وأنشئ كائنًا واطبع علامته", correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)', 'car = Car("Cody")', 'car.display()'], options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)', 'car = Car("Cody")', 'car.display()'] }
     };
     let seq = [], correctSeq = [], score = 0, currentLevel = 'easy', attempts = 0;
     const drop = document.getElementById('dropZone'), source = document.getElementById('sourceZone'), btn = document.getElementById('btn'), scoreDisplay = document.getElementById('scoreDisplay'), taskText = document.getElementById('taskText');
@@ -239,7 +240,8 @@
           document.getElementById('resultScreen').classList.add('active');
           document.getElementById('resultEmoji').textContent = '🏆';
           document.getElementById('resultTitle').textContent = 'اكتمل ترتيب الكود!';
-          document.getElementById('resultMessage').textContent = `لقد حصلت على ${earned} نقطة.`;
+          document.getElementById('resultMessage').textContent = `حصلت على ${earned} نقطة. هذا ترتيب Python تم اختباره ضمن اختبارات المنصة.`;
+          document.getElementById('buildLearning').textContent = 'الكود الصحيح:\n' + correctSeq.join('\n') + '\n\nالناتج المتوقع:\n' + ({easy:'Hello\n5',medium:'Hello Cody',hard:'Cody'}[currentLevel]);
           window.CodeQuestExperience?.reward({ gems: 0, title: 'البازل اكتمل!', message: 'رتبت الكود بشكل صحيح! كودي فخور بيك.' });
         }, 800);
       } else {

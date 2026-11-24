@@ -121,9 +121,10 @@
   <link rel="stylesheet" href="css/codequest-games.css">
   <link rel="stylesheet" href="css/codequest-games-pro.css">
   <link rel="stylesheet" href="css/game-3d.css">
+<link rel="stylesheet" href="css/game-space.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
 </head>
-<body class="cq-game-page" data-cq-game="quiz" data-cq-theme="bright">
+<body class="cq-game-page" data-cq-game="quiz" data-cq-theme="space">
   <canvas id="bg-canvas"></canvas>
   <div class="top-nav">
     <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
@@ -148,7 +149,7 @@
     <div class="level-box">
       <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
       <div class="q-text" id="question">...</div>
-      <div class="options" id="options"></div>
+      <p id="quizLearning" class="cq-learning-feedback" role="status"></p><div class="options" id="options"></div>
     </div>
   </div>
   <div class="screen" id="resultScreen">
@@ -183,11 +184,11 @@
         { q: "في JavaScript، ماذا يعني '===' ؟", opts: ["تساوي القيمة", "تساوي القيمة والنوع", "لا يساوي", "أكبر من"], a: 1 },
         { q: "ما هي الكلمة المفتاحية لتعريف متغير في JS حديثاً؟", opts: ["var", "let", "int", "string"], a: 1 },
         { q: "أي مما يلي لغة برمجة كائنية التوجه (OOP)؟", opts: ["HTML", "CSS", "C++", "SQL"], a: 2 },
-        { q: "كيف نكتب حلقة تكرار 'لكل عنصر' في بايثون؟", opts: ["for i in range():", "for i:", "foreach i:", "loop i:"], a: 0 },
+        { q: "كيف نمرّ على كل عنصر في القائمة items في بايثون؟", opts: ["for item in items:", "for items:", "foreach item:", "loop items:"], a: 0 },
         { q: "ما هو الخطأ الذي يسبب توقف البرنامج فجأة؟", opts: ["Syntax Error", "Logic Error", "Runtime Error", "All"], a: 2 },
-        { q: "ما هي الدالة المستخدمة لطباعة النص في C++؟", opts: ["print()", "cout", "console.log()", "echo"], a: 1 },
+        { q: "أي تعبير نستخدمه لإرسال نص إلى المخرجات القياسية في C++؟", opts: ["print()", "std::cout << text", "console.log()", "echo"], a: 1 },
         { q: "ما هي اللغة التي تستخدم في قواعد البيانات؟", opts: ["Python", "C++", "JavaScript", "SQL"], a: 3 },
-        { q: "ما هو اسم الدالة التي تنفذ أولاً في بايثون؟", opts: ["main()", "__init__()", "start()", "run()"], a: 0 },
+        { q: "هل تستدعي Python دالة main() تلقائيًا لمجرد تعريفها؟", opts: ["نعم دائمًا", "لا، يجب استدعاؤها", "فقط داخل كلاس", "إذا لم تستقبل معاملات"], a: 1, why: "تعريف الدالة لا يستدعيها. يبدأ الملف بتنفيذ التعليمات الموجودة في مستواه الأعلى." },
         { q: "كيف نعرف مصفوفة في JavaScript؟", opts: ["[]", "{}", "()", "<>"], a: 0 },
         { q: "ما هي الكلمة المستخدمة لإنهاء الحلقة في بايثون؟", opts: ["stop", "break", "exit", "end"], a: 1 },
         { q: "أي مما يلي يصف HTML بشكل صحيح؟", opts: ["لغة برمجة", "لغة ترميز", "قاعدة بيانات", "نظام تشغيل"], a: 1 }
@@ -195,11 +196,11 @@
       hard: [
         { q: "ما هو ناتج الكود: let x = [1, 2, 3]; x.push(4); console.log(x.length);", opts: ["3", "4", "5", "Error"], a: 1 },
         { q: "ما هو الفرق بين let و const في JS؟", opts: ["لا فرق", "const لا يمكن إعادة تعيينها", "let أسرع", "const أبطأ"], a: 1 },
-        { q: "ما هو الـ Closure في JavaScript؟", opts: ["دالة داخل دالة", "حلقة تكرار", "متغير عام", "كائن"], a: 0 },
+        { q: "ما هو الـ Closure في JavaScript؟", opts: ["دالة تحتفظ بالوصول إلى نطاقها الخارجي", "حلقة تكرار", "متغير عام فقط", "اسم آخر للمصفوفة"], a: 0 },
         { q: "كيف نتعامل مع الاستثناءات في بايثون؟", opts: ["if/else", "try/except", "for/while", "switch/case"], a: 1 },
         { q: "ما هو الـ Pointer في C++؟", opts: ["متغير يخزن عنوان ذاكرة", "دالة", "حلقة", "مصفوفة"], a: 0 },
         { q: "ما هو ناتج الكود: console.log(typeof []);", opts: ["array", "object", "list", "undefined"], a: 1 },
-        { q: "ما هو الـ Hoisting في JavaScript؟", opts: ["رفع المتغيرات لأعلى", "حذف المتغيرات", "تعديل المتغيرات", "طباعة المتغيرات"], a: 0 },
+        { q: "ما هو الـ Hoisting في JavaScript؟", opts: ["معالجة التصريحات قبل التنفيذ مع اختلاف قواعد الوصول إليها", "نقل سطور الملف فعليًا", "إتاحة let قبل تهيئتها", "طباعة المتغيرات"], a: 0 },
         { q: "كيف نحسب طول النص في بايثون؟", opts: ["size()", "len()", "length()", "count()"], a: 1 },
         { q: "ما هو الـ Virtual Function في C++؟", opts: ["دالة وهمية", "دالة يمكن تجاوزها", "دالة ثابتة", "دالة عشوائية"], a: 1 },
         { q: "ما هو ناتج الكود: let a = 10; let b = '10'; console.log(a == b);", opts: ["true", "false", "Error", "undefined"], a: 0 },
@@ -261,6 +262,7 @@
         btn.onclick = () => checkAns(i, btn);
         optsEl.appendChild(btn);
       });
+      document.getElementById('quizLearning').textContent='';
       startTimer();
     }
 
@@ -269,6 +271,8 @@
       answerLocked = true;
       clearInterval(timerInt);
       const correctIndex = currentQs[curr].a;
+      const feedback=document.getElementById('quizLearning');
+      feedback.textContent='الإجابة الصحيحة: '+currentQs[curr].opts[correctIndex]+'. '+(currentQs[curr].why||'');
       document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
       if (i === correctIndex) {
         btn.classList.add('correct');

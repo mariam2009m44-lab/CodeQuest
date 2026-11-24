@@ -16,8 +16,8 @@ import * as THREE from '../assets/vendor/three.module.min.js';
   body.prepend(canvas);
   // Move the page background to <html> so the canvas (z-index -1) is not painted over by the body background.
   const cs = getComputedStyle(body), root = document.documentElement;
-  const bright = body.dataset.cqTheme === 'bright';
-  root.style.backgroundColor = cs.backgroundColor; root.style.backgroundImage = bright ? 'linear-gradient(170deg,#7c6cff 0%,#4f8cff 48%,#39c6d9 100%)' : cs.backgroundImage;
+  const bright = ['bright','space'].includes(body.dataset.cqTheme);
+  root.style.backgroundColor = cs.backgroundColor; root.style.backgroundImage = body.dataset.cqTheme === 'space' ? 'radial-gradient(ellipse at 50% 0%,#25126b,transparent 55%),linear-gradient(160deg,#060625,#10104b 60%,#090829)' : bright ? 'linear-gradient(170deg,#7c6cff 0%,#4f8cff 48%,#39c6d9 100%)' : cs.backgroundImage;
   root.style.backgroundAttachment = 'fixed'; body.style.background = 'transparent';
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
@@ -34,7 +34,7 @@ import * as THREE from '../assets/vendor/three.module.min.js';
     new THREE.TorusGeometry(0.7, 0.22, 12, 28), new THREE.TetrahedronGeometry(1, 0)];
   let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const items = [];
-  const count = bright ? (window.innerWidth < 700 ? 9 : 14) : (window.innerWidth < 700 ? 16 : 26);
+  const count = bright ? (window.innerWidth < 700 ? 4 : 7) : (window.innerWidth < 700 ? 16 : 26);
   for (let i = 0; i < count; i++) {
     const c = palette[i % palette.length];
     const m = new THREE.Mesh(geos[i % geos.length], new THREE.MeshStandardMaterial({ color: c, roughness: 0.35, metalness: 0.45, emissive: c, emissiveIntensity: 0.12, transparent: true, opacity: bright ? 0.28 : 0.85 }));

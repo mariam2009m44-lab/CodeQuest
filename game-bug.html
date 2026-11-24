@@ -116,9 +116,10 @@
   <link rel="stylesheet" href="css/codequest-games.css">
   <link rel="stylesheet" href="css/codequest-games-pro.css">
   <link rel="stylesheet" href="css/game-3d.css">
+<link rel="stylesheet" href="css/game-space.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
 </head>
-<body class="cq-game-page" data-cq-game="bug" data-cq-theme="bright">
+<body class="cq-game-page" data-cq-game="bug" data-cq-theme="space">
   <canvas id="bg-canvas"></canvas>
   <div class="top-nav">
     <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
@@ -163,7 +164,7 @@
     const levels = {
       easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, hint:'راجع اسم المتغير في سطر الإرجاع؛ هل يطابق الاسم الذي تم إنشاؤه؟', explanation:'تم إنشاء المتغير باسم result، لكن سطر الإرجاع يستخدم reslt. أسماء المتغيرات يجب أن تتطابق تمامًا.' },
       medium: { lines: ['let x = 10;', 'let y = "5";', 'let sum = x + y;', 'console.log(sum);'], bugIndex: 2, hint:'انتبه لاختلاف نوع البيانات: أحد المتغيرين رقم والآخر نص.', explanation:'في JavaScript، استخدام + مع رقم ونص قد يؤدي إلى دمج النصوص بدل الجمع الحسابي. حوّل النص إلى رقم عند الحاجة.' },
-      hard: { lines: ['function findMax(arr) {', '  let max = 0;', '  for (let i = 0; i <= arr.length; i++) {', '    if (arr[i] > max) max = arr[i];', '  }', '  return max;', '}'], bugIndex: 2, hint:'تذكّر أن آخر فهرس في المصفوفة يساوي طولها ناقص واحد.', explanation:'الفهارس تبدأ من صفر؛ لذلك يجب أن يتوقف الشرط قبل arr.length. استخدام <= يجعل الحلقة تصل إلى فهرس غير موجود.' }
+      hard: { lines: ['function findMax(arr) { // مصفوفة أرقام غير فارغة', '  let max = arr[0];', '  for (let i = 0; i <= arr.length; i++) {', '    if (arr[i] > max) max = arr[i];', '  }', '  return max;', '}'], bugIndex: 2, hint:'تذكّر أن آخر فهرس في المصفوفة يساوي طولها ناقص واحد.', explanation:'الفهارس تبدأ من صفر؛ لذلك يجب أن يتوقف الشرط قبل arr.length. استخدام <= يجعل الحلقة تصل إلى فهرس غير موجود.' }
     };
     let ended = false, score = 0, currentLevel = 'easy', attempts = 0;
     const scoreDisplay = document.getElementById('scoreDisplay'), codeContainer = document.getElementById('codeContainer'), msg = document.getElementById('msg');
@@ -195,7 +196,7 @@
         codeContainer.querySelectorAll('.line').forEach(button => { button.disabled = true; });
         msg.textContent = 'صحيح! ' + levels[currentLevel].explanation;
         msg.style.color = 'var(--green)';
-        const earned = Math.max(10, 30 - Math.max(0, attempts - 1) * 5);
+        const earned = Math.max(10, 30 - attempts * 5);
         score += earned;
         scoreDisplay.textContent = score;
         updateGlobalScore(earned);

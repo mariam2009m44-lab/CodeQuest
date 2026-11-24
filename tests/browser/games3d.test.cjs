@@ -108,3 +108,14 @@ for (const g of ['bug', 'build', 'quiz', 'speed']) {
     assert.deepEqual(errors, []);
   });
 }
+
+test('bug/build: wrong answers do not win, retries lower scores, repeated correct input does not award twice', async t=>{
+ const{page}=await newPage(t);await page.goto(`${origin}/game-bug.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
+ await page.locator('#codeContainer .line').first().click();assert.equal(await page.locator('#resultScreen').getAttribute('class'),'screen');
+ await page.evaluate(()=>document.querySelectorAll('#codeContainer .line')[levels.easy.bugIndex].click());
+ await page.waitForSelector('#resultScreen.active');assert.equal(await page.locator('#scoreDisplay').textContent(),'25');
+ await page.evaluate(()=>check(levels.easy.bugIndex,document.querySelectorAll('#codeContainer .line')[levels.easy.bugIndex]));assert.equal(await page.locator('#scoreDisplay').textContent(),'25');
+ await page.goto(`${origin}/game-build.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
+ await page.evaluate(()=>{correctSeq.slice().reverse().forEach(c=>[...source.children].find(b=>b.textContent===c).click());check()});
+ assert.equal(await page.locator('#scoreDisplay').textContent(),'0');assert.ok(!(await page.locator('#resultScreen').getAttribute('class')).includes('active'));
+});
