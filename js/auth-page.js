@@ -61,6 +61,7 @@ if (!form) {
     "games.html",
     "game-quiz.html",
     "game-memory.html",
+    "game-image-puzzle.html",
     "game-build.html",
     "game-bug.html",
     "game-match.html",
@@ -88,7 +89,10 @@ if (!form) {
     "course-path.html",
     "instructor-portal.html",
     "academy-registration.html",
-    "academy-admin.html"
+    "academy-admin.html",
+    "academy-community.html",
+    "live-academy.html",
+    "live-classroom.html"
   ]);
 
   function getNextPage() {
@@ -157,7 +161,9 @@ if (!form) {
     actions.style.marginTop = "10px";
 
     const loginLink = document.createElement("a");
-    loginLink.href = "login.html";
+    const targetLogin=new URL("login.html",location.href);
+    if(params.has("next"))targetLogin.searchParams.set("next",getNextPage());
+    loginLink.href = targetLogin.href;
     loginLink.textContent = "الانتقال إلى تسجيل الدخول";
     loginLink.style.fontWeight = "800";
     loginLink.style.color = "#4f46e5";

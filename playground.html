@@ -540,7 +540,7 @@ int main() {
 
       const dot = document.createElement("span");
       dot.className = "status-dot";
-      dot.style.background = busy ? "#fbbf24" : "#4ade80";
+      dot.style.background = busy ? "#fbbf24" : /لم يتم|تعذّر|تعذر/.test(message) ? "#fb7185" : "#4ade80";
 
       const label = document.createElement("span");
       label.textContent = message;
@@ -934,7 +934,7 @@ int main() {
       } catch (error) {
         console.error("Project save error:", error);
 
-        setSaveStatus("لم يتم الحفظ");
+        setSaveStatus(readLocalDraft(currentUser.uid) ? "تعذّر الحفظ على الحساب؛ مسودتك محفوظة على هذا الجهاز" : "لم يتم الحفظ؛ احتفظ بنسخة من الكود");
 
         showToast(
           error.message || "حدثت مشكلة أثناء حفظ المشروع.",

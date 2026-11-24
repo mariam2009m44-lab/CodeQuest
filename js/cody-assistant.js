@@ -473,6 +473,7 @@ document.addEventListener("keydown", event => {
 let activeRequestController = null;
 let stopRequested = false;
 let previousAuthUid = null;
+let requestGeneration = 0;
 
 stopButton?.addEventListener("click", () => {
   if (!sending || !activeRequestController) return;
@@ -571,7 +572,13 @@ onAuthStateChanged(auth, async user => {
   if (accountChanged) {
     // Invalidate pending restores and isolate every learner's private chat.
     conversationLoadVersion += 1;
+    requestGeneration += 1;
     activeRequestController?.abort();
+    sending = false;stopRequested = false;
+    if(input){input.disabled=false;input.value="";}
+    if(sendButton)sendButton.disabled=false;
+    if(stopButton){stopButton.hidden=true;stopButton.disabled=false;}
+    hideTyping();
     history = [];
     messages?.querySelectorAll(
       ".cody-chat-message:not(#codyWelcomeMessage), .cody-chat-typing"
@@ -640,6 +647,9 @@ async function handleCodySubmit(event) {
     return;
   }
 
+  // A late saved-history response must never replace this new conversation.
+  conversationLoadVersion += 1;
+  const requestId = ++requestGeneration;
   sending = true;
   stopRequested = false;
   const submit = form.querySelector('button[type="submit"]');
@@ -660,6 +670,7 @@ async function handleCodySubmit(event) {
 
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
+    controller.signal.addEventListener("abort",()=>{const error=new Error("Request cancelled");error.name="AbortError";reject(error);},{once:true});
     timeoutId = window.setTimeout(() => {
       controller.abort();
       const timeoutError = new Error("انتهت مهلة الاتصال بخدمة كودي.");
@@ -677,6 +688,7 @@ async function handleCodySubmit(event) {
       requestUser.getIdToken(),
       timeoutPromise
     ]);
+    if(controller.signal.aborted || requestId!==requestGeneration || currentUser?.uid!==requestUser.uid)return;
     // Cody no longer waits for optional Firestore profile or lesson reads.
     // Conversation context remains in memory for this active page session.
 
@@ -709,7 +721,7 @@ async function handleCodySubmit(event) {
       timeoutPromise
     ]);
 
-    if (currentUser?.uid !== requestUser.uid) return;
+    if (requestId !== requestGeneration || currentUser?.uid !== requestUser.uid) return;
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -743,7 +755,7 @@ async function handleCodySubmit(event) {
     playCodyEmotion("happy");
   } catch (error) {
     // A sign-out or account switch intentionally aborts the old account's request.
-    if (currentUser?.uid !== requestUser.uid) return;
+    if (requestId !== requestGeneration || currentUser?.uid !== requestUser.uid) return;
     if (stopRequested && error?.name === "AbortError") {
       const lastTurn = history[history.length - 1];
       if (!(lastTurn?.role === "user" && lastTurn.text === question)) {
@@ -775,6 +787,7 @@ async function handleCodySubmit(event) {
     if (input) { input.value = question; resizeComposer(); }
   } finally {
     window.clearTimeout(timeoutId);
+    if(requestId !== requestGeneration)return;
     hideTyping();
     if (activeRequestController === controller) activeRequestController = null;
     sending = false;

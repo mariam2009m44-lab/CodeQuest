@@ -70,11 +70,15 @@ export async function runCodeOnServer(language, code, stdin = "") {
     throw new Error("بيانات الإدخال طويلة جدًا أو غير صالحة.");
   }
 
+  const controller=new AbortController();
+  let timeoutId;
+  const deadline=new Promise((_,reject)=>{timeoutId=setTimeout(()=>{controller.abort();const error=new Error("تأخر خادم تشغيل الأكواد. الكود محفوظ في المحرر؛ حاول مرة أخرى.");error.name="TimeoutError";reject(error);},45000)});
   try {
-    const user = auth.currentUser || await requireUser();
-    const idToken = await user.getIdToken();
+    const user = await Promise.race([Promise.resolve(auth.currentUser || requireUser()),deadline]);
+    const idToken = await Promise.race([user.getIdToken(),deadline]);
 
-    const response = await fetch(`${CODE_RUNNER_URL}/api/code/run`, {
+    const response = await Promise.race([fetch(`${CODE_RUNNER_URL}/api/code/run`, {
+      signal:controller.signal,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -85,13 +89,14 @@ export async function runCodeOnServer(language, code, stdin = "") {
         code,
         stdin
       })
-    });
+    }),deadline]);
 
     let result;
 
     try {
-      result = await response.json();
-    } catch {
+      result = await Promise.race([response.json(),deadline]);
+    } catch (error) {
+      if(error?.name === "TimeoutError")throw error;
       throw new Error("وصل رد غير مفهوم من خدمة تشغيل الأكواد.");
     }
 
@@ -134,7 +139,7 @@ export async function runCodeOnServer(language, code, stdin = "") {
     throw new Error(
       "تعذّر تشغيل الكود. تحققي من الاتصال بالإنترنت."
     );
-  }
+  } finally {clearTimeout(timeoutId);}
 }
 
 
