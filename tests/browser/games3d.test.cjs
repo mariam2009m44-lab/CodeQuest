@@ -18,7 +18,7 @@ async function newPage(t) {
     const url = new URL(route.request().url());
     if (url.origin !== origin) return route.abort();
     if (['/js/route-guard.js', '/js/reminders.js', '/js/game-audio.js'].includes(url.pathname)) return route.fulfill({ contentType: 'application/javascript', body: '' });
-    const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.json': 'application/json' };
+    const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.json': 'application/json' };
     try { await route.fulfill({ contentType: types[extname(url.pathname)] || 'application/octet-stream', body: await readFile(resolve(root, url.pathname.slice(1))) }); }
     catch { await route.fulfill({ status: 404, body: 'nf' }); }
   });
@@ -34,6 +34,9 @@ for (const g of games) {
     await page.goto(`${origin}/${g}.html`);
     await page.waitForFunction(() => window.__cq3d && window.__cq3d.ready, null, { timeout: 15000 });
     assert.equal(await page.locator('canvas#bg3d').count(), 1);
+    const bg = await page.evaluate(() => ({ body: getComputedStyle(document.body).backgroundImage, html: getComputedStyle(document.documentElement).backgroundImage, theme: document.body.dataset.cqTheme }));
+    assert.equal(bg.body, 'none', 'body must not paint over the 3D layer');
+    if (bg.theme === 'bright') assert.ok(!/url\(/.test(bg.html) && /gradient/.test(bg.html), 'bright pages use the calm gradient, not the photo');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
     assert.deepEqual(errors, []);
   });
