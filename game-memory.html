@@ -118,7 +118,7 @@
   <link rel="stylesheet" href="css/game-3d.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
 </head>
-<body class="cq-game-page">
+<body class="cq-game-page" data-cq-theme="bright">
   <canvas id="bg-canvas"></canvas>
   <div class="top-nav">
     <a href="games.html" class="back-btn"><i class="ri-arrow-right-line"></i> رجوع للألعاب</a>
@@ -251,7 +251,7 @@
             const isBest=!previousBest||memorySeconds<previousBest;
             if(isBest)localStorage.setItem(bestKey,String(memorySeconds));
             const earned = memoryStarsFor(currentPairs, memoryMoves);
-            if (earned > memoryStars(currentPairs)) localStorage.setItem('codequest-memory-stars-' + currentPairs, String(earned));
+            if (earned > memoryStars(currentPairs)) { localStorage.setItem('codequest-memory-stars-' + currentPairs, String(earned)); window.dispatchEvent(new CustomEvent('cq-stars-changed', { detail: { game: 'memory', level: String(currentPairs), stars: earned } })); }
             renderMemoryLevels();
             winScreen.style.display = 'block'; gameGrid.style.display = 'none';
             document.getElementById('resultEmoji').textContent = '🏆';

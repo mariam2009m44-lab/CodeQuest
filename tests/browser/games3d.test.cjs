@@ -64,3 +64,44 @@ test('memory game: stars are earned, saved, and unlock the next level', { timeou
   assert.equal(await page.locator('.lvl-btn[data-pairs="10"]').isDisabled(), false, 'unlock persists');
   assert.deepEqual(errors, []);
 });
+
+for (const g of ['bug', 'build', 'quiz', 'speed']) {
+  test(`game-${g}: level badges, locked levels, stars saved after a win`, { timeout: 90000 }, async t => {
+    const { page, errors } = await newPage(t);
+    await page.goto(`${origin}/game-${g}.html`);
+    assert.equal(await page.locator('.lvl-btn[data-cq-level="easy"] img.cq-badge').count(), 1);
+    assert.equal(await page.locator('.lvl-btn[data-cq-level="medium"]').isDisabled(), true);
+    assert.equal(await page.locator('.lvl-btn[data-cq-level="hard"]').isDisabled(), true);
+    await page.click('.lvl-btn[data-cq-level="easy"]');
+    if (g === 'bug') {
+      await page.evaluate(() => document.querySelectorAll('#codeContainer .line')[levels[currentLevel].bugIndex].click());
+    } else if (g === 'build') {
+      const seq = await page.evaluate(() => correctSeq);
+      for (const code of seq) {
+        const idx = await page.evaluate(c => [...document.querySelectorAll('#sourceBlocks .code-block, .code-block')].findIndex(b => b.textContent === c && !b.classList.contains('selected') && !b.closest('#dropZone')), code);
+        void idx;
+        await page.evaluate(c => { const b = [...document.querySelectorAll('.code-block')].find(x => x.textContent === c && !x.classList.contains('selected') && x.parentElement === source); b.click(); }, code);
+      }
+      await page.evaluate(() => check());
+    } else {
+      // Answer every question correctly, skipping the animation delays by calling the game's own handlers.
+      const n = await page.evaluate(() => currentQs.length);
+      for (let i = 0; i < n; i++) {
+        if (g === 'quiz') {
+          await page.evaluate(() => { const q = currentQs[curr]; document.querySelectorAll('.opt-btn')[q.a].click(); });
+          await page.waitForFunction(k => curr > k || document.getElementById('resultScreen').classList.contains('active'), i, { timeout: 5000 });
+        } else {
+          await page.evaluate(() => ans(currentQs[curr].a));
+          await page.waitForFunction(k => curr > k || gameEnded, i, { timeout: 3000 });
+        }
+      }
+    }
+    await page.waitForSelector('#resultScreen.active', { timeout: 8000 });
+    await page.waitForSelector('.cq-result-stars');
+    assert.equal(await page.evaluate(g2 => localStorage.getItem(`codequest-${g2}-stars-easy`), g), '3');
+    await page.evaluate(() => restartGame());
+    assert.equal(await page.locator('.lvl-btn[data-cq-level="medium"]').isDisabled(), false);
+    assert.equal(await page.locator('.lvl-btn[data-cq-level="hard"]').isDisabled(), true);
+    assert.deepEqual(errors, []);
+  });
+}
