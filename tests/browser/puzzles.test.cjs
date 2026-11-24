@@ -80,3 +80,36 @@ test('image puzzle preset: played result facts remain readable', async t=>{
  await page.locator('#learningTitle').scrollIntoViewIfNeeded();
  await page.screenshot({path:'/downloads/puzzle-facts-fixed.png'});
 });
+
+test('speed: learning pauses timer, explains wrong answers, manual continue, finite round and fresh replay',async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
+ assert.equal(await page.evaluate(()=>untimed),true);const code=await page.locator('#speedCode').textContent();assert.match(code,/print\(/);
+ const first=await page.evaluate(()=>currentQs.map(q=>q.id));await page.evaluate(()=>ans(!currentQs[curr].a));
+ assert.equal(await page.locator('#score').textContent(),'0');await page.waitForTimeout(1200);assert.equal(await page.evaluate(()=>curr),0);assert.equal(await page.evaluate(()=>time),30);
+ assert.ok((await page.locator('#speedExplain').textContent()).length>40);await page.locator('#answerFeedback').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/speed-learning-preview.png'});
+ for(let i=0;i<6;i++){if(i>0)await page.evaluate(()=>ans(currentQs[curr].a));await page.click('#continueAnswer');}
+ await page.waitForSelector('#resultScreen.active');assert.equal(await page.locator('#learningReview p').count(),6);
+ await page.evaluate(()=>restartGame());await page.click('.lvl-btn[data-cq-level="easy"]');const next=await page.evaluate(()=>currentQs.map(q=>q.id));assert.equal(next.filter(x=>!first.includes(x)).length,2);
+ assert.deepEqual(await page.evaluate(()=>currentQs.every(q=>q.level==='easy')),true);
+});
+test('speed: timed mode does not consume thinking time while explanation is open',async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.uncheck('#untimedMode');await page.click('.lvl-btn[data-cq-level="easy"]');
+ await page.waitForFunction(()=>time<30);await page.evaluate(()=>ans(currentQs[curr].a));const time=await page.evaluate(()=>time);await page.waitForTimeout(1200);assert.equal(await page.evaluate(()=>time),time);await page.click('#continueAnswer');await page.waitForFunction(old=>time<old,time);
+});
+test('image puzzle: eight new local programming scenes, contextual answer retry and completion',async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-image-puzzle.html`);await page.selectOption('#galleryCategory','programming');assert.equal(await page.locator('.art-card').count(),8);
+ const loaded=await page.locator('.art-card img').evaluateAll(images=>Promise.all(images.map(im=>im.decode().then(()=>im.naturalWidth>0))));assert.ok(loaded.every(Boolean));
+ await page.screenshot({path:'/downloads/puzzle-gallery-expanded.png'});
+ await page.locator('.art-card').first().click();await page.click('#startBtn');await page.waitForSelector('#gameLayout.visible');
+ for(let i=0;i<4;i++){await page.locator(`[data-piece="${i}"]`).first().click();await page.locator('#board').scrollIntoViewIfNeeded();const xy=await page.evaluate(i=>{const r=document.getElementById('board').getBoundingClientRect();return{x:r.left+(i%2+.5)*cellW,y:r.top+(Math.floor(i/2)+.5)*cellH}},i);await page.mouse.click(xy.x,xy.y)}
+ await page.waitForSelector('#successBox.visible');assert.equal(await page.locator('#learningChoices button').count(),3);await page.locator('#learningChoices button').nth(0).click();assert.match(await page.locator('#learningChoiceFeedback').textContent(),/جرّب/);assert.equal(await page.evaluate(()=>localStorage.getItem('cq-puzzle-learned-learn-variables')),null);
+ await page.locator('#learningChoices button').nth(1).click();assert.match(await page.locator('#learningChoiceFeedback').textContent(),/صحيحة/);assert.equal(await page.evaluate(()=>localStorage.getItem('cq-puzzle-learned-learn-variables')),'1');await page.locator('#learningQuestion').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/puzzle-learning-check.png'});
+});
+test('code puzzle: added practice has correct output and no account reward call',async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-match.html`);await page.selectOption('#matchLesson','1');
+ for(const word of ['let score = 2;','score = score + 3;','console.log(score);'])await page.getByRole('button',{name:'إضافة '+word,exact:true}).click();
+ await page.click('#checkButton');await page.waitForSelector('#matchLearning:not([hidden])');assert.equal(await page.locator('#matchOutput').textContent(),'5');assert.match(await page.locator('#feedback').textContent(),/لا توجد مكافأة/);assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-match-practice-1')),'1');await page.locator('#matchLearning').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/code-puzzle-learning.png'});
+});
+test('speed: guessing one answer cannot unlock the next level',async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');await page.evaluate(()=>{ans(currentQs[curr].a);end()});await page.waitForSelector('#resultScreen.active');assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-speed-stars-easy')),null);await page.evaluate(()=>restartGame());assert.equal(await page.locator('[data-cq-level="medium"]').isDisabled(),true);
+});

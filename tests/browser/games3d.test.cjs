@@ -95,6 +95,7 @@ for (const g of ['bug', 'build', 'quiz', 'speed']) {
           await page.waitForFunction(k => curr > k || document.getElementById('resultScreen').classList.contains('active'), i, { timeout: 5000 });
         } else {
           await page.evaluate(() => ans(currentQs[curr].a));
+          await page.click("#continueAnswer");
           await page.waitForFunction(k => curr > k || gameEnded, i, { timeout: 3000 });
         }
       }
@@ -126,5 +127,5 @@ test('quiz and speed: wrong answers do not score, rapid repeat answer is ignored
  assert.equal(await page.locator('#score').textContent(),'0');assert.match(await page.locator('#quizLearning').textContent(),/الإجابة الصحيحة/);
  await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
  await page.evaluate(()=>{ans(!currentQs[curr].a);ans(currentQs[curr].a)});assert.equal(await page.locator('#score').textContent(),'0');
- await page.waitForFunction(()=>curr===1);await page.evaluate(()=>{ans(currentQs[curr].a);ans(currentQs[curr].a)});assert.equal(await page.locator('#score').textContent(),'12');
+ await page.click("#continueAnswer");await page.waitForFunction(()=>curr===1);await page.evaluate(()=>{ans(currentQs[curr].a);ans(currentQs[curr].a)});assert.equal(await page.locator('#score').textContent(),'12');
 });

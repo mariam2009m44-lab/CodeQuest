@@ -397,7 +397,7 @@
   <link rel="stylesheet" href="css/game-3d.css">
 <link rel="stylesheet" href="css/game-space.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
-</head>
+<style>#matchLesson{display:block;width:100%;margin:10px 0;padding:13px;background:#21164e;color:#f2eeff;border:1px solid #8c69db;border-radius:12px;font:inherit}#matchLearning{padding:16px;border:1px solid #675bb2;border-radius:14px;background:#1b1741;line-height:1.9}#matchOutput{direction:ltr;text-align:left;white-space:pre-wrap;color:#90f4e3}</style><style>#targetZone{direction:ltr!important}#targetZone[data-multiline="true"]{flex-direction:column;align-items:stretch}#targetZone[data-multiline="true"] .piece{text-align:left;justify-content:flex-start;white-space:pre-wrap}#matchSolvedCode{direction:ltr;text-align:left;white-space:pre-wrap;font:14px/1.8 monospace;color:#e5d8ff}</style></head>
 <body class="cq-game-page" data-cq-theme="space" data-cq-puzzle="true">
   <main class="page-container">
     <header class="header">
@@ -416,7 +416,7 @@
         رتّب قطع الكود بالترتيب الصحيح، ثم تحقّق من إجابتك.
       </p>
 
-      <p class="objective">
+      <label for="matchLesson">اختر تحديًا في نفس البازل</label><select id="matchLesson"><option value="0">الطباعة</option><option value="1">متغير يتغير</option><option value="2">حلقة تكرار</option><option value="3">دالة تعيد قيمة</option></select><p class="objective" id="matchObjective">
         الهدف: طباعة <code>Hello World</code> باستخدام JavaScript.
       </p>
 
@@ -447,7 +447,7 @@
         </button>
       </div>
 
-      <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+      <section id="matchLearning" hidden><h3>لماذا هذا الترتيب؟</h3><pre id="matchSolvedCode" dir="ltr"></pre><strong>الناتج المتوقع</strong><pre id="matchOutput" dir="ltr"></pre><p id="matchExplanation"></p><p>الناتج المتوقع من الكود، وليس تنفيذًا حيًا هنا. انتهت الجولة، ويمكنك التوقف أو اختيار تحدٍ آخر.</p></section><p class="feedback" id="feedback" role="status" aria-live="polite"></p>
 
       <section class="reward" id="rewardPanel" aria-live="polite">
         <h2>🎉 أحسنت! الحل صحيح</h2>
@@ -491,13 +491,16 @@
     if(localStorage.getItem('codequest-match-completed')==='1')document.getElementById('matchProgress').textContent='اكتمل هذا التحدي على هذا الجهاز ★';
     const GAME_ID = "code-puzzle-hello-world";
 
-    const correctCode = [
-      "console.log",
-      "(",
-      '"Hello World"',
-      ")",
-      ";"
+    const lessons = [
+      {title:'الطباعة في JavaScript',pieces:['console.log','(', '"Hello World"',')',';'],output:'Hello World',explain:'console.log تطبع القيمة داخل الأقواس. علامتا التنصيص تحددان النص، ولا تظهران في الناتج.'},
+      {title:'متغير يتغير',pieces:['let score = 2;','score = score + 3;','console.log(score);'],output:'5',explain:'عرّفنا score بقيمة 2، ثم أضفنا 3 إلى القيمة الحالية. لذلك تطبع console.log العدد 5.'},
+      {title:'حلقة تكرار',pieces:['for (let i = 0; i < 3; i++) {','    console.log(i);','}'],output:'0\n1\n2',explain:'تبدأ i من 0. تطبع الحلقة ثم تزيد i بمقدار 1. تتوقف عندما تصبح i مساوية 3.'},
+      {title:'دالة تعيد قيمة',pieces:['function double(x) {','    return x * 2;','}','console.log(double(4));'],output:'8',explain:'الدالة double تضرب المدخل في 2 وتعيد الناتج. نمرر 4، فتطبع console.log العدد 8.'}
     ];
+    let lessonIndex=0;
+    let correctCode=lessons[0].pieces;
+    const lessonSelect=document.getElementById('matchLesson');
+    lessonSelect.addEventListener('change',()=>{lessonIndex=Number(lessonSelect.value);correctCode=lessons[lessonIndex].pieces;document.getElementById('matchObjective').textContent='الهدف: '+lessons[lessonIndex].title+'، رتّب الكود لتوقّع الناتج.';resetGame();});
 
     const claimGameReward = httpsCallable(
       functions,
@@ -621,9 +624,11 @@
         claimingReward ||
         rewardClaimed;
 
-      resetButton.disabled = claimingReward;
+      resetButton.disabled = claimingReward;lessonSelect.disabled=claimingReward;
+      if(solved && lessonIndex!==0){checkButton.disabled=true;checkButton.textContent='اكتمل التدريب';}
 
-      if (claimingReward) {
+      if(solved && lessonIndex!==0){checkButton.textContent='اكتمل التدريب';}
+      else if (claimingReward) {
         checkButton.textContent = "جارٍ تسجيل المكافأة...";
       } else if (solved && !rewardClaimed) {
         checkButton.textContent = "إعادة محاولة تسجيل المكافأة";
@@ -633,6 +638,7 @@
     }
 
     async function submitRewardClaim() {
+      if(lessonIndex!==0){setFeedback('حل صحيح! حُفظ إنجاز التدريب على هذا الجهاز. لا توجد مكافأة حساب لهذا التدريب.','success');return;}
       if (claimingReward || rewardClaimed) return;
 
       claimingReward = true;
@@ -713,6 +719,9 @@
       claimingReward = false;
       rewardClaimed = false;
 
+      document.getElementById('matchProgress').textContent=localStorage.getItem(lessonIndex===0?'codequest-match-completed':'codequest-match-practice-'+lessonIndex)==='1'?'اكتمل هذا التحدي على هذا الجهاز ★':'تدريب جديد على ترتيب الكود';
+      targetZone.dataset.multiline=String(lessonIndex>0);
+      document.getElementById("matchLearning").hidden=true;
       targetZone.classList.remove("correct", "incorrect");
       rewardPanel.classList.remove("visible");
 
@@ -777,7 +786,8 @@
       }
 
       solved = true;
-      const recordKey='codequest-match-completed';
+      const lesson=lessons[lessonIndex];const learning=document.getElementById('matchLearning');learning.hidden=false;document.getElementById('matchSolvedCode').textContent=lesson.pieces.join(lessonIndex?'\n':'');document.getElementById('matchOutput').textContent=lesson.output;document.getElementById('matchExplanation').textContent=lesson.explain;
+      const recordKey=lessonIndex===0?'codequest-match-completed':'codequest-match-practice-'+lessonIndex;
       localStorage.setItem(recordKey,'1');
       document.getElementById('matchProgress').textContent='اكتمل هذا التحدي على هذا الجهاز ★';
 
@@ -785,8 +795,7 @@
       targetZone.classList.add("correct");
 
       rewardPanel.classList.add("visible");
-      rewardMessage.textContent =
-        "إجابة صحيحة! جارٍ التحقق من إنجازك وتسجيل مكافأتك.";
+      rewardMessage.textContent=lessonIndex===0?'إجابة صحيحة! جارٍ التحقق من تسجيل المكافأة.':'حل صحيح! تدريب محفوظ على الجهاز، بلا مكافأة حساب.';
 
       setFeedback("إجابة صحيحة! أحسنت، جارٍ تسجيل المكافأة.", "success");
 

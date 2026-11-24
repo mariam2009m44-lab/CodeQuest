@@ -130,7 +130,7 @@
   <link rel="stylesheet" href="css/game-3d.css">
 <link rel="stylesheet" href="css/game-space.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
-</head>
+<style>#speedCode{direction:ltr;text-align:left;white-space:pre-wrap;background:#080d26;border:1px solid #5954ab;border-radius:14px;padding:18px;color:#9ff3ed;font:16px/1.8 monospace}#speedClaim{font:700 19px monospace;color:#ffe18b}.learning-explain{line-height:1.9;padding:14px;background:#35255a;border-radius:12px;color:#f2edff}.learning-mode{display:block;padding:16px;color:#b8f5ed}#continueAnswer{margin:12px auto;background:#7054da;color:#fff}#continueAnswer[hidden],.learning-explain[hidden]{display:none}#learningReview{text-align:right;line-height:1.8}.answer-feedback{height:auto!important;min-height:28px}</style><style>.learning-explain pre{direction:ltr;text-align:left;padding:10px;background:#080d26;color:#a7f5e1;border-radius:8px;font:18px monospace}</style><style>body[data-cq-game="speed"] .question{font-size:clamp(1.05rem,4.8vw,1.45rem);min-height:0;margin:18px 0;line-height:1.7}body[data-cq-game="speed"] .timer-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:.75rem}#speedCode{margin:12px 0;padding:13px;line-height:1.6}body[data-cq-game="speed"] .answer-feedback{font-size:.9rem}.learning-explain{font-size:.9rem}</style></head>
 <body class="cq-game-page" data-cq-game="speed" data-cq-theme="space">
   <canvas id="bg-canvas"></canvas>
   <div class="top-nav">
@@ -140,51 +140,42 @@
   <section class="game-art-banner" aria-label="تحدي السرعة"><img src="assets/games/game-speed.svg" alt="" decoding="async"></section>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
-      <h2>اختر مستوى السرعة</h2>
+      <h2>سباق الفهم والسرعة</h2><p>توقّع ناتج كود Python، وافهم السبب بعد كل إجابة. جولة قصيرة من 6 تحديات.</p><label class="learning-mode"><input type="checkbox" id="untimedMode" checked> تعلّم على مهلك، بدون مؤقت</label>
       <div class="levels-grid">
-        <button class="lvl-btn lvl-easy" onclick="startGame('easy')"><span>مبتدئ</span> <span>10 أسئلة | 30 ثانية</span></button>
-        <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>15 سؤال | 40 ثانية</span></button>
-        <button class="lvl-btn lvl-hard" onclick="startGame('hard')"><span>متقدم</span> <span>20 سؤال | 50 ثانية</span></button>
+        <button class="lvl-btn lvl-easy" onclick="startGame('easy')"><span>مبتدئ</span> <span>متغيرات ونصوص | 6 تحديات</span></button>
+        <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>شروط وتكرار | 6 تحديات</span></button>
+        <button class="lvl-btn lvl-hard" onclick="startGame('hard')"><span>متقدم</span> <span>دوال وقوائم | 6 تحديات</span></button>
       </div>
     </div>
   </div>
   <div class="screen" id="gameScreen">
     <div class="level-box">
       <div class="timer-bar" role="progressbar" aria-label="الوقت المتبقي" aria-valuemin="0" aria-valuemax="50" aria-valuenow="30"><div class="fill" id="fill"></div></div>
-      <div class="timer-meta"><span id="timerText" aria-live="off">الوقت المتبقي: 30 ثانية</span><span id="questionProgress">السؤال 1 من 10</span><span id="streakText" aria-live="polite">سلسلة: 0</span></div>
+      <div class="timer-meta"><span id="timerText" aria-live="off">الوقت المتبقي: 30 ثانية</span><span id="questionProgress">السؤال 1 من 10</span><span id="streakText" aria-live="polite">إجابات صحيحة: 0</span></div>
       <div class="question" id="qText" aria-live="polite">...</div>
+      <pre id="speedCode" dir="ltr" aria-label="كود Python"></pre><p id="speedClaim" dir="ltr"></p>
       <div class="actions">
         <button class="btn btn-true" id="trueAnswer" onclick="ans(true)">صح</button>
         <button class="btn btn-false" id="falseAnswer" onclick="ans(false)">خطأ</button>
       </div>
-      <p id="answerFeedback" class="answer-feedback" role="status" aria-live="polite"></p>
+      <p id="answerFeedback" class="answer-feedback" role="status" aria-live="polite"></p><p id="speedExplain" class="learning-explain" hidden></p><button class="btn" id="continueAnswer" onclick="continueRound()" hidden>فهمت، التالي</button><button class="btn-back" onclick="end()">إنهاء الجولة ومراجعة ما تعلمت</button>
     </div>
   </div>
   <div class="screen" id="resultScreen">
     <div class="level-box result-box">
       <div class="result-emoji" id="resultEmoji">🏆</div>
       <h2 id="resultTitle">انتهى التحدي!</h2>
-      <p class="result-message" id="resultMessage"></p>
+      <p class="result-message" id="resultMessage"></p><div id="learningReview"></div><p>انتهت الجولة. خذ راحة أو اختر مستوى عندما تحب.</p>
       <p class="final-score-text">لقد جمعت <span id="final" style="color: var(--green);">0</span> نقطة.</p>
       <button class="btn-restart" onclick="restartGame()">العب مجدداً</button>
       <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
     </div>
   </div>
+  <script src="js/speed-learning-bank.js"></script>
   <script>
-    const allQs = [
-      { q: "هل HTML هي لغة برمجة؟", a: false }, { q: "هل نستخدم print() في بايثون للطباعة؟", a: true },
-      { q: "هل CSS مسؤولة عن بنية عناصر HTML نفسها؟", a: false }, { q: "هل يُترجم برنامج C++ عادةً إلى كود آلة قبل تشغيله؟", a: true },
-      { q: "هل console.log() تستخدم في JavaScript؟", a: true }, { q: "هل يمكن استخدام Python في الذكاء الاصطناعي؟", a: true },
-      { q: "هل يمكن أن يبدأ اسم متغير Python برقم؟", a: false }, { q: "هل # تستخدم للتعليق في بايثون؟", a: true },
-      { q: "هل // تستخدم للتعليق في C++؟", a: true }, { q: "هل المتصفح يعرض النص HTML المخزّن داخل متغير تلقائيًا دون إضافته إلى الصفحة؟", a: false },
-      { q: "هل JS تستخدم لبناء الواجهات الأمامية؟", a: true }, { q: "هل يضمن استخدام Python أن البرنامج أسرع من نفس الخوارزمية المكتوبة بـ C++؟", a: false },
-      { q: "هل SQL تستخدم في قواعد البيانات؟", a: true }, { q: "هل يمكن استخدام CSS في الطباعة؟", a: true },
-      { q: "هل Git هو لغة برمجة؟", a: false }, { q: "هل API تعني واجهة برمجة التطبيقات؟", a: true },
-      { q: "هل الـ Loop هو حلقة تكرار؟", a: true }, { q: "هل الـ Array يخزن قيمة واحدة فقط؟", a: false },
-      { q: "هل يمكن استخدام دالة كمتغير؟", a: true }, { q: "هل OOP تعني البرمجة الكائنية؟", a: true }
-    ];
+    const allQs = window.CQSpeedBank;
     let curr = 0, score = 0, maxTime = 0, time = 0, int, currentQs = [], currentLevel = 'easy';
-    let answerLocked = false, gameEnded = false, answerStreak = 0;
+    let answerLocked = false, gameEnded = false, answerStreak = 0, untimed = true, reviews = [];
     const timerText = document.getElementById('timerText');
     const questionProgress = document.getElementById('questionProgress');
     const timerBar = document.querySelector('.timer-bar');
@@ -199,7 +190,7 @@
     }
 
     function updateTimerDisplay() {
-      timerText.textContent = `الوقت المتبقي: ${time} ثانية`;
+      timerText.textContent = untimed ? "وضع التعلّم: بدون مؤقت" : `وقت التفكير المتبقي: ${time} ثانية`;
       timerBar.setAttribute('aria-valuenow', String(time));
     }
     const fill = document.getElementById('fill'), qText = document.getElementById('qText'), scoreEl = document.getElementById('score');
@@ -215,12 +206,14 @@
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
-      let count = level === 'easy' ? 10 : level === 'medium' ? 15 : 20;
+      let count = 6; untimed = document.getElementById('untimedMode').checked; reviews = [];
       maxTime = level === 'easy' ? 30 : level === 'medium' ? 40 : 50;
       time = maxTime;
       timerBar.setAttribute('aria-valuemax', String(maxTime));
-      currentQs = shuffleQuestions(allQs).slice(0, count);
-      curr = 0; score = 0; answerStreak = 0; answerLocked = false; gameEnded = false; scoreEl.textContent = score; document.getElementById('streakText').textContent = 'سلسلة: 0'; document.getElementById('answerFeedback').textContent = ''; document.getElementById('trueAnswer').classList.remove('answer-correct','answer-wrong'); document.getElementById('falseAnswer').classList.remove('answer-correct','answer-wrong');
+      const seenKey='cq-speed-last-'+level;let previous=[];try{previous=JSON.parse(localStorage.getItem(seenKey)||'[]')}catch(e){}
+      const candidates=shuffleQuestions(allQs.filter(q=>q.level===level));candidates.sort((a,b)=>Number(previous.includes(a.id))-Number(previous.includes(b.id)));
+      currentQs=candidates.slice(0,count);localStorage.setItem(seenKey,JSON.stringify(currentQs.map(q=>q.id)));
+      curr = 0; score = 0; answerStreak = 0; answerLocked = false; gameEnded = false; scoreEl.textContent = score; document.getElementById('streakText').textContent = 'إجابات صحيحة: 0'; document.getElementById('answerFeedback').textContent = ''; document.getElementById('trueAnswer').classList.remove('answer-correct','answer-wrong'); document.getElementById('falseAnswer').classList.remove('answer-correct','answer-wrong');
       fill.style.width = '100%'; updateTimerDisplay(); load(); startTimer();
     }
 
@@ -228,7 +221,8 @@
       if (curr >= currentQs.length) return end();
       answerLocked = false;
       document.querySelectorAll('.actions .btn').forEach(button => { button.disabled = false; });
-      qText.textContent = currentQs[curr].q;
+      const item=currentQs[curr];
+      qText.textContent=item.concept+' · '+item.q;document.getElementById('speedCode').textContent=item.code;document.getElementById('speedClaim').textContent='Output: '+item.claim;document.getElementById('speedExplain').hidden=true;document.getElementById('continueAnswer').hidden=true;
       questionProgress.textContent = `السؤال ${curr + 1} من ${currentQs.length}`;
       document.getElementById('answerFeedback').textContent = '';
       document.getElementById('trueAnswer').classList.remove('answer-correct','answer-wrong');
@@ -250,26 +244,26 @@
         score += points;
         scoreEl.textContent = score;
         updateGlobalScore(points);
-        document.getElementById('streakText').textContent = 'سلسلة: ' + answerStreak;
+        document.getElementById('streakText').textContent = 'إجابات صحيحة: ' + (reviews.filter(r=>r.correct).length+1);
         document.getElementById('answerFeedback').textContent = 'إجابة صحيحة! +' + points + ' نقطة';
         (choice ? trueButton : falseButton).classList.add('answer-correct');
       } else {
         answerStreak = 0;
-        document.getElementById('streakText').textContent = 'سلسلة: 0';
+        document.getElementById('streakText').textContent = 'إجابات صحيحة: '+reviews.filter(r=>r.correct).length;
         document.getElementById('answerFeedback').textContent = 'مش بالضبط! الإجابة الصحيحة: ' + (correctChoice ? 'صح' : 'خطأ');
         (choice ? trueButton : falseButton).classList.add('answer-wrong');
         (correctChoice ? trueButton : falseButton).classList.add('answer-correct');
       }
-      window.setTimeout(() => {
-        if (gameEnded) return;
-        curr++;
-        load();
-      }, 520);
+      clearInterval(int);
+      const item=currentQs[curr];reviews.push({concept:item.concept,correct,output:item.output});
+      const explain=document.getElementById('speedExplain');explain.textContent='الناتج الصحيح موضح بالأسفل. '+item.explain;explain.hidden=false;const result=document.createElement('pre');result.dir='ltr';result.textContent=item.output;explain.appendChild(result);
+      const next=document.getElementById('continueAnswer');next.hidden=false;next.textContent=curr===currentQs.length-1?'مراجعة الجولة':'فهمت، التالي';
     }
+    function continueRound(){if(!answerLocked||gameEnded)return;curr++;load();if(!gameEnded)startTimer();}
 
     function startTimer() {
       clearInterval(int);
-      if (document.hidden || gameEnded) return;
+      if (document.hidden || gameEnded || answerLocked || untimed) return;
       int = setInterval(() => {
         time = Math.max(0, time - 1);
         fill.style.width = `${(time / maxTime) * 100}%`;
@@ -293,7 +287,8 @@
       document.getElementById('final').textContent = score;
       const emoji = document.getElementById('resultEmoji');
       const msg = document.getElementById('resultMessage');
-      if (score >= 80) { emoji.textContent = '🏆'; msg.textContent = 'أنت سريع جداً! أداء رائع.'; }
+      const review=document.getElementById('learningReview');review.replaceChildren();for(const r of reviews){const line=document.createElement('p');line.textContent=(r.correct?'✓ ':'راجع: ')+r.concept+' · الناتج '+r.output;review.appendChild(line);}
+      if (score >= 80) { emoji.textContent = '🏆'; msg.textContent = 'فهم رائع للكود! راجع ما تعلمته في الجولة.'; }
       else if (score >= 40) { emoji.textContent = '🌟'; msg.textContent = 'جيد جداً! يمكنك التحسن.'; }
       else { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة، استمر!'; }
       if (score >= 40) window.CodeQuestExperience?.reward({ gems: 0, title: 'سرعة وتركيز!', message: 'أكملت التحدي وحققت نتيجة تستحق الاحتفال.' });

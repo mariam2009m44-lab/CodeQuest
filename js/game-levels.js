@@ -12,6 +12,7 @@
 
   function perfect(n, per) { let t = 0; for (let k = 1; k <= n; k++) t += per(k); return t; }
   function earnedStars() {
+    if(game==='speed'){const rows=g('reviews')||[],total=(g('currentQs')||[]).length||6;const ratio=rows.filter(r=>r.correct).length/total;return ratio>=0.8?3:ratio>=0.6?2:0;}
     if (game === 'bug' || game === 'build') { const a = g('attempts') || 0; return a === 0 ? 3 : a <= 2 ? 2 : 1; }
     const n = (g('currentQs') || []).length || 10, score = g('score') || 0;
     const per = game === 'quiz' ? k => 10 + 2 * k : k => 10 + Math.min(2 * k, 10);
