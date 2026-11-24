@@ -125,3 +125,24 @@ test('Live Academy protects class writes, private meeting data, and enrollment l
     code: 'unauthorized', language: 'javascript', updatedBy: otherUid, updatedAt: serverTimestamp()
   }, { merge: true }));
 });
+
+test('project CRUD isolates owners and rejects owner reassignment or oversized source', { skip: !host }, async t => {
+  assert.match(host, /^(127\.0\.0\.1|localhost):\d+$/);
+  const env = await initializeTestEnvironment({ projectId: 'demo-codequest-audit', firestore: { rules: fs.readFileSync(path.join(__dirname, '../../firestore.rules'), 'utf8') } });
+  t.after(() => env.cleanup());
+  const uid = `project-owner-${process.pid}-${Date.now()}`;
+  const ownDb = env.authenticatedContext(uid).firestore();
+  const otherDb = env.authenticatedContext(uid + '-other').firestore();
+  const projectPath = `projects/${uid}`;
+  const project = { userId: uid, name: 'Release test', language: 'python', code: 'print(1)' };
+  await assertSucceeds(setDoc(doc(ownDb, projectPath), project));
+  await assertSucceeds(getDoc(doc(ownDb, projectPath)));
+  await assertFails(getDoc(doc(otherDb, projectPath)));
+  await assertFails(setDoc(doc(otherDb, projectPath), { ...project, code: 'print(2)' }));
+  await assertFails(setDoc(doc(ownDb, projectPath), { ...project, userId: uid + '-other' }));
+  await assertFails(setDoc(doc(ownDb, projectPath), { ...project, code: 'x'.repeat(50001) }));
+  await assertSucceeds(setDoc(doc(ownDb, projectPath), { ...project, code: 'print(3)' }));
+  const { deleteDoc } = require('firebase/firestore');
+  await assertFails(deleteDoc(doc(otherDb, projectPath)));
+  await assertSucceeds(deleteDoc(doc(ownDb, projectPath)));
+});
