@@ -119,3 +119,12 @@ test('bug/build: wrong answers do not win, retries lower scores, repeated correc
  await page.evaluate(()=>{correctSeq.slice().reverse().forEach(c=>[...source.children].find(b=>b.textContent===c).click());check()});
  assert.equal(await page.locator('#scoreDisplay').textContent(),'0');assert.ok(!(await page.locator('#resultScreen').getAttribute('class')).includes('active'));
 });
+
+test('quiz and speed: wrong answers do not score, rapid repeat answer is ignored',async t=>{
+ const{page}=await newPage(t);await page.goto(`${origin}/game-quiz.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
+ await page.evaluate(()=>{const wrong=(currentQs[curr].a+1)%4;checkAns(wrong,document.querySelectorAll('.opt-btn')[wrong]);checkAns(currentQs[curr].a,document.querySelectorAll('.opt-btn')[currentQs[curr].a])});
+ assert.equal(await page.locator('#score').textContent(),'0');assert.match(await page.locator('#quizLearning').textContent(),/الإجابة الصحيحة/);
+ await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
+ await page.evaluate(()=>{ans(!currentQs[curr].a);ans(currentQs[curr].a)});assert.equal(await page.locator('#score').textContent(),'0');
+ await page.waitForFunction(()=>curr===1);await page.evaluate(()=>{ans(currentQs[curr].a);ans(currentQs[curr].a)});assert.equal(await page.locator('#score').textContent(),'12');
+});
