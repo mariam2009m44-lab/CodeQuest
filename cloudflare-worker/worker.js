@@ -871,7 +871,7 @@ export default {
         };
 
         // Use the primary model first. If its model-specific quota is exhausted,
-        // make one attempt with the supported lightweight fallback model.
+        // switch promptly to the supported lightweight fallback model.
         const fallbackModel = (env.GEMINI_FALLBACK_MODEL || "gemini-3.5-flash-lite").trim();
         const modelsToTry = [model];
         if (
@@ -886,6 +886,7 @@ export default {
         let modelUsed = model;
         let networkError = null;
         let lastProviderError = null;
+        const providerDeadline = Date.now() + 34000;
 
         for (let modelIndex = 0; modelIndex < modelsToTry.length; modelIndex++) {
           const candidateModel = modelsToTry[modelIndex];
@@ -893,7 +894,9 @@ export default {
 
           // Retry only transient server/network failures. A 429 is handled
           // separately because it may mean a model-specific quota is exhausted.
-          for (let attempt = 0; attempt < 2; attempt++) {
+          for (let attempt = 0; attempt < (modelIndex === 0 && modelsToTry.length > 1 ? 1 : 2); attempt++) {
+            const remainingMs = providerDeadline - Date.now();
+            if (remainingMs < 1000) break;
             try {
               candidateResponse = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidateModel)}:generateContent`,
@@ -904,13 +907,13 @@ export default {
                     "x-goog-api-key": env.GEMINI_API_KEY
                   },
                   body: JSON.stringify(generationRequest),
-                  signal: AbortSignal.timeout(20000)
+                  signal: AbortSignal.timeout(Math.min(11000, remainingMs))
                 }
               );
               networkError = null;
             } catch (error) {
               networkError = error;
-              if (error?.name === "AbortError" || attempt === 1) {
+              if (["AbortError", "TimeoutError"].includes(error?.name) || attempt === 1 || (modelIndex === 0 && modelsToTry.length > 1)) {
                 if (modelIndex < modelsToTry.length - 1) break;
                 throw error;
               }
@@ -918,13 +921,13 @@ export default {
 
             if (candidateResponse) {
               const transientFailure = [408, 500, 502, 503, 504].includes(candidateResponse.status);
-              if (!transientFailure || attempt === 1) break;
+              if (!transientFailure || attempt === 1 || (modelIndex === 0 && modelsToTry.length > 1)) break;
               await candidateResponse.body?.cancel().catch(() => {});
               candidateResponse = null;
             }
 
             if (attempt === 0) {
-              await new Promise(resolve => setTimeout(resolve, 600));
+              await new Promise(resolve => setTimeout(resolve, 800 + Math.floor(Math.random() * 300)));
             }
           }
 

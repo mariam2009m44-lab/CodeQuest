@@ -875,6 +875,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     "use strict";
 
     import { verifyJavaChallenge, verifyJavaQuizAnswer, runCodeOnServer } from "./js/code-runner.js";
+    import { mountGuidedLesson } from "./js/guided-lesson.js";
     import { mountCodyTutor } from "./js/cody-tutor.js";
     import { requireUser, saveLessonProgress, getLessonProgress, getUserProfile } from "./js/auth.js";
 
@@ -1770,6 +1771,7 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
         if (element) element.textContent = value || "";
       });
 
+      mountGuidedLesson(lesson);
       setupEditor(lesson.starter);
       renderQuiz(lesson.quiz);
       renderSidebar();
@@ -2097,6 +2099,8 @@ html[data-theme="light"] .xp-pill { color: #805B00; }
     }
 
     function updateNavigationButtons() {
+      const record = readProgress()[currentLessonId];
+      const done = record?.completed === true;
       const index = allLessons.findIndex(
         lesson => lesson.id === currentLessonId
       );

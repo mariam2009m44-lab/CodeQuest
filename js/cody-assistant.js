@@ -771,7 +771,7 @@ async function handleCodySubmit(event) {
         ? "تعذّر الاتصال بخدمة كودي. تحقّق من الإنترنت وحاول مجددًا."
         : (error?.message || "حدث خطأ غير متوقع أثناء إرسال السؤال.");
 
-    setStatus(message, "error");
+    setStatus("لم يصل رد. التفاصيل وزر إعادة المحاولة في المحادثة.", "error");
     // Show failures in the conversation itself, not only in the small status line.
     // This makes missing Worker/Gemini configuration visible to the learner.
     addMessage("مش قادر أرد على السؤال دلوقتي: " + message, "model", null, {
