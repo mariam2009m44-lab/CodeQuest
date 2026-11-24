@@ -148,7 +148,7 @@ for (let chapterId = 1; chapterId <= 12; chapterId += 1) {
     if (!challenges.length) fail(`${label}: needs at least one coding challenge`);
     for (const challenge of challenges) {
       if (
-        typeof challenge.expected !== "string" ||
+        (typeof challenge.expected !== "string" && challenge.expected !== null) ||
         typeof challenge.defaultCode !== "string" ||
         typeof challenge.check !== "function"
       ) {
