@@ -730,11 +730,10 @@ async function handleCodySubmit(event) {
       if (response.status === 429) {
         throw new Error(data.message || "وصلت إلى حد الأسئلة المتاح حاليًا. حاول لاحقًا.");
       }
-      throw new Error(
-        data.message ||
-        data.detail ||
-        "تعذّر على كودي الرد الآن. حاول مرة أخرى بعد قليل."
-      );
+      const serviceMessage = data.message || data.detail || "تعذّر على كودي الرد الآن. حاول مرة أخرى بعد قليل.";
+      const diagnosticCode = typeof data.errorCode === "string" && /^[A-Z0-9_]{1,80}$/.test(data.errorCode) ? data.errorCode : "CODY_REQUEST_FAILED";
+      const providerStatus = Number.isInteger(data.providerHttpStatus) ? data.providerHttpStatus : response.status;
+      throw new Error(`${serviceMessage} (رمز التشخيص: ${diagnosticCode} / ${providerStatus})`);
     }
 
     if (typeof data.answer !== "string" || !data.answer.trim()) {

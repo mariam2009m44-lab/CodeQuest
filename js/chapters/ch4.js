@@ -46,8 +46,8 @@ window.CHAPTERS[4] = {
         { type: "cody", text: "حان وقت إثبات جدارتك! 🎓 الامتحان ده هيختبر فهمك للشروط." },
         { type: "quiz", question: "1. لو شرط الـ if طلع غلط، بنستخدم إيه عشان ننفذ كود تاني؟", options: ["if", "else", "print"], correct: 1, explanation: "else (وإلا) بتتنفذ لما شرط if ميتحققش." },
         { type: "quiz", question: "2. إيه الرمز اللي لازم نحطه في آخر سطر الشرط؟", options: [".", ":", ";"], correct: 1, explanation: "النقطتين (:) هما أساس كتابة if و else." },
-        { type: "cody", text: "تحدي برمجي أخير: نظام تسجيل دخول بسيط. أنشئ متغير <code>user = \"admin\"</code> ومتغير <code>pass = \"1234\"</code>. لو الاتنين دول مطابقين، اطبع <code>Welcome</code>." },
-        { type: "challenge", expected: "Welcome", defaultCode: '# اكتب الكود هنا\n', hint: 'user = "admin"\npass = "1234"\nif user == "admin" and pass == "1234":\n    print("Welcome")', check: (code) => code.includes('user == "admin"') && code.includes('pass == "1234"') && code.includes('print("Welcome")'), successMsg: "🎉 مبروك! لقد اجتزت الامتحان بنجاح. أنت الآن تفهم الشروط تماماً." }
+        { type: "cody", text: "تحدي برمجي أخير: محاكاة تعليمية للشروط، وليست نظام تسجيل دخول آمنًا. أنشئ متغير <code>user = \"admin\"</code> ومتغير <code>password = \"1234\"</code>. لو الاتنين دول مطابقين، اطبع <code>Welcome</code>." },
+        { type: "challenge", expected: "Welcome", defaultCode: '# اكتب الكود هنا\n', hint: 'user = "admin"\npassword = "1234"\nif user == "admin" and password == "1234":\n    print("Welcome")', check: (code) => code.includes('user == "admin"') && code.includes('password == "1234"') && code.includes('print("Welcome")'), successMsg: "🎉 مبروك! لقد اجتزت الامتحان بنجاح. أنت الآن تفهم الشروط تماماً." }
       ]
     }
   ]

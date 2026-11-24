@@ -24,7 +24,7 @@ window.CHAPTERS[11] = {
       title: "الدرس 3: صندوق العشوائية", steps: [
         { type: "cody", text: "أهلاً بك! في مكتبة تانية اسمها <code>random</code> بتطلعلك أرقام عشوائية (زي زهر الطاولة)." },
         { type: "cody", text: "تحديك: استورد random، واطبع رقم عشوائي بين 1 و 10 باستخدام <code>random.randint(1, 10)</code>." },
-        { type: "challenge", expected: "", defaultCode: '# اكتب الكود هنا\n', hint: 'import random\nprint(random.randint(1, 10))', check: (code) => code.includes('import random') && code.includes('random.randint(1, 10)'), successMsg: "عبقري! ولدت رقماً عشوائياً." }
+        { type: "challenge", expected: null, defaultCode: '# اكتب الكود هنا\n', hint: 'import random\nprint(random.randint(1, 10))', check: (code) => code.includes('import random') && code.includes('random.randint(1, 10)'), successMsg: "عبقري! ولدت رقماً عشوائياً." }
       ]
     },
     {
@@ -40,7 +40,7 @@ window.CHAPTERS[11] = {
         { type: "cody", text: "جاهز لامتحان المكتبات؟ 🎓" },
         { type: "quiz", question: "1. إيه الكلمة اللي بنستخدمها لاستدعاء مكتبة؟", options: ["import", "get", "library"], correct: 0, explanation: "بنستخدم import لاستدعاء المكتبات." },
         { type: "cody", text: "تحديك: استورد random واطبع <code>random.choice([1, 2, 3])</code>." },
-        { type: "challenge", expected: "", defaultCode: '# اكتب الكود هنا\n', hint: 'import random\nprint(random.choice([1, 2, 3]))', check: (code) => code.includes('random.choice'), successMsg: "🎉 مبروك! اجتزت الفصل الحادي عشر." }
+        { type: "challenge", expected: null, defaultCode: '# اكتب الكود هنا\n', hint: 'import random\nprint(random.choice([1, 2, 3]))', check: (code) => code.includes('random.choice'), successMsg: "🎉 مبروك! اجتزت الفصل الحادي عشر." }
       ]
     }
   ]

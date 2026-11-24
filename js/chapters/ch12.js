@@ -22,7 +22,7 @@ window.CHAPTERS[12] = {
     {
       title: "الدرس 3: الحركة (شروط وحلقات ودوال)", steps: [
         { type: "cody", text: "أهلاً بك! دلوقتي اللعبة هتبدأ تتحرك. هنستخدم الدوال (من الفصل 7)، والحلقات (من الفصل 5)، والشروط (من الفصل 4)." },
-        { type: "cody", text: "هنعمل دالة بتداوي اللاعب. وهنستخدم حلقة عشان نلف 3 مرات ونشوف حالة اللاعب." },
+        { type: "cody", text: "هنعمل دالة بتداوي اللاعب. وهنستخدم حلقة عشان نلف مرتين ونشوف حالة اللاعب." },
         { type: "choice", question: "عشان نتحقق من حالة اللاعب في كل لفة، نستخدم إيه؟", options: ["حلقة for بس", "حلقة for وجواها شرط if"], replies: ["الحلقة لوحدها مش كفاية عشان نتحقق من الشرط.", "بالظبط! كده بنقدر نتأكد من الصحة في كل دور."] },
         { type: "cody", text: "تحديك: اعمل دالة <code>heal()</code> تطبع <code>Healed</code>. وبعدين اكتب حلقة <code>for i in range(2):</code> اللي تطبع <code>Turn</code> كل لفة، وجواها <code>if health > 0:</code> اللي تستدعي <code>heal()</code>." },
         { type: "challenge", expected: "Turn\nHealed\nTurn\nHealed", defaultCode: '# اكتب الكود هنا\n', hint: 'health = 100\ndef heal():\n    print("Healed")\nfor i in range(2):\n    print("Turn")\n    if health > 0:\n        heal()', check: (code) => code.includes('def heal():') && code.includes('for i in range(2):') && code.includes('if health > 0:') && code.includes('heal()'), successMsg: "عبقري! استخدمت الحلقات والشروط والدوال مع بعض." }
@@ -33,7 +33,7 @@ window.CHAPTERS[12] = {
         { type: "cody", text: "آخر خطوة! هنحمي اللعبة من الانهيار لو حصل خطأ (من الفصل 9)، وهنستخدم مكتبة random (من الفصل 11)، ونتعامل مع النصوص (من الفصل 8)." },
         { type: "cody", text: "لو اللعبة حاولت تقسم على صفر هتضرب خطأ، عشان كده هنستخدم <code>try/except</code>." },
         { type: "cody", text: "تحديك: استورد <code>random</code>، واعمل <code>try</code> تطبع فيها <code>random.randint(1, 6)</code>، ولو حصل خطأ اطبع <code>Safe</code> باستخدام <code>except</code>." },
-        { type: "challenge", expected: "", defaultCode: '# اكتب الكود هنا\n', hint: 'import random\ntry:\n    print(random.randint(1, 6))\nexcept:\n    print("Safe")', check: (code) => code.includes('import random') && code.includes('try:') && code.includes('random.randint(1, 6)') && code.includes('except:'), successMsg: "مذهل! استخدمت المكتبات والأخطاء لحماية مشروعك." }
+        { type: "challenge", expected: null, defaultCode: '# اكتب الكود هنا\n', hint: 'import random\ntry:\n    print(random.randint(1, 6))\nexcept:\n    print("Safe")', check: (code) => code.includes('import random') && code.includes('try:') && code.includes('random.randint(1, 6)') && code.includes('except:'), successMsg: "مذهل! استخدمت المكتبات والأخطاء لحماية مشروعك." }
       ]
     },
     {
