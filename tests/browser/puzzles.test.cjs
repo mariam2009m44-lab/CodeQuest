@@ -16,7 +16,7 @@ async function newPage(t) {
   t.after(() => context.close());
   await context.route('**/*', async route => {
     const url = new URL(route.request().url());
-    if (url.href === 'https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js') return route.fulfill({contentType:'text/javascript',body:'export function httpsCallable(){return async()=>{throw new Error("emulated failure")}}'});
+    if (url.href === 'https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js') return route.fulfill({contentType:'text/javascript',body:'export function httpsCallable(){return async()=>{window.rewardCalls=(window.rewardCalls||0)+1;throw new Error("emulated failure")}}'});
     if (url.origin !== origin) return route.abort();
     if (url.pathname === '/js/auth.js') return route.fulfill({contentType:'text/javascript',body:'export async function requireUser(){return {uid:"test"}}'});
     if (url.pathname === '/js/firebase-config.js') return route.fulfill({contentType:'text/javascript',body:'export const functions={};'});
@@ -108,7 +108,7 @@ test('image puzzle: eight new local programming scenes, contextual answer retry 
 test('code puzzle: added practice has correct output and no account reward call',async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-match.html`);await page.selectOption('#matchLesson','1');
  for(const word of ['let score = 2;','score = score + 3;','console.log(score);'])await page.getByRole('button',{name:'إضافة '+word,exact:true}).click();
- await page.click('#checkButton');await page.waitForSelector('#matchLearning:not([hidden])');assert.equal(await page.locator('#matchOutput').textContent(),'5');assert.match(await page.locator('#feedback').textContent(),/لا توجد مكافأة/);assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-match-practice-1')),'1');await page.locator('#matchLearning').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/code-puzzle-learning.png'});
+ await page.click('#checkButton');await page.waitForSelector('#matchLearning:not([hidden])');assert.equal(await page.locator('#matchOutput').textContent(),'5');assert.match(await page.locator('#feedback').textContent(),/لا توجد مكافأة/);assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-match-practice-1')),'1');assert.equal(await page.evaluate(()=>window.rewardCalls||0),0);await page.locator('#matchLearning').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/code-puzzle-learning.png'});
 });
 test('speed: guessing one answer cannot unlock the next level',async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');await page.evaluate(()=>{ans(currentQs[curr].a);end()});await page.waitForSelector('#resultScreen.active');assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-speed-stars-easy')),null);await page.evaluate(()=>restartGame());assert.equal(await page.locator('[data-cq-level="medium"]').isDisabled(),true);
@@ -116,4 +116,8 @@ test('speed: guessing one answer cannot unlock the next level',async t=>{
 for(const level of ['medium','hard'])test(`speed: ${level} has six appropriate questions, finite perfect round and correct stars`,async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.evaluate(()=>{localStorage.setItem('codequest-speed-stars-easy','3');localStorage.setItem('codequest-speed-stars-medium','3')});await page.reload();await page.click(`[data-cq-level="${level}"]`);assert.equal(await page.evaluate(()=>currentQs.length),6);assert.equal(await page.evaluate(level=>currentQs.every(q=>q.level===level),level),true);
  for(let i=0;i<6;i++){await page.evaluate(()=>ans(currentQs[curr].a));await page.click('#continueAnswer')};await page.waitForSelector('#resultScreen.active');assert.equal(await page.evaluate(level=>localStorage.getItem(`codequest-speed-stars-${level}`),level),'3');assert.equal(await page.locator('#learningReview pre').count(),6);
+});
+
+for(const [level,words,out] of [[2,['for (let i = 0; i < 3; i++) {','    console.log(i);','}'],'0\n1\n2'],[3,['function double(x) {','    return x * 2;','}','console.log(double(4));'],'8']])test(`code puzzle: practice ${level} solves through real buttons without rewards`,async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-match.html`);await page.selectOption('#matchLesson',String(level));for(const word of words)await page.getByRole('button',{name:'إضافة '+word,exact:true}).click();await page.click('#checkButton');assert.equal(await page.locator('#matchOutput').textContent(),out);assert.equal(await page.evaluate(()=>window.rewardCalls||0),0);assert.equal(await page.locator('#checkButton').isDisabled(),true);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
 });
