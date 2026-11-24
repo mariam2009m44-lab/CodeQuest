@@ -397,7 +397,7 @@
   <link rel="stylesheet" href="css/game-3d.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
 </head>
-<body class="cq-game-page">
+<body class="cq-game-page" data-cq-theme="bright" data-cq-puzzle="true">
   <main class="page-container">
     <header class="header">
       <a href="games.html" class="back-link">
@@ -408,6 +408,7 @@
       <h1 class="game-title">🧩 بازل الأكواد</h1>
     </header>
 
+    <p id="matchProgress" class="cq-device-note" role="status">التقدم محفوظ على هذا الجهاز فقط</p>
     <section class="game-art-banner" aria-label="تحدي ترتيب الكود"><img src="assets/games/game-match.svg" alt="" decoding="async"></section>
   <section class="game-card" aria-labelledby="gameInstructions">
       <p class="intro" id="gameInstructions">
@@ -486,6 +487,7 @@
     import { functions } from "./js/firebase-config.js";
     import { requireUser } from "./js/auth.js";
 
+    if(localStorage.getItem('codequest-match-completed')==='1')document.getElementById('matchProgress').textContent='اكتمل هذا التحدي على هذا الجهاز ★';
     const GAME_ID = "code-puzzle-hello-world";
 
     const correctCode = [
@@ -774,6 +776,9 @@
       }
 
       solved = true;
+      const recordKey='codequest-match-completed';
+      localStorage.setItem(recordKey,'1');
+      document.getElementById('matchProgress').textContent='اكتمل هذا التحدي على هذا الجهاز ★';
 
       targetZone.classList.remove("incorrect");
       targetZone.classList.add("correct");
