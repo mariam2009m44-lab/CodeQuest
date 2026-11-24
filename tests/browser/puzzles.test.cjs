@@ -61,3 +61,22 @@ test('image puzzle: custom image stays usable, real tap-placement awards stars a
  await page.locator('#puzzleStars').scrollIntoViewIfNeeded();
  await page.screenshot({path:'/downloads/puzzle-real-win.png'});
 });
+test('image puzzle preset: played result facts remain readable', async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-image-puzzle.html`);
+ // Use the existing illustrated game banner as a lightweight local uploaded image.
+ await page.click('#startBtn');await page.waitForSelector('#gameLayout.visible');
+
+ // Exercise the click placement handler for every piece, rather than directly calling checkWin.
+ for(let i=0;i<4;i++){
+   await page.locator(`[data-piece="${i}"]`).first().click();
+   await page.locator('#board').scrollIntoViewIfNeeded();
+   const xy=await page.evaluate(i=>{const r=document.getElementById('board').getBoundingClientRect();return {x:r.left+(i%2+.5)*cellW,y:r.top+(Math.floor(i/2)+.5)*cellH}},i);
+   await page.mouse.click(xy.x,xy.y);
+ }
+ await page.waitForSelector('#successBox.visible');
+ assert.equal(await page.locator('#puzzleStars').textContent(),'★★★');
+ const record=await page.evaluate(()=>JSON.parse(localStorage.getItem('codeQuestPuzzleBest_tech-computer_2')));
+ assert.equal(record.stars,3);assert.equal(record.plays,1);
+ await page.locator('#learningTitle').scrollIntoViewIfNeeded();
+ await page.screenshot({path:'/downloads/puzzle-facts-fixed.png'});
+});
