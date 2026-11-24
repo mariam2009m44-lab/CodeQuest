@@ -1,5 +1,6 @@
 
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
@@ -687,6 +688,8 @@ export default {
         configured,
         quotaAvailable,
         ready: configured && quotaAvailable,
+        readinessScope: "configuration-only",
+        providerVerified: false,
         model: env.GEMINI_MODEL || "gemini-3.8-flash"
       }, 200, origin);
     }
@@ -999,6 +1002,7 @@ export default {
         }
 
         if (!upstream) {
+          await refundCodyQuestionQuota(env, authenticatedUser.uid);
           return jsonResponse({
             success: false,
             errorCode: "GEMINI_UPSTREAM_UNAVAILABLE",
@@ -1035,8 +1039,8 @@ export default {
           await refundCodyQuestionQuota(env, authenticatedUser.uid);
           return jsonResponse({
             success: false,
-            errorCode: "GEMINI_UPSTREAM_ERROR",
-            message: "خدمة Gemini واجهت مشكلة مؤقتة. حاول مرة أخرى بعد قليل."
+            ...describeGeminiFailure(upstream.status),
+            providerHttpStatus: upstream.status
           }, 502, origin);
         }
 

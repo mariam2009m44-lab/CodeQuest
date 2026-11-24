@@ -430,7 +430,7 @@ async function openChat() {
       setStatus(message, "error");
       addServiceNotice(message);
     } else if (health.ready === true) {
-      setStatus("كودي متصل وجاهز لاستقبال أسئلتك.", "success");
+      setStatus("إعدادات كودي موجودة. توافر الرد يتأكد عند إرسال السؤال.", "info");
     } else {
       const message = "خدمة كودي استجابت، لكن إعداداتها غير مكتملة حتى الآن.";
       setStatus(message, "info");

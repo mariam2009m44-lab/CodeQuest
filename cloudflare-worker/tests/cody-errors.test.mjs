@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import{describeGeminiFailure}from'../cody-errors.js';
+test('configuration failures are not mislabeled temporary',()=>{for(const status of [400,402,404]){const e=describeGeminiFailure(status);assert.doesNotMatch(e.message,/مؤقت/);assert.notEqual(e.errorCode,'CODY_PROVIDER_TEMPORARY')}});
+test('transient provider errors remain retryable, unknown failures stay honest',()=>{for(const s of [408,500,502,503,504])assert.equal(describeGeminiFailure(s).errorCode,'CODY_PROVIDER_TEMPORARY');assert.equal(describeGeminiFailure(422).errorCode,'CODY_PROVIDER_REJECTED')});
