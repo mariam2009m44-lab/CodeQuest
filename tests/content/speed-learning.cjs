@@ -5,3 +5,5 @@ for(const q of bank){const p=spawnSync('python3',['-I','-c',q.code],{encoding:'u
 const html=fs.readFileSync('game-match.html','utf8'),start=html.indexOf('    const lessons = ['),end=html.indexOf('    let lessonIndex',start),out={};vm.runInNewContext(html.slice(start,end)+';this.lessons=lessons',out);
 for(const lesson of out.lessons){const logs=[];vm.runInNewContext(lesson.pieces.join('\n'),{console:{log:x=>logs.push(String(x))}},{timeout:1000});assert.equal(logs.join('\n'),lesson.output,lesson.title)}
 console.log('24 Python speed snippets and 4 JavaScript puzzle solutions execute with exact claimed outputs');
+const gallery={window:{}};vm.runInNewContext(fs.readFileSync('js/puzzle-learning-gallery.js','utf8'),gallery);assert.equal(gallery.window.CQPuzzleLearning.length,8);for(const art of gallery.window.CQPuzzleLearning){assert.ok(fs.statSync(art.src).size<12000);assert.equal(art.learning.choices[art.learning.correct],art.learning.answer);assert.ok(art.learning.explain.length>30)}
+console.log('8 local SVG files and contextual answer mappings checked');
