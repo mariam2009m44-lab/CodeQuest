@@ -16,6 +16,7 @@ async function newPage(t) {
   t.after(() => context.close());
   await context.route('**/*', async route => {
     const url = new URL(route.request().url());
+    if (url.href.includes('/codemirror.min.css')) return route.fulfill({contentType:'text/css',body:await readFile(require.resolve('codemirror/lib/codemirror.css'))});
     if (url.href.includes('/codemirror.min.js')) return route.fulfill({contentType:'text/javascript',body:await readFile(require.resolve('codemirror/lib/codemirror.js'))});
     if (url.origin === 'https://www.gstatic.com' && url.pathname.endsWith('firebase-firestore.js')) return route.fulfill({contentType:'text/javascript',body:`
       export const doc=(_, ...p)=>p.join('/'); export const collection=doc; export const serverTimestamp=()=>0;
@@ -44,6 +45,7 @@ test('playground runs actual JavaScript in worker, reports errors, saves and iso
  await page.evaluate(code=>document.querySelector('.CodeMirror').CodeMirror.setValue(code),code);
  await page.click('#runBtn');await page.waitForFunction(()=>!document.getElementById('runBtn').disabled);
  assert.equal((await page.locator('#output').textContent()).trim(),'line one\nline two');
+ await page.locator('#output').scrollIntoViewIfNeeded();
  await page.screenshot({path:'/downloads/editor-real-output.png'});
  await page.evaluate(()=>document.querySelector('.CodeMirror').CodeMirror.setValue('throw new Error("test-error")'));
  await page.click('#runBtn');await page.waitForFunction(()=>!document.getElementById('runBtn').disabled);assert.match(await page.locator('#output').textContent(),/test-error/);
