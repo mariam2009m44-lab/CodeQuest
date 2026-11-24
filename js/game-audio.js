@@ -25,6 +25,17 @@
   let masterBus = null, musicBus = null, soundBus = null, delayNode = null;
   let delayFeedback = null, delayWet = null, compressor = null, noiseBuffer = null;
   let musicGeneration = 0;
+  let orbitBuffer = null, orbitLoading = null, orbitSource = null;
+  const retiringMusic = new Set();
+  const ORBIT_URL = new URL("../assets/audio/orbit-loop.ogg", SCRIPT_URL).href;
+  async function loadOrbit(ctx) {
+    if (orbitBuffer) return orbitBuffer;
+    if (!orbitLoading) orbitLoading = fetch(ORBIT_URL).then(response => {
+      if (!response.ok) throw new Error("Music unavailable");
+      return response.arrayBuffer();
+    }).then(data => ctx.decodeAudioData(data)).then(buffer => (orbitBuffer = buffer)).catch(error => { orbitLoading = null; throw error; });
+    return orbitLoading;
+  }
   const musicSources = new Set();
   function trackSource(source, nodes, channel) {
     if (channel !== "sound") musicSources.add(source);
@@ -57,7 +68,7 @@
       delayWet = context.createGain();
       delayWet.gain.value = 0.13;
       musicBus.connect(masterBus);
-      musicBus.connect(delayNode);
+      // Orbit is rendered with its own stereo ambience; no second delay send.
       delayNode.connect(delayFeedback);
       delayFeedback.connect(delayNode);
       delayNode.connect(delayWet);
@@ -243,21 +254,31 @@
     const ctx = getContext();
     if (!ctx) return;
     musicEnabled = true;
-    const generation = ++musicGeneration;
-    try { await ctx.resume(); } catch { return; }
-    if (generation !== musicGeneration || !musicEnabled || document.hidden) return;
-    if (musicTimer) { setVolumes({}); return; }
-    clearMusicSources();
     save(MUSIC_KEY, true);
-    const now = ctx.currentTime;
-    musicBus.gain.cancelScheduledValues(now);
-    musicBus.gain.setValueAtTime(musicBus.gain.value, now);
-    musicBus.gain.linearRampToValueAtTime(musicVolume * 0.72, now + 1.1);
-    if (musicTimer) clearInterval(musicTimer);
-    musicStep = 0;
-    nextMusicStepTime = now + 0.08;
-    scheduleMusic();
-    musicTimer = setInterval(scheduleMusic, 45);
+    const generation = ++musicGeneration;
+    try {
+      await ctx.resume();
+      const buffer = await loadOrbit(ctx);
+      if (generation !== musicGeneration || !musicEnabled || document.hidden) return;
+      if (orbitSource) { setVolumes({}); return; }
+      clearMusicSources();
+      for (const old of retiringMusic) { try { old.stop(); } catch {} }
+      retiringMusic.clear();
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.connect(musicBus);
+      orbitSource = source;
+      source.onended = () => { retiringMusic.delete(source); source.disconnect(); if (orbitSource === source) orbitSource = null; };
+      const now = ctx.currentTime;
+      musicBus.gain.cancelScheduledValues(now);
+      musicBus.gain.setValueAtTime(0, now);
+      musicBus.gain.linearRampToValueAtTime(musicVolume * 0.72, now + 0.8);
+      source.start(now);
+    } catch (error) {
+      // Keep the stored preference and controls usable if an asset cannot load.
+      console.warn("CodeQuest music could not start:", error);
+    }
   }
 
   function stopMusic() {
@@ -266,6 +287,12 @@
     save(MUSIC_KEY, false);
     if (musicTimer) clearInterval(musicTimer);
     musicTimer = null;
+    if (orbitSource) {
+      const source = orbitSource;
+      retiringMusic.add(source);
+      orbitSource = null;
+      try { source.stop(context.currentTime + 0.46); } catch {}
+    }
     if (musicBus && context?.state === "running") {
       const now = context.currentTime;
       musicBus.gain.cancelScheduledValues(now);
@@ -407,7 +434,7 @@
     const target=event.target;
     if(!(target instanceof Element)||!target.closest("button,a[href],[role=\"button\"],.mobile-nav-item,.activity-card,.course-card,.choice-btn,.piece,.code-block,.match-item,.bug-line,.drag-piece,input,select,summary"))return;
     const ctx=getContext();
-    if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer)startMusic()}).catch(()=>{});else {if(soundEnabled)play("tap");if(musicEnabled&&!musicTimer)startMusic();}
+    if(ctx?.state==="suspended")ctx.resume().then(()=>{if(soundEnabled)play("tap");if(musicEnabled&&!orbitSource)startMusic()}).catch(()=>{});else {if(soundEnabled)play("tap");if(musicEnabled&&!orbitSource)startMusic();}
   }
   document.addEventListener("pointerdown",onInteraction,{passive:true});
   document.addEventListener("keydown",onInteraction);
@@ -415,7 +442,7 @@
   if(document.readyState!=="loading")mountControls();
   window.addEventListener("storage",event=>{if(event.key===SOUND_KEY){soundEnabled=read(SOUND_KEY);setVolumes({sound:soundVolume})}if(event.key===MUSIC_KEY){if(read(MUSIC_KEY)){musicEnabled=true;if(context?.state==="running")startMusic()}else stopMusic()}if(event.key==="cq_sound_volume"||event.key==="cq_music_volume"){const value=Number(event.newValue);if(event.newValue!==null&&Number.isFinite(value))setVolumes(event.key==="cq_sound_volume"?{sound:value}:{music:value})}});
   document.addEventListener("cq:audio-settings-change",()=>{soundEnabled=read(SOUND_KEY);setVolumes({});if(read(MUSIC_KEY))startMusic();else stopMusic();});
-  document.addEventListener("visibilitychange",()=>{if(document.hidden){if(musicTimer)clearInterval(musicTimer);musicTimer=null;if(context?.state==="running")context.suspend().catch(()=>{})}else if(musicEnabled&&context?.state==="suspended")startMusic()});
+  document.addEventListener("visibilitychange",()=>{if(document.hidden){if(musicTimer)clearInterval(musicTimer);musicTimer=null;++musicGeneration;if(orbitSource){try{orbitSource.stop()}catch{}orbitSource=null}if(context?.state==="running")context.suspend().catch(()=>{})}else if(musicEnabled&&context?.state==="suspended")startMusic()});
   soundEnabled=read(SOUND_KEY);
   musicEnabled=read(MUSIC_KEY);
   window.CodeQuestAudio=Object.freeze({play,refreshGemBalance,setGemBalance,setVolumes});
