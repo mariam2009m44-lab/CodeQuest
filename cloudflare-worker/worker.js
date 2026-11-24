@@ -86,6 +86,14 @@ function getAllowedOrigin(request, env) {
 
   if (origin === allowedOrigin) return origin;
 
+  // Additional production frontends are listed as exact origins.
+  // Wildcards are intentionally not supported.
+  const extraOrigins = String(env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+  if (origin && extraOrigins.includes(origin)) return origin;
+
   // Hash-prefixed Cloudflare Pages previews are separate origins. Allow them
   // only on preview deployments; never widen the production allow-list.
   if (
