@@ -115,6 +115,7 @@
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/codequest-games.css">
   <link rel="stylesheet" href="css/codequest-games-pro.css">
+  <link rel="stylesheet" href="css/game-3d.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
 </head>
 <body class="cq-game-page">
@@ -128,9 +129,9 @@
     <div class="level-box">
       <h2>اختر مستوى الذاكرة</h2>
       <div class="levels-grid">
-        <button class="lvl-btn lvl-easy" onclick="startGame(6)"><span>مبتدئ</span> <span>6 أزواج</span></button>
-        <button class="lvl-btn lvl-med" onclick="startGame(10)"><span>متوسط</span> <span>10 أزواج</span></button>
-        <button class="lvl-btn lvl-hard" onclick="startGame(15)"><span>متقدم</span> <span>15 زوج</span></button>
+        <button class="lvl-btn lvl-easy" data-pairs="6" onclick="startGame(6)"><span>مبتدئ</span> <span>6 أزواج</span> <span class="cq-stars" data-stars="6"></span></button>
+        <button class="lvl-btn lvl-med" data-pairs="10" onclick="startGame(10)"><span>متوسط</span> <span>10 أزواج</span> <span class="cq-stars" data-stars="10"></span></button>
+        <button class="lvl-btn lvl-hard" data-pairs="15" onclick="startGame(15)"><span>متقدم</span> <span>15 زوج</span> <span class="cq-stars" data-stars="15"></span></button>
       </div>
     </div>
   </div>
@@ -142,6 +143,7 @@
         <h2 id="resultTitle">أحسنت! لقد أكملت اللعبة 🎉</h2>
         <p class="result-message" id="resultMessage" style="color: var(--muted); margin-bottom: 20px;"></p>
         <button class="btn-restart" onclick="restartCurrentLevel()">العب مرة أخرى</button>
+        <button class="btn-back" onclick="showMemoryLevels()">المستويات</button>
         <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
       </div>
     </div>
@@ -169,7 +171,26 @@
       window.CodeQuestExperience?.collectible({ label: "+" + points + " نقطة" });
     }
 
+    const MEM_REQUIRES = { 6: 0, 10: 6, 15: 10 };
+    function memoryStars(n) { return Number(localStorage.getItem('codequest-memory-stars-' + n)) || 0; }
+    function memoryStarText(n) { return '★'.repeat(n) + '<span class="off">' + '★'.repeat(3 - n) + '</span>'; }
+    function memoryStarsFor(pairs, moves) { return moves <= Math.ceil(pairs * 1.5) ? 3 : moves <= pairs * 2.5 ? 2 : 1; }
+    function renderMemoryLevels() {
+      document.querySelectorAll('.lvl-btn[data-pairs]').forEach(btn => {
+        const n = Number(btn.dataset.pairs), req = MEM_REQUIRES[n], open = !req || memoryStars(req) > 0;
+        btn.disabled = !open;
+        btn.querySelector('.cq-stars').innerHTML = open ? memoryStarText(memoryStars(n)) : '<span class="cq-lock">أنهِ المستوى السابق لفتحه</span>';
+      });
+    }
+    function showMemoryLevels() {
+      stopMemoryTimer(); renderMemoryLevels();
+      document.getElementById('gameScreen').classList.remove('active');
+      document.getElementById('levelScreen').classList.add('active');
+    }
+    renderMemoryLevels();
+
     function startGame(pairsCount) {
+      if (MEM_REQUIRES[pairsCount] && memoryStars(MEM_REQUIRES[pairsCount]) === 0) return;
       stopMemoryTimer(); currentPairs = pairsCount; totalPairs = pairsCount; score = 0; memoryMoves = 0; document.getElementById('memoryMoves').textContent='0'; scoreDisplay.textContent = score;
       flippedCards = []; matchedCount = 0; lock = false;
       document.getElementById('levelScreen').classList.remove('active');
@@ -229,9 +250,12 @@
             const previousBest=Number(localStorage.getItem(bestKey))||0;
             const isBest=!previousBest||memorySeconds<previousBest;
             if(isBest)localStorage.setItem(bestKey,String(memorySeconds));
+            const earned = memoryStarsFor(currentPairs, memoryMoves);
+            if (earned > memoryStars(currentPairs)) localStorage.setItem('codequest-memory-stars-' + currentPairs, String(earned));
+            renderMemoryLevels();
             winScreen.style.display = 'block'; gameGrid.style.display = 'none';
             document.getElementById('resultEmoji').textContent = '🏆';
-            document.getElementById('resultTitle').textContent = 'رائع! لقد أكملت اللعبة!';
+            document.getElementById('resultTitle').textContent = 'رائع! لقد أكملت اللعبة! ' + '★'.repeat(earned);
             document.getElementById('resultMessage').textContent = `النقاط: ${score} • الوقت: ${formatMemoryTime(memorySeconds)} • المحاولات: ${memoryMoves} • أفضل وقت: ${formatMemoryTime(Number(localStorage.getItem(bestKey))||memorySeconds)}${isBest?' • رقم قياسي جديد!':''}`;
             window.CodeQuestExperience?.reward({ gems: 0, title: 'ذاكرة خارقة!', message: 'طابقت كل البطاقات وأكملت المرحلة بنجاح.' });
           }, 500);
@@ -283,5 +307,7 @@
   </script>
 <script type="module" src="js/route-guard.js"></script>
   <script src="js/game-audio.js"></script>
+<script type="module" src="js/game-3d.js"></script>
+<script type="module" src="js/memory-3d.js"></script>
 </body>
 </html>
