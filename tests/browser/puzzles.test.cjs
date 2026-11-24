@@ -113,3 +113,7 @@ test('code puzzle: added practice has correct output and no account reward call'
 test('speed: guessing one answer cannot unlock the next level',async t=>{
  const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');await page.evaluate(()=>{ans(currentQs[curr].a);end()});await page.waitForSelector('#resultScreen.active');assert.equal(await page.evaluate(()=>localStorage.getItem('codequest-speed-stars-easy')),null);await page.evaluate(()=>restartGame());assert.equal(await page.locator('[data-cq-level="medium"]').isDisabled(),true);
 });
+for(const level of ['medium','hard'])test(`speed: ${level} has six appropriate questions, finite perfect round and correct stars`,async t=>{
+ const {page}=await newPage(t);await page.goto(`${origin}/game-speed.html`);await page.evaluate(()=>{localStorage.setItem('codequest-speed-stars-easy','3');localStorage.setItem('codequest-speed-stars-medium','3')});await page.reload();await page.click(`[data-cq-level="${level}"]`);assert.equal(await page.evaluate(()=>currentQs.length),6);assert.equal(await page.evaluate(level=>currentQs.every(q=>q.level===level),level),true);
+ for(let i=0;i<6;i++){await page.evaluate(()=>ans(currentQs[curr].a));await page.click('#continueAnswer')};await page.waitForSelector('#resultScreen.active');assert.equal(await page.evaluate(level=>localStorage.getItem(`codequest-speed-stars-${level}`),level),'3');assert.equal(await page.locator('#learningReview pre').count(),6);
+});

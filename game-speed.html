@@ -130,7 +130,7 @@
   <link rel="stylesheet" href="css/game-3d.css">
 <link rel="stylesheet" href="css/game-space.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
-<style>#speedCode{direction:ltr;text-align:left;white-space:pre-wrap;background:#080d26;border:1px solid #5954ab;border-radius:14px;padding:18px;color:#9ff3ed;font:16px/1.8 monospace}#speedClaim{font:700 19px monospace;color:#ffe18b}.learning-explain{line-height:1.9;padding:14px;background:#35255a;border-radius:12px;color:#f2edff}.learning-mode{display:block;padding:16px;color:#b8f5ed}#continueAnswer{margin:12px auto;background:#7054da;color:#fff}#continueAnswer[hidden],.learning-explain[hidden]{display:none}#learningReview{text-align:right;line-height:1.8}.answer-feedback{height:auto!important;min-height:28px}</style><style>.learning-explain pre{direction:ltr;text-align:left;padding:10px;background:#080d26;color:#a7f5e1;border-radius:8px;font:18px monospace}</style><style>body[data-cq-game="speed"] .question{font-size:clamp(1.05rem,4.8vw,1.45rem);min-height:0;margin:18px 0;line-height:1.7}body[data-cq-game="speed"] .timer-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:.75rem}#speedCode{margin:12px 0;padding:13px;line-height:1.6}body[data-cq-game="speed"] .answer-feedback{font-size:.9rem}.learning-explain{font-size:.9rem}</style></head>
+<style>#speedCode{direction:ltr;text-align:left;white-space:pre-wrap;background:#080d26;border:1px solid #5954ab;border-radius:14px;padding:18px;color:#9ff3ed;font:16px/1.8 monospace}#speedClaim{font:700 19px monospace;color:#ffe18b}.learning-explain{line-height:1.9;padding:14px;background:#35255a;border-radius:12px;color:#f2edff}.learning-mode{display:block;padding:16px;color:#b8f5ed}#continueAnswer{margin:12px auto;background:#7054da;color:#fff}#continueAnswer[hidden],.learning-explain[hidden]{display:none}#learningReview{text-align:right;line-height:1.8}.answer-feedback{height:auto!important;min-height:28px}</style><style>.learning-explain pre{direction:ltr;text-align:left;padding:10px;background:#080d26;color:#a7f5e1;border-radius:8px;font:18px monospace}</style><style>body[data-cq-game="speed"] .question{font-size:clamp(1.05rem,4.8vw,1.45rem);min-height:0;margin:18px 0;line-height:1.7}body[data-cq-game="speed"] .timer-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:.75rem}#speedCode{margin:12px 0;padding:13px;line-height:1.6}body[data-cq-game="speed"] .answer-feedback{font-size:.9rem}.learning-explain{font-size:.9rem}</style><style>#learningReview pre{direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 monospace;background:#0b0b28;padding:12px;border-radius:10px}</style></head>
 <body class="cq-game-page" data-cq-game="speed" data-cq-theme="space">
   <canvas id="bg-canvas"></canvas>
   <div class="top-nav">
@@ -255,7 +255,7 @@
         (correctChoice ? trueButton : falseButton).classList.add('answer-correct');
       }
       clearInterval(int);
-      const item=currentQs[curr];reviews.push({concept:item.concept,correct,output:item.output});
+      const item=currentQs[curr];reviews.push({concept:item.concept,correct,output:item.output,code:item.code,explain:item.explain});
       const explain=document.getElementById('speedExplain');explain.textContent='الناتج الصحيح موضح بالأسفل. '+item.explain;explain.hidden=false;const result=document.createElement('pre');result.dir='ltr';result.textContent=item.output;explain.appendChild(result);
       const next=document.getElementById('continueAnswer');next.hidden=false;next.textContent=curr===currentQs.length-1?'مراجعة الجولة':'فهمت، التالي';
     }
@@ -287,7 +287,7 @@
       document.getElementById('final').textContent = score;
       const emoji = document.getElementById('resultEmoji');
       const msg = document.getElementById('resultMessage');
-      const review=document.getElementById('learningReview');review.replaceChildren();for(const r of reviews){const line=document.createElement('p');line.textContent=(r.correct?'✓ ':'راجع: ')+r.concept+' · الناتج '+r.output;review.appendChild(line);}
+      const review=document.getElementById('learningReview');review.replaceChildren();for(const r of reviews){const line=document.createElement('p');line.textContent=(r.correct?'✓ ':'راجع: ')+r.concept;const code=document.createElement('pre');code.dir='ltr';code.textContent=r.code+'\n# Output: '+r.output;line.appendChild(code);if(!r.correct){const why=document.createElement('span');why.textContent=r.explain;line.appendChild(why);}review.appendChild(line);}
       if (score >= 80) { emoji.textContent = '🏆'; msg.textContent = 'فهم رائع للكود! راجع ما تعلمته في الجولة.'; }
       else if (score >= 40) { emoji.textContent = '🌟'; msg.textContent = 'جيد جداً! يمكنك التحسن.'; }
       else { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة، استمر!'; }
