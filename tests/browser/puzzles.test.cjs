@@ -88,7 +88,7 @@ test('speed: learning pauses timer, explains wrong answers, manual continue, fin
  assert.equal(await page.locator('#score').textContent(),'0');await page.waitForTimeout(1200);assert.equal(await page.evaluate(()=>curr),0);assert.equal(await page.evaluate(()=>time),30);
  assert.ok((await page.locator('#speedExplain').textContent()).length>40);await page.locator('#answerFeedback').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/speed-learning-preview.png'});
  for(let i=0;i<6;i++){if(i>0)await page.evaluate(()=>ans(currentQs[curr].a));await page.click('#continueAnswer');}
- await page.waitForSelector('#resultScreen.active');assert.equal(await page.locator('#learningReview p').count(),6);
+ await page.waitForSelector('#resultScreen.active');assert.equal(await page.locator('#learningReview p').count(),6);await page.locator('#learningReview').scrollIntoViewIfNeeded();await page.screenshot({path:'/downloads/speed-round-review.png'});
  await page.evaluate(()=>restartGame());await page.click('.lvl-btn[data-cq-level="easy"]');const next=await page.evaluate(()=>currentQs.map(q=>q.id));assert.equal(next.filter(x=>!first.includes(x)).length,2);
  assert.deepEqual(await page.evaluate(()=>currentQs.every(q=>q.level==='easy')),true);
 });
