@@ -87,6 +87,7 @@ if (!form) {
     "parent.html",
     "achievements.html",
     "course-path.html",
+    "learning.html",
     "instructor-portal.html",
     "academy-registration.html",
     "academy-admin.html",

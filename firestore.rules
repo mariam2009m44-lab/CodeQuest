@@ -161,6 +161,10 @@ service cloud.firestore {
 
       allow delete: if false;
 
+      match /studioEvidence/{evidenceId} {
+        allow read, write: if false;
+      }
+
       match /lessonProgress/{lessonId} {
         function hasVerifiedQuizResult(uid, data) {
           // A rules path can interpolate a whole segment, not fragments of it.

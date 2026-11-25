@@ -1,0 +1,11 @@
+// Account evidence is separate from local session evidence and account rewards.
+// No local storage/offline queue: failed requests stay unconfirmed and cannot leak
+// into the next signed-in account. Identity checked before and after every await.
+export class AccountProgress{
+ constructor({uid,currentUid,submit,read,version}){if(!uid||[currentUid,submit,read].some(f=>typeof f!=='function')||!version)throw new TypeError('Account adapters required');Object.assign(this,{uid,currentUid,submit,read,version});this.states=new Map();this.status='idle';this.epoch=0}
+ assertOwner(){if(this.currentUid()!==this.uid){this.clear();throw new Error('Account changed')}}
+ clear(){this.states.clear();this.status='unconfirmed';this.epoch++}
+ valid(state,id){if(state?.uid!==this.uid||state.lessonId!==id||state.curriculumVersion!==this.version||state.serverVerified!==true||!['prediction','worked','practice','explanation','transfer','complete'].includes(state.phase)||state.revision!==['prediction','worked','practice','explanation','transfer','complete'].indexOf(state.phase)||state.completed!==(state.phase==='complete'))throw new Error('Unverified account evidence');return state}
+ async load(id){this.assertOwner();const epoch=this.epoch;this.status='loading';try{const state=this.valid(await this.read({lessonId:id,curriculumVersion:this.version}),id);this.assertOwner();if(epoch!==this.epoch)throw new Error('Stale account read');this.states.set(id,state);this.status=state.completed?'saved':'ready';return state}catch(e){this.status='unconfirmed';throw e}}
+ async advance(id,phase,extra={}){this.assertOwner();const state=this.states.get(id);if(!state||state.phase!==phase)throw new Error('Load current account phase first');const epoch=this.epoch;this.status='saving';try{const result=await this.submit({lessonId:id,curriculumVersion:this.version,phase,revision:state.revision,...extra});this.assertOwner();if(epoch!==this.epoch)throw new Error('Stale account save');if(result?.accepted!==true){this.status='unconfirmed';return result}const verified=this.valid(result.evidence,id);if(verified.revision!==state.revision+1)throw new Error('Unexpected account transition');this.states.set(id,verified);this.status=verified.completed?'saved':'ready';return result}catch(e){this.status='unconfirmed';throw e}}
+}

@@ -146,3 +146,12 @@ test('project CRUD isolates owners and rejects owner reassignment or oversized s
   await assertFails(deleteDoc(doc(otherDb, projectPath)));
   await assertSucceeds(deleteDoc(doc(ownDb, projectPath)));
 });
+
+test('studio evidence cannot be read, forged or changed directly by any client', {skip:!host}, async t=>{
+ const env=await initializeTestEnvironment({projectId:'demo-codequest-audit',firestore:{rules:fs.readFileSync(path.join(__dirname,'../../firestore.rules'),'utf8')}});t.after(()=>env.cleanup());
+ const uid='studio-rules-'+process.pid,where=`users/${uid}/studioEvidence/studio-v1-test__py-1-1`,state={uid,serverVerified:true,completed:true,revision:5};
+ await env.withSecurityRulesDisabled(async c=>setDoc(doc(c.firestore(),where),state));
+ for(const db of[env.authenticatedContext(uid).firestore(),env.authenticatedContext(uid+'-other').firestore(),env.unauthenticatedContext().firestore()]){
+  await assertFails(getDoc(doc(db,where)));await assertFails(setDoc(doc(db,where),state));await assertFails(setDoc(doc(db,where+'-new'),state));
+ }
+});

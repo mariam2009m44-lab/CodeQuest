@@ -44,6 +44,8 @@ const LANGUAGES = Object.freeze({
 const CURRICULUM_CACHE_TTL_MS = 5 * 60 * 1000;
 const curriculumCache = new Map();
 const USER_RATE_LIMITS = Object.freeze({
+  studioEvidence: Object.freeze({ windowMs: 60 * 1000, maxRequests: 12 }),
+  studioRead: Object.freeze({ windowMs: 60 * 1000, maxRequests: 60 }),
   quizAnswer: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
   saveLessonProgress: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
   runCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 }),
@@ -4013,3 +4015,30 @@ exports.moderateAcademyContent = onCall({ region: "europe-west1" }, async reques
   });
   return { success: true, status: nextStatus };
 });
+
+
+// Versioned studio progress never writes legacy lessonProgress or account rewards.
+let studioHandlers;
+async function getStudioHandlers() {
+  studioHandlers ??= Promise.all([
+    import("./studio-callables.mjs"), import("./studio-firestore-store.mjs"),
+    import("./studio-executor.mjs")
+  ]).then(([{studioCallableHandlers},{studioFirestoreStore},{isolatedExecutor}]) =>
+    studioCallableHandlers({
+      store: studioFirestoreStore(db, () => FieldValue.serverTimestamp()),
+      execute: isolatedExecutor({baseUrl: JUDGE0_URL.value()}),
+      rateLimit: enforceUserRateLimit
+    }));
+  return studioHandlers;
+}
+async function studioCall(action,request) {
+  try { return await (await getStudioHandlers())[action](request); }
+  catch(error) {
+    if(error instanceof HttpsError) throw error;
+    const allowed = new Set(["unauthenticated","invalid-argument","not-found","failed-precondition","permission-denied","aborted","unavailable"]);
+    throw new HttpsError(allowed.has(error?.code) ? error.code : "unavailable",
+      "لم يكتمل التحقق أو حفظ تقدم الدرس. لم نحتسب إنجازًا غير مؤكد. حدّث الحالة وحاول مرة أخرى.");
+  }
+}
+exports.submitStudioEvidence = onCall({...CALL_OPTIONS,timeoutSeconds:120,concurrency:3}, request => studioCall("submit",request));
+exports.getStudioEvidence = onCall(CALL_OPTIONS, request => studioCall("read",request));
