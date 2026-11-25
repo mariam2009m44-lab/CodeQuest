@@ -40,7 +40,7 @@ function renderChild(child, index, d) {
     const note = element("p", "child-sub", d?.syncState === "read_failed" ? "تعذر تحميل البيانات مؤقتًا. حاول التحديث بعد قليل." : "لا توجد بعد نتائج موثّقة على الخادم لهذا الحساب، وهذا لا يعني أنه لم يتعلم شيئًا.");
     note.setAttribute("role", "status"); note.style.margin = "10px 0 0"; card.append(note);
   } else {
-    const note = element("p", "child-sub", "تُحسب النتائج التي قيّمها الخادم فقط."); note.style.margin = "10px 0 0"; card.append(note);
+    const note = element("p", "child-sub", "هذه نتائج قيّمها الخادم وتمت مزامنتها، وليست سجل التعلّم كاملًا."); note.style.margin = "10px 0 0"; card.append(note);
   }
   const actions = element("div", "child-actions");
   const unlink = element("button", "unlink-button", "إلغاء الربط"); unlink.type = "button";

@@ -8,7 +8,7 @@ async function open(file, handler) {
     if (u.hostname === 'codequest.mariam2009m44.workers.dev') { const cors = { 'access-control-allow-origin': 'http://fixture', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS' }; if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors }); const body = JSON.parse(r.request().postData() || '{}'), act = u.pathname.split('/').pop(); reqs.push({ act, body, cache: r.request().headers()['cache-control'], auth: r.request().headers().authorization }); const o = handler(act, body); return r.fulfill({ status: o.status, headers: cors, contentType: 'application/json', body: JSON.stringify(o.data) }); }
     if (u.href.endsWith('firebase-auth.js')) return js('export const onAuthStateChanged=(a,cb)=>{window.__authcb=cb;cb({uid:"u",getIdToken:async()=>"t"})};export const signOut=async()=>{}');
     if (u.pathname === '/js/firebase-config.js') return js('export const auth={currentUser:{uid:"u",getIdToken:async()=>"t"}},functions={},db={}');
-    if (u.pathname === '/js/auth.js') return js('export const requireUser=async()=>({uid:"u",getIdToken:async()=>"t"});export const getCurrentUser=async()=>({uid:"u"});export const updateCurrentUserName=async()=>{};export async function logoutUser(){}');
+    if (u.pathname === '/js/auth.js') return js('export const requireUser=async()=>({uid:"u",getIdToken:async()=>"t"});export const getCurrentUser=()=>({uid:"u"});export const updateCurrentUserName=async()=>{};export async function logoutUser(){}');
     if (['/js/reminders.js', '/js/route-guard.js', '/js/game-audio.js'].includes(u.pathname)) return js('');
     if (u.origin !== 'http://fixture') { if (process.env.DBG) console.log('ABORT', u.href); return r.abort(); }
     const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
@@ -27,8 +27,9 @@ test('settings: consent names who can claim, the exact two counts, expiry, code 
     await p.check('#parentConsentCheck'); await p.click('#createParentCodeButton'); await p.waitForSelector('#parentCodeBox:not([hidden])');
     assert.equal(await p.textContent('#parentCodeValue'), 'K7M2QX4PR9TD');
     const c = reqs.find(r => r.act === 'create'); assert.equal(c.body.consent, true); assert.equal(c.auth, 'Bearer t');
-    await p.waitForSelector('#linkedParentsList button'); await p.screenshot({ path: path.join(require('node:os').tmpdir(), 'parent-consent-390.png'), fullPage: false });
+    await p.waitForSelector('#linkedParentsList button'); await p.locator('section[aria-labelledby=learnerLinkTitle]').screenshot({ path: path.join(require('node:os').tmpdir(), 'parent-consent-390.png') });
     p.once('dialog', d => d.accept()); await p.click('#linkedParentsList button'); await p.waitForTimeout(300); assert.deepEqual(reqs.find(r => r.act === 'unlink').body, { parent: 'p1' });
+    assert.equal(await p.locator('.toast, [role=alert]').filter({ hasText: 'تعذر' }).count(), 0, 'no error toast');
     assert.deepEqual(errs, []);
   } finally { await b.close(); }
 });
