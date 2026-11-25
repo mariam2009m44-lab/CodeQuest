@@ -11,7 +11,7 @@ if(u.pathname.endsWith('execution.mjs'))return r.fulfill({contentType:'text/java
 try{const file=path.join(root,u.pathname);return r.fulfill({contentType:({'.html':'text/html','.mjs':'text/javascript','.json':'application/json','.css':'text/css','.webp':'image/webp'})[path.extname(file)]||'application/octet-stream',body:await fs.readFile(file)})}catch{return r.fulfill({status:404,body:'missing'})}});
 await p.addInitScript(()=>{window.studioAccountUser={uid:'a'}});
 await p.goto('https://studio.test/learning.html?lang=python');
-await p.waitForSelector('#accountProgress');await p.waitForTimeout(800);
+await p.waitForSelector('#accountProgress',{state:'attached'});await p.waitForTimeout(800);
 const text=await p.textContent('#accountProgress');
 assert.match(text,/لم يُفعّل بعد/);assert.doesNotMatch(text,/محفوظ للحساب|تم الحفظ/);
 assert.equal(await p.locator('#retryProgress').isVisible(),false);assert.equal(proofCalls,0);
