@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="js/theme.js"></script>
+  <script src="js/game-store.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#070B14">
   <meta name="description" content="لعبة ترتيب قطع الكود في CodeQuest">
@@ -488,7 +489,8 @@
     import { functions } from "./js/firebase-config.js";
     import { requireUser } from "./js/auth.js";
 
-    if(localStorage.getItem('codequest-match-completed')==='1')document.getElementById('matchProgress').textContent='اكتمل هذا التحدي على هذا الجهاز ★';
+    function showSavedMatchProgress(){if(CQGameStore.get('codequest-match-completed')==='1')document.getElementById('matchProgress').textContent='اكتمل هذا التحدي على هذا الجهاز ★';}
+    showSavedMatchProgress();window.addEventListener('cq-game-ready',()=>{if(lessonIndex===0)showSavedMatchProgress();});
     const GAME_ID = "code-puzzle-hello-world";
 
     const lessons = [
@@ -719,7 +721,7 @@
       claimingReward = false;
       rewardClaimed = false;
 
-      document.getElementById('matchProgress').textContent=localStorage.getItem(lessonIndex===0?'codequest-match-completed':'codequest-match-practice-'+lessonIndex)==='1'?'اكتمل هذا التحدي على هذا الجهاز ★':'تدريب جديد على ترتيب الكود';
+      document.getElementById('matchProgress').textContent=CQGameStore.get(lessonIndex===0?'codequest-match-completed':'codequest-match-practice-'+lessonIndex)==='1'?'اكتمل هذا التحدي على هذا الجهاز ★':'تدريب جديد على ترتيب الكود';
       targetZone.dataset.multiline=String(lessonIndex>0);
       document.getElementById("matchLearning").hidden=true;
       targetZone.classList.remove("correct", "incorrect");
@@ -788,7 +790,7 @@
       solved = true;
       const lesson=lessons[lessonIndex];const learning=document.getElementById('matchLearning');learning.hidden=false;document.getElementById('matchSolvedCode').textContent=lesson.pieces.join(lessonIndex?'\n':'');document.getElementById('matchOutput').textContent=lesson.output;document.getElementById('matchExplanation').textContent=lesson.explain;
       const recordKey=lessonIndex===0?'codequest-match-completed':'codequest-match-practice-'+lessonIndex;
-      localStorage.setItem(recordKey,'1');
+      CQGameStore.set(recordKey,'1');
       document.getElementById('matchProgress').textContent='اكتمل هذا التحدي على هذا الجهاز ★';
 
       targetZone.classList.remove("incorrect");

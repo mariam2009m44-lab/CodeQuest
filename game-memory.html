@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="js/theme.js"></script>
+  <script src="js/game-store.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لعبة الذاكرة | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -157,6 +158,7 @@
       { id: 10, term: 'Variable', def: 'متغير' }, { id: 11, term: 'API', def: 'واجهة برمجة' }, { id: 12, term: 'Git', def: 'تتبع إصدارات الكود' },
       { id: 13, term: 'SQL', def: 'استعلامات قواعد البيانات' }, { id: 14, term: 'C++', def: 'لغة عالية الأداء' }, { id: 15, term: 'Java', def: 'كائنية التوجه' }
     ];
+    let mismatchTimer = null, gameRun = 0;
     let flippedCards = [], matchedCount = 0, totalPairs = 0, score = 0, lock = false, currentPairs = 0, memoryMoves = 0, memorySeconds = 0, memoryTimer = null;
     const scoreDisplay = document.getElementById('scoreDisplay'), gameGrid = document.getElementById('gameGrid'), winScreen = document.getElementById('winScreen');
     function formatMemoryTime(seconds){return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');}
@@ -166,14 +168,14 @@
     document.addEventListener('visibilitychange',()=>document.hidden?stopMemoryTimer():resumeMemoryTimer());
 
     function updateGlobalScore(points) {
-      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
+      let total = parseInt(CQGameStore.get('codyTotalScore')) || 0;
       total += points;
-      localStorage.setItem('codyTotalScore', total);
+      CQGameStore.set('codyTotalScore', total);
       window.CodeQuestExperience?.collectible({ label: "+" + points + " نقطة" });
     }
 
     const MEM_REQUIRES = { 6: 0, 10: 6, 15: 10 };
-    function memoryStars(n) { return Number(localStorage.getItem('codequest-memory-stars-' + n)) || 0; }
+    function memoryStars(n) { return Number(CQGameStore.get('codequest-memory-stars-' + n)) || 0; }
     function memoryStarText(n) { return '★'.repeat(n) + '<span class="off">' + '★'.repeat(3 - n) + '</span>'; }
     function memoryStarsFor(pairs, moves) { return moves <= Math.ceil(pairs * 1.5) ? 3 : moves <= pairs * 2.5 ? 2 : 1; }
     function renderMemoryLevels() {
@@ -189,10 +191,12 @@
       document.getElementById('levelScreen').classList.add('active');
     }
     renderMemoryLevels();
+    window.addEventListener('cq-game-ready', renderMemoryLevels);
 
     function startGame(pairsCount) {
+      if (!CQGameStore.ready) { CQGameStore.whenReady(() => startGame(pairsCount)); return; }
       if (MEM_REQUIRES[pairsCount] && memoryStars(MEM_REQUIRES[pairsCount]) === 0) return;
-      stopMemoryTimer(); currentPairs = pairsCount; totalPairs = pairsCount; score = 0; memoryMoves = 0; document.getElementById('memoryMoves').textContent='0'; scoreDisplay.textContent = score;
+      stopMemoryTimer(); clearTimeout(mismatchTimer); mismatchTimer = null; gameRun++; currentPairs = pairsCount; totalPairs = pairsCount; score = 0; memoryMoves = 0; document.getElementById('memoryMoves').textContent='0'; scoreDisplay.textContent = score;
       flippedCards = []; matchedCount = 0; lock = false;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
@@ -248,22 +252,24 @@
           setTimeout(() => {
             stopMemoryTimer();
             const bestKey='codequest-memory-best-'+currentPairs;
-            const previousBest=Number(localStorage.getItem(bestKey))||0;
+            const previousBest=Number(CQGameStore.get(bestKey))||0;
             const isBest=!previousBest||memorySeconds<previousBest;
-            if(isBest)localStorage.setItem(bestKey,String(memorySeconds));
+            if(isBest)CQGameStore.set(bestKey,String(memorySeconds));
             const earned = memoryStarsFor(currentPairs, memoryMoves);
-            if (earned > memoryStars(currentPairs)) { localStorage.setItem('codequest-memory-stars-' + currentPairs, String(earned)); window.dispatchEvent(new CustomEvent('cq-stars-changed', { detail: { game: 'memory', level: String(currentPairs), stars: earned } })); }
+            if (earned > memoryStars(currentPairs)) { CQGameStore.set('codequest-memory-stars-' + currentPairs, String(earned)); window.dispatchEvent(new CustomEvent('cq-stars-changed', { detail: { game: 'memory', level: String(currentPairs), stars: earned } })); }
             renderMemoryLevels();
             winScreen.style.display = 'block'; gameGrid.style.display = 'none';
             document.getElementById('resultEmoji').textContent = '🏆';
             document.getElementById('resultTitle').textContent = 'رائع! لقد أكملت اللعبة! ' + '★'.repeat(earned);
-            document.getElementById('resultMessage').textContent = `النقاط: ${score} • الوقت: ${formatMemoryTime(memorySeconds)} • المحاولات: ${memoryMoves} • أفضل وقت: ${formatMemoryTime(Number(localStorage.getItem(bestKey))||memorySeconds)}${isBest?' • رقم قياسي جديد!':''}`;
+            document.getElementById('resultMessage').textContent = `النقاط: ${score} • الوقت: ${formatMemoryTime(memorySeconds)} • المحاولات: ${memoryMoves} • أفضل وقت: ${formatMemoryTime(Number(CQGameStore.get(bestKey))||memorySeconds)}${isBest?' • رقم قياسي جديد!':''}`;
             window.CodeQuestExperience?.reward({ gems: 0, title: 'ذاكرة خارقة!', message: 'طابقت كل البطاقات وأكملت المرحلة بنجاح.' });
           }, 500);
         }
       } else {
         score = Math.max(0, score - 5); scoreDisplay.textContent = score;
-        setTimeout(() => {
+        const runAtMismatch = gameRun;
+        mismatchTimer = setTimeout(() => {
+          if (runAtMismatch !== gameRun) return;
           c1.el.classList.remove('flipped'); c2.el.classList.remove('flipped');
           c1.el.setAttribute('aria-label', 'بطاقة مخفية');
           c2.el.setAttribute('aria-label', 'بطاقة مخفية');

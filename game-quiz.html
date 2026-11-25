@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="js/theme.js"></script>
+  <script src="js/game-store.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>سيد الأسئلة | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -38,6 +39,11 @@
     .opt-btn:hover { background: rgba(107,232,255,0.1); border-color: var(--cyan); transform: translateX(-5px); }
     .opt-btn.correct { background: rgba(118,233,192,0.2); border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(118,233,192,0.2); }
     .opt-btn.wrong { background: rgba(255,145,169,0.2); border-color: var(--red); color: var(--red); }
+    /* Answered state must stay clearly readable even though the buttons are disabled. */
+    body[data-cq-theme="space"] .opt-btn.correct:disabled { opacity: 1 !important; background: #0f6b52 !important; border: 2px solid #8ff5c8 !important; color: #ffffff !important; box-shadow: 0 0 16px rgba(105,229,170,.45) !important; }
+    body[data-cq-theme="space"] .opt-btn.wrong:disabled { opacity: 1 !important; background: #7a1f4a !important; border: 2px solid #ffa3c4 !important; color: #ffffff !important; }
+    body[data-cq-theme="space"] .opt-btn.correct:disabled::before { content: "✓ "; }
+    body[data-cq-theme="space"] .opt-btn.wrong:disabled::before { content: "✕ "; }
     .result-box { text-align: center; }
     .result-emoji { font-size: 5rem; margin-bottom: 15px; animation: bounce 1s infinite alternate; }
     @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
@@ -216,6 +222,7 @@
         { q: "ما هو الـ Git؟", opts: ["لغة برمجة", "نظام تحكم في الإصدارات", "قاعدة بيانات", "محرر نصوص"], a: 1 }
       ]
     };
+    let optionOrder = [];
     let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy', answerLocked = false;
     const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), progressEl = document.getElementById('progress');
 
@@ -240,9 +247,9 @@
     }
 
     function updateGlobalScore(points) {
-      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
+      let total = parseInt(CQGameStore.get('codyTotalScore')) || 0;
       total += points;
-      localStorage.setItem('codyTotalScore', total);
+      CQGameStore.set('codyTotalScore', total);
       window.CodeQuestExperience?.collectible({ label: "+" + points + " نقطة" });
     }
 
@@ -255,11 +262,14 @@
       progressEl.setAttribute('aria-label',`السؤال ${curr+1} من ${currentQs.length}`);
       progressEl.parentElement.setAttribute('aria-valuenow', String(curr + 1));
       progressEl.parentElement.setAttribute('aria-valuemax', String(currentQs.length));
-      q.opts.forEach((opt, i) => {
+      // Show the options in a random order. optionOrder[position] is the original option index,
+      // so the correct answer is identified by its original index, never by screen position.
+      optionOrder = shuffleQuestions(q.opts.map((_, index) => index));
+      optionOrder.forEach((originalIndex, position) => {
         const btn = document.createElement('button');
         btn.className = 'opt-btn';
-        btn.textContent = opt;
-        btn.onclick = () => checkAns(i, btn);
+        btn.textContent = q.opts[originalIndex];
+        btn.onclick = () => checkAns(position, btn);
         optsEl.appendChild(btn);
       });
       document.getElementById('quizLearning').textContent='';
@@ -270,11 +280,12 @@
       if (answerLocked) return;
       answerLocked = true;
       clearInterval(timerInt);
-      const correctIndex = currentQs[curr].a;
+      const correctIndex = optionOrder.indexOf(currentQs[curr].a);
+      const chosenOriginal = optionOrder[i];
       const feedback=document.getElementById('quizLearning');
-      feedback.textContent='الإجابة الصحيحة: '+currentQs[curr].opts[correctIndex]+'. '+(currentQs[curr].why||'');
+      feedback.textContent='الإجابة الصحيحة: '+currentQs[curr].opts[currentQs[curr].a]+'. '+(currentQs[curr].why||'');
       document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-      if (i === correctIndex) {
+      if (chosenOriginal === currentQs[curr].a) {
         btn.classList.add('correct');
         streak++;
         let points = 10 + (streak * 2);
@@ -293,9 +304,9 @@
 
     function startTimer(reset = true) {
       clearInterval(timerInt);
-      if (document.hidden || answerLocked) return;
       if (reset) timeLeft = 20;
       timeEl.textContent = timeLeft;
+      if (document.hidden || answerLocked) return;
       timerInt = setInterval(() => {
         timeLeft--; timeEl.textContent = timeLeft;
         if (timeLeft <= 0) {
@@ -303,7 +314,8 @@
           answerLocked = true;
           clearInterval(timerInt);
           document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-          optsEl.children[currentQs[curr].a].classList.add('correct');
+          optsEl.children[optionOrder.indexOf(currentQs[curr].a)].classList.add('correct');
+          document.getElementById('quizLearning').textContent='انتهى الوقت. الإجابة الصحيحة: '+currentQs[curr].opts[currentQs[curr].a]+'. '+(currentQs[curr].why||'');
           streak = 0; comboEl.textContent = streak;
           setTimeout(() => { curr++; answerLocked = false; loadQ(); }, 1700);
         }
@@ -317,10 +329,14 @@
       document.getElementById('finalScore').textContent = score;
       const emoji = document.getElementById('resultEmoji');
       const msg = document.getElementById('resultMessage');
-      if (score >= 100) { emoji.textContent = '🏆'; msg.textContent = 'أنت أسطورة! أداء مبهر جداً.'; }
-      else if (score >= 50) { emoji.textContent = '🌟'; msg.textContent = 'عمل رائع! يمكنك تحقيق الأفضل.'; }
-      else { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة! استمر في التعلم.'; }
-      if (score >= 50) window.CodeQuestExperience?.reward({ gems: 0, title: 'تحدي مكتمل!', message: 'أداء رائع! كودي بيحتفل بتقدمك.' });
+      // Same thresholds as the stars in js/game-levels.js: 80% / 50% / 20% of the best possible streak score.
+      let bestPossible = 0; for (let k = 1; k <= currentQs.length; k++) bestPossible += 10 + 2 * k;
+      const quizRatio = score / bestPossible;
+      if (quizRatio >= 0.8) { emoji.textContent = '🏆'; msg.textContent = 'أنت أسطورة! أداء مبهر جداً. حصلت على 3 نجوم.'; }
+      else if (quizRatio >= 0.5) { emoji.textContent = '🌟'; msg.textContent = 'عمل رائع! حصلت على نجمتين. حاول مرة أخرى للحصول على 3.'; }
+      else if (quizRatio >= 0.2) { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة! حصلت على نجمة وفتحت المستوى التالي. استمر في التعلم.'; }
+      else { emoji.textContent = '🚀'; msg.textContent = 'لم تحصل على نجمة هذه المرة. أجب بشكل صحيح وبسلسلة أطول لفتح المستوى التالي، وحاول مرة أخرى.'; }
+      if (quizRatio >= 0.2) window.CodeQuestExperience?.reward({ gems: 0, title: 'تحدي مكتمل!', message: 'أداء رائع! كودي بيحتفل بتقدمك.' });
     }
 
     function restartGame() {

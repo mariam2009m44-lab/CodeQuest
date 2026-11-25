@@ -17,6 +17,7 @@ async function newPage(t) {
   await context.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (url.origin !== origin) return route.abort();
+    if (url.pathname === '/js/auth.js') return route.fulfill({ contentType: 'text/javascript', body: 'export async function requireUser(){return {uid:"test"}}' });
     if (['/js/route-guard.js', '/js/reminders.js', '/js/game-audio.js'].includes(url.pathname)) return route.fulfill({ contentType: 'application/javascript', body: '' });
     const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.json': 'application/json' };
     try { await route.fulfill({ contentType: types[extname(url.pathname)] || 'application/octet-stream', body: await readFile(resolve(root, url.pathname.slice(1))) }); }
@@ -91,7 +92,7 @@ for (const g of ['bug', 'build', 'quiz', 'speed']) {
       const n = await page.evaluate(() => currentQs.length);
       for (let i = 0; i < n; i++) {
         if (g === 'quiz') {
-          await page.evaluate(() => { const q = currentQs[curr]; document.querySelectorAll('.opt-btn')[q.a].click(); });
+          await page.evaluate(() => { const q = currentQs[curr]; document.querySelectorAll('.opt-btn')[optionOrder.indexOf(q.a)].click(); });
           await page.waitForFunction(k => curr > k || document.getElementById('resultScreen').classList.contains('active'), i, { timeout: 5000 });
         } else {
           await page.evaluate(() => ans(currentQs[curr].a));
@@ -123,7 +124,7 @@ test('bug/build: wrong answers do not win, retries lower scores, repeated correc
 
 test('quiz and speed: wrong answers do not score, rapid repeat answer is ignored',async t=>{
  const{page}=await newPage(t);await page.goto(`${origin}/game-quiz.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
- await page.evaluate(()=>{const wrong=(currentQs[curr].a+1)%4;checkAns(wrong,document.querySelectorAll('.opt-btn')[wrong]);checkAns(currentQs[curr].a,document.querySelectorAll('.opt-btn')[currentQs[curr].a])});
+ await page.evaluate(()=>{const right=optionOrder.indexOf(currentQs[curr].a),wrong=(right+1)%4;checkAns(wrong,document.querySelectorAll('.opt-btn')[wrong]);checkAns(right,document.querySelectorAll('.opt-btn')[right])});
  assert.equal(await page.locator('#score').textContent(),'0');assert.match(await page.locator('#quizLearning').textContent(),/الإجابة الصحيحة/);
  await page.goto(`${origin}/game-speed.html`);await page.click('.lvl-btn[data-cq-level="easy"]');
  await page.evaluate(()=>{ans(!currentQs[curr].a);ans(currentQs[curr].a)});assert.equal(await page.locator('#score').textContent(),'0');

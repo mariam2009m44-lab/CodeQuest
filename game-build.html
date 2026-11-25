@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="js/theme.js"></script>
+  <script src="js/game-store.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>بازل الأكواد | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
@@ -165,14 +166,14 @@
     const puzzles = {
       easy: { task: "Python: رتّب الكود لطباعة Hello ثم العدد 5", correct: ['message = "Hello"', 'print(message)', 'print(2 + 3)'], options: ['message = "Hello"', 'print(message)', 'print(2 + 3)'] },
       medium: { task: "Python: رتّب دالة ترحّب بالمستخدم وتستدعيها", correct: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'], options: ['def greet(name):', '    print("Hello " + name)', '    return True', 'greet("Cody")'] },
-      hard: { task: "Python: رتّب كلاس سيارة وأنشئ كائنًا واطبع علامته", correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)', 'car = Car("Cody")', 'car.display()'], options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)', 'car = Car("Cody")', 'car.display()'] }
+      hard: { task: "Python: رتّب كلاس سيارة وأنشئ كائنًا واطبع علامته", correct: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)', 'car = Car("Cody")', 'car.display()'], alternatives: [['class Car:', '    def display(self):', '        print(self.brand)', '    def __init__(self, brand):', '        self.brand = brand', 'car = Car("Cody")', 'car.display()']], options: ['class Car:', '    def __init__(self, brand):', '        self.brand = brand', '    def display(self):', '        print(self.brand)', 'car = Car("Cody")', 'car.display()'] }
     };
-    let seq = [], correctSeq = [], score = 0, currentLevel = 'easy', attempts = 0;
+    let seq = [], correctSeq = [], acceptedSeqs = [], score = 0, currentLevel = 'easy', attempts = 0;
     const drop = document.getElementById('dropZone'), source = document.getElementById('sourceZone'), btn = document.getElementById('btn'), scoreDisplay = document.getElementById('scoreDisplay'), taskText = document.getElementById('taskText');
 
     function updateGlobalScore(points) {
-      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
-      total += points; localStorage.setItem('codyTotalScore', total);
+      let total = parseInt(CQGameStore.get('codyTotalScore')) || 0;
+      total += points; CQGameStore.set('codyTotalScore', total);
       window.CodeQuestExperience?.collectible({ label: "+" + points + " نقطة" });
     }
 
@@ -181,7 +182,7 @@
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('resultScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
-      const p = puzzles[level]; correctSeq = p.correct; taskText.textContent = p.task;
+      const p = puzzles[level]; correctSeq = p.correct; acceptedSeqs = [p.correct, ...(p.alternatives || [])]; taskText.textContent = p.task;
       const shuffled = [...p.options];
       for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
       source.innerHTML = ''; drop.innerHTML = ''; seq = []; btn.disabled = true;
@@ -226,8 +227,11 @@
     }
 
     function check() {
-      const firstWrong = seq.findIndex((value, index) => value !== correctSeq[index]);
-      if (firstWrong === -1 && seq.length === correctSeq.length) {
+      // Accept every genuinely equivalent order (for example two independent methods in a class).
+      // The wrong-line hint follows the accepted order that matches the longest prefix.
+      const wrongAt = candidate => seq.findIndex((value, index) => value !== candidate[index]);
+      const firstWrong = acceptedSeqs.map(wrongAt).reduce((best, at) => (at === -1 || best === -1) ? -1 : Math.max(best, at), 0);
+      if (firstWrong === -1 && acceptedSeqs.some(candidate => seq.length === candidate.length)) {
         const earned = Math.max(20, 50 - attempts * 5);
         document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! كل سطر في مكانه، وأصبح الكود جاهزًا للتنفيذ.';
         btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;

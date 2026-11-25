@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="js/theme.js"></script>
+  <script src="js/game-store.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مركز الألعاب | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -288,11 +289,12 @@
   
   <script>
     function updateGlobalScore() {
-      const score = parseInt(localStorage.getItem('codyTotalScore')) || 0;
+      const score = parseInt(CQGameStore.get('codyTotalScore')) || 0;
       document.getElementById('globalScore').textContent = score;
     }
     updateGlobalScore();
     window.addEventListener('storage', updateGlobalScore);
+    window.addEventListener('cq-game-ready', updateGlobalScore);
 
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');

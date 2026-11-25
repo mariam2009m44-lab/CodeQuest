@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="js/theme.js"></script>
+  <script src="js/game-store.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تحدي السرعة | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -196,8 +197,8 @@
     const fill = document.getElementById('fill'), qText = document.getElementById('qText'), scoreEl = document.getElementById('score');
 
     function updateGlobalScore(points) {
-      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
-      total += points; localStorage.setItem('codyTotalScore', total);
+      let total = parseInt(CQGameStore.get('codyTotalScore')) || 0;
+      total += points; CQGameStore.set('codyTotalScore', total);
       window.CodeQuestExperience?.collectible({ label: "+" + points + " نقطة" });
     }
 
@@ -210,9 +211,9 @@
       maxTime = level === 'easy' ? 30 : level === 'medium' ? 40 : 50;
       time = maxTime;
       timerBar.setAttribute('aria-valuemax', String(maxTime));
-      const seenKey='cq-speed-last-'+level;let previous=[];try{previous=JSON.parse(localStorage.getItem(seenKey)||'[]')}catch(e){}
+      const seenKey='cq-speed-last-'+level;let previous=[];try{previous=JSON.parse(CQGameStore.get(seenKey)||'[]')}catch(e){}
       const candidates=shuffleQuestions(allQs.filter(q=>q.level===level));candidates.sort((a,b)=>Number(previous.includes(a.id))-Number(previous.includes(b.id)));
-      currentQs=candidates.slice(0,count);localStorage.setItem(seenKey,JSON.stringify(currentQs.map(q=>q.id)));
+      currentQs=candidates.slice(0,count);CQGameStore.set(seenKey,JSON.stringify(currentQs.map(q=>q.id)));
       curr = 0; score = 0; answerStreak = 0; answerLocked = false; gameEnded = false; scoreEl.textContent = score; document.getElementById('streakText').textContent = 'إجابات صحيحة: 0'; document.getElementById('answerFeedback').textContent = ''; document.getElementById('trueAnswer').classList.remove('answer-correct','answer-wrong'); document.getElementById('falseAnswer').classList.remove('answer-correct','answer-wrong');
       fill.style.width = '100%'; updateTimerDisplay(); load(); startTimer();
     }
@@ -288,10 +289,12 @@
       const emoji = document.getElementById('resultEmoji');
       const msg = document.getElementById('resultMessage');
       const review=document.getElementById('learningReview');review.replaceChildren();for(const r of reviews){const line=document.createElement('p');line.textContent=(r.correct?'✓ ':'راجع: ')+r.concept;const code=document.createElement('pre');code.dir='ltr';code.textContent=r.code+'\n# Output: '+r.output;line.appendChild(code);if(!r.correct){const why=document.createElement('span');why.textContent=r.explain;line.appendChild(why);}review.appendChild(line);}
-      if (score >= 80) { emoji.textContent = '🏆'; msg.textContent = 'فهم رائع للكود! راجع ما تعلمته في الجولة.'; }
-      else if (score >= 40) { emoji.textContent = '🌟'; msg.textContent = 'جيد جداً! يمكنك التحسن.'; }
-      else { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة، استمر!'; }
-      if (score >= 40) window.CodeQuestExperience?.reward({ gems: 0, title: 'سرعة وتركيز!', message: 'أكملت التحدي وحققت نتيجة تستحق الاحتفال.' });
+      // Same thresholds as the stars in js/game-levels.js: 80% correct = 3 stars, 60% = 2 stars.
+      const speedRatio = reviews.filter(r => r.correct).length / (currentQs.length || 6);
+      if (speedRatio >= 0.8) { emoji.textContent = '🏆'; msg.textContent = 'فهم رائع للكود! حصلت على 3 نجوم. راجع ما تعلمته في الجولة.'; }
+      else if (speedRatio >= 0.6) { emoji.textContent = '🌟'; msg.textContent = 'جيد جداً! حصلت على نجمتين وفتحت المستوى التالي. يمكنك التحسن.'; }
+      else { emoji.textContent = '🚀'; msg.textContent = 'لم تحصل على نجمة هذه المرة. لفتح المستوى التالي أجب عن 4 أسئلة صحيحة من 6 على الأقل، وراجع الشرح بالأسفل ثم حاول مرة أخرى.'; }
+      if (speedRatio >= 0.6) window.CodeQuestExperience?.reward({ gems: 0, title: 'سرعة وتركيز!', message: 'أكملت التحدي وحققت نتيجة تستحق الاحتفال.' });
     }
 
     function restartGame() {

@@ -6,7 +6,7 @@
   if (!game) return;
   const ORDER = ['easy', 'medium', 'hard'];
   const key = lvl => 'codequest-' + game + '-stars-' + lvl;
-  const stars = lvl => Number(localStorage.getItem(key(lvl))) || 0;
+  const stars = lvl => Number(CQGameStore.get(key(lvl))) || 0;
   const starHtml = n => '★'.repeat(n) + '<span class="off">' + '★'.repeat(3 - n) + '</span>';
   const g = name => { try { return (0, eval)('typeof ' + name + ' !== "undefined" ? ' + name + ' : undefined'); } catch (e) { return undefined; } };
 
@@ -39,7 +39,7 @@
     const lvl = g('currentLevel');
     if (!ORDER.includes(lvl)) return;
     const earned = earnedStars();
-    if (earned > stars(lvl)) { localStorage.setItem(key(lvl), String(earned)); window.dispatchEvent(new CustomEvent('cq-stars-changed', { detail: { game, level: lvl, stars: earned } })); }
+    if (earned > stars(lvl)) { CQGameStore.set(key(lvl), String(earned)); window.dispatchEvent(new CustomEvent('cq-stars-changed', { detail: { game, level: lvl, stars: earned } })); }
     const card = document.getElementById('resultScreen');
     let el = card.querySelector('.cq-result-stars');
     if (!el) {
@@ -57,9 +57,15 @@
     .observe(res, { attributes: true, attributeFilter: ['class'] });
   const realStart = window.startGame;
   if (typeof realStart === 'function') window.startGame = function (lvl) {
+    if (!window.CQGameStore || !window.CQGameStore.ready) {
+      // Fail closed: progress is account-scoped, so wait until the signed-in account is known.
+      if (window.CQGameStore) window.CQGameStore.whenReady(() => window.startGame(lvl));
+      return;
+    }
     const i = ORDER.indexOf(lvl);
     if (i > 0 && stars(ORDER[i - 1]) === 0) return;
     return realStart.apply(this, arguments);
   };
+  window.addEventListener('cq-game-ready', renderLevels);
   renderLevels();
 })();

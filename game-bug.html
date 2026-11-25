@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="js/theme.js"></script>
+  <script src="js/game-store.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>صائد الأخطاء | Cody</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code&display=swap" rel="stylesheet">
@@ -170,8 +171,8 @@
     const scoreDisplay = document.getElementById('scoreDisplay'), codeContainer = document.getElementById('codeContainer'), msg = document.getElementById('msg');
 
     function updateGlobalScore(points) {
-      let total = parseInt(localStorage.getItem('codyTotalScore')) || 0;
-      total += points; localStorage.setItem('codyTotalScore', total);
+      let total = parseInt(CQGameStore.get('codyTotalScore')) || 0;
+      total += points; CQGameStore.set('codyTotalScore', total);
       window.CodeQuestExperience?.collectible({ label: "+" + points + " نقطة" });
     }
 
