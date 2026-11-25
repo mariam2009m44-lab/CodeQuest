@@ -762,5 +762,1541 @@
    "answer": 0,
    "why": "and بتطلب إن الشرط على الشمال والشرط على اليمين الاتنين صح."
   }
+ ],
+ "py-5-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(1, 4):\n    print(n * 2)",
+   "run": "python",
+   "options": [
+    "1 ثم 2 ثم 3",
+    "2 ثم 4 ثم 6 ثم 8",
+    "2 ثم 4 ثم 6"
+   ],
+   "answer": 2,
+   "why": "range(1, 4) بتدي 1 و2 و3، والنهاية 4 مش داخلة. كل رقم بيتضرب في 2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(3):\n    print(n)",
+   "run": "python",
+   "options": [
+    "0 ثم 1 ثم 2",
+    "1 ثم 2 ثم 3",
+    "0 ثم 1 ثم 2 ثم 3"
+   ],
+   "answer": 0,
+   "why": "range(3) بتبدأ من 0 وبتوقف قبل 3، فالقيم 0 و1 و2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "total = 0\nfor n in range(1, 5):\n    total = total + n\nprint(total)",
+   "run": "python",
+   "options": [
+    "4",
+    "10",
+    "15"
+   ],
+   "answer": 1,
+   "why": "total بتجمع 1 و2 و3 و4 يعني 10. الرقم 5 مش داخل في range(1, 5)."
+  },
+  {
+   "q": "كام مرة بيتنفذ جسم الحلقة في for n in range(2, 6)؟",
+   "options": [
+    "5 مرات",
+    "6 مرات",
+    "4 مرات (2 و3 و4 و5)"
+   ],
+   "answer": 2,
+   "why": "القيم بتبدأ من 2 وتخلص عند 5 لأن 6 مش مشمولة، فهي 4 قيم."
+  }
+ ],
+ "py-5-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "n = 3\nwhile n > 0:\n    print(n)\n    n = n - 1",
+   "run": "python",
+   "options": [
+    "3 ثم 2 ثم 1",
+    "3 ثم 2 ثم 1 ثم 0",
+    "1 ثم 2 ثم 3"
+   ],
+   "answer": 0,
+   "why": "while بتشتغل طول ما n أكبر من 0، فبتطبع 3 و2 و1 وبعدين n تبقى 0 وتقف."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "n = 0\nwhile n > 0:\n    print(\"go\")\n    n = n - 1\nprint(\"end\")",
+   "run": "python",
+   "options": [
+    "go ثم end",
+    "end",
+    "go"
+   ],
+   "answer": 1,
+   "why": "الشرط n > 0 غلط من الأول، فجسم الحلقة مش بيتنفذ ولا مرة والبرنامج يطبع end بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "n = 1\nwhile n < 20:\n    n = n * 2\nprint(n)",
+   "run": "python",
+   "options": [
+    "16",
+    "8 ثم 16",
+    "32"
+   ],
+   "answer": 2,
+   "why": "n بتتضاعف: 2 و4 و8 و16 و32. لما تبقى 32 الشرط n < 20 يغلط وتتوقف."
+  },
+  {
+   "q": "إيه اللي هيحصل لو نسينا السطر اللي بيغيّر العداد جوه while؟",
+   "options": [
+    "الحلقة ممكن ما تقفش أبدًا",
+    "الحلقة بتتنفذ مرة واحدة بس",
+    "بايثون بتغيّر العداد لوحدها"
+   ],
+   "answer": 0,
+   "why": "لو الشرط فضل صح ومفيش حاجة بتغيّره، الحلقة بتكمل بلا نهاية."
+  }
+ ],
+ "py-5-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(1, 10):\n    if n == 3:\n        break\n    print(n)",
+   "run": "python",
+   "options": [
+    "1 ثم 2 ثم 3",
+    "1 ثم 2",
+    "1 ثم 2 ثم 3 ثم 4 ثم 5 ثم 6 ثم 7 ثم 8 ثم 9"
+   ],
+   "answer": 1,
+   "why": "break بتخرج من الحلقة لما n تبقى 3، قبل ما تطبعه."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(1, 4):\n    print(n)\n    if n == 2:\n        break",
+   "run": "python",
+   "options": [
+    "1 ثم 2 ثم 3",
+    "1",
+    "1 ثم 2"
+   ],
+   "answer": 2,
+   "why": "هنا print قبل if، فبتطبع 1 و2 وبعدين break توقف الحلقة قبل 3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(1, 4):\n    if n == 5:\n        break\n    print(n)",
+   "run": "python",
+   "options": [
+    "1 ثم 2 ثم 3",
+    "1 ثم 2",
+    "1 ثم 2 ثم 3 ثم 4 ثم 5"
+   ],
+   "answer": 0,
+   "why": "n عمرها ما بتبقى 5 هنا، فـ break ما بتتنفذش والحلقة بتطبع كل القيم 1 و2 و3."
+  },
+  {
+   "q": "break بتعمل إيه جوه حلقة for؟",
+   "options": [
+    "بتتخطى الدورة دي بس وتكمل",
+    "بتخرج من الحلقة فورًا",
+    "بتبدأ الحلقة من الأول"
+   ],
+   "answer": 1,
+   "why": "break بتوقف أقرب حلقة خالص، ومش بتكمل أي دورات بعدها."
+  }
+ ],
+ "py-5-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(1, 6):\n    if n % 2 == 0:\n        continue\n    print(n)",
+   "run": "python",
+   "options": [
+    "2 ثم 4",
+    "1 ثم 3",
+    "1 ثم 3 ثم 5"
+   ],
+   "answer": 2,
+   "why": "continue بتتخطى الأرقام الزوجية، فبيتطبع الفردي بس: 1 و3 و5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(1, 4):\n    if n == 2:\n        continue\n    print(n * 10)",
+   "run": "python",
+   "options": [
+    "10 ثم 30",
+    "10 ثم 20 ثم 30",
+    "10"
+   ],
+   "answer": 0,
+   "why": "لما n تبقى 2 بنتخطى الطباعة، فبيطلع 10 و30 بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "for n in range(1, 4):\n    print(n)\n    if n == 2:\n        continue",
+   "run": "python",
+   "options": [
+    "1 ثم 2",
+    "1 ثم 2 ثم 3",
+    "1 ثم 2 ثم 3 ثم 2"
+   ],
+   "answer": 1,
+   "why": "continue في آخر الدورة ما بتغيّرش حاجة لأن مفيش بعدها أوامر، فكل القيم 1 و2 و3 بتتطبع."
+  },
+  {
+   "q": "الفرق بين continue و break؟",
+   "options": [
+    "continue بتنهي الحلقة وbreak بتتخطى دورة",
+    "هما نفس الشيء",
+    "continue بتتخطى الدورة الحالية وبتكمل، وbreak بتنهي الحلقة"
+   ],
+   "answer": 2,
+   "why": "continue بتروح للدورة اللي بعدها مباشرة، وbreak بتخرج من الحلقة كلها."
+  }
+ ],
+ "py-6-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "items = [\"map\", \"rope\", \"lamp\"]\nprint(items)",
+   "run": "python",
+   "options": [
+    "['map', 'rope', 'lamp']",
+    "map rope lamp",
+    "['map', 'rope']"
+   ],
+   "answer": 0,
+   "why": "print للـlist بتعرض شكلها بالأقواس المربعة والاقتباسات: ['map', 'rope', 'lamp']."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "nums = [4, 7, 9]\nprint(nums)",
+   "run": "python",
+   "options": [
+    "4 7 9",
+    "[4, 7, 9]",
+    "4, 7, 9"
+   ],
+   "answer": 1,
+   "why": "القائمة بتتطبع بالأقواس المربعة، والأرقام من غير اقتباسات لأنها أعداد."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "empty = []\nprint(empty)",
+   "run": "python",
+   "options": [
+    "0",
+    "None",
+    "[]"
+   ],
+   "answer": 2,
+   "why": "القائمة الفاضية بتتطبع [] وهي لسه list."
+  },
+  {
+   "q": "أنهي سطر بيعمل list صح؟",
+   "options": [
+    "tools = [\"map\", \"rope\"]",
+    "tools = \"map\", \"rope\" ]",
+    "tools = (\"map\" \"rope\")"
+   ],
+   "answer": 0,
+   "why": "الـlist بتتكتب بين أقواس مربعة والعناصر بينها فاصلة."
+  }
+ ],
+ "py-6-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "tools = [\"map\", \"rope\", \"lamp\"]\nprint(tools[1])",
+   "run": "python",
+   "options": [
+    "map",
+    "rope",
+    "lamp"
+   ],
+   "answer": 1,
+   "why": "الفهرس بيبدأ من 0، فـ tools[1] هو العنصر التاني وهو rope."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "nums = [10, 20, 30]\nprint(nums[0] + nums[2])",
+   "run": "python",
+   "options": [
+    "30",
+    "40 ثم 60",
+    "40"
+   ],
+   "answer": 2,
+   "why": "nums[0] هو 10 و nums[2] هو 30، والمجموع 40."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "tools = [\"map\", \"rope\", \"lamp\"]\nprint(tools[-1])",
+   "run": "python",
+   "options": [
+    "lamp",
+    "map",
+    "rope"
+   ],
+   "answer": 0,
+   "why": "الفهرس -1 معناه آخر عنصر، وهو lamp."
+  },
+  {
+   "q": "list فيها 4 عناصر، إيه أكبر فهرس صالح؟",
+   "options": [
+    "4",
+    "3",
+    "1"
+   ],
+   "answer": 1,
+   "why": "الفهارس بتبدأ من 0 فهي 0 و1 و2 و3، والفهرس 4 بيدّي IndexError."
+  }
+ ],
+ "py-6-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "a = [\"x\"]\na.append(\"y\")\na.append(\"z\")\nprint(a)",
+   "run": "python",
+   "options": [
+    "['x', 'y']",
+    "['z', 'y', 'x']",
+    "['x', 'y', 'z']"
+   ],
+   "answer": 2,
+   "why": "append بتضيف في آخر القائمة بالترتيب، فالنتيجة ['x', 'y', 'z']."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "a = [\"x\", \"y\", \"x\"]\na.remove(\"x\")\nprint(a)",
+   "run": "python",
+   "options": [
+    "['y', 'x']",
+    "['y']",
+    "['x', 'y']"
+   ],
+   "answer": 0,
+   "why": "remove بتشيل أول قيمة مطابقة بس، فبيفضل ['y', 'x']."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "a = [1, 2]\na.append(3)\nprint(len(a))",
+   "run": "python",
+   "options": [
+    "2",
+    "3",
+    "4"
+   ],
+   "answer": 1,
+   "why": "القائمة كانت فيها عنصرين وأضفنا واحد، فالعدد 3."
+  },
+  {
+   "q": "append بتضيف العنصر فين؟",
+   "options": [
+    "في أول القائمة",
+    "مكان الفهرس 0 وتمسح اللي فيه",
+    "في آخر القائمة"
+   ],
+   "answer": 2,
+   "why": "append بتحط العنصر الجديد بعد آخر عنصر."
+  }
+ ],
+ "py-6-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "a = [\"map\", \"rope\", \"lamp\"]\nprint(len(a))",
+   "run": "python",
+   "options": [
+    "3",
+    "5",
+    "2"
+   ],
+   "answer": 0,
+   "why": "len بتعد العناصر في القائمة وهي 3، مش حروفها."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "a = []\na.append(5)\na.append(6)\nprint(len(a))",
+   "run": "python",
+   "options": [
+    "0",
+    "2",
+    "1"
+   ],
+   "answer": 1,
+   "why": "أضفنا عنصرين لقائمة فاضية، فالطول 2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "a = [\"ab\", \"cde\"]\nprint(len(a))",
+   "run": "python",
+   "options": [
+    "5",
+    "3",
+    "2"
+   ],
+   "answer": 2,
+   "why": "القائمة فيها عنصرين، وlen بتعد العناصر مش حروف كل عنصر."
+  },
+  {
+   "q": "len([\"a\", \"b\", \"c\"]) بترجع إيه؟",
+   "options": [
+    "3",
+    "2",
+    "\"abc\""
+   ],
+   "answer": 0,
+   "why": "len بترجع عدد عناصر القائمة وهو 3."
+  }
+ ],
+ "py-7-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def hi():\n    print(\"hi\")\nprint(\"start\")\nhi()",
+   "run": "python",
+   "options": [
+    "hi ثم start",
+    "start ثم hi",
+    "start"
+   ],
+   "answer": 1,
+   "why": "التعريف نفسه ما بيطبعش. أول أمر بيتنفذ بيطبع start، وبعدين استدعاء hi() بيشغل جسم الدالة ويطبع hi."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def hi():\n    print(\"hi\")\nhi()\nhi()",
+   "run": "python",
+   "options": [
+    "hi",
+    "hi ثم hi ثم hi",
+    "hi ثم hi"
+   ],
+   "answer": 2,
+   "why": "كل استدعاء بيشغّل الدالة مرة، وفي استدعاءين يعني hi مرتين."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def hi():\n    print(\"hi\")\nprint(\"done\")",
+   "run": "python",
+   "options": [
+    "done",
+    "hi ثم done",
+    "hi"
+   ],
+   "answer": 0,
+   "why": "الدالة اتعرّفت بس ما اتندهتش، فبيطبع done بس."
+  },
+  {
+   "q": "إزاي نشغّل دالة اتعرّفت بـ def report():؟",
+   "options": [
+    "def report",
+    "report()",
+    "report"
+   ],
+   "answer": 1,
+   "why": "لازم نكتب اسمها وبعده الأقواس عشان تتنفذ."
+  }
+ ],
+ "py-7-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def show(x):\n    print(x + 1)\nshow(4)\nshow(10)",
+   "run": "python",
+   "options": [
+    "5",
+    "4 ثم 10",
+    "5 ثم 11"
+   ],
+   "answer": 2,
+   "why": "x بتاخد القيمة اللي في كل استدعاء: 4 فبيطلع 5، و10 فبيطلع 11."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def greet(name):\n    print(\"Hi \" + name)\ngreet(\"Cody\")",
+   "run": "python",
+   "options": [
+    "Hi Cody",
+    "Hi name",
+    "Hi"
+   ],
+   "answer": 0,
+   "why": "القيمة \"Cody\" بتدخل في name، فالنص بيبقى Hi Cody."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def add(a, b):\n    print(a - b)\nadd(9, 4)",
+   "run": "python",
+   "options": [
+    "13",
+    "5",
+    "5 ثم 4"
+   ],
+   "answer": 1,
+   "why": "الدالة بتطرح، 9 ناقص 4 بيدي 5."
+  },
+  {
+   "q": "كلمة x في def show(x): اسمها إيه؟",
+   "options": [
+    "argument",
+    "return",
+    "parameter (متغير بيستقبل القيمة)"
+   ],
+   "answer": 2,
+   "why": "الـparameter هو الاسم في تعريف الدالة، والـargument هو القيمة اللي بنبعتها وقت الاستدعاء."
+  }
+ ],
+ "py-7-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def double(x):\n    return x * 2\nprint(double(5))",
+   "run": "python",
+   "options": [
+    "10",
+    "5",
+    "x * 2"
+   ],
+   "answer": 0,
+   "why": "return بترجع 10 للمستدعي، وprint بتطبعها."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def double(x):\n    return x * 2\nr = double(3) + double(4)\nprint(r)",
+   "run": "python",
+   "options": [
+    "10",
+    "14",
+    "7"
+   ],
+   "answer": 1,
+   "why": "double(3) بـ 6 وdouble(4) بـ 8، والمجموع 14."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def f(x):\n    return x + 1\n    print(\"never\")\nprint(f(1))",
+   "run": "python",
+   "options": [
+    "2 ثم never",
+    "never",
+    "2"
+   ],
+   "answer": 2,
+   "why": "الدالة بتخرج عند return، فسطر print جواها مش بيتنفذ. بيطلع 2 بس."
+  },
+  {
+   "q": "الفرق بين return و print جوه دالة؟",
+   "options": [
+    "return بترجع قيمة للمستدعي، وprint بتعرضها بس",
+    "هما نفس الشيء",
+    "print بترجع قيمة وreturn بتعرضها"
+   ],
+   "answer": 0,
+   "why": "return بتدّي القيمة لباقي البرنامج يستخدمها، لكن print بتعرضها على الشاشة بس."
+  }
+ ],
+ "py-7-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def sq(x):\n    return x * x\ndef show(v):\n    print(v)\nshow(sq(4))",
+   "run": "python",
+   "options": [
+    "4",
+    "16",
+    "8"
+   ],
+   "answer": 1,
+   "why": "sq(4) بترجع 16 وبتتبعت لـ show اللي بتطبعها."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def add(a, b):\n    return a + b\ndef show(v):\n    print(\"Total:\", v)\ntotal = add(2, 5)\nshow(total)",
+   "run": "python",
+   "options": [
+    "Total: 2 5",
+    "Total: 10",
+    "Total: 7"
+   ],
+   "answer": 2,
+   "why": "add بترجع 7 وshow بتطبعه بعد كلمة Total:."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def add(a, b):\n    return a + b\nx = add(1, 2)\ny = add(x, 4)\nprint(y)",
+   "run": "python",
+   "options": [
+    "7",
+    "3",
+    "10"
+   ],
+   "answer": 0,
+   "why": "x = 3 ثم y = 3 + 4 = 7."
+  },
+  {
+   "q": "ليه بنفصل الحساب في دالة والعرض في دالة تانية؟",
+   "options": [
+    "عشان بايثون بتمنع غير كده",
+    "عشان نستخدم نتيجة الحساب في أكتر من مكان",
+    "عشان الدوال لازم تبقى اتنين"
+   ],
+   "answer": 1,
+   "why": "دالة الحساب بترجع القيمة، وأي دالة تانية تعرضها أو تستخدمها."
+  }
+ ],
+ "py-8-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "s = \"Cody\"\nprint(len(s))",
+   "run": "python",
+   "options": [
+    "1",
+    "3",
+    "4"
+   ],
+   "answer": 2,
+   "why": "len بتعد الحروف: C و o و d و y يعني 4."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "s = \"hi there\"\nprint(len(s))",
+   "run": "python",
+   "options": [
+    "8",
+    "2",
+    "7"
+   ],
+   "answer": 0,
+   "why": "المسافة بتتحسب حرف، فالنص h i مسافة t h e r e يعني 8."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "s = \"\"\nprint(len(s))",
+   "run": "python",
+   "options": [
+    "1",
+    "0",
+    "None"
+   ],
+   "answer": 1,
+   "why": "النص الفاضي طوله 0."
+  },
+  {
+   "q": "len(\"a b\") بترجع كام؟",
+   "options": [
+    "2",
+    "1",
+    "3"
+   ],
+   "answer": 2,
+   "why": "الحروف a ومسافة وb، والمسافة بتتحسب حرف."
+  }
+ ],
+ "py-8-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "m = \"Cody\"\nm.upper()\nprint(m)",
+   "run": "python",
+   "options": [
+    "Cody",
+    "CODY",
+    "cody"
+   ],
+   "answer": 0,
+   "why": "upper بترجع نسخة جديدة وما بتغيّرش m، ومفيش حد خزّن النتيجة، فبيطبع Cody."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "m = \"Nova\"\nm = m.upper()\nprint(m)",
+   "run": "python",
+   "options": [
+    "Nova",
+    "NOVA",
+    "nova"
+   ],
+   "answer": 1,
+   "why": "هنا خزّنا النتيجة في m، فبقت NOVA."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "m = \"HeLLo\"\nprint(m.lower())",
+   "run": "python",
+   "options": [
+    "HELLO",
+    "HeLLo",
+    "hello"
+   ],
+   "answer": 2,
+   "why": "lower بتحوّل كل الحروف لصغيرة: hello."
+  },
+  {
+   "q": "ليه m.upper() لوحدها ما بتغيّرش m؟",
+   "options": [
+    "عشان النصوص ما بتتغيّرش، والدالة بترجع نص جديد",
+    "عشان upper مش شغالة",
+    "عشان m ثابتة وممنوع تتطبع"
+   ],
+   "answer": 0,
+   "why": "النصوص في بايثون ثابتة، فالدالة بترجع نسخة جديدة لازم نخزنها."
+  }
+ ],
+ "py-8-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "m = \"a-b-c\"\nprint(m.replace(\"-\", \"+\"))",
+   "run": "python",
+   "options": [
+    "a-b-c",
+    "a+b+c",
+    "a+b-c"
+   ],
+   "answer": 1,
+   "why": "replace بتبدّل كل المطابقات، فبيطلع a+b+c."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "m = \"cat\"\nm.replace(\"c\", \"b\")\nprint(m)",
+   "run": "python",
+   "options": [
+    "bat",
+    "cat ثم bat",
+    "cat"
+   ],
+   "answer": 2,
+   "why": "النتيجة ما اتخزنتش، فـ m فضلت cat."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "m = \"cat\"\nn = m.replace(\"c\", \"b\")\nprint(m, n)",
+   "run": "python",
+   "options": [
+    "cat bat",
+    "bat cat",
+    "bat bat"
+   ],
+   "answer": 0,
+   "why": "m الأصلية cat وn النسخة المعدلة bat."
+  },
+  {
+   "q": "إزاي نحتفظ بنتيجة replace؟",
+   "options": [
+    "نكتب m.replace(a, b) بس",
+    "نكتب new = m.replace(a, b)",
+    "replace بتعدل m تلقائيًا"
+   ],
+   "answer": 1,
+   "why": "replace بترجع نصًا جديدًا لازم نحطه في متغير."
+  }
+ ],
+ "py-8-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "t = \"a b c\".split()\nprint(len(t))",
+   "run": "python",
+   "options": [
+    "1",
+    "2",
+    "3"
+   ],
+   "answer": 2,
+   "why": "split بتقسم عند المسافات، فبتطلع قائمة فيها 3 عناصر."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "t = \"x y z\".split()\nprint(t[2])",
+   "run": "python",
+   "options": [
+    "z",
+    "x",
+    "y"
+   ],
+   "answer": 0,
+   "why": "الفهرس 2 هو العنصر التالت وهو z."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "t = \"red,green\".split(\",\")\nprint(t)",
+   "run": "python",
+   "options": [
+    "['red,green']",
+    "['red', 'green']",
+    "red green"
+   ],
+   "answer": 1,
+   "why": "split(\",\") بتقسم عند الفاصلة، فالنتيجة ['red', 'green']."
+  },
+  {
+   "q": "نوع نتيجة \"a b\".split() هو؟",
+   "options": [
+    "str",
+    "int",
+    "list"
+   ],
+   "answer": 2,
+   "why": "split بترجع قائمة (list) من النصوص."
+  }
+ ],
+ "py-9-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "raw = \"abc\"\ntry:\n    print(int(raw))\nexcept ValueError:\n    print(\"Invalid\")",
+   "run": "python",
+   "options": [
+    "Invalid",
+    "abc",
+    "0"
+   ],
+   "answer": 0,
+   "why": "int(\"abc\") بتعمل ValueError، فبيتنفذ except ويطبع Invalid."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "raw = \"42\"\ntry:\n    print(int(raw) + 1)\nexcept ValueError:\n    print(\"Invalid\")",
+   "run": "python",
+   "options": [
+    "Invalid",
+    "43",
+    "42"
+   ],
+   "answer": 1,
+   "why": "\"42\" نص عددي صالح، فالتحويل ينجح والناتج 43."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    n = int(\"x\")\n    print(\"ok\")\nexcept ValueError:\n    print(\"bad\")",
+   "run": "python",
+   "options": [
+    "ok",
+    "ok ثم bad",
+    "bad"
+   ],
+   "answer": 2,
+   "why": "int(\"x\") بتفشل قبل سطر print(\"ok\")، فبيتخطاه ويروح لـ except ويطبع bad."
+  },
+  {
+   "q": "إيه اللي بيشغّل except ValueError؟",
+   "options": [
+    "تحويل قيمة بشكل غلط زي int(\"oops\")",
+    "أي سطر بيطبع حاجة",
+    "القسمة على صفر"
+   ],
+   "answer": 0,
+   "why": "ValueError بتحصل لما القيمة نوعها مقبول بس محتواها مش مناسب للتحويل."
+  }
+ ],
+ "py-9-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"No division\")",
+   "run": "python",
+   "options": [
+    "0",
+    "No division",
+    "Infinity"
+   ],
+   "answer": 1,
+   "why": "القسمة على صفر بتعمل ZeroDivisionError، فبيطبع No division."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = 4\ntry:\n    print(20 / d)\nexcept ZeroDivisionError:\n    print(\"No division\")",
+   "run": "python",
+   "options": [
+    "No division",
+    "5",
+    "5.0"
+   ],
+   "answer": 2,
+   "why": "d مش صفر، فالقسمة بتنجح والناتج 5.0."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    x = 1 / 0\n    print(\"after\")\nexcept ZeroDivisionError:\n    print(\"caught\")",
+   "run": "python",
+   "options": [
+    "caught",
+    "after",
+    "after ثم caught"
+   ],
+   "answer": 0,
+   "why": "الخطأ بيحصل في سطر القسمة، فسطر print(\"after\") ما بيتنفذش."
+  },
+  {
+   "q": "إيه ناتج 5 / 0 في بايثون من غير try؟",
+   "options": [
+    "0",
+    "ZeroDivisionError ويوقف البرنامج",
+    "Infinity"
+   ],
+   "answer": 1,
+   "why": "بايثون بتعمل خطأ عند القسمة على صفر ولا بتختلق رقم."
+  }
+ ],
+ "py-9-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    print(\"3\" + 2)\nexcept TypeError:\n    print(\"Wrong type\")",
+   "run": "python",
+   "options": [
+    "5",
+    "32",
+    "Wrong type"
+   ],
+   "answer": 2,
+   "why": "جمع نص مع رقم بيعمل TypeError، فبيتنفذ except."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    print(3 + 2)\nexcept TypeError:\n    print(\"Wrong type\")",
+   "run": "python",
+   "options": [
+    "5",
+    "Wrong type",
+    "32"
+   ],
+   "answer": 0,
+   "why": "هنا الاتنين أرقام، فالجمع عادي والناتج 5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    print(\"7\" + str(1))\nexcept TypeError:\n    print(\"Wrong type\")",
+   "run": "python",
+   "options": [
+    "8",
+    "71",
+    "Wrong type"
+   ],
+   "answer": 1,
+   "why": "str(1) بتحوّل الرقم لنص، فبيتم وصل النصين والناتج 71."
+  },
+  {
+   "q": "أنهي خطأ بيظهر في int(\"abc\")؟",
+   "options": [
+    "TypeError",
+    "ZeroDivisionError",
+    "ValueError"
+   ],
+   "answer": 2,
+   "why": "النوع نص وهو مقبول للتحويل، بس محتواه مش رقم، فده ValueError."
+  }
+ ],
+ "py-9-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    n = int(\"8\")\n    print(n / 2)\nexcept ValueError:\n    print(\"Invalid\")\nexcept ZeroDivisionError:\n    print(\"No division\")",
+   "run": "python",
+   "options": [
+    "4.0",
+    "Invalid",
+    "4"
+   ],
+   "answer": 0,
+   "why": "التحويل نجح والقسمة على 2 بتدي 4.0."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    n = int(\"0\")\n    print(10 / n)\nexcept ValueError:\n    print(\"Invalid\")\nexcept ZeroDivisionError:\n    print(\"No division\")",
+   "run": "python",
+   "options": [
+    "Invalid",
+    "No division",
+    "0"
+   ],
+   "answer": 1,
+   "why": "n = 0 فالقسمة بتعمل ZeroDivisionError، ومعالجه بيطبع No division."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "try:\n    n = int(\"a\")\n    print(10 / 0)\nexcept ValueError:\n    print(\"Invalid\")\nexcept ZeroDivisionError:\n    print(\"No division\")",
+   "run": "python",
+   "options": [
+    "No division",
+    "Invalid ثم No division",
+    "Invalid"
+   ],
+   "answer": 2,
+   "why": "أول خطأ (ValueError) بيوقف try، فالقسمة ما بتتنفذش وبيطبع Invalid بس."
+  },
+  {
+   "q": "ليه بنكتب معالجين مختلفين بدل except واحد عام؟",
+   "options": [
+    "عشان نرد على كل نوع خطأ بشكل مناسب",
+    "عشان بايثون بتطلب كده",
+    "عشان الأخطاء بتختفي لوحدها"
+   ],
+   "answer": 0,
+   "why": "المعالج المحدد بيخلّينا نعرف السبب ونرد عليه بدل ما نخفي أي خطأ."
+  }
+ ],
+ "py-10-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1, \"b\": 2}\nprint(d[\"b\"])",
+   "run": "python",
+   "options": [
+    "1",
+    "2",
+    "b"
+   ],
+   "answer": 1,
+   "why": "المفتاح \"b\" قيمته 2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"x\": 10, \"y\": 20}\nprint(d[\"x\"] + d[\"y\"])",
+   "run": "python",
+   "options": [
+    "10",
+    "x y",
+    "30"
+   ],
+   "answer": 2,
+   "why": "10 زائد 20 بتدي 30."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"Cody\": 12}\nprint(len(d))",
+   "run": "python",
+   "options": [
+    "1",
+    "12",
+    "0"
+   ],
+   "answer": 0,
+   "why": "القاموس فيه مفتاح واحد، وlen بتعد المفاتيح."
+  },
+  {
+   "q": "في القاموس {\"Nova\": 24}، إيه المفتاح؟",
+   "options": [
+    "24",
+    "\"Nova\"",
+    "{\"Nova\": 24}"
+   ],
+   "answer": 1,
+   "why": "المفتاح هو اللي قبل النقطتين، والقيمة هي اللي بعدهم."
+  }
+ ],
+ "py-10-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1}\nprint(d.get(\"b\", 0))",
+   "run": "python",
+   "options": [
+    "1",
+    "None",
+    "0"
+   ],
+   "answer": 2,
+   "why": "المفتاح b مش موجود، فget بترجع القيمة الافتراضية 0."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1}\nprint(d.get(\"a\", 0))",
+   "run": "python",
+   "options": [
+    "1",
+    "0",
+    "a"
+   ],
+   "answer": 0,
+   "why": "المفتاح a موجود، فget بترجع قيمته 1."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1}\nd.get(\"z\", 5)\nprint(len(d))",
+   "run": "python",
+   "options": [
+    "2",
+    "1",
+    "0"
+   ],
+   "answer": 1,
+   "why": "get بس بتقرأ وما بتضيفش مفاتيح، فالعدد لسه 1."
+  },
+  {
+   "q": "d[\"zz\"] والمفتاح zz مش موجود، بتعمل إيه؟",
+   "options": [
+    "بترجع 0",
+    "بتضيفه تلقائيًا",
+    "KeyError"
+   ],
+   "answer": 2,
+   "why": "القراءة بالأقواس لمفتاح مش موجود بتعمل KeyError، وget هي اللي بتدي قيمة بديلة."
+  }
+ ],
+ "py-10-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1}\nd[\"b\"] = 2\nprint(len(d))",
+   "run": "python",
+   "options": [
+    "2",
+    "1",
+    "3"
+   ],
+   "answer": 0,
+   "why": "\"b\" مفتاح جديد اتضاف، فبقى فيه مفتاحين."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1}\nd[\"a\"] = 9\nprint(d[\"a\"])",
+   "run": "python",
+   "options": [
+    "1",
+    "9",
+    "10"
+   ],
+   "answer": 1,
+   "why": "\"a\" موجود فالإسناد بيحدّث قيمته إلى 9."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1}\nd[\"a\"] = 9\nprint(len(d))",
+   "run": "python",
+   "options": [
+    "2",
+    "9",
+    "1"
+   ],
+   "answer": 2,
+   "why": "التحديث ما بيضيفش مفتاح جديد، فالعدد لسه 1."
+  },
+  {
+   "q": "d[\"k\"] = 5 بتعمل إيه لو k موجود قبل كده؟",
+   "options": [
+    "بتبدّل قيمته القديمة",
+    "بتضيف مفتاح تاني بنفس الاسم",
+    "بتعمل خطأ"
+   ],
+   "answer": 0,
+   "why": "المفتاح في القاموس لازم يبقى مرة واحدة، فالقيمة بتتحدّث."
+  }
+ ],
+ "py-10-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1, \"b\": 2}\nfor k in d:\n    print(k)",
+   "run": "python",
+   "options": [
+    "1 ثم 2",
+    "a ثم b",
+    "a ثم 1 ثم b ثم 2"
+   ],
+   "answer": 1,
+   "why": "الحلقة على القاموس بتدّي المفاتيح بالترتيب: a ثم b."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1, \"b\": 2}\ntotal = 0\nfor k in d:\n    total = total + d[k]\nprint(total)",
+   "run": "python",
+   "options": [
+    "ab",
+    "2",
+    "3"
+   ],
+   "answer": 2,
+   "why": "بنجمع القيم 1 و2 فالناتج 3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "d = {\"a\": 1, \"b\": 2}\nfor k in d:\n    print(k, d[k])",
+   "run": "python",
+   "options": [
+    "a 1 ثم b 2",
+    "a b",
+    "1 ثم 2"
+   ],
+   "answer": 0,
+   "why": "في كل دورة بيتطبع المفتاح وقيمته: a 1 ثم b 2."
+  },
+  {
+   "q": "في for k in d: إيه هو k؟",
+   "options": [
+    "قيمة من القيم",
+    "مفتاح من مفاتيح القاموس",
+    "عدد العناصر"
+   ],
+   "answer": 1,
+   "why": "الحلقة على القاموس بتدّي المفاتيح، والقيمة بنجيبها بـ d[k]."
+  }
+ ],
+ "py-11-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import math\nprint(math.sqrt(25))",
+   "run": "python",
+   "options": [
+    "5",
+    "sqrt(25)",
+    "5.0"
+   ],
+   "answer": 2,
+   "why": "math.sqrt بترجع جذر 25 كعدد عشري: 5.0."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import math\nprint(math.floor(3.9))",
+   "run": "python",
+   "options": [
+    "3",
+    "4",
+    "3.9"
+   ],
+   "answer": 0,
+   "why": "floor بترجع أكبر عدد صحيح أقل من أو يساوي القيمة: 3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import math\nprint(math.ceil(3.1))",
+   "run": "python",
+   "options": [
+    "3",
+    "4",
+    "3.1"
+   ],
+   "answer": 1,
+   "why": "ceil بتقرّب لأعلى: 4."
+  },
+  {
+   "q": "بعد import math، إزاي نحسب الجذر؟",
+   "options": [
+    "sqrt(16)",
+    "import sqrt(16)",
+    "math.sqrt(16)"
+   ],
+   "answer": 2,
+   "why": "لازم نكتب اسم الوحدة قبل الأداة لأننا استوردنا الوحدة كلها."
+  }
+ ],
+ "py-11-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import math\nprint(round(math.pi, 2))",
+   "run": "python",
+   "options": [
+    "3.14",
+    "3",
+    "3.14159"
+   ],
+   "answer": 0,
+   "why": "round بتقرّب لخانتين عشريتين: 3.14."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import math\nr = 1\nprint(round(math.pi * r * r, 1))",
+   "run": "python",
+   "options": [
+    "3",
+    "3.1",
+    "3.14"
+   ],
+   "answer": 1,
+   "why": "pi × 1 × 1 تقريبًا 3.14159، وتقريبها لخانة عشرية واحدة 3.1."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import math\nprint(math.pi > 3 and math.pi < 4)",
+   "run": "python",
+   "options": [
+    "3.14",
+    "False",
+    "True"
+   ],
+   "answer": 2,
+   "why": "pi بين 3 و4، فالشرطين صح."
+  },
+  {
+   "q": "مساحة دائرة نصف قطرها r بتتحسب إزاي؟",
+   "options": [
+    "math.pi * r * r",
+    "2 * r",
+    "math.pi + r"
+   ],
+   "answer": 0,
+   "why": "المساحة = باي × نصف القطر × نصف القطر."
+  }
+ ],
+ "py-11-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import random\nn = random.randint(1, 3)\nprint(n >= 1 and n <= 3)",
+   "run": "python",
+   "options": [
+    "1",
+    "True",
+    "False"
+   ],
+   "answer": 1,
+   "why": "randint(1, 3) بتدّي عدد من 1 لـ 3 مشمولين، فالشرط True دايمًا."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import random\nn = random.randint(5, 5)\nprint(n)",
+   "run": "python",
+   "options": [
+    "1",
+    "0",
+    "5"
+   ],
+   "answer": 2,
+   "why": "لما الحدين متساويين الاختيار الوحيد هو 5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import random\nn = random.randint(1, 6)\nprint(n > 6)",
+   "run": "python",
+   "options": [
+    "False",
+    "True",
+    "6"
+   ],
+   "answer": 0,
+   "why": "randint(1, 6) عمرها ما بتدّي أكتر من 6، فالمقارنة False."
+  },
+  {
+   "q": "ليه ما نتوقعش رقم معين من random.randint(1, 6)؟",
+   "options": [
+    "لأن الدالة معطلة",
+    "لأن القيمة بتتغير من تشغيل للتاني",
+    "لأنها بترجع نص"
+   ],
+   "answer": 1,
+   "why": "الدالة بتختار عشوائيًا، فنفحص المدى بدل ما نفترض رقم."
+  }
+ ],
+ "py-11-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "from math import sqrt\nprint(sqrt(36))",
+   "run": "python",
+   "options": [
+    "36",
+    "math.sqrt",
+    "6.0"
+   ],
+   "answer": 2,
+   "why": "sqrt بعد الاستيراد المباشر بتتنده بالاسم بس، والناتج 6.0."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "from math import sqrt\nprint(sqrt(9) + 1)",
+   "run": "python",
+   "options": [
+    "4.0",
+    "3",
+    "10"
+   ],
+   "answer": 0,
+   "why": "sqrt(9) = 3.0 ثم نزيد 1، فالناتج 4.0."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "from math import pi\nprint(round(pi, 3))",
+   "run": "python",
+   "options": [
+    "3.14",
+    "3.142",
+    "3.1416"
+   ],
+   "answer": 1,
+   "why": "pi تقريبها لـ3 خانات عشرية 3.142."
+  },
+  {
+   "q": "بعد from math import sqrt، أنهي سطر بيشتغل؟",
+   "options": [
+    "math.sqrt(16)",
+    "import sqrt",
+    "sqrt(16)"
+   ],
+   "answer": 2,
+   "why": "الاستيراد المباشر بيدخل الاسم sqrt نفسه، فنستدعيه من غير math."
+  }
+ ],
+ "py-12-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "name = \"Nova\"\nlevel = 3\nprint(name)\nprint(level)",
+   "run": "python",
+   "options": [
+    "Nova ثم 3",
+    "name ثم level",
+    "Nova ثم level"
+   ],
+   "answer": 0,
+   "why": "print بتطبع القيمة المخزنة في كل متغير: Nova ثم 3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "name = \"Nova\"\nprint(\"name\")",
+   "run": "python",
+   "options": [
+    "Nova",
+    "name",
+    "\"name\""
+   ],
+   "answer": 1,
+   "why": "اللي بين الاقتباسات نص حرفي، فبيطبع name مش القيمة."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "level = 2\nlevel = level + 1\nprint(level)",
+   "run": "python",
+   "options": [
+    "2",
+    "level + 1",
+    "3"
+   ],
+   "answer": 2,
+   "why": "level بقت 3 بعد الإسناد."
+  },
+  {
+   "q": "print(level) من غير اقتباسات بتطبع إيه؟",
+   "options": [
+    "القيمة المخزنة في المتغير level",
+    "كلمة level",
+    "خطأ دايمًا"
+   ],
+   "answer": 0,
+   "why": "من غير اقتباسات بايثون بتعتبرها اسم متغير وتطبع قيمته."
+  }
+ ],
+ "py-12-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "p = {\"name\": \"Cody\", \"score\": 3}\np[\"score\"] = p[\"score\"] + 4\nprint(p[\"score\"])",
+   "run": "python",
+   "options": [
+    "3",
+    "7",
+    "4"
+   ],
+   "answer": 1,
+   "why": "بنزوّد 4 على 3، فالـscore بقت 7."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "b = [\"Scout\", \"Builder\"]\nprint(b[1])",
+   "run": "python",
+   "options": [
+    "Scout",
+    "Scout ثم Builder",
+    "Builder"
+   ],
+   "answer": 2,
+   "why": "الفهرس 1 هو العنصر التاني Builder."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "p = {\"name\": \"Cody\", \"badges\": [\"Scout\", \"Builder\"]}\nprint(p[\"badges\"][0])",
+   "run": "python",
+   "options": [
+    "Scout",
+    "Cody",
+    "badges"
+   ],
+   "answer": 0,
+   "why": "p[\"badges\"] قائمة، والفهرس 0 فيها Scout."
+  },
+  {
+   "q": "ليه نحط الأوسمة في list واللاعب في dict؟",
+   "options": [
+    "لأن بايثون بتطلب كده",
+    "dict لبيانات مسماة، وlist لمجموعة مرتبة",
+    "عشان نخلي الكود أبطأ"
+   ],
+   "answer": 1,
+   "why": "القاموس بيربط الاسم بالقيمة، والقائمة بترتب عناصر نصل ليها بالفهرس."
+  }
+ ],
+ "py-12-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def tag(n):\n    if n % 2 == 0:\n        print(\"even\")\n    else:\n        print(\"odd\")\nfor i in range(1, 4):\n    tag(i)",
+   "run": "python",
+   "options": [
+    "even ثم odd ثم even",
+    "odd ثم odd ثم odd",
+    "odd ثم even ثم odd"
+   ],
+   "answer": 2,
+   "why": "i = 1 و2 و3: فردي وزوجي وفردي."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def f(x):\n    return x * 2\ntotal = 0\nfor i in range(1, 4):\n    total = total + f(i)\nprint(total)",
+   "run": "python",
+   "options": [
+    "12",
+    "6",
+    "14"
+   ],
+   "answer": 0,
+   "why": "f(1)+f(2)+f(3) = 2+4+6 = 12."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "def big(n):\n    if n > 2:\n        print(\"big\")\nfor i in range(1, 5):\n    big(i)",
+   "run": "python",
+   "options": [
+    "big ثم big ثم big",
+    "big ثم big",
+    "big"
+   ],
+   "answer": 1,
+   "why": "القيمتان 3 و4 بس أكبر من 2، فبيطلع big مرتين."
+  },
+  {
+   "q": "ليه الدالة بتفيدنا جوه الحلقة؟",
+   "options": [
+    "عشان الحلقة مش هتشتغل من غيرها",
+    "عشان نمنع الحلقة من التكرار",
+    "بنعيد استخدام نفس القرار مع كل قيمة"
+   ],
+   "answer": 2,
+   "why": "الدالة بتغلف المنطق مرة واحدة والحلقة بتستدعيها لكل قيمة."
+  }
+ ],
+ "py-12-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "raw = \"9\"\ntry:\n    n = int(raw)\n    print(n * 2)\nexcept ValueError:\n    print(\"Invalid\")",
+   "run": "python",
+   "options": [
+    "18",
+    "Invalid",
+    "9"
+   ],
+   "answer": 0,
+   "why": "\"9\" نص عددي، فالتحويل ينجح والناتج 18."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "raw = \"9.5\"\ntry:\n    n = int(raw)\n    print(n * 2)\nexcept ValueError:\n    print(\"Invalid\")",
+   "run": "python",
+   "options": [
+    "19",
+    "Invalid",
+    "19.0"
+   ],
+   "answer": 1,
+   "why": "int(\"9.5\") بتعمل ValueError لأن النص مش عدد صحيح، فبيطبع Invalid."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import math\nn = -4\nif n >= 0:\n    print(math.sqrt(n))\nelse:\n    print(\"Negative\")",
+   "run": "python",
+   "options": [
+    "2.0",
+    "Invalid",
+    "Negative"
+   ],
+   "answer": 2,
+   "why": "n سالب، فبنتخطى sqrt ونطبع Negative."
+  },
+  {
+   "q": "ليه نفحص القيمة قبل math.sqrt؟",
+   "options": [
+    "لأن sqrt لعدد سالب بتعمل خطأ",
+    "لأن sqrt بطيئة",
+    "لأن sqrt بتطبع نص"
+   ],
+   "answer": 0,
+   "why": "جذر عدد سالب بيعمل ValueError، فالفحص بيمنع الخطأ."
+  }
  ]
 }
