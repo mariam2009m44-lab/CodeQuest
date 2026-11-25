@@ -155,3 +155,38 @@ test('studio evidence cannot be read, forged or changed directly by any client',
   await assertFails(getDoc(doc(db,where)));await assertFails(setDoc(doc(db,where),state));await assertFails(setDoc(doc(db,where+'-new'),state));
  }
 });
+
+test('Python final exam results are readable only by their owner and never client-writable', { skip: !host }, async t => {
+  assert.match(host, /^(127\\.0\\.0\\.1|localhost):\\d+$/);
+  const env = await initializeTestEnvironment({
+    projectId: 'demo-codequest-audit',
+    firestore: {
+      rules: fs.readFileSync(path.join(__dirname, '../../firestore.rules'), 'utf8')
+    }
+  });
+  t.after(() => env.cleanup());
+
+  const uid = `python-final-exam-${process.pid}-${Date.now()}`;
+  const resultPath = `users/${uid}/examResults/python_final_exam`;
+  const ownDb = env.authenticatedContext(uid).firestore();
+  const otherDb = env.authenticatedContext(uid + '-other').firestore();
+  const result = {
+    uid,
+    examId: 'python_final_exam',
+    passed: true,
+    serverVerified: true,
+    verificationVersion: 1,
+    score: 12,
+    total: 15,
+    percentage: 80
+  };
+
+  await env.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(), resultPath), result);
+  });
+
+  const snapshot = await assertSucceeds(getDoc(doc(ownDb, resultPath)));
+  assert.equal(snapshot.data().serverVerified, true);
+  await assertFails(getDoc(doc(otherDb, resultPath)));
+  await assertFails(setDoc(doc(ownDb, resultPath), result));
+});
