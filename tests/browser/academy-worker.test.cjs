@@ -16,7 +16,7 @@ before(async () => { browser = await chromium.launch(); ({ boot } = await import
 after(async () => { await browser?.close(); });
 
 async function setup(t, { workerOn, token, verified = true }) {
-  const w = boot({}); w.env.ALLOWED_ORIGINS = origin; if (workerOn) { w.env.ACADEMY_APPLICATIONS = 'on'; w.env.ACADEMY_ADMIN_UIDS = 'uidE'; }
+  const w = boot({}); w.env.ALLOWED_ORIGINS = origin; if (workerOn) { w.env.ACADEMY_APPLICATIONS = workerOn === 'admin-only' ? 'admin-only' : 'on'; w.env.ACADEMY_ADMIN_UIDS = 'uidE'; }
   const fnCalls = [];
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
   t.after(() => context.close());
@@ -84,4 +84,19 @@ test('worker unreachable during submit: no fallback to the callable (no duplicat
   await p.click('#instructorTab'); await fill(p); await p.click('#instructorForm button[type=submit]');
   await p.waitForFunction(() => /لم نتأكد/.test(document.getElementById('instructorFeedback').textContent));
   assert.equal(await p.evaluate(() => (window.__fn || []).includes('submitInstructorApplication')), false);
+});
+
+test('admin-only mode (stubbed Firebase, mock tokens): the owner uid sees the admin page; a signed-in non-owner gets a real Worker 403 and the refusal; nothing is written', async t => {
+  const o = await setup(t, { workerOn: 'admin-only', token: 'tokE' });
+  const owner = await page(o.context, 'academy-admin.html'); await owner.p.waitForSelector('#adminContent:not([hidden])');
+  await owner.p.waitForFunction(() => document.getElementById('adminStats').children.length === 2);
+  assert.match(await owner.p.textContent('#adminStats'), /طلبات قيد المراجعة/);
+  await owner.p.screenshot({ path: path.join(artifactDir, 'academy-admin-only-owner-390.png'), fullPage: true });
+  assert.deepEqual(owner.errors, []);
+  const n = await setup(t, { workerOn: 'admin-only', token: 'tokA' });
+  const statuses = []; n.context.on('response', r => { if (r.url().includes('/api/academy/admin/applications')) statuses.push(r.status()); });
+  const non = await page(n.context, 'academy-admin.html'); await non.p.waitForFunction(() => document.getElementById('adminState').textContent.includes('مخصص لمسؤول'));
+  assert.equal(await non.p.locator('#adminContent').isVisible(), false); assert.deepEqual(statuses, [403]);
+  await non.p.screenshot({ path: path.join(artifactDir, 'academy-admin-only-nonowner-390.png'), fullPage: true });
+  for (const h of [o.w, n.w]) for (const st of h.stores.values()) assert.equal(st.m.size, 0, 'no record written');
 });
