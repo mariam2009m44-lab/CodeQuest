@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
 import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, recordFinalExam, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { emptyLinks, createCode, claimCode, canRead, childrenOf, parentsOf, unlink } from "./parent-core.js";
 import { validateApplication, emptyDirectory, submitApplication, myStatus, listApplications, reviewApplication } from "./academy-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
@@ -810,6 +811,56 @@ async function handleAcademy(request, env, origin, action) {
   return jsonResponse(await res.json(), res.status, origin);
 }
 
+// Parent links on the free Worker path. Default OFF: PARENT_LINKS must be "on". Codes are random, shown once, stored only as SHA-256 hashes.
+// A parent sees ONLY these fields about a linked child: lessonTestsPassed, unitExamsPassed (server-assessed counts). No name, email, chats or code.
+const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+async function sha256Hex(text) { const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text))); return Array.from(d, b => b.toString(16).padStart(2, "0")).join(""); }
+function newCode() { const r = crypto.getRandomValues(new Uint8Array(12)); return Array.from(r, b => CODE_ALPHABET[b % CODE_ALPHABET.length]).join(""); }
+async function handleParent(request, env, origin, action) {
+  let user;
+  try { user = await verifyFirebaseUser(request, env); } catch { return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin); }
+  if (!env.PARENT_LINKS) return jsonResponse({ success: false, message: "parent_unavailable" }, 503, origin);
+  if (env.PARENT_LINKS_ENABLED !== "on") return jsonResponse({ success: false, retryable: true, message: "parent_off" }, 503, origin);
+  let body = {};
+  try { body = await readBoundedJson(request, 2048); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
+  const stub = env.PARENT_LINKS.get(env.PARENT_LINKS.idFromName("links"));
+  const send = (act, payload) => stub.fetch("https://parent.internal/" + act, { method: "POST", body: JSON.stringify(payload) }).then(async r => ({ status: r.status, data: await r.json() }));
+  const out = r => jsonResponse(r.data, r.status, origin);
+  if (action === "create") {
+    if (body.consent !== true) return jsonResponse({ success: false, message: "consent_required" }, 400, origin);
+    const code = newCode(); const r = await send("create", { child: user.uid, hash: await sha256Hex(code) });
+    if (r.status === 200) r.data = { success: true, code, expiresAt: r.data.expiresAt };
+    return out(r);
+  }
+  if (action === "claim") {
+    const code = String(body.code || "").toUpperCase().replace(/[\s-]/g, "");
+    if (!/^[A-Z0-9]{12}$/.test(code)) return jsonResponse({ success: false, message: "code_invalid" }, 404, origin);
+    const r = await send("claim", { parent: user.uid, hash: await sha256Hex(code) });
+    return out({ status: r.status, data: r.status === 200 ? { success: true } : r.data });
+  }
+  if (action === "children") return out(await send("children", { parent: user.uid }));
+  if (action === "parents") return out(await send("parents", { child: user.uid }));
+  if (action === "unlink") {
+    const child = String(body.child || user.uid), parent = String(body.parent || user.uid);
+    return out(await send("unlink", { actor: user.uid, child, parent }));
+  }
+  if (action === "dashboard") {
+    const child = String(body.child || "");
+    if (!child || !env.STUDENT_PROGRESS) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
+    const a1 = await send("authorize", { parent: user.uid, child });
+    if (a1.status !== 200) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
+    let st;
+    try { const pr = await env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(child)).fetch("https://progress.internal/get", { method: "POST", body: "{}" }); st = await pr.json(); if (!pr.ok || !st.success) throw new Error("x"); }
+    catch { return jsonResponse({ success: true, available: false }, 200, origin); }
+    // Authorization is checked again after the read: an unlink during the read means nothing is returned.
+    const a2 = await send("authorize", { parent: user.uid, child });
+    if (a2.status !== 200) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
+    return jsonResponse({ success: true, available: true, lessonTestsPassed: Object.values(st.lessonTests || {}).filter(x => x && x.passed === true).length, unitExamsPassed: Object.values(st.exams || {}).filter(x => x && x.passed === true).length }, 200, origin);
+  }
+  return jsonResponse({ success: false }, 404, origin);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1351,6 +1402,10 @@ export default {
       if (url.pathname === path && request.method === "POST") return handleAcademy(request, env, origin, act);
     }
 
+    for (const act of ["create", "claim", "children", "parents", "unlink", "dashboard"]) {
+      if (url.pathname === "/api/parent/" + act && request.method === "POST") return handleParent(request, env, origin, act);
+    }
+
     return jsonResponse({
       success: false,
       message: "المسار المطلوب غير موجود."
@@ -1551,6 +1606,25 @@ export class AcademyDirectory {
       if (action === "status") return { status: 200, data: { success: true, ...myStatus(dir, b.uid) } };
       if (action === "list") return { status: 200, data: { success: true, ...(() => { const l = listApplications(dir, b.status, b.cursor, b.limit); return { applications: l.items, hasMore: l.hasMore }; })() } };
       if (action === "review") { const r = reviewApplication(dir, b.admin, b.target, b.decision, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }
+      return { status: 404, data: { success: false } };
+    });
+    return Response.json(out.data, { status: out.status });
+  }
+}
+
+export class ParentLinks {
+  constructor(state) { this.state = state; }
+  async fetch(request) {
+    const action = new URL(request.url).pathname.slice(1);
+    let b = {}; try { b = JSON.parse(await request.text() || "{}"); } catch { return Response.json({ success: false }, { status: 400 }); }
+    const out = await this.state.storage.transaction(async tx => {
+      const s = (await tx.get("links")) || emptyLinks(); const now = Date.now(); const bad = r => ({ status: r.status, data: { success: false, message: r.reason, retryable: r.status === 429 } });
+      if (action === "create") { const r = createCode(s, String(b.child || ""), String(b.hash || ""), now); if (!r.ok) return bad(r); await tx.put("links", s); return { status: 200, data: { success: true, expiresAt: r.expiresAt } }; }
+      if (action === "claim") { const r = claimCode(s, String(b.parent || ""), String(b.hash || ""), now); await tx.put("links", s); if (!r.ok) return bad(r); return { status: 200, data: { success: true } }; }
+      if (action === "authorize") return canRead(s, String(b.parent || ""), String(b.child || "")) ? { status: 200, data: { success: true } } : { status: 403, data: { success: false } };
+      if (action === "children") return { status: 200, data: { success: true, children: childrenOf(s, String(b.parent || "")).map(uid => ({ uid })) } };
+      if (action === "parents") return { status: 200, data: { success: true, parents: parentsOf(s, String(b.child || "")) } };
+      if (action === "unlink") { const r = unlink(s, String(b.actor || ""), String(b.child || ""), String(b.parent || "")); if (!r.ok) return bad(r); await tx.put("links", s); return { status: 200, data: { success: true } }; }
       return { status: 404, data: { success: false } };
     });
     return Response.json(out.data, { status: out.status });

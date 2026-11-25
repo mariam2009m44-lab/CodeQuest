@@ -25,6 +25,10 @@ class_name = "StudentProgress"
 name = "ACADEMY_DIRECTORY"
 class_name = "AcademyDirectory"
 
+[[durable_objects.bindings]]
+name = "PARENT_LINKS"
+class_name = "ParentLinks"
+
 [[migrations]]
 tag = "v1-code-execution-limiter"
 new_sqlite_classes = ["CodeExecutionLimiter"]
@@ -42,6 +46,11 @@ new_sqlite_classes = ["StudentProgress"]
 [[migrations]]
 tag = "v3-academy-directory"
 new_sqlite_classes = ["AcademyDirectory"]
+
+# Adds ParentLinks (additive, SQLite-backed). PARENT_LINKS_ENABLED is unset: every parent route answers 503 until a reviewed commit turns it on. Roll-forward only; never delete this class.
+[[migrations]]
+tag = "v4-parent-links"
+new_sqlite_classes = ["ParentLinks"]
 
 [previews.vars]
 FIREBASE_PROJECT_ID = "codequest-6350a"
