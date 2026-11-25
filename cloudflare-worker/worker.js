@@ -221,6 +221,12 @@ async function readJudge0Response(response) {
 // Runs one program in the existing isolated Judge0 executor (never on the Worker host) and returns its stdout.
 // Fail closed: anything other than a clean accepted run returns ok:false and is never counted as a pass.
 async function executeForVerification(env, language, code, stdin, fetchFn = fetch) {
+  // One bounded retry, only when the provider never produced a verdict (timeout/unreachable). A real verdict is never retried.
+  const first = await executeOnce(env, language, code, stdin, fetchFn);
+  if (first.ok || !["timeout", "executor_unreachable"].includes(first.reason)) return first;
+  return executeOnce(env, language, code, stdin, fetchFn);
+}
+async function executeOnce(env, language, code, stdin, fetchFn) {
   const languageId = EXECUTABLE_LANGUAGES[language];
   if (!languageId || typeof code !== "string" || !code.trim() || code.length > 15000) return { ok: false, reason: "bad_input" };
   const baseUrl = (env.JUDGE0_URL || "https://ce.judge0.com").replace(/\/+$/, "");
@@ -1356,27 +1362,7 @@ export class StudentProgress {
         cq.count += n; await tx.put("cexec", cq);
         return { status: 200, data: { success: true } };
       }
-      if (action === "practicetask") {
-    const input = { language: String(body.language || ""), lessonId: String(body.lessonId || ""), phase: String(body.phase || ""), bank: body.bank };
-    const plan = practicePlan(PRACTICE_INDEX, input);
-    if (!plan.ok) return plan.refresh ? jsonResponse({ success: false, refreshNeeded: true, message: "refresh_needed" }, 409, origin) : jsonResponse({ success: false, message: plan.reason }, 400, origin);
-    if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
-    // Concept check first: it needs no execution, so a wrong approach never spends executor capacity.
-    let conceptApproved = false;
-    try { conceptApproved = checkIntroConcept({ lesson: { id: input.lessonId, steps: [{ type: input.phase, referenceSolution: plan.ref, conceptRubric: "" }] }, phase: input.phase, code: body.code, language: input.language }).approved === true; } catch { conceptApproved = false; }
-    const results = [];
-    if (conceptApproved) {
-      const begin = await stub.fetch("https://progress.internal/codebegin", { method: "POST", body: JSON.stringify({ n: plan.cases.length }) });
-      if (!begin.ok) return jsonResponse(await begin.json(), begin.status, origin);
-      for (const c of plan.cases) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
-      if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
-        return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
-      }
-    }
-    const rec = await stub.fetch("https://progress.internal/practicetask", { method: "POST", body: JSON.stringify({ ...input, conceptApproved, results, version: typeof body.version === "string" ? body.version : "" }) });
-    return jsonResponse(await rec.json(), rec.status, origin);
-  }
-  if (action === "codetask") {
+      if (action === "codetask") {
         const out = recordCodeTask(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), item: body.item, bank: body.bank, results: body.results }, typeof body.version === "string" ? body.version : "v1");
         if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
         await tx.put("state", state);
