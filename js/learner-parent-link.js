@@ -28,6 +28,11 @@ if (createButton && copyButton && codeBox && codeValue && expiryNode && statusNo
   }
 
   createButton.addEventListener("click", async () => {
+    const consent = document.getElementById("parentConsentCheck");
+    if (consent && !consent.checked) {
+      setStatus("وافق على ما سيراه ولي الأمر أولًا، ثم أنشئ الرمز.", "error");
+      return;
+    }
     createButton.disabled = true;
     createButton.textContent = "جارٍ إنشاء الرمز...";
     setStatus("يتم إنشاء رمز مؤقت وآمن...");

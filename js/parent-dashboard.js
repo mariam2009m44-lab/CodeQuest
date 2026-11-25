@@ -68,14 +68,18 @@ function renderChild(child) {
   head.append(identity);
   card.append(head);
 
+  // An unavailable source is shown as unavailable, never as a zero.
+  const progressOk = child.dataAvailability?.progress !== false;
+  const projectsOk = child.dataAvailability?.projects !== false;
+  const profileOk = child.dataAvailability?.profile !== false;
   const stats = element("div", "stats");
   [
-    [child.completedLessons, "درس مكتمل"],
-    [child.lessonsThisWeek, "هذا الأسبوع"],
-    [child.projectsCount, "مشروع محفوظ"]
-  ].forEach(([value, label]) => {
+    [child.completedLessons, "درس مكتمل", progressOk],
+    [child.lessonsThisWeek, "هذا الأسبوع", progressOk],
+    [child.projectsCount, "مشروع محفوظ", projectsOk]
+  ].forEach(([value, label, ok]) => {
     const box = element("div", "stat");
-    box.append(element("strong", "", Number(value) || 0));
+    box.append(element("strong", "", ok ? (Number(value) || 0) : "غير متاح"));
     box.append(element("span", "", label));
     stats.append(box);
   });
@@ -91,7 +95,7 @@ function renderChild(child) {
   Object.entries(labels).forEach(([key, label]) => {
     const row = element("div", "language-row");
     row.append(element("span", "", label));
-    row.append(element("strong", "", (child.languageCounts?.[key] || 0) + " درس"));
+    row.append(element("strong", "", progressOk ? (child.languageCounts?.[key] || 0) + " درس" : "غير متاح"));
     languages.append(row);
   });
   card.append(languages);
@@ -108,7 +112,7 @@ function renderChild(child) {
     const warning = element(
       "p",
       "child-sub",
-      "تعذر تحميل " + unavailableSections.join(" و") + " مؤقتًا؛ قد لا تعكس الأرقام المعروضة بيانات الحساب كاملة."
+      "تعذر تحميل " + unavailableSections.join(" و") + " مؤقتًا. الأقسام غير المتاحة تظهر «غير متاح» وليست صفرًا."
     );
     warning.setAttribute("role", "status");
     warning.style.margin = "10px 0 0";
@@ -117,7 +121,7 @@ function renderChild(child) {
   }
 
   const actions = element("div", "child-actions");
-  actions.append(element("span", "child-sub", "المستوى " + (child.level || 1) + " · " + (child.xp || 0) + " XP · " + (child.stars || 0) + " نجمة"));
+  actions.append(element("span", "child-sub", profileOk ? "المستوى " + (child.level || 1) + " · " + (child.xp || 0) + " XP · " + (child.stars || 0) + " نجمة" : "المستوى والنقاط: غير متاحة"));
   const unlink = element("button", "unlink-button", "إلغاء الربط");
   unlink.type = "button";
   unlink.addEventListener("click", async () => {
