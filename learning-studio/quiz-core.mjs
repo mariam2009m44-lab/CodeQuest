@@ -7,7 +7,7 @@ export function outputMatches(actual,expected){return normalizeOutput(actual)===
 export async function gradeCode(item,code,execute){
  const results=[];
  for(const t of item.tests){
-  let r;try{r=await execute(code,t.stdin??'')}catch(e){r={ok:false,stdout:'',message:'تعذر التشغيل'}}
+  let r;try{r=await execute((t.prelude??'')+code+(t.append?'\n'+t.append:''),t.stdin??'')}catch(e){r={ok:false,stdout:'',message:'تعذر التشغيل'}}
   results.push({ok:r.ok===true&&outputMatches(r.stdout,t.expected),ran:r.ok===true,stdout:r.stdout??'',message:r.message??''});
  }
  return {passed:results.every(x=>x.ok),results,ran:results.every(x=>x.ran)};

@@ -23,3 +23,19 @@ test('code grading needs every case to pass and fails closed on errors',async()=
  const bad=await gradeCode(item,'x',async()=>({ok:false,stdout:'',message:'boom'}));assert.equal(bad.passed,false);assert.equal(bad.ran,false);
  const thr=await gradeCode(item,'x',async()=>{throw new Error('net')});assert.equal(thr.passed,false);
 });
+
+import {spawnSync} from 'node:child_process';
+import {writeFileSync,mkdtempSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {gradeCode as gradeHidden} from '../../learning-studio/quiz-core.mjs';
+test('function tasks run hidden extra calls: reference passes, hardcoded and wrong solutions fail',async()=>{
+ const q=Q;
+ const dir=mkdtempSync(join(tmpdir(),'qz-'));
+ const runner=lang=>async(code)=>{const f=join(dir,lang==='python'?'a.py':'a.js');writeFileSync(f,code);const r=spawnSync(lang==='python'?'python3':'node',[f],{encoding:'utf8',timeout:10000});return {ok:r.status===0,stdout:r.stdout,message:r.stderr}};
+ const cases=[['python-7','python','def add(x, y):\n    return x - y\nprint(13)','def add(x, y):\n    return x + y\nprint(add(8, 5))'],['python-12','python','print("Nova - 3")','def card(name, level):\n    return name + " - " + str(level)\nprint(card("Nova", 3))'],['javascript-5','javascript','function add(x, y) { return 13; }\nconsole.log(add(8, 5));','const add = (a, b) => a + b;\nconsole.log(add(8, 5));']];
+ for(const [k,lang,bad,alt] of cases){const item=q[k].code[0];assert.ok(item.tests.some(t=>t.append),k+' has hidden calls');
+  assert.equal((await gradeHidden(item,item.reference,runner(lang))).passed,true,k+' reference');
+  assert.equal((await gradeHidden(item,bad,runner(lang))).passed,false,k+' hardcoded/wrong rejected');
+  assert.equal((await gradeHidden(item,alt,runner(lang))).passed,true,k+' alternative valid program accepted');}
+});
