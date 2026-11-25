@@ -987,6 +987,13 @@ async function completeCurrentLesson({ serverVerified = true } = {}) {
 }
 
 async function checkQuizAnswer() {
+  if (selectedQuizOption === null && currentLesson && !quizPassed && !quizRequestInProgress) {
+    setStatus("اختار إجابة الأول، وبعدها اضغط تحقّق.", "error");
+    const fb = byId("quizFeedback");
+    if (fb) { fb.textContent = "اختار إجابة الأول، وبعدها اضغط تحقّق."; fb.hidden = false; }
+    return;
+  }
+
   if (
     quizRequestInProgress ||
     selectedQuizOption === null ||
