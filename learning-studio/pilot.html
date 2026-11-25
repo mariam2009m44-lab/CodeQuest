@@ -7,14 +7,14 @@
 <p>معرّف الحساب (مش سرّي، بس بيتبعت للمسؤول عشان يضيف حسابك للتجربة): <bdi dir="ltr" id="uid" style="user-select:all;font-family:monospace"></bdi></p>
 <p><button id="toggle" type="button" class="primary" disabled>...</button></p>
 <p id="state" role="status"></p>
-<p><a href="/course-path.html">الرجوع للخريطة</a></p>
+<p><a href="/course-path.html" style="color:#9fc2ff">الرجوع للخريطة</a></p>
 </main>
 <script type="module">
 import {pilotActive,setPilot} from './pilot.mjs';
 const $=id=>document.getElementById(id);let uid=null;
 const localHost=location.hostname==='localhost'||location.hostname==='127.0.0.1';
 try{if(localHost){uid=new URLSearchParams(location.search).get('uid')}else{const {requireUser}=await import('/js/auth.js');const u=await requireUser();uid=u?.uid||null}}catch{uid=null}
-if(!uid){$('who').textContent='لازم تسجّلي الدخول الأول.';$('toggle').hidden=true}
+if(!uid){$('who').textContent='لازم تسجّلي الدخول الأول.';$('toggle').hidden=true;$('uid').parentElement.hidden=true}
 else{$('who').textContent='الحساب الحالي جاهز.';$('uid').textContent=uid;
  const paint=()=>{const on=pilotActive(uid,localStorage);$('toggle').disabled=false;$('toggle').textContent=on?'إيقاف التجربة':'تشغيل التجربة على هذا الجهاز';$('state').textContent=on?'التجربة شغالة على هذا الجهاز لحسابك. نتيجة اختبار الدرس الجاي هتتحاول تتسجل على الحساب، ولو الخادم مش جاهز هتفضل محفوظة على الجهاز.':'التجربة موقوفة.'};
  $('toggle').onclick=()=>{setPilot(uid,!pilotActive(uid,localStorage),localStorage);paint()};paint()}
