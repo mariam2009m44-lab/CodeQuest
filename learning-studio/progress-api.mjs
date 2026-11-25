@@ -5,8 +5,12 @@ import {quizBankHash,cyrb53} from './bank-hash.mjs';
 export const ENDPOINT='https://codequest.mariam2009m44.workers.dev';
 export async function postProgress({enabled,endpoint=ENDPOINT,getToken,fetchFn,path,payload}){
  if(enabled!==true||!payload)return {sent:false,reason:'disabled'};
- try{const token=await getToken();if(!token)return {sent:false,reason:'no-token'};
-  const r=await fetchFn(endpoint+path,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payload)});
+ const once=async force=>{const token=await getToken(force);if(!token)return {noToken:true};
+  return {r:await fetchFn(endpoint+path,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payload)})}};
+ try{let a=await once(false);if(a.noToken)return {sent:false,reason:'no-token'};
+  // 401 can be an expired token: refresh once. A second 401 means the sign-in itself is not accepted: needs the learner to sign in again.
+  if(a.r.status===401){a=await once(true);if(a.noToken)return {sent:false,reason:'no-token'};if(a.r.status===401)return {sent:true,ok:false,status:401,needsLogin:true}}
+  const r=a.r;
   if(r.status===409)return {sent:true,ok:false,refreshNeeded:true};
   if(r.status===429||r.status===503)return {sent:true,ok:false,retryable:true,status:r.status};
   if(!r.ok)return {sent:true,ok:false,status:r.status};
@@ -34,38 +38,48 @@ export function practicePayload({language,lesson,phase,code,version}){
  const bank=practiceBankHash(language,lesson,phase);if(!bank)return null;
  return {language,lessonId:lesson.id,phase,version:String(version||'v1').slice(0,64),bank,code};
 }
-// Durable, per-account, bounded retry for every assessment post. A result that could not be recorded because of a busy server, a lost response
-// or a missing token is kept on the device for THAT account and retried on later page opens (at most MAX_ATTEMPTS sends in total).
-// A 409 (stale question bank) or any other rejection discards the payload: old answers are never replayed against a new bank.
+// Durable, per-account retry for every assessment post. A result that could not be recorded (busy server, lost response, missing token,
+// sign-in not accepted) stays on the device for THAT account. Automatic retries are bounded (MAX_ATTEMPTS sends); after that the payload is
+// KEPT as "exhausted" for a deliberate learner retry (retryExhausted) and is never silently dropped. It is removed only on a confirmed
+// receipt (200) or a definitive rejection (409 stale bank: fresh assessment needed; other 4xx). Old answers are never replayed against a new bank.
 export const MAX_ATTEMPTS=3;
 const qkey=uid=>'cq_pending_'+uid;
 const readQ=(storage,uid)=>{try{const v=JSON.parse(storage.getItem(qkey(uid))||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch{return {}}};
 const writeQ=(storage,uid,q)=>{try{Object.keys(q).length?storage.setItem(qkey(uid),JSON.stringify(q)):storage.removeItem(qkey(uid))}catch{}};
-function settle(r,attempts){
+function settle(r){
  if(r.ok)return {state:'saved',data:r.data,keep:false};
  if(r.refreshNeeded)return {state:'stale',keep:false};
- const retry=r.retryable===true||r.reason==='network'||r.reason==='no-token';
- if(!retry)return {state:'rejected',status:r.status,keep:false};
- return attempts>=MAX_ATTEMPTS?{state:'gave-up',keep:false}:{state:'pending',keep:true};
+ if(r.needsLogin)return {state:'needs-login',keep:true};
+ if(r.retryable===true||r.reason==='network'||r.reason==='no-token')return {state:'pending',keep:true};
+ return {state:'rejected',status:r.status,keep:false};
 }
+const exhausted=e=>e.attempts>=MAX_ATTEMPTS||e.needsLogin===true;
 export async function postDurable({uid,storage,key,enabled,endpoint,getToken,fetchFn,path,payload,defer}){
  if(enabled!==true||!payload||!uid)return {state:'off'};
  if(defer===true){const q=readQ(storage,uid);q[key]={path,payload,attempts:0};writeQ(storage,uid,q);return {state:'pending'}}
  const r=await postProgress({enabled,endpoint,getToken,fetchFn,path,payload});
- const out=settle(r,1);const q=readQ(storage,uid);
- if(out.keep)q[key]={path,payload,attempts:1};else delete q[key];
+ const out=settle(r);const q=readQ(storage,uid);
+ if(out.keep)q[key]={path,payload,attempts:1,needsLogin:out.state==='needs-login'};else delete q[key];
  writeQ(storage,uid,q);return out;
 }
-// Retries this account's saved posts in order; stops at the first one that still cannot be sent so the order (code tasks before exam) holds.
-export async function flushPending({uid,storage,enabled,endpoint,getToken,fetchFn}){
+async function run(opts,includeExhausted){
+ const {uid,storage,enabled,endpoint,getToken,fetchFn}=opts;
  if(enabled!==true||!uid)return {sent:0,left:0};
  const q=readQ(storage,uid);let sent=0;
  for(const key of Object.keys(q)){
   const e=q[key];if(!e||typeof e.path!=='string'||!e.payload||!Number.isInteger(e.attempts)){delete q[key];continue}
+  if(exhausted(e)&&!includeExhausted)break; // an exhausted item holds the later ones back (order); the learner retries deliberately
   const r=await postProgress({enabled,endpoint,getToken,fetchFn,path:e.path,payload:e.payload});
-  const out=settle(r,e.attempts+1);
-  if(out.keep){q[key]={...e,attempts:e.attempts+1};break}
+  const out=settle(r);
+  if(out.keep){q[key]={...e,attempts:e.attempts+1,needsLogin:out.state==='needs-login'};break}
   delete q[key];if(out.state==='saved')sent++;
  }
  writeQ(storage,uid,q);return {sent,left:Object.keys(q).length};
+}
+export const flushPending=opts=>run(opts,false);
+export const retryExhausted=opts=>run(opts,true);
+// What the page may say: counts only, from storage. "exhausted" and "needsLogin" need a learner action.
+export function pendingStatus({uid,storage}){
+ const q=uid?readQ(storage,uid):{};const es=Object.values(q).filter(e=>e&&typeof e==='object');
+ return {total:es.length,exhausted:es.filter(exhausted).length,needsLogin:es.filter(e=>e.needsLogin===true).length};
 }

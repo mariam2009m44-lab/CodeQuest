@@ -1204,9 +1204,9 @@
           const { postProgress } = await import("./learning-studio/progress-api.mjs");
           return postProgress({
             enabled: true,
-            getToken: async () => {
+            getToken: async force => {
               const { auth } = await import("./js/firebase-config.js");
-              return auth.currentUser?.getIdToken() ?? null;
+              return auth.currentUser?.getIdToken(force === true) ?? null;
             },
             fetchFn: (u, o) => fetch(u, o),
             path: "/api/progress/final-exam",
