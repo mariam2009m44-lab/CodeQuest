@@ -45,5 +45,7 @@ export class LessonSession {
    this.evidence.explanation=true;this.phase='transfer';this.code=this.step('transfer').starter??'';this.version++;return {ok:true};
   }catch(error){return {ok:false,reason:'review',message:String(error.message)}}finally{this.busy=false}
  }
- snapshot(){return {lessonId:this.lesson.id,phase:this.phase,busy:this.busy,attempts:this.attempts,evidence:{...this.evidence},code:this.code,accountReward:false}}
+ // Resume only: puts a returning student back at a step. Earlier steps are marked as resumed, not freshly earned.
+ restore(phase,code){const order=['prediction','worked','practice','explanation','transfer'];const i=order.indexOf(phase);if(i<1||this.busy)return false;if(phase==='explanation')phase='practice';const j=order.indexOf(phase);this.resumedFrom=phase;this.phase=phase;this.evidence.prediction=true;if(j>=1)this.evidence.worked=true;if(j>=3){this.evidence.practice=true;this.evidence.explanation=true;this.version++}if(phase==='transfer')this.code=this.step('transfer').starter??'';if(typeof code==='string'&&code!==''&&['practice','transfer'].includes(phase))this.setCode(code);return true}
+ snapshot(){return {lessonId:this.lesson.id,phase:this.phase,busy:this.busy,attempts:this.attempts,evidence:{...this.evidence},code:this.code,accountReward:false,resumedFrom:this.resumedFrom??null}}
 }

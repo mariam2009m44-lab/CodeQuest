@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {LessonSession} from '../../learning-studio/session.mjs';
+const units=JSON.parse(fs.readFileSync(new URL('../../learning-studio/units.json',import.meta.url)));const lesson=units[0].lessons[0];
+const mk=()=>new LessonSession(lesson,{execute:async()=>({ok:true,stdout:''}),checkConcept:async()=>({approved:true}),checkExplanation:async()=>({approved:true})});
+test('restore puts the student back at practice with the draft and marks resumedFrom',()=>{const s=mk();assert.equal(s.restore('practice','x=1'),true);assert.equal(s.phase,'practice');assert.equal(s.code,'x=1');assert.equal(s.snapshot().resumedFrom,'practice')});
+test('explanation resumes at practice (the answer must be earned again)',()=>{const s=mk();s.restore('explanation','x=1');assert.equal(s.phase,'practice');assert.equal(s.evidence.practice,false)});
+test('transfer resume with empty draft uses the starter; prediction and complete are not restorable',()=>{const s=mk();s.restore('transfer','');assert.equal(s.phase,'transfer');assert.equal(s.code,s.step('transfer').starter??'');assert.equal(mk().restore('prediction'),false);assert.equal(mk().restore('complete'),false)});
