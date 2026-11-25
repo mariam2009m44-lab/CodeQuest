@@ -47,3 +47,12 @@ _test('byLesson groups weighted scores per lesson',()=>{
  const r=_byLesson(items,[{correct:true},{correct:false},{correct:false}]);
  _assert.deepEqual(r.map(x=>[x.lesson,x.earned,x.total,x.percent]),[['a',1,3,33],['b',0,1,0]]);
 });
+
+import {isPassed,PASS_PERCENT,summarize as _summ} from '../../learning-studio/quiz-core.mjs';
+_test('pass threshold is 50 percent inclusive',()=>{
+ _assert.equal(PASS_PERCENT,50);_assert.equal(isPassed(50),true);_assert.equal(isPassed(49),false);_assert.equal(isPassed(100),true);_assert.equal(isPassed(0),false);
+ const items=[{lesson:'a',kind:'mcq'},{lesson:'a',kind:'mcq'}];
+ _assert.equal(_summ(items,[{correct:true},{correct:false}]).percent,50);
+ _assert.equal(isPassed(_summ(items,[{correct:true},{correct:false}]).percent),true);
+ _assert.equal(isPassed(_summ(items,[{correct:false},{correct:false}]).percent),false);
+});
