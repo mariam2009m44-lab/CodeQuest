@@ -392,7 +392,7 @@
 
         <div class="info-card">
           <span>درجة النجاح</span>
-          <strong>80%</strong>
+          <strong>50%</strong>
         </div>
 
         <div class="info-card">
@@ -484,7 +484,8 @@
     } from "./js/auth.js";
 
     const EXAM_SIZE = 15;
-    const PASS_PERCENTAGE = 80;
+    // Owner-approved (Mariam, 19:09): pass at 50 percent or more, inclusive. 15 questions: 8 correct passes, 7 fails.
+    const PASS_PERCENTAGE = 50;
     const EXAM_KEY_PREFIX = "codequest_python_exam_passed_";
 
     const allQuestions = [
@@ -1147,7 +1148,7 @@
             (score / examQuestions.length) * 100
           );
 
-          const passed = percentage >= PASS_PERCENTAGE;
+          const passed = score * 100 >= PASS_PERCENTAGE * examQuestions.length;
 
           progressFill.style.width = "100%";
 

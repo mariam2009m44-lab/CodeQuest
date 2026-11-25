@@ -1932,7 +1932,8 @@ html[data-theme="light"] .bottom-action {
   let examScore = 0;
   let examAnswered = false;
 
-  const PASS_PERCENTAGE = 80;
+  // Owner-approved (Mariam, 15:56): chapter exams pass at 50 percent or more, inclusive.
+  const PASS_PERCENTAGE = 50;
 
   const chatContainer =
     document.getElementById("chatContainer");
@@ -4158,7 +4159,7 @@ html[data-theme="light"] .bottom-action {
     ? Math.round((examScore / total) * 100)
     : 0;
 
-  const passed = percentage >= PASS_PERCENTAGE;
+  const passed = total > 0 && examScore * 100 >= PASS_PERCENTAGE * total;
 
   $("examQuestionBox")?.style.setProperty(
     "display",
@@ -4190,7 +4191,7 @@ html[data-theme="light"] .bottom-action {
   if (resultMsg) {
     resultMsg.textContent = passed
       ? `حصلت على ${percentage}% واجتزت الامتحان بنجاح.`
-      : `حصلت على ${percentage}%. تحتاج إلى 80% على الأقل للنجاح.`;
+      : `حصلت على ${percentage}%. تحتاج إلى 50% على الأقل للنجاح.`;
   }
 
   const nextExamLessonButton = $("nextExamLessonBtn");
