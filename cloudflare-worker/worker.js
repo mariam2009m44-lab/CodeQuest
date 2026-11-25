@@ -2,7 +2,8 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
-import { emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { emptyState, recordLesson, recordExam, recordLessonTest, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
@@ -1160,6 +1161,12 @@ export default {
     if (url.pathname === "/api/progress/resume" && request.method === "POST") {
       return handleProgress(request, env, origin, "resume");
     }
+    if (url.pathname === "/api/progress/lesson-test" && request.method === "POST") {
+      return handleProgress(request, env, origin, "lessontest");
+    }
+    if (url.pathname === "/api/progress/eligibility" && request.method === "POST") {
+      return handleProgress(request, env, origin, "eligibility");
+    }
     if (url.pathname === "/api/progress/exam" && request.method === "POST") {
       return handleProgress(request, env, origin, "exam");
     }
@@ -1257,7 +1264,7 @@ export class StudentProgress {
 
     const result = await this.state.storage.transaction(async tx => {
       const state = (await tx.get("state")) || emptyState();
-      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, resume: resumeView(state, Date.now()) } }; }
+      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, lessonTests: state.lessonTests || {}, resume: resumeView(state, Date.now()) } }; }
 
       if (action === "resume") {
         const today = new Date().toISOString().slice(0, 10);
@@ -1270,7 +1277,8 @@ export class StudentProgress {
         return { status: 200, data: { success: true, stale: out.stale, resume: out.resume } };
       }
 
-      if (action !== "lesson" && action !== "exam") return { status: 404, data: { success: false, message: "unknown action" } };
+      if (action === "eligibility") return { status: 200, data: { success: true, ...certificateEligibility(state, CURRICULUM_INDEX, String(body.language || "")) } };
+      if (action !== "lesson" && action !== "exam" && action !== "lessontest") return { status: 404, data: { success: false, message: "unknown action" } };
       const today = new Date().toISOString().slice(0, 10);
       const quota = (await tx.get("writes")) || { day: today, count: 0 };
       if (quota.day !== today) { quota.day = today; quota.count = 0; }
@@ -1279,6 +1287,7 @@ export class StudentProgress {
       let outcome;
       const version = typeof body.version === "string" ? body.version : "";
       if (action === "lesson") outcome = recordLesson(state, CURRICULUM_INDEX, { language: body.language, lessonId: body.lessonId, version });
+      else if (action === "lessontest") outcome = recordLessonTest(state, CURRICULUM_INDEX, LESSON_ANSWERS, { language: body.language, lessonId: body.lessonId, picks: body.picks }, version);
       else if (action === "exam") outcome = recordExam(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), choices: body.choices }, version);
       else return { status: 404, data: { success: false, message: "unknown action" } };
       if (!outcome.ok) return { status: 400, data: { success: false, message: outcome.reason } };
@@ -1286,6 +1295,7 @@ export class StudentProgress {
       quota.count += 1;
       await tx.put("state", state);
       await tx.put("writes", quota);
+      if (action === "lessontest") return { status: 200, data: { success: true, earned: outcome.result.earned, total: outcome.result.total, percent: outcome.result.percent, passed: outcome.result.passed, best: outcome.best, missed: outcome.result.missed } };
       if (action === "exam") return { status: 200, data: { success: true, percent: outcome.result.percent, passed: outcome.result.passed, codeVerified: outcome.result.codeVerified, best: outcome.best, missedLessons: outcome.result.missedLessons } };
       return { status: 200, data: { success: true, replay: outcome.replay === true, verified: false } };
     });

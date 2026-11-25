@@ -108,3 +108,62 @@ export function publicCertificateRecord({ displayName, language, issuedAtMs, ran
   if (!name || !/^[a-f0-9]{32}$/.test(randomId)) return null;
   return { id: randomId, name, track: language, issuedAt: issuedAtMs };
 }
+
+// ---- Server grading of per-lesson tests (anti-tamper, not secrecy) ----
+// The question bank is public (learning-studio/lesson-tests.json), so the answer key here only stops a forged score.
+// key: { lessonId: [correctOptionIndex, ...] }. picks are the ORIGINAL option indexes the learner chose (null = unanswered).
+export function gradeLessonTest(index, key, { language, lessonId, picks }) {
+  const meta = index.lessons[lessonId];
+  if (!meta || meta.language !== language) return { ok: false, reason: "unknown_lesson" };
+  const answers = key[lessonId];
+  if (!Array.isArray(answers) || answers.length === 0) return { ok: false, reason: "no_test" };
+  if (!Array.isArray(picks) || picks.length !== answers.length) return { ok: false, reason: "bad_picks" };
+  let earned = 0, answered = 0;
+  const missed = [];
+  answers.forEach((a, i) => {
+    const p = picks[i];
+    if (p !== null && !(Number.isInteger(p) && p >= 0 && p <= 2)) { missed.push(i); return; }
+    if (p !== null) answered += 1;
+    if (p === a) earned += 1; else missed.push(i);
+  });
+  if (picks.some(p => p !== null && !(Number.isInteger(p) && p >= 0 && p <= 2))) return { ok: false, reason: "bad_picks" };
+  const total = answers.length;
+  // Exact integer rule: 50 percent inclusive, only when every question was answered.
+  const passed = answered === total && earned * 100 >= PASS_PERCENT * total;
+  return { ok: true, earned, total, percent: Math.round(earned * 100 / total), passed, missed };
+}
+
+export function recordLessonTest(state, index, key, input, version) {
+  if (typeof version !== "string" || version.length === 0 || version.length > 64) return { ok: false, reason: "bad_version" };
+  const g = gradeLessonTest(index, key, input);
+  if (!g.ok) return g;
+  state.lessonTests = state.lessonTests || {};
+  const prev = state.lessonTests[input.lessonId];
+  // Best result wins; a later lower attempt never removes a pass.
+  const keep = prev && (prev.passed || prev.percent > g.percent) ? prev : { percent: g.percent, passed: g.passed, version };
+  state.lessonTests[input.lessonId] = keep;
+  return { ok: true, result: g, best: keep };
+}
+
+// Code tasks are still self-reported by the browser. Until server-side execution is wired, issuance stays blocked.
+export const CODE_TASK_VERIFICATION_WIRED = false;
+// Python is the only track with a final comprehensive exam in the current curriculum (python-exam.html).
+export const FINAL_EXAM_TRACKS = ["python"];
+
+export function certificateEligibility(state, index, language) {
+  const blockers = [];
+  const lessonIds = Object.keys(index.lessons).filter(id => index.lessons[id].language === language);
+  if (lessonIds.length === 0) return { eligible: false, blockers: ["unknown_track"] };
+  const lt = state.lessonTests || {};
+  const missingTests = lessonIds.filter(id => !(lt[id] && lt[id].passed));
+  if (missingTests.length) blockers.push({ code: "lesson_tests", remaining: missingTests.length, of: lessonIds.length });
+  const unitKeys = Object.keys(index.quizzes).filter(k => k.startsWith(language + "-"));
+  const missingUnits = unitKeys.filter(k => !(state.exams[k] && state.exams[k].passed));
+  if (missingUnits.length) blockers.push({ code: "unit_exams", remaining: missingUnits.length, of: unitKeys.length });
+  if (FINAL_EXAM_TRACKS.includes(language)) {
+    const f = state.finals && state.finals[language];
+    if (!(f && f.passed)) blockers.push({ code: "final_exam" });
+  }
+  if (!CODE_TASK_VERIFICATION_WIRED) blockers.push({ code: "code_tasks_not_server_verified" });
+  return { eligible: blockers.length === 0, blockers };
+}
