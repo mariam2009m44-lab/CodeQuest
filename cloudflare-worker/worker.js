@@ -2,7 +2,7 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
-import { emptyState, recordLesson, recordExam } from "./progress-core.js";
+import { emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView } from "./progress-core.js";
 import CURRICULUM_INDEX from "./curriculum-index.json";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
@@ -633,7 +633,7 @@ async function handleProgress(request, env, origin, action) {
   }
   let body = {};
   if (action !== "get") {
-    try { body = await readBoundedJson(request, 4096); } catch (error) {
+    try { body = await readBoundedJson(request, action === "resume" ? 32768 : 4096); } catch (error) {
       const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
       return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, tooLarge ? 413 : 400, origin);
     }
@@ -1157,6 +1157,9 @@ export default {
     if (url.pathname === "/api/progress/lesson" && request.method === "POST") {
       return handleProgress(request, env, origin, "lesson");
     }
+    if (url.pathname === "/api/progress/resume" && request.method === "POST") {
+      return handleProgress(request, env, origin, "resume");
+    }
     if (url.pathname === "/api/progress/exam" && request.method === "POST") {
       return handleProgress(request, env, origin, "exam");
     }
@@ -1254,7 +1257,18 @@ export class StudentProgress {
 
     const result = await this.state.storage.transaction(async tx => {
       const state = (await tx.get("state")) || emptyState();
-      if (action === "get") return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams } };
+      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, resume: resumeView(state, Date.now()) } }; }
+
+      if (action === "resume") {
+        const today = new Date().toISOString().slice(0, 10);
+        const rq = (await tx.get("rwrites")) || { day: today, count: 0 };
+        if (rq.day !== today) { rq.day = today; rq.count = 0; }
+        if (rq.count >= 600) return { status: 429, data: { success: false, retryable: true, message: "وصلت للحد اليومي لحفظ نقطة التوقف." } };
+        const out = saveResume(state, CURRICULUM_INDEX, { language: body.language, lessonId: body.lessonId, phase: body.phase, draft: body.draft, savedAt: body.savedAt }, Date.now());
+        if (!out.ok) return { status: 400, data: { success: false, message: out.reason } };
+        if (!out.stale) { rq.count += 1; await tx.put("state", state); await tx.put("rwrites", rq); }
+        return { status: 200, data: { success: true, stale: out.stale, resume: out.resume } };
+      }
 
       if (action !== "lesson" && action !== "exam") return { status: 404, data: { success: false, message: "unknown action" } };
       const today = new Date().toISOString().slice(0, 10);

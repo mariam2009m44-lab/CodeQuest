@@ -2,12 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
-import { emptyState, recordLesson, recordExam } from "../progress-core.js";
+import { emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView } from "../progress-core.js";
 const index = JSON.parse(fs.readFileSync(new URL("../curriculum-index.json", import.meta.url), "utf8"));
 function load() {
   let source = fs.readFileSync(new URL("../worker.js", import.meta.url), "utf8");
   source = source.replace(/^import .*;$/gm, "").replace("export default {", "globalThis.worker = {").replace(/export class (\w+)/g, "globalThis.$1 = class $1");
-  const sandbox = { globalThis: null, URL, Response, console, emptyState, recordLesson, recordExam, CURRICULUM_INDEX: index, createRemoteJWKSet() {}, jwtVerify() {}, Date, JSON, Number, Promise, TextEncoder, Request, Headers, fetch: undefined };
+  const sandbox = { globalThis: null, URL, Response, console, emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView, CURRICULUM_INDEX: index, createRemoteJWKSet() {}, jwtVerify() {}, Date, JSON, Number, Promise, TextEncoder, Request, Headers, fetch: undefined };
   sandbox.globalThis = sandbox;
   vm.runInNewContext(source, sandbox);
   return sandbox;
@@ -26,7 +26,7 @@ test("Durable Object stores best exam, never trusts a client score, and returns 
   assert.equal(a.data.codeVerified, false);
   assert.ok(a.data.percent < 100);
   const g = await call(o, "get", {});
-  assert.deepEqual(Object.keys(g.data).sort(), ["exams", "lessons", "success"]);
+  assert.deepEqual(Object.keys(g.data).sort(), ["exams", "lessons", "resume", "success"]);
   assert.equal(JSON.stringify(g.data).includes("uid"), false);
 });
 test("Durable Object rejects bad input and enforces the daily write cap", async () => {
