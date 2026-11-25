@@ -5,7 +5,7 @@ compatibility_date = "2026-10-30"
 [vars]
 FIREBASE_PROJECT_ID = "codequest-6350a"
 ALLOWED_ORIGIN = "https://mariam2009m44-lab.github.io"
-ALLOWED_ORIGINS = "https://codequest-mu-six.vercel.app"
+ALLOWED_ORIGINS = "https://codequest-mu-six.vercel.app,https://pilot-optin.codequest-preview.pages.dev"
 ENVIRONMENT = "production"
 GEMINI_MODEL = "gemini-3.8-flash"
 
@@ -29,6 +29,7 @@ new_sqlite_classes = ["CodeExecutionLimiter"]
 # across a Durable Object class change, and the class and its records are never deleted as a rollback step.
 # PROGRESS_WRITES and CERT_ISSUANCE are intentionally NOT set here: with them unset every progress write route and certificate issuance answer 503.
 # Turn them on only through a reviewed commit that adds them to [vars].
+# Pilot (lesson-test route only): set PROGRESS_PILOT_EMAILS or PROGRESS_PILOT_UIDS as Cloudflare dashboard SECRETS (they survive deploys and stay out of the repo).
 [[migrations]]
 tag = "v2-student-progress"
 new_sqlite_classes = ["StudentProgress"]

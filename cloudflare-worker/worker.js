@@ -193,7 +193,8 @@ async function verifyFirebaseUser(request, env) {
     email:
       typeof payload.email === "string"
         ? payload.email
-        : null
+        : null,
+    emailVerified: payload.email_verified === true
   };
 }
 
@@ -700,7 +701,9 @@ async function handleProgress(request, env, origin, action) {
   // Reads (get, certificates) stay available. Auth is checked first, so an unauthenticated call still answers 401, never this.
   if (action !== "get" && action !== "certificates" && action !== "eligibility" && env.PROGRESS_WRITES !== "on") {
     // Pilot: only the lesson-test route, only for accounts on the PROGRESS_PILOT_UIDS allowlist. Nothing else is opened and no code execution is involved.
-    const pilotOk = action === "lessontest" && String(env.PROGRESS_PILOT_UIDS || "").split(",").map(x => x.trim()).filter(Boolean).includes(user.uid);
+    // PROGRESS_PILOT_UIDS / PROGRESS_PILOT_EMAILS can be Cloudflare dashboard secrets, so the account is never written into the repository. An email counts only when the signed token says it is verified.
+    const list = v => String(v || "").split(",").map(x => x.trim()).filter(Boolean);
+    const pilotOk = action === "lessontest" && (list(env.PROGRESS_PILOT_UIDS).includes(user.uid) || (user.emailVerified === true && typeof user.email === "string" && list(env.PROGRESS_PILOT_EMAILS).map(x => x.toLowerCase()).includes(user.email.toLowerCase())));
     if (!pilotOk) return jsonResponse({ success: false, retryable: true, message: "progress_writes_off" }, 503, origin);
   }
   let body = {};

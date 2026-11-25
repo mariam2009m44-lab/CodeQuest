@@ -202,7 +202,8 @@ test('touch: quiz option and memory cards work with real taps on a phone viewpor
   const pos = await quiz.page.evaluate(() => [...document.querySelectorAll('.opt-btn')].findIndex(b => b.textContent === currentQs[curr].opts[currentQs[curr].a]));
   await quiz.page.locator('.opt-btn').nth(pos).tap();
   assert.ok(Number(await quiz.page.locator('#score').textContent()) > 0);
-  await quiz.page.locator('.opt-btn').nth(pos).scrollIntoViewIfNeeded();
+  // The game replaces the options 1.7 s after an answer, so scroll synchronously: a locator wait for the old button to be stable can outlive it on a loaded machine.
+  await quiz.page.evaluate(i => document.querySelectorAll('.opt-btn')[i]?.scrollIntoView({ block: 'nearest' }), pos);
   await quiz.page.screenshot({ path: path.join(artifactDir, 'audit-quiz-touch.png') });
   const mem = await d.open('accountA', 'game-memory.html');
   await mem.page.waitForFunction(() => window.CQGameStore.ready);

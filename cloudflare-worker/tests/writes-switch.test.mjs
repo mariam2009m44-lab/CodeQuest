@@ -31,3 +31,12 @@ test("pilot allowlist: lesson-test only, only for listed accounts; every other w
   assert.equal((await w.call("/api/progress/get", { token: "tokB", body: {} })).status, 200);
   w.env.PROGRESS_PILOT_UIDS = ""; const none = await w.call("/api/progress/lesson-test", { token: "tokA", body: {} }); assert.equal(none.status, 503);
 });
+test("pilot by verified email (secret, not in the repo): verified token only, lesson-test only, case-insensitive email, exact uid", async () => {
+  const w = boot({}); delete w.env.PROGRESS_WRITES; w.env.PROGRESS_PILOT_EMAILS = "pilot@example.com";
+  const ok = await w.call("/api/progress/lesson-test", { token: "tokE", body: {} }); assert.notEqual(ok.data && ok.data.message, "progress_writes_off");
+  const unverified = await w.call("/api/progress/lesson-test", { token: "tokU", body: {} }); assert.equal(unverified.status, 503, "an unverified email never qualifies");
+  const other = await w.call("/api/progress/lesson-test", { token: "tokA", body: {} }); assert.equal(other.status, 503);
+  const cx = await w.call("/api/progress/code-task", { token: "tokE", body: {} }); assert.equal(cx.status, 503, "code routes stay off for the pilot account");
+  w.env.PROGRESS_PILOT_EMAILS = ""; w.env.PROGRESS_PILOT_UIDS = "UIDE"; assert.equal((await w.call("/api/progress/lesson-test", { token: "tokE", body: {} })).status, 503, "uid match is exact, not case-folded");
+  w.env.PROGRESS_PILOT_UIDS = "uidE"; assert.notEqual((await w.call("/api/progress/lesson-test", { token: "tokE", body: {} })).data.message, "progress_writes_off");
+});
