@@ -12,7 +12,8 @@ export function applyMapMode(language){
  return back;
 }
 export function recordMapProgress(language,unit,index,uid){
- return fromMap?writeMapProgress(language,unit,index,uid):false;
+ // Recorded whichever way the lesson was opened (map, tracks page, resume), so the map never lags behind lessons she finished.
+ return writeMapProgress(language,unit,index,uid);
 }
 export function writeMapProgress(language,unit,index,uid){
  if(!uid||!Number.isSafeInteger(unit)||!Number.isSafeInteger(index))return false;
