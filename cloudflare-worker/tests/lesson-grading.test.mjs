@@ -51,3 +51,13 @@ test("eligibility needs every lesson test, unit exam, python final, and server-v
   assert.deepEqual(e.blockers.map(b => b.code), ["code_tasks_not_server_verified"]);
   assert.equal(certificateEligibility(s, index, "ruby").eligible, false);
 });
+test("picks are canonical option indexes, so any display shuffle grades the same", () => {
+  const a = key[id];
+  for (let t = 0; t < 50; t++) {
+    const order = [0, 1, 2].sort(() => Math.random() - 0.5); // display positions, never sent
+    const clicked = a.map(x => order.indexOf(x)); // learner clicks the right option at some position
+    const picks = clicked.map(pos => order[pos]); // client maps the position back to the original index
+    assert.deepEqual(picks, a);
+    assert.equal(gradeLessonTest(index, key, { language: "python", lessonId: id, picks }).earned, a.length);
+  }
+});
