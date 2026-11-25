@@ -1,4 +1,4 @@
-import {gradeCode,summarize,byLesson,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
+import {gradeCode,summarize,byLesson,isPassed,PASS_PERCENT,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
 import {selectExecutor} from './execution.mjs';
 import {setProse} from './prose.mjs';
 const q=new URLSearchParams(location.search),lang=q.get('lang')||'python',unit=Number(q.get('unit')||1);
@@ -42,17 +42,17 @@ else{
  function done(){
   if(answers.filter(Boolean).length<items.length)return;
   const s=summarize(items,answers);const r=$('quizResult');r.hidden=false;r.replaceChildren();
-  const h=document.createElement('h2');h.textContent='نتيجتك: '+s.percent+'% ('+s.earned+' من '+s.total+') - '+s.band;r.append(h);
+  const h=document.createElement('h2');h.textContent='نتيجتك: '+s.percent+'% ('+s.earned+' من '+s.total+') - '+s.band;r.append(h);const ok=isPassed(s.percent);const st=document.createElement('p');st.className='quiz-status '+(ok?'pass':'review');st.textContent=ok?'ناجح: تقدر تكمّل للوحدة الجاية.':'محتاج مراجعة: النجاح من '+PASS_PERCENT+'%. راجع الدروس تحت ثم أعد الاختبار.';r.append(st);
   const n=document.createElement('p');n.textContent=s.missedLessons.length?'راجع: '+s.missedLessons.map(titleOf).join('، '):'كل الإجابات صح.';r.append(n);
   const ul=document.createElement('ul');ul.className='quiz-lessons';
   byLesson(items,answers).forEach(x=>{const li=document.createElement('li');const a=document.createElement('a');a.href='/learning.html?lang='+encodeURIComponent(lang)+'&lesson='+encodeURIComponent(x.lesson);a.textContent=titleOf(x.lesson);const sp=document.createElement('span');sp.textContent=x.earned+' من '+x.total+' ('+x.percent+'%)';li.append(a,sp);if(x.percent<100){const m=document.createElement('em');m.textContent='راجع الدرس ده';li.append(m)}ul.append(li)});
   const hh=document.createElement('h3');hh.textContent='أسئلة الاختبار المرتبطة بكل درس';r.append(hh,ul);
   const cov=document.createElement('p');cov.className='small';cov.textContent='دي أسئلة قليلة (من '+items.length+') بتغطي بعض مفاهيم الدرس بس، فمش تقييم كامل للدرس.';r.append(cov);const note=document.createElement('p');note.textContent='النسبة دي نتيجة هذا الاختبار فقط ومحفوظة على هذا الجهاز، مش تقييم لمستواك الكامل ولا مكافأة.';r.append(note);
   const nu=units.find(u=>u.language===lang&&u.unit===unit+1);
-  if(nu){const g=document.createElement('a');g.className='primary';g.href='/learning.html?lang='+encodeURIComponent(lang)+'&unit='+nu.unit+'&lesson='+encodeURIComponent(nu.lessons[0].id);g.textContent='كمّل: الوحدة '+nu.unit+' - '+nu.title;g.style.marginInlineEnd='10px';r.append(g)}
-  else{const e=document.createElement('p');e.textContent='ده آخر اختبار في المسار.';r.append(e)}
+  if(ok&&nu){const g=document.createElement('a');g.className='primary';g.href='/learning.html?lang='+encodeURIComponent(lang)+'&unit='+nu.unit+'&lesson='+encodeURIComponent(nu.lessons[0].id);g.textContent='كمّل: الوحدة '+nu.unit+' - '+nu.title;g.style.marginInlineEnd='10px';r.append(g)}
+  else if(ok){const e=document.createElement('p');e.textContent='ده آخر اختبار في المسار.';r.append(e)}
   const again=document.createElement('a');again.className='primary';again.href=location.href;again.textContent='ابدأ اختبار جديد';r.append(again);
-  try{localStorage.setItem('codequest_studio_quiz_'+lang+'_'+unit,JSON.stringify({percent:s.percent,earned:s.earned,total:s.total,lessons:byLesson(items,answers),at:Date.now(),source:'studio-device-only'}))}catch{}
+  try{localStorage.setItem('codequest_studio_quiz_'+lang+'_'+unit,JSON.stringify({percent:s.percent,passed:ok,earned:s.earned,total:s.total,lessons:byLesson(items,answers),at:Date.now(),source:'studio-device-only'}))}catch{}
   r.scrollIntoView();
  }
 }
