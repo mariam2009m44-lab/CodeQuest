@@ -958,6 +958,7 @@
 
         // بدء الامتحان
         function startExam() {
+          allQuestions.forEach(q => { delete q.__pick; });
           examQuestions = shuffleArray(allQuestions).slice(
             0,
             Math.min(EXAM_SIZE, allQuestions.length)
@@ -1047,6 +1048,7 @@
           const buttons = questionOptions.querySelectorAll(".opt-btn");
 
           const isCorrect = selectedIndex === question.a;
+          question.__pick = selectedIndex;
 
           buttons.forEach((button, index) => {
             button.disabled = true;
@@ -1149,6 +1151,7 @@
           );
 
           const passed = score * 100 >= PASS_PERCENTAGE * examQuestions.length;
+          submitFinalToServer();
 
           progressFill.style.width = "100%";
 
@@ -1180,6 +1183,35 @@
               "لم يتم تسجيل الامتحان كمكتمل لأن درجة النجاح لم تتحقق.";
 
             saveStatus.className = "error";
+          }
+        }
+
+        // Server-side record of the final exam. OFF unless features.json serverAssessment is true (the Worker routes are not deployed).
+        // The browser sends only which option was picked for each question id; the server scores it. Failures never change the on-screen result.
+        async function submitFinalToServer() {
+          try {
+            const features = await fetch("learning-studio/features.json").then(r => r.json()).catch(() => ({}));
+            if (features.serverAssessment !== true) return;
+            const [{ cyrb53 }, { postProgress }] = await Promise.all([
+              import("./learning-studio/bank-hash.mjs"),
+              import("./learning-studio/progress-api.mjs")
+            ]);
+            const answers = examQuestions.map(q => ({
+              id: cyrb53(JSON.stringify([q.q, q.code ?? "", q.opts, q.a])),
+              pick: Number.isInteger(q.__pick) ? q.__pick : null
+            }));
+            await postProgress({
+              enabled: true,
+              getToken: async () => {
+                const { auth } = await import("./js/firebase-config.js");
+                return auth.currentUser?.getIdToken() ?? null;
+              },
+              fetchFn: (u, o) => fetch(u, o),
+              path: "/api/progress/final-exam",
+              payload: { language: "python", version: "v1", answers }
+            });
+          } catch (error) {
+            console.warn("final exam server record skipped", error);
           }
         }
 
