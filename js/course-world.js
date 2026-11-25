@@ -173,6 +173,16 @@ async function init(){
    throw new Error("ملفات المنهج غير مكتملة أو لا تحتوي على دروس.");
   }
 
+  // Display titles follow the lesson that actually opens. Layout, ids and legacy progress identity stay untouched.
+  try{
+   const studio=await (await fetch("learning-studio/units.json",{cache:"no-store"})).json();
+   curriculumChapters.forEach((chapter,ci)=>{
+    const pack=studio.find(x=>x.language===language&&x.unit===ci+1);if(!pack)return;
+    const prefix=String(chapter.title||"").split(":")[0];chapter.title=prefix&&prefix!==chapter.title?prefix+": "+pack.title:pack.title;
+    pack.lessons.forEach((entry,li)=>{if(chapter.lessons[li])chapter.lessons[li].title=entry.title;else chapter.lessons.push({id:entry.id,title:entry.title})});
+   });
+  }catch(error){console.warn("Studio titles unavailable; keeping map titles",error)}
+
   try{
    const user=await requireUser();
    uid=user?.uid||null;
