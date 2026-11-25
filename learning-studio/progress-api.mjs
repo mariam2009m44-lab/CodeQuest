@@ -3,10 +3,10 @@
 // A 409 means the page and the server hold different question banks: the caller must refresh, never retry the same payload.
 import {quizBankHash,cyrb53} from './bank-hash.mjs';
 export const ENDPOINT='https://codequest.mariam2009m44.workers.dev';
-export async function postProgress({enabled,endpoint=ENDPOINT,getToken,fetchFn,path,payload}){
+export async function postProgress({enabled,endpoint=ENDPOINT,getToken,fetchFn,path,payload,requestId}){
  if(enabled!==true||!payload)return {sent:false,reason:'disabled'};
  const once=async force=>{const token=await getToken(force);if(!token)return {noToken:true};
-  return {r:await fetchFn(endpoint+path,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payload)})}};
+  return {r:await fetchFn(endpoint+path,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,...(requestId?{'X-Request-Id':requestId}:{})},body:JSON.stringify(payload)})}};
  try{let a=await once(false);if(a.noToken)return {sent:false,reason:'no-token'};
   // 401 can be an expired token: refresh once. A second 401 means the sign-in itself is not accepted: needs the learner to sign in again.
   if(a.r.status===401){a=await once(true);if(a.noToken)return {sent:false,reason:'no-token'};if(a.r.status===401)return {sent:true,ok:false,status:401,needsLogin:true}}
@@ -53,13 +53,15 @@ function settle(r){
  if(r.retryable===true||r.reason==='network'||r.reason==='no-token')return {state:'pending',keep:true};
  return {state:'rejected',status:r.status,keep:false};
 }
+const newId=()=>{const a=new Uint8Array(16);(globalThis.crypto||{getRandomValues:x=>x.map(()=>Math.floor(Math.random()*256))}).getRandomValues(a);return 'r'+Array.from(a,b=>b.toString(16).padStart(2,'0')).join('')};
 const exhausted=e=>e.attempts>=MAX_ATTEMPTS||e.needsLogin===true;
 export async function postDurable({uid,storage,key,enabled,endpoint,getToken,fetchFn,path,payload,defer}){
  if(enabled!==true||!payload||!uid)return {state:'off'};
- if(defer===true){const q=readQ(storage,uid);q[key]={path,payload,attempts:0};writeQ(storage,uid,q);return {state:'pending'}}
- const r=await postProgress({enabled,endpoint,getToken,fetchFn,path,payload});
+ if(defer===true){const q=readQ(storage,uid);q[key]={path,payload,attempts:0,id:newId()};writeQ(storage,uid,q);return {state:'pending'}}
+ const id=newId();
+ const r=await postProgress({enabled,endpoint,getToken,fetchFn,path,payload,requestId:id});
  const out=settle(r);const q=readQ(storage,uid);
- if(out.keep)q[key]={path,payload,attempts:1,needsLogin:out.state==='needs-login'};else delete q[key];
+ if(out.keep)q[key]={path,payload,attempts:1,needsLogin:out.state==='needs-login',id};else delete q[key];
  writeQ(storage,uid,q);return out;
 }
 async function run(opts,includeExhausted){
@@ -69,9 +71,10 @@ async function run(opts,includeExhausted){
  for(const key of Object.keys(q)){
   const e=q[key];if(!e||typeof e.path!=='string'||!e.payload||!Number.isInteger(e.attempts)){delete q[key];continue}
   if(exhausted(e)&&!includeExhausted)break; // an exhausted item holds the later ones back (order); the learner retries deliberately
-  const r=await postProgress({enabled,endpoint,getToken,fetchFn,path:e.path,payload:e.payload});
+  const id=typeof e.id==='string'&&e.id?e.id:newId();
+  const r=await postProgress({enabled,endpoint,getToken,fetchFn,path:e.path,payload:e.payload,requestId:id});
   const out=settle(r);
-  if(out.keep){q[key]={...e,attempts:e.attempts+1,needsLogin:out.state==='needs-login'};break}
+  if(out.keep){q[key]={...e,id,attempts:e.attempts+1,needsLogin:out.state==='needs-login'};break}
   delete q[key];if(out.state==='saved')sent++;
  }
  writeQ(storage,uid,q);return {sent,left:Object.keys(q).length};

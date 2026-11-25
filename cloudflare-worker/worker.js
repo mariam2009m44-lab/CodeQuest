@@ -86,7 +86,7 @@ function jsonResponse(data, status, origin = null) {
       "GET, POST, OPTIONS";
 
     headers["Access-Control-Allow-Headers"] =
-      "Content-Type, Authorization";
+      "Content-Type, Authorization, X-Request-Id";
   }
 
   return new Response(JSON.stringify(data), {
@@ -664,6 +664,30 @@ async function handleQuizCheck(request, env, origin) {
 }
 
 
+// Request-id dedupe for the actions that spend executor capacity (code tasks, practice). The record is per account (inside the account's
+// Durable Object), keyed by a client-chosen id plus a hash of the request body. A replay of a finished request returns the stored answer
+// without executing again; the same id with a different body is refused; a request still in progress is retryable. Execution on the provider
+// is at-least-once: if the Worker dies between the provider call and the stored result, a retry after the in-progress window runs it again.
+// Recording of the result is exactly once per id.
+async function bodyHash(parts) {
+  const bytes = new TextEncoder().encode(JSON.stringify(parts));
+  const d = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  return Array.from(d, b => b.toString(16).padStart(2, "0")).join("");
+}
+function requestIdOf(request) {
+  const v = request.headers.get("X-Request-Id") || "";
+  return /^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : "";
+}
+async function dedupeStart(stub, reqId, hash) {
+  if (!reqId) return { none: true };
+  const r = await stub.fetch("https://progress.internal/reqstart", { method: "POST", body: JSON.stringify({ id: reqId, h: hash }) });
+  return { res: r, data: await r.json() };
+}
+async function dedupeFinish(stub, reqId, status, data) {
+  if (!reqId) return;
+  await stub.fetch("https://progress.internal/reqdone", { method: "POST", body: JSON.stringify({ id: reqId, status, resp: data }) });
+}
+
 async function handleProgress(request, env, origin, action) {
   let user;
   try { user = await verifyFirebaseUser(request, env); } catch {
@@ -693,6 +717,12 @@ async function handleProgress(request, env, origin, action) {
     const plan = practicePlan(PRACTICE_INDEX, input);
     if (!plan.ok) return plan.refresh ? jsonResponse({ success: false, refreshNeeded: true, message: "refresh_needed" }, 409, origin) : jsonResponse({ success: false, message: plan.reason }, 400, origin);
     if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
+    const reqId = requestIdOf(request);
+    const ds = await dedupeStart(stub, reqId, await bodyHash([action, input, body.code, body.version || ""]));
+    if (!ds.none) {
+      if (ds.data.replay) return jsonResponse(ds.data.resp, ds.data.rstatus, origin);
+      if (!ds.res.ok) return jsonResponse(ds.data, ds.res.status, origin);
+    }
     // Concept check first: it needs no execution, so a wrong approach never spends executor capacity.
     let conceptApproved = false;
     try { conceptApproved = checkIntroConcept({ lesson: { id: input.lessonId, steps: [{ type: input.phase, referenceSolution: plan.ref, conceptRubric: "" }] }, phase: input.phase, code: body.code, language: input.language }).approved === true; } catch { conceptApproved = false; }
@@ -702,11 +732,14 @@ async function handleProgress(request, env, origin, action) {
       if (!begin.ok) return jsonResponse(await begin.json(), begin.status, origin);
       for (const c of plan.cases) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
       if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
+        await dedupeFinish(stub, reqId, 503, null);
         return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
       }
     }
     const rec = await stub.fetch("https://progress.internal/practicetask", { method: "POST", body: JSON.stringify({ ...input, conceptApproved, results, version: typeof body.version === "string" ? body.version : "" }) });
-    return jsonResponse(await rec.json(), rec.status, origin);
+    const recData = await rec.json();
+    await dedupeFinish(stub, reqId, rec.status, recData);
+    return jsonResponse(recData, rec.status, origin);
   }
   if (action === "codetask") {
     // The client supplies only the code. The expected output, the execution and the verdict all stay on the server.
@@ -714,15 +747,24 @@ async function handleProgress(request, env, origin, action) {
     const t = codeTaskTests(CURRICULUM_INDEX, input);
     if (!t.ok) return t.refresh ? jsonResponse({ success: false, refreshNeeded: true, message: "refresh_needed" }, 409, origin) : jsonResponse({ success: false, message: t.reason }, 400, origin);
     if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
+    const reqId = requestIdOf(request);
+    const ds = await dedupeStart(stub, reqId, await bodyHash([action, input, body.code, body.version || ""]));
+    if (!ds.none) {
+      if (ds.data.replay) return jsonResponse(ds.data.resp, ds.data.rstatus, origin);
+      if (!ds.res.ok) return jsonResponse(ds.data, ds.res.status, origin);
+    }
     const begin = await stub.fetch("https://progress.internal/codebegin", { method: "POST", body: JSON.stringify({ n: t.tests.length }) });
-    if (!begin.ok) return jsonResponse(await begin.json(), begin.status, origin);
+    if (!begin.ok) { const bd = await begin.json(); await dedupeFinish(stub, reqId, begin.status, null); return jsonResponse(bd, begin.status, origin); }
     const results = [];
     for (const c of t.tests) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
     if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
+      await dedupeFinish(stub, reqId, 503, null);
       return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
     }
     const rec = await stub.fetch("https://progress.internal/codetask", { method: "POST", body: JSON.stringify({ ...input, version: typeof body.version === "string" ? body.version : "", results }) });
-    return jsonResponse(await rec.json(), rec.status, origin);
+    const recData = await rec.json();
+    await dedupeFinish(stub, reqId, rec.status, recData);
+    return jsonResponse(recData, rec.status, origin);
   }
   const response = await stub.fetch(`https://progress.internal/${action}`, { method: "POST", body: JSON.stringify(body) });
   const data = await response.json();
@@ -777,7 +819,7 @@ export default {
             "GET, POST, OPTIONS",
 
           "Access-Control-Allow-Headers":
-            "Content-Type, Authorization",
+            "Content-Type, Authorization, X-Request-Id",
 
           "Vary": "Origin"
         }
@@ -1372,6 +1414,28 @@ export class StudentProgress {
         return { status: 200, data: { success: true, stale: out.stale, resume: out.resume } };
       }
 
+      if (action === "reqstart" || action === "reqdone") {
+        const now = Date.now(), DAY = 86400000, INFLIGHT = 300000, CAP = 200;
+        const reqs = (await tx.get("reqs")) || {};
+        for (const k of Object.keys(reqs)) if (now - reqs[k].t > DAY) delete reqs[k];
+        const keys = Object.keys(reqs);
+        if (keys.length > CAP) keys.sort((a, b) => reqs[a].t - reqs[b].t).slice(0, keys.length - CAP).forEach(k => delete reqs[k]);
+        const id = String(body.id || "");
+        if (action === "reqstart") {
+          const e = reqs[id];
+          if (e && e.h !== String(body.h)) { await tx.put("reqs", reqs); return { status: 422, data: { success: false, message: "request_id_conflict" } }; }
+          if (e && e.done) { await tx.put("reqs", reqs); return { status: 200, data: { replay: true, rstatus: e.status, resp: e.resp } }; }
+          if (e && now - e.t < INFLIGHT) { await tx.put("reqs", reqs); return { status: 503, data: { success: false, retryable: true, message: "request_in_progress" } }; }
+          reqs[id] = { h: String(body.h), t: now, done: false };
+          await tx.put("reqs", reqs);
+          return { status: 200, data: { started: true } };
+        }
+        // Only a recorded, definitive answer is kept for replay; a busy/limit/failed attempt is cleared so a retry can run.
+        if (reqs[id] && body.status === 200 && body.resp) reqs[id] = { ...reqs[id], done: true, status: 200, resp: body.resp, t: now };
+        else delete reqs[id];
+        await tx.put("reqs", reqs);
+        return { status: 200, data: { ok: true } };
+      }
       if (action === "codebegin") {
         const today = new Date().toISOString().slice(0, 10);
         const cq = (await tx.get("cexec")) || { day: today, count: 0 };
