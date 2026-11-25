@@ -78,3 +78,11 @@ test("owner-only: an email allowlist is ignored, an approved applicant is not ad
   w.env.ACADEMY_ADMIN_UIDS = "uidEE"; assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 403, "exact match only");
   w.env.ACADEMY_ADMIN_UIDS = "uide"; assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 403, "case-sensitive");
 });
+test("admin-only mode: only the exact admin uid can read the list; submit, status and review are off for everyone; no writes", async () => {
+  const w = boot({}); w.env.ACADEMY_APPLICATIONS = "admin-only"; w.env.ACADEMY_ADMIN_UIDS = "uidE";
+  assert.equal((await w.call("/api/academy/admin/applications", { body: {} })).status, 401);
+  assert.equal((await w.call("/api/academy/admin/applications", { token: "tokA", body: {} })).status, 403);
+  assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 200);
+  for (const t of ["tokA", "tokE"]) for (const r of ["instructor-application", "my-status", "admin/review"]) assert.equal((await w.call("/api/academy/" + r, { token: t, body: app })).status, 503, t + r);
+  for (const h of w.stores.values()) assert.equal(h.m.size, 0, "no record written");
+});

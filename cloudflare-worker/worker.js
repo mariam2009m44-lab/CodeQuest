@@ -785,14 +785,16 @@ async function handleProgress(request, env, origin, action) {
 
 // Service instances of the StudentProgress class. A verified uid is at most 128 characters, so these 140+ character names can never equal any user's instance name: no uid format is rejected and no user can address them.
 const SERVICE_INSTANCE = { academy: "svc-academy-" + "x".repeat(130), parent: "svc-parent-" + "x".repeat(130) };
-// Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on".
+// Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on". "admin-only" enables ONLY the read-only admin list for the exact admin uid (identity probe); submit, status and review stay off for everyone.
 // Admin = an exact uid listed in the ACADEMY_ADMIN_UIDS dashboard secret (never in the repo). Emails are never used.
 // Review records a decision only. It does not grant any role and sends no message.
 async function handleAcademy(request, env, origin, action) {
   let user;
   try { user = await verifyFirebaseUser(request, env); } catch { return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin); }
   if (!env.STUDENT_PROGRESS) return jsonResponse({ success: false, message: "academy_unavailable" }, 503, origin);
-  if (env.ACADEMY_APPLICATIONS !== "on") return jsonResponse({ success: false, retryable: true, message: "academy_off" }, 503, origin);
+  const mode = env.ACADEMY_APPLICATIONS;
+  const adminProbe = mode === "admin-only" && action === "list";
+  if (mode !== "on" && !adminProbe) return jsonResponse({ success: false, retryable: true, message: "academy_off" }, 503, origin);
   let body = {};
   try { body = await readBoundedJson(request, 16384); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
