@@ -46,10 +46,10 @@ async function ensure(base,doc){
  })().catch(e=>{kill();throw e});
  return readyP;
 }
-export function runPython(code,{stdin='',timeoutMs=4000,doc=globalThis.document,base='/learning-studio/pyodide/'}={}){
+export function runPython(code,{stdin='',timeoutMs=4000,doc=globalThis.document,base='/learning-studio/pyodide/',onLoading=null}={}){
  if(typeof code!=='string'||code.length>50000)return Promise.resolve({ok:false,stdout:'',message:'الكود غير صالح أو طويل جدًا.'});
  const job=queue.then(async()=>{
-  try{await ensure(base,doc)}catch(e){return {ok:false,stdout:'',message:String(e.message||e),errorCode:'runner-unavailable'}}
+  try{if(!readyP&&typeof onLoading==='function')try{onLoading()}catch{}await ensure(base,doc)}catch(e){return {ok:false,stdout:'',message:String(e.message||e),errorCode:'runner-unavailable'}}
   const id=++counter,f=frame;
   return new Promise(resolve=>{
    let done=false;const finish=r=>{if(done)return;done=true;clearTimeout(t);removeEventListener('message',on);resolve(r)};

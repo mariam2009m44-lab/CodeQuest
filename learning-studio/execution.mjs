@@ -11,10 +11,10 @@ export function compilerAdapter(language,runCodeOnServer){
   return {ok:true,stdout:result.stdout};
  };
 }
-export async function selectExecutor(language){
+export async function selectExecutor(language,opts={}){
  // JavaScript runs in the learner's browser sandbox: no server quota, no external service.
  // Python in the browser (Pyodide) is experimental and OFF by default: only with ?pyodide.
- if(language==='python'&&typeof document!=='undefined'&&PYODIDE_FLAG){const {runPython}=await import('./py-sandbox.mjs');return async(code,stdin='')=>{const r=await runPython(code,{stdin});return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message,errorCode:r.errorCode}}}
+ if(language==='python'&&typeof document!=='undefined'&&PYODIDE_FLAG&&!opts.noPyodide){const {runPython}=await import('./py-sandbox.mjs');let server=null;return async(code,stdin='')=>{const r=await runPython(code,{stdin,onLoading:()=>{const o=document.getElementById('output');if(o)o.textContent='جاري تجهيز بايثون على جهازك (أول مرة بس، حوالي ٥ ميجا)...'}});if(!r.ok&&r.errorCode==='runner-unavailable'){server=server||await selectExecutor(language,{noPyodide:true});return server(code,stdin)}return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message,errorCode:r.errorCode}}}
  if(language==='javascript'&&typeof document!=='undefined'&&!new URLSearchParams(location.search).has('serverjs')){const {runJavaScript}=await import('./js-sandbox.mjs');return async(code)=>{const r=await runJavaScript(code);return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message}}}
  if(location.hostname==='localhost'||location.hostname==='127.0.0.1'){
   // The development endpoint exists only in the local verification server.
