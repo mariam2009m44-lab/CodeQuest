@@ -13,9 +13,26 @@ const instructorPanel=document.getElementById("instructorPanel");
 const consentRow=document.getElementById("guardianConsentRow");
 const ageSelect=studentForm.elements.ageBand;
 const verifyButton=document.getElementById("verifyEmailButton");
+import { academyWorker } from "./academy-api.js";
 const submitStudent=httpsCallable(functions,"submitStudentAcademyProfile");
-const submitInstructor=httpsCallable(functions,"submitInstructorApplication");
-const getStatus=httpsCallable(functions,"getMyAcademyRegistrationStatus");
+const submitInstructorCallable=httpsCallable(functions,"submitInstructorApplication");
+async function submitInstructor(payload){
+ const w=await academyWorker(currentUser,"instructor-application",payload);
+ if(w.ok)return {data:w.data,worker:true};
+ if(!w.off&&!w.unreachable)throw new Error(w.data.message==="rate_limited"?"وصلتِ للحد اليومي لإرسال الطلب. حاولي غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
+ return submitInstructorCallable(payload);
+}
+const callableStatus=httpsCallable(functions,"getMyAcademyRegistrationStatus");
+let workerInstructor=false;
+async function getStatus(){
+ const w=await academyWorker(currentUser,"my-status",{});
+ workerInstructor=w.ok;
+ let data={};let failure=null;
+ try{data=(await callableStatus({})).data||{};}catch(error){failure=error;}
+ if(w.ok&&w.data.exists)data={...data,instructorApplication:{...w.data.application,status:w.data.status}};
+ if(failure&&!w.ok)throw failure;
+ return {data};
+}
 let currentUser=null;
 function setFeedback(node,text,error=false){node.textContent=text;node.style.color=error?"#dc626e":"#26a77f";}
 function switchTab(which){
@@ -40,7 +57,7 @@ onAuthStateChanged(auth,async user=>{
   verifyButton.hidden=Boolean(user.emailVerified);
   if(student){studentForm.elements.ageBand.value=student.ageBand||"";studentForm.elements.grade.value=student.grade||"";studentForm.elements.skillLevel.value=student.skillLevel||"beginner";studentForm.elements.learningGoals.value=student.learningGoals||"";studentForm.elements.learningNeeds.value=student.learningNeeds||"";studentForm.elements.preferredSchedule.value=student.preferredSchedule||"";(student.interests||[]).forEach(v=>{const input=studentForm.querySelector('input[value="'+v+'"]');if(input)input.checked=true;});const consentInput=studentForm.elements.guardianConsent;if(consentInput)consentInput.checked=student.guardianConsent===true;updateConsent();setFeedback(studentFeedback,student.ageBand!=="18+"&&!student.guardianConsentVerified?"ملفك محفوظ، وسيظل التسجيل في الفصول المباشرة معلقًا حتى تتحقق الإدارة من موافقة ولي الأمر.":"ملف الطالب محفوظ بالفعل. يمكنك تحديث بياناتك وإعادة الحفظ.");}
   if(instructor){
-   const labels={pending:"طلبك قيد المراجعة من إدارة CodeQuest.",approved:"تم اعتماد حسابك كمدرب. يمكنك إنشاء الفصول مباشرة.",rejected:"لم تتم الموافقة على الطلب السابق. يمكنك تحديث البيانات وإعادة التقديم."};
+   const labels={pending:"طلبك قيد المراجعة من إدارة CodeQuest.",approved:workerInstructor?"تمت الموافقة على طلبك كمدرب. سنُعلمك عند إتاحة إنشاء الفصول المباشرة.":"تم اعتماد حسابك كمدرب. يمكنك إنشاء الفصول مباشرة.",rejected:"لم تتم الموافقة على الطلب السابق. يمكنك تحديث البيانات وإعادة التقديم."};
    setFeedback(instructorFeedback,labels[instructor.status]||"حالة الطلب: "+instructor.status,instructor.status==="rejected");
    ["fullName","experience","bio","portfolioUrl","availability","linkedinUrl","introVideoUrl","teachingDemoUrl","qualifications","teachingExperience"].forEach(name=>{if(instructorForm.elements[name])instructorForm.elements[name].value=instructor[name]||"";});
    ["specialties","teachingStyles","ageGroups","teachingLevels"].forEach(name=>(instructor[name]||[]).forEach(value=>{const input=instructorForm.querySelector('input[name="'+name+'"][value="'+value+'"]');if(input)input.checked=true;}));

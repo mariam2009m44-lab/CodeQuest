@@ -14,7 +14,7 @@ export function boot({ fetchImpl, jose } = {}) {
     // Mock Firebase verification: token names map to claims. Anything else (expired, wrong audience, bad signature) throws like jose.
     async jwtVerify(token, _k, opts) {
       if (opts.audience !== "proj" || opts.issuer !== "https://securetoken.google.com/proj") throw new Error("claim");
-      const t = { tokA: { sub: "uidA" }, tokB: { sub: "uidB" }, tokE: { sub: "uidE", email: "Pilot@Example.com", email_verified: true }, tokU: { sub: "uidU", email: "pilot@example.com", email_verified: false }, nosub: {}, longsub: { sub: "x".repeat(129) } }[token];
+      const t = { tokA: { sub: "uidA" }, tokB: { sub: "uidB" }, tokE: { sub: "uidE", email: "Pilot@Example.com", email_verified: true }, tokU: { sub: "uidU", email: "pilot@example.com", email_verified: false }, tokV: { sub: "uidV", email: "v@example.com", email_verified: true }, nosub: {}, longsub: { sub: "x".repeat(129) } }[token];
       if (!t) throw new Error("jwt invalid or expired");
       return { payload: t };
     } };

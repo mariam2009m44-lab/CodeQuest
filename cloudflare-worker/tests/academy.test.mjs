@@ -18,20 +18,27 @@ test("submit validates like the Firebase callable and stores one pending record 
   const ok = await w.call("/api/academy/instructor-application", { token: "tokA", body: app }); assert.equal(ok.status, 200); assert.equal(ok.data.status, "pending");
   assert.equal((await w.call("/api/academy/instructor-application", { token: "tokA", body: { ...app, fullName: "سارة محمد" } })).status, 200);
   const st = await w.call("/api/academy/my-status", { token: "tokA", body: {} }); assert.equal(st.data.status, "pending");
-  assert.equal(JSON.stringify(st.data).includes("bio"), false, "status never echoes the application");
+  assert.equal(st.data.application.fullName, "سارة محمد", "owner gets their own application back"); assert.equal(st.data.application.uid, undefined);
   assert.equal((await w.call("/api/academy/my-status", { token: "tokB", body: {} })).data.exists, false);
   const dir = [...w.adirs.values()][0].m.get("dir"); assert.equal(Object.keys(dir.apps).length, 1); assert.equal(dir.apps.uidA.fullName, "سارة محمد");
 });
 test("admin list/review: verified allowlisted email or exact uid only; an unverified same email and everyone else get 403", async () => {
-  const w = on(); await w.call("/api/academy/instructor-application", { token: "tokA", body: app });
+  const w = on(); await w.call("/api/academy/instructor-application", { token: "tokA", body: app }); await w.call("/api/academy/instructor-application", { token: "tokV", body: app });
   for (const t of ["tokA", "tokB", "tokU"]) { assert.equal((await w.call("/api/academy/admin/applications", { token: t, body: {} })).status, 403, t); assert.equal((await w.call("/api/academy/admin/review", { token: t, body: { uid: "uidA", decision: "approved" } })).status, 403, t); }
-  const l = await w.call("/api/academy/admin/applications", { token: "tokE", body: {} }); assert.equal(l.status, 200); assert.equal(l.data.applications.length, 1);
+  const l = await w.call("/api/academy/admin/applications", { token: "tokE", body: {} }); assert.equal(l.status, 200); assert.equal(l.data.applications.length, 2);
   assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidA", decision: "bogus" } })).status, 400);
   assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "nope", decision: "approved" } })).status, 404);
-  assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidA", decision: "approved" } })).status, 200);
-  assert.equal((await w.call("/api/academy/my-status", { token: "tokA", body: {} })).data.status, "approved");
-  assert.equal((await w.call("/api/academy/instructor-application", { token: "tokA", body: app })).status, 409, "approved accounts cannot be overwritten");
+  assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidA", decision: "approved" } })).data.message, "email_not_verified", "unverified email cannot be approved");
+  assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidA", decision: "rejected" } })).status, 200);
+  assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidA", decision: "approved" } })).data.message, "not_pending");
+  assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidV", decision: "approved" } })).status, 200);
+  assert.equal((await w.call("/api/academy/my-status", { token: "tokV", body: {} })).data.status, "approved");
+  assert.equal((await w.call("/api/academy/instructor-application", { token: "tokV", body: app })).status, 409, "approved accounts cannot be overwritten");
   w.env.ACADEMY_ADMIN_EMAILS = ""; w.env.ACADEMY_ADMIN_UIDS = "uidB"; assert.equal((await w.call("/api/academy/admin/applications", { token: "tokB", body: {} })).status, 200); assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 403);
+});
+test("a verified admin cannot review their own application", async () => {
+  const w = on(); await w.call("/api/academy/instructor-application", { token: "tokE", body: app });
+  assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidE", decision: "approved" } })).status, 403);
 });
 test("daily submit cap and wrong-origin refusal", async () => {
   const w = on(); let last; for (let i = 0; i < 6; i++) last = await w.call("/api/academy/instructor-application", { token: "tokA", body: app });

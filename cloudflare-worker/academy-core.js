@@ -42,14 +42,18 @@ export function submitApplication(dir, uid, email, emailVerified, value, now) {
   if (dir.audit.length > 500) dir.audit.splice(0, dir.audit.length - 500);
   return { ok: true, status: "pending" };
 }
-export function myStatus(dir, uid) { const a = dir.apps[uid]; return a ? { exists: true, status: a.status, submittedAt: a.submittedAt, updatedAt: a.updatedAt } : { exists: false }; }
+// The owner sees their own application (to pre-fill the form). Nobody else's is ever returned here.
+export function myStatus(dir, uid) { const a = dir.apps[uid]; return a ? { exists: true, status: a.status, submittedAt: a.submittedAt, updatedAt: a.updatedAt, application: { ...a, uid: undefined } } : { exists: false }; }
 export function listApplications(dir, status) {
   return Object.values(dir.apps).filter(a => !status || a.status === status).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 200);
 }
 // Records the decision only. It never grants a role or contacts the applicant.
 export function reviewApplication(dir, adminUid, targetUid, decision, now) {
-  if (!["approved", "rejected", "pending"].includes(decision)) return { ok: false, status: 400, reason: "bad_decision" };
+  if (!["approved", "rejected"].includes(decision)) return { ok: false, status: 400, reason: "bad_decision" };
+  if (adminUid === targetUid) return { ok: false, status: 403, reason: "no_self_review" };
   const a = dir.apps[targetUid]; if (!a) return { ok: false, status: 404, reason: "not_found" };
+  if (a.status !== "pending") return { ok: false, status: 409, reason: "not_pending" };
+  if (decision === "approved" && a.emailVerified !== true) return { ok: false, status: 409, reason: "email_not_verified" };
   a.status = decision; a.reviewedAt = now; a.updatedAt = now;
   dir.audit.push({ actor: adminUid, action: "application_" + decision, target: targetUid, at: now });
   return { ok: true, status: decision };
