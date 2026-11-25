@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {loadMyCertificates,validateCertificates,renderCertificates,latestOnly} from '../../learning-studio/certificate-records.mjs';
-const rec={track:'python',trackName:'Python',issuedAt:'2026-11-25T10:00:00Z',lessonsCompleted:48,lessonsTotal:48,recordId:'FIXTURE-0001'};
+const rec={track:'python',trackName:'Python',issuedAt:'2026-11-25T10:00:00Z',lessonsCompleted:48,lessonsTotal:48,unitExamsPassed:12,unitExamsTotal:12,codeTasksVerified:true,recordId:'FIXTURE-0001'};
 const body=(...r)=>({certificates:r.length?r:[rec]});
 const D=(o={})=>({enabled:true,getUid:()=>'u1',fetchCertificates:async()=>body(),...o});
 test('disabled by default',async()=>{assert.equal((await loadMyCertificates()).state,'disabled');assert.equal((await loadMyCertificates({fetchCertificates:async()=>body(),getUid:()=>'u1'})).state,'disabled')});
@@ -13,7 +13,7 @@ test('account switched or signed out mid-request drops the response',async()=>{
  uid='u1';const b=await loadMyCertificates(D({getUid:()=>uid,fetchCertificates:async()=>{uid=null;return body()}}));assert.equal(b.records.length,0);
 });
 test('invalid fixtures make the whole response untrusted',async()=>{
- const bad=[{...rec,track:'ruby'},{...rec,recordId:''},{...rec,recordId:'a b c d e f g h'},{...rec,issuedAt:'2026-11-25'},{...rec,issuedAt:'2026-11-25T10:00:00+02:00'},{...rec,issuedAt:'2099-01-01T00:00:00Z'},{...rec,lessonsCompleted:47},{...rec,lessonsTotal:0,lessonsCompleted:0},{...rec,lessonsCompleted:'48'},null,'x'];
+ const bad=[{...rec,track:'ruby'},{...rec,recordId:''},{...rec,recordId:'a b c d e f g h'},{...rec,issuedAt:'2026-11-25'},{...rec,issuedAt:'2026-11-25T10:00:00+02:00'},{...rec,issuedAt:'2099-01-01T00:00:00Z'},{...rec,lessonsCompleted:47},{...rec,lessonsTotal:0,lessonsCompleted:0},{...rec,unitExamsPassed:11},{...rec,unitExamsTotal:0,unitExamsPassed:0},{...rec,codeTasksVerified:false},{...rec,codeTasksVerified:'true'},{...rec,codeTasksVerified:undefined},{...rec,unitExamsPassed:undefined,unitExamsTotal:undefined,codeTasksVerified:undefined},{...rec,lessonsCompleted:'48'},null,'x'];
  for(const b of bad)assert.equal((await loadMyCertificates(D({fetchCertificates:async()=>({certificates:[rec,b]})}))).state,'error');
  for(const b of [null,undefined,'x',{},{certificates:'x'}])assert.equal((await loadMyCertificates(D({fetchCertificates:async()=>b}))).state,'error');
  assert.equal(validateCertificates({certificates:[rec,{...rec,recordId:'FIXTURE-0002'}]}),null);
@@ -29,6 +29,6 @@ test('renderer shows list, empty, error, signedout states',()=>{
  const list=mk(),empty=mk();
  renderCertificates(doc,list,empty,{state:'error',records:[]});assert.ok(list.hidden&&!empty.hidden);assert.match(empty.textContent,/تعذر/);
  renderCertificates(doc,list,empty,{state:'signedout',records:[]});assert.match(empty.textContent,/سجّلي/);
- renderCertificates(doc,list,empty,{state:'disabled',records:[]});assert.match(empty.textContent,/لا توجد/);
+ renderCertificates(doc,list,empty,{state:'disabled',records:[]});assert.match(empty.textContent,/غير مفعّل/);assert.doesNotMatch(empty.textContent,/^لا توجد/);
  renderCertificates(doc,list,empty,{state:'ok',records:[{language:'cpp',recordId:'A_b-12345',issuedAt:'x'}]});assert.ok(!list.hidden&&empty.hidden);assert.match(list.children[0].children[0].href,/id=A_b-12345$/);
 });

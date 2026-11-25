@@ -4,6 +4,8 @@
 export const CERT_ENDPOINT_ENABLED=false;
 const TRACKS=['python','javascript','cpp','java'];
 const LABELS={python:'Python',javascript:'JavaScript',cpp:'C++',java:'Java'};
+// Issuable only when every lesson and every unit exam passed AND code tasks were verified server-side. MCQ alone never qualifies.
+const full=(a,b)=>Number.isInteger(a)&&Number.isInteger(b)&&b>0&&a===b;
 const ISO=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
 export function validateCertificates(raw){
  if(!raw||typeof raw!=='object'||!Array.isArray(raw.certificates))return null;
@@ -12,9 +14,9 @@ export function validateCertificates(raw){
   if(!r||typeof r!=='object')return null;
   const ok=TRACKS.includes(r.track)&&typeof r.recordId==='string'&&/^[A-Za-z0-9_-]{8,64}$/.test(r.recordId)
    &&typeof r.issuedAt==='string'&&ISO.test(r.issuedAt)&&!Number.isNaN(Date.parse(r.issuedAt))&&Date.parse(r.issuedAt)<=Date.now()+60000
-   &&Number.isInteger(r.lessonsCompleted)&&Number.isInteger(r.lessonsTotal)&&r.lessonsTotal>0&&r.lessonsCompleted===r.lessonsTotal;
+   &&full(r.lessonsCompleted,r.lessonsTotal)&&full(r.unitExamsPassed,r.unitExamsTotal)&&r.codeTasksVerified===true;
   if(!ok||seen.has(r.track))return null; // any bad entry makes the whole response untrusted
-  seen.add(r.track);out.push({language:r.track,recordId:r.recordId,issuedAt:r.issuedAt,lessonsTotal:r.lessonsTotal});
+  seen.add(r.track);out.push({language:r.track,recordId:r.recordId,issuedAt:r.issuedAt,lessonsTotal:r.lessonsTotal,unitExamsTotal:r.unitExamsTotal});
  }
  return out;
 }
@@ -40,5 +42,5 @@ export function renderCertificates(doc,listEl,emptyEl,result){
  listEl.hidden=true;emptyEl.hidden=false;
  emptyEl.textContent=result.state==='error'?'تعذر تحميل شهاداتك الآن. جرّبي مرة أخرى بعد قليل.'
   :result.state==='signedout'?'سجّلي الدخول لعرض شهاداتك.'
-  :'لا توجد شهادات صادرة بعد. تظهر هنا شهادة كل مسار بعد إكماله وتسجيل الإكمال على حسابك.';
+  :'عرض الشهادات غير مفعّل حاليًا. لا يعني هذا أن حسابك بلا شهادات أو أن مسارًا اكتمل. ستظهر هنا بعد تفعيل تسجيل الإكمال على حسابك.';
 }

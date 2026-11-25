@@ -1054,7 +1054,7 @@
     <section class="profile-certs-card" id="profileCerts" aria-labelledby="certsTitle" data-cert-source="none">
       <h2 id="certsTitle">شهاداتي</h2>
       <ul class="profile-certs-list" id="certsList" hidden></ul>
-      <p class="profile-certs-empty" id="certsEmpty">لا توجد شهادات صادرة بعد. تظهر هنا شهادة كل مسار بعد إكماله وتسجيل الإكمال على حسابك.</p>
+      <p class="profile-certs-empty" id="certsEmpty">عرض الشهادات غير مفعّل حاليًا. لا يعني هذا أن حسابك بلا شهادات أو أن مسارًا اكتمل. ستظهر هنا بعد تفعيل تسجيل الإكمال على حسابك.</p>
     </section>
 
   </main>
@@ -1431,6 +1431,14 @@
     initializeAchievements();
   </script>
 
+<script type="module">
+  import { getCurrentUser } from "./js/auth.js";
+  import { CERT_ENDPOINT_ENABLED } from "./learning-studio/certificate-records.mjs";
+  import { makeCertificateFetcher } from "./learning-studio/certificate-source.mjs";
+  import { initProfileCertificates } from "./learning-studio/profile-certificates.mjs";
+  const certs = initProfileCertificates({ deps: { enabled: CERT_ENDPOINT_ENABLED, getUid: () => getCurrentUser()?.uid || null, fetchCertificates: makeCertificateFetcher(() => getCurrentUser()) } });
+  certs.refresh();
+</script>
 <script type="module" src="js/reminders.js"></script>
 </body>
 </html>
