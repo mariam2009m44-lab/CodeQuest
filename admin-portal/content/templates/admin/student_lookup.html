@@ -43,6 +43,9 @@
       <h2>ملخص التقدم</h2>
       <p>الدروس المكتملة: <strong>{{ student.completed_lessons }}</strong></p>
       <p>المشاريع المحفوظة: <strong>{{ student.projects_count }}</strong></p>
+      {% if student.progress_may_be_incomplete or student.projects_may_be_incomplete %}
+        <p class="help">تنبيه: تم الوصول إلى حد القراءة الآمن (500 سجل). قد تكون بعض الأعداد المعروضة أقل من الإجمالي الفعلي.</p>
+      {% endif %}
       {% if student.lessons_by_language %}
         <table>
           <thead><tr><th>المسار</th><th>الدروس المكتملة</th></tr></thead>

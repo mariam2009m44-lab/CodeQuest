@@ -50,7 +50,7 @@ class CourseInline(admin.TabularInline):
 class LessonInline(admin.TabularInline):
     model = Lesson
     extra = 0
-    fields = ("title", "lesson_key", "display_order", "status")
+    fields = ("title", "lesson_key", "chapter_title", "lesson_order", "status")
     show_change_link = True
 
 
@@ -80,9 +80,14 @@ class CourseAdmin(PublishingAdmin):
 
 @admin.register(Lesson)
 class LessonAdmin(PublishingAdmin):
-    list_display = ("title", "course", "lesson_key", "status", "display_order", "updated_at")
-    list_filter = ("status", "course__path", "course")
-    search_fields = ("title", "lesson_key", "summary", "content")
+    list_display = ("title", "course", "chapter_title", "status", "chapter_order", "lesson_order", "updated_at")
+    list_filter = ("status", "course__path", "course", "chapter_title")
+    search_fields = ("title", "lesson_key", "chapter_title", "objective", "summary", "description", "content", "task")
+    fieldsets = (
+        ("الترتيب والربط", {"fields": ("course", "lesson_key", "chapter_key", "chapter_title", "chapter_order", "lesson_order", "display_order", "status")}),
+        ("المحتوى التعليمي", {"fields": ("title", "objective", "cody_intro", "summary", "description", "content", "task", "hints", "code_example", "starter_code", "estimated_minutes")}),
+        ("بيانات المصدر", {"fields": ("source_data",), "classes": ("collapse",)}),
+    )
     inlines = (QuizQuestionInline,)
 
 
