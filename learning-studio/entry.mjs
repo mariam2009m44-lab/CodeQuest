@@ -8,7 +8,7 @@ async function enter(){
    if(!user?.uid)throw new Error('sign-in required');
    const {auth}=await import('/js/firebase-config.js');
    const {onAuthStateChanged}=await import('https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js');
-   window.studioAccountUser=user;try{localStorage.setItem('cq_last_uid',user.uid)}catch{}const uid=user.uid;onAuthStateChanged(auth,current=>{if(current?.uid!==uid)location.reload()});
+   window.studioAccountUser=user;const uid=user.uid;onAuthStateChanged(auth,current=>{if(current?.uid!==uid)location.reload()});
   }catch{location.replace('/login.html?'+new URLSearchParams({next:'learning.html'+location.search}));return}
  }
  try{await import('./ui.mjs')}catch{showLoadError()}

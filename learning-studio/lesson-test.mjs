@@ -7,9 +7,16 @@ const [bank,units]=await Promise.all([fetch('lesson-tests.json').then(r=>r.json(
 const pack=units.find(u=>u.language===lang&&u.lessons.some(l=>l.id===lessonId)),lesson=pack?.lessons.find(l=>l.id===lessonId),items=bank[lessonId];
 $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
 const idx=pack?pack.lessons.indexOf(lesson):-1;
-const fm=q.get('from')==='map'?'&from=map':'';
+// The account is resolved from the real sign-in (same guard as the lesson page). localhost has no sign-in, so tests pass ?uid=.
+const localHost=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+let uid=null;
+if(localHost){uid=q.get('uid')||null}
+else{try{const {requireUser}=await import('/js/auth.js');const u=await requireUser();if(!u?.uid)throw new Error('sign-in required');uid=u.uid}catch{location.replace('/login.html?'+new URLSearchParams({next:'learning-studio/lesson-test.html'+location.search}));await new Promise(()=>{})}}
+// A pending map step belongs to one account; another account never inherits it.
+const pending=(()=>{try{const p=JSON.parse(localStorage.getItem('cq_lt_pending')||'null');return p&&p.lessonId===lessonId&&(localHost&&!uid?true:p.uid===uid)?p:null}catch{return null}})();
+const fm=(q.get('from')==='map'?'&from=map':'')+(localHost&&uid?'&uid='+encodeURIComponent(uid):'');
 const mapUrl='/course-path.html?lang='+encodeURIComponent(lang),retakeUrl=location.pathname+'?lang='+encodeURIComponent(lang)+'&lesson='+encodeURIComponent(lessonId)+fm+'&retake=1';
-const pending=(()=>{try{const p=JSON.parse(localStorage.getItem('cq_lt_pending')||'null');return p&&p.lessonId===lessonId?p:null}catch{return null}})(),uid=pending?.uid||(()=>{try{return localStorage.getItem('cq_last_uid')}catch{return null}})()||null;
+if(localHost&&!uid&&pending?.uid)uid=pending.uid;
 function nextTarget(){if(!pack)return null;if(idx+1<pack.lessons.length){const n=pack.lessons[idx+1];return {href:'/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(n.id)+fm,text:'التالي: '+n.title}}return {href:'quiz.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit,text:'التالي: امتحان الوحدة '+pack.unit}}
 const link=(href,text,cls='primary')=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;a.style.marginInlineEnd='10px';return a};
 if(!lesson||!items){$('ltTitle').textContent='اختبار الدرس';$('ltIntro').textContent='لسه مفيش اختبار لهذا الدرس، فبتكمل من غيره. اختبار الوحدة موجود في آخرها.';document.querySelector('.quiz-progress').hidden=true;$('ltBody').hidden=true;const n=nextTarget();if(n)$('ltResult').append(link(n.href,n.text));$('ltResult').hidden=false}
