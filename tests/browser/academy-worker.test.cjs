@@ -56,7 +56,7 @@ test('worker ON: applicant submits through the Worker, reload shows pending and 
   const dirs = a.w; const adminSetup = await setup(t, { workerOn: true, token: 'tokE' }); adminSetup.w.adirs.clear(); for (const [k, v] of a.w.adirs) adminSetup.w.adirs.set(k, v);
   const admin = await page(adminSetup.context, 'academy-admin.html'); await admin.p.waitForSelector('#pendingInstructors .admin-application');
   assert.match(await admin.p.textContent('#adminStats'), /طلبات قيد المراجعة/);
-  assert.match(await admin.p.textContent('#adminStudents'), /غير متاح حاليًا/); assert.match(await admin.p.textContent('#adminClasses'), /غير متاح حاليًا/); assert.match(await admin.p.textContent('#adminState'), /باقي الأقسام غير متاحة/);
+  assert.match(await admin.p.textContent('#adminStudents'), /لم يُنفَّذ بعد/); assert.match(await admin.p.textContent('#adminClasses'), /لم يُنفَّذ بعد/); assert.match(await admin.p.textContent('.academy-intro p'), /مراجعة طلبات المدربين فقط/); assert.doesNotMatch(await admin.p.textContent('.academy-intro p'), /في مكان واحد/); assert.match(await admin.p.textContent('#adminState'), /باقي الأقسام لم تُنفَّذ بعد/);
   await admin.p.screenshot({ path: path.join(artifactDir, 'academy-admin-worker.png'), fullPage: true });
   await admin.p.locator('#pendingInstructors .admin-action').first().click();
   await admin.p.waitForFunction(() => document.querySelector('#pendingInstructors').textContent.includes('لا توجد طلبات'));
