@@ -35,6 +35,15 @@
     .card-front { background: linear-gradient(135deg, #1e293b, #0f172a); color: var(--purple); font-size: 2rem; box-shadow: inset 0 0 20px rgba(169,154,255,0.1); }
     .card-back { background: linear-gradient(135deg, #1e293b, #0f172a); transform: rotateY(180deg); color: var(--cyan); font-size: 1rem; padding: 8px; text-align: center; }
     .card.matched .card-back { border-color: var(--green); color: var(--green); box-shadow: 0 0 20px rgba(118,233,192,0.3); }
+
+    /* Memory polish: term and definition look different, and each match is explained */
+    .card-back[data-kind="term"]{border-color:rgba(54,191,229,.65);color:var(--cyan)}
+    .card-back[data-kind="definition"]{border-color:rgba(255,212,138,.65);color:var(--gold)}
+    .card-back::before{content:attr(data-label);position:absolute;top:5px;inset-inline:0;text-align:center;font-size:.6rem;font-weight:700;opacity:.75}
+    .card.matched .card-back{border-color:var(--green);color:var(--green)}
+    .match-note{min-height:2.6em;margin:14px 0 0;padding:10px 12px;border-radius:12px;background:rgba(118,233,192,.1);border:1px solid rgba(118,233,192,.35);color:#8ff0c8!important;font-weight:800;text-align:center;line-height:1.7}
+    .match-note:empty{visibility:hidden}
+    .match-note.miss{background:rgba(255,145,169,.08);border-color:rgba(255,145,169,.3);color:var(--red)}
     .win-screen { display: none; text-align: center; margin-top: 25px; }
     .win-screen h2 { color: var(--green); font-size: 1.8rem; margin-bottom: 15px; }
     .btn-restart { background: var(--cyan); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 900; font-size: 1.1rem; cursor: pointer; font-family: 'Cairo'; width: 100%; margin-bottom: 10px; transition: 0.3s; }
@@ -140,6 +149,7 @@
   <div class="screen" id="gameScreen">
     <div class="level-box">
       <div id="gameGrid" class="memory-grid" role="group" aria-label="بطاقات لعبة الذاكرة"></div>
+      <p id="matchNote" class="match-note" role="status" aria-live="polite"></p>
       <div id="winScreen" class="win-screen">
         <div class="result-emoji" id="resultEmoji">🏆</div>
         <h2 id="resultTitle">أحسنت! لقد أكملت اللعبة 🎉</h2>
@@ -200,7 +210,7 @@
       flippedCards = []; matchedCount = 0; lock = false;
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
-      winScreen.style.display = 'none'; gameGrid.style.display = 'grid'; startMemoryTimer();
+      winScreen.style.display = 'none'; gameGrid.style.display = 'grid'; document.getElementById('matchNote').textContent = ''; startMemoryTimer();
       let cols = pairsCount === 15 ? 5 : 4;
       gameGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       const selected = allPairs.slice(0, pairsCount);
@@ -223,7 +233,7 @@
         cardEl.dataset.id = cardData.id;
         cardEl.setAttribute('aria-label', 'بطاقة مخفية');
         cardEl.setAttribute('aria-pressed', 'false');
-        cardEl.innerHTML = `<span class="card-inner"><span class="card-front" aria-hidden="true">?</span><span class="card-back" aria-hidden="true">${cardData.text}</span></span>`;
+        cardEl.innerHTML = `<span class="card-inner"><span class="card-front" aria-hidden="true">?</span><span class="card-back" aria-hidden="true" data-kind="${cardData.type}" data-label="${cardData.type==='term'?'مصطلح':'تعريف'}">${cardData.text}</span></span>`;
         cardEl.addEventListener('click', () => flipCard(cardEl, cardData));
         gameGrid.appendChild(cardEl);
       });
@@ -246,7 +256,7 @@
       ) {
         c1.el.classList.add('matched'); c2.el.classList.add('matched');
         c1.el.disabled = true; c2.el.disabled = true;
-        matchedCount++; score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
+        matchedCount++; showMatchNote(c1.data.type==='term'?c1.data:c2.data, c1.data.type==='term'?c2.data:c1.data); score += 20; scoreDisplay.textContent = score; updateGlobalScore(20);
         flippedCards = []; lock = false;
         if (matchedCount === totalPairs) {
           setTimeout(() => {
@@ -258,7 +268,7 @@
             const earned = memoryStarsFor(currentPairs, memoryMoves);
             if (earned > memoryStars(currentPairs)) { CQGameStore.set('codequest-memory-stars-' + currentPairs, String(earned)); window.dispatchEvent(new CustomEvent('cq-stars-changed', { detail: { game: 'memory', level: String(currentPairs), stars: earned } })); }
             renderMemoryLevels();
-            winScreen.style.display = 'block'; gameGrid.style.display = 'none';
+            winScreen.style.display = 'block'; gameGrid.style.display = 'none'; document.getElementById('matchNote').textContent = '';
             document.getElementById('resultEmoji').textContent = '🏆';
             document.getElementById('resultTitle').textContent = 'رائع! لقد أكملت اللعبة! ' + '★'.repeat(earned);
             document.getElementById('resultMessage').textContent = `النقاط: ${score} • الوقت: ${formatMemoryTime(memorySeconds)} • المحاولات: ${memoryMoves} • أفضل وقت: ${formatMemoryTime(Number(CQGameStore.get(bestKey))||memorySeconds)}${isBest?' • رقم قياسي جديد!':''}`;
@@ -266,7 +276,7 @@
           }, 500);
         }
       } else {
-        score = Math.max(0, score - 5); scoreDisplay.textContent = score;
+        score = Math.max(0, score - 5); scoreDisplay.textContent = score; showMissNote();
         const runAtMismatch = gameRun;
         mismatchTimer = setTimeout(() => {
           if (runAtMismatch !== gameRun) return;
@@ -279,6 +289,8 @@
         }, 800);
       }
     }
+    function showMatchNote(term, def) { const n = document.getElementById('matchNote'); n.className = 'match-note'; n.textContent = '✔ ' + term.text + ' = ' + def.text; }
+    function showMissNote() { const n = document.getElementById('matchNote'); n.className = 'match-note miss'; n.textContent = 'مش نفس الزوج. افتكر مكان كل بطاقة وحاول تاني.'; }
     function restartCurrentLevel() { startGame(currentPairs); }
     window.addEventListener('pagehide',stopMemoryTimer);
 

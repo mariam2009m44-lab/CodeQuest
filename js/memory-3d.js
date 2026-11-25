@@ -44,8 +44,8 @@ import * as THREE from '../assets/vendor/three.module.min.js';
     g.closePath(); g.fill();
   }
   const texCache = new Map();
-  function faceTexture(kind, text, pair, ratio) {
-    const k = kind + '|' + text + '|' + pair + '|' + ratio.toFixed(2); if (texCache.has(k)) return texCache.get(k);
+  function faceTexture(kind, text, pair, ratio, role) {
+    const k = kind + '|' + role + '|' + text + '|' + pair + '|' + ratio.toFixed(2); if (texCache.has(k)) return texCache.get(k);
     const W = 256, H = Math.round(256 * ratio), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
     const [c1, c2] = kind === 'front' ? ['#8b7bff', '#4b3bd0'] : PAL[pair % PAL.length];
     const grad = g.createLinearGradient(0, 0, W, H); grad.addColorStop(0, c1); grad.addColorStop(1, c2);
@@ -61,7 +61,8 @@ import * as THREE from '../assets/vendor/three.module.min.js';
       g.fillStyle = '#fff'; g.shadowColor = 'rgba(40,20,120,.45)'; g.shadowBlur = 12; g.shadowOffsetY = 6; g.font = '900 ' + Math.round(W * 0.5) + 'px Cairo, Arial, sans-serif'; g.fillText('?', W / 2, H / 2 + 6);
     } else {
       icon(g, ICONS[pair % ICONS.length], W / 2, H * 0.26, W * 0.15, 'rgba(255,255,255,.95)');
-      rr(g, 20, H * 0.43, W - 40, H * 0.46, W * 0.07); g.fillStyle = 'rgba(255,255,255,.95)'; g.fill();
+      rr(g, 20, H * 0.43, W - 40, H * 0.46, W * 0.07); g.fillStyle = role === 'definition' ? '#fff1c2' : '#ffffff'; g.fill();
+      g.lineWidth = 5; g.strokeStyle = role === 'definition' ? '#f59f00' : '#1c7ed6'; g.stroke();
       g.fillStyle = c2; let size = 52; const maxW = W - 64;
       const font = z => '900 ' + z + 'px Cairo, Arial, sans-serif'; g.font = font(size);
       const words = text.split(/\s+/); let lines = [text];
@@ -94,7 +95,7 @@ import * as THREE from '../assets/vendor/three.module.min.js';
       const pair = pairIndex.get(id) % PAL.length;
       const r0 = el.getBoundingClientRect(), ratio = r0.width > 0 ? Math.min(1.5, Math.max(0.9, r0.height / r0.width)) : 1.15;
       const front = new THREE.MeshStandardMaterial({ map: faceTexture('front', '?', 0, ratio), roughness: 0.55, metalness: 0, transparent: true });
-      const back = new THREE.MeshStandardMaterial({ map: faceTexture('back', label, pair, ratio), roughness: 0.5, metalness: 0, transparent: true });
+      const back = new THREE.MeshStandardMaterial({ map: faceTexture('back', label, pair, ratio, el.querySelector('.card-back')?.dataset.kind || ''), roughness: 0.5, metalness: 0, transparent: true });
       const side = new THREE.MeshStandardMaterial({ color: new THREE.Color('#ffffff'), roughness: 0.5 });
       const mesh = new THREE.Group();
       const body = new THREE.Mesh(bodyGeo, side);
