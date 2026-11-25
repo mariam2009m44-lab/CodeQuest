@@ -55,7 +55,7 @@ test('languages page: each card opens the new lessons and the previous path link
 
   for (const lang of langs) {
     await page.goto(`${origin}/languages.html`);
-    assert.equal(await page.getAttribute(`.lang-card[href$="lang=${lang}"]`,'href'),`learning.html?lang=${lang}`,`${lang}: main card opens the new lessons`);await page.click(`.old-path a[href$="lang=${lang}"]`);
+    assert.equal(await page.getAttribute(`.lang-card[href$="lang=${lang}"]`,'href'),`course-path.html?lang=${lang}`,`${lang}: main card opens the level map`);await page.click(`.lang-card[href$="lang=${lang}"]`);
     await page.waitForURL(`**/course-path.html?lang=${lang}`);
     const data = JSON.parse(await readFile(resolve(root, curricula[lang]), 'utf8'));
     await page.waitForSelector('.cw-road-node', { timeout: 15000 });
