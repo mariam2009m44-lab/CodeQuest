@@ -8,19 +8,19 @@ const local=location.hostname==='localhost'||location.hostname==='127.0.0.1';
 let record=null;
 if(q.get('demo')==='1')record={name:'اسم الطالب (نموذج)',language:q.get('lang')||'python',issuedAt:new Date().toISOString(),demo:true};
 else if(local&&q.get('synthetic')==='1')record={name:q.get('name')||'طالب تجريبي',language:q.get('lang')||'python',issuedAt:q.get('date')||new Date().toISOString(),certId:q.get('id')||undefined,demo:false,synthetic:true};
-let failed=false;
+let failed=false,st='disabled';
 // Real records come only through the trusted adapter (authenticated endpoint, current uid). The URL carries
 // only a record id used to pick from the adapter's result, never record data. Disabled until the backend exists.
 if(!record&&CERT_ENDPOINT_ENABLED){
  try{
   const auth=await import('../js/auth.js');
   const res=await loadMyCertificates({enabled:true,getUid:()=>auth.getCurrentUser()?.uid||null,fetchCertificates:makeCertificateFetcher(()=>auth.getCurrentUser())});
-  if(res.state==='error')failed=true;
+  st=res.state;if(res.state==='error')failed=true;
   const hit=res.state==='ok'?res.records.find(r=>r.recordId===q.get('id')):null;
   if(hit){const prof=await auth.getUserProfile();const nm=String(prof?.name||prof?.displayName||'').trim();if(nm)record={name:nm,language:hit.language,issuedAt:hit.issuedAt,certId:hit.recordId,demo:false}}
- }catch{failed=true}
+ }catch{failed=true;st='error'}
 }
-if(!record){$('certNone').hidden=false;if(failed)$('certNone').textContent='تعذر تحميل الشهادة الآن. جرّبي مرة أخرى بعد قليل.';else if(!CERT_ENDPOINT_ENABLED)$('certNone').textContent='عرض الشهادات غير مفعّل حاليًا، ولا توجد شهادة صادرة.'}
+if(!record){const msg={disabled:'عرض الشهادات غير مفعّل حاليًا.',error:'تعذر تحميل الشهادة الآن. جرّبي مرة أخرى بعد قليل.',signedout:'سجّلي الدخول لعرض شهادتك.',ok:'لا توجد شهادة بهذا المعرّف في حسابك.'};$('certNone').textContent=msg[st]||msg.error;$('certNone').hidden=false}
 else{
  await drawCertificate($('certCanvas'),record,CODY);$('certCanvas').hidden=false;$('certActions').hidden=false;
  $('certNote').textContent=(record.demo||record.synthetic)?'هذا نموذج تصميم بيانات تجريبية، وليس شهادة صادرة.':'';
