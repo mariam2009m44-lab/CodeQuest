@@ -1,9 +1,15 @@
 import {gradeCode,summarize,byLesson,isPassed,PASS_PERCENT,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
 import {selectExecutor} from './execution.mjs';
 import {setProse} from './prose.mjs';
+import {postProgress,postDurable,flushPending,examPayload,codeTaskPayload} from './progress-api.mjs';
 const q=new URLSearchParams(location.search),lang=q.get('lang')||'python',unit=Number(q.get('unit')||1);
 const $=id=>document.getElementById(id);
 const quizzes=await (await fetch('quizzes.json')).json();const data=quizzes[lang+'-'+unit];
+const features=await fetch('features.json').then(r=>r.json()).catch(()=>({}));
+const serverOn=features.serverAssessment===true;
+const durable=async(key,path,payload,extra={})=>{const {auth}=await import('/js/firebase-config.js');return postDurable({uid:auth.currentUser?.uid||null,storage:localStorage,key,enabled:serverOn,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o),path,payload,...extra})};
+if(serverOn)import('/js/firebase-config.js').then(({auth})=>flushPending({uid:auth.currentUser?.uid||null,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)}).then(async()=>{const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:auth.currentUser?.uid||null,storage:localStorage,sendOpts:()=>({getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)})})})).catch(()=>{});
+const pendingSync=[];
 const units=await (await fetch('units.json')).json();const pack=units.find(u=>u.language===lang&&u.unit===unit);
 $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
 if(!data||!pack){$('quizTitle').textContent='لا يوجد اختبار لهذه الوحدة بعد.'}
@@ -22,7 +28,7 @@ else{
   if(it.kind==='mcq'){
    const box=document.createElement('div');box.className='choices';
    const order=it.options.map((_,k)=>k);for(let a=order.length-1;a>0;a--){const r=Math.floor(Math.random()*(a+1));[order[a],order[r]]=[order[r],order[a]]}
-   order.forEach(k=>{const o=it.options[k];const b=document.createElement('button');b.type='button';setProse(b,o);b.onclick=()=>{if(answers[i])return;answers[i]={correct:k===it.answer};box.querySelectorAll('button').forEach(x=>x.disabled=true);b.setAttribute('aria-pressed','true');box.querySelectorAll('button').forEach((x,xi)=>{if(order[xi]===it.answer)x.classList.add('quiz-right');else if(x===b)x.classList.add('quiz-wrong')});fb.className='bubble reply '+(k===it.answer?'fit':'retry');setProse(fb,(k===it.answer?'صح. ':'إجابتك مش صح، والصح: '+it.options[it.answer]+'. ')+it.why);fb.hidden=false;upd();done()};box.append(b)});
+   order.forEach(k=>{const o=it.options[k];const b=document.createElement('button');b.type='button';setProse(b,o);b.onclick=()=>{if(answers[i])return;answers[i]={correct:k===it.answer,picked:k};box.querySelectorAll('button').forEach(x=>x.disabled=true);b.setAttribute('aria-pressed','true');box.querySelectorAll('button').forEach((x,xi)=>{if(order[xi]===it.answer)x.classList.add('quiz-right');else if(x===b)x.classList.add('quiz-wrong')});fb.className='bubble reply '+(k===it.answer?'fit':'retry');setProse(fb,(k===it.answer?'صح. ':'إجابتك مش صح، والصح: '+it.options[it.answer]+'. ')+it.why);fb.hidden=false;upd();done()};box.append(b)});
    card.append(box,fb);
   }else{
    const ta=document.createElement('textarea');ta.className='quiz-code';ta.dir='ltr';ta.rows=8;ta.value=it.starter||'';ta.setAttribute('aria-label','كود السؤال '+(i+1));
@@ -34,13 +40,14 @@ else{
    sub.onclick=async()=>{if(busy||answers[i])return;busy=true;sub.disabled=tryBtn.disabled=true;ta.readOnly=true;fb.hidden=false;fb.className='bubble reply';fb.textContent='بنصحح...';
     let g;try{g=await gradeCode(it,ta.value,await selectExecutor(lang))}catch(e){g={passed:false,results:[],ran:false}}
     if(!g.ran&&!g.passed&&g.results.every(r=>!r.ran)){answers[i]=undefined;sub.disabled=tryBtn.disabled=false;ta.readOnly=false;fb.className='bubble reply retry';fb.textContent='الكود ما اشتغلش أو الخدمة مش متاحة، فالتسليم ما اتحسبش. صلّح الخطأ وسلّم تاني. '+(g.results[0]?.message||'');busy=false;return}
-    answers[i]={correct:g.passed};fb.className='bubble reply '+(g.passed?'fit':'retry');setProse(fb,(g.passed?'صح. الناتج مطابق في كل الحالات. ':'الناتج مش مطابق في حالة أو أكتر. ')+it.why);busy=false;upd();done()};
+    answers[i]={correct:g.passed};if(serverOn)pendingSync.push(durable('ct:'+lang+':'+unit+':'+(i-data.mcq.length),'/api/progress/code-task',codeTaskPayload({language:lang,unit,quiz:data,item:i-data.mcq.length,code:ta.value})));fb.className='bubble reply '+(g.passed?'fit':'retry');setProse(fb,(g.passed?'صح. الناتج مطابق في كل الحالات. ':'الناتج مش مطابق في حالة أو أكتر. ')+it.why);busy=false;upd();done()};
    card.append(ta);if(stdinBox)card.append(stdinBox);card.append(tryBtn,sub,out,fb);
   }
   $('quizBody').append(card);cards.push(card);
  });
  function done(){
   if(answers.filter(Boolean).length<items.length)return;
+  if(serverOn)Promise.all(pendingSync).then(states=>durable('ex:'+lang+':'+unit,'/api/progress/exam',examPayload({language:lang,unit,quiz:data,answers}),{defer:states.some(x=>x.state!=='saved'&&x.state!=='off')}));
   const s=summarize(items,answers);const r=$('quizResult');r.hidden=false;r.replaceChildren();
   const h=document.createElement('h2');h.textContent='نتيجتك: '+s.percent+'% ('+s.earned+' من '+s.total+') - '+s.band;r.append(h);const ok=isPassed(s.percent);const st=document.createElement('p');st.className='quiz-status '+(ok?'pass':'review');st.textContent=ok?'ناجح: تقدر تكمّل للوحدة الجاية.':'محتاج مراجعة: النجاح من '+PASS_PERCENT+'%. راجع الدروس تحت ثم أعد الاختبار.';r.append(st);
   const n=document.createElement('p');n.textContent=s.missedLessons.length?'راجع: '+s.missedLessons.map(titleOf).join('، '):'كل الإجابات صح.';r.append(n);

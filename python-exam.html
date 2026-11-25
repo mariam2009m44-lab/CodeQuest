@@ -445,6 +445,7 @@
         <div class="result-score" id="scoreText"></div>
         <p id="resultDetails"></p>
         <p id="saveStatus"></p>
+        <p id="serverRecord" role="status" hidden></p>
 
         <div class="result-actions">
           <a
@@ -830,6 +831,7 @@
         const projectsLink = document.getElementById("projectsLink");
 
         let currentUser = null;
+        let serverMode = false; // features.json serverAssessment; OFF until the Worker routes are deployed
         let examQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
@@ -958,6 +960,8 @@
 
         // بدء الامتحان
         function startExam() {
+          allQuestions.forEach(q => { delete q.__pick; });
+          { const n = document.getElementById("serverRecord"); if (n) n.hidden = true; }
           examQuestions = shuffleArray(allQuestions).slice(
             0,
             Math.min(EXAM_SIZE, allQuestions.length)
@@ -1047,6 +1051,7 @@
           const buttons = questionOptions.querySelectorAll(".opt-btn");
 
           const isCorrect = selectedIndex === question.a;
+          question.__pick = selectedIndex;
 
           buttons.forEach((button, index) => {
             button.disabled = true;
@@ -1117,8 +1122,9 @@
               expectedUid: currentUser.uid
             });
 
-            saveStatus.textContent =
-              "تم حفظ نتيجة الامتحان ومزامنتها مع الحساب.";
+            saveStatus.textContent = serverMode
+              ? "تم حفظ نتيجة الامتحان على هذا الجهاز. تسجيل الحساب موضّح تحته."
+              : "تم حفظ نتيجة الامتحان ومزامنتها مع الحساب.";
 
             saveStatus.className = "success";
 
@@ -1149,6 +1155,7 @@
           );
 
           const passed = score * 100 >= PASS_PERCENTAGE * examQuestions.length;
+          submitFinalToServer();
 
           progressFill.style.width = "100%";
 
@@ -1183,6 +1190,75 @@
           }
         }
 
+        // Server-side record of the final exam. OFF unless serverMode (features.json serverAssessment). Only ids and picks are sent;
+        // the server scores. The local result is never changed by this. A pending payload is kept per account and retried a bounded
+        // number of times on page open. A 409 (stale question bank) drops the payload: old answers are never replayed against new questions.
+        const pendingKey = uid => "cq_final_pending_" + uid;
+        function showServerNote(text) {
+          const note = document.getElementById("serverRecord");
+          if (!note) return;
+          note.textContent = text;
+          note.hidden = !text;
+        }
+        async function sendFinal(payload) {
+          const { postProgress } = await import("./learning-studio/progress-api.mjs");
+          return postProgress({
+            enabled: true,
+            getToken: async force => {
+              const { auth } = await import("./js/firebase-config.js");
+              return auth.currentUser?.getIdToken(force === true) ?? null;
+            },
+            fetchFn: (u, o) => fetch(u, o),
+            path: "/api/progress/final-exam",
+            payload
+          });
+        }
+        function settleFinal(uid, out, payload, attempts) {
+          const key = pendingKey(uid);
+          if (out.ok) {
+            localStorage.removeItem(key);
+            showServerNote(out.data && out.data.passed ? "تم تسجيل نجاحك في الامتحان على حسابك." : "تم تسجيل محاولتك على حسابك. لم تصل لدرجة النجاح.");
+          } else if (out.refreshNeeded) {
+            localStorage.removeItem(key);
+            showServerNote("نسخة الأسئلة عندك قديمة، فمتسجلتش على حسابك. حدّث الصفحة وأعد الامتحان.");
+          } else if (out.retryable || out.reason === "network" || out.reason === "no-token") {
+            if (attempts < 3) {
+              localStorage.setItem(key, JSON.stringify({ payload, attempts: attempts + 1 }));
+              showServerNote("التسجيل على حسابك لسه مستني. نتيجتك المحلية محفوظة وهنحاول تاني لما تفتح الصفحة.");
+            } else {
+              localStorage.removeItem(key);
+              showServerNote("تعذّر تسجيل الامتحان على حسابك بعد عدة محاولات. نتيجتك المحلية محفوظة.");
+            }
+          } else {
+            localStorage.removeItem(key);
+            showServerNote("تعذّر تسجيل الامتحان على حسابك. نتيجتك المحلية لسه كما هي.");
+          }
+        }
+        async function submitFinalToServer() {
+          if (!serverMode || !currentUser) return;
+          try {
+            const { cyrb53 } = await import("./learning-studio/bank-hash.mjs");
+            const answers = examQuestions.map(q => ({
+              id: cyrb53(JSON.stringify([q.q, q.code ?? "", q.opts, q.a])),
+              pick: Number.isInteger(q.__pick) ? q.__pick : null
+            }));
+            const payload = { language: "python", version: "v1", answers };
+            settleFinal(currentUser.uid, await sendFinal(payload), payload, 0);
+          } catch (error) {
+            console.warn("final exam server record skipped", error);
+          }
+        }
+        async function retryPendingFinal() {
+          if (!serverMode || !currentUser) return;
+          try {
+            const raw = JSON.parse(localStorage.getItem(pendingKey(currentUser.uid)) || "null");
+            if (!raw || !raw.payload || !Number.isInteger(raw.attempts)) return;
+            settleFinal(currentUser.uid, await sendFinal(raw.payload), raw.payload, raw.attempts);
+          } catch (error) {
+            console.warn("pending final exam retry skipped", error);
+          }
+        }
+
         // إعادة الامتحان
         retryButton.addEventListener("click", () => {
           startExam();
@@ -1205,6 +1281,8 @@
             }
 
             migrateLegacyPythonStorage(currentUser.uid);
+            serverMode = (await fetch("learning-studio/features.json").then(r => r.json()).catch(() => ({}))).serverAssessment === true;
+            retryPendingFinal();
 
             showStatus("جارٍ التحقق من إكمال الفصول الاثني عشر...");
 
