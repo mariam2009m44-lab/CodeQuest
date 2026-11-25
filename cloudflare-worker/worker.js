@@ -2,6 +2,8 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
+import { emptyState, recordLesson, recordExam } from "./progress-core.js";
+import CURRICULUM_INDEX from "./curriculum-index.json";
 
 const FIREBASE_KEYS = createRemoteJWKSet(
   new URL(
@@ -620,6 +622,32 @@ async function handleQuizCheck(request, env, origin) {
   }
 }
 
+
+async function handleProgress(request, env, origin, action) {
+  let user;
+  try { user = await verifyFirebaseUser(request, env); } catch {
+    return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin);
+  }
+  if (!env.STUDENT_PROGRESS) {
+    return jsonResponse({ success: false, message: "حفظ التقدم غير مفعّل على الخادم." }, 503, origin);
+  }
+  let body = {};
+  if (action !== "get") {
+    try { body = await readBoundedJson(request, 4096); } catch (error) {
+      const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
+      return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, tooLarge ? 413 : 400, origin);
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
+    }
+  }
+  // The uid only selects the Durable Object; it is never returned or stored in a public record.
+  const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(user.uid));
+  const response = await stub.fetch(`https://progress.internal/${action}`, { method: "POST", body: JSON.stringify(body) });
+  const data = await response.json();
+  return jsonResponse(data, response.status, origin);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1123,6 +1151,16 @@ export default {
       );
     }
 
+    if (url.pathname === "/api/progress/get" && request.method === "POST") {
+      return handleProgress(request, env, origin, "get");
+    }
+    if (url.pathname === "/api/progress/lesson" && request.method === "POST") {
+      return handleProgress(request, env, origin, "lesson");
+    }
+    if (url.pathname === "/api/progress/exam" && request.method === "POST") {
+      return handleProgress(request, env, origin, "exam");
+    }
+
     return jsonResponse({
       success: false,
       message: "المسار المطلوب غير موجود."
@@ -1200,5 +1238,43 @@ export class CodeExecutionLimiter {
       allowed: true,
       remaining: dailyLimit - result.count
     });
+  }
+}
+
+
+// Per-student progress. One Durable Object per Firebase uid; SQLite-backed, small records only.
+// Raw code is never stored. A daily write cap bounds storage churn per student.
+export class StudentProgress {
+  constructor(state) { this.state = state; }
+
+  async fetch(request) {
+    const action = new URL(request.url).pathname.slice(1);
+    let body = {};
+    try { body = JSON.parse(await request.text() || "{}"); } catch { return Response.json({ success: false, message: "bad request" }, { status: 400 }); }
+
+    const result = await this.state.storage.transaction(async tx => {
+      const state = (await tx.get("state")) || emptyState();
+      if (action === "get") return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams } };
+
+      if (action !== "lesson" && action !== "exam") return { status: 404, data: { success: false, message: "unknown action" } };
+      const today = new Date().toISOString().slice(0, 10);
+      const quota = (await tx.get("writes")) || { day: today, count: 0 };
+      if (quota.day !== today) { quota.day = today; quota.count = 0; }
+      if (quota.count >= 300) return { status: 429, data: { success: false, message: "وصلت للحد اليومي لحفظ التقدم." } };
+
+      let outcome;
+      const version = typeof body.version === "string" ? body.version : "";
+      if (action === "lesson") outcome = recordLesson(state, CURRICULUM_INDEX, { language: body.language, lessonId: body.lessonId, version });
+      else if (action === "exam") outcome = recordExam(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), choices: body.choices }, version);
+      else return { status: 404, data: { success: false, message: "unknown action" } };
+      if (!outcome.ok) return { status: 400, data: { success: false, message: outcome.reason } };
+
+      quota.count += 1;
+      await tx.put("state", state);
+      await tx.put("writes", quota);
+      if (action === "exam") return { status: 200, data: { success: true, percent: outcome.result.percent, passed: outcome.result.passed, codeVerified: outcome.result.codeVerified, best: outcome.best, missedLessons: outcome.result.missedLessons } };
+      return { status: 200, data: { success: true, replay: outcome.replay === true, verified: false } };
+    });
+    return Response.json(result.data, { status: result.status });
   }
 }

@@ -17,9 +17,19 @@ id = "99de09069f1a4c82b5155b5a70739f5b"
 name = "CODE_EXECUTION_LIMITER"
 class_name = "CodeExecutionLimiter"
 
+[[durable_objects.bindings]]
+name = "STUDENT_PROGRESS"
+class_name = "StudentProgress"
+
 [[migrations]]
 tag = "v1-code-execution-limiter"
 new_sqlite_classes = ["CodeExecutionLimiter"]
+
+# DRAFT, branch only: adds the StudentProgress class. Roll back by deploying a version without it and
+# a v3 migration with deleted_classes = ["StudentProgress"].
+[[migrations]]
+tag = "v2-student-progress"
+new_sqlite_classes = ["StudentProgress"]
 
 [previews.vars]
 FIREBASE_PROJECT_ID = "codequest-6350a"
