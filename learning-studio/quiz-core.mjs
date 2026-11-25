@@ -1,8 +1,8 @@
 // Chapter quiz scoring. Only the graded answers count: one choice per question and one
 // submission per code task. Free "run" clicks, lesson steps and hints are never scored.
 export const MCQ_POINTS=1,CODE_POINTS=2;
-// DRAFT: not approved by the owner. 60 is the existing lowest non-review band (BANDS). Change here only.
-export const PASS_PERCENT=60;
+// Owner-approved (Mariam, 15:56): pass at 50 percent or more, inclusive.
+export const PASS_PERCENT=50;
 export const isPassed=percent=>percent>=PASS_PERCENT;
 export const BANDS=[[90,'ممتاز'],[75,'جيد جدًا'],[60,'جيد'],[0,'محتاج مراجعة']];
 export function normalizeOutput(s){return String(s??'').replace(/\r\n/g,'\n').split('\n').map(x=>x.replace(/[ \t]+$/,'')).join('\n').replace(/\n+$/,'')}

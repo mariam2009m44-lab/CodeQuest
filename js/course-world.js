@@ -105,6 +105,13 @@ function render(chapters,records,local){
  const flat=[];
  chapters.forEach((chapter,ci)=>(chapter.lessons||[]).forEach((lesson,li)=>flat.push({chapter,lesson,ci,li,done:isDone(lesson,ci,li,records,local)})));
  let first=flat.findIndex(item=>!item.done);if(first<0)first=flat.length;
+ // The next unit opens only after the previous unit exam is passed (50 percent or more).
+ let examGate=0;
+ if(first<flat.length&&flat[first].ci>0&&flat[first].li===0){
+  const prev=flat[first].ci;let passed=false;
+  try{passed=JSON.parse(localStorage.getItem("codequest_studio_quiz_"+language+"_"+prev)||"null")?.passed===true}catch{}
+  if(!passed)examGate=prev;
+ }
  const completed=flat.filter(item=>item.done).length,total=flat.length,percent=total?Math.round(completed/total*100):0;
  courseStats={completed,total,percent,firstIndex:first};
  document.getElementById("cwTitle").textContent="رحلة "+cfg.name;
@@ -112,6 +119,8 @@ function render(chapters,records,local){
  document.getElementById("cwProgressText").textContent=percent+"% مكتمل";
  document.getElementById("cwLessonCount").textContent=completed+" من "+total+" درس";
  document.getElementById("cwProgressBar").style.width=percent+"%";
+ {const old=document.getElementById("cwExamGate");if(old)old.remove();
+  if(examGate){const a=document.createElement("a");a.id="cwExamGate";a.className="cw-exam-gate";a.href="/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+examGate;a.textContent="اختبار الوحدة "+examGate+": انجح فيه (٥٠٪ أو أكثر) علشان تفتح الوحدة اللي بعدها";a.style.cssText="display:block;margin:12px auto;max-width:520px;padding:12px 16px;border-radius:12px;background:#674ac1;color:#fff;text-align:center;font-weight:700;text-decoration:none";document.getElementById("cwProgressBar").closest("section,div")?.after(a)}}
  const units=chapters.map((chapter,ci)=>{
   const lessons=chapter.lessons||[],unitDone=lessons.filter((lesson,li)=>isDone(lesson,ci,li,records,local)).length;
   const height=Math.max(230,150+(lessons.length-1)*145+85);
@@ -120,7 +129,7 @@ function render(chapters,records,local){
   const progressPath=completedCount?makeRoadPath(points.slice(0,Math.min(completedCount,points.length))):"";
   const nodes=lessons.map((lesson,li)=>{
    const globalIndex=flat.findIndex(item=>item.ci===ci&&item.li===li),done=isDone(lesson,ci,li,records,local);
-   const current=!done&&globalIndex===first,locked=!done&&!current;
+   const current=!done&&globalIndex===first&&!examGate,locked=!done&&!current;
    const icon=done?"ri-check-line":locked?"ri-lock-2-line":"ri-play-fill";
    const title=lesson.title||("الدرس "+(li+1)),href=cfg.url(ci,li,lesson.id),{x,y}=points[li];
    return `<div class="cw-road-node ${current?"is-current":done?"is-done":"is-locked"}" data-lesson-index="${globalIndex}" style="left:${x}%;top:${y}px">${current?'<div class="cw-cody cw-cody--node">'+CODY+'</div>':""}<button class="cw-node ${done?"is-done":current?"is-current":""}" type="button" ${locked?'disabled aria-label="درس مقفول"':'data-href="'+escapeHTML(href)+'" aria-label="'+escapeHTML(title)+'"'}><i class="${icon}"></i></button><span class="cw-node-label">${escapeHTML(title)}</span><span class="cw-node-sub">${done?"مكتمل":current?"ابدأ هنا":"افتح بعد السابق"}</span></div>`;
