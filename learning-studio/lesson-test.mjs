@@ -7,13 +7,25 @@ const [bank,units]=await Promise.all([fetch('lesson-tests.json').then(r=>r.json(
 const pack=units.find(u=>u.language===lang&&u.lessons.some(l=>l.id===lessonId)),lesson=pack?.lessons.find(l=>l.id===lessonId),items=bank[lessonId];
 $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
 const idx=pack?pack.lessons.indexOf(lesson):-1;
-const pending=(()=>{try{const p=JSON.parse(localStorage.getItem('cq_lt_pending')||'null');return p&&p.lessonId===lessonId?p:null}catch{return null}})(),uid=pending?.uid||null;
-function nextTarget(){if(!pack)return null;if(idx+1<pack.lessons.length){const n=pack.lessons[idx+1];return {href:'/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(n.id),text:'التالي: '+n.title}}return {href:'quiz.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit,text:'التالي: امتحان الوحدة '+pack.unit}}
+const fm=q.get('from')==='map'?'&from=map':'';
+const mapUrl='/course-path.html?lang='+encodeURIComponent(lang),retakeUrl=location.pathname+'?lang='+encodeURIComponent(lang)+'&lesson='+encodeURIComponent(lessonId)+fm+'&retake=1';
+const pending=(()=>{try{const p=JSON.parse(localStorage.getItem('cq_lt_pending')||'null');return p&&p.lessonId===lessonId?p:null}catch{return null}})(),uid=pending?.uid||(()=>{try{return localStorage.getItem('cq_last_uid')}catch{return null}})()||null;
+function nextTarget(){if(!pack)return null;if(idx+1<pack.lessons.length){const n=pack.lessons[idx+1];return {href:'/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(n.id)+fm,text:'التالي: '+n.title}}return {href:'quiz.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit,text:'التالي: امتحان الوحدة '+pack.unit}}
 const link=(href,text,cls='primary')=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;a.style.marginInlineEnd='10px';return a};
 if(!lesson||!items){$('ltTitle').textContent='اختبار الدرس';$('ltIntro').textContent='لسه مفيش اختبار لهذا الدرس، فبتكمل من غيره. اختبار الوحدة موجود في آخرها.';document.querySelector('.quiz-progress').hidden=true;$('ltBody').hidden=true;const n=nextTarget();if(n)$('ltResult').append(link(n.href,n.text));$('ltResult').hidden=false}
 else{
  $('ltTitle').textContent='اختبار الدرس: '+lesson.title;
  $('ltIntro').textContent='٤ أسئلة جديدة عن الدرس. تُحسب الإجابة الأولى لكل سؤال، والنجاح من '+PASS_PERCENT+'% يعني إجابتين صحيحتين على الأقل. لا يُحسب هنا أي شيء من الشات.';
+ const saved=(()=>{try{return JSON.parse(localStorage.getItem(lessonTestKey(lang,lessonId,uid))||'null')}catch{return null}})();
+ if(saved?.passed===true&&q.get('retake')!=='1'){
+  // Reopening (for example with the browser Back button) shows the saved pass; it never silently restarts the exam.
+  const r=$('ltResult');$('ltBody').hidden=true;document.querySelector('.quiz-progress').hidden=true;r.hidden=false;r.className='lt-result';
+  const score=document.createElement('div');score.className='lt-score';const pct=document.createElement('bdi');pct.dir='ltr';pct.className='lt-big';pct.textContent=saved.percent+'%';score.append(pct);
+  const st=document.createElement('p');st.className='lt-status pass';st.textContent='نجحت في هذا الاختبار. الدرس التالي متاح.';r.append(score,st);
+  const actions=document.createElement('div');actions.className='lt-actions';
+  const mk2=(href,text,cls)=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;a.onclick=e=>{e.preventDefault();location.replace(href)};return a};
+  const n=nextTarget();if(n)actions.append(mk2(n.href,n.text,'lt-btn lt-primary'));actions.append(mk2(retakeUrl,'إعادة الاختبار','lt-btn lt-secondary'),mk2(mapUrl,'الرجوع إلى الخريطة','lt-btn lt-secondary'));r.append(actions);
+ }else{
  const answers=[];let cur=0;
  const draw=()=>{
   const it=items[cur];$('ltProgText').textContent='سؤال '+(cur+1)+' من '+items.length;$('ltBar').style.width=Math.round(cur*100/items.length)+'%';
@@ -48,11 +60,12 @@ else{
   // Passing is what completes the node on the map (the lesson page only records the node after this).
   if(s.passed)try{const pend=pending;if(pend&&pend.fromMap){writeMapProgress(pend.language,pend.unit,pend.index,pend.uid);localStorage.removeItem('cq_lt_pending')}}catch{}
   const n=nextTarget();const actions=document.createElement('div');actions.className='lt-actions';
-  const mk=(href,text,cls)=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;return a};
-  if(s.passed&&n){actions.append(mk(n.href,n.text,'lt-btn lt-primary'),mk(location.href,'إعادة الاختبار','lt-btn lt-secondary'))}
-  else{actions.append(mk(location.href,'إعادة الاختبار','lt-btn lt-primary'),mk('/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(lessonId),'مراجعة الدرس','lt-btn lt-secondary'))}
-  r.append(actions);
+  const mk=(href,text,cls)=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;a.onclick=e=>{e.preventDefault();location.replace(href)};return a};
+  if(s.passed&&n){actions.append(mk(n.href,n.text,'lt-btn lt-primary'),mk(retakeUrl,'إعادة الاختبار','lt-btn lt-secondary'))}
+  else{actions.append(mk(retakeUrl,'إعادة الاختبار','lt-btn lt-primary'),mk('/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(lessonId)+fm,'مراجعة الدرس','lt-btn lt-secondary'))}
+  actions.append(mk(mapUrl,'الرجوع إلى الخريطة','lt-btn lt-secondary'));r.append(actions);
   const note=document.createElement('p');note.className='small';note.textContent='النتيجة محفوظة على هذا الجهاز فقط، وغير مرتبطة بالحساب حتى الآن.';r.append(note);
  };
  draw();
+ }
 }

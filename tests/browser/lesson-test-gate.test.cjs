@@ -11,7 +11,9 @@ await p.evaluate(u=>localStorage.setItem('cq_lt_pending',JSON.stringify({lessonI
 await p.goto(L+'/learning-studio/lesson-test.html?lang=python&lesson=py-1-1');await p.waitForSelector('#ltBody .choices button');
 for(let i=0;i<4;i++){const want=bank[i].options[bank[i].answer];const bs=p.locator('#ltBody .choices button');const n=await bs.count();let t;for(let k=0;k<n;k++){const x=(await bs.nth(k).innerText()).trim();if(i<nright?x===want:x!==want){t=bs.nth(k);break}}await t.click();await p.locator('#ltBody button.primary').click()}
 await p.waitForSelector('#ltResult:not([hidden])');
-const st=await p.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));await c.close();return st}
+const st=await p.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+ if(nright>=2){await p.evaluate(()=>localStorage.setItem('cq_last_uid','u1'));await p.goto(L+'/learning-studio/lesson-test.html?lang=python&lesson=py-1-1');await p.waitForSelector('#ltResult:not([hidden])');assert(await p.locator('#ltBody').isHidden(),'reopen must not restart the exam');assert(/نجحت/.test(await p.innerText('#ltResult')),'reopen shows saved pass');const hrefs=await p.locator('#ltResult a').evaluateAll(a=>a.map(x=>x.getAttribute('href')));assert(hrefs.some(h=>h.includes('course-path.html')),'map link');assert(hrefs.some(h=>h.includes('lesson=py-1-2')),'next link')}
+ await c.close();return st}
 const keys=o=>Object.keys(o);
 const fail=await run('u1',1);
 assert(keys(fail).some(k=>k==='codequest_studio_lessontest_u1_python_py-1-1'),'uid-keyed result');
