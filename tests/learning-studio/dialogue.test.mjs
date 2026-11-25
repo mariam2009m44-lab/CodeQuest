@@ -15,6 +15,6 @@ test('every dialogue turn asks a question with 2-3 options, one fitting, each wi
  }
  assert.ok(n>0);
 });
-test('Java lessons all carry at least two dialogue turns',()=>{
- for(const l of lessons.filter(l=>l.language==='java'))assert.ok((l.dialogue??[]).length>=2,l.id);
+test('Java and JavaScript lessons all carry at least two dialogue turns',()=>{
+ for(const l of lessons.filter(l=>['java','javascript'].includes(l.language)))assert.ok((l.dialogue??[]).length>=2,l.id);
 });

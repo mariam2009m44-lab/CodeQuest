@@ -542,7 +542,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "كودي كتب console.log(\"Signal ready\"). تفتكر الرسالة هتظهر في الصفحة نفسها ولا في مكان تاني؟",
+            "options": [
+              {
+                "text": "في وحدة تحكم المتصفح",
+                "reply": "صح. console.log بتكتب في وحدة التحكم اللي بنراجع منها شغلنا، مش في تصميم الصفحة.",
+                "fit": true
+              },
+              {
+                "text": "في وسط الصفحة",
+                "reply": "لأ. الصفحة بيتحكم فيها كود تاني. console.log مخصصة للمطور."
+              }
+            ]
+          },
+          {
+            "ask": "لو شلنا علامتي الاقتباس من Signal ready، إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "هتطلع رسالة خطأ",
+                "reply": "صح. من غير اقتباس JavaScript بتدور على أسماء مش موجودة.",
+                "fit": true
+              },
+              {
+                "text": "هتتطبع عادي",
+                "reply": "ما ينفعش. الاقتباس هو اللي بيقول إن ده نص."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch1_l2",
@@ -642,7 +672,41 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "energy = 3 وبعدين energy = energy + 2. بعد السطر التاني قيمتها كام؟",
+            "options": [
+              {
+                "text": "5",
+                "reply": "تمام. الجانب الأيمن يتحسب الأول (3 + 2) وبعدين يتخزن في energy.",
+                "fit": true
+              },
+              {
+                "text": "2",
+                "reply": "2 هي اللي أضفناها. السطر بيضيفها على القيمة القديمة."
+              },
+              {
+                "text": "3",
+                "reply": "3 كانت القيمة قبل السطر. let بتسمح بالتغيير."
+              }
+            ]
+          },
+          {
+            "ask": "ليه استخدمنا let ومش const هنا؟",
+            "options": [
+              {
+                "text": "عشان القيمة هتتغير",
+                "reply": "بالظبط. let للقيم اللي بنعيد إسنادها.",
+                "fit": true
+              },
+              {
+                "text": "عشان let أسرع",
+                "reply": "السرعة مش السبب. الاختيار على حسب هل القيمة هتتغير."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch1_l3",
@@ -742,7 +806,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "const baseName = \"Nova\"; لو كتبنا baseName = \"Luna\" بعدها، إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "خطأ، const ما بتتغيرش",
+                "reply": "صح. const بتمنع إعادة الإسناد للاسم نفسه.",
+                "fit": true
+              },
+              {
+                "text": "هتتغير عادي",
+                "reply": "لو كانت let أيوه. const اتصممت إن الاسم يفضل مربوط بنفس القيمة."
+              }
+            ]
+          },
+          {
+            "ask": "أنهي معلومة الأنسب لـ const؟",
+            "options": [
+              {
+                "text": "اسم المحطة اللي ما بيتغيرش",
+                "reply": "تمام. اسم ثابت يفضل ثابت، ولو القيمة بتتغير نستخدم let.",
+                "fit": true
+              },
+              {
+                "text": "عدد الأدوات اللي بيزيد",
+                "reply": "ده بيتغير، فمحتاج let."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -2217,7 +2311,37 @@
             "صحيح، الاقتباس جعل القيم نصوصًا في الثاني.",
             "الاقتباس يحدد نصًا، ولا يضاعف الأعداد."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "console.log(3 + 2) وconsole.log(\"3\" + \"2\"). هتطلع نفس النتيجة؟",
+            "options": [
+              {
+                "text": "لأ، 5 و \"32\"",
+                "reply": "صح. + مع الأعداد بتجمع، ومع النصوص بتلصق.",
+                "fit": true
+              },
+              {
+                "text": "أيوه، 5 في الاتنين",
+                "reply": "\"3\" نص بسبب الاقتباس، فالـ + بتلصق النصين."
+              }
+            ]
+          },
+          {
+            "ask": "ليه \"3\" + \"2\" بتدي 32؟",
+            "options": [
+              {
+                "text": "عشان النصوص بتتوصل جنب بعض",
+                "reply": "بالظبط. وصل النصوص مش جمع.",
+                "fit": true
+              },
+              {
+                "text": "عشان JavaScript بتغلط",
+                "reply": "مش غلط. دي القاعدة مع النصوص."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch2_l2",
@@ -2331,7 +2455,37 @@
             "توجد أعداد ونصوص وقيم منطقية وأنواع أخرى.",
             "صحيح، ونوع القيمة مهم عندما نبني الشروط."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "doorOpen = \"true\" بالاقتباس. ده نفس doorOpen = true؟",
+            "options": [
+              {
+                "text": "لأ، الأولى نص والتانية قيمة منطقية",
+                "reply": "صح. true من غير اقتباس هي القيمة المنطقية الحقيقية.",
+                "fit": true
+              },
+              {
+                "text": "أيوه نفس الحاجة",
+                "reply": "النص \"false\" كمان يتحسب true في الشرط لأنه نص مش فاضي. خلي بالك."
+              }
+            ]
+          },
+          {
+            "ask": "أنهي اسم متغير بيعبر عن سؤال نعم أو لا أحسن؟",
+            "options": [
+              {
+                "text": "doorOpen",
+                "reply": "تمام. الاسم بيوضح إن القيمة true أو false.",
+                "fit": true
+              },
+              {
+                "text": "door",
+                "reply": "الاسم ده مش واضح هو بيخزن إيه."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch2_l3",
@@ -2445,7 +2599,37 @@
             "/ للقسمة، وليس الباقي.",
             "+ للجمع العددي هنا."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "7 / 2 في JavaScript بتدي كام؟",
+            "options": [
+              {
+                "text": "3.5",
+                "reply": "صح. JavaScript بتحافظ على الكسر مش زي C++ مع الأعداد الصحيحة.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "ده سلوك قسمة int في لغات تانية. هنا الناتج 3.5."
+              }
+            ]
+          },
+          {
+            "ask": "7 % 2 بتدي إيه، وفين بنستفيد منها؟",
+            "options": [
+              {
+                "text": "1، والباقي بيفيدنا نعرف زوجي أو فردي",
+                "reply": "صح. باقي القسمة على 2 بيبقى 0 للزوجي و1 للفردي.",
+                "fit": true
+              },
+              {
+                "text": "3.5",
+                "reply": "دي القسمة. % بتدي الباقي بس."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch2_l4",
@@ -2566,7 +2750,37 @@
             "صحيح، ثم نختبر صلاحية التحويل عندما تكون المدخلات غير مضمونة.",
             "النص غير العددي قد يعطي NaN."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "label = \"8\" و label + 2 من غير تحويل. هتطلع كام؟",
+            "options": [
+              {
+                "text": "\"82\"",
+                "reply": "صح. النص بيلصق الرقم فبيطلع \"82\".",
+                "fit": true
+              },
+              {
+                "text": "10",
+                "reply": "لو كان label رقم أيوه. هو نص."
+              }
+            ]
+          },
+          {
+            "ask": "إزاي نخلي الجمع عددي؟",
+            "options": [
+              {
+                "text": "Number(label) + 2",
+                "reply": "تمام. Number بتحول النص لعدد قبل الجمع.",
+                "fit": true
+              },
+              {
+                "text": "label.length + 2",
+                "reply": "length بتعد حروف النص، مش بتحوله لعدد."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -3801,7 +4015,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "ليه 5 === \"5\" بتدي false؟",
+            "options": [
+              {
+                "text": "عشان نوع الاتنين مختلف",
+                "reply": "صح. === بتقارن القيمة والنوع.",
+                "fit": true
+              },
+              {
+                "text": "عشان القيمتين مختلفتين",
+                "reply": "القيمة شكلها واحد، لكن واحد عدد وواحد نص."
+              }
+            ]
+          },
+          {
+            "ask": "energy = 5 جملة إسناد. وenergy === 5؟",
+            "options": [
+              {
+                "text": "مقارنة بتدي true أو false",
+                "reply": "صح. = بتحط قيمة، و === بتسأل.",
+                "fit": true
+              },
+              {
+                "text": "إسناد برضه",
+                "reply": "الإسناد = لوحدها. === دايمًا سؤال."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch3_l2",
@@ -3899,7 +4143,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "energy = 2 والشرط energy >= 5. سطر Go هيظهر؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. الشرط false، فالجسم بيتخطى.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "2 أصغر من 5، فالشرط ما اتحققش."
+              }
+            ]
+          },
+          {
+            "ask": "لو energy = 5 بالظبط؟",
+            "options": [
+              {
+                "text": "هيظهر Go",
+                "reply": "صح. >= بتشمل المساواة.",
+                "fit": true
+              },
+              {
+                "text": "مش هيظهر",
+                "reply": ">= بتشمل 5، فهيظهر. لو كانت > ما كانش هيظهر."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch3_l3",
@@ -3997,7 +4271,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "energy = 2 والشرط energy >= 5. أنهي فرع يشتغل؟",
+            "options": [
+              {
+                "text": "else وبيطبع Charge",
+                "reply": "صح. لما الشرط يفشل، else هو اللي بيمشي.",
+                "fit": true
+              },
+              {
+                "text": "الاتنين",
+                "reply": "لأ. دايمًا فرع واحد بس."
+              }
+            ]
+          },
+          {
+            "ask": "ممكن else يشتغل من غير ما if تفشل؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. else هو \"غير كده\".",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "else مرتبطة بفشل الشرط بس."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch3_l4",
@@ -4095,7 +4399,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "temperature = 9. ليه بنكتب < 10 قبل < 25؟",
+            "options": [
+              {
+                "text": "عشان أول شرط يتحقق هو اللي بينفذ",
+                "reply": "صح. لو بدأنا بـ < 25 كانت 9 هتعدي عليه وتطلع Mild غلط.",
+                "fit": true
+              },
+              {
+                "text": "عشان الترتيب مش مهم",
+                "reply": "مهم جدًا. أول شرط متحقق هو اللي بيشتغل."
+              }
+            ]
+          },
+          {
+            "ask": "لو الحرارة 30، أنهي فرع يشتغل؟",
+            "options": [
+              {
+                "text": "else وبيطبع Hot",
+                "reply": "صح. ولا شرط قبله اتحقق.",
+                "fit": true
+              },
+              {
+                "text": "Mild",
+                "reply": "Mild شرطها < 25 و30 مش أقل."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -5170,7 +5504,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "for (let gate = 1; gate <= 3; gate++) هل 4 بتتطبع؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. لما gate تبقى 4 الشرط بيفشل قبل الطباعة.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "4 هي القيمة اللي بتوقف الحلقة."
+              }
+            ]
+          },
+          {
+            "ask": "لو غيرنا <= إلى < ، كام قيمة هتتطبع؟",
+            "options": [
+              {
+                "text": "اتنين: 1 و2",
+                "reply": "صح. gate بتوصل 3 والشرط 3 < 3 غلط.",
+                "fit": true
+              },
+              {
+                "text": "تلاتة",
+                "reply": "مع < مش بنطبع 3."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch4_l2",
@@ -5264,7 +5628,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كودي نسي count = count - 1. إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "الحلقة هتفضل شغالة",
+                "reply": "صح. count مش بيقرب من الصفر، فالشرط true للأبد.",
+                "fit": true
+              },
+              {
+                "text": "هتقف بعد 3 مرات",
+                "reply": "مفيش حاجة بتقلل count، فهتفضل."
+              }
+            ]
+          },
+          {
+            "ask": "لو count بدأ بصفر، while (count > 0) هتدخل؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. while بتفحص الشرط الأول.",
+                "fit": true
+              },
+              {
+                "text": "مرة واحدة",
+                "reply": "ده سلوك do...while. while العادية ممكن ما تدخلش."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch4_l3",
@@ -5358,7 +5752,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "gate = 2 وفيه continue. إيه اللي بيحصل؟",
+            "options": [
+              {
+                "text": "نتخطى الطباعة ونكمل اللفة اللي بعدها",
+                "reply": "صح. continue بتروح للفة الجاية.",
+                "fit": true
+              },
+              {
+                "text": "الحلقة كلها بتقف",
+                "reply": "دي break. continue بتتخطى لفة واحدة بس."
+              }
+            ]
+          },
+          {
+            "ask": "وgate = 5 وفيه break؟",
+            "options": [
+              {
+                "text": "الحلقة بتخرج خالص",
+                "reply": "صح. break بتنهي الحلقة.",
+                "fit": true
+              },
+              {
+                "text": "نتخطى لفة بس",
+                "reply": "ده شغل continue."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -6406,7 +6830,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كتبنا function report() { ... } ومنادناش report(). هتطبع؟",
+            "options": [
+              {
+                "text": "لأ، التعريف لوحده ما بينفذش",
+                "reply": "صح. لازم نستدعيها بالأقواس.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "التعريف بيجهّز الدالة بس."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نحط الكود جوه دالة؟",
+            "options": [
+              {
+                "text": "عشان نستخدمه أكتر من مرة باسم واحد",
+                "reply": "صح. نكتب مرة وننادي كل ما نحتاج.",
+                "fit": true
+              },
+              {
+                "text": "عشان يشتغل أسرع",
+                "reply": "مش السبب. السبب التنظيم وإعادة الاستخدام."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch5_l2",
@@ -6500,7 +6954,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "report(3) ثم report(5). count بتاخد إيه كل مرة؟",
+            "options": [
+              {
+                "text": "3 ثم 5",
+                "reply": "صح. كل استدعاء بيدي count قيمته.",
+                "fit": true
+              },
+              {
+                "text": "3 في الاتنين",
+                "reply": "لأ. الـ argument بيتغير كل استدعاء."
+              }
+            ]
+          },
+          {
+            "ask": "count اللي في تعريف الدالة اسمها إيه؟",
+            "options": [
+              {
+                "text": "parameter",
+                "reply": "صح. والقيمة اللي بنبعتها وقت الاستدعاء اسمها argument.",
+                "fit": true
+              },
+              {
+                "text": "argument",
+                "reply": "الـ argument هو 3 أو 5 وقت الاستدعاء. count هو parameter."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch5_l3",
@@ -6594,7 +7078,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "الدالة total فيها return x + y. ده بيطبع المجموع؟",
+            "options": [
+              {
+                "text": "لأ، بيرجعه كقيمة",
+                "reply": "صح. return بترجع القيمة، وإحنا اللي نطبعها.",
+                "fit": true
+              },
+              {
+                "text": "أيوه بيطبعه",
+                "reply": "الطباعة بتحتاج console.log. return بترجع القيمة بس."
+              }
+            ]
+          },
+          {
+            "ask": "const answer = total(3, 4); بتخزن إيه؟",
+            "options": [
+              {
+                "text": "7",
+                "reply": "صح. القيمة المرجعة اتخزنت في answer.",
+                "fit": true
+              },
+              {
+                "text": "undefined",
+                "reply": "لو الدالة مفيهاش return كان هيبقى undefined. هنا فيها."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -7642,7 +8156,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "[4, 7, 9]. length كام؟",
+            "options": [
+              {
+                "text": "3",
+                "reply": "صح. عدد العناصر ثلاثة.",
+                "fit": true
+              },
+              {
+                "text": "9",
+                "reply": "9 هي آخر قيمة، مش العدد."
+              }
+            ]
+          },
+          {
+            "ask": "لو ضفنا عنصر رابع، length تبقى؟",
+            "options": [
+              {
+                "text": "4",
+                "reply": "صح. length بتتحدث مع العناصر.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "هتزيد بزيادة العناصر."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch6_l2",
@@ -7736,7 +8280,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "readings[0] في [4, 7, 9] بتدي إيه؟",
+            "options": [
+              {
+                "text": "4",
+                "reply": "صح. الفهرس بيبدأ من الصفر.",
+                "fit": true
+              },
+              {
+                "text": "7",
+                "reply": "7 في الفهرس 1. الفهرس بيبدأ من الصفر."
+              }
+            ]
+          },
+          {
+            "ask": "readings[3] في نفس المصفوفة؟",
+            "options": [
+              {
+                "text": "undefined، لأن المكان مش موجود",
+                "reply": "صح. JavaScript بترجع undefined، مش بتوقف البرنامج زي لغات تانية.",
+                "fit": true
+              },
+              {
+                "text": "9",
+                "reply": "9 في الفهرس 2، وreadings[3] بعد آخر عنصر."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch6_l3",
@@ -7830,7 +8404,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "const readings = [4, 7]; وبعدين readings.push(9). هتتمنع؟",
+            "options": [
+              {
+                "text": "لأ، push بتغير محتوى المصفوفة",
+                "reply": "صح. const بتمنع إعادة الإسناد مش تعديل المحتوى.",
+                "fit": true
+              },
+              {
+                "text": "أيوه، const ثابتة",
+                "reply": "const بتثبت الربط بالاسم، والمصفوفة نفسها تتعدل."
+              }
+            ]
+          },
+          {
+            "ask": "readings = [1, 2] بعد const؟",
+            "options": [
+              {
+                "text": "خطأ، ده إعادة إسناد",
+                "reply": "صح. هنا حاولنا نربط الاسم بمصفوفة تانية.",
+                "fit": true
+              },
+              {
+                "text": "هتشتغل",
+                "reply": "دي إعادة إسناد، فبتفشل مع const."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch6_l4",
@@ -7924,7 +8528,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "robot = {name: \"Cody\", energy: 5}. إزاي نقرا الاسم؟",
+            "options": [
+              {
+                "text": "robot.name",
+                "reply": "صح. بنستخدم اسم الخاصية.",
+                "fit": true
+              },
+              {
+                "text": "robot[0]",
+                "reply": "الأرقام للمصفوفات. الكائن بيتقرى بأسماء الخاصيات."
+              }
+            ]
+          },
+          {
+            "ask": "الكائن يتميز عن المصفوفة في إيه؟",
+            "options": [
+              {
+                "text": "بنوصل للقيم بأسماء مش بترتيب",
+                "reply": "صح. مناسب لمعلومات متعددة عن شيء واحد.",
+                "fit": true
+              },
+              {
+                "text": "مفيش فرق",
+                "reply": "فيه. المصفوفة بالترتيب، والكائن بالأسماء."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -9066,7 +9700,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "\"Cody\".length كام؟",
+            "options": [
+              {
+                "text": "4",
+                "reply": "صح. كلمة Cody فيها أربعة حروف.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "عد الحروف: C o d y."
+              }
+            ]
+          },
+          {
+            "ask": "هل length بتدي عدد الحروف المرئية في كل اللغات؟",
+            "options": [
+              {
+                "text": "مش دايمًا، بتعد وحدات النص",
+                "reply": "صح. بعض الرموز بتتحسب أكتر من واحدة. هنا بنتكلم عن ASCII البسيط.",
+                "fit": true
+              },
+              {
+                "text": "أيوه دايمًا",
+                "reply": "في الإيموجي والرموز المركبة ممكن تختلف."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch7_l2",
@@ -9160,7 +9824,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "message.toUpperCase() بتغير message نفسها؟",
+            "options": [
+              {
+                "text": "لأ، بترجع نص جديد",
+                "reply": "صح. النصوص في JavaScript ما بتتعدلش من مكانها.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "message بتفضل Cody. النتيجة نص جديد."
+              }
+            ]
+          },
+          {
+            "ask": "إزاي نحتفظ بالنسخة الكبيرة؟",
+            "options": [
+              {
+                "text": "const big = message.toUpperCase();",
+                "reply": "صح. نخزن الناتج في متغير.",
+                "fit": true
+              },
+              {
+                "text": "message.toUpperCase();",
+                "reply": "ده بيحسب وينسى الناتج."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch7_l3",
@@ -9254,7 +9948,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كتبنا console.Log بحرف L كبير. إيه المشكلة؟",
+            "options": [
+              {
+                "text": "JavaScript حساسة للحروف، فاسم الأمر غلط",
+                "reply": "صح. console.log بحرف صغير.",
+                "fit": true
+              },
+              {
+                "text": "مفيش مشكلة",
+                "reply": "فيه. console.Log مش موجودة."
+              }
+            ]
+          },
+          {
+            "ask": "بنتصرف إزاي لما تظهر رسالة خطأ؟",
+            "options": [
+              {
+                "text": "نقرا أول خطأ ونصلح السبب",
+                "reply": "صح. الرسالة بتقولنا فين المشكلة.",
+                "fit": true
+              },
+              {
+                "text": "نمسح الكود كله",
+                "reply": "مش لازم. الرسالة بتحدد المكان."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -11760,7 +12484,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "age = 13 وhasPermission = false والشرط age >= 12 && hasPermission. هتظهر Access granted؟",
+            "options": [
+              {
+                "text": "لأ، && بتحتاج الاتنين صح",
+                "reply": "صح. العمر مناسب لكن الإذن false.",
+                "fit": true
+              },
+              {
+                "text": "أيوه، العمر كفاية",
+                "reply": "&& لازم الشرطين يتحققوا مع بعض."
+              }
+            ]
+          },
+          {
+            "ask": "لو غيرنا && إلى || ؟",
+            "options": [
+              {
+                "text": "هتظهر، لأن شرط واحد كفاية",
+                "reply": "صح. || بتكفيها حالة واحدة صح.",
+                "fit": true
+              },
+              {
+                "text": "مش هتظهر",
+                "reply": "|| بتنجح لما واحد من الشرطين يتحقق."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "js_ch8_l2",
@@ -11854,7 +12608,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "جوه الدالة showPlayer(person) إزاي نوصل لاسم اللاعب؟",
+            "options": [
+              {
+                "text": "person.name",
+                "reply": "صح. person هو الكائن اللي بعتناه.",
+                "fit": true
+              },
+              {
+                "text": "player.name",
+                "reply": "player برا الدالة. جواها بنستخدم اسم الباراميتر."
+              }
+            ]
+          },
+          {
+            "ask": "badges مصفوفة وplayer كائن. ليه بنستخدم الاتنين؟",
+            "options": [
+              {
+                "text": "الكائن للحقول، والمصفوفة لقائمة",
+                "reply": "صح. كل شكل بيناسب نوع معلومة.",
+                "fit": true
+              },
+              {
+                "text": "عشان نزود الكود",
+                "reply": "لازم يبقى فيه سبب. كل بنية ليها دور."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
