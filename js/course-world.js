@@ -13,7 +13,7 @@ const language=(params.get("lang")||"python").toLowerCase();
 const cfg=CONFIG[language],map=document.getElementById("cwMap");
 const escapeHTML=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const CODY='<span class="cody-character is-waving"><span class="cody-character__antenna"></span><span class="cody-character__head"><span class="cody-character__eye cody-character__eye--left"></span><span class="cody-character__eye cody-character__eye--right"></span><span class="cody-character__mouth"></span></span><span class="cody-character__body"><span class="cody-character__core">✦</span></span><span class="cody-character__arm cody-character__arm--left"></span><span class="cody-character__arm cody-character__arm--right"></span><span class="cody-character__leg cody-character__leg--left"></span><span class="cody-character__leg cody-character__leg--right"></span></span>';
-let uid=null,curriculumChapters=[],lastRecords=[],lastLocal=[],courseStats={completed:0,total:0,percent:0,firstIndex:0};
+let studioUnits=[],uid=null,curriculumChapters=[],lastRecords=[],lastLocal=[],courseStats={completed:0,total:0,percent:0,firstIndex:0};
 
 function setCody(mood,message){
  const host=document.getElementById("cwCody");if(!host)return;
@@ -31,6 +31,13 @@ function getLocalDone(){
   const javaRecords=Object.entries(java||{}).filter(([,v])=>v?.completed===true).map(([id])=>({id,completed:true}));
   const list=[...(Array.isArray(generic)?generic:[]),...(Array.isArray(python)?python.map(key=>({id:String(key),completed:true})):[]),...javaRecords];
   if(language==="java"&&Array.isArray(java?.completed))list.push(...java.completed.flatMap(chapter=>[{chapter:Number(chapter)-1,lesson:0,completed:true},{chapter:Number(chapter)-1,lesson:1,completed:true}]));
+  // A passed lesson test is an existing, assessed, per-account record: it also marks its map node, so lessons finished before map recording was fixed do not need repeating.
+  if(uid){const pre="codequest_studio_lessontest_"+uid+"_"+language+"_";
+   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||!k.startsWith(pre))continue;
+    let rec=null;try{rec=JSON.parse(localStorage.getItem(k)||"null")}catch{}
+    if(rec?.passed!==true)continue;const id=k.slice(pre.length);
+    const pack=studioUnits.find(x=>x.language===language&&x.lessons.some(l=>l.id===id));
+    if(pack)list.push({id:"lesson-test-"+id,chapter:pack.unit-1,lesson:pack.lessons.findIndex(l=>l.id===id),completed:true,source:"lesson-test-pass"});}}
   return list;
  }catch{return []}
 }
@@ -184,7 +191,7 @@ async function init(){
 
   // Display titles follow the lesson that actually opens. Layout, ids and legacy progress identity stay untouched.
   try{
-   const studio=await (await fetch("learning-studio/units.json",{cache:"no-store"})).json();
+   const studio=await (await fetch("learning-studio/units.json",{cache:"no-store"})).json();studioUnits=Array.isArray(studio)?studio:[];
    curriculumChapters.forEach((chapter,ci)=>{
     const pack=studio.find(x=>x.language===language&&x.unit===ci+1);if(!pack)return;
     const prefix=String(chapter.title||"").split(":")[0];chapter.title=prefix&&prefix!==chapter.title?prefix+": "+pack.title:pack.title;
