@@ -10,6 +10,8 @@ export function compilerAdapter(language,runCodeOnServer){
  };
 }
 export async function selectExecutor(language){
+ // JavaScript runs in the learner's browser sandbox: no server quota, no external service.
+ if(language==='javascript'&&typeof document!=='undefined'&&!new URLSearchParams(location.search).has('serverjs')){const {runJavaScript}=await import('./js-sandbox.mjs');return async(code)=>{const r=await runJavaScript(code);return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message}}}
  if(location.hostname==='localhost'||location.hostname==='127.0.0.1'){
   // The development endpoint exists only in the local verification server.
   // Never include a process-execution server in a hosted static page.
