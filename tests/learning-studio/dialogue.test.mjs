@@ -15,6 +15,6 @@ test('every dialogue turn asks a question with 2-3 options, one fitting, each wi
  }
  assert.ok(n>0);
 });
-test('Java, JavaScript and C++ lessons all carry at least two dialogue turns',()=>{
- for(const l of lessons.filter(l=>['java','javascript','cpp'].includes(l.language)))assert.ok((l.dialogue??[]).length>=2,l.id);
+test('All lessons all carry at least two dialogue turns',()=>{
+ for(const l of lessons.filter(l=>['java','javascript','cpp','python'].includes(l.language)))assert.ok((l.dialogue??[]).length>=2,l.id);
 });

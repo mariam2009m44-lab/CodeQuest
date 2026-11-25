@@ -102,7 +102,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "كودي كتب print(\"Hello\"). الشاشة هتعرض إيه بالظبط؟",
+            "options": [
+              {
+                "text": "Hello من غير اقتباس",
+                "reply": "صح. الاقتباس بيحدد النص ومش بيتعرض.",
+                "fit": true
+              },
+              {
+                "text": "print(\"Hello\") كلها",
+                "reply": "print هي الأمر نفسه، مش جزء من الرسالة."
+              }
+            ]
+          },
+          {
+            "ask": "لو شلنا الاقتباس: print(Hello)؟",
+            "options": [
+              {
+                "text": "خطأ، لأن Hello هتتفهم كاسم متغير",
+                "reply": "صح. من غير اقتباس Python بتدور على متغير اسمه Hello.",
+                "fit": true
+              },
+              {
+                "text": "هتتطبع Hello عادي",
+                "reply": "لأ. الاقتباس هو اللي بيعرّف النص."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-1-2",
@@ -209,6 +239,36 @@
             "code": "print(2.5)\nprint(2 + 0.5)",
             "output": "2.5\n2.5"
           }
+        ],
+        "dialogue": [
+          {
+            "ask": "print(3 + 2) بتعرض إيه؟",
+            "options": [
+              {
+                "text": "5",
+                "reply": "صح. من غير اقتباس Python بتحسب العملية.",
+                "fit": true
+              },
+              {
+                "text": "3 + 2",
+                "reply": "ده لو كانت جوه اقتباس."
+              }
+            ]
+          },
+          {
+            "ask": "وprint(\"3 + 2\")؟",
+            "options": [
+              {
+                "text": "3 + 2 زي ما هي",
+                "reply": "صح. جوه الاقتباس ده نص، ما بيتحسبش.",
+                "fit": true
+              },
+              {
+                "text": "5",
+                "reply": "النص بيتعرض زي ما هو من غير حساب."
+              }
+            ]
+          }
         ]
       },
       {
@@ -309,7 +369,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "print(\"Check\") وبعدها print(\"Go\"). مين بيظهر الأول؟",
+            "options": [
+              {
+                "text": "Check",
+                "reply": "صح. Python بتنفذ السطور بالترتيب من فوق لتحت.",
+                "fit": true
+              },
+              {
+                "text": "Go",
+                "reply": "الترتيب من فوق لتحت، فـ Check الأول."
+              }
+            ]
+          },
+          {
+            "ask": "لو بدلنا السطرين؟",
+            "options": [
+              {
+                "text": "Go ثم Check",
+                "reply": "صح. ترتيب الكتابة هو ترتيب التنفيذ.",
+                "fit": true
+              },
+              {
+                "text": "نفس الترتيب القديم",
+                "reply": "الترتيب بيتغير بتغيير مكان السطور."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-1-4",
@@ -409,7 +499,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "print(Ready) من غير اقتباس. إيه المشكلة؟",
+            "options": [
+              {
+                "text": "Ready هتتفهم كاسم مش نص",
+                "reply": "صح. لازم نحط النص بين اقتباسين.",
+                "fit": true
+              },
+              {
+                "text": "مفيش مشكلة",
+                "reply": "فيه. Python هتقول إن Ready مش معرّفة."
+              }
+            ]
+          },
+          {
+            "ask": "أنهي سطر معطّل؟",
+            "options": [
+              {
+                "text": "print(\"Ready)",
+                "reply": "صح. الاقتباس ناقص وبيطلع خطأ.",
+                "fit": true
+              },
+              {
+                "text": "print(\"Ready\")",
+                "reply": "ده سطر سليم، الاقتباس مقفول."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -1993,7 +2113,37 @@
             "الاقتباس مسموح للنصوص، لكنه سيعرض حروف الاسم هنا.",
             "tools اسم المتغير الذي عرّفناه، و print الدالة."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "tools = 4. أنهي جزء اسم المتغير؟",
+            "options": [
+              {
+                "text": "tools",
+                "reply": "صح. الاسم على الشمال، والقيمة على اليمين.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "4 هي القيمة اللي بتتخزن."
+              }
+            ]
+          },
+          {
+            "ask": "العلامة = في Python معناها إيه؟",
+            "options": [
+              {
+                "text": "ضع القيمة في الاسم",
+                "reply": "صح. هي إسناد مش مقارنة.",
+                "fit": true
+              },
+              {
+                "text": "الاتنين متساويين",
+                "reply": "للمقارنة بنستخدم ==. دي لحفظ القيمة."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-2-2",
@@ -2107,7 +2257,41 @@
             "صحيح، استخدم اليمين القيمة القديمة ثم حفظ الناتج.",
             "نقرأ القيمة القديمة أولًا قبل استبدالها."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "tools = 4 ثم tools = tools + 3. القيمة المطبوعة؟",
+            "options": [
+              {
+                "text": "7",
+                "reply": "صح. الطرف الأيمن اتحسب بالقيمة القديمة 4 + 3.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "3 هي اللي ضفناها. الجمع بيتم على القيمة الحالية."
+              },
+              {
+                "text": "4",
+                "reply": "4 كانت القيمة قبل السطر التاني."
+              }
+            ]
+          },
+          {
+            "ask": "هل tools = 4 ثم tools = 9 بيحتفظوا بالقيمتين؟",
+            "options": [
+              {
+                "text": "لأ، الأخيرة بس",
+                "reply": "صح. المتغير بيشيل قيمة واحدة في كل لحظة.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "كل إسناد جديد بيكتب فوق القديم."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-2-3",
@@ -2221,7 +2405,37 @@
             "المسافات داخل النص تبقى.",
             "صحيح، وترتيب الجزأين يغيّر الرسالة."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "\"Hi \" + name. ليه فيه مسافة بعد Hi؟",
+            "options": [
+              {
+                "text": "عشان الكلمتين ما يتلزقوش",
+                "reply": "صح. المسافة جزء من النص.",
+                "fit": true
+              },
+              {
+                "text": "Python بتحتاجها",
+                "reply": "مش بتحتاجها. إحنا اللي عايزينها في الرسالة."
+              }
+            ]
+          },
+          {
+            "ask": "الجمع بين نص ونص بيعمل إيه؟",
+            "options": [
+              {
+                "text": "بيلصقهم",
+                "reply": "صح. اسمه concatenation.",
+                "fit": true
+              },
+              {
+                "text": "بيحسب مجموع",
+                "reply": "الجمع الحسابي للأرقام بس."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-2-4",
@@ -2335,7 +2549,41 @@
             "count اختيار واضح لهذا المعنى، وليس شرطًا للغة.",
             "الأرقام مسموحة بعد أول حرف صالح."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "أنهي اسم متغير صالح؟",
+            "options": [
+              {
+                "text": "tools_count",
+                "reply": "صح. حروف وشرطة سفلية وبيوضح المعنى.",
+                "fit": true
+              },
+              {
+                "text": "2tools",
+                "reply": "لأ. الاسم ما ينفعش يبدأ برقم."
+              },
+              {
+                "text": "tools count",
+                "reply": "المسافة ما ينفعش جوه الاسم."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نختار اسم واضح زي tools_count؟",
+            "options": [
+              {
+                "text": "عشان نفهم الكود بعد كده",
+                "reply": "صح. الاسم الواضح بيشرح المعنى.",
+                "fit": true
+              },
+              {
+                "text": "عشان Python تسرع",
+                "reply": "السرعة ما بتتأثرش. الوضوح للقارئ."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -3085,7 +3333,7 @@
               },
               {
                 "text": "أيوه",
-                "reply": "3 أقل من 5."
+                "reply": "3 أقل من 5، فالشرط false والجسم بيتخطى."
               }
             ]
           },
@@ -3844,7 +4092,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "boxes = 5 + 3 ثم boxes = boxes - 2. القيمة النهائية؟",
+            "options": [
+              {
+                "text": "6",
+                "reply": "صح. 8 ثم نطرح 2.",
+                "fit": true
+              },
+              {
+                "text": "8",
+                "reply": "8 كانت بعد السطر الأول بس."
+              }
+            ]
+          },
+          {
+            "ask": "أنهي عملية تعبر عن استخدام صندوقين؟",
+            "options": [
+              {
+                "text": "boxes - 2",
+                "reply": "صح. الطرح بينقص المخزون.",
+                "fit": true
+              },
+              {
+                "text": "boxes + 2",
+                "reply": "الجمع بيزود."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-3-2",
@@ -3949,6 +4227,36 @@
             "code": "print(-7 // 2)",
             "output": "-4"
           }
+        ],
+        "dialogue": [
+          {
+            "ask": "print(7 / 2) بتدي إيه؟",
+            "options": [
+              {
+                "text": "3.5",
+                "reply": "صح. / بتدي ناتج بالكسر.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "دي شغل //. العلامة % بتدي الباقي بس."
+              }
+            ]
+          },
+          {
+            "ask": "وprint(7 // 2)؟",
+            "options": [
+              {
+                "text": "3",
+                "reply": "صح. // قسمة صحيحة بتتجاهل الكسر.",
+                "fit": true
+              },
+              {
+                "text": "3.5",
+                "reply": "// ما بتدي كسر."
+              }
+            ]
+          }
         ]
       },
       {
@@ -4047,7 +4355,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "10 % 3 بتدي كام؟",
+            "options": [
+              {
+                "text": "1",
+                "reply": "صح. 10 = 3 × 3 + 1.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "3 هو عدد المجموعات الكاملة، ودي شغل //."
+              }
+            ]
+          },
+          {
+            "ask": "% بتدينا عدد المجموعات الكاملة ولا الباقي؟",
+            "options": [
+              {
+                "text": "الباقي",
+                "reply": "صح. وعدد المجموعات من //.",
+                "fit": true
+              },
+              {
+                "text": "عدد المجموعات",
+                "reply": "دي شغل //. % بتدي الباقي."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-3-4",
@@ -4145,7 +4483,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "2 + 3 * 4 بتدي كام؟",
+            "options": [
+              {
+                "text": "14",
+                "reply": "صح. الضرب قبل الجمع.",
+                "fit": true
+              },
+              {
+                "text": "20",
+                "reply": "20 لو جمعنا الأول. الضرب أولى."
+              }
+            ]
+          },
+          {
+            "ask": "وكيف نخلي الجمع الأول؟",
+            "options": [
+              {
+                "text": "(2 + 3) * 4",
+                "reply": "صح. الأقواس بتغير الترتيب وتطلع 20.",
+                "fit": true
+              },
+              {
+                "text": "2 + 3 * 4 بدون تغيير",
+                "reply": "من غير أقواس الضرب هو اللي يتحسب الأول."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -5061,7 +5429,7 @@
               },
               {
                 "text": "بنتخطى لفة بس",
-                "reply": "ده continue."
+                "reply": "ده شغل continue مش break."
               }
             ]
           }
@@ -5446,7 +5814,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "energy = 2 والشرط energy >= 5. Go هتظهر؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. الشرط false والجسم بيتخطى.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "2 أقل من 5، فالمقارنة false والسطر يتخطى."
+              }
+            ]
+          },
+          {
+            "ask": "ليه print(\"Go\") مزاحة جوه if؟",
+            "options": [
+              {
+                "text": "عشان تتبع الشرط",
+                "reply": "صح. المسافة البادئة بتحدد الجسم في Python.",
+                "fit": true
+              },
+              {
+                "text": "للشكل بس",
+                "reply": "لأ. من غيرها Python هتطلع خطأ."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-4-2",
@@ -5540,7 +5938,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "energy = 2 ومعانا if/else. أنهي فرع يشتغل؟",
+            "options": [
+              {
+                "text": "else وبيطبع Charge",
+                "reply": "صح. else بتشتغل لما if تفشل.",
+                "fit": true
+              },
+              {
+                "text": "الاتنين",
+                "reply": "فرع واحد بس."
+              }
+            ]
+          },
+          {
+            "ask": "لو energy = 5؟",
+            "options": [
+              {
+                "text": "Go",
+                "reply": "صح. >= بتشمل المساواة.",
+                "fit": true
+              },
+              {
+                "text": "Charge",
+                "reply": "5 >= 5 صح فبتدخل if."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-4-3",
@@ -5634,7 +6062,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "temperature = 18. ليه نفحص < 10 الأول؟",
+            "options": [
+              {
+                "text": "عشان أول شرط يتحقق هو اللي بينفذ",
+                "reply": "صح. لو بدأنا بـ < 25 كانت قيمة زي 5 هتطلع Mild بدل Cold.",
+                "fit": true
+              },
+              {
+                "text": "الترتيب مش مهم",
+                "reply": "مهم. الأول المتحقق يوقف الباقي."
+              }
+            ]
+          },
+          {
+            "ask": "طيب لو الحرارة 30، أنهي فرع يشتغل؟",
+            "options": [
+              {
+                "text": "else وبيطبع Hot",
+                "reply": "صح. ما فيش شرط قبلها اتحقق.",
+                "fit": true
+              },
+              {
+                "text": "Mild",
+                "reply": "Mild شرطها < 25."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-4-4",
@@ -5728,7 +6186,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "energy = 6 وtools = 1 والشرط energy >= 5 and tools >= 2. ليه Wait؟",
+            "options": [
+              {
+                "text": "and لازم الشرطين صح وtools مش كفاية",
+                "reply": "صح. شرط واحد false يكفي يفشل and.",
+                "fit": true
+              },
+              {
+                "text": "energy مش كفاية",
+                "reply": "energy كفاية. المشكلة في tools."
+              }
+            ]
+          },
+          {
+            "ask": "لو غيرنا and إلى or؟",
+            "options": [
+              {
+                "text": "هيطبع Ready لأن شرط واحد صح",
+                "reply": "صح. or بتكفيها حالة واحدة.",
+                "fit": true
+              },
+              {
+                "text": "هيطبع Wait",
+                "reply": "energy >= 5 صح، فـ or بتنجح."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -6862,7 +7350,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "range(1, 4) بتضم 4؟",
+            "options": [
+              {
+                "text": "لأ، بتقف قبلها",
+                "reply": "صح. تطلع 1 و2 و3.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "النهاية مش مشمولة."
+              }
+            ]
+          },
+          {
+            "ask": "عشان نوصل لـ 4 نكتب؟",
+            "options": [
+              {
+                "text": "range(1, 5)",
+                "reply": "صح. نزود النهاية واحد.",
+                "fit": true
+              },
+              {
+                "text": "range(1, 4)",
+                "reply": "ده بيقف عند 3."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-5-2",
@@ -6956,7 +7474,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "نسينا count = count - 1. إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "حلقة لا نهائية",
+                "reply": "صح. count مش بيوصل صفر.",
+                "fit": true
+              },
+              {
+                "text": "هتقف بعد 3",
+                "reply": "مفيش حاجة بتقلل count."
+              }
+            ]
+          },
+          {
+            "ask": "while بتفحص الشرط إمتى؟",
+            "options": [
+              {
+                "text": "قبل كل لفة",
+                "reply": "صح. ولو أول مرة false ما تدخلش.",
+                "fit": true
+              },
+              {
+                "text": "بعد كل لفة",
+                "reply": "لأ، while بتفحص الشرط قبل كل لفة مش بعدها."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-5-3",
@@ -7050,7 +7598,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "range(1, 6) وفيه break عند 4. ليه 4 ما بتظهرش؟",
+            "options": [
+              {
+                "text": "break بتقف قبل الطباعة",
+                "reply": "صح. الحلقة بتخرج قبل print.",
+                "fit": true
+              },
+              {
+                "text": "range بتقف عند 3",
+                "reply": "range(1,6) توصل 5. break هي اللي وقفت."
+              }
+            ]
+          },
+          {
+            "ask": "كام رقم هيتطبع؟",
+            "options": [
+              {
+                "text": "3: 1 و2 و3",
+                "reply": "صح. بعدها break.",
+                "fit": true
+              },
+              {
+                "text": "5",
+                "reply": "break بتمنع الباقي."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-5-4",
@@ -7144,7 +7722,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "عند gate == 2 مع continue. إيه اللي بيحصل؟",
+            "options": [
+              {
+                "text": "بنتخطى print ونروح للدورة الجاية",
+                "reply": "صح. continue بتتخطى باقي الجسم.",
+                "fit": true
+              },
+              {
+                "text": "الحلقة بتقف",
+                "reply": "دي شغل break مش continue."
+              }
+            ]
+          },
+          {
+            "ask": "كام رقم هيتطبع مع range(1, 5)؟",
+            "options": [
+              {
+                "text": "3: 1 و3 و4",
+                "reply": "صح. 2 اتخطى.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "العدد 2 اتخطى بسبب continue."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -8278,7 +8886,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "tools = [\"map\", \"rope\"]. إيه نوع tools؟",
+            "options": [
+              {
+                "text": "قائمة list فيها عنصرين",
+                "reply": "صح. القوائم بتشيل أكتر من قيمة.",
+                "fit": true
+              },
+              {
+                "text": "نص",
+                "reply": "النص بين اقتباس واحد. القائمة بأقواس مربعة."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نستخدم قائمة بدل متغيرين؟",
+            "options": [
+              {
+                "text": "عشان نمر على القيم بسهولة",
+                "reply": "صح. نحتفظ بيهم في مكان واحد.",
+                "fit": true
+              },
+              {
+                "text": "عشان تسرع",
+                "reply": "السبب التنظيم."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-6-2",
@@ -8372,7 +9010,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "فهرس أول عنصر في القائمة كام؟",
+            "options": [
+              {
+                "text": "0",
+                "reply": "صح. العد بيبدأ من الصفر.",
+                "fit": true
+              },
+              {
+                "text": "1",
+                "reply": "1 هو التاني."
+              }
+            ]
+          },
+          {
+            "ask": "tools[3] في قائمة من 3 عناصر؟",
+            "options": [
+              {
+                "text": "IndexError",
+                "reply": "صح. الفهرس برا الحدود.",
+                "fit": true
+              },
+              {
+                "text": "بترجع آخر عنصر",
+                "reply": "لا. بتطلع خطأ."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-6-3",
@@ -8466,7 +9134,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "tools.append(\"lamp\") بتعمل إيه؟",
+            "options": [
+              {
+                "text": "بتضيف lamp في الآخر",
+                "reply": "صح. append للإضافة.",
+                "fit": true
+              },
+              {
+                "text": "بتحذف lamp",
+                "reply": "الحذف بـ remove."
+              }
+            ]
+          },
+          {
+            "ask": "remove(\"map\") بتحذف إيه؟",
+            "options": [
+              {
+                "text": "أول عنصر قيمته map",
+                "reply": "صح. بتدور بالقيمة مش بالفهرس.",
+                "fit": true
+              },
+              {
+                "text": "العنصر رقم map",
+                "reply": "map قيمة مش فهرس."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-6-4",
@@ -8560,7 +9258,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "len(tools) بتعد إيه؟",
+            "options": [
+              {
+                "text": "عدد العناصر",
+                "reply": "صح. عنصرين في المثال.",
+                "fit": true
+              },
+              {
+                "text": "عدد الحروف كلها",
+                "reply": "دي لو كان نص. هنا بتعد عناصر القائمة."
+              }
+            ]
+          },
+          {
+            "ask": "len(\"rope\")؟",
+            "options": [
+              {
+                "text": "4",
+                "reply": "صح. مع النص بتعد الحروف.",
+                "fit": true
+              },
+              {
+                "text": "1",
+                "reply": "هو نص واحد، لكن len بتعد حروفه الأربعة."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -9942,7 +10670,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "def report(): ... من غير استدعاء. هتطبع؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. def بتعرّف بس.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "لازم report()."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نستخدم دالة؟",
+            "options": [
+              {
+                "text": "عشان نعيد استخدام الكود",
+                "reply": "صح. نكتبها مرة وننادي عليها.",
+                "fit": true
+              },
+              {
+                "text": "عشان تبقى أسرع",
+                "reply": "السبب إعادة الاستخدام."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-7-2",
@@ -10036,7 +10794,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "report(3) وreport(5). count بتاخد إيه؟",
+            "options": [
+              {
+                "text": "3 ثم 5",
+                "reply": "صح. كل استدعاء بيدي قيمة.",
+                "fit": true
+              },
+              {
+                "text": "3 دايمًا",
+                "reply": "القيمة بتتغير كل استدعاء."
+              }
+            ]
+          },
+          {
+            "ask": "count جوه الأقواس في def اسمها؟",
+            "options": [
+              {
+                "text": "parameter",
+                "reply": "صح. والقيم وقت الاستدعاء arguments.",
+                "fit": true
+              },
+              {
+                "text": "argument",
+                "reply": "دي 3 و5 وقت الاستدعاء."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-7-3",
@@ -10130,7 +10918,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "أنهي أمر بيرجع المجموع؟",
+            "options": [
+              {
+                "text": "return x + y",
+                "reply": "صح. return بتبعت القيمة.",
+                "fit": true
+              },
+              {
+                "text": "print(x + y)",
+                "reply": "print بتعرض بس. return بترجع."
+              }
+            ]
+          },
+          {
+            "ask": "الدالة من غير return بترجع إيه؟",
+            "options": [
+              {
+                "text": "None",
+                "reply": "صح. قيمة فاضية.",
+                "fit": true
+              },
+              {
+                "text": "0",
+                "reply": "لأ. بترجع None."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-7-4",
@@ -10224,7 +11042,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "فين نحتفظ بالمجموع بين الحساب والتقرير؟",
+            "options": [
+              {
+                "text": "في متغير answer",
+                "reply": "صح. نخزن القيمة المرجعة.",
+                "fit": true
+              },
+              {
+                "text": "جوه print",
+                "reply": "print بتعرض وبتنسى."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نفصل total وreport؟",
+            "options": [
+              {
+                "text": "كل دالة ليها مهمة واحدة",
+                "reply": "صح. أسهل في الفهم والتعديل.",
+                "fit": true
+              },
+              {
+                "text": "مش مهم",
+                "reply": "فصل المهام بيخلي الكود أنضف."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -11234,7 +12082,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "len(\"Cody\") كام؟",
+            "options": [
+              {
+                "text": "4",
+                "reply": "صح. بتعد الحروف.",
+                "fit": true
+              },
+              {
+                "text": "1",
+                "reply": "هو كلمة واحدة لكن len بتعد الحروف."
+              }
+            ]
+          },
+          {
+            "ask": "مسافة في نص هتتحسب؟",
+            "options": [
+              {
+                "text": "أيوه حرف",
+                "reply": "صح. المسافة جزء من النص.",
+                "fit": true
+              },
+              {
+                "text": "لأ",
+                "reply": "المسافة حرف عادي وبتتحسب في len."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-8-2",
@@ -11328,7 +12206,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "message.upper() بتغير message؟",
+            "options": [
+              {
+                "text": "لأ، بترجع نص جديد",
+                "reply": "صح. النصوص ثابتة.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "message بتفضل Cody."
+              }
+            ]
+          },
+          {
+            "ask": "نحتفظ بالكبير إزاي؟",
+            "options": [
+              {
+                "text": "big = message.upper()",
+                "reply": "صح. نخزن الناتج.",
+                "fit": true
+              },
+              {
+                "text": "message.upper()",
+                "reply": "ده بيحسب وينسى."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-8-3",
@@ -11422,7 +12330,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "replace(\"old\", \"new\") بتعدل message؟",
+            "options": [
+              {
+                "text": "لأ، بترجع نسخة جديدة",
+                "reply": "صح. نخزنها في updated.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "message بتفضل Base old."
+              }
+            ]
+          },
+          {
+            "ask": "أنهي متغير فيه النسخة المصححة؟",
+            "options": [
+              {
+                "text": "updated",
+                "reply": "صح. الناتج اتخزن فيه.",
+                "fit": true
+              },
+              {
+                "text": "message",
+                "reply": "message هي الأصل."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-8-4",
@@ -11516,7 +12454,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "split() بترجع نوع إيه؟",
+            "options": [
+              {
+                "text": "قائمة",
+                "reply": "صح. كل كلمة عنصر.",
+                "fit": true
+              },
+              {
+                "text": "نص",
+                "reply": "بترجع قائمة نصوص."
+              }
+            ]
+          },
+          {
+            "ask": "tools[0] بعد split على \"key rope\"؟",
+            "options": [
+              {
+                "text": "key",
+                "reply": "صح. أول كلمة.",
+                "fit": true
+              },
+              {
+                "text": "rope",
+                "reply": "دي tools[1]."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -11622,7 +12590,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "raw = \"oops\" مع int(raw). إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "ValueError ويتنفذ except",
+                "reply": "صح. التحويل فشل واتمسك.",
+                "fit": true
+              },
+              {
+                "text": "هيرجع 0",
+                "reply": "ما بيرجعش 0. بيرمي خطأ."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نستخدم try؟",
+            "options": [
+              {
+                "text": "عشان البرنامج ما يقعش على مدخل غلط",
+                "reply": "صح. نمسك الخطأ ونرد برسالة.",
+                "fit": true
+              },
+              {
+                "text": "عشان نخفي الخطأ",
+                "reply": "لا. نتعامل معاه بوضوح."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-9-2",
@@ -11716,7 +12714,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "12 / 0 بتدي إيه؟",
+            "options": [
+              {
+                "text": "ZeroDivisionError",
+                "reply": "صح. القسمة على صفر ممنوعة.",
+                "fit": true
+              },
+              {
+                "text": "0",
+                "reply": "لا. بتطلع خطأ."
+              }
+            ]
+          },
+          {
+            "ask": "except ZeroDivisionError بتتنفذ إمتى؟",
+            "options": [
+              {
+                "text": "لما القسمة على صفر بس",
+                "reply": "صح. بتمسك نوع خطأ محدد.",
+                "fit": true
+              },
+              {
+                "text": "لأي خطأ",
+                "reply": "نوع محدد بس."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-9-3",
@@ -11810,7 +12838,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "\"3\" + 2 ليه بتفشل؟",
+            "options": [
+              {
+                "text": "نص مع عدد، TypeError",
+                "reply": "صح. Python ما بتخلطش النوعين.",
+                "fit": true
+              },
+              {
+                "text": "بتدي 5",
+                "reply": "لا. بتطلع خطأ."
+              }
+            ]
+          },
+          {
+            "ask": "إزاي نصلحها؟",
+            "options": [
+              {
+                "text": "int(\"3\") + 2",
+                "reply": "صح. نحول النص لعدد.",
+                "fit": true
+              },
+              {
+                "text": "\"3\" + \"2\"",
+                "reply": "ده بيلصق نصين."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-9-4",
@@ -11904,7 +12962,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "لو int(raw) فشلت، القسمة بعدها بتتنفذ؟",
+            "options": [
+              {
+                "text": "لأ، بنقفز لـ except",
+                "reply": "صح. السطور اللي بعد الخطأ بتتخطى.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "الخطأ بيوقف باقي try."
+              }
+            ]
+          },
+          {
+            "ask": "ليه معالجين مختلفين؟",
+            "options": [
+              {
+                "text": "كل خطأ ليه رسالة مناسبة",
+                "reply": "صح. الأخطاء مختلفة في المعنى.",
+                "fit": true
+              },
+              {
+                "text": "عشان نطول الكود",
+                "reply": "لأ، الهدف إن المستخدم يفهم إيه اللي حصل."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -12010,7 +13098,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "contacts[\"Cody\"] بتجيب إيه؟",
+            "options": [
+              {
+                "text": "12، القيمة المرتبطة بالمفتاح",
+                "reply": "صح. القاموس بالأسماء مش بالترتيب.",
+                "fit": true
+              },
+              {
+                "text": "Cody",
+                "reply": "دي المفتاح. بنجيب القيمة."
+              }
+            ]
+          },
+          {
+            "ask": "contacts[\"Zed\"] لو مش موجود؟",
+            "options": [
+              {
+                "text": "KeyError",
+                "reply": "صح. المفتاح مش موجود.",
+                "fit": true
+              },
+              {
+                "text": "0",
+                "reply": "لأ، بتطلع KeyError لما المفتاح مش موجود."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-10-2",
@@ -12104,7 +13222,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "contacts.get(\"Guest\", \"Missing\") بتضيف Guest؟",
+            "options": [
+              {
+                "text": "لأ، بتقرا بس",
+                "reply": "صح. get ما بتغيرش القاموس.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "get بتقرا بس ومش بتغير القاموس."
+              }
+            ]
+          },
+          {
+            "ask": "ليه get أأمن من []؟",
+            "options": [
+              {
+                "text": "بترجع بديل بدل خطأ",
+                "reply": "صح. نحدد القيمة الافتراضية.",
+                "fit": true
+              },
+              {
+                "text": "أسرع",
+                "reply": "الأمان هو الفرق."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-10-3",
@@ -12198,7 +13346,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "contacts[\"Guest\"] = 9 مفتاح جديد. العدد؟",
+            "options": [
+              {
+                "text": "3",
+                "reply": "صح. اتضاف مفتاح جديد.",
+                "fit": true
+              },
+              {
+                "text": "2",
+                "reply": "2 قبل الإضافة."
+              }
+            ]
+          },
+          {
+            "ask": "contacts[\"Cody\"] = 99؟",
+            "options": [
+              {
+                "text": "بتحدّث القيمة والعدد يفضل 3",
+                "reply": "صح. المفتاح موجود فبتحدث.",
+                "fit": true
+              },
+              {
+                "text": "بتضيف مفتاح تاني",
+                "reply": "لا. المفاتيح فريدة."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-10-4",
@@ -12292,7 +13470,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "for name in contacts. name بتاخد إيه؟",
+            "options": [
+              {
+                "text": "المفاتيح",
+                "reply": "صح. بتمر على المفاتيح.",
+                "fit": true
+              },
+              {
+                "text": "القيم",
+                "reply": "القيم بـ contacts[name]."
+              }
+            ]
+          },
+          {
+            "ask": "نوصل لقيمة الاسم إزاي؟",
+            "options": [
+              {
+                "text": "contacts[name]",
+                "reply": "صح. بنستخدم المفتاح.",
+                "fit": true
+              },
+              {
+                "text": "name[contacts]",
+                "reply": "ده عكس الصح. المفتاح هو اللي بين الأقواس المربعة."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -12398,7 +13606,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "بعد import math نستخدم إيه؟",
+            "options": [
+              {
+                "text": "math.sqrt",
+                "reply": "صح. بنكتب اسم الوحدة قبل الأداة.",
+                "fit": true
+              },
+              {
+                "text": "sqrt مباشرة",
+                "reply": "هي جوه math."
+              }
+            ]
+          },
+          {
+            "ask": "math.sqrt(16) بتدي كام؟",
+            "options": [
+              {
+                "text": "4.0",
+                "reply": "صح. الجذر عدد بكسر.",
+                "fit": true
+              },
+              {
+                "text": "256",
+                "reply": "دي التربيع مش الجذر. الجذر بـ sqrt."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-11-2",
@@ -12492,7 +13730,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "math.pi رقم نكتبه بإيدينا؟",
+            "options": [
+              {
+                "text": "لأ، قيمة جاهزة من math",
+                "reply": "صح. أدق وأوضح.",
+                "fit": true
+              },
+              {
+                "text": "أيوه 3",
+                "reply": "مش لازم نكتب تقريب."
+              }
+            ]
+          },
+          {
+            "ask": "round(area, 2) بتعمل إيه؟",
+            "options": [
+              {
+                "text": "بتقرب لرقمين بعد الفاصلة",
+                "reply": "صح. بتقرب الرقم عشان العرض يبقى مقروء.",
+                "fit": true
+              },
+              {
+                "text": "بتحذف الكسر",
+                "reply": "بتقرب مش بتحذف."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-11-3",
@@ -12586,7 +13854,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "random.randint(1, 6) هتدي نفس الرقم كل تشغيل؟",
+            "options": [
+              {
+                "text": "لأ، بتتغير",
+                "reply": "صح. عشوائي في الحدود.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "كل مرة قيمة جديدة."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نفحص الحدود؟",
+            "options": [
+              {
+                "text": "نتأكد إن القيمة في المدى",
+                "reply": "صح. الاختبار بيتجنب الاعتماد على رقم واحد.",
+                "fit": true
+              },
+              {
+                "text": "عشان random بتغلط",
+                "reply": "مش بتغلط. نختبر المدى."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-11-4",
@@ -12680,7 +13978,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "بعد from math import sqrt ننادي إزاي؟",
+            "options": [
+              {
+                "text": "sqrt(16)",
+                "reply": "صح. الاسم اتجلب مباشرة.",
+                "fit": true
+              },
+              {
+                "text": "math.sqrt(16)",
+                "reply": "math مش معرّفة بالشكل ده."
+              }
+            ]
+          },
+          {
+            "ask": "مين أوضح للقارئ؟",
+            "options": [
+              {
+                "text": "import math لما نستخدم أكتر من أداة",
+                "reply": "صح. الاسم بيوضح المصدر.",
+                "fit": true
+              },
+              {
+                "text": "مفيش فرق",
+                "reply": "في وضوح. الأسلوبين شغالين."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -12786,7 +14114,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "ليه print(level) من غير اقتباس؟",
+            "options": [
+              {
+                "text": "عشان نعرض قيمة المتغير",
+                "reply": "صح. الاقتباس كان هيعرض كلمة level.",
+                "fit": true
+              },
+              {
+                "text": "عشان level نص",
+                "reply": "level متغير."
+              }
+            ]
+          },
+          {
+            "ask": "print(\"level\")؟",
+            "options": [
+              {
+                "text": "بتعرض كلمة level",
+                "reply": "صح. نص مش متغير.",
+                "fit": true
+              },
+              {
+                "text": "بتعرض القيمة",
+                "reply": "القيمة من غير اقتباس."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-12-2",
@@ -12880,7 +14238,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "player[\"score\"] + 2 بتحسب إيه؟",
+            "options": [
+              {
+                "text": "القيمة الحالية زائد 2",
+                "reply": "صح. وبعدين بنخزنها.",
+                "fit": true
+              },
+              {
+                "text": "2 بس",
+                "reply": "بتجمع على القيمة الحالية."
+              }
+            ]
+          },
+          {
+            "ask": "ليه قاموس وقائمة معًا؟",
+            "options": [
+              {
+                "text": "القاموس للحقول والقائمة لمجموعة",
+                "reply": "صح. لكل بنية دور.",
+                "fit": true
+              },
+              {
+                "text": "عشان نطول",
+                "reply": "لكل بنية مناسبة."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-12-3",
@@ -12974,7 +14362,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "ليه أول رسالة Train؟",
+            "options": [
+              {
+                "text": "level = 1 أقل من 2",
+                "reply": "صح. أول لفة شرطها false.",
+                "fit": true
+              },
+              {
+                "text": "عشان else دايمًا الأول",
+                "reply": "الشرط هو اللي يقرر."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نكتب report مرة ونكررها في حلقة؟",
+            "options": [
+              {
+                "text": "نختبر كل قيمة بنفس القاعدة",
+                "reply": "صح. إعادة استخدام.",
+                "fit": true
+              },
+              {
+                "text": "عشان range",
+                "reply": "الدالة للتنظيم."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "py-12-4",
@@ -13068,7 +14486,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "ليه نفحص score >= 0 قبل sqrt؟",
+            "options": [
+              {
+                "text": "الجذر السالب خطأ",
+                "reply": "صح. نحمي المدخل قبل الحساب.",
+                "fit": true
+              },
+              {
+                "text": "عشان sqrt بطيئة",
+                "reply": "السبب الأمان."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نعرض رسالة بدل ما نخفي الخطأ؟",
+            "options": [
+              {
+                "text": "عشان نعرف السبب ونصلحه",
+                "reply": "صح. إخفاء الخطأ بيضيع الأثر.",
+                "fit": true
+              },
+              {
+                "text": "عشان الشكل",
+                "reply": "الوضوح للمستخدم."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
