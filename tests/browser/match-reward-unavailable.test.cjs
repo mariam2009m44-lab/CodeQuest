@@ -30,6 +30,12 @@ test('functions/not-found: solved state is honest and there is no reward retry l
   const btn = p.locator('button', { hasText: 'اكتمل التدريب' }); assert.equal(await btn.count() > 0, true); assert.equal(await btn.first().isDisabled(), true);
   assert.doesNotMatch(await p.evaluate(() => document.body.innerText), /إعادة محاولة تسجيل المكافأة/);
   await p.screenshot({ path: path.join(artifactDir, 'match-reward-unavailable-390.png'), fullPage: true });
+  await p.locator('#matchLearning').scrollIntoViewIfNeeded(); await p.evaluate(() => document.getElementById('matchLearning').scrollIntoView({ block: 'start' }));
+  await p.screenshot({ path: path.join(artifactDir, 'match-vp-explanation-390.png') });
+  await p.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight)); await p.waitForTimeout(200);
+  await p.screenshot({ path: path.join(artifactDir, 'match-vp-bottom-390.png') });
+  const nav = await p.evaluate(() => { const n = [...document.querySelectorAll('nav,[class*=bottom-nav],[class*=mobile-nav]')].find(e => getComputedStyle(e).position === 'fixed'); const r = n && n.getBoundingClientRect(); const last = document.getElementById('rewardPanel') || document.querySelector('.reward-panel'); const l = last && last.getBoundingClientRect(); return { navTop: r && r.top, panelBottom: l && l.bottom }; });
+  assert.ok(nav.navTop === null || nav.panelBottom === null || nav.panelBottom <= nav.navTop, 'result panel is not under the fixed nav at the bottom: ' + JSON.stringify(nav));
 }));
 test('a transient error keeps the retry button (reward may still be available)', () => run('functions/internal', async p => {
   await solve(p);
