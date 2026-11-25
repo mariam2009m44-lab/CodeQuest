@@ -219,3 +219,21 @@ export function certificateEligibility(state, index, language, practice) {
   } else blockers.push({ code: "lesson_practice_not_server_verified" });
   return { eligible: blockers.length === 0, blockers };
 }
+
+// ---- Certificate records (private recordId, no QR, no public directory) ----
+// A record is created only by the server, only when certificateEligibility says every required part is server-verified.
+export const CERT_TRACK_NAMES = { python: "Python", javascript: "JavaScript", cpp: "C++", java: "Java" };
+export function issueCertificate(state, index, practice, language, nowMs, randomId) {
+  state.certs = state.certs || {};
+  if (state.certs[language]) return { ok: true, existing: true, cert: state.certs[language] };
+  const e = certificateEligibility(state, index, language, practice);
+  if (!e.eligible) return { ok: false, reason: "not_eligible", blockers: e.blockers };
+  if (typeof randomId !== "string" || !/^[a-f0-9]{32}$/.test(randomId)) return { ok: false, reason: "bad_random" };
+  const lessons = Object.keys(index.lessons).filter(id => index.lessons[id].language === language).length;
+  const units = Object.keys(index.quizzes).filter(k => k.startsWith(language + "-")).length;
+  state.certs[language] = { recordId: randomId, issuedAt: new Date(nowMs).toISOString().replace(/\.\d+Z$/, "Z"), lessonsTotal: lessons, unitExamsTotal: units };
+  return { ok: true, existing: false, cert: state.certs[language] };
+}
+export function listCertificates(state) {
+  return Object.entries(state.certs || {}).map(([track, c]) => ({ track, trackName: CERT_TRACK_NAMES[track] || track, issuedAt: c.issuedAt, lessonsCompleted: c.lessonsTotal, lessonsTotal: c.lessonsTotal, unitExamsPassed: c.unitExamsTotal, unitExamsTotal: c.unitExamsTotal, codeTasksVerified: true, recordId: c.recordId }));
+}

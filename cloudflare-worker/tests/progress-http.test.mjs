@@ -10,7 +10,7 @@ const ORIGIN = "https://codequest-mu-six.vercel.app";
 function boot({ fetchImpl } = {}) {
   let source = fs.readFileSync(new URL("../worker.js", import.meta.url), "utf8");
   source = source.replace(/^import .*;$/gm, "").replace("export default {", "globalThis.worker = {").replace(/export class (\w+)/g, "globalThis.$1 = class $1");
-  const sb = { globalThis: null, URL, Response, console: { log() {}, warn() {}, error() {} }, AbortSignal, setTimeout, Date, JSON, Number, Promise, TextEncoder, TextDecoder, Request, Headers, ...core, checkIntroConcept, CURRICULUM_INDEX: index, LESSON_ANSWERS: key, PRACTICE_INDEX: practice, fetch: fetchImpl,
+  const sb = { globalThis: null, URL, Response, console: { log() {}, warn() {}, error() {} }, AbortSignal, setTimeout, Date, JSON, Number, Promise, TextEncoder, TextDecoder, Request, Headers, crypto, ...core, checkIntroConcept, CURRICULUM_INDEX: index, LESSON_ANSWERS: key, PRACTICE_INDEX: practice, fetch: fetchImpl,
     createRemoteJWKSet() {},
     // Mock Firebase verification: token names map to claims. Anything else (expired, wrong audience, bad signature) throws like jose.
     async jwtVerify(token, _k, opts) {
@@ -118,4 +118,31 @@ test("practice-task over HTTP: wrong approach spends no executor run; correct ap
   assert.equal(ok.data.passed, true); assert.ok(ex.log.length >= 2);
   assert.equal((await call("/api/progress/practice-task", { token: "tokA", body: { ...body, bank: "old" } })).status, 409);
   assert.equal((await call("/api/progress/practice-task", { token: "tokA", body: { ...body, phase: "worked" } })).status, 400);
+});
+test("certificates: issuance switch off by default, GET lists only server records, issue needs full eligibility, idempotent, opaque id", async () => {
+  const { call, stores, env } = boot();
+  assert.equal((await call("/api/certificates", { method: "GET" })).status, 401);
+  const empty = await call("/api/certificates", { method: "GET", token: "tokA" });
+  assert.equal(empty.status, 200); assert.deepEqual(empty.data, { certificates: [] });
+  const off = await call("/api/certificates/issue", { token: "tokA", body: { language: "java" } });
+  assert.equal(off.status, 503);
+  env.CERT_ISSUANCE = "on";
+  const no = await call("/api/certificates/issue", { token: "tokA", body: { language: "java" } });
+  assert.equal(no.status, 409); assert.equal(no.data.message, "not_eligible");
+  assert.deepEqual((await call("/api/certificates", { method: "GET", token: "tokA" })).data, { certificates: [] });
+  // Seed a fully verified java account directly in the DO store (what the verified endpoints would have written).
+  const m = stores.get("uidA").m, st = m.get("state") || { lessons: {}, exams: {}, resume: {} };
+  st.lessonTests = {}; st.practice = {}; st.codeTasks = {};
+  for (const [lid, l] of Object.entries(index.lessons)) if (l.language === "java") { st.lessonTests[lid] = { passed: true }; for (const ph of ["practice", "transfer"]) st.practice[`${lid}:${ph}`] = { passed: true }; }
+  for (const [k, q] of Object.entries(index.quizzes)) if (k.startsWith("java-")) { st.exams[k] = { passed: true }; q.code.forEach((_, i) => { st.codeTasks[`${k}#${i}`] = { passed: true }; }); }
+  m.set("state", st);
+  const a = await call("/api/certificates/issue", { token: "tokA", body: { language: "java", name: "Forged Name", recordId: "x".repeat(32) } });
+  assert.equal(a.status, 200); assert.equal(a.data.created, true);
+  const c = a.data.certificates[0];
+  assert.match(c.recordId, /^[a-f0-9]{32}$/); assert.notEqual(c.recordId, "x".repeat(32));
+  assert.equal(c.track, "java"); assert.equal(c.codeTasksVerified, true); assert.equal(JSON.stringify(a.data).includes("Forged"), false); assert.equal(JSON.stringify(a.data).includes("uidA"), false);
+  const again = await call("/api/certificates/issue", { token: "tokA", body: { language: "java" } });
+  assert.equal(again.data.created, false); assert.equal(again.data.certificates[0].recordId, c.recordId);
+  assert.deepEqual((await call("/api/certificates", { method: "GET", token: "tokB" })).data, { certificates: [] });
+  assert.equal((await call("/api/certificates/issue", { token: "tokA", body: { language: "python" } })).status, 409);
 });

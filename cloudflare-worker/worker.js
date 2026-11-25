@@ -2,7 +2,7 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
-import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
 import PRACTICE_INDEX from "./practice-index.json";
@@ -666,7 +666,7 @@ async function handleProgress(request, env, origin, action) {
     return jsonResponse({ success: false, message: "حفظ التقدم غير مفعّل على الخادم." }, 503, origin);
   }
   let body = {};
-  if (action !== "get") {
+  if (action !== "get" && action !== "certificates") {
     try { body = await readBoundedJson(request, action === "resume" || action === "codetask" || action === "practicetask" ? 32768 : 4096); } catch (error) {
       const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
       return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, tooLarge ? 413 : 400, origin);
@@ -677,6 +677,10 @@ async function handleProgress(request, env, origin, action) {
   }
   // The uid only selects the Durable Object; it is never returned or stored in a public record.
   const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(user.uid));
+  if (action === "issue" && env.CERT_ISSUANCE !== "on") {
+    // Issuance is a separate switch, off until the owner enables it after the backend is verified live.
+    return jsonResponse({ success: false, message: "certificate_issuance_off" }, 503, origin);
+  }
   if (action === "practicetask") {
     const input = { language: String(body.language || ""), lessonId: String(body.lessonId || ""), phase: String(body.phase || ""), bank: body.bank };
     const plan = practicePlan(PRACTICE_INDEX, input);
@@ -1233,6 +1237,12 @@ export default {
     if (url.pathname === "/api/progress/lesson-test" && request.method === "POST") {
       return handleProgress(request, env, origin, "lessontest");
     }
+    if (url.pathname === "/api/certificates" && request.method === "GET") {
+      return handleProgress(request, env, origin, "certificates");
+    }
+    if (url.pathname === "/api/certificates/issue" && request.method === "POST") {
+      return handleProgress(request, env, origin, "issue");
+    }
     if (url.pathname === "/api/progress/code-task" && request.method === "POST") {
       return handleProgress(request, env, origin, "codetask");
     }
@@ -1373,6 +1383,13 @@ export class StudentProgress {
         if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
         await tx.put("state", state);
         return { status: 200, data: { success: true, passed: out.passed, best: out.best } };
+      }
+      if (action === "certificates") return { status: 200, data: { certificates: listCertificates(state) } };
+      if (action === "issue") {
+        const out = issueCertificate(state, CURRICULUM_INDEX, PRACTICE_INDEX, String(body.language || ""), Date.now(), crypto.randomUUID().replace(/-/g, ""));
+        if (!out.ok) return { status: 409, data: { success: false, message: out.reason, blockers: out.blockers || [] } };
+        if (!out.existing) await tx.put("state", state);
+        return { status: 200, data: { success: true, created: !out.existing, certificates: listCertificates(state) } };
       }
       if (action === "eligibility") return { status: 200, data: { success: true, ...certificateEligibility(state, CURRICULUM_INDEX, String(body.language || ""), PRACTICE_INDEX) } };
       if (action !== "lesson" && action !== "exam" && action !== "lessontest") return { status: 404, data: { success: false, message: "unknown action" } };
