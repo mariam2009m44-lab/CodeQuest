@@ -160,6 +160,8 @@
     .line.wrong{border-color:var(--red)!important;background:rgba(251,113,133,.13)!important;transform:translateX(-2px)}
     .line.correct{border-color:var(--green)!important;background:rgba(52,211,153,.16)!important}
     .line:disabled{opacity:1;cursor:default}
+    .line.ruled-out:not(.correct){opacity:.62}
+    .line .code-text{white-space:pre;text-align:left;direction:ltr}
   </style>
   <script>
     const levels = {
@@ -184,7 +186,9 @@
       const lvl = levels[level]; codeContainer.innerHTML = ''; msg.textContent = '';
       lvl.lines.forEach((line, index) => {
         const lineEl = document.createElement('button'); lineEl.type = 'button'; lineEl.className = 'line'; lineEl.setAttribute('aria-label','فحص السطر '+(index+1));
-        lineEl.innerHTML = `<span class="num">${index + 1}</span> ${line}`;
+        const numEl = document.createElement('span'); numEl.className = 'num'; numEl.textContent = String(index + 1);
+        const codeEl = document.createElement('span'); codeEl.className = 'code-text'; codeEl.textContent = line; // textContent keeps < and > literal
+        lineEl.append(numEl, codeEl);
         lineEl.onclick = () => check(index, lineEl); codeContainer.appendChild(lineEl);
       });
     }
@@ -211,9 +215,14 @@
           window.CodeQuestExperience?.reward({ gems: 0, title: 'تم اصطياد الخطأ!', message: 'اكتشفت المشكلة وحليتها بنجاح. برافو!' });
         }, 1000);
       } else {
+        // Pressing a line already ruled out again is not a new attempt: no extra penalty.
+        const repeated = lineEl.dataset.tried === '1';
+        lineEl.dataset.tried = '1';
+        if (repeated) { msg.textContent = 'السطر ده جربته قبل كده وطلع سليم. جرّب سطر تاني.'; msg.style.color = 'var(--red)'; return; }
         attempts++;
         document.getElementById('attemptStatus').textContent = 'المحاولات: ' + attempts;
         lineEl.classList.add('wrong');
+        lineEl.classList.add('ruled-out');
         msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود وحاول مرة أخرى.';
         msg.style.color = 'var(--red)';
         setTimeout(() => lineEl.classList.remove('wrong'), 800);
