@@ -79,3 +79,5 @@ else{
  draw();
  }
 }
+// Reopening this page (Back, reload) also retries anything of this account that is still waiting, and shows the honest status. OFF unless serverAssessment is true.
+fetch('features.json').then(r=>r.json()).catch(()=>({})).then(async f=>{if(f.serverAssessment!==true||!uid)return;const {auth}=await import('/js/firebase-config.js');const ctx={uid:auth.currentUser?.uid||uid,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)};await flushPending(ctx);const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:ctx.uid,storage:localStorage,sendOpts:()=>({getToken:ctx.getToken,fetchFn:ctx.fetchFn})})}).catch(()=>{});
