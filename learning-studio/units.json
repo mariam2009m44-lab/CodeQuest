@@ -1440,7 +1440,41 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "قبل ما نكتب أي سطر: لو عايز البرنامج يعرض كلمة Arrived، أنهي جزء تفتكر إنه اللي بيعمل العرض؟",
+            "options": [
+              {
+                "text": "السطر اللي فيه System.out.println",
+                "reply": "بالظبط. println هي اللي بترسل النص للشاشة، والباقي قالب بيشغّل البرنامج.",
+                "fit": true
+              },
+              {
+                "text": "السطر الأول public class Main",
+                "reply": "ده اسم الفئة اللي بيبدأ منها البرنامج. بيجهّز المكان، لكنه ما بيعرضش حاجة بنفسه."
+              },
+              {
+                "text": "القوس الأخير",
+                "reply": "القوس بيقفل الجزء بس. اللي بيعمل الفعل هو أمر println."
+              }
+            ]
+          },
+          {
+            "ask": "لو مسحت علامتي الاقتباس حوالين Arrived، تفتكر إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "هيشتغل عادي",
+                "reply": "لأ. من غير اقتباس Java بتدور على متغير اسمه Arrived، ومش هتلاقيه، فهتديك خطأ."
+              },
+              {
+                "text": "هيطلع خطأ لأن Java مش هتفهم إنه نص",
+                "reply": "صح. الاقتباس هو اللي بيقول لـ Java إن ده نص مش اسم.",
+                "fit": true
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "java-1-2",
@@ -1540,7 +1574,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "كودي كتب print مرتين ورا بعض. تفتكر الكلمتين هتظهر في سطر واحد ولا سطرين؟",
+            "options": [
+              {
+                "text": "سطر واحد",
+                "reply": "صح. print بتعرض النص وتفضل واقفة في نفس السطر، فالكلمة الجاية تتلزق فيها.",
+                "fit": true
+              },
+              {
+                "text": "سطرين",
+                "reply": "ده سلوك println. print مش بتنزل لسطر جديد من نفسها."
+              }
+            ]
+          },
+          {
+            "ask": "ليه كودي سايب مسافة بعد كلمة Hello جوه الاقتباس؟",
+            "options": [
+              {
+                "text": "عشان الكلمتين ما يتلزقوش",
+                "reply": "تمام. المسافة جزء من النص، وprint هتعرضها زي ما هي.",
+                "fit": true
+              },
+              {
+                "text": "ملهاش لازمة",
+                "reply": "لها لازمة. من غيرها هتشوف HelloCody ملزوقين."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -3038,7 +3102,37 @@
             "نختار النوع حسب البيانات.",
             "صحيح، نستخدم String للاسم النصي."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كودي عنده اسم المحطة وعدد الأدوات والحرارة وهل النظام جاهز. نختار نوع واحد لكل المعلومات ولا نوع لكل واحدة؟",
+            "options": [
+              {
+                "text": "نوع لكل معلومة حسب طبيعتها",
+                "reply": "صح. الاسم نص، العدد صحيح، الحرارة بكسر، والجاهزية true أو false.",
+                "fit": true
+              },
+              {
+                "text": "int لكل حاجة",
+                "reply": "int بتشيل أعداد صحيحة بس. مش هتشيل اسم نصي ولا درجة حرارة بكسر."
+              }
+            ]
+          },
+          {
+            "ask": "القيمة 4.5 تتخزن في int ولا double؟",
+            "options": [
+              {
+                "text": "int",
+                "reply": "لأ. int بدون كسر، وJava هترفض تحط 4.5 فيه من غير تحويل صريح."
+              },
+              {
+                "text": "double",
+                "reply": "صح. double بتشيل الأعداد اللي فيها كسر.",
+                "fit": true
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "java-2-2",
@@ -3152,7 +3246,41 @@
             "هذا محاولة تعريف آخر، لا تحديث للاسم الموجود.",
             "الطباعة تعرض ولا تغيّر القيمة."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كودي كتب int tools = 4; وبعدين عايز يزود 3. أنهي سطر هو الصح؟",
+            "options": [
+              {
+                "text": "tools = tools + 3;",
+                "reply": "تمام. الطرف الأيمن يتحسب الأول، وبعدين القيمة الجديدة تتحفظ في tools.",
+                "fit": true
+              },
+              {
+                "text": "int tools = tools + 3;",
+                "reply": "كده بتعرّف tools مرة تانية، وJava هتعترض إن الاسم موجود فعلًا."
+              }
+            ]
+          },
+          {
+            "ask": "لو tools كانت 4 وكتبنا tools = tools + 3، قيمتها بعد السطر كام؟",
+            "options": [
+              {
+                "text": "7",
+                "reply": "صح. 4 + 3 اتحسبت الأول وبعدين اتخزنت.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "3 هي القيمة اللي أضفناها بس. السطر بيجمعها على القيمة القديمة."
+              },
+              {
+                "text": "4",
+                "reply": "4 هي القيمة قبل السطر. الإسناد غيّرها فعلًا."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -4390,6 +4518,36 @@
             "code": "public class Main {public static void main(String[] args){System.out.println(-7 / 2);System.out.println(2 + 3 * 4);System.out.println((2 + 3) * 4);}}",
             "output": "-3\n14\n20"
           }
+        ],
+        "dialogue": [
+          {
+            "ask": "كودي وزع 7 ألواح على رحلتين بـ 7 / 2. تتوقع تطلع 3.5؟",
+            "options": [
+              {
+                "text": "أيوه 3.5",
+                "reply": "لأ. الاتنين int، فJava بتحذف الجزء الكسري وتطلع 3."
+              },
+              {
+                "text": "لأ، 3",
+                "reply": "صح. قسمة int على int بتدي عدد صحيح بس.",
+                "fit": true
+              }
+            ]
+          },
+          {
+            "ask": "إزاي أخلي الناتج يطلع بالكسر؟",
+            "options": [
+              {
+                "text": "أكتب 7.0 / 2",
+                "reply": "تمام. وجود double في الحساب بيخلي القسمة كسرية وتطلع 3.5.",
+                "fit": true
+              },
+              {
+                "text": "أكتب 7 // 2",
+                "reply": "// دي من Python. في Java هتطلع خطأ."
+              }
+            ]
+          }
         ]
       },
       {
@@ -4488,7 +4646,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "10 أدوات في مجموعات من 3. كام أداة هتفضل برا المجموعات؟",
+            "options": [
+              {
+                "text": "1",
+                "reply": "صح. 10 = 3 × 3 + 1، والباقي 1.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "3 هي حجم المجموعة. الباقي دايمًا أقل من المقسوم عليه."
+              }
+            ]
+          },
+          {
+            "ask": "العلامة % بتدينا الناتج ولا الباقي؟",
+            "options": [
+              {
+                "text": "ناتج القسمة",
+                "reply": "ده شغل علامة /. % بتدي الباقي بس."
+              },
+              {
+                "text": "الباقي بعد القسمة",
+                "reply": "بالظبط. ومنها بنعرف لو رقم زوجي أو فردي.",
+                "fit": true
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -5570,7 +5758,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كودي كتب if (energy = 5). تفتكر ده مقارنة ولا إسناد؟",
+            "options": [
+              {
+                "text": "إسناد، وده هيطلع خطأ في Java",
+                "reply": "صح. = بتحط قيمة، و if لازم تاخد boolean. للمقارنة بنستخدم ==.",
+                "fit": true
+              },
+              {
+                "text": "مقارنة",
+                "reply": "المقارنة بتبقى ==. علامة = لوحدها بتحط قيمة."
+              }
+            ]
+          },
+          {
+            "ask": "لو energy بقت 2، سطر Go هيظهر؟",
+            "options": [
+              {
+                "text": "أيوه",
+                "reply": "الشرط energy >= 5 بيبقى false لما تكون 2، فالسطر يتخطى."
+              },
+              {
+                "text": "لأ",
+                "reply": "صح. الشرط ما اتحققش فالجسم ما بيشتغلش.",
+                "fit": true
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "java-4-2",
@@ -5664,7 +5882,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "لو energy تساوي 5 بالظبط، أنهي فرع هيشتغل مع energy >= 5؟",
+            "options": [
+              {
+                "text": "فرع if",
+                "reply": "صح. >= بتشمل المساواة، فالشرط true.",
+                "fit": true
+              },
+              {
+                "text": "فرع else",
+                "reply": "else بيشتغل لما الشرط يفشل. هنا الشرط نجح."
+              }
+            ]
+          },
+          {
+            "ask": "لو غيرنا >= إلى >، الحالة energy = 5 هتعمل إيه؟",
+            "options": [
+              {
+                "text": "هتروح لـ else",
+                "reply": "صح. 5 > 5 غلط، فالفرع التاني هو اللي يشتغل. حرف واحد غيّر السلوك.",
+                "fit": true
+              },
+              {
+                "text": "ما تتغيرش",
+                "reply": "اتغيرت. اختبر دايمًا القيمة اللي على الحد نفسه."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -6746,7 +6994,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "for (int gate = 1; gate <= 3; gate++) كام مرة هتلف؟",
+            "options": [
+              {
+                "text": "3 مرات",
+                "reply": "صح. gate بياخد 1 و2 و3، وبعدها 4 تفشل الشرط.",
+                "fit": true
+              },
+              {
+                "text": "4 مرات",
+                "reply": "4 هي القيمة اللي بتوقف الحلقة، مش بتتنفذ."
+              }
+            ]
+          },
+          {
+            "ask": "لو غيرنا <= إلى <، كام لفة؟",
+            "options": [
+              {
+                "text": "2",
+                "reply": "صح. gate بياخد 1 و2 بس.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "مع < مش بنوصل لـ 3. جرّب تتبع القيم واحدة واحدة."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "java-5-2",
@@ -6840,7 +7118,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كودي نسي يكتب count-- جوه while. إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "هتلف بلا نهاية",
+                "reply": "صح. count عمره ما هيبقى صفر، فالشرط يفضل true.",
+                "fit": true
+              },
+              {
+                "text": "هتقف بعد 3 مرات",
+                "reply": "ما فيش حاجة بتقلل count، فمفيش سبب يقف."
+              }
+            ]
+          },
+          {
+            "ask": "لو count بدأ بـ 0، while (count > 0) هتشتغل كام مرة؟",
+            "options": [
+              {
+                "text": "ولا مرة",
+                "reply": "صح. while بتفحص الشرط قبل الجسم.",
+                "fit": true
+              },
+              {
+                "text": "مرة واحدة على الأقل",
+                "reply": "ده سلوك do-while. while العادية ممكن ما تدخلش خالص."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -8110,7 +8418,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "مصفوفة {4, 7, 9}. عدد عناصرها 3. آخر فهرس فيها كام؟",
+            "options": [
+              {
+                "text": "2",
+                "reply": "صح. الفهرس بيبدأ من 0: الأماكن 0 و1 و2.",
+                "fit": true
+              },
+              {
+                "text": "3",
+                "reply": "3 هي length. آخر فهرس هو length ناقص 1."
+              }
+            ]
+          },
+          {
+            "ask": "لو طلبنا readings[3] من المصفوفة دي؟",
+            "options": [
+              {
+                "text": "هيطلع خطأ ArrayIndexOutOfBounds",
+                "reply": "صح. الفهرس 3 برا الحدود.",
+                "fit": true
+              },
+              {
+                "text": "هيرجع 0",
+                "reply": "Java ما بترجعش قيمة افتراضية هنا. بترمي خطأ."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "java-6-2",
@@ -8204,7 +8542,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "ليه نكتب index < readings.length ومش index <= readings.length؟",
+            "options": [
+              {
+                "text": "عشان آخر فهرس هو length - 1",
+                "reply": "صح. <= هتحاول تقرا مكان مش موجود.",
+                "fit": true
+              },
+              {
+                "text": "الاتنين زي بعض",
+                "reply": "مش زي بعض. <= بتزود لفة زيادة وتطلع خطأ."
+              }
+            ]
+          },
+          {
+            "ask": "لو المصفوفة اتغيرت وبقت 5 عناصر، هنعدّل الحلقة؟",
+            "options": [
+              {
+                "text": "لأ، length بتتحدث لوحدها",
+                "reply": "تمام. ده سبب إننا نستخدم length بدل رقم ثابت.",
+                "fit": true
+              },
+              {
+                "text": "أيوه، نغير الرقم",
+                "reply": "ده كان هيحصل لو كتبنا الرقم ثابت. length بتوفر علينا."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -9192,7 +9560,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كودي عرّف report() لكن ما استدعاهاش. هتطبع Check؟",
+            "options": [
+              {
+                "text": "لأ، التعريف لوحده ما بينفذش",
+                "reply": "صح. لازم تنادي report() من main.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "التعريف بيجهّز الأداة بس. الاستدعاء هو اللي بيشغلها."
+              }
+            ]
+          },
+          {
+            "ask": "نكتب report() مرتين ولا نكرر الأمر في كل مكان؟",
+            "options": [
+              {
+                "text": "نستدعي report() مرتين",
+                "reply": "تمام. نكتب الكود مرة وننادي عليه كل ما نحتاجه.",
+                "fit": true
+              },
+              {
+                "text": "ننسخ println كل مرة",
+                "reply": "ينفع، لكن لو غيّرنا الرسالة هنعدل في كل مكان."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "java-7-2",
@@ -9286,7 +9684,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "total(int x, int y) بتجمع وتعيد النتيجة. نوع القيمة المعادة إيه؟",
+            "options": [
+              {
+                "text": "int",
+                "reply": "صح. النوع قبل اسم الطريقة هو نوع اللي بترجعه.",
+                "fit": true
+              },
+              {
+                "text": "void",
+                "reply": "void معناها ترجع لا شيء. هنا بترجع x + y."
+              }
+            ]
+          },
+          {
+            "ask": "int answer = total(5, 4); ليه كده أحسن من الطباعة جوه الطريقة؟",
+            "options": [
+              {
+                "text": "عشان أستخدم النتيجة في أي مكان",
+                "reply": "بالظبط. النتيجة قيمة نقدر نطبعها أو نجمعها أو نخزنها.",
+                "fit": true
+              },
+              {
+                "text": "عشان تبقى أسرع",
+                "reply": "السرعة مش السبب. السبب إعادة الاستخدام."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -11532,7 +11960,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "first و second اتعملوا بـ new Robot(). تغيير طاقة first هيغير second؟",
+            "options": [
+              {
+                "text": "لأ، كل كائن مستقل",
+                "reply": "صح. كل new بتصنع كائن جديد بحقوله.",
+                "fit": true
+              },
+              {
+                "text": "أيوه، لأن الفئة واحدة",
+                "reply": "الفئة هي المخطط بس. كل كائن ليه نسخته."
+              }
+            ]
+          },
+          {
+            "ask": "Robot هي كائن ولا مخطط؟",
+            "options": [
+              {
+                "text": "مخطط",
+                "reply": "تمام. new Robot() هي اللي بتبني كائن منه.",
+                "fit": true
+              },
+              {
+                "text": "كائن",
+                "reply": "الكائن بيتعمل بـ new. الفئة هي الوصف."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "java-8-2",
@@ -11626,7 +12084,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "ليه المنشئ Robot(int start) مفيهوش كلمة void؟",
+            "options": [
+              {
+                "text": "لأنه مش طريقة عادية ومالوش نوع إرجاع",
+                "reply": "صح. اسمه نفس اسم الفئة وبيجهز الكائن وقت new.",
+                "fit": true
+              },
+              {
+                "text": "نسيان من كودي",
+                "reply": "لأ، ده مقصود. لو كتبنا void يبقى طريقة عادية مش منشئ."
+              }
+            ]
+          },
+          {
+            "ask": "new Robot(4) و new Robot(9) هيبقوا ليهم نفس الطاقة؟",
+            "options": [
+              {
+                "text": "لأ، 4 و 9",
+                "reply": "صح. كل كائن بيخزن القيمة اللي اتبعتت له.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "القيمة اللي بنمررها هي اللي بتتخزن، فهي مختلفة."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
