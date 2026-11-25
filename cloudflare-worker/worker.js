@@ -2,9 +2,11 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
-import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
+import PRACTICE_INDEX from "./practice-index.json";
+import { checkIntroConcept } from "./studio/concept.mjs";
 
 // Per-account cap on verification executions per day. A policy placeholder, not a promise of provider capacity.
 const CODE_VERIFY_DAILY_RUNS = 20;
@@ -659,7 +661,7 @@ async function handleProgress(request, env, origin, action) {
   }
   let body = {};
   if (action !== "get") {
-    try { body = await readBoundedJson(request, action === "resume" || action === "codetask" ? 32768 : 4096); } catch (error) {
+    try { body = await readBoundedJson(request, action === "resume" || action === "codetask" || action === "practicetask" ? 32768 : 4096); } catch (error) {
       const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
       return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, tooLarge ? 413 : 400, origin);
     }
@@ -669,6 +671,26 @@ async function handleProgress(request, env, origin, action) {
   }
   // The uid only selects the Durable Object; it is never returned or stored in a public record.
   const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(user.uid));
+  if (action === "practicetask") {
+    const input = { language: String(body.language || ""), lessonId: String(body.lessonId || ""), phase: String(body.phase || ""), bank: body.bank };
+    const plan = practicePlan(PRACTICE_INDEX, input);
+    if (!plan.ok) return plan.refresh ? jsonResponse({ success: false, refreshNeeded: true, message: "refresh_needed" }, 409, origin) : jsonResponse({ success: false, message: plan.reason }, 400, origin);
+    if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
+    // Concept check first: it needs no execution, so a wrong approach never spends executor capacity.
+    let conceptApproved = false;
+    try { conceptApproved = checkIntroConcept({ lesson: { id: input.lessonId, steps: [{ type: input.phase, referenceSolution: plan.ref, conceptRubric: "" }] }, phase: input.phase, code: body.code, language: input.language }).approved === true; } catch { conceptApproved = false; }
+    const results = [];
+    if (conceptApproved) {
+      const begin = await stub.fetch("https://progress.internal/codebegin", { method: "POST", body: JSON.stringify({ n: plan.cases.length }) });
+      if (!begin.ok) return jsonResponse(await begin.json(), begin.status, origin);
+      for (const c of plan.cases) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
+      if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
+        return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
+      }
+    }
+    const rec = await stub.fetch("https://progress.internal/practicetask", { method: "POST", body: JSON.stringify({ ...input, conceptApproved, results, version: typeof body.version === "string" ? body.version : "" }) });
+    return jsonResponse(await rec.json(), rec.status, origin);
+  }
   if (action === "codetask") {
     // The client supplies only the code. The expected output, the execution and the verdict all stay on the server.
     const input = { language: String(body.language || ""), unit: Number(body.unit), item: body.item, bank: body.bank };
@@ -1208,6 +1230,9 @@ export default {
     if (url.pathname === "/api/progress/code-task" && request.method === "POST") {
       return handleProgress(request, env, origin, "codetask");
     }
+    if (url.pathname === "/api/progress/practice-task" && request.method === "POST") {
+      return handleProgress(request, env, origin, "practicetask");
+    }
     if (url.pathname === "/api/progress/eligibility" && request.method === "POST") {
       return handleProgress(request, env, origin, "eligibility");
     }
@@ -1308,7 +1333,7 @@ export class StudentProgress {
 
     const result = await this.state.storage.transaction(async tx => {
       const state = (await tx.get("state")) || emptyState();
-      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, codeTasks: state.codeTasks || {}, lessonTests: state.lessonTests || {}, resume: resumeView(state, Date.now()) } }; }
+      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, codeTasks: state.codeTasks || {}, practice: state.practice || {}, lessonTests: state.lessonTests || {}, resume: resumeView(state, Date.now()) } }; }
 
       if (action === "resume") {
         const today = new Date().toISOString().slice(0, 10);
@@ -1331,13 +1356,39 @@ export class StudentProgress {
         cq.count += n; await tx.put("cexec", cq);
         return { status: 200, data: { success: true } };
       }
-      if (action === "codetask") {
+      if (action === "practicetask") {
+    const input = { language: String(body.language || ""), lessonId: String(body.lessonId || ""), phase: String(body.phase || ""), bank: body.bank };
+    const plan = practicePlan(PRACTICE_INDEX, input);
+    if (!plan.ok) return plan.refresh ? jsonResponse({ success: false, refreshNeeded: true, message: "refresh_needed" }, 409, origin) : jsonResponse({ success: false, message: plan.reason }, 400, origin);
+    if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
+    // Concept check first: it needs no execution, so a wrong approach never spends executor capacity.
+    let conceptApproved = false;
+    try { conceptApproved = checkIntroConcept({ lesson: { id: input.lessonId, steps: [{ type: input.phase, referenceSolution: plan.ref, conceptRubric: "" }] }, phase: input.phase, code: body.code, language: input.language }).approved === true; } catch { conceptApproved = false; }
+    const results = [];
+    if (conceptApproved) {
+      const begin = await stub.fetch("https://progress.internal/codebegin", { method: "POST", body: JSON.stringify({ n: plan.cases.length }) });
+      if (!begin.ok) return jsonResponse(await begin.json(), begin.status, origin);
+      for (const c of plan.cases) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
+      if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
+        return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
+      }
+    }
+    const rec = await stub.fetch("https://progress.internal/practicetask", { method: "POST", body: JSON.stringify({ ...input, conceptApproved, results, version: typeof body.version === "string" ? body.version : "" }) });
+    return jsonResponse(await rec.json(), rec.status, origin);
+  }
+  if (action === "codetask") {
         const out = recordCodeTask(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), item: body.item, bank: body.bank, results: body.results }, typeof body.version === "string" ? body.version : "v1");
         if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
         await tx.put("state", state);
         return { status: 200, data: { success: true, passed: out.passed, best: out.best } };
       }
-      if (action === "eligibility") return { status: 200, data: { success: true, ...certificateEligibility(state, CURRICULUM_INDEX, String(body.language || "")) } };
+      if (action === "practicetask") {
+        const out = recordPractice(state, PRACTICE_INDEX, { language: body.language, lessonId: body.lessonId, phase: body.phase, bank: body.bank, conceptApproved: body.conceptApproved === true, results: body.results }, typeof body.version === "string" ? body.version : "v1");
+        if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
+        await tx.put("state", state);
+        return { status: 200, data: { success: true, passed: out.passed, best: out.best } };
+      }
+      if (action === "eligibility") return { status: 200, data: { success: true, ...certificateEligibility(state, CURRICULUM_INDEX, String(body.language || ""), PRACTICE_INDEX) } };
       if (action !== "lesson" && action !== "exam" && action !== "lessontest") return { status: 404, data: { success: false, message: "unknown action" } };
       const today = new Date().toISOString().slice(0, 10);
       const quota = (await tx.get("writes")) || { day: today, count: 0 };

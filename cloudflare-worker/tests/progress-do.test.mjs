@@ -2,12 +2,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
-import { emptyState, recordLesson, recordExam, recordLessonTest, certificateEligibility, codeTaskTests, recordCodeTask, saveResume, purgeExpired, resumeView } from "../progress-core.js";
+import { checkIntroConcept } from "../studio/concept.mjs";
+import { emptyState, recordLesson, recordExam, recordLessonTest, certificateEligibility, codeTaskTests, recordCodeTask, practicePlan, recordPractice, saveResume, purgeExpired, resumeView } from "../progress-core.js";
 const index = JSON.parse(fs.readFileSync(new URL("../curriculum-index.json", import.meta.url), "utf8"));
 function load() {
   let source = fs.readFileSync(new URL("../worker.js", import.meta.url), "utf8");
   source = source.replace(/^import .*;$/gm, "").replace("export default {", "globalThis.worker = {").replace(/export class (\w+)/g, "globalThis.$1 = class $1");
-  const sandbox = { globalThis: null, AbortSignal, setTimeout, codeTaskTests, recordCodeTask, recordLessonTest, certificateEligibility, LESSON_ANSWERS: JSON.parse(fs.readFileSync(new URL("../lesson-answers.json", import.meta.url), "utf8")), URL, Response, console, emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView, CURRICULUM_INDEX: index, createRemoteJWKSet() {}, jwtVerify() {}, Date, JSON, Number, Promise, TextEncoder, Request, Headers, fetch: undefined };
+  const sandbox = { globalThis: null, PRACTICE_INDEX: JSON.parse(fs.readFileSync(new URL("../practice-index.json", import.meta.url), "utf8")), checkIntroConcept, practicePlan, recordPractice, AbortSignal, setTimeout, codeTaskTests, recordCodeTask, recordLessonTest, certificateEligibility, LESSON_ANSWERS: JSON.parse(fs.readFileSync(new URL("../lesson-answers.json", import.meta.url), "utf8")), URL, Response, console, emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView, CURRICULUM_INDEX: index, createRemoteJWKSet() {}, jwtVerify() {}, Date, JSON, Number, Promise, TextEncoder, Request, Headers, fetch: undefined };
   sandbox.globalThis = sandbox;
   vm.runInNewContext(source, sandbox);
   return sandbox;
@@ -26,7 +27,7 @@ test("Durable Object stores best exam, never trusts a client score, and returns 
   assert.equal(a.data.codeVerified, false);
   assert.ok(a.data.percent < 100);
   const g = await call(o, "get", {});
-  assert.deepEqual(Object.keys(g.data).sort(), ["codeTasks", "exams", "lessonTests", "lessons", "resume", "success"]);
+  assert.deepEqual(Object.keys(g.data).sort(), ["codeTasks", "exams", "lessonTests", "lessons", "practice", "resume", "success"]);
   assert.equal(JSON.stringify(g.data).includes("uid"), false);
 });
 test("Durable Object rejects bad input and enforces the daily write cap", async () => {

@@ -2,9 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { lessonBankHash, quizBankHash } from "../bank-hash.js";
+import { practicePlan, recordPractice } from "../progress-core.js";
+import { checkIntroConcept } from "../studio/concept.mjs";
 import { emptyState, gradeLessonTest, recordLessonTest, certificateEligibility, scoreExam } from "../progress-core.js";
 const rd = f => JSON.parse(fs.readFileSync(new URL(f, import.meta.url), "utf8"));
-const index = rd("../curriculum-index.json"), key = rd("../lesson-answers.json"), bank = rd("../../learning-studio/lesson-tests.json");
+const practice = rd("../practice-index.json"), index = rd("../curriculum-index.json"), key = rd("../lesson-answers.json"), bank = rd("../../learning-studio/lesson-tests.json");
 const id = "py-1-1";
 test("answer key matches the public bank for all 119 lessons (476 questions)", () => {
   assert.equal(Object.keys(key).length, 119);
@@ -49,12 +51,15 @@ test("eligibility needs every lesson test, unit exam, python final, and server-v
   s.finals = { python: { passed: true } };
   e = certificateEligibility(s, index, "python");
   assert.equal(e.eligible, false);
-  assert.deepEqual(e.blockers.map(b => b.code), ["code_tasks_not_server_verified"]);
+  assert.deepEqual(e.blockers.map(b => b.code), ["code_tasks_not_server_verified", "lesson_practice_not_server_verified"]);
   assert.equal(e.blockers[0].remaining, 12);
   for (const k of Object.keys(index.quizzes).filter(k => k.startsWith("python-"))) index.quizzes[k].code.forEach((_, i) => { s.codeTasks = { ...(s.codeTasks || {}), [`${k}#${i}`]: { passed: true } }; });
-  e = certificateEligibility(s, index, "python");
+  e = certificateEligibility(s, index, "python", practice);
+  assert.deepEqual(e.blockers.map(b => b.code), ["lesson_practice_not_server_verified"]);
+  assert.equal(e.blockers[0].remaining, 96);
+  for (const [id, v] of Object.entries(practice)) if (v.language === "python") for (const ph of ["practice", "transfer"]) s.practice = { ...(s.practice || {}), [`${id}:${ph}`]: { passed: true } };
+  e = certificateEligibility(s, index, "python", practice);
   assert.equal(e.eligible, true);
-  assert.equal(e.coverage.lessonPracticeServerVerified, false);
   assert.equal(certificateEligibility(s, index, "ruby").eligible, false);
 });
 test("picks are canonical option indexes, so any display shuffle grades the same", () => {
@@ -88,4 +93,34 @@ test("unit exam requires the matching quiz bank hash", () => {
   const q = index.quizzes["python-1"];
   assert.equal(scoreExam(index, { language: "python", unit: 1, choices: q.mcq.map(m => m.answer) }).reason, "refresh_needed");
   assert.equal(scoreExam(index, { language: "python", unit: 1, choices: q.mcq.map(m => m.answer), bank: q.h }).ok, true);
+});
+
+test("practice: server-owned cases, bank hash, concept gate and execution both required; a pass is never overwritten", () => {
+  const id = "py-1-1", base = { language: "python", lessonId: id, phase: "practice", bank: practice[id].practice.h };
+  const c = practice[id].practice.cases;
+  const good = c.map(x => ({ ok: true, stdout: x.stdout + "\n" }));
+  const s = emptyState();
+  assert.equal(recordPractice(s, practice, { ...base, conceptApproved: true, results: good }, "v1").passed, true);
+  const s2 = emptyState();
+  assert.equal(recordPractice(s2, practice, { ...base, conceptApproved: false, results: good }, "v1").passed, false);
+  assert.equal(recordPractice(s2, practice, { ...base, conceptApproved: true, results: [{ ok: true, stdout: "wrong" }] }, "v1").passed, false);
+  assert.equal(recordPractice(s2, practice, { ...base, conceptApproved: true, results: [{ ok: false, stdout: c[0].stdout }] }, "v1").passed, false);
+  assert.equal(recordPractice(s, practice, { ...base, conceptApproved: false, results: [] }, "v1").best.passed, true);
+  assert.equal(recordPractice(s, practice, { ...base, bank: "old", conceptApproved: true, results: good }, "v1").refresh, true);
+  assert.equal(practicePlan(practice, { ...base, language: "java" }).ok, false);
+  assert.equal(practicePlan(practice, { ...base, phase: "worked" }).ok, false);
+});
+test("every reference solution passes the concept gate (so a correct learner path is not blocked by the server)", () => {
+  const units = rd("../../learning-studio/units.json"); let n = 0;
+  for (const un of units) for (const ls of un.lessons) for (const ph of ["practice", "transfer"]) {
+    const st = ls.steps.find(x => x.type === ph);
+    const r = checkIntroConcept({ lesson: { id: ls.id, steps: [{ type: ph, referenceSolution: st.referenceSolution, conceptRubric: "" }] }, phase: ph, code: st.referenceSolution, language: un.language });
+    assert.equal(r.approved, true, ls.id + " " + ph); n += 1;
+  }
+  assert.equal(n, 238);
+});
+test("worker copies of the studio concept checker match the public ones byte for byte", () => {
+  for (const f of ["concept.mjs", "intro-runner.mjs"]) assert.equal(fs.readFileSync(new URL("../studio/" + f, import.meta.url), "utf8"), fs.readFileSync(new URL("../../learning-studio/" + f, import.meta.url), "utf8"), f);
+  const units = rd("../../learning-studio/units.json"), p = rd("../practice-index.json");
+  assert.equal(Object.keys(p).length, units.reduce((n, u) => n + u.lessons.length, 0));
 });

@@ -175,7 +175,27 @@ export function recordCodeTask(state, index, { language, unit, item, bank, resul
 // Python is the only track with a final comprehensive exam in the current curriculum (python-exam.html).
 export const FINAL_EXAM_TRACKS = ["python"];
 
-export function certificateEligibility(state, index, language) {
+export const studioNormalize = v => String(v ?? "").replace(/\r\n/g, "\n").replace(/\n$/, "");
+// Lesson practice/transfer tasks: expected outputs and cases come from the server-owned index, never from the client.
+export function practicePlan(practice, { language, lessonId, phase, bank }) {
+  const e = practice[lessonId];
+  if (!e || e.language !== language || !["practice", "transfer"].includes(phase) || !e[phase]) return { ok: false, reason: "unknown_task" };
+  if (typeof bank !== "string" || bank !== e[phase].h) return { ok: false, reason: "refresh_needed", refresh: true };
+  return { ok: true, ref: e[phase].ref, cases: e[phase].cases };
+}
+// conceptApproved comes from the server-side concept check; results come from the server's own execution.
+export function recordPractice(state, practice, { language, lessonId, phase, bank, conceptApproved, results }, version) {
+  const p = practicePlan(practice, { language, lessonId, phase, bank });
+  if (!p.ok) return p;
+  const passed = conceptApproved === true && Array.isArray(results) && results.length === p.cases.length && p.cases.every((c, i) => results[i] && results[i].ok === true && studioNormalize(results[i].stdout) === c.stdout);
+  state.practice = state.practice || {};
+  const key = `${lessonId}:${phase}`;
+  const prev = state.practice[key];
+  state.practice[key] = prev && prev.passed ? prev : { passed, version };
+  return { ok: true, passed, best: state.practice[key] };
+}
+
+export function certificateEligibility(state, index, language, practice) {
   const blockers = [];
   const lessonIds = Object.keys(index.lessons).filter(id => index.lessons[id].language === language);
   if (lessonIds.length === 0) return { eligible: false, blockers: ["unknown_track"] };
@@ -192,5 +212,10 @@ export function certificateEligibility(state, index, language) {
   let codeTotal = 0, codeDone = 0;
   for (const k of unitKeys) index.quizzes[k].code.forEach((_, i) => { codeTotal += 1; if (state.codeTasks && state.codeTasks[`${k}#${i}`] && state.codeTasks[`${k}#${i}`].passed) codeDone += 1; });
   if (codeDone < codeTotal) blockers.push({ code: "code_tasks_not_server_verified", remaining: codeTotal - codeDone, of: codeTotal });
-  return { eligible: blockers.length === 0, blockers, coverage: { unitExamCodeTasksServerVerified: true, lessonPracticeServerVerified: false } };
+  if (practice) {
+    let pt = 0, pd = 0;
+    for (const id of lessonIds) for (const ph of ["practice", "transfer"]) if (practice[id] && practice[id][ph]) { pt += 1; if (state.practice && state.practice[`${id}:${ph}`] && state.practice[`${id}:${ph}`].passed) pd += 1; }
+    if (pd < pt) blockers.push({ code: "lesson_practice_not_server_verified", remaining: pt - pd, of: pt });
+  } else blockers.push({ code: "lesson_practice_not_server_verified" });
+  return { eligible: blockers.length === 0, blockers };
 }
