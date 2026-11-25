@@ -1,5 +1,6 @@
 import {scoreLessonTest,lessonTestKey} from './lesson-test-core.mjs';
 import {PASS_PERCENT} from './quiz-core.mjs';
+import {writeMapProgress} from './map-flow.mjs';
 import {setProse} from './prose.mjs';
 const $=id=>document.getElementById(id),q=new URLSearchParams(location.search),lang=q.get('lang')||'python',lessonId=q.get('lesson')||'';
 const [bank,units]=await Promise.all([fetch('lesson-tests.json').then(r=>r.json()),fetch('units.json').then(r=>r.json())]);
@@ -11,7 +12,7 @@ const link=(href,text,cls='primary')=>{const a=document.createElement('a');a.cla
 if(!lesson||!items){$('ltTitle').textContent='اختبار الدرس';$('ltIntro').textContent='لسه مفيش اختبار لهذا الدرس، فبتكمل من غيره. اختبار الوحدة موجود في آخرها.';document.querySelector('.quiz-progress').hidden=true;$('ltBody').hidden=true;const n=nextTarget();if(n)$('ltResult').append(link(n.href,n.text));$('ltResult').hidden=false}
 else{
  $('ltTitle').textContent='اختبار الدرس: '+lesson.title;
- $('ltIntro').textContent='٤ أسئلة جديدة عن الدرس. كل سؤال إجابته الأولى هي اللي بتتحسب، والنجاح من '+PASS_PERCENT+'٪ يعني إجابتين صح على الأقل. مفيش حاجة من الشات بتتحسب هنا.';
+ $('ltIntro').textContent='٤ أسئلة جديدة عن الدرس. تُحسب الإجابة الأولى لكل سؤال، والنجاح من '+PASS_PERCENT+'% يعني إجابتين صحيحتين على الأقل. لا يُحسب هنا أي شيء من الشات.';
  const answers=[];let cur=0;
  const draw=()=>{
   const it=items[cur];$('ltProgText').textContent='سؤال '+(cur+1)+' من '+items.length;$('ltBar').style.width=Math.round(cur*100/items.length)+'%';
@@ -24,17 +25,33 @@ else{
   body.append(box,fb,nextBtn);
  };
  const finish=()=>{
-  const s=scoreLessonTest(items,answers),r=$('ltResult');$('ltBody').hidden=true;$('ltBar').style.width='100%';$('ltProgText').textContent='خلصت الأسئلة';r.replaceChildren();r.hidden=false;
-  const h=document.createElement('h2');h.textContent=s.percent+'٪ ('+s.earned+' من '+s.total+')';const st=document.createElement('p');st.className=s.passed?'':'error';st.textContent=s.passed?'ناجح. تقدري تكملي للدرس اللي بعده.':'محتاج مراجعة. راجعي الدرس وجرّبي تاني، النجاح من '+PASS_PERCENT+'٪.';r.append(h,st);
-  const ul=document.createElement('ol');items.forEach((it,i)=>{const li=document.createElement('li');setProse(li,(answers[i].correct?'صح: ':'غلط: ')+it.q+(answers[i].correct?'':' الإجابة الصحيحة: '+it.options[it.answer]));ul.append(li)});r.append(ul);
+  const s=scoreLessonTest(items,answers),r=$('ltResult');$('ltBody').hidden=true;$('ltBar').style.width='100%';$('ltProgText').textContent='انتهت الأسئلة';r.replaceChildren();r.hidden=false;r.className='lt-result';
+  const score=document.createElement('div');score.className='lt-score';
+  const big=document.createElement('bdi');big.dir='ltr';big.className='lt-big';big.textContent=s.earned+' / '+s.total;
+  const pct=document.createElement('bdi');pct.dir='ltr';pct.className='lt-pct';pct.textContent=s.percent+'%';
+  score.append(big,pct);
+  const st=document.createElement('p');st.className='lt-status '+(s.passed?'pass':'fail');
+  st.textContent=s.passed?'ناجح. الدرس التالي متاح.':'يحتاج مراجعة. حد النجاح '+PASS_PERCENT+'% (إجابتان صحيحتان من أربع).';
+  r.append(score,st);
+  const ol=document.createElement('ol');ol.className='lt-review';
+  items.forEach((it,i)=>{const li=document.createElement('li');li.className=answers[i].correct?'ok':'bad';
+   const head=document.createElement('p');head.className='lt-rq';setProse(head,(answers[i].correct?'صحيح. ':'غير صحيح. ')+it.q);li.append(head);
+   if(it.code){const pre=document.createElement('pre');pre.dir='ltr';pre.className='quiz-snippet';pre.textContent=it.code;li.append(pre)}
+   const ans=document.createElement('p');ans.className='lt-ans';const lab=document.createElement('span');lab.textContent='الإجابة الصحيحة: ';const val=document.createElement('bdi');val.dir='auto';val.className=/^[\x20-\x7e]+$/.test(it.options[it.answer])?'lt-val':'lt-text';val.textContent=it.options[it.answer];ans.append(lab,val);li.append(ans);
+   if(!answers[i].correct){const why=document.createElement('p');why.className='lt-why';setProse(why,it.why);li.append(why)}
+   ol.append(li)});
+  r.append(ol);
   const prev=(()=>{try{return JSON.parse(localStorage.getItem(lessonTestKey(lang,lessonId))||'null')}catch{return null}})();
   // A pass is never removed by a later lower attempt.
   const keep=prev?.passed===true;try{localStorage.setItem(lessonTestKey(lang,lessonId),JSON.stringify({percent:keep?Math.max(prev.percent,s.percent):s.percent,passed:keep||s.passed,at:Date.now(),source:'studio-device-only'}))}catch{}
-  const n=nextTarget();
-  if(s.passed&&n)r.append(link(n.href,n.text));
-  else r.append(link('/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(lessonId),'راجعي الدرس','primary'));
-  r.append(link(location.href,'أعيدي الاختبار','secondary'));
-  const note=document.createElement('p');note.className='small';note.textContent='النتيجة محفوظة على هذا الجهاز فقط، ومش مربوطة بالحساب لسه.';r.append(note);
+  // Passing is what completes the node on the map (the lesson page only records the node after this).
+  if(s.passed)try{const pend=JSON.parse(localStorage.getItem('cq_lt_pending')||'null');if(pend&&pend.lessonId===lessonId&&pend.fromMap){writeMapProgress(pend.language,pend.unit,pend.index,pend.uid);localStorage.removeItem('cq_lt_pending')}}catch{}
+  const n=nextTarget();const actions=document.createElement('div');actions.className='lt-actions';
+  const mk=(href,text,cls)=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;return a};
+  if(s.passed&&n){actions.append(mk(n.href,n.text,'lt-btn lt-primary'),mk(location.href,'إعادة الاختبار','lt-btn lt-secondary'))}
+  else{actions.append(mk(location.href,'إعادة الاختبار','lt-btn lt-primary'),mk('/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(lessonId),'مراجعة الدرس','lt-btn lt-secondary'))}
+  r.append(actions);
+  const note=document.createElement('p');note.className='small';note.textContent='النتيجة محفوظة على هذا الجهاز فقط، وغير مرتبطة بالحساب حتى الآن.';r.append(note);
  };
  draw();
 }

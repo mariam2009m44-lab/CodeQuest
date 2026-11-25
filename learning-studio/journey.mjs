@@ -14,7 +14,7 @@ export function startJourney({anchor,pack,lesson,next,goNext,quizUrl,testUrl=nul
  const main=document.createElement('button');main.type='button';main.className='primary';
  const stay=document.createElement('button');stay.type='button';stay.textContent='ابقى هنا';
  let action;
- if(testUrl){p.textContent='خلصت خطوات الدرس. الخطوة الجاية اختبار الدرس: ٤ أسئلة جديدة، والنجاح من ٥٠٪. بعد النتيجة تضغطي «التالي» بنفسك.';main.textContent='ابدأ اختبار الدرس';action=()=>{location.href=testUrl}}
+ if(testUrl){p.textContent='انتهت خطوات الدرس. الخطوة التالية اختبار الدرس: ٤ أسئلة جديدة، والنجاح من ٥٠٪. بعد النتيجة يكون الانتقال بزر «التالي».';main.textContent='بدء اختبار الدرس';action=()=>{location.href=testUrl}}
  else if(sameUnit){p.textContent='الدرس الجاي: '+next.lesson.title+'.';main.textContent='الدرس اللي بعده';action=goNext}
  else{p.textContent='خلصت كل دروس الوحدة '+pack.unit+'. الخطوة الجاية اختبار الوحدة، بيوريك أنهي درس يحتاج مراجعة.';main.textContent='ابدأ اختبار الوحدة';action=()=>{location.href=quizUrl}}
  main.onclick=()=>{stopJourney();action()};

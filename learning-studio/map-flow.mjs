@@ -12,7 +12,10 @@ export function applyMapMode(language){
  return back;
 }
 export function recordMapProgress(language,unit,index,uid){
- if(!fromMap||!uid||!Number.isSafeInteger(unit)||!Number.isSafeInteger(index))return false;
+ return fromMap?writeMapProgress(language,unit,index,uid):false;
+}
+export function writeMapProgress(language,unit,index,uid){
+ if(!uid||!Number.isSafeInteger(unit)||!Number.isSafeInteger(index))return false;
  const key='codequest_lesson_progress_'+uid+'_'+language;
  try{
   const list=JSON.parse(localStorage.getItem(key)||'[]'),records=Array.isArray(list)?list:[];
