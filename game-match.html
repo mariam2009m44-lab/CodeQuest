@@ -640,6 +640,8 @@
         checkButton.textContent = "جارٍ تسجيل المكافأة...";
       } else if (solved && !rewardClaimed) {
         checkButton.textContent = "إعادة محاولة تسجيل المكافأة";
+      } else if (solved && rewardClaimed) {
+        checkButton.textContent = "اكتمل التدريب";
       } else {
         checkButton.textContent = "تحقق من الحل";
       }
@@ -705,6 +707,13 @@
 
         if (error.code === "functions/unauthenticated") {
           message = "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى ثم حاول.";
+        } else if (error.code === "functions/not-found" || error.code === "functions/unimplemented") {
+          // The reward service is not deployed: the puzzle itself is solved and saved on this device. No retry loop.
+          message = "حل صحيح! التدريب اتحفظ على جهازك. مكافأة الحساب غير متاحة حاليًا.";
+          rewardMessage.textContent = "حل صحيح! التدريب اتحفظ على هذا الجهاز. مكافأة الحساب غير متاحة حاليًا.";
+          rewardClaimed = true;
+          setFeedback(message, "success");
+          return;
         } else if (error.code === "functions/failed-precondition") {
           message = "لم يتم قبول الحل من الخادم. أعد المحاولة وتأكد من ترتيب القطع.";
           solved = false;
