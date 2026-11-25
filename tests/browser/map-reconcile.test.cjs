@@ -16,5 +16,10 @@ try{
  assert.equal(other[0],'current','another account\'s results never mark this account');
  const failed=await nodes('u1',{'codequest_studio_lessontest_u1_python_py-1-1':JSON.stringify({passed:false})});
  assert.equal(failed[0],'current','a failed test does not mark the node');
+ // id-less node must not match an id-less record, and an id-less record with chapter/lesson only marks its own node
+ const idless=await nodes('u1',{'codequest_lesson_progress_u1_python':JSON.stringify([{completed:true,chapter:0,lesson:0}])});
+ assert.deepEqual(idless.slice(0,3),['done','current','other'],'chapter/lesson record marks only its own node: '+JSON.stringify(idless));
+ const noMatch=await nodes('u1',{'codequest_lesson_progress_u1_python':JSON.stringify([{completed:true}])});
+ assert.equal(noMatch[0],'current','a record with no id and no position marks nothing: '+JSON.stringify(noMatch));
  console.log('map reconcile ok');
 }finally{await b.close();srv.close()}})().catch(e=>{console.error(e);process.exit(1)});

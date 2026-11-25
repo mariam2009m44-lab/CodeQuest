@@ -45,7 +45,7 @@ function isDone(item,ci,li,records,local){
  const id=String(item.id||""),pythonKey=(ci+1)+"_"+li;
  const match=x=>x?.completed===true&&(
   (Number.isInteger(Number(x.chapter))&&Number.isInteger(Number(x.lesson))&&Number(x.chapter)===ci&&Number(x.lesson)===li)||
-  String(x.lessonId||x.id||"")===id||String(x.id||"")===pythonKey
+  (id!==""&&String(x.lessonId||x.id||"")===id)||String(x.id||"")===pythonKey
  );
  return records.some(match)||local.some(match);
 }
