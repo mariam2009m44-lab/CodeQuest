@@ -2,10 +2,12 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
-import { emptyState, recordLesson, recordExam, recordLessonTest, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
 
+// Per-account cap on verification executions per day. A policy placeholder, not a promise of provider capacity.
+const CODE_VERIFY_DAILY_RUNS = 20;
 const FIREBASE_KEYS = createRemoteJWKSet(
   new URL(
     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
@@ -212,6 +214,29 @@ async function readJudge0Response(response) {
   }
 
   return data;
+}
+
+// Runs one program in the existing isolated Judge0 executor (never on the Worker host) and returns its stdout.
+// Fail closed: anything other than a clean accepted run returns ok:false and is never counted as a pass.
+async function executeForVerification(env, language, code, stdin, fetchFn = fetch) {
+  const languageId = EXECUTABLE_LANGUAGES[language];
+  if (!languageId || typeof code !== "string" || !code.trim() || code.length > 15000) return { ok: false, reason: "bad_input" };
+  const baseUrl = (env.JUDGE0_URL || "https://ce.judge0.com").replace(/\/+$/, "");
+  const deadline = Date.now() + 30000;
+  try {
+    const created = await fetchFn(`${baseUrl}/submissions?base64_encoded=false&wait=false`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source_code: code, language_id: languageId, stdin: stdin || "" }), signal: AbortSignal.timeout(10000) });
+    if (!created.ok) return { ok: false, reason: `submit_${created.status}` };
+    const { token } = await readJudge0Response(created);
+    if (!token) return { ok: false, reason: "no_token" };
+    for (let i = 0; i < 20 && Date.now() < deadline; i++) {
+      await new Promise(r => setTimeout(r, 800));
+      const r = await fetchFn(`${baseUrl}/submissions/${encodeURIComponent(token)}?base64_encoded=false`, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(5000) });
+      if (!r.ok) continue;
+      const res = await readJudge0Response(r);
+      if (res?.status?.id > 2) return { ok: res.status.id === 3, stdout: typeof res.stdout === "string" ? res.stdout : "", reason: res.status.id === 3 ? null : `status_${res.status.id}` };
+    }
+    return { ok: false, reason: "timeout" };
+  } catch { return { ok: false, reason: "executor_unreachable" }; }
 }
 
 async function handleCodeRun(request, env, origin) {
@@ -634,7 +659,7 @@ async function handleProgress(request, env, origin, action) {
   }
   let body = {};
   if (action !== "get") {
-    try { body = await readBoundedJson(request, action === "resume" ? 32768 : 4096); } catch (error) {
+    try { body = await readBoundedJson(request, action === "resume" || action === "codetask" ? 32768 : 4096); } catch (error) {
       const tooLarge = error?.message === "REQUEST_BODY_TOO_LARGE";
       return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, tooLarge ? 413 : 400, origin);
     }
@@ -644,6 +669,22 @@ async function handleProgress(request, env, origin, action) {
   }
   // The uid only selects the Durable Object; it is never returned or stored in a public record.
   const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(user.uid));
+  if (action === "codetask") {
+    // The client supplies only the code. The expected output, the execution and the verdict all stay on the server.
+    const input = { language: String(body.language || ""), unit: Number(body.unit), item: body.item, bank: body.bank };
+    const t = codeTaskTests(CURRICULUM_INDEX, input);
+    if (!t.ok) return t.refresh ? jsonResponse({ success: false, refreshNeeded: true, message: "refresh_needed" }, 409, origin) : jsonResponse({ success: false, message: t.reason }, 400, origin);
+    if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
+    const begin = await stub.fetch("https://progress.internal/codebegin", { method: "POST", body: JSON.stringify({ n: t.tests.length }) });
+    if (!begin.ok) return jsonResponse(await begin.json(), begin.status, origin);
+    const results = [];
+    for (const c of t.tests) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
+    if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
+      return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
+    }
+    const rec = await stub.fetch("https://progress.internal/codetask", { method: "POST", body: JSON.stringify({ ...input, version: typeof body.version === "string" ? body.version : "", results }) });
+    return jsonResponse(await rec.json(), rec.status, origin);
+  }
   const response = await stub.fetch(`https://progress.internal/${action}`, { method: "POST", body: JSON.stringify(body) });
   const data = await response.json();
   return jsonResponse(data, response.status, origin);
@@ -1164,6 +1205,9 @@ export default {
     if (url.pathname === "/api/progress/lesson-test" && request.method === "POST") {
       return handleProgress(request, env, origin, "lessontest");
     }
+    if (url.pathname === "/api/progress/code-task" && request.method === "POST") {
+      return handleProgress(request, env, origin, "codetask");
+    }
     if (url.pathname === "/api/progress/eligibility" && request.method === "POST") {
       return handleProgress(request, env, origin, "eligibility");
     }
@@ -1264,7 +1308,7 @@ export class StudentProgress {
 
     const result = await this.state.storage.transaction(async tx => {
       const state = (await tx.get("state")) || emptyState();
-      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, lessonTests: state.lessonTests || {}, resume: resumeView(state, Date.now()) } }; }
+      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, codeTasks: state.codeTasks || {}, lessonTests: state.lessonTests || {}, resume: resumeView(state, Date.now()) } }; }
 
       if (action === "resume") {
         const today = new Date().toISOString().slice(0, 10);
@@ -1277,6 +1321,22 @@ export class StudentProgress {
         return { status: 200, data: { success: true, stale: out.stale, resume: out.resume } };
       }
 
+      if (action === "codebegin") {
+        const today = new Date().toISOString().slice(0, 10);
+        const cq = (await tx.get("cexec")) || { day: today, count: 0 };
+        if (cq.day !== today) { cq.day = today; cq.count = 0; }
+        const n = Number(body.n);
+        if (!Number.isInteger(n) || n < 1 || n > 10) return { status: 400, data: { success: false, message: "bad_request" } };
+        if (cq.count + n > CODE_VERIFY_DAILY_RUNS) return { status: 429, data: { success: false, message: "verification_limit_reached" } };
+        cq.count += n; await tx.put("cexec", cq);
+        return { status: 200, data: { success: true } };
+      }
+      if (action === "codetask") {
+        const out = recordCodeTask(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), item: body.item, bank: body.bank, results: body.results }, typeof body.version === "string" ? body.version : "v1");
+        if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
+        await tx.put("state", state);
+        return { status: 200, data: { success: true, passed: out.passed, best: out.best } };
+      }
       if (action === "eligibility") return { status: 200, data: { success: true, ...certificateEligibility(state, CURRICULUM_INDEX, String(body.language || "")) } };
       if (action !== "lesson" && action !== "exam" && action !== "lessontest") return { status: 404, data: { success: false, message: "unknown action" } };
       const today = new Date().toISOString().slice(0, 10);

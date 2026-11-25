@@ -149,8 +149,29 @@ export function recordLessonTest(state, index, key, input, version) {
   return { ok: true, result: g, best: keep };
 }
 
-// Code tasks are still self-reported by the browser. Until server-side execution is wired, issuance stays blocked.
-export const CODE_TASK_VERIFICATION_WIRED = false;
+// Unit-exam code tasks are verified only from a server-side execution result (see recordCodeTask).
+// Lesson practice tasks inside the chat still run in the learner's browser and are NOT server-verified; eligibility reports that as coverage.
+export const normalizeOutput = v => String(v ?? "").replace(/\r\n/g, "\n").split("\n").map(l => l.replace(/\s+$/, "")).join("\n").replace(/\s+$/, "");
+export const outputMatches = (stdout, expected) => normalizeOutput(stdout) === normalizeOutput(expected);
+export function codeTaskTests(index, { language, unit, item, bank }) {
+  const quiz = index.quizzes[`${language}-${unit}`];
+  if (!quiz) return { ok: false, reason: "unknown_exam" };
+  if (typeof bank !== "string" || bank !== quiz.h) return { ok: false, reason: "refresh_needed", refresh: true };
+  const task = Number.isInteger(item) ? quiz.code[item] : undefined;
+  if (!task || !Array.isArray(task.tests) || task.tests.length === 0) return { ok: false, reason: "unknown_task" };
+  return { ok: true, tests: task.tests };
+}
+// results: [{ ok: boolean, stdout: string }] produced by the Worker's own execution, one per test. Never from the client.
+export function recordCodeTask(state, index, { language, unit, item, bank, results }, version) {
+  const t = codeTaskTests(index, { language, unit, item, bank });
+  if (!t.ok) return t;
+  const passed = Array.isArray(results) && results.length === t.tests.length && t.tests.every((c, i) => results[i] && results[i].ok === true && outputMatches(results[i].stdout, c.expected));
+  state.codeTasks = state.codeTasks || {};
+  const key = `${language}-${unit}#${item}`;
+  const prev = state.codeTasks[key];
+  state.codeTasks[key] = prev && prev.passed ? prev : { passed, version };
+  return { ok: true, passed, best: state.codeTasks[key] };
+}
 // Python is the only track with a final comprehensive exam in the current curriculum (python-exam.html).
 export const FINAL_EXAM_TRACKS = ["python"];
 
@@ -168,6 +189,8 @@ export function certificateEligibility(state, index, language) {
     const f = state.finals && state.finals[language];
     if (!(f && f.passed)) blockers.push({ code: "final_exam" });
   }
-  if (!CODE_TASK_VERIFICATION_WIRED) blockers.push({ code: "code_tasks_not_server_verified" });
-  return { eligible: blockers.length === 0, blockers };
+  let codeTotal = 0, codeDone = 0;
+  for (const k of unitKeys) index.quizzes[k].code.forEach((_, i) => { codeTotal += 1; if (state.codeTasks && state.codeTasks[`${k}#${i}`] && state.codeTasks[`${k}#${i}`].passed) codeDone += 1; });
+  if (codeDone < codeTotal) blockers.push({ code: "code_tasks_not_server_verified", remaining: codeTotal - codeDone, of: codeTotal });
+  return { eligible: blockers.length === 0, blockers, coverage: { unitExamCodeTasksServerVerified: true, lessonPracticeServerVerified: false } };
 }

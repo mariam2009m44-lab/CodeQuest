@@ -50,6 +50,11 @@ test("eligibility needs every lesson test, unit exam, python final, and server-v
   e = certificateEligibility(s, index, "python");
   assert.equal(e.eligible, false);
   assert.deepEqual(e.blockers.map(b => b.code), ["code_tasks_not_server_verified"]);
+  assert.equal(e.blockers[0].remaining, 12);
+  for (const k of Object.keys(index.quizzes).filter(k => k.startsWith("python-"))) index.quizzes[k].code.forEach((_, i) => { s.codeTasks = { ...(s.codeTasks || {}), [`${k}#${i}`]: { passed: true } }; });
+  e = certificateEligibility(s, index, "python");
+  assert.equal(e.eligible, true);
+  assert.equal(e.coverage.lessonPracticeServerVerified, false);
   assert.equal(certificateEligibility(s, index, "ruby").eligible, false);
 });
 test("picks are canonical option indexes, so any display shuffle grades the same", () => {

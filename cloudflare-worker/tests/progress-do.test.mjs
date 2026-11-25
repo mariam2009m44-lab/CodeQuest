@@ -2,12 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
-import { emptyState, recordLesson, recordExam, recordLessonTest, certificateEligibility, saveResume, purgeExpired, resumeView } from "../progress-core.js";
+import { emptyState, recordLesson, recordExam, recordLessonTest, certificateEligibility, codeTaskTests, recordCodeTask, saveResume, purgeExpired, resumeView } from "../progress-core.js";
 const index = JSON.parse(fs.readFileSync(new URL("../curriculum-index.json", import.meta.url), "utf8"));
 function load() {
   let source = fs.readFileSync(new URL("../worker.js", import.meta.url), "utf8");
   source = source.replace(/^import .*;$/gm, "").replace("export default {", "globalThis.worker = {").replace(/export class (\w+)/g, "globalThis.$1 = class $1");
-  const sandbox = { globalThis: null, recordLessonTest, certificateEligibility, LESSON_ANSWERS: JSON.parse(fs.readFileSync(new URL("../lesson-answers.json", import.meta.url), "utf8")), URL, Response, console, emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView, CURRICULUM_INDEX: index, createRemoteJWKSet() {}, jwtVerify() {}, Date, JSON, Number, Promise, TextEncoder, Request, Headers, fetch: undefined };
+  const sandbox = { globalThis: null, AbortSignal, setTimeout, codeTaskTests, recordCodeTask, recordLessonTest, certificateEligibility, LESSON_ANSWERS: JSON.parse(fs.readFileSync(new URL("../lesson-answers.json", import.meta.url), "utf8")), URL, Response, console, emptyState, recordLesson, recordExam, saveResume, purgeExpired, resumeView, CURRICULUM_INDEX: index, createRemoteJWKSet() {}, jwtVerify() {}, Date, JSON, Number, Promise, TextEncoder, Request, Headers, fetch: undefined };
   sandbox.globalThis = sandbox;
   vm.runInNewContext(source, sandbox);
   return sandbox;
@@ -26,7 +26,7 @@ test("Durable Object stores best exam, never trusts a client score, and returns 
   assert.equal(a.data.codeVerified, false);
   assert.ok(a.data.percent < 100);
   const g = await call(o, "get", {});
-  assert.deepEqual(Object.keys(g.data).sort(), ["exams", "lessonTests", "lessons", "resume", "success"]);
+  assert.deepEqual(Object.keys(g.data).sort(), ["codeTasks", "exams", "lessonTests", "lessons", "resume", "success"]);
   assert.equal(JSON.stringify(g.data).includes("uid"), false);
 });
 test("Durable Object rejects bad input and enforces the daily write cap", async () => {
@@ -62,4 +62,38 @@ test("Durable Object answers 409 refresh-needed for a stale bank and keeps the s
   assert.equal(stale.status, 409); assert.equal(stale.data.refreshNeeded, true);
   assert.equal((await call(o, "exam", { language: "python", unit: 1, version: "v1", bank: "old", choices: [0, 0, 0] })).status, 409);
   assert.equal((await call(o, "get", {})).data.lessonTests["py-1-1"].passed, true);
+});
+
+test("executeForVerification is fail-closed: unreachable, rejected, timeout or non-accepted never count as ok", async () => {
+  const { executeForVerification } = load();
+  const ok = (data, status = 200) => ({ ok: status < 400, status, json: async () => data });
+  assert.equal((await executeForVerification({}, "python", "print(1)", "", async () => { throw new Error("net"); })).ok, false);
+  assert.equal((await executeForVerification({}, "python", "print(1)", "", async () => ok({}, 429))).reason, "submit_429");
+  assert.equal((await executeForVerification({}, "ruby", "x", "")).reason, "bad_input");
+  assert.equal((await executeForVerification({}, "python", "   ", "")).reason, "bad_input");
+  let n = 0;
+  const f = async (u) => (n++ === 0 ? ok({ token: "t" }) : ok({ status: { id: 3 }, stdout: "9\nGo\n" }));
+  const good = await executeForVerification({}, "python", "print(9)", "", f);
+  assert.equal(good.ok, true); assert.equal(good.stdout, "9\nGo\n");
+  let m = 0;
+  const bad = await executeForVerification({}, "python", "x", "", async () => (m++ === 0 ? ok({ token: "t" }) : ok({ status: { id: 6 }, stdout: "" })));
+  assert.equal(bad.ok, false); assert.equal(bad.reason, "status_6");
+});
+test("Durable Object records a code task only from server results, enforces bank + daily run budget", async () => {
+  const { StudentProgress } = load();
+  const q = index.quizzes["python-1"];
+  const o = new StudentProgress(fakeState());
+  const base = { language: "python", unit: 1, item: 0, bank: q.h, version: "v1" };
+  const wrong = await call(o, "codetask", { ...base, results: [{ ok: true, stdout: "nope" }] });
+  assert.equal(wrong.data.passed, false);
+  const right = await call(o, "codetask", { ...base, results: q.code[0].tests.map(t => ({ ok: true, stdout: t.expected + "\n" })) });
+  assert.equal(right.data.passed, true);
+  const later = await call(o, "codetask", { ...base, results: [{ ok: false, stdout: "" }] });
+  assert.equal(later.data.best.passed, true);
+  assert.equal((await call(o, "codetask", { ...base, bank: "old", results: [] })).status, 409);
+  assert.equal((await call(o, "codetask", { ...base, item: 9, results: [] })).status, 400);
+  assert.equal((await call(o, "codebegin", { n: 10 })).status, 200);
+  assert.equal((await call(o, "codebegin", { n: 10 })).status, 200);
+  assert.equal((await call(o, "codebegin", { n: 1 })).status, 429);
+  assert.equal((await call(o, "codebegin", { n: 0 })).status, 400);
 });
