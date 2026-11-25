@@ -72,6 +72,7 @@ test('memory: term and definition are marked, a match names the pair, a miss say
   const term = info.find(x => x.kind === 'term'), def = info.find(x => x.id === term.id && x.kind === 'definition');
   await cards.nth(term.i).click(); await cards.nth(def.i).click();
   assert.equal((await page.textContent('#matchNote')).trim(), `✔ ${term.text} = ${def.text}`);
+  assert.equal(await page.$eval('#matchNote', n => getComputedStyle(n).color), 'rgb(143, 240, 200)');
   // one more pair so the screenshot shows matched + note
   const t2 = info.find(x => x.kind === 'term' && x.id !== term.id), d2 = info.find(x => x.id === t2.id && x.kind === 'definition');
   await cards.nth(t2.i).click(); await cards.nth(d2.i).click();
