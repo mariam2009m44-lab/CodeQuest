@@ -141,8 +141,8 @@ function render(chapters,records,local){
   if(examGate){const a=document.createElement("a");a.id="cwExamGate";a.className="cw-exam-gate";a.href="/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+examGate;a.textContent="اختبار الوحدة "+examGate+": انجح فيه (٥٠٪ أو أكثر) علشان تفتح الوحدة اللي بعدها";a.style.cssText="display:block;margin:12px auto;max-width:520px;padding:12px 16px;border-radius:12px;background:#674ac1;color:#fff;text-align:center;font-weight:700;text-decoration:none";document.getElementById("cwProgressBar").closest("section,div")?.after(a)}}
  const units=chapters.map((chapter,ci)=>{
   const lessons=chapter.lessons||[],unitDone=lessons.filter((lesson,li)=>isDone(lesson,ci,li,records,local)).length;
-  const height=Math.max(230,150+(lessons.length-1)*145+85);
-  const points=lessons.map((lesson,li)=>({x:nodeX(li),y:65+li*145}));
+  const height=Math.max(285,205+(lessons.length-1)*145+85);
+  const points=lessons.map((lesson,li)=>({x:nodeX(li),y:120+li*145}));
   const path=makeRoadPath(points),completedCount=unitDone;
   const progressPath=completedCount?makeRoadPath(points.slice(0,Math.min(completedCount,points.length))):"";
   const nodes=lessons.map((lesson,li)=>{
