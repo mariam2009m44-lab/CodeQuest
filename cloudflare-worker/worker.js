@@ -785,7 +785,7 @@ async function handleProgress(request, env, origin, action) {
 
 // Service instances of the StudentProgress class. A verified uid is at most 128 characters, so these 140+ character names can never equal any user's instance name: no uid format is rejected and no user can address them.
 const SERVICE_INSTANCE = { academy: "svc-academy-" + "x".repeat(130), parent: "svc-parent-" + "x".repeat(130) };
-// Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on". "admin-only" enables ONLY the read-only admin list for the exact admin uid (identity probe); submit, status and review stay off for everyone.
+// Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on". "admin-only" enables ONLY an identity probe for the exact admin uid (no record is read or returned); submit, status and review stay off for everyone.
 // Admin = an exact uid listed in the ACADEMY_ADMIN_UIDS dashboard secret (never in the repo). Emails are never used.
 // Review records a decision only. It does not grant any role and sends no message.
 async function handleAcademy(request, env, origin, action) {
@@ -802,6 +802,8 @@ async function handleAcademy(request, env, origin, action) {
   // Owner-only: exact Firebase uid match against the ACADEMY_ADMIN_UIDS dashboard secret. No email, domain, role, claim or approval ever grants admin.
   const isAdmin = list(env.ACADEMY_ADMIN_UIDS).includes(user.uid);
   if ((action === "list" || action === "review") && !isAdmin) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
+  // Identity probe only: confirms the exact admin uid, reads no stored record and returns no applicant data.
+  if (adminProbe) return jsonResponse({ success: true, probeOnly: true, adminVerified: true }, 200, origin);
   const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(SERVICE_INSTANCE.academy));
   const send = payload => stub.fetch("https://academy.internal/" + action, { method: "POST", body: JSON.stringify(payload) });
   let res;

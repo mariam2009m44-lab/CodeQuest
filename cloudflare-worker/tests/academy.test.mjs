@@ -82,7 +82,14 @@ test("admin-only mode: only the exact admin uid can read the list; submit, statu
   const w = boot({}); w.env.ACADEMY_APPLICATIONS = "admin-only"; w.env.ACADEMY_ADMIN_UIDS = "uidE";
   assert.equal((await w.call("/api/academy/admin/applications", { body: {} })).status, 401);
   assert.equal((await w.call("/api/academy/admin/applications", { token: "tokA", body: {} })).status, 403);
-  assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 200);
+  const pr = await w.call("/api/academy/admin/applications", { token: "tokE", body: {} }); assert.equal(pr.status, 200); assert.deepEqual(pr.data, { success: true, probeOnly: true, adminVerified: true });
   for (const t of ["tokA", "tokE"]) for (const r of ["instructor-application", "my-status", "admin/review"]) assert.equal((await w.call("/api/academy/" + r, { token: t, body: app })).status, 503, t + r);
   for (const h of w.stores.values()) assert.equal(h.m.size, 0, "no record written");
+});
+test("admin-only mode with a pre-existing record: the probe still returns no applicant data", async () => {
+  const w = on(); assert.equal((await w.call("/api/academy/instructor-application", { token: "tokA", body: app })).status, 200);
+  w.env.ACADEMY_APPLICATIONS = "admin-only";
+  const r = await w.call("/api/academy/admin/applications", { token: "tokE", body: {} });
+  assert.equal(r.status, 200); assert.deepEqual(r.data, { success: true, probeOnly: true, adminVerified: true });
+  assert.equal(JSON.stringify(r.data).includes("سارة"), false);
 });

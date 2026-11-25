@@ -89,8 +89,8 @@ test('worker unreachable during submit: no fallback to the callable (no duplicat
 test('admin-only mode (stubbed Firebase, mock tokens): the owner uid sees the admin page; a signed-in non-owner gets a real Worker 403 and the refusal; nothing is written', async t => {
   const o = await setup(t, { workerOn: 'admin-only', token: 'tokE' });
   const owner = await page(o.context, 'academy-admin.html'); await owner.p.waitForSelector('#adminContent:not([hidden])');
-  await owner.p.waitForFunction(() => document.getElementById('adminStats').children.length === 2);
-  assert.match(await owner.p.textContent('#adminStats'), /طلبات قيد المراجعة/);
+  await owner.p.waitForFunction(() => document.getElementById('adminState').textContent.includes('تم التحقق من هويتك'));
+  assert.equal(await owner.p.locator('.admin-application').count(), 0);
   await owner.p.screenshot({ path: path.join(artifactDir, 'academy-admin-only-owner-390.png'), fullPage: true });
   assert.deepEqual(owner.errors, []);
   const n = await setup(t, { workerOn: 'admin-only', token: 'tokA' });
