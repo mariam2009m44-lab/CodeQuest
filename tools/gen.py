@@ -37,5 +37,6 @@ def build(lang,spec,bank,units):
                 _,q,r,w1,w2,why=it
                 opts=[w1,w2];opts.insert(pos,r)
                 out.append({'q':q,'options':opts,'answer':pos,'why':why})
+        [print('SHORTWHY',lid) for o in out if len(o['why'])<15]
         bank[lid]=out
 def hash_(s): return sum(ord(c) for c in s)
