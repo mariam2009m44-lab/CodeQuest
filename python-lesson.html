@@ -4207,14 +4207,10 @@ html[data-theme="light"] .bottom-action {
     completedChapters.add(Number(currentChapterId));
     saveLocalProgress();
 
-    // الامتحان له سجل مستقل حتى لا يُحسب كدرس عادي.
-    const cloudSaved = await saveProgressToFirebase({
-      chapter: Number(currentChapterId) - 1,
-      lesson: 104
-    });
-    if (!cloudSaved) {
-      showToast("تم حفظ نجاح الامتحان على هذا الجهاز، وستتم مزامنته عند عودة الاتصال.");
-    }
+    // علامة امتحان الفصل ليست درسًا عاديًا، ولا تملك حاليًا
+    // إثباتًا خادميًا مستقلًا؛ لذلك لا نحاول تمريرها إلى saveLessonProgress.
+    // تُعرض كإنجاز محلي بوضوح بدل إظهار رسالة مزامنة غير صحيحة.
+    showToast("تم حفظ نجاح الامتحان على هذا الجهاز. لم تتم مزامنته مع الحساب بعد.");
   }
 }
 
