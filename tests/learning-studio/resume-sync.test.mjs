@@ -25,7 +25,7 @@ test('no token or backend off: stays on the device, nothing lost, no failed clut
  assert.equal(r.calls.length,0);assert.equal(r.s.status,'device');assert.equal(r.s.readLocal('python').draft,'print(1)');assert.equal(r.s.readLocal('python').pending,true);
 });
 test('stale reply from the server: newer account checkpoint is adopted, older device copy not pushed over it',async()=>{
- const r=rig({responses:[{ok:true,status:200,json:async()=>({success:true,stale:true,resume:{lessonId:'py-9',phase:'transfer',draft:'NEWER',savedAt:99999}})}]});
+ const r=rig({responses:[{ok:true,status:200,json:async()=>({success:true,stale:true,resume:{lessonId:'py-9',phase:'transfer',draft:'NEWER',savedAt:99999,rev:7}})}]});
  r.s.checkpoint(cp());await r.fire();
  const l=r.s.readLocal('python');assert.equal(l.lessonId,'py-9');assert.equal(l.draft,'NEWER');assert.equal(l.pending,false);
 });
@@ -40,9 +40,9 @@ test('accounts on one device never mix',()=>{
 });
 test('languages are separate',()=>{const r=rig();r.s.checkpoint(cp());r.s.checkpoint(cp({language:'java',lessonId:'j-1',draft:'int x;'}));assert.equal(r.s.readLocal('python').draft,'print(1)');assert.equal(r.s.readLocal('java').draft,'int x;')});
 test('restore: newer of device and account wins; older account copy never replaces newer device copy',async()=>{
- const r=rig({responses:[{ok:true,status:200,json:async()=>({success:true,resume:{python:{lessonId:'py-5',phase:'worked',draft:'',savedAt:5000}}})}]});
+ const r=rig({responses:[{ok:true,status:200,json:async()=>({success:true,resume:{python:{lessonId:'py-5',phase:'worked',draft:'',savedAt:5000,rev:3}}})}]});
  const got=await r.s.restore('python');assert.equal(got.lessonId,'py-5');assert.equal(got.source,'account');
- const r2=rig({t0:9000,responses:[{ok:true,status:200,json:async()=>({success:true,resume:{python:{lessonId:'old',phase:'worked',draft:'',savedAt:5}}})}]});
+ const r2=rig({t0:9000,responses:[{ok:true,status:200,json:async()=>({success:true,resume:{python:{lessonId:'old',phase:'worked',draft:'',savedAt:5,rev:9}}})}]});
  r2.s.checkpoint(cp());const g2=await r2.s.restore('python');assert.equal(g2.lessonId,'py-1');assert.equal(g2.source,'device');
 });
 test('draft is capped and complete phase stores no draft',()=>{
@@ -50,3 +50,17 @@ test('draft is capped and complete phase stores no draft',()=>{
  r.s.checkpoint(cp({phase:'complete'}));assert.equal(r.s.readLocal('python').draft,'');
 });
 test('corrupt device record is ignored',()=>{const r=rig();r.storage.setItem(r.s.key('python'),'{bad');assert.equal(r.s.readLocal('python'),null)});
+
+test('sends sentAt and baseRev, adopts the server revision after a save',async()=>{
+ const r=rig({responses:[{ok:true,status:200,json:async()=>({success:true,stale:false,resume:{rev:4}})}]});r.s.checkpoint(cp());await r.fire();
+ assert.equal(r.calls[0].body.baseRev,0);assert.equal(r.calls[0].body.sentAt,r.s.now());assert.equal(r.s.readLocal('python').rev,4);
+ r.s.checkpoint(cp({draft:'print(9)'}));await r.fire();assert.equal(r.calls[1].body.baseRev,4);
+});
+test('device-only mode (account sync off) makes no request and says device, never saved-to-account',async()=>{
+ const st=mem();const seen=[];const s=new ResumeSync({uid:'a',accountSync:false,getToken:async()=>'t',storage:st,fetchFn:async()=>{throw Error('must not be called')},endpoint:'https://w',onStatus:x=>seen.push(x)});
+ s.checkpoint(cp());s.checkpoint(cp({draft:'z'}));assert.deepEqual(seen,['device','device']);assert.equal(s.readLocal('python').pending,true);assert.equal(await s.restore('python').then(x=>x.source),'device');
+});
+test('restore keeps a pending device copy even if the server revision is higher (the server orders it)',async()=>{
+ const r=rig({responses:[{ok:true,status:200,json:async()=>({success:true,resume:{python:{lessonId:'srv',phase:'worked',draft:'',savedAt:9e12,rev:50}}})}]});
+ r.s.checkpoint(cp());const g=await r.s.restore('python');assert.equal(g.lessonId,'py-1');assert.equal(r.s.readLocal('python').pending,true);
+});
