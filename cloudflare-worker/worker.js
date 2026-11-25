@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
 import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, recordFinalExam, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { validateApplication, emptyDirectory, submitApplication, myStatus, listApplications, reviewApplication } from "./academy-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
 import PRACTICE_INDEX from "./practice-index.json";
@@ -781,6 +782,33 @@ async function handleProgress(request, env, origin, action) {
   return jsonResponse(data, response.status, origin);
 }
 
+// Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on".
+// Admin = a verified email or exact uid listed in the ACADEMY_ADMIN_EMAILS / ACADEMY_ADMIN_UIDS dashboard secrets (never in the repo).
+// Review records a decision only. It does not grant any role and sends no message.
+async function handleAcademy(request, env, origin, action) {
+  let user;
+  try { user = await verifyFirebaseUser(request, env); } catch { return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin); }
+  if (!env.ACADEMY_DIRECTORY) return jsonResponse({ success: false, message: "academy_unavailable" }, 503, origin);
+  if (env.ACADEMY_APPLICATIONS !== "on") return jsonResponse({ success: false, retryable: true, message: "academy_off" }, 503, origin);
+  let body = {};
+  try { body = await readBoundedJson(request, 16384); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
+  const list = v => String(v || "").split(",").map(x => x.trim()).filter(Boolean);
+  const isAdmin = list(env.ACADEMY_ADMIN_UIDS).includes(user.uid) || (user.emailVerified === true && typeof user.email === "string" && list(env.ACADEMY_ADMIN_EMAILS).map(x => x.toLowerCase()).includes(user.email.toLowerCase()));
+  if ((action === "list" || action === "review") && !isAdmin) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
+  const stub = env.ACADEMY_DIRECTORY.get(env.ACADEMY_DIRECTORY.idFromName("directory"));
+  const send = payload => stub.fetch("https://academy.internal/" + action, { method: "POST", body: JSON.stringify(payload) });
+  let res;
+  if (action === "submit") {
+    const v = validateApplication(body);
+    if (!v.ok) return jsonResponse({ success: false, message: "راجعي بيانات طلب المدرب والروابط والتخصصات." }, 400, origin);
+    res = await send({ uid: user.uid, email: user.email, emailVerified: user.emailVerified, value: v.value });
+  } else if (action === "status") res = await send({ uid: user.uid });
+  else if (action === "list") res = await send({ status: typeof body.status === "string" ? body.status : "" });
+  else res = await send({ admin: user.uid, target: String(body.uid || ""), decision: String(body.decision || "") });
+  return jsonResponse(await res.json(), res.status, origin);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1318,6 +1346,10 @@ export default {
       return handleProgress(request, env, origin, "exam");
     }
 
+    for (const [path, act] of [["/api/academy/instructor-application", "submit"], ["/api/academy/my-status", "status"], ["/api/academy/admin/applications", "list"], ["/api/academy/admin/review", "review"]]) {
+      if (url.pathname === path && request.method === "POST") return handleAcademy(request, env, origin, act);
+    }
+
     return jsonResponse({
       success: false,
       message: "المسار المطلوب غير موجود."
@@ -1504,5 +1536,22 @@ export class StudentProgress {
       return { status: 200, data: { success: true, replay: outcome.replay === true, verified: false } };
     });
     return Response.json(result.data, { status: result.status });
+  }
+}
+
+export class AcademyDirectory {
+  constructor(state) { this.state = state; }
+  async fetch(request) {
+    const action = new URL(request.url).pathname.slice(1);
+    let b = {}; try { b = JSON.parse(await request.text() || "{}"); } catch { return Response.json({ success: false }, { status: 400 }); }
+    const out = await this.state.storage.transaction(async tx => {
+      const dir = (await tx.get("dir")) || emptyDirectory(); const now = Date.now();
+      if (action === "submit") { const r = submitApplication(dir, b.uid, b.email, b.emailVerified, b.value, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason, retryable: r.status === 429 || r.status === 503 } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }
+      if (action === "status") return { status: 200, data: { success: true, ...myStatus(dir, b.uid) } };
+      if (action === "list") return { status: 200, data: { success: true, applications: listApplications(dir, b.status) } };
+      if (action === "review") { const r = reviewApplication(dir, b.admin, b.target, b.decision, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }
+      return { status: 404, data: { success: false } };
+    });
+    return Response.json(out.data, { status: out.status });
   }
 }

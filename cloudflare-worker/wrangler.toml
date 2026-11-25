@@ -21,6 +21,10 @@ class_name = "CodeExecutionLimiter"
 name = "STUDENT_PROGRESS"
 class_name = "StudentProgress"
 
+[[durable_objects.bindings]]
+name = "ACADEMY_DIRECTORY"
+class_name = "AcademyDirectory"
+
 [[migrations]]
 tag = "v1-code-execution-limiter"
 new_sqlite_classes = ["CodeExecutionLimiter"]
@@ -33,6 +37,11 @@ new_sqlite_classes = ["CodeExecutionLimiter"]
 [[migrations]]
 tag = "v2-student-progress"
 new_sqlite_classes = ["StudentProgress"]
+
+# Adds AcademyDirectory (additive, SQLite-backed, Free-plan compatible). ACADEMY_APPLICATIONS is intentionally unset: every academy route answers 503 until a reviewed commit turns it on.
+[[migrations]]
+tag = "v3-academy-directory"
+new_sqlite_classes = ["AcademyDirectory"]
 
 [previews.vars]
 FIREBASE_PROJECT_ID = "codequest-6350a"
