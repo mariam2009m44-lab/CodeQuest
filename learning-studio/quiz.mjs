@@ -1,13 +1,14 @@
 import {gradeCode,summarize,byLesson,isPassed,PASS_PERCENT,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
 import {selectExecutor} from './execution.mjs';
 import {setProse} from './prose.mjs';
-import {postProgress,examPayload,codeTaskPayload} from './progress-api.mjs';
+import {postProgress,postDurable,flushPending,examPayload,codeTaskPayload} from './progress-api.mjs';
 const q=new URLSearchParams(location.search),lang=q.get('lang')||'python',unit=Number(q.get('unit')||1);
 const $=id=>document.getElementById(id);
 const quizzes=await (await fetch('quizzes.json')).json();const data=quizzes[lang+'-'+unit];
 const features=await fetch('features.json').then(r=>r.json()).catch(()=>({}));
 const serverOn=features.serverAssessment===true;
-const api=(path,payload)=>postProgress({enabled:serverOn,getToken:async()=>{const {auth}=await import('/js/firebase-config.js');return auth.currentUser?.getIdToken()??null},fetchFn:(u,o)=>fetch(u,o),path,payload});
+const durable=async(key,path,payload,extra={})=>{const {auth}=await import('/js/firebase-config.js');return postDurable({uid:auth.currentUser?.uid||null,storage:localStorage,key,enabled:serverOn,getToken:async()=>auth.currentUser?.getIdToken()??null,fetchFn:(u,o)=>fetch(u,o),path,payload,...extra})};
+if(serverOn)import('/js/firebase-config.js').then(({auth})=>flushPending({uid:auth.currentUser?.uid||null,storage:localStorage,enabled:true,getToken:async()=>auth.currentUser?.getIdToken()??null,fetchFn:(u,o)=>fetch(u,o)})).catch(()=>{});
 const pendingSync=[];
 const units=await (await fetch('units.json')).json();const pack=units.find(u=>u.language===lang&&u.unit===unit);
 $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
@@ -39,14 +40,14 @@ else{
    sub.onclick=async()=>{if(busy||answers[i])return;busy=true;sub.disabled=tryBtn.disabled=true;ta.readOnly=true;fb.hidden=false;fb.className='bubble reply';fb.textContent='بنصحح...';
     let g;try{g=await gradeCode(it,ta.value,await selectExecutor(lang))}catch(e){g={passed:false,results:[],ran:false}}
     if(!g.ran&&!g.passed&&g.results.every(r=>!r.ran)){answers[i]=undefined;sub.disabled=tryBtn.disabled=false;ta.readOnly=false;fb.className='bubble reply retry';fb.textContent='الكود ما اشتغلش أو الخدمة مش متاحة، فالتسليم ما اتحسبش. صلّح الخطأ وسلّم تاني. '+(g.results[0]?.message||'');busy=false;return}
-    answers[i]={correct:g.passed};if(serverOn)pendingSync.push(api('/api/progress/code-task',codeTaskPayload({language:lang,unit,quiz:data,item:i-data.mcq.length,code:ta.value})));fb.className='bubble reply '+(g.passed?'fit':'retry');setProse(fb,(g.passed?'صح. الناتج مطابق في كل الحالات. ':'الناتج مش مطابق في حالة أو أكتر. ')+it.why);busy=false;upd();done()};
+    answers[i]={correct:g.passed};if(serverOn)pendingSync.push(durable('ct:'+lang+':'+unit+':'+(i-data.mcq.length),'/api/progress/code-task',codeTaskPayload({language:lang,unit,quiz:data,item:i-data.mcq.length,code:ta.value})));fb.className='bubble reply '+(g.passed?'fit':'retry');setProse(fb,(g.passed?'صح. الناتج مطابق في كل الحالات. ':'الناتج مش مطابق في حالة أو أكتر. ')+it.why);busy=false;upd();done()};
    card.append(ta);if(stdinBox)card.append(stdinBox);card.append(tryBtn,sub,out,fb);
   }
   $('quizBody').append(card);cards.push(card);
  });
  function done(){
   if(answers.filter(Boolean).length<items.length)return;
-  if(serverOn)Promise.all(pendingSync).then(()=>api('/api/progress/exam',examPayload({language:lang,unit,quiz:data,answers})));
+  if(serverOn)Promise.all(pendingSync).then(states=>durable('ex:'+lang+':'+unit,'/api/progress/exam',examPayload({language:lang,unit,quiz:data,answers}),{defer:states.some(x=>x.state!=='saved'&&x.state!=='off')}));
   const s=summarize(items,answers);const r=$('quizResult');r.hidden=false;r.replaceChildren();
   const h=document.createElement('h2');h.textContent='نتيجتك: '+s.percent+'% ('+s.earned+' من '+s.total+') - '+s.band;r.append(h);const ok=isPassed(s.percent);const st=document.createElement('p');st.className='quiz-status '+(ok?'pass':'review');st.textContent=ok?'ناجح: تقدر تكمّل للوحدة الجاية.':'محتاج مراجعة: النجاح من '+PASS_PERCENT+'%. راجع الدروس تحت ثم أعد الاختبار.';r.append(st);
   const n=document.createElement('p');n.textContent=s.missedLessons.length?'راجع: '+s.missedLessons.map(titleOf).join('، '):'كل الإجابات صح.';r.append(n);
