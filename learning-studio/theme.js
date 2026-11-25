@@ -9,7 +9,7 @@
  document.addEventListener('DOMContentLoaded',function(){
   var h=document.querySelector('header');if(!h||document.getElementById('themeToggle'))return;
   var b=document.createElement('button');b.type='button';b.id='themeToggle';b.className='theme-toggle';
-  function label(){var l=root.getAttribute('data-theme')==='light';b.textContent=l?'🌙 داكن':'☀️ فاتح';b.setAttribute('aria-label',l?'التبديل إلى الوضع الداكن':'التبديل إلى الوضع الفاتح')}
+  function label(){var l=root.getAttribute('data-theme')==='light';b.textContent=l?'الوضع الداكن':'الوضع الفاتح';b.setAttribute('aria-label',l?'التبديل إلى الوضع الداكن':'التبديل إلى الوضع الفاتح')}
   b.onclick=function(){var n=root.getAttribute('data-theme')==='light'?'dark':'light';apply(n);try{localStorage.setItem(KEY,n)}catch(e){}label()};
   label();h.append(b);
  });

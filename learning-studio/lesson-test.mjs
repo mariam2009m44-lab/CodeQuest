@@ -7,6 +7,7 @@ const [bank,units]=await Promise.all([fetch('lesson-tests.json').then(r=>r.json(
 const pack=units.find(u=>u.language===lang&&u.lessons.some(l=>l.id===lessonId)),lesson=pack?.lessons.find(l=>l.id===lessonId),items=bank[lessonId];
 $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
 const idx=pack?pack.lessons.indexOf(lesson):-1;
+const pending=(()=>{try{const p=JSON.parse(localStorage.getItem('cq_lt_pending')||'null');return p&&p.lessonId===lessonId?p:null}catch{return null}})(),uid=pending?.uid||null;
 function nextTarget(){if(!pack)return null;if(idx+1<pack.lessons.length){const n=pack.lessons[idx+1];return {href:'/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(n.id),text:'التالي: '+n.title}}return {href:'quiz.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit,text:'التالي: امتحان الوحدة '+pack.unit}}
 const link=(href,text,cls='primary')=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;a.style.marginInlineEnd='10px';return a};
 if(!lesson||!items){$('ltTitle').textContent='اختبار الدرس';$('ltIntro').textContent='لسه مفيش اختبار لهذا الدرس، فبتكمل من غيره. اختبار الوحدة موجود في آخرها.';document.querySelector('.quiz-progress').hidden=true;$('ltBody').hidden=true;const n=nextTarget();if(n)$('ltResult').append(link(n.href,n.text));$('ltResult').hidden=false}
@@ -41,11 +42,11 @@ else{
    if(!answers[i].correct){const why=document.createElement('p');why.className='lt-why';setProse(why,it.why);li.append(why)}
    ol.append(li)});
   r.append(ol);
-  const prev=(()=>{try{return JSON.parse(localStorage.getItem(lessonTestKey(lang,lessonId))||'null')}catch{return null}})();
+  const prev=(()=>{try{return JSON.parse(localStorage.getItem(lessonTestKey(lang,lessonId,uid))||'null')}catch{return null}})();
   // A pass is never removed by a later lower attempt.
-  const keep=prev?.passed===true;try{localStorage.setItem(lessonTestKey(lang,lessonId),JSON.stringify({percent:keep?Math.max(prev.percent,s.percent):s.percent,passed:keep||s.passed,at:Date.now(),source:'studio-device-only'}))}catch{}
+  const keep=prev?.passed===true;try{localStorage.setItem(lessonTestKey(lang,lessonId,uid),JSON.stringify({percent:keep?Math.max(prev.percent,s.percent):s.percent,passed:keep||s.passed,at:Date.now(),source:'studio-device-only'}))}catch{}
   // Passing is what completes the node on the map (the lesson page only records the node after this).
-  if(s.passed)try{const pend=JSON.parse(localStorage.getItem('cq_lt_pending')||'null');if(pend&&pend.lessonId===lessonId&&pend.fromMap){writeMapProgress(pend.language,pend.unit,pend.index,pend.uid);localStorage.removeItem('cq_lt_pending')}}catch{}
+  if(s.passed)try{const pend=pending;if(pend&&pend.fromMap){writeMapProgress(pend.language,pend.unit,pend.index,pend.uid);localStorage.removeItem('cq_lt_pending')}}catch{}
   const n=nextTarget();const actions=document.createElement('div');actions.className='lt-actions';
   const mk=(href,text,cls)=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;return a};
   if(s.passed&&n){actions.append(mk(n.href,n.text,'lt-btn lt-primary'),mk(location.href,'إعادة الاختبار','lt-btn lt-secondary'))}

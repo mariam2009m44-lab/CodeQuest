@@ -7,7 +7,8 @@ export function scoreLessonTest(items,answers){
  const percent=total?Math.round(earned*100/total):0;
  return {earned,total,percent,passed:total>0&&answers.filter(Boolean).length===total&&isPassed(percent),missed:items.map((it,i)=>answers[i]?.correct===true?null:i).filter(i=>i!==null)};
 }
-export const lessonTestKey=(lang,lessonId)=>'codequest_studio_lessontest_'+lang+'_'+lessonId;
+// Keyed by account uid so two accounts on one device never share a result.
+export const lessonTestKey=(lang,lessonId,uid)=>'codequest_studio_lessontest_'+(uid||'anon')+'_'+lang+'_'+lessonId;
 // Structural checks used by the content validator and tests.
 export function validateItem(it){
  const errs=[];
