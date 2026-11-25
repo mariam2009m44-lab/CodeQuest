@@ -41,14 +41,14 @@ test("revocation DURING a read returns nothing (authorization is rechecked after
   const w = on(boot());
   const code = (await w.call(P + "create", { token: "tokA", body: { consent: true } })).data.code; await w.call(P + "claim", { token: "tokB", body: { code } });
   w.env.STUDENT_PROGRESS.get("uidA"); w.stores.get("uidA").m.set("state", { lessons: {}, exams: { "python-1": { percent: 80, passed: true } } });
-  const orig = w.env.STUDENT_PROGRESS.get; w.env.STUDENT_PROGRESS.get = id => { const s = orig(id); return { fetch: async (u, i) => { const r = await s.fetch(u, i); await w.call(P + "unlink", { token: "tokA", body: { parent: "uidB" } }); return r; } }; };
+  const orig = w.env.STUDENT_PROGRESS.get; w.env.STUDENT_PROGRESS.get = id => { const s = orig(id); if (id !== "uidA") return s; return { fetch: async (u, i) => { const r = await s.fetch(u, i); await w.call(P + "unlink", { token: "tokA", body: { parent: "uidB" } }); return r; } }; };
   const d = await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } });
   assert.equal(d.status, 403); assert.equal(JSON.stringify(d.data).includes("lessonTestsPassed"), false);
 });
 test("progress read failure shows available:false, not zeros", async () => {
   const w = on(boot());
   const code = (await w.call(P + "create", { token: "tokA", body: { consent: true } })).data.code; await w.call(P + "claim", { token: "tokB", body: { code } });
-  w.env.STUDENT_PROGRESS.get = () => ({ fetch: async () => { throw new Error("down"); } });
+  { const o2 = w.env.STUDENT_PROGRESS.get; w.env.STUDENT_PROGRESS.get = id => id === "uidA" ? { fetch: async () => { throw new Error("down"); } } : o2(id); }
   const d = await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } });
   assert.deepEqual(d.data, { success: true, available: false, syncState: "read_failed" });
 });
@@ -61,4 +61,11 @@ test("brute force: wrong codes are bounded per account, then even the right code
   assert.deepEqual((await w.call(P + "children", { token: "tokV" })).data.children, [{ uid: "uidA" }]);
   assert.deepEqual((await w.call(P + "children", { token: "tokB" })).data.children, []);
   assert.equal((await w.call(P + "parents", { token: "tokA" })).data.parents.length, 1);
+});
+test("a uid containing ':' can never address the internal service instances", async () => {
+  const w = on(boot());
+  for (const r of ["create", "claim", "children", "parents", "unlink", "dashboard"]) assert.equal((await w.call(P + r, { token: "colon", body: { consent: true, child: "x" } })).status, 401, r);
+  assert.equal((await w.call("/api/academy/my-status", { token: "colon" })).status, 401);
+  assert.equal((await w.call("/api/progress/get", { token: "colon" })).status, 401);
+  assert.equal(w.stores.size, 0);
 });

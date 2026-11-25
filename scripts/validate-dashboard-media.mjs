@@ -109,10 +109,10 @@ if (parent.includes('id="createLinkButton"') || parent.includes('id="generatedCo
   throw new Error("Parent dashboard must not expose learner-side code generation.");
 }
 const learnerLinkScript = fs.readFileSync("js/learner-parent-link.js", "utf8");
-if (!learnerLinkScript.includes('"createParentLinkCode"') ||
-    !learnerLinkScript.includes('"getMyParentLinks"') ||
-    !learnerLinkScript.includes('"removeParentLinkAsChild"')) {
-  throw new Error("Learner parent-link management callables are incomplete.");
+if (!learnerLinkScript.includes('parentApi(user, "create"') ||
+    !learnerLinkScript.includes('parentApi(user, "parents"') ||
+    !learnerLinkScript.includes('parentApi(user, "unlink"')) {
+  throw new Error("Learner parent-link management calls are incomplete.");
 }
 const progressPage = fs.readFileSync("progress.html", "utf8");
 if (!progressPage.includes(String.raw`const match = /^(\d+)_(\d+)$/.exec(String(key));`)) {

@@ -21,14 +21,6 @@ class_name = "CodeExecutionLimiter"
 name = "STUDENT_PROGRESS"
 class_name = "StudentProgress"
 
-[[durable_objects.bindings]]
-name = "ACADEMY_DIRECTORY"
-class_name = "AcademyDirectory"
-
-[[durable_objects.bindings]]
-name = "PARENT_LINKS"
-class_name = "ParentLinks"
-
 [[migrations]]
 tag = "v1-code-execution-limiter"
 new_sqlite_classes = ["CodeExecutionLimiter"]
@@ -41,16 +33,6 @@ new_sqlite_classes = ["CodeExecutionLimiter"]
 [[migrations]]
 tag = "v2-student-progress"
 new_sqlite_classes = ["StudentProgress"]
-
-# Adds AcademyDirectory (additive, SQLite-backed, Free-plan compatible). ACADEMY_APPLICATIONS is intentionally unset: every academy route answers 503 until a reviewed commit turns it on.
-[[migrations]]
-tag = "v3-academy-directory"
-new_sqlite_classes = ["AcademyDirectory"]
-
-# Adds ParentLinks (additive, SQLite-backed). PARENT_LINKS_ENABLED is unset: every parent route answers 503 until a reviewed commit turns it on. Roll-forward only; never delete this class.
-[[migrations]]
-tag = "v4-parent-links"
-new_sqlite_classes = ["ParentLinks"]
 
 [previews.vars]
 FIREBASE_PROJECT_ID = "codequest-6350a"

@@ -5,7 +5,7 @@ export async function parentApi(user, path, body) {
     const token = await user.getIdToken();
     const res = await fetch(WORKER + "/api/parent/" + path, { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(body || {}) });
     const data = await res.json().catch(() => ({}));
-    const off = res.status === 503 && (data.message === "parent_off" || data.message === "parent_unavailable");
+    const off = (res.status === 503 && (data.message === "parent_off" || data.message === "parent_unavailable")) || (res.status === 404 && typeof data.message === "string" && data.message.includes("المسار"));
     return { ok: res.ok, status: res.status, data, off, unreachable: false };
   } catch { return { ok: false, status: 0, data: {}, off: false, unreachable: true }; }
 }

@@ -185,8 +185,10 @@ async function verifyFirebaseUser(request, env) {
   if (
     typeof payload.sub !== "string" ||
     payload.sub.length === 0 ||
-    payload.sub.length > 128
+    payload.sub.length > 128 ||
+    payload.sub.includes(":")
   ) {
+    // ":" is reserved for internal service instance names ("svc:...") so a uid can never address them.
     throw new Error("INVALID_USER");
   }
 
@@ -789,7 +791,7 @@ async function handleProgress(request, env, origin, action) {
 async function handleAcademy(request, env, origin, action) {
   let user;
   try { user = await verifyFirebaseUser(request, env); } catch { return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin); }
-  if (!env.ACADEMY_DIRECTORY) return jsonResponse({ success: false, message: "academy_unavailable" }, 503, origin);
+  if (!env.STUDENT_PROGRESS) return jsonResponse({ success: false, message: "academy_unavailable" }, 503, origin);
   if (env.ACADEMY_APPLICATIONS !== "on") return jsonResponse({ success: false, retryable: true, message: "academy_off" }, 503, origin);
   let body = {};
   try { body = await readBoundedJson(request, 16384); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
@@ -798,7 +800,7 @@ async function handleAcademy(request, env, origin, action) {
   // Owner-only: exact Firebase uid match against the ACADEMY_ADMIN_UIDS dashboard secret. No email, domain, role, claim or approval ever grants admin.
   const isAdmin = list(env.ACADEMY_ADMIN_UIDS).includes(user.uid);
   if ((action === "list" || action === "review") && !isAdmin) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
-  const stub = env.ACADEMY_DIRECTORY.get(env.ACADEMY_DIRECTORY.idFromName("directory"));
+  const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName("svc:academy"));
   const send = payload => stub.fetch("https://academy.internal/" + action, { method: "POST", body: JSON.stringify(payload) });
   let res;
   if (action === "submit") {
@@ -824,12 +826,12 @@ async function handleParent(request, env, origin, action) {
 async function handleParentInner(request, env, origin, action) {
   let user;
   try { user = await verifyFirebaseUser(request, env); } catch { return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin); }
-  if (!env.PARENT_LINKS) return jsonResponse({ success: false, message: "parent_unavailable" }, 503, origin);
+  if (!env.STUDENT_PROGRESS) return jsonResponse({ success: false, message: "parent_unavailable" }, 503, origin);
   if (env.PARENT_LINKS_ENABLED !== "on") return jsonResponse({ success: false, retryable: true, message: "parent_off" }, 503, origin);
   let body = {};
   try { body = await readBoundedJson(request, 2048); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
-  const stub = env.PARENT_LINKS.get(env.PARENT_LINKS.idFromName("links"));
+  const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName("svc:parent"));
   const send = (act, payload) => stub.fetch("https://parent.internal/" + act, { method: "POST", body: JSON.stringify(payload) }).then(async r => ({ status: r.status, data: await r.json() }));
   const out = r => jsonResponse(r.data, r.status, origin);
   if (action === "create") {
@@ -1502,6 +1504,10 @@ export class StudentProgress {
   constructor(state) { this.state = state; }
 
   async fetch(request) {
+    // Service instances ("svc:academy", "svc:parent") reuse this already-deployed class under their own instance names, so each has separate storage and no new Durable Object namespace is needed (the Free plan caps namespaces per account).
+    const host = new URL(request.url).hostname;
+    if (host === "academy.internal") return new AcademyDirectory(this.state).fetch(request);
+    if (host === "parent.internal") return new ParentLinks(this.state).fetch(request);
     const action = new URL(request.url).pathname.slice(1);
     let body = {};
     try { body = JSON.parse(await request.text() || "{}"); } catch { return Response.json({ success: false, message: "bad request" }, { status: 400 }); }
@@ -1604,7 +1610,7 @@ export class StudentProgress {
   }
 }
 
-export class AcademyDirectory {
+class AcademyDirectory {
   constructor(state) { this.state = state; }
   async fetch(request) {
     const action = new URL(request.url).pathname.slice(1);
@@ -1621,7 +1627,7 @@ export class AcademyDirectory {
   }
 }
 
-export class ParentLinks {
+class ParentLinks {
   constructor(state) { this.state = state; }
   async fetch(request) {
     const action = new URL(request.url).pathname.slice(1);

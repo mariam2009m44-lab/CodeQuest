@@ -31,4 +31,5 @@ The dry run validates the bundle without publishing it. Production publishing is
 - All links and codes live under ONE Durable Object storage key (`links`). That is fine for a small pilot; it has a storage-size ceiling and one object serialises every request. Move to per-account keys before broad use.
 - Bounds (3 active codes per child, 10 failed claims per hour per parent, 4 parents per child, 10 children per parent, 30 minute codes) are provisional, not user-approved.
 - The parent dashboard shows only lessonTestsPassed and unitExamsPassed from server-assessed results. An empty server record, or PROGRESS_WRITES not "on", returns syncState "unknown" (never 0).
-- Roll-forward only: never delete the ParentLinks class or its records as rollback.
+- Storage: academy and parent services run as the named instances "svc:academy" and "svc:parent" of the already-deployed StudentProgress class. No new Durable Object namespace and no new migration: Workers Free allows only 100 DO namespaces per account, and the deploy of two new classes was refused (error 10067) on 2026-11-25. Firebase uids containing ":" are rejected so a uid can never address a service instance.
+- Roll-forward only: never delete these records or the StudentProgress class as rollback.

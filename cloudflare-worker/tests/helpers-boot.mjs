@@ -15,7 +15,7 @@ export function boot({ fetchImpl, jose } = {}) {
     // Mock Firebase verification: token names map to claims. Anything else (expired, wrong audience, bad signature) throws like jose.
     async jwtVerify(token, _k, opts) {
       if (opts.audience !== "proj" || opts.issuer !== "https://securetoken.google.com/proj") throw new Error("claim");
-      const t = { tokA: { sub: "uidA" }, tokB: { sub: "uidB" }, tokE: { sub: "uidE", email: "Pilot@Example.com", email_verified: true }, tokU: { sub: "uidU", email: "pilot@example.com", email_verified: false }, tokV: { sub: "uidV", email: "v@example.com", email_verified: true }, nosub: {}, longsub: { sub: "x".repeat(129) } }[token];
+      const t = { tokA: { sub: "uidA" }, tokB: { sub: "uidB" }, tokE: { sub: "uidE", email: "Pilot@Example.com", email_verified: true }, tokU: { sub: "uidU", email: "pilot@example.com", email_verified: false }, tokV: { sub: "uidV", email: "v@example.com", email_verified: true }, nosub: {}, colon: { sub: "svc:parent" }, longsub: { sub: "x".repeat(129) } }[token];
       if (!t) throw new Error("jwt invalid or expired");
       return { payload: t };
     } };
@@ -23,9 +23,10 @@ export function boot({ fetchImpl, jose } = {}) {
   sb.globalThis = sb; vm.runInNewContext(source, sb);
   const stores = new Map();
   const ns = { idFromName: n => n, get: id => { if (!stores.has(id)) { const m = new Map(); stores.set(id, { m, o: new sb.StudentProgress({ storage: { async transaction(fn) { return fn({ get: async k => m.has(k) ? JSON.parse(JSON.stringify(m.get(k))) : undefined, put: async (k, v) => { m.set(k, JSON.parse(JSON.stringify(v))); } }); } } }) }); } const h = stores.get(id); return { fetch: (u, init) => h.o.fetch(new Request(u, init)) }; } };
-  const adirs = new Map(); const ans = { idFromName: n => n, get: id => { if (!adirs.has(id)) { const m = new Map(); adirs.set(id, { m, o: new sb.AcademyDirectory({ storage: { async transaction(fn) { return fn({ get: async k => m.has(k) ? JSON.parse(JSON.stringify(m.get(k))) : undefined, put: async (k, v) => { m.set(k, JSON.parse(JSON.stringify(v))); } }); } } }) }); } const h = adirs.get(id); return { fetch: (u, init) => h.o.fetch(new Request(u, init)) }; } };
-  const pls = new Map(); const pns = { idFromName: n => n, get: id => { if (!pls.has(id)) { const m = new Map(); pls.set(id, { m, o: new sb.ParentLinks({ storage: { async transaction(fn) { return fn({ get: async k => m.has(k) ? JSON.parse(JSON.stringify(m.get(k))) : undefined, put: async (k, v) => { m.set(k, JSON.parse(JSON.stringify(v))); } }); } } }) }); } const h = pls.get(id); return { fetch: (u, init) => h.o.fetch(new Request(u, init)) }; } };
-  const env = { PARENT_LINKS: pns, ACADEMY_DIRECTORY: ans, FIREBASE_PROJECT_ID: "proj", ALLOWED_ORIGINS: ORIGIN, STUDENT_PROGRESS: ns, PROGRESS_WRITES: "on" };
+  // Academy and parent services run as named instances of StudentProgress ("svc:academy", "svc:parent"); these views expose their stores to tests.
+  const adirs = { get size() { return stores.has("svc:academy") ? 1 : 0; }, values: () => (stores.has("svc:academy") ? [stores.get("svc:academy")] : []).values(), clear: () => stores.delete("svc:academy") };
+  const pls = { get size() { return stores.has("svc:parent") ? 1 : 0; }, get: () => stores.get("svc:parent") };
+  const env = { FIREBASE_PROJECT_ID: "proj", ALLOWED_ORIGINS: ORIGIN, STUDENT_PROGRESS: ns, PROGRESS_WRITES: "on" };
   const call = (path, { token, body, method = "POST", origin = ORIGIN, raw, headers: extra } = {}) => sb.worker.fetch(new Request("https://w.test" + path, { method, headers: { "Content-Type": "application/json", ...(extra || {}), ...(origin ? { Origin: origin } : {}), ...(token ? { Authorization: token.startsWith("Bearer") || token.startsWith("Basic") ? token : "Bearer " + token } : {}) }, body: method === "GET" ? undefined : (raw ?? JSON.stringify(body ?? {})) }), env).then(async r => ({ status: r.status, h: r.headers, data: await r.json().catch(() => null) }));
   return { call, stores, adirs, pls, sb, env };
 }

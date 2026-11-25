@@ -53,7 +53,7 @@ test('worker ON: applicant submits through the Worker, reload shows pending and 
   assert.deepEqual(errors, []);
   // admin on the same Worker store, admin token
   const b = await browser.newContext({ viewport: { width: 390, height: 1000 }, serviceWorkers: 'block' }); t.after(() => b.close());
-  const dirs = a.w; const adminSetup = await setup(t, { workerOn: true, token: 'tokE' }); adminSetup.w.adirs.clear(); for (const [k, v] of a.w.adirs) adminSetup.w.adirs.set(k, v);
+  const dirs = a.w; const adminSetup = await setup(t, { workerOn: true, token: 'tokE' }); adminSetup.w.stores.set('svc:academy', a.w.stores.get('svc:academy'));
   const admin = await page(adminSetup.context, 'academy-admin.html'); await admin.p.waitForSelector('#pendingInstructors .admin-application');
   assert.match(await admin.p.textContent('#adminStats'), /طلبات قيد المراجعة/);
   assert.match(await admin.p.textContent('#adminStudents'), /لم يُنفَّذ بعد/); assert.match(await admin.p.textContent('#adminClasses'), /لم يُنفَّذ بعد/); assert.match(await admin.p.textContent('.academy-intro p'), /مراجعة طلبات المدربين فقط/); assert.doesNotMatch(await admin.p.textContent('.academy-intro p'), /في مكان واحد/); assert.match(await admin.p.textContent('#adminState'), /باقي الأقسام لم تُنفَّذ بعد/);
