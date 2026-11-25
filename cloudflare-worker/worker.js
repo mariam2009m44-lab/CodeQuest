@@ -804,7 +804,7 @@ async function handleAcademy(request, env, origin, action) {
     if (!v.ok) return jsonResponse({ success: false, message: "راجعي بيانات طلب المدرب والروابط والتخصصات." }, 400, origin);
     res = await send({ uid: user.uid, email: user.email, emailVerified: user.emailVerified, value: v.value });
   } else if (action === "status") res = await send({ uid: user.uid });
-  else if (action === "list") res = await send({ status: typeof body.status === "string" ? body.status : "" });
+  else if (action === "list") res = await send({ status: typeof body.status === "string" ? body.status : "", cursor: typeof body.cursor === "string" ? body.cursor.slice(0, 200) : "", limit: Number.isInteger(body.limit) ? body.limit : 25 });
   else res = await send({ admin: user.uid, target: String(body.uid || ""), decision: String(body.decision || "") });
   return jsonResponse(await res.json(), res.status, origin);
 }
@@ -1548,7 +1548,7 @@ export class AcademyDirectory {
       const dir = (await tx.get("dir")) || emptyDirectory(); const now = Date.now();
       if (action === "submit") { const r = submitApplication(dir, b.uid, b.email, b.emailVerified, b.value, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason, retryable: r.status === 429 || r.status === 503 } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }
       if (action === "status") return { status: 200, data: { success: true, ...myStatus(dir, b.uid) } };
-      if (action === "list") return { status: 200, data: { success: true, applications: listApplications(dir, b.status) } };
+      if (action === "list") return { status: 200, data: { success: true, ...(() => { const l = listApplications(dir, b.status, b.cursor, b.limit); return { applications: l.items, hasMore: l.hasMore }; })() } };
       if (action === "review") { const r = reviewApplication(dir, b.admin, b.target, b.decision, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }
       return { status: 404, data: { success: false } };
     });

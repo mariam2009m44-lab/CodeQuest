@@ -45,3 +45,27 @@ test("daily submit cap and wrong-origin refusal", async () => {
   assert.equal(last.status, 429);
   assert.equal((await w.call("/api/academy/my-status", { token: "tokA", body: {}, origin: "https://evil.example" })).status, 403);
 });
+import * as core from "../academy-core.js";
+const val = core.validateApplication(app).value;
+test("core: global daily intake cap is bounded and resets next UTC day (provisional threshold)", () => {
+  const dir = core.emptyDirectory(); const t = Date.UTC(2026, 10, 25, 12);
+  for (let i = 0; i < core.GLOBAL_DAILY_INTAKE; i++) assert.equal(core.submitApplication(dir, "u" + i, "e@x.com", true, val, t).ok, true);
+  const over = core.submitApplication(dir, "late", "e@x.com", true, val, t); assert.equal(over.status, 503); assert.equal(over.reason, "intake_full_today"); assert.equal(dir.apps.late, undefined);
+  assert.equal(core.submitApplication(dir, "late", "e@x.com", true, val, t + 86400000).ok, true);
+  assert.equal(Object.keys(dir.apps).length, core.GLOBAL_DAILY_INTAKE + 1, "nothing was deleted");
+});
+test("core: admin list is paginated with a stable cursor, limit is capped, no overlap, no gaps", () => {
+  const dir = core.emptyDirectory(); for (let i = 0; i < 7; i++) core.submitApplication(dir, "u" + i, "e@x.com", true, val, 1000 + (i % 3));
+  const seen = []; let cursor = ""; let pages = 0;
+  for (;;) { const l = core.listApplications(dir, "", cursor, 3); seen.push(...l.items.map(a => a.uid)); pages++; if (!l.hasMore) break; cursor = l.items[l.items.length - 1].cursorId; }
+  assert.equal(pages, 3); assert.equal(new Set(seen).size, 7);
+  assert.equal(core.listApplications(dir, "", "", 100000).items.length, 7); assert.equal(core.listApplications(dir, "", "bogus", 3).items.length, 0);
+});
+test("HTTP: replaying the same submission is idempotent (one record), cross-user private fields never leak, admin routes deny non-admin including pagination params", async () => {
+  const w = on(); for (let i = 0; i < 3; i++) await w.call("/api/academy/instructor-application", { token: "tokA", body: app });
+  assert.equal(Object.keys([...w.adirs.values()][0].m.get("dir").apps).length, 1);
+  const other = await w.call("/api/academy/my-status", { token: "tokB", body: {} }); assert.equal(JSON.stringify(other.data).includes("سارة"), false);
+  assert.equal(JSON.stringify(other.data).includes("uidA"), false);
+  const denied = await w.call("/api/academy/admin/applications", { token: "tokB", body: { limit: 100, cursor: "x" } }); assert.equal(denied.status, 403); assert.equal(JSON.stringify(denied.data).includes("سارة"), false);
+  const page = await w.call("/api/academy/admin/applications", { token: "tokE", body: { limit: 1 } }); assert.equal(page.data.applications.length, 1); assert.equal(page.data.hasMore, false);
+});

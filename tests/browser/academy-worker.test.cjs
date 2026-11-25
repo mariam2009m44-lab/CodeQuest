@@ -56,7 +56,7 @@ test('worker ON: applicant submits through the Worker, reload shows pending and 
   const dirs = a.w; const adminSetup = await setup(t, { workerOn: true, token: 'tokE' }); adminSetup.w.adirs.clear(); for (const [k, v] of a.w.adirs) adminSetup.w.adirs.set(k, v);
   const admin = await page(adminSetup.context, 'academy-admin.html'); await admin.p.waitForSelector('#pendingInstructors .admin-application');
   assert.match(await admin.p.textContent('#adminStats'), /طلبات قيد المراجعة/);
-  assert.equal(await admin.p.locator('#adminStudents').isVisible(), false, 'sections that have no Worker data are hidden, not shown empty');
+  assert.match(await admin.p.textContent('#adminStudents'), /غير متاح حاليًا/); assert.match(await admin.p.textContent('#adminClasses'), /غير متاح حاليًا/); assert.match(await admin.p.textContent('#adminState'), /باقي الأقسام غير متاحة/);
   await admin.p.screenshot({ path: path.join(artifactDir, 'academy-admin-worker.png'), fullPage: true });
   await admin.p.locator('#pendingInstructors .admin-action').first().click();
   await admin.p.waitForFunction(() => document.querySelector('#pendingInstructors').textContent.includes('لا توجد طلبات'));
@@ -75,4 +75,13 @@ test('worker OFF: the page falls back to the Firebase callable (and reports its 
   await p.click('#instructorTab'); await fill(p); await p.click('#instructorForm button[type=submit]');
   await p.waitForFunction(() => /callable unavailable/.test(document.getElementById('instructorFeedback').textContent));
   assert.equal(await p.evaluate(() => window.__fn.includes('submitInstructorApplication')), true); assert.equal(a.w.adirs.size, 0);
+});
+
+test('worker unreachable during submit: no fallback to the callable (no duplicate store), honest message', async t => {
+  const a = await setup(t, { workerOn: true, token: 'tokV' });
+  const { p } = await page(a.context, 'academy-registration.html'); await p.waitForFunction(() => document.getElementById('accountState').textContent.includes('Sara'));
+  await a.context.route(WORKER + '/api/academy/instructor-application', r => r.abort());
+  await p.click('#instructorTab'); await fill(p); await p.click('#instructorForm button[type=submit]');
+  await p.waitForFunction(() => /لم نتأكد/.test(document.getElementById('instructorFeedback').textContent));
+  assert.equal(await p.evaluate(() => (window.__fn || []).includes('submitInstructorApplication')), false);
 });

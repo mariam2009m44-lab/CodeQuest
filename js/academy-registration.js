@@ -19,7 +19,8 @@ const submitInstructorCallable=httpsCallable(functions,"submitInstructorApplicat
 async function submitInstructor(payload){
  const w=await academyWorker(currentUser,"instructor-application",payload);
  if(w.ok)return {data:w.data,worker:true};
- if(!w.off&&!w.unreachable)throw new Error(w.data.message==="rate_limited"?"وصلتِ للحد اليومي لإرسال الطلب. حاولي غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
+ if(w.unreachable)throw new Error("لم نتأكد من وصول طلبك. افتحي الصفحة من جديد وتحققي من حالة الطلب قبل إعادة الإرسال.");
+ if(!w.off)throw new Error(w.data.message==="rate_limited"?"وصلتِ للحد اليومي لإرسال الطلب. حاولي غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
  return submitInstructorCallable(payload);
 }
 const callableStatus=httpsCallable(functions,"getMyAcademyRegistrationStatus");

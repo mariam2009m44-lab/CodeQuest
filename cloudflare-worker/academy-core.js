@@ -5,6 +5,9 @@ const AGES = ["10-12", "13-15", "16-17", "18+"];
 const LEVELS = ["beginner", "basic", "intermediate", "advanced"];
 export const APPLICATION_CAP = 2000;
 export const DAILY_SUBMITS = 5;
+// PROVISIONAL thresholds (not user-approved policy): total new-or-updated applications accepted per UTC day, and admin page size.
+export const GLOBAL_DAILY_INTAKE = 100;
+export const PAGE_MAX = 100;
 const str = v => String(v == null ? "" : v).trim();
 const uniq = v => Array.isArray(v) ? [...new Set(v.map(String))] : [];
 const httpsOk = v => !v || (v.length <= 500 && /^https:\/\//i.test(v));
@@ -28,15 +31,17 @@ export function validateApplication(d) {
     !httpsOk(v.portfolioUrl) || !httpsOk(v.linkedinUrl) || !httpsOk(v.introVideoUrl) || !httpsOk(v.teachingDemoUrl);
   return bad ? { ok: false } : { ok: true, value: v };
 }
-export function emptyDirectory() { return { apps: {}, audit: [], submits: {} }; }
+export function emptyDirectory() { return { apps: {}, audit: [], submits: {}, intake: { day: "", n: 0 } }; }
 export function submitApplication(dir, uid, email, emailVerified, value, now) {
   const day = new Date(now).toISOString().slice(0, 10);
   const q = dir.submits[uid] && dir.submits[uid].day === day ? dir.submits[uid] : { day, n: 0 };
   if (q.n >= DAILY_SUBMITS) return { ok: false, status: 429, reason: "rate_limited" };
+  const intake = dir.intake && dir.intake.day === day ? dir.intake : { day, n: 0 };
+  if (intake.n >= GLOBAL_DAILY_INTAKE) return { ok: false, status: 503, reason: "intake_full_today" };
   const prev = dir.apps[uid];
   if (prev && prev.status === "approved") return { ok: false, status: 409, reason: "already_approved" };
   if (!prev && Object.keys(dir.apps).length >= APPLICATION_CAP) return { ok: false, status: 503, reason: "directory_full" };
-  q.n += 1; dir.submits[uid] = q;
+  q.n += 1; dir.submits[uid] = q; intake.n += 1; dir.intake = intake;
   dir.apps[uid] = { ...value, uid, email: String(email || "").slice(0, 254), emailVerified: emailVerified === true, status: "pending", submittedAt: prev ? prev.submittedAt : now, updatedAt: now };
   dir.audit.push({ actor: uid, action: "application_submitted", target: uid, at: now });
   if (dir.audit.length > 500) dir.audit.splice(0, dir.audit.length - 500);
@@ -44,8 +49,13 @@ export function submitApplication(dir, uid, email, emailVerified, value, now) {
 }
 // The owner sees their own application (to pre-fill the form). Nobody else's is ever returned here.
 export function myStatus(dir, uid) { const a = dir.apps[uid]; return a ? { exists: true, status: a.status, submittedAt: a.submittedAt, updatedAt: a.updatedAt, application: { ...a, uid: undefined } } : { exists: false }; }
-export function listApplications(dir, status) {
-  return Object.values(dir.apps).filter(a => !status || a.status === status).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 200);
+export function listApplications(dir, status, cursor, limit) {
+  const lim = Math.min(Math.max(Number.isInteger(limit) ? limit : 25, 1), PAGE_MAX);
+  let rows = Object.values(dir.apps).filter(a => !status || a.status === status).sort((a, b) => b.updatedAt - a.updatedAt || (a.uid < b.uid ? -1 : 1));
+  const key = a => a.updatedAt + ":" + a.uid;
+  if (typeof cursor === "string" && cursor) { const i = rows.findIndex(a => key(a) === cursor); rows = i < 0 ? [] : rows.slice(i + 1); }
+  const page = rows.slice(0, lim).map(a => ({ ...a, cursorId: key(a) }));
+  return { items: page, hasMore: rows.length > lim };
 }
 // Records the decision only. It never grants a role or contacts the applicant.
 export function reviewApplication(dir, adminUid, targetUid, decision, now) {
