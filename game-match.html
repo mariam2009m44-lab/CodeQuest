@@ -231,6 +231,11 @@
     .feedback.error {
       color: var(--danger);
     }
+    #feedback.feedback { scroll-margin-bottom: 120px; }
+    body { padding-bottom: max(110px, env(safe-area-inset-bottom)) !important; }
+    #feedback.feedback.error { color: #ffb3c4 !important; }
+    #feedback.feedback.success { color: #8ff0c8 !important; }
+    .piece { direction: ltr; unicode-bidi: isolate; }
 
     .feedback.info {
       color: var(--cyan);
@@ -542,6 +547,7 @@
     function setFeedback(message, type = "info") {
       feedback.textContent = message;
       feedback.className = `feedback ${type}`;
+      if (message && type === "error") feedback.scrollIntoView({ block: "center" });
     }
 
     function renderPieces() {

@@ -60,6 +60,11 @@ test('match: a wrong order says how many pieces are right and which one to reche
   const msg = (await page.textContent('#feedback')).trim();
   assert.match(msg, /3 من 5 قطع في مكانها الصحيح/);
   assert.match(msg, /راجع القطعة رقم 4/);
+  await page.waitForTimeout(600);
   await page.screenshot({ path: path.join(artifactDir, 'match-hint-390.png') });
+  assert.equal(await page.$$eval('#targetZone .piece', b => b.map(x => getComputedStyle(x).direction).join()), 'ltr,ltr,ltr,ltr,ltr');
+  assert.equal(await page.$eval('#feedback', f => getComputedStyle(f).color), 'rgb(255, 179, 196)');
+  const vis = await page.evaluate(() => { const f = document.getElementById('feedback').getBoundingClientRect(), n = document.querySelector('.mobile-bottom-nav').getBoundingClientRect(); return { fb: f.bottom, nav: n.top }; });
+  assert.ok(vis.fb <= vis.nav, 'feedback must not sit under the bottom nav: ' + JSON.stringify(vis));
   assert.deepEqual(errors, []);
 });
