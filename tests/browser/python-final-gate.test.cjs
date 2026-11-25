@@ -28,11 +28,11 @@ try{
  r=await exam({server:true,worker:{status:200,body:{success:true}},legacy:true});assert.equal(r.content,false,'malformed state is unknown, not passed');
  r=await exam({server:false,worker:'net',legacy:true});assert.equal(r.content,true,'legacy mode (server assessment OFF) keeps its existing behaviour');assert.equal(r.hits,0,'legacy mode does not call the Worker gate');
  // map: after the last lesson the end link appears (last unit exam, then the Python final)
- for(const [passed,re] of [[false,/quiz\.html\?lang=python&unit=12/],[true,/\/python-exam\.html$/]]){
-  const c=await ctx();const p=await c.newPage();await p.addInitScript(()=>{sessionStorage.setItem('cq_cody_intro_u1_python','1')});await p.goto(L+'/learning-studio/index.html');
+ for(const [passed,re,flag] of [[false,/quiz\.html\?lang=python&unit=12/,true],[true,/\/python-exam\.html$/,true],[true,/^$/,false]]){
+  const c=await ctx();await c.route('**/learning-studio/features.json',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({serverAssessment:flag})}));const p=await c.newPage();await p.addInitScript(()=>{sessionStorage.setItem('cq_cody_intro_u1_python','1')});await p.goto(L+'/learning-studio/index.html');
   await p.evaluate(ps=>{if(ps)localStorage.setItem('codequest_studio_quiz_python_'+ps,JSON.stringify({passed:true}))},passed?'12':null);
   await p.goto(L+'/course-path.html?lang=python');await p.waitForSelector('.cw-unit',{timeout:8000});await p.waitForTimeout(500);
   const href=await p.evaluate(()=>document.getElementById('cwExamGate')?.getAttribute('href')||null);
-  assert.match(href||'',re);if(passed){await p.evaluate(()=>document.getElementById('cwExamGate').scrollIntoView({block:'center'}));await p.waitForTimeout(400)}if(passed)await p.screenshot({path:process.env.SHOT_MAP||'/tmp/final-map.png'});await c.close()}
+  assert.match(href||'',re);if(passed&&flag){await p.evaluate(()=>document.getElementById('cwExamGate').scrollIntoView({block:'center'}));await p.waitForTimeout(400)}if(passed&&flag)await p.screenshot({path:process.env.SHOT_MAP||'/tmp/final-map.png'});await c.close()}
  console.log('python final gate + map entry ok (stubbed)');
 }finally{await b.close();srv.close()}})().catch(e=>{console.error(e);process.exit(1)});

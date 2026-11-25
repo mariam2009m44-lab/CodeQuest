@@ -144,7 +144,7 @@ function render(chapters,records,local){
    const last=chapters.length;let lastPassed=false;
    try{lastPassed=JSON.parse(localStorage.getItem("codequest_studio_quiz_"+language+"_"+last)||"null")?.passed===true}catch{}
    if(!lastPassed)endLink={href:"/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+last,text:"اختبار الوحدة "+last+": انجح فيه (٥٠٪ أو أكثر) علشان تكمل المسار"};
-   else if(language==="python")endLink={href:"/python-exam.html",text:"الامتحان الشامل لبايثون: بيفتح بعد ما تنجح في امتحانات الوحدات كلها"};
+   else if(language==="python"&&finalLinkOn)endLink={href:"/python-exam.html",text:"الامتحان الشامل لبايثون: بيفتح بعد ما تنجح في امتحانات الوحدات كلها"};
   }
   if(endLink){const a=document.createElement("a");a.id="cwExamGate";a.className="cw-exam-gate";a.href=endLink.href;a.textContent=endLink.text;a.style.cssText="display:block;margin:12px auto;max-width:520px;padding:12px 16px;border-radius:12px;background:#674ac1;color:#fff;text-align:center;font-weight:700;text-decoration:none";document.getElementById("cwProgressBar").closest("section,div")?.after(a)}
   if(examGate){const a=document.createElement("a");a.id="cwExamGate";a.className="cw-exam-gate";a.href="/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+examGate;a.textContent="اختبار الوحدة "+examGate+": انجح فيه (٥٠٪ أو أكثر) علشان تفتح الوحدة اللي بعدها";a.style.cssText="display:block;margin:12px auto;max-width:520px;padding:12px 16px;border-radius:12px;background:#674ac1;color:#fff;text-align:center;font-weight:700;text-decoration:none";document.getElementById("cwProgressBar").closest("section,div")?.after(a)}}
@@ -208,7 +208,10 @@ async function refreshProgress(){
  lastRecords=records;lastLocal=getLocalDone();render(curriculumChapters,lastRecords,lastLocal);
  }catch(error){console.error("Could not refresh course progress",error)}
 }
+// The Python final link shows only when server assessment is ON: with it OFF the exam page still uses its legacy chapter-record gate, which Studio progress does not satisfy.
+let finalLinkOn=false;
 async function init(){
+ try{finalLinkOn=(await fetch('/learning-studio/features.json',{cache:'no-store'}).then(r=>r.json())).serverAssessment===true}catch{finalLinkOn=false}
  if(!cfg){map.innerHTML='<div class="cw-empty">المسار المطلوب غير موجود. ارجع واختار لغة من المسارات.</div>';return}
  try{
   // Load the curriculum before account data so a temporary authentication
