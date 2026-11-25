@@ -41,6 +41,17 @@ function getLocalDone(){
   return list;
  }catch{return []}
 }
+// A lesson whose chat is finished but whose test is not passed yet: the map shows it honestly and links straight to the test.
+function pendingTest(){
+ try{const p=JSON.parse(localStorage.getItem("cq_lt_pending")||"null");
+  if(p&&uid&&p.uid===uid&&p.language===language&&typeof p.lessonId==="string"&&Number.isSafeInteger(p.unit)&&Number.isSafeInteger(p.index))return p}catch{}
+ return null;
+}
+function celebration(){
+ try{const c=JSON.parse(localStorage.getItem("cq_map_celebrate")||"null");
+  if(c&&uid&&c.uid===uid&&c.language===language&&Date.now()-Number(c.at)<10*60*1000)return c}catch{}
+ return null;
+}
 function isDone(item,ci,li,records,local){
  const id=String(item.id||""),pythonKey=(ci+1)+"_"+li;
  const match=x=>x?.completed===true&&(
@@ -138,8 +149,9 @@ function render(chapters,records,local){
    const globalIndex=flat.findIndex(item=>item.ci===ci&&item.li===li),done=isDone(lesson,ci,li,records,local);
    const current=!done&&globalIndex===first&&!examGate,locked=!done&&!current;
    const icon=done?"ri-check-line":locked?"ri-lock-2-line":"ri-play-fill";
-   const title=lesson.title||("الدرس "+(li+1)),href=cfg.url(ci,li,lesson.id),{x,y}=points[li];
-   return `<div class="cw-road-node ${current?"is-current":done?"is-done":"is-locked"}" data-lesson-index="${globalIndex}" style="left:${x}%;top:${y}px">${current?'<div class="cw-cody cw-cody--node">'+CODY+'</div>':""}<button class="cw-node ${done?"is-done":current?"is-current":""}" type="button" ${locked?'disabled aria-label="درس مقفول"':'data-href="'+escapeHTML(href)+'" aria-label="'+escapeHTML(title)+'"'}><i class="${icon}"></i></button><span class="cw-node-label">${escapeHTML(title)}</span><span class="cw-node-sub">${done?"مكتمل":current?"ابدأ هنا":"افتح بعد السابق"}</span></div>`;
+   const pt=pendingTest(),needsTest=current&&pt&&pt.lessonId===lesson.id&&pt.unit===ci+1&&pt.index===li;
+   const title=lesson.title||("الدرس "+(li+1)),href=needsTest?"/learning-studio/lesson-test.html?lang="+encodeURIComponent(language)+"&lesson="+encodeURIComponent(lesson.id):cfg.url(ci,li,lesson.id),{x,y}=points[li];
+   return `<div data-ci="${ci}" data-li="${li}" class="cw-road-node ${current?"is-current":done?"is-done":"is-locked"}${needsTest?" needs-test":""}" data-lesson-index="${globalIndex}" style="left:${x}%;top:${y}px">${current?'<div class="cw-cody cw-cody--node">'+CODY+'</div>':""}<button class="cw-node ${done?"is-done":current?"is-current":""}" type="button" ${locked?'disabled aria-label="درس مقفول"':'data-href="'+escapeHTML(href)+'" aria-label="'+escapeHTML(title)+'"'}><i class="${icon}"></i></button><span class="cw-node-label">${escapeHTML(title)}</span><span class="cw-node-sub">${done?"مكتمل":needsTest?"خلصت الدرس، فاضل الاختبار":current?"ابدأ هنا":"افتح بعد السابق"}</span></div>`;
   }).join("");
   const unitPercent=lessons.length?Math.round(unitDone/lessons.length*100):0;
   return `<section class="cw-unit ${unitPercent===100?"is-complete":""}"><header class="cw-unit-head"><span class="cw-unit-number">${ci+1}</span><div class="cw-unit-title"><h3>${escapeHTML(chapter.title||("الوحدة "+(ci+1)))}</h3><p>${lessons.length} دروس · ${unitDone} مكتمل</p><div class="cw-unit-progress"><span style="width:${unitPercent}%"></span></div></div><span class="cw-unit-status">${unitPercent===100?"✓ مكتملة":unitDone+" / "+lessons.length}</span></header><div class="cw-road" style="height:${height}px"><svg class="cw-road-svg" viewBox="0 0 100 ${height}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}"></path><path class="cw-road-glow" d="${progressPath}"></path></svg>${nodes}</div><div class="cw-unit-foot"><strong><i class="${unitPercent===100?"ri-trophy-line":"ri-flag-2-line"}"></i> ${unitPercent===100?"أنهيت الوحدة بنجاح!":"محطة نهاية الوحدة"}</strong><span>${unitPercent===100?"أحسنت! كل دروس الوحدة اكتملت. كودي فخور بيك.":"أكمل الدروس بالترتيب عشان تفتح الوحدة التالية."}</span></div></section>`;
@@ -159,7 +171,27 @@ function render(chapters,records,local){
   const finish=document.getElementById("cwFinish");if(finish)finish.hidden=true;
   const currentUnit=flat[first]?.ci??0;
   setCody("wave",`أهلًا بعودتك! أنت خلصت ${completed} من ${total} درس. كمل من الوحدة ${currentUnit+1}، وأنا معاك!`);
+  const waiting=map.querySelector(".cw-road-node.needs-test");
+  if(waiting)setCody("thinking","خلصتي الدرس! فاضل اختبار قصير ونعدّي للدرس اللي بعده. دوسي على المحطة المضيئة.");
+  playCelebration();
  }
+}
+// Shown once, only after a lesson test pass recorded for this account in the last 10 minutes.
+function playCelebration(){
+ const c=celebration();if(!c||!map)return;
+ try{localStorage.removeItem("cq_map_celebrate")}catch{}
+ const doneNode=[...map.querySelectorAll(".cw-road-node.is-done")].find(n=>{return Number(n.dataset.ci)===c.unit-1&&Number(n.dataset.li)===c.index});
+ if(!doneNode)return;
+ const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ doneNode.classList.add("just-done");
+ const next=map.querySelector(".cw-road-node.is-current");
+ if(next)next.classList.add("cody-arrives");
+ const burst=document.createElement("div");burst.className="cw-burst";burst.setAttribute("aria-hidden","true");
+ for(let i=0;i<14;i++){const s=document.createElement("i");s.style.setProperty("--a",(i*360/14)+"deg");s.style.setProperty("--d",(46+(i%3)*14)+"px");burst.append(s)}
+ doneNode.append(burst);
+ setCody("happy","عاشت! الدرس اتحسب ومحطة جديدة اتفتحت. أنا جاي معاكي للي بعده!");
+ setTimeout(()=>{burst.remove();doneNode.classList.remove("just-done");next?.classList.remove("cody-arrives")},reduce?300:2600);
+ scrollToCurrent();
 }
 async function refreshProgress(){
  if(!cfg||!uid)return;
