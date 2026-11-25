@@ -4,9 +4,9 @@ Status: source tested locally, not committed, pushed or deployed. Existing CodeQ
 
 ## Completed checks
 
-- 113 lessons and113 original concept-linked scenes in35units across Python48,JavaScript26,C++23,Java16.
+- 119 lessons and119 original concept-linked scenes in35units across Python48,JavaScript26,C++23,Java22.
 - 921 portable tests.
-- All113 lesson browser sequences with real local compilers, including syntax-error and code-preservation paths.
+- All119 lesson browser sequences with real local compilers, including syntax-error and code-preservation paths.
 - 41 backend tests with actual Firestore emulator, zero skipped: canonical sequence checks, authentication/schema/owner/version, duplicate and transaction isolation, compiler protocol, legacy rules and rewards.
 - Full existing browser suite run in bounded groups:62tests pass, including auth return and account isolation. Extra root entry/compiler smoke and saved/unconfirmed proof-flow fixtures pass.
 - Syntax, curriculum structure, dashboard media,49-page local links and diff-whitespace checks pass.

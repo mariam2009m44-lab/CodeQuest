@@ -3983,6 +3983,279 @@
             ]
           }
         ]
+      },
+      {
+        "id": "java-2-3",
+        "title": "طول النص وحروفه",
+        "objective": "يستخدم length() وcharAt() مع String ويفرّق بين عدد الحروف وفهرس الحرف.",
+        "story": "شريط اسم المحطة يمرّ تحت شعاع مسطرة مضيء. كودي يريد أن يعرف كم حرفًا في الاسم، وما أول حرف فيه.",
+        "comic": {
+          "required": true,
+          "scene": "شريط اسم المحطة يمرّ تحت شعاع مسطرة مضيء. كودي يريد أن يعرف كم حرفًا في الاسم، وما أول حرف فيه.",
+          "alt": "كودي يقيس طول شريط اسم مضيء بشعاع مسطرة",
+          "textOutsideImage": true,
+          "assetStatus": "original detailed comic inspected",
+          "asset": "java-2-3.webp"
+        },
+        "acceptance": {
+          "mustPass": [
+            "prediction with corrective retry",
+            "worked code executed",
+            "practice code executed with required concept",
+            "explanation check",
+            "independent transfer"
+          ],
+          "noSpeedPenalty": true,
+          "noAccountRewardsInPreview": true,
+          "reviewStatus": "authored; reference solutions compiled and run with a real Java launcher on the build machine; production authentication and final editorial review pending"
+        },
+        "steps": [
+          {
+            "type": "cody",
+            "text": "شريط اسم المحطة يمرّ تحت شعاع مسطرة مضيء. كودي يريد أن يعرف كم حرفًا في الاسم، وما أول حرف فيه."
+          },
+          {
+            "type": "worked",
+            "code": "public class Main {\n public static void main(String[] args) {\n  String name = \"Cody\";\n  System.out.println(name.length());\n  System.out.println(name.charAt(0));\n  System.out.println(name + \"-7\");\n }\n}",
+            "output": "4\nC\nCody-7",
+            "hideOutputUntilPrediction": true
+          },
+          {
+            "type": "prediction",
+            "question": "ما قيمة name.length() عندما يكون name = \"Cody\"؟",
+            "options": [
+              "4، لأنها تعدّ كل الحروف",
+              "3، لأن العدّ يبدأ من صفر",
+              "1، لأنها تعيد أول حرف"
+            ],
+            "correctIndex": 0,
+            "feedbackByOption": [
+              "صحيح. الطول هو عدد الحروف. أما الفهرس فيبدأ من صفر.",
+              "الفهرس يبدأ من صفر، لكن length() تعدّ الحروف كلها.",
+              "أول حرف نأخذه بـ charAt(0). length() تعيد العدد."
+            ]
+          },
+          {
+            "type": "run",
+            "mustExecute": true
+          },
+          {
+            "type": "investigate",
+            "text": "length() تعيد عدد الحروف، وcharAt(0) تعيد الحرف الأول لأن الفهرس يبدأ من صفر. آخر فهرس يساوي length() - 1. علامة + بين نصين تلصقهما."
+          },
+          {
+            "type": "practice",
+            "task": "عرّف String tag = \"Robot\". اطبع tag.length() ثم اطبع tag.charAt(0).",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  String tag = \"Robot\";\n  System.out.println(tag.length());\n  System.out.println(tag.charAt(0));\n }\n}",
+            "expectedOutput": "5\nR",
+            "hint": "length() بقوسين فارغين، وcharAt تأخذ رقم الفهرس. الحرف الأول فهرسه 0.",
+            "starter": "public class Main {\n public static void main(String[] args) {\n  String tag = \"Bot\";\n  System.out.println(tag.length());\n  System.out.println(tag.charAt(0));\n }\n}",
+            "conceptRubric": "عرّف String tag = \"Robot\". اطبع tag.length() ثم اطبع tag.charAt(0).",
+            "feedback": {
+              "output": "قارن أول سطر مختلف وحدد القرار أو الاستدعاء المسؤول.",
+              "concept": "نحتاج استخدام الفكرة، لا حفظ الناتج.",
+              "syntax": "اقرأ أول خطأ ومكانه، ثم غيّر جزءًا واحدًا."
+            }
+          },
+          {
+            "type": "explain",
+            "question": "لماذا تعيد name.length() الرقم 4 للاسم Cody بينما آخر فهرس فيه 3؟",
+            "rubric": "الطول يعدّ الحروف من واحد، والفهرس يبدأ من صفر، فآخر فهرس هو length() - 1."
+          },
+          {
+            "type": "transfer",
+            "task": "عرّف String code = \"Orbit\". اطبع code.length() ثم اطبع آخر حرف فيه باستخدام code.charAt(code.length() - 1).",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  String code = \"Orbit\";\n  System.out.println(code.length());\n  System.out.println(code.charAt(code.length() - 1));\n }\n}",
+            "expectedOutput": "5\nt",
+            "showSolutionToLearner": false,
+            "starter": "",
+            "conceptRubric": "عرّف String code = \"Orbit\". اطبع code.length() ثم اطبع آخر حرف فيه باستخدام code.charAt(code.length() - 1)."
+          },
+          {
+            "type": "recallLater",
+            "question": "ما الفرق بين length() وفهرس آخر حرف؟",
+            "useNewValues": true
+          }
+        ],
+        "dialogue": [
+          {
+            "ask": "كودي عنده name = \"Cody\". تفتكر name.charAt(0) هتطبع إيه؟",
+            "options": [
+              {
+                "text": "C",
+                "reply": "صح. الفهرس بيبدأ من صفر، فالحرف الأول هو C.",
+                "fit": true
+              },
+              {
+                "text": "o",
+                "reply": "o هو الحرف التاني وفهرسه 1. العدّ بيبدأ من صفر."
+              },
+              {
+                "text": "4",
+                "reply": "4 هو الطول. charAt بترجع حرف مش عدد."
+              }
+            ]
+          },
+          {
+            "ask": "طيب آخر حرف في Cody فهرسه كام؟",
+            "options": [
+              {
+                "text": "3",
+                "reply": "صح. الطول 4، فآخر فهرس هو length() - 1 يعني 3.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "4 هو الطول. لو كتبنا charAt(4) هتطلع خطأ لأن مفيش حرف في المكان ده."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "java-2-4",
+        "title": "اقرأ عددين من المدخلات",
+        "objective": "يقرأ عددين صحيحين بـ Scanner بالترتيب نفسه الذي أُدخلا به.",
+        "story": "زائر يمرّر بطاقته ويكتب عددين. كودي يريد أن يقرأ البرنامج العددين بدل أن يكتبهما داخل الكود.",
+        "comic": {
+          "required": true,
+          "scene": "زائر يمرّر بطاقته ويكتب عددين. كودي يريد أن يقرأ البرنامج العددين بدل أن يكتبهما داخل الكود.",
+          "alt": "كودي يوصّل كابل بجهاز لوحة مفاتيح وزائر يمرّر بطاقة",
+          "textOutsideImage": true,
+          "assetStatus": "original detailed comic inspected",
+          "asset": "java-2-4.webp"
+        },
+        "acceptance": {
+          "mustPass": [
+            "prediction with corrective retry",
+            "worked code executed",
+            "practice code executed with required concept",
+            "explanation check",
+            "independent transfer"
+          ],
+          "noSpeedPenalty": true,
+          "noAccountRewardsInPreview": true,
+          "reviewStatus": "authored; reference solutions compiled and run with a real Java launcher on the build machine; production authentication and final editorial review pending"
+        },
+        "steps": [
+          {
+            "type": "cody",
+            "text": "زائر يمرّر بطاقته ويكتب عددين. كودي يريد أن يقرأ البرنامج العددين بدل أن يكتبهما داخل الكود."
+          },
+          {
+            "type": "worked",
+            "code": "import java.util.Scanner;\n\npublic class Main {\n public static void main(String[] args) {\n  Scanner scanner = new Scanner(System.in);\n  int energy = scanner.nextInt();\n  int used = scanner.nextInt();\n  System.out.println(energy - used);\n }\n}",
+            "output": "5",
+            "hideOutputUntilPrediction": true
+          },
+          {
+            "type": "prediction",
+            "question": "المدخلات 9 4. أي قيمة تدخل المتغير energy؟",
+            "options": [
+              "9، لأنها أول عدد مُدخل",
+              "4، لأن Scanner تقرأ من النهاية",
+              "13، لأن Scanner تجمع الأعداد"
+            ],
+            "correctIndex": 0,
+            "feedbackByOption": [
+              "صحيح. nextInt() تقرأ العدد التالي بالترتيب، والأول هو 9.",
+              "Scanner تقرأ من البداية بالترتيب، فالأول هو 9.",
+              "Scanner لا تجمع. كل استدعاء لـ nextInt() يقرأ عددًا واحدًا."
+            ]
+          },
+          {
+            "type": "run",
+            "mustExecute": true
+          },
+          {
+            "type": "investigate",
+            "text": "الاستيراد يعرّف Java مكان فئة Scanner. كل nextInt() تقرأ العدد التالي بالترتيب. الترتيب هو الذي يحدد أي متغير يأخذ أي عدد. المدخلات تُكتب في خانة الإدخال."
+          },
+          {
+            "type": "practice",
+            "task": "اقرأ عددين int باسم energy وextra بنفس الأسلوب، ثم اطبع مجموعهما.",
+            "referenceSolution": "import java.util.Scanner;\n\npublic class Main {\n public static void main(String[] args) {\n  Scanner scanner = new Scanner(System.in);\n  int energy = scanner.nextInt();\n  int extra = scanner.nextInt();\n  System.out.println(energy + extra);\n }\n}",
+            "expectedOutput": "7",
+            "hint": "أنشئ Scanner مرة واحدة، ثم استدعِ nextInt() مرتين بالترتيب.",
+            "starter": "import java.util.Scanner;\n\npublic class Main {\n public static void main(String[] args) {\n  Scanner scanner = new Scanner(System.in);\n  int energy = scanner.nextInt();\n  int used = scanner.nextInt();\n  System.out.println(energy - used);\n }\n}",
+            "conceptRubric": "اقرأ عددين int باسم energy وextra بنفس الأسلوب، ثم اطبع مجموعهما.",
+            "feedback": {
+              "output": "قارن أول سطر مختلف وحدد القرار أو الاستدعاء المسؤول.",
+              "concept": "نحتاج استخدام الفكرة، لا حفظ الناتج.",
+              "syntax": "اقرأ أول خطأ ومكانه، ثم غيّر جزءًا واحدًا."
+            }
+          },
+          {
+            "type": "explain",
+            "question": "ماذا تفعل scanner.nextInt() في كل استدعاء؟",
+            "rubric": "تقرأ العدد الصحيح التالي من المدخلات، لذلك يحدد ترتيب القراءة أي متغير يأخذ أي عدد."
+          },
+          {
+            "type": "transfer",
+            "task": "اقرأ width ثم height، ثم اطبع المساحة width * height.",
+            "referenceSolution": "import java.util.Scanner;\n\npublic class Main {\n public static void main(String[] args) {\n  Scanner scanner = new Scanner(System.in);\n  int width = scanner.nextInt();\n  int height = scanner.nextInt();\n  System.out.println(width * height);\n }\n}",
+            "expectedOutput": "12",
+            "showSolutionToLearner": false,
+            "starter": "",
+            "conceptRubric": "اقرأ width ثم height، ثم اطبع المساحة width * height."
+          },
+          {
+            "type": "recallLater",
+            "question": "لماذا تحتاج Scanner إلى import؟",
+            "useNewValues": true
+          }
+        ],
+        "dialogue": [
+          {
+            "ask": "المدخل 9 4 والكود قرأ energy الأول وبعدين used. energy هتساوي كام؟",
+            "options": [
+              {
+                "text": "9",
+                "reply": "صح. nextInt() بتقرأ العدد التالي بالترتيب، والأول 9.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "لأ. الـ 4 جاي تاني. الترتيب هو اللي بيحدد مين ياخد أنهي عدد."
+              }
+            ]
+          },
+          {
+            "ask": "ليه محتاجين import java.util.Scanner؟",
+            "options": [
+              {
+                "text": "عشان Scanner مش من الأساسيات، فنقول لـ Java تجيبها من java.util",
+                "reply": "صح. الـ import بيعرّف Java مكان الفئة.",
+                "fit": true
+              },
+              {
+                "text": "عشان البرنامج يشتغل أسرع",
+                "reply": "الـ import مش للسرعة. هو بس بيقول لـ Java فين تلاقي Scanner."
+              }
+            ]
+          }
+        ],
+        "workedStdin": "9 4",
+        "practiceCases": [
+          {
+            "stdin": "5 2",
+            "stdout": "7"
+          },
+          {
+            "stdin": "8 1",
+            "stdout": "9"
+          }
+        ],
+        "transferCases": [
+          {
+            "stdin": "4 3",
+            "stdout": "12"
+          },
+          {
+            "stdin": "5 2",
+            "stdout": "10"
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -7245,6 +7518,254 @@
             ]
           }
         ]
+      },
+      {
+        "id": "java-4-3",
+        "title": "شرطان في شرط واحد",
+        "objective": "يجمع شرطين بـ && و|| ويعرف متى يكون كل منهما صحيحًا.",
+        "story": "باب له قفلان: يحتاج مفتاحًا وطاقة كافية. كودي يختار && حين يلزم الشرطان، و|| حين يكفي واحد.",
+        "comic": {
+          "required": true,
+          "scene": "باب له قفلان: يحتاج مفتاحًا وطاقة كافية. كودي يختار && حين يلزم الشرطان، و|| حين يكفي واحد.",
+          "alt": "باب بقفلين ومصباحان أخضر وأصفر وكودي بين مفتاحين",
+          "textOutsideImage": true,
+          "assetStatus": "original detailed comic inspected",
+          "asset": "java-4-3.webp"
+        },
+        "acceptance": {
+          "mustPass": [
+            "prediction with corrective retry",
+            "worked code executed",
+            "practice code executed with required concept",
+            "explanation check",
+            "independent transfer"
+          ],
+          "noSpeedPenalty": true,
+          "noAccountRewardsInPreview": true,
+          "reviewStatus": "authored; reference solutions compiled and run with a real Java launcher on the build machine; production authentication and final editorial review pending"
+        },
+        "steps": [
+          {
+            "type": "cody",
+            "text": "باب له قفلان: يحتاج مفتاحًا وطاقة كافية. كودي يختار && حين يلزم الشرطان، و|| حين يكفي واحد."
+          },
+          {
+            "type": "worked",
+            "code": "public class Main {\n public static void main(String[] args) {\n  int energy = 8;\n  boolean hasKey = false;\n  if (hasKey && energy >= 5) {\n    System.out.println(\"Open\");\n  } else {\n    System.out.println(\"Locked\");\n  }\n  if (hasKey || energy >= 5) {\n    System.out.println(\"Light on\");\n  }\n }\n}",
+            "output": "Locked\nLight on",
+            "hideOutputUntilPrediction": true
+          },
+          {
+            "type": "prediction",
+            "question": "hasKey = false وenergy = 8. ماذا يحدث للشرط hasKey && energy >= 5؟",
+            "options": [
+              "يكون false فيُطبع Locked، لأن && تحتاج الشرطين صحيحين",
+              "يكون true لأن energy كافية",
+              "يُطبع Light on"
+            ],
+            "correctIndex": 0,
+            "feedbackByOption": [
+              "صحيح. المفتاح غير موجود، فالشرط المركب false.",
+              "الطاقة وحدها لا تكفي مع &&.",
+              "Light on تأتي من شرط || الثاني، وليس من &&."
+            ]
+          },
+          {
+            "type": "run",
+            "mustExecute": true
+          },
+          {
+            "type": "investigate",
+            "text": "&& تعيد true فقط إذا صحّ الشرطان. || تعيد true إذا صحّ أحدهما. نفس القيمتين أعطتا نتيجتين مختلفتين: Locked و Light on."
+          },
+          {
+            "type": "practice",
+            "task": "عرّف int energy = 8 وboolean hasKey = true. اطبع Open إذا كانت hasKey && energy >= 5، وإلا اطبع Locked.",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  int energy = 8;\n  boolean hasKey = true;\n  if (hasKey && energy >= 5) {\n    System.out.println(\"Open\");\n  } else {\n    System.out.println(\"Locked\");\n  }\n }\n}",
+            "expectedOutput": "Open",
+            "hint": "ضع الشرطين داخل أقواس if وبينهما &&.",
+            "starter": "public class Main {\n public static void main(String[] args) {\n  int energy = 8;\n  boolean hasKey = false;\n  if (hasKey && energy >= 5) {\n    System.out.println(\"Open\");\n  } else {\n    System.out.println(\"Locked\");\n  }\n  if (hasKey || energy >= 5) {\n    System.out.println(\"Light on\");\n  }\n }\n}",
+            "conceptRubric": "عرّف int energy = 8 وboolean hasKey = true. اطبع Open إذا كانت hasKey && energy >= 5، وإلا اطبع Locked.",
+            "feedback": {
+              "output": "قارن أول سطر مختلف وحدد القرار أو الاستدعاء المسؤول.",
+              "concept": "نحتاج استخدام الفكرة، لا حفظ الناتج.",
+              "syntax": "اقرأ أول خطأ ومكانه، ثم غيّر جزءًا واحدًا."
+            }
+          },
+          {
+            "type": "explain",
+            "question": "متى يكون الشرط a && b صحيحًا؟",
+            "rubric": "عندما يكون الشرطان a وb صحيحين معًا. أما || فيكفي فيها أن يكون واحد منهما صحيحًا."
+          },
+          {
+            "type": "transfer",
+            "task": "عرّف int level = 6. اطبع Inside إذا كانت level >= 3 && level <= 8، وإلا اطبع Outside.",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  int level = 6;\n  if (level >= 3 && level <= 8) {\n    System.out.println(\"Inside\");\n  } else {\n    System.out.println(\"Outside\");\n  }\n }\n}",
+            "expectedOutput": "Inside",
+            "showSolutionToLearner": false,
+            "starter": "",
+            "conceptRubric": "عرّف int level = 6. اطبع Inside إذا كانت level >= 3 && level <= 8، وإلا اطبع Outside."
+          },
+          {
+            "type": "recallLater",
+            "question": "ما الفرق بين && و||؟",
+            "useNewValues": true
+          }
+        ],
+        "dialogue": [
+          {
+            "ask": "لو hasKey = false وenergy = 9، الباب (hasKey && energy >= 5) هيفتح؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. && لازم الشرطين يتحققوا، والمفتاح مش موجود.",
+                "fit": true
+              },
+              {
+                "text": "أيوه، الطاقة كفاية",
+                "reply": "الطاقة وحدها مش كفاية مع &&. الشرطين لازم يتحققوا مع بعض."
+              }
+            ]
+          },
+          {
+            "ask": "ومع || يعني (hasKey || energy >= 5) بنفس القيم؟",
+            "options": [
+              {
+                "text": "هيتحقق",
+                "reply": "صح. || بتكفي بشرط واحد صح، وenergy >= 5 صح.",
+                "fit": true
+              },
+              {
+                "text": "مش هيتحقق",
+                "reply": "|| بتكفي بشرط واحد، وenergy 9 أكبر من 5، فالشرط true."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "java-4-4",
+        "title": "اختيار من عدة أزرار",
+        "objective": "يستخدم switch مع case وbreak وdefault لاختيار فرع من عدة قيم.",
+        "story": "لوحة أزرار ملوّنة، وكل زر يفتح حجرة مختلفة. كودي يستخدم switch بدل سلسلة طويلة من if.",
+        "comic": {
+          "required": true,
+          "scene": "لوحة أزرار ملوّنة، وكل زر يفتح حجرة مختلفة. كودي يستخدم switch بدل سلسلة طويلة من if.",
+          "alt": "كودي يضغط زرًّا ملوّنًا وباب الحجرة المطابق يفتح",
+          "textOutsideImage": true,
+          "assetStatus": "original detailed comic inspected",
+          "asset": "java-4-4.webp"
+        },
+        "acceptance": {
+          "mustPass": [
+            "prediction with corrective retry",
+            "worked code executed",
+            "practice code executed with required concept",
+            "explanation check",
+            "independent transfer"
+          ],
+          "noSpeedPenalty": true,
+          "noAccountRewardsInPreview": true,
+          "reviewStatus": "authored; reference solutions compiled and run with a real Java launcher on the build machine; production authentication and final editorial review pending"
+        },
+        "steps": [
+          {
+            "type": "cody",
+            "text": "لوحة أزرار ملوّنة، وكل زر يفتح حجرة مختلفة. كودي يستخدم switch بدل سلسلة طويلة من if."
+          },
+          {
+            "type": "worked",
+            "code": "public class Main {\n public static void main(String[] args) {\n  int button = 2;\n  switch (button) {\n    case 1:\n      System.out.println(\"Red bay\");\n      break;\n    case 2:\n      System.out.println(\"Yellow bay\");\n      break;\n    default:\n      System.out.println(\"Unknown\");\n  }\n }\n}",
+            "output": "Yellow bay",
+            "hideOutputUntilPrediction": true
+          },
+          {
+            "type": "prediction",
+            "question": "قيمة button هي 2. ماذا يُطبع؟",
+            "options": [
+              "Yellow bay فقط",
+              "Red bay ثم Yellow bay",
+              "Unknown"
+            ],
+            "correctIndex": 0,
+            "feedbackByOption": [
+              "صحيح. يطابق case 2 ثم break توقف التنفيذ.",
+              "Red bay تخص case 1، ولا تعمل هنا.",
+              "Unknown تعمل فقط إذا لم تطابق أي case."
+            ]
+          },
+          {
+            "type": "run",
+            "mustExecute": true
+          },
+          {
+            "type": "investigate",
+            "text": "switch تقارن القيمة بكل case. عند التطابق تنفذ أوامر الفرع حتى break. إن لم يوجد تطابق تعمل default."
+          },
+          {
+            "type": "practice",
+            "task": "عرّف int button = 3. أضف case 3 يطبع Green bay ثم break، واترك default.",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  int button = 3;\n  switch (button) {\n    case 1:\n      System.out.println(\"Red bay\");\n      break;\n    case 2:\n      System.out.println(\"Yellow bay\");\n      break;\n    case 3:\n      System.out.println(\"Green bay\");\n      break;\n    default:\n      System.out.println(\"Unknown\");\n  }\n }\n}",
+            "expectedOutput": "Green bay",
+            "hint": "أضف case 3 بين case 2 وdefault، وضع break في آخره.",
+            "starter": "public class Main {\n public static void main(String[] args) {\n  int button = 2;\n  switch (button) {\n    case 1:\n      System.out.println(\"Red bay\");\n      break;\n    case 2:\n      System.out.println(\"Yellow bay\");\n      break;\n    default:\n      System.out.println(\"Unknown\");\n  }\n }\n}",
+            "conceptRubric": "عرّف int button = 3. أضف case 3 يطبع Green bay ثم break، واترك default.",
+            "feedback": {
+              "output": "قارن أول سطر مختلف وحدد القرار أو الاستدعاء المسؤول.",
+              "concept": "نحتاج استخدام الفكرة، لا حفظ الناتج.",
+              "syntax": "اقرأ أول خطأ ومكانه، ثم غيّر جزءًا واحدًا."
+            }
+          },
+          {
+            "type": "explain",
+            "question": "ما وظيفة break داخل case في switch؟",
+            "rubric": "تمنع الاستمرار إلى الحالة التالية بعد تنفيذ الفرع المطابق."
+          },
+          {
+            "type": "transfer",
+            "task": "عرّف int size = 2. اجعل case 1 وcase 2 يطبعان Small معًا بلا تكرار الطباعة، وcase 3 يطبع Large، وdefault يطبع Unknown.",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  int size = 2;\n  switch (size) {\n    case 1:\n    case 2:\n      System.out.println(\"Small\");\n      break;\n    case 3:\n      System.out.println(\"Large\");\n      break;\n    default:\n      System.out.println(\"Unknown\");\n  }\n }\n}",
+            "expectedOutput": "Small",
+            "showSolutionToLearner": false,
+            "starter": "",
+            "conceptRubric": "عرّف int size = 2. اجعل case 1 وcase 2 يطبعان Small معًا بلا تكرار الطباعة، وcase 3 يطبع Large، وdefault يطبع Unknown."
+          },
+          {
+            "type": "recallLater",
+            "question": "ماذا يفعل break في switch؟",
+            "useNewValues": true
+          }
+        ],
+        "dialogue": [
+          {
+            "ask": "لو حذفنا break من case 2 وbutton = 2، إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "هيطبع Yellow bay وبعده Unknown كمان",
+                "reply": "صح. من غير break بتكمل Java للحالة اللي بعدها.",
+                "fit": true
+              },
+              {
+                "text": "هيطبع Yellow bay بس",
+                "reply": "من غير break، Java بتكمل للحالة اللي بعدها، فهتشوف Unknown كمان."
+              }
+            ]
+          },
+          {
+            "ask": "default بتشتغل إمتى؟",
+            "options": [
+              {
+                "text": "لما القيمة ما تطابقش أي case",
+                "reply": "صح. هي الاختيار الاحتياطي.",
+                "fit": true
+              },
+              {
+                "text": "دايمًا في الآخر",
+                "reply": "default مش بتشتغل دايمًا. بتشتغل لما مفيش case مطابق، أو لو الفرع اللي قبلها ما وقفش بـ break."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -8777,6 +9298,134 @@
               {
                 "text": "مرة واحدة على الأقل",
                 "reply": "ده سلوك do-while. while العادية ممكن ما تدخلش خالص."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "java-5-3",
+        "title": "حلقة داخل حلقة",
+        "objective": "يكتب حلقة داخل حلقة ويحسب كم مرة يتنفذ الأمر الداخلي.",
+        "story": "مركبة صغيرة بعجلات تمرّ على كل ممر، وفي كل ممر تفحص عدة محطات. كودي يكتب حلقة للممرات وحلقة داخلها للمحطات.",
+        "comic": {
+          "required": true,
+          "scene": "مركبة صغيرة بعجلات تمرّ على كل ممر، وفي كل ممر تفحص عدة محطات. كودي يكتب حلقة للممرات وحلقة داخلها للمحطات.",
+          "alt": "كودي يمشي في صف ممرات ومركبة صغيرة بعجلات تفحص الصف الذي بعده",
+          "textOutsideImage": true,
+          "assetStatus": "original detailed comic inspected",
+          "asset": "java-5-3.webp"
+        },
+        "acceptance": {
+          "mustPass": [
+            "prediction with corrective retry",
+            "worked code executed",
+            "practice code executed with required concept",
+            "explanation check",
+            "independent transfer"
+          ],
+          "noSpeedPenalty": true,
+          "noAccountRewardsInPreview": true,
+          "reviewStatus": "authored; reference solutions compiled and run with a real Java launcher on the build machine; production authentication and final editorial review pending"
+        },
+        "steps": [
+          {
+            "type": "cody",
+            "text": "مركبة صغيرة بعجلات تمرّ على كل ممر، وفي كل ممر تفحص عدة محطات. كودي يكتب حلقة للممرات وحلقة داخلها للمحطات."
+          },
+          {
+            "type": "worked",
+            "code": "public class Main {\n public static void main(String[] args) {\n  for (int row = 1; row <= 2; row++) {\n    for (int slot = 1; slot <= 3; slot++) {\n      System.out.print(slot);\n    }\n    System.out.println();\n  }\n }\n}",
+            "output": "123\n123",
+            "hideOutputUntilPrediction": true
+          },
+          {
+            "type": "prediction",
+            "question": "كم مرة يعمل System.out.print(slot) في الكود كله؟",
+            "options": [
+              "6 مرات: ثلاث في كل صف من صفين",
+              "3 مرات",
+              "2 مرتان"
+            ],
+            "correctIndex": 0,
+            "feedbackByOption": [
+              "صحيح. الداخلية تعمل كاملة مع كل لفة من الخارجية: 2 × 3.",
+              "3 هي لفات الداخلية في صف واحد فقط.",
+              "2 هي لفات الخارجية فقط."
+            ]
+          },
+          {
+            "type": "run",
+            "mustExecute": true
+          },
+          {
+            "type": "investigate",
+            "text": "مع كل لفة من الحلقة الخارجية تعمل الداخلية كاملة. لذلك عدد التنفيذات يُضرب: 2 × 3. println() الفارغة تنزل لسطر جديد بعد انتهاء الصف."
+          },
+          {
+            "type": "practice",
+            "task": "اجعل الممرات 3 والمحطات 2، واطبع أرقام المحطات في كل ممر، ثم انتقل لسطر جديد.",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  for (int row = 1; row <= 3; row++) {\n    for (int slot = 1; slot <= 2; slot++) {\n      System.out.print(slot);\n    }\n    System.out.println();\n  }\n }\n}",
+            "expectedOutput": "12\n12\n12",
+            "hint": "غيّر حد الحلقة الخارجية إلى 3 والداخلية إلى 2.",
+            "starter": "public class Main {\n public static void main(String[] args) {\n  for (int row = 1; row <= 2; row++) {\n    for (int slot = 1; slot <= 3; slot++) {\n      System.out.print(slot);\n    }\n    System.out.println();\n  }\n }\n}",
+            "conceptRubric": "اجعل الممرات 3 والمحطات 2، واطبع أرقام المحطات في كل ممر، ثم انتقل لسطر جديد.",
+            "feedback": {
+              "output": "قارن أول سطر مختلف وحدد القرار أو الاستدعاء المسؤول.",
+              "concept": "نحتاج استخدام الفكرة، لا حفظ الناتج.",
+              "syntax": "اقرأ أول خطأ ومكانه، ثم غيّر جزءًا واحدًا."
+            }
+          },
+          {
+            "type": "explain",
+            "question": "أين نضع System.out.println() الفارغة ولماذا؟",
+            "rubric": "بعد الحلقة الداخلية وداخل الخارجية، لننتقل لسطر جديد بعد كل صف."
+          },
+          {
+            "type": "transfer",
+            "task": "اجعل حد الحلقة الداخلية يعتمد على الخارجية: لكل ممر row اطبع الأرقام من 1 إلى row، ثم سطر جديد. الممرات من 1 إلى 3.",
+            "referenceSolution": "public class Main {\n public static void main(String[] args) {\n  for (int row = 1; row <= 3; row++) {\n    for (int slot = 1; slot <= row; slot++) {\n      System.out.print(slot);\n    }\n    System.out.println();\n  }\n }\n}",
+            "expectedOutput": "1\n12\n123",
+            "showSolutionToLearner": false,
+            "starter": "",
+            "conceptRubric": "اجعل حد الحلقة الداخلية يعتمد على الخارجية: لكل ممر row اطبع الأرقام من 1 إلى row، ثم سطر جديد. الممرات من 1 إلى 3."
+          },
+          {
+            "type": "recallLater",
+            "question": "كم مرة تعمل الحلقة الداخلية عندما تعمل الخارجية مرتين؟",
+            "useNewValues": true
+          }
+        ],
+        "dialogue": [
+          {
+            "ask": "الحلقة الخارجية 2 والداخلية 3. كام مرة بينفذ print الداخلي؟",
+            "options": [
+              {
+                "text": "6 مرات",
+                "reply": "صح. كل لفة من الخارجية بتشغّل الداخلية كلها، يعني 2 × 3.",
+                "fit": true
+              },
+              {
+                "text": "3 مرات",
+                "reply": "3 هي لفات الداخلية في صف واحد. الخارجية بتكرر الداخلية مرتين."
+              },
+              {
+                "text": "5 مرات",
+                "reply": "مش بنجمع، بنضرب. كل صف فيه كل المحطات."
+              }
+            ]
+          },
+          {
+            "ask": "ليه كتبنا System.out.println() فاضية بعد الحلقة الداخلية؟",
+            "options": [
+              {
+                "text": "عشان ننزل لسطر جديد بعد ما يخلص الصف",
+                "reply": "صح. من غيرها كل الأرقام تتلزق في سطر واحد.",
+                "fit": true
+              },
+              {
+                "text": "عشان نكرر الحلقة",
+                "reply": "println() الفاضية بتنزل لسطر جديد بس، مش بتكرر حاجة."
               }
             ]
           }
@@ -10561,6 +11210,130 @@
               {
                 "text": "أيوه، نغير الرقم",
                 "reply": "ده كان هيحصل لو كتبنا الرقم ثابت. length بتوفر علينا."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "java-6-3",
+        "title": "قائمة تكبر: ArrayList",
+        "objective": "يستخدم ArrayList مع add وsize وget، ويعرف أنها تكبر بخلاف المصفوفة.",
+        "story": "صينية شحن تضيف خانة جديدة كلما دفع كودي صندوقًا إضافيًا. القائمة التي تكبر مثل هذه الصينية.",
+        "comic": {
+          "required": true,
+          "scene": "صينية شحن تضيف خانة جديدة كلما دفع كودي صندوقًا إضافيًا. القائمة التي تكبر مثل هذه الصينية.",
+          "alt": "صينية شحن تزيد خانة جديدة وكودي يدفع صندوقًا إضافيًا",
+          "textOutsideImage": true,
+          "assetStatus": "original detailed comic inspected",
+          "asset": "java-6-3.webp"
+        },
+        "acceptance": {
+          "mustPass": [
+            "prediction with corrective retry",
+            "worked code executed",
+            "practice code executed with required concept",
+            "explanation check",
+            "independent transfer"
+          ],
+          "noSpeedPenalty": true,
+          "noAccountRewardsInPreview": true,
+          "reviewStatus": "authored; reference solutions compiled and run with a real Java launcher on the build machine; production authentication and final editorial review pending"
+        },
+        "steps": [
+          {
+            "type": "cody",
+            "text": "صينية شحن تضيف خانة جديدة كلما دفع كودي صندوقًا إضافيًا. القائمة التي تكبر مثل هذه الصينية."
+          },
+          {
+            "type": "worked",
+            "code": "import java.util.ArrayList;\n\npublic class Main {\n public static void main(String[] args) {\n  ArrayList<String> tools = new ArrayList<>();\n  tools.add(\"map\");\n  tools.add(\"rope\");\n  System.out.println(tools.size());\n  System.out.println(tools.get(0));\n }\n}",
+            "output": "2\nmap",
+            "hideOutputUntilPrediction": true
+          },
+          {
+            "type": "prediction",
+            "question": "بعد استدعاءين لـ tools.add، كم عنصرًا في القائمة؟",
+            "options": [
+              "2، لأن القائمة تكبر مع كل add",
+              "0، لأن حجمها ثابت مثل المصفوفة",
+              "1، لأن add تستبدل العنصر"
+            ],
+            "correctIndex": 0,
+            "feedbackByOption": [
+              "صحيح. size() تعيد عدد العناصر الحالي.",
+              "المصفوفة ثابتة الطول، لكن ArrayList تكبر.",
+              "add تضيف في النهاية ولا تستبدل."
+            ]
+          },
+          {
+            "type": "run",
+            "mustExecute": true
+          },
+          {
+            "type": "investigate",
+            "text": "ArrayList تبدأ فارغة وتكبر بـ add. size() تعيد عدد العناصر، وget(index) تعيد عنصرًا بفهرسه الذي يبدأ من صفر."
+          },
+          {
+            "type": "practice",
+            "task": "أنشئ ArrayList<String> باسم tools. أضف lamp ثم torch، واطبع size() ثم get(1).",
+            "referenceSolution": "import java.util.ArrayList;\n\npublic class Main {\n public static void main(String[] args) {\n  ArrayList<String> tools = new ArrayList<>();\n  tools.add(\"lamp\");\n  tools.add(\"torch\");\n  System.out.println(tools.size());\n  System.out.println(tools.get(1));\n }\n}",
+            "expectedOutput": "2\ntorch",
+            "hint": "العنصر الثاني فهرسه 1. size() تعيد 2.",
+            "starter": "import java.util.ArrayList;\n\npublic class Main {\n public static void main(String[] args) {\n  ArrayList<String> tools = new ArrayList<>();\n  tools.add(\"map\");\n  tools.add(\"rope\");\n  System.out.println(tools.size());\n  System.out.println(tools.get(0));\n }\n}",
+            "conceptRubric": "أنشئ ArrayList<String> باسم tools. أضف lamp ثم torch، واطبع size() ثم get(1).",
+            "feedback": {
+              "output": "قارن أول سطر مختلف وحدد القرار أو الاستدعاء المسؤول.",
+              "concept": "نحتاج استخدام الفكرة، لا حفظ الناتج.",
+              "syntax": "اقرأ أول خطأ ومكانه، ثم غيّر جزءًا واحدًا."
+            }
+          },
+          {
+            "type": "explain",
+            "question": "ما الذي يميّز ArrayList عن المصفوفة؟",
+            "rubric": "حجمها يتغير: نضيف بـ add ويتحدث size() تلقائيًا، بينما طول المصفوفة ثابت عند إنشائها."
+          },
+          {
+            "type": "transfer",
+            "task": "أنشئ ArrayList<Integer> باسم readings. أضف 5 ثم 3 ثم 8، ثم اطبع كل عنصر بحلقة for حدّها readings.size().",
+            "referenceSolution": "import java.util.ArrayList;\n\npublic class Main {\n public static void main(String[] args) {\n  ArrayList<Integer> readings = new ArrayList<>();\n  readings.add(5);\n  readings.add(3);\n  readings.add(8);\n  for (int index = 0; index < readings.size(); index++) {\n    System.out.println(readings.get(index));\n  }\n }\n}",
+            "expectedOutput": "5\n3\n8",
+            "showSolutionToLearner": false,
+            "starter": "",
+            "conceptRubric": "أنشئ ArrayList<Integer> باسم readings. أضف 5 ثم 3 ثم 8، ثم اطبع كل عنصر بحلقة for حدّها readings.size()."
+          },
+          {
+            "type": "recallLater",
+            "question": "لماذا نستخدم size() في حد الحلقة مع ArrayList؟",
+            "useNewValues": true
+          }
+        ],
+        "dialogue": [
+          {
+            "ask": "إيه الفرق الأساسي بين ArrayList والمصفوفة؟",
+            "options": [
+              {
+                "text": "ArrayList بتكبر مع add، والمصفوفة طولها ثابت",
+                "reply": "صح. ده سبب إننا نستخدم ArrayList لما عدد العناصر بيتغير.",
+                "fit": true
+              },
+              {
+                "text": "مفيش فرق",
+                "reply": "فيه فرق: المصفوفة بتتحدد بطول ثابت، وArrayList بتزيد عناصرها."
+              }
+            ]
+          },
+          {
+            "ask": "لو القائمة فيها عنصرين وكتبنا tools.get(2)؟",
+            "options": [
+              {
+                "text": "هيحصل خطأ وقت التشغيل لأن مفيش فهرس 2",
+                "reply": "صح. الفهارس 0 و1 بس.",
+                "fit": true
+              },
+              {
+                "text": "هيرجع null",
+                "reply": "في ArrayList الفهرس الغلط بيرمي IndexOutOfBoundsException، مش null."
               }
             ]
           }

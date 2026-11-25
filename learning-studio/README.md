@@ -1,6 +1,6 @@
 # Learning studio
 
-113 authored draft lessons across35 units: Python48, JavaScript26, C++23, Java16. All planned lessons have scripts; editorial and integration work remain. All113 detailed original comic scenes have passed continuity and loaded-view inspection.
+119 authored draft lessons across35 units: Python48, JavaScript26, C++23, Java22. All planned lessons have scripts; editorial and integration work remain. All119 detailed original comic scenes have passed continuity and loaded-view inspection.
 
 Execution uses the existing authenticated platform language runner. The separate loopback development compiler is not included. No interpreter fallback is used for learner execution. All113 scripted paths passed local real-compiler browser regression. This does not establish authenticated production service health.
 
