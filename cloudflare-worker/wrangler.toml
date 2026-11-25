@@ -25,8 +25,10 @@ class_name = "StudentProgress"
 tag = "v1-code-execution-limiter"
 new_sqlite_classes = ["CodeExecutionLimiter"]
 
-# DRAFT, branch only: adds the StudentProgress class. Roll back by deploying a version without it and
-# a v3 migration with deleted_classes = ["StudentProgress"].
+# Adds the StudentProgress class (additive, SQLite-backed, Free-plan compatible). Rollback is roll-forward only: wrangler rollback is refused
+# across a Durable Object class change, and the class and its records are never deleted as a rollback step.
+# PROGRESS_WRITES and CERT_ISSUANCE are intentionally NOT set here: with them unset every progress write route and certificate issuance answer 503.
+# Turn them on only through a reviewed commit that adds them to [vars].
 [[migrations]]
 tag = "v2-student-progress"
 new_sqlite_classes = ["StudentProgress"]

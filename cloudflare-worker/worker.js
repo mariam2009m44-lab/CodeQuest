@@ -696,6 +696,11 @@ async function handleProgress(request, env, origin, action) {
   if (!env.STUDENT_PROGRESS) {
     return jsonResponse({ success: false, message: "حفظ التقدم غير مفعّل على الخادم." }, 503, origin);
   }
+  // Controlled release switch, default OFF: every write route is refused until the owner sets PROGRESS_WRITES="on" after the backend is verified live.
+  // Reads (get, certificates) stay available. Auth is checked first, so an unauthenticated call still answers 401, never this.
+  if (action !== "get" && action !== "certificates" && action !== "eligibility" && env.PROGRESS_WRITES !== "on") {
+    return jsonResponse({ success: false, retryable: true, message: "progress_writes_off" }, 503, origin);
+  }
   let body = {};
   if (action !== "get" && action !== "certificates") {
     try { body = await readBoundedJson(request, action === "resume" || action === "codetask" || action === "practicetask" ? 32768 : 4096); } catch (error) {

@@ -21,7 +21,7 @@ export function boot({ fetchImpl, jose } = {}) {
   sb.globalThis = sb; vm.runInNewContext(source, sb);
   const stores = new Map();
   const ns = { idFromName: n => n, get: id => { if (!stores.has(id)) { const m = new Map(); stores.set(id, { m, o: new sb.StudentProgress({ storage: { async transaction(fn) { return fn({ get: async k => m.has(k) ? JSON.parse(JSON.stringify(m.get(k))) : undefined, put: async (k, v) => { m.set(k, JSON.parse(JSON.stringify(v))); } }); } } }) }); } const h = stores.get(id); return { fetch: (u, init) => h.o.fetch(new Request(u, init)) }; } };
-  const env = { FIREBASE_PROJECT_ID: "proj", ALLOWED_ORIGINS: ORIGIN, STUDENT_PROGRESS: ns };
+  const env = { FIREBASE_PROJECT_ID: "proj", ALLOWED_ORIGINS: ORIGIN, STUDENT_PROGRESS: ns, PROGRESS_WRITES: "on" };
   const call = (path, { token, body, method = "POST", origin = ORIGIN, raw, headers: extra } = {}) => sb.worker.fetch(new Request("https://w.test" + path, { method, headers: { "Content-Type": "application/json", ...(extra || {}), ...(origin ? { Origin: origin } : {}), ...(token ? { Authorization: token.startsWith("Bearer") || token.startsWith("Basic") ? token : "Bearer " + token } : {}) }, body: method === "GET" ? undefined : (raw ?? JSON.stringify(body ?? {})) }), env).then(async r => ({ status: r.status, h: r.headers, data: await r.json().catch(() => null) }));
   return { call, stores, sb, env };
 }
