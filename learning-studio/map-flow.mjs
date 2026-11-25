@@ -16,7 +16,7 @@ export function recordMapProgress(language,unit,index,uid){
  const key='codequest_lesson_progress_'+uid+'_'+language;
  try{
   const list=JSON.parse(localStorage.getItem(key)||'[]'),records=Array.isArray(list)?list:[];
-  if(!records.some(x=>x?.completed===true&&x.chapter===unit-1&&x.lesson===index))records.push({chapter:unit-1,lesson:index,completed:true,source:'studio-device-only'});
+  if(!records.some(x=>x?.completed===true&&x.chapter===unit-1&&x.lesson===index))records.push({id:'studio-'+language+'-'+unit+'-'+index,chapter:unit-1,lesson:index,completed:true,source:'studio-device-only'});
   localStorage.setItem(key,JSON.stringify(records));return true;
  }catch{return false}
 }
