@@ -251,6 +251,11 @@ service cloud.firestore {
         allow delete: if owns(uid);
       }
 
+      match /examResults/{examId} {
+        allow get, list: if owns(uid);
+        allow write: if false;
+      }
+
       match /quizResults/{resultId} {
         allow read: if owns(uid);
         allow write: if false;
