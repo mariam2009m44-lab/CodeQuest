@@ -7,7 +7,7 @@ export function startJourney({anchor,pack,lesson,next,goNext,quizUrl,seconds=10}
  if(shownFor===lesson.id)return;stopJourney();shownFor=lesson.id;
  const index=pack.lessons.indexOf(lesson)+1,total=pack.lessons.length,sameUnit=next&&next.pack===pack;
  const box=document.createElement('section');box.id='journey';box.setAttribute('role','status');box.setAttribute('aria-live','polite');
- const h=document.createElement('h3');h.textContent='وصلت لحد هنا: الوحدة '+pack.unit+'، الدرس '+index+' من '+total;
+ const h=document.createElement('h3');h.textContent='الوحدة '+pack.unit+' · الدرس '+index+' من '+total;
  const p=document.createElement('p');
  const dots=document.createElement('div');dots.className='journey-dots';pack.lessons.forEach((l,i)=>{const d=document.createElement('span');d.className=i<index?'done':'';dots.append(d)});
  const row=document.createElement('div');row.className='journey-actions';
