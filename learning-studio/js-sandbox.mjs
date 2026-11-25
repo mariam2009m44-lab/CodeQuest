@@ -20,7 +20,7 @@ const line=(...a)=>{out+=a.map((x,i)=>fmt(x,true)).join(' ')+'\\n';if(out.length
 const console={log:line,info:line,debug:line,error:line,warn:line};
 onmessage=e=>{try{(0,eval)('(function(console){"use strict";'+e.data+'\\n})')(console);postMessage({ok:true,stdout:out})}catch(err){postMessage({ok:false,stdout:out,message:String(err&&err.name?err.name+': '+err.message:err)})}};
 `;
-const FRAME=`<!doctype html><meta charset=utf-8><script>
+const FRAME=`<!doctype html><meta charset=utf-8><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; worker-src blob:; connect-src 'none'"><script>
 const src=${JSON.stringify(WORKER_SOURCE)};
 let w;onmessage=e=>{if(e.data.kill){try{w&&w.terminate()}catch{}return}
  try{w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})))}catch(err){parent.postMessage({id:e.data.id,ok:false,message:'المتصفح منع تشغيل الكود هنا.'},'*');return}
