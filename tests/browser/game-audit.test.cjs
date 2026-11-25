@@ -215,3 +215,42 @@ test('touch: quiz option and memory cards work with real taps on a phone viewpor
   await mem.page.screenshot({ path: path.join(artifactDir, 'audit-memory-touch.png') });
   assert.deepEqual([...quiz.errors, ...mem.errors], []);
 });
+
+test('quiz: C++ reads in order in the question, the options and the answer feedback, text unchanged and no HTML parsing', async t => {
+  const d = await device(t);
+  const { page, errors } = await d.open('accountA', 'game-quiz.html');
+  await page.waitForFunction(() => window.CQGameStore.ready);
+  await page.evaluate(() => { CQGameStore.set('codequest-quiz-stars-easy', '3'); window.dispatchEvent(new CustomEvent('cq-game-ready')); });
+  await page.click('.lvl-btn[onclick*="medium"]');
+  const question = 'ما هو الرمز المستخدم للتحقق من التساوي في C++؟';
+  await page.evaluate(q => {
+    currentQs[curr] = { q, opts: ['=', '==', '<b>x</b>', 'C++'], a: 3, why: 'يستخدم C++ مع <i>operator</i> == في الشروط.' };
+    loadQ();
+  }, question);
+  const measure = () => page.evaluate(() => {
+    const out = {};
+    for (const [name, root] of [['question', document.getElementById('question')], ['option', [...document.querySelectorAll('.opt-btn')].find(b => b.textContent === 'C++')], ['feedback', document.getElementById('quizLearning')]]) {
+      if (!root || !root.textContent) { out[name] = null; continue; }
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let n, found = null;
+      while ((n = walker.nextNode())) if (n.data.includes('C++')) { found = n; break; }
+      if (!found) { out[name] = null; continue; }
+      const i = found.data.indexOf('C++'), r = document.createRange(), x = k => { r.setStart(found, i + k); r.setEnd(found, i + k + 1); return r.getBoundingClientRect().left; };
+      out[name] = { c: x(0), plus1: x(1), plus2: x(2) };
+    }
+    return out;
+  });
+  const before = await measure();
+  assert.ok(before.question, 'question has a C++ text node');
+  assert.ok(before.question.c < before.question.plus1 && before.question.plus1 < before.question.plus2, 'question: ' + JSON.stringify(before.question));
+  assert.ok(before.option.c < before.option.plus1 && before.option.plus1 < before.option.plus2, 'option: ' + JSON.stringify(before.option));
+  assert.equal(await page.locator('#question').textContent(), question, 'question text unchanged');
+  await page.evaluate(() => document.querySelectorAll('.opt-btn')[optionOrder.indexOf(currentQs[curr].a)].click());
+  const after = await measure();
+  assert.ok(after.feedback.c < after.feedback.plus1 && after.feedback.plus1 < after.feedback.plus2, 'feedback: ' + JSON.stringify(after.feedback));
+  assert.equal(await page.locator('#quizLearning').textContent(), 'الإجابة الصحيحة: C++. يستخدم C++ مع <i>operator</i> == في الشروط.');
+  assert.equal(await page.locator('#quizLearning i, #question b, .opt-btn b').count(), 0, 'markup in data must stay text');
+  await page.locator('#question').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.join(artifactDir, 'audit-quiz-cpp-full.png') });
+  assert.deepEqual(errors, []);
+});

@@ -226,6 +226,18 @@
     let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy', answerLocked = false;
     const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), progressEl = document.getElementById('progress');
 
+    // Show Latin runs (C++, console.log(), code) left-to-right inside Arabic text. Each run is wrapped in an
+    // isolated LTR span built with createElement/textContent, so the text is never parsed as HTML and
+    // textContent stays identical to the original string.
+    function setBidiText(el, text) {
+      el.textContent = '';
+      const parts = String(text).split(/([\x21-\x7E](?:[\x20-\x7E]*[\x21-\x7E])?)/);
+      parts.forEach((part, i) => {
+        if (!part) return;
+        if (i % 2 === 1) { const span = document.createElement('span'); span.dir = 'ltr'; span.style.unicodeBidi = 'isolate'; span.textContent = part; el.appendChild(span); }
+        else el.appendChild(document.createTextNode(part));
+      });
+    }
     function shuffleQuestions(items) {
       const shuffled = [...items];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -256,7 +268,7 @@
     function loadQ() {
       if (curr >= currentQs.length) return endGame();
       const q = currentQs[curr];
-      qEl.textContent = q.q;
+      setBidiText(qEl, q.q);
       optsEl.innerHTML = '';
       progressEl.style.width = `${(curr / currentQs.length) * 100}%`;
       progressEl.setAttribute('aria-label',`السؤال ${curr+1} من ${currentQs.length}`);
@@ -268,7 +280,7 @@
       optionOrder.forEach((originalIndex, position) => {
         const btn = document.createElement('button');
         btn.className = 'opt-btn';
-        btn.textContent = q.opts[originalIndex];
+        setBidiText(btn, q.opts[originalIndex]);
         btn.onclick = () => checkAns(position, btn);
         optsEl.appendChild(btn);
       });
@@ -283,7 +295,7 @@
       const correctIndex = optionOrder.indexOf(currentQs[curr].a);
       const chosenOriginal = optionOrder[i];
       const feedback=document.getElementById('quizLearning');
-      feedback.textContent='الإجابة الصحيحة: '+currentQs[curr].opts[currentQs[curr].a]+'. '+(currentQs[curr].why||'');
+      setBidiText(feedback, 'الإجابة الصحيحة: '+currentQs[curr].opts[currentQs[curr].a]+'. '+(currentQs[curr].why||''));
       document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
       if (chosenOriginal === currentQs[curr].a) {
         btn.classList.add('correct');
@@ -315,7 +327,7 @@
           clearInterval(timerInt);
           document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
           optsEl.children[optionOrder.indexOf(currentQs[curr].a)].classList.add('correct');
-          document.getElementById('quizLearning').textContent='انتهى الوقت. الإجابة الصحيحة: '+currentQs[curr].opts[currentQs[curr].a]+'. '+(currentQs[curr].why||'');
+          setBidiText(document.getElementById('quizLearning'), 'انتهى الوقت. الإجابة الصحيحة: '+currentQs[curr].opts[currentQs[curr].a]+'. '+(currentQs[curr].why||''));
           streak = 0; comboEl.textContent = streak;
           setTimeout(() => { curr++; answerLocked = false; loadQ(); }, 1700);
         }
