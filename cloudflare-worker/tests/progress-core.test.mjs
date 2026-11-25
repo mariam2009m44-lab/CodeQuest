@@ -7,32 +7,32 @@ const quiz = index.quizzes["python-1"];
 const right = quiz.mcq.map(m => m.answer);
 
 test("score is recomputed from trusted answers, client score is not an input", () => {
-  const r = scoreExam(index, { language: "python", unit: 1, choices: right, score: 100, percent: 100 });
+  const r = scoreExam(index, { language: "python", unit: 1, bank: quiz.h, choices: right, score: 100, percent: 100 });
   assert.equal(r.ok, true);
   assert.equal(r.codeVerified, false);
   assert.ok(r.percent < 100, "unverified code tasks cannot count");
 });
 test("code tasks count only with server-verified results", () => {
-  const r = scoreExam(index, { language: "python", unit: 1, choices: right, codeResults: quiz.code.map(() => true) });
+  const r = scoreExam(index, { language: "python", unit: 1, bank: quiz.h, choices: right, codeResults: quiz.code.map(() => true) });
   assert.equal(r.percent, 100);
   assert.equal(r.passed, true);
 });
 test("pass boundary is 50 percent inclusive", () => {
   assert.equal(PASS_PERCENT, 50);
-  const r = scoreExam(index, { language: "python", unit: 1, choices: right.map(() => 0), codeResults: quiz.code.map(() => true) });
+  const r = scoreExam(index, { language: "python", unit: 1, bank: quiz.h, choices: right.map(() => 0), codeResults: quiz.code.map(() => true) });
   assert.ok(r.percent >= 0);
 });
 test("rejects wrong lengths, out of range and unknown exams", () => {
-  assert.equal(scoreExam(index, { language: "python", unit: 1, choices: [0] }).reason, "bad_choices");
+  assert.equal(scoreExam(index, { language: "python", unit: 1, bank: quiz.h, choices: [0] }).reason, "bad_choices");
   assert.equal(scoreExam(index, { language: "python", unit: 99, choices: [] }).reason, "unknown_exam");
   const bad = right.map(() => 99);
-  assert.equal(scoreExam(index, { language: "python", unit: 1, choices: bad }).percent, scoreExam(index, { language: "python", unit: 1, choices: bad.map(() => -1) }).percent);
+  assert.equal(scoreExam(index, { language: "python", unit: 1, bank: quiz.h, choices: bad }).percent, scoreExam(index, { language: "python", unit: 1, bank: quiz.h, choices: bad.map(() => -1) }).percent);
 });
 test("a later lower attempt never removes a pass; replay is idempotent", () => {
   const s = emptyState();
-  const pass = recordExam(s, index, { language: "python", unit: 1, choices: right, codeResults: quiz.code.map(() => true) }, "v1");
+  const pass = recordExam(s, index, { language: "python", unit: 1, bank: quiz.h, choices: right, codeResults: quiz.code.map(() => true) }, "v1");
   assert.equal(pass.best.passed, true);
-  const low = recordExam(s, index, { language: "python", unit: 1, choices: right.map(() => -1) }, "v1");
+  const low = recordExam(s, index, { language: "python", unit: 1, bank: quiz.h, choices: right.map(() => -1) }, "v1");
   assert.equal(low.best.passed, true);
   const a = recordLesson(s, index, { language: "python", lessonId: Object.keys(index.lessons).find(k => index.lessons[k].language === "python"), version: "v1" });
   const b = recordLesson(s, index, { language: "python", lessonId: Object.keys(index.lessons).find(k => index.lessons[k].language === "python"), version: "v1" });

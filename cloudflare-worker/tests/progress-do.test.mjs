@@ -21,7 +21,7 @@ const quiz = index.quizzes["python-1"];
 test("Durable Object stores best exam, never trusts a client score, and returns no uid", async () => {
   const { StudentProgress } = load();
   const st = fakeState(); const o = new StudentProgress(st);
-  const a = await call(o, "exam", { language: "python", unit: 1, version: "v1", choices: quiz.mcq.map(m => m.answer), percent: 100, passed: true });
+  const a = await call(o, "exam", { language: "python", unit: 1, bank: quiz.h, version: "v1", choices: quiz.mcq.map(m => m.answer), percent: 100, passed: true });
   assert.equal(a.status, 200);
   assert.equal(a.data.codeVerified, false);
   assert.ok(a.data.percent < 100);
@@ -43,13 +43,23 @@ test("Durable Object grades a lesson test server-side and reports eligibility bl
   const { StudentProgress } = load();
   const key = JSON.parse(fs.readFileSync(new URL("../lesson-answers.json", import.meta.url), "utf8"));
   const o = new StudentProgress(fakeState());
-  const bad = await call(o, "lessontest", { language: "python", lessonId: "py-1-1", version: "v1", picks: [0, 0, 0, 0], percent: 100, passed: true });
+  const bad = await call(o, "lessontest", { language: "python", lessonId: "py-1-1", version: "v1", bank: key["py-1-1"].h, picks: [0, 0, 0, 0], percent: 100, passed: true });
   assert.equal(bad.status, 200);
-  const good = await call(o, "lessontest", { language: "python", lessonId: "py-1-1", version: "v1", picks: key["py-1-1"] });
+  const good = await call(o, "lessontest", { language: "python", lessonId: "py-1-1", version: "v1", bank: key["py-1-1"].h, picks: key["py-1-1"].a });
   assert.equal(good.data.passed, true);
   const g = await call(o, "get", {});
   assert.equal(g.data.lessonTests["py-1-1"].passed, true);
   const e = await call(o, "eligibility", { language: "python" });
   assert.equal(e.data.eligible, false);
   assert.equal(JSON.stringify(e.data).includes("uid"), false);
+});
+test("Durable Object answers 409 refresh-needed for a stale bank and keeps the stored pass", async () => {
+  const { StudentProgress } = load();
+  const key = JSON.parse(fs.readFileSync(new URL("../lesson-answers.json", import.meta.url), "utf8"));
+  const o = new StudentProgress(fakeState());
+  assert.equal((await call(o, "lessontest", { language: "python", lessonId: "py-1-1", version: "v1", bank: key["py-1-1"].h, picks: key["py-1-1"].a })).data.passed, true);
+  const stale = await call(o, "lessontest", { language: "python", lessonId: "py-1-1", version: "v1", bank: "old", picks: key["py-1-1"].a });
+  assert.equal(stale.status, 409); assert.equal(stale.data.refreshNeeded, true);
+  assert.equal((await call(o, "exam", { language: "python", unit: 1, version: "v1", bank: "old", choices: [0, 0, 0] })).status, 409);
+  assert.equal((await call(o, "get", {})).data.lessonTests["py-1-1"].passed, true);
 });

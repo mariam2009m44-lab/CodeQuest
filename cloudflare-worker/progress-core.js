@@ -69,9 +69,10 @@ export function recordLesson(state, index, { language, lessonId, version }) {
 
 // choices: array of option indexes (or null) in the quiz's MCQ order.
 // codeResults: array of booleans, only from server-side execution; absent means not verified.
-export function scoreExam(index, { language, unit, choices, codeResults }) {
+export function scoreExam(index, { language, unit, choices, codeResults, bank }) {
   const quiz = index.quizzes[`${language}-${unit}`];
   if (!quiz) return { ok: false, reason: "unknown_exam" };
+  if (typeof bank !== "string" || bank !== quiz.h) return { ok: false, reason: "refresh_needed", refresh: true };
   if (!Array.isArray(choices) || choices.length !== quiz.mcq.length || choices.length > MAX_CHOICES) return { ok: false, reason: "bad_choices" };
   let earned = 0, total = 0;
   const missed = new Set();
@@ -112,11 +113,14 @@ export function publicCertificateRecord({ displayName, language, issuedAtMs, ran
 // ---- Server grading of per-lesson tests (anti-tamper, not secrecy) ----
 // The question bank is public (learning-studio/lesson-tests.json), so the answer key here only stops a forged score.
 // key: { lessonId: [correctOptionIndex, ...] }. picks are the ORIGINAL option indexes the learner chose (null = unanswered).
-export function gradeLessonTest(index, key, { language, lessonId, picks }) {
+export function gradeLessonTest(index, key, { language, lessonId, picks, bank }) {
   const meta = index.lessons[lessonId];
   if (!meta || meta.language !== language) return { ok: false, reason: "unknown_lesson" };
-  const answers = key[lessonId];
+  const entry = key[lessonId];
+  const answers = entry && entry.a;
   if (!Array.isArray(answers) || answers.length === 0) return { ok: false, reason: "no_test" };
+  // The client must prove it graded against the same bank (question + options + answer identity). Otherwise refresh first.
+  if (typeof bank !== "string" || bank !== entry.h) return { ok: false, reason: "refresh_needed", refresh: true };
   if (!Array.isArray(picks) || picks.length !== answers.length) return { ok: false, reason: "bad_picks" };
   let earned = 0, answered = 0;
   const missed = [];

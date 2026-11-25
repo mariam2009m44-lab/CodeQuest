@@ -1287,10 +1287,10 @@ export class StudentProgress {
       let outcome;
       const version = typeof body.version === "string" ? body.version : "";
       if (action === "lesson") outcome = recordLesson(state, CURRICULUM_INDEX, { language: body.language, lessonId: body.lessonId, version });
-      else if (action === "lessontest") outcome = recordLessonTest(state, CURRICULUM_INDEX, LESSON_ANSWERS, { language: body.language, lessonId: body.lessonId, picks: body.picks }, version);
-      else if (action === "exam") outcome = recordExam(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), choices: body.choices }, version);
+      else if (action === "lessontest") outcome = recordLessonTest(state, CURRICULUM_INDEX, LESSON_ANSWERS, { language: body.language, lessonId: body.lessonId, picks: body.picks, bank: body.bank }, version);
+      else if (action === "exam") outcome = recordExam(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), choices: body.choices, bank: body.bank }, version);
       else return { status: 404, data: { success: false, message: "unknown action" } };
-      if (!outcome.ok) return { status: 400, data: { success: false, message: outcome.reason } };
+      if (!outcome.ok) return outcome.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: outcome.reason } };
 
       quota.count += 1;
       await tx.put("state", state);
