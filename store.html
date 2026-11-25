@@ -679,7 +679,7 @@
                 const description = createElement(
                     "p",
                     "",
-                    "الشخصيات الجديدة هتكون متاحة قريبًا. رصيد عملاتك محفوظ، وتقدر تكمّل التعلّم وتجميع المكافآت."
+                    "لسه مفيش عناصر في المتجر. الشخصيات الحالية متاحة لك مجانًا من صفحة اختيار الشخصية."
                 );
 
                 emptyState.append(icon, title, description);
@@ -772,6 +772,7 @@
         }
 
         function updateStoreData(data) {
+            const coinsValid = typeof data.coins === "number" && Number.isFinite(data.coins) && data.coins >= 0;
             currentCoins =
                 typeof data.coins === "number" &&
                 Number.isFinite(data.coins) &&
@@ -785,7 +786,8 @@
                 )
                 : [];
 
-            coinsElement.textContent = String(currentCoins);
+            // A missing or invalid coins field is shown as unavailable, never as 0.
+            coinsElement.textContent = coinsValid ? String(currentCoins) : "غير متاح";
 
             renderStore();
         }
