@@ -4650,5 +4650,1061 @@
    "answer": 0,
    "why": "else بتغطي أي رمز ما اتذكرش في الشروط."
   }
+ ],
+ "java-1-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"A\");\n    System.out.println(\"B\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "A ثم B",
+    "AB",
+    "B ثم A"
+   ],
+   "answer": 0,
+   "why": "كل println بتنزّل سطر، فبيظهر A ثم B."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"2 + 2\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "4",
+    "2 + 2",
+    "2+2=4"
+   ],
+   "answer": 1,
+   "why": "اللي بين الاقتباسات نص، فبيتطبع زي ما هو: 2 + 2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(1 + 1);\n  }\n}",
+   "run": "java",
+   "options": [
+    "1 + 1",
+    "11",
+    "2"
+   ],
+   "answer": 2,
+   "why": "من غير اقتباسات Java بتحسب الجمع وبتطبع 2."
+  },
+  {
+   "q": "أي سطر بيعرض كلمة Ready؟",
+   "options": [
+    "System.out.println(\"Ready\");",
+    "print(\"Ready\");",
+    "System.println(\"Ready\");"
+   ],
+   "answer": 0,
+   "why": "الطباعة في Java بتكون بـ System.out.println."
+  }
+ ],
+ "java-1-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.print(\"A\");\n    System.out.print(\"B\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "A ثم B",
+    "AB",
+    "BA"
+   ],
+   "answer": 1,
+   "why": "print من غير ln بتطبع ورا بعض في نفس السطر: AB."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.print(\"A\");\n    System.out.println(\"B\");\n    System.out.println(\"C\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "A ثم B ثم C",
+    "ABC",
+    "AB ثم C"
+   ],
+   "answer": 2,
+   "why": "أول print ما نزّلتش سطر، فA وB في نفس السطر وC في سطر جديد."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    // System.out.println(\"no\");\n    System.out.println(\"yes\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "yes",
+    "no",
+    "no ثم yes"
+   ],
+   "answer": 0,
+   "why": "// بتخلي السطر تعليق مش بيتنفذ، فبيطبع yes بس."
+  },
+  {
+   "q": "الفرق بين print و println؟",
+   "options": [
+    "print بتنزّل سطر وprintln لأ",
+    "println بتنزّل سطر جديد بعد الطباعة",
+    "مفيش فرق"
+   ],
+   "answer": 1,
+   "why": "ln اختصار line، يعني بتنهي السطر بعد الطباعة."
+  }
+ ],
+ "java-2-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    String s = \"Hi\";\n    int n = 3;\n    System.out.println(s + n);\n  }\n}",
+   "run": "java",
+   "options": [
+    "Hi 3",
+    "Hi3",
+    "3Hi"
+   ],
+   "answer": 1,
+   "why": "+ مع نص بتوصل، فالناتج Hi3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    double d = 2.5;\n    System.out.println(d * 2);\n  }\n}",
+   "run": "java",
+   "options": [
+    "5",
+    "2.5",
+    "5.0"
+   ],
+   "answer": 2,
+   "why": "d من نوع double فالناتج بيظهر 5.0."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    boolean b = 5 > 3;\n    System.out.println(b);\n  }\n}",
+   "run": "java",
+   "options": [
+    "true",
+    "5",
+    "true ثم false"
+   ],
+   "answer": 0,
+   "why": "5 أكبر من 3، فالقيمة true."
+  },
+  {
+   "q": "أنهي نوع مناسب لتخزين اسم نصي؟",
+   "options": [
+    "int",
+    "String",
+    "boolean"
+   ],
+   "answer": 1,
+   "why": "String هو النوع المخصص للنصوص."
+  }
+ ],
+ "java-2-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int n = 4;\n    n = n + 3;\n    System.out.println(n);\n  }\n}",
+   "run": "java",
+   "options": [
+    "4",
+    "43",
+    "7"
+   ],
+   "answer": 2,
+   "why": "n كانت 4 وزودنا 3، فبقت 7."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int a = 2;\n    int b = a;\n    a = 9;\n    System.out.println(b);\n  }\n}",
+   "run": "java",
+   "options": [
+    "2",
+    "9",
+    "11"
+   ],
+   "answer": 0,
+   "why": "b خدت نسخة من 2، وتغيير a بعد كده ما بيأثرش فيها."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int n = 5;\n    n = n * 2;\n    n = n - 3;\n    System.out.println(n);\n  }\n}",
+   "run": "java",
+   "options": [
+    "10",
+    "7",
+    "2"
+   ],
+   "answer": 1,
+   "why": "n بتبقى 10 بعد الضرب و7 بعد الطرح."
+  },
+  {
+   "q": "ليه ما نكتبش int مرة تانية في n = n + 3;؟",
+   "options": [
+    "لأن int ممنوعة",
+    "لأن n تتغير نوعها",
+    "لأن المتغير اتعرّف قبل كده ونحن بس بنحدّثه"
+   ],
+   "answer": 2,
+   "why": "تكرار int بيحاول يعرّف متغير جديد بنفس الاسم وده خطأ."
+  }
+ ],
+ "java-2-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    String s = \"Nova\";\n    System.out.println(s.length());\n  }\n}",
+   "run": "java",
+   "options": [
+    "4",
+    "3",
+    "5"
+   ],
+   "answer": 0,
+   "why": "Nova فيها 4 حروف."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    String s = \"Nova\";\n    System.out.println(s.charAt(1));\n  }\n}",
+   "run": "java",
+   "options": [
+    "N",
+    "o",
+    "v"
+   ],
+   "answer": 1,
+   "why": "الفهرس 1 هو الحرف التاني وهو o."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    String s = \"ab\";\n    System.out.println(s.length() + \"\" + s.charAt(0));\n  }\n}",
+   "run": "java",
+   "options": [
+    "3",
+    "a2",
+    "2a"
+   ],
+   "answer": 2,
+   "why": "length() = 2 وcharAt(0) = a، والوصل بينهم بيدي 2a."
+  },
+  {
+   "q": "s.charAt(0) في s = \"Cody\" بترجع؟",
+   "options": [
+    "C",
+    "Cody",
+    "y"
+   ],
+   "answer": 0,
+   "why": "الفهرس 0 هو أول حرف."
+  }
+ ],
+ "java-3-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(9 / 2);\n    System.out.println(9.0 / 2);\n  }\n}",
+   "run": "java",
+   "options": [
+    "4.5 ثم 4.5",
+    "4 ثم 4",
+    "4 ثم 4.5"
+   ],
+   "answer": 2,
+   "why": "قسمة int على int بتدي 4 وتحذف الكسر، لكن 9.0 / 2 بتدي 4.5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(1 / 2);\n  }\n}",
+   "run": "java",
+   "options": [
+    "0",
+    "0.5",
+    "1"
+   ],
+   "answer": 0,
+   "why": "قسمة int على int بتدي 0 وتحذف الكسر."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    double d = 7 / 2;\n    System.out.println(d);\n  }\n}",
+   "run": "java",
+   "options": [
+    "3.5",
+    "3.0",
+    "3"
+   ],
+   "answer": 1,
+   "why": "7 / 2 اتحسبت كـ int فطلعت 3، وبعدين اتخزنت في double فبقت 3.0."
+  },
+  {
+   "q": "ليه 7 / 2 بتدي 3 في Java؟",
+   "options": [
+    "لأن Java بتقرّب لأعلى",
+    "لأن 7 رقم فردي",
+    "لأن قسمة int على int بتحذف الكسر"
+   ],
+   "answer": 2,
+   "why": "لما الاتنين int بيرجع int من غير الجزء العشري."
+  }
+ ],
+ "java-3-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(17 % 5);\n  }\n}",
+   "run": "java",
+   "options": [
+    "2",
+    "3",
+    "5"
+   ],
+   "answer": 0,
+   "why": "17 = 5 × 3 + 2، فالباقي 2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(8 % 2);\n    System.out.println(9 % 2);\n  }\n}",
+   "run": "java",
+   "options": [
+    "1 ثم 0",
+    "0 ثم 1",
+    "0 ثم 0"
+   ],
+   "answer": 1,
+   "why": "8 على 2 باقي 0، و9 على 2 باقي 1."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int n = 14;\n    System.out.println(n / 4 + \" \" + n % 4);\n  }\n}",
+   "run": "java",
+   "options": [
+    "3 3",
+    "3.5 2",
+    "3 2"
+   ],
+   "answer": 2,
+   "why": "14 / 4 = 3 (قسمة int) و14 % 4 = 2، فالناتج 3 2."
+  },
+  {
+   "q": "أنهي تعبير بيعطي باقي 14 على 4؟",
+   "options": [
+    "14 % 4",
+    "14 / 4",
+    "14 * 4"
+   ],
+   "answer": 0,
+   "why": "% هو معامل الباقي."
+  }
+ ],
+ "java-2-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int a = 9, b = 4;\n    System.out.println(a - b);\n  }\n}",
+   "run": "java",
+   "options": [
+    "13",
+    "5",
+    "4"
+   ],
+   "answer": 1,
+   "why": "9 - 4 بتدي 5 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int a = 3, b = 3;\n    System.out.println(a * b);\n  }\n}",
+   "run": "java",
+   "options": [
+    "6",
+    "33",
+    "9"
+   ],
+   "answer": 2,
+   "why": "3 × 3 بتدي 9 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int energy = 10;\n    int used = 4;\n    energy = energy - used;\n    System.out.println(energy);\n  }\n}",
+   "run": "java",
+   "options": [
+    "6",
+    "10",
+    "14"
+   ],
+   "answer": 0,
+   "why": "energy بقت 6 بعد الطرح."
+  },
+  {
+   "q": "Scanner بيقرأ العددين بأنهي ترتيب؟",
+   "options": [
+    "بالعكس",
+    "بنفس ترتيب إدخالهم",
+    "بالأكبر الأول"
+   ],
+   "answer": 1,
+   "why": "nextInt الأولى بتاخد أول رقم والتانية التاني."
+  }
+ ],
+ "java-4-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 3;\n    if (e >= 5) {\n      System.out.println(\"Go\");\n    }\n    System.out.println(\"End\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "End",
+    "Go ثم End",
+    "Go"
+   ],
+   "answer": 0,
+   "why": "الشرط غلط، فبيتخطى الجسم ويطبع End بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 5;\n    if (e >= 5) {\n      System.out.println(\"A\");\n    }\n    if (e > 5) {\n      System.out.println(\"B\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "A ثم B",
+    "A",
+    "B"
+   ],
+   "answer": 1,
+   "why": "5 >= 5 صح فبيطبع A، و5 > 5 غلط."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 6;\n    if (e == 6) {\n      System.out.println(\"six\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "6",
+    "بدون مخرجات",
+    "six"
+   ],
+   "answer": 2,
+   "why": "== بتقارن فبيطبع six."
+  },
+  {
+   "q": "الفرق بين = و == في Java؟",
+   "options": [
+    "= بتسند و== بتقارن",
+    "= بتقارن و== بتسند",
+    "مفيش فرق"
+   ],
+   "answer": 0,
+   "why": "= بتحط قيمة، و== بتسأل هل متساويين."
+  }
+ ],
+ "java-4-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 9;\n    if (e >= 5) {\n      System.out.println(\"Go\");\n    } else {\n      System.out.println(\"Charge\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "Charge",
+    "Go",
+    "Go ثم Charge"
+   ],
+   "answer": 1,
+   "why": "الشرط صح فبيتنفذ Go بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 5;\n    if (e > 5) {\n      System.out.println(\"Go\");\n    } else {\n      System.out.println(\"Charge\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "Go",
+    "Go ثم Charge",
+    "Charge"
+   ],
+   "answer": 2,
+   "why": "5 مش أكبر من 5، فبيتنفذ else ويطبع Charge."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int n = 9;\n    if (n % 3 == 0) {\n      System.out.println(\"yes\");\n    } else {\n      System.out.println(\"no\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "yes",
+    "no",
+    "yes ثم no"
+   ],
+   "answer": 0,
+   "why": "9 % 3 يساوي 0 فالشرط صح ويطبع yes."
+  },
+  {
+   "q": "إمتى بيتنفذ else؟",
+   "options": [
+    "لما شرط if يطلع صح",
+    "لما شرط if يطلع غلط",
+    "دايمًا"
+   ],
+   "answer": 1,
+   "why": "else هي المسار البديل لو الشرط ما اتحققش."
+  }
+ ],
+ "java-4-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 8;\n    boolean k = true;\n    if (k && e >= 5) {\n      System.out.println(\"Open\");\n    } else {\n      System.out.println(\"Locked\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "Locked",
+    "Open ثم Locked",
+    "Open"
+   ],
+   "answer": 2,
+   "why": "الشرطين صح، فبيطبع Open."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 2;\n    boolean k = false;\n    if (k || e >= 5) {\n      System.out.println(\"Open\");\n    } else {\n      System.out.println(\"Locked\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "Locked",
+    "Open",
+    "Open ثم Locked"
+   ],
+   "answer": 0,
+   "why": "الشرطين غلط والـ || محتاجة واحد صح، فبيطبع Locked."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int e = 2;\n    boolean k = true;\n    if (k || e >= 5) {\n      System.out.println(\"Light\");\n    } else {\n      System.out.println(\"Dark\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "Dark",
+    "Light",
+    "Light ثم Dark"
+   ],
+   "answer": 1,
+   "why": "|| بتكفي شرط صح واحد، وk هي true، فبيطبع Light."
+  },
+  {
+   "q": "&& بترجع true إمتى؟",
+   "options": [
+    "لما شرط واحد صح",
+    "لما الاتنين غلط",
+    "لما الشرطين صح"
+   ],
+   "answer": 2,
+   "why": "&& محتاجة الاتنين صح."
+  }
+ ],
+ "java-4-4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int b = 3;\n    switch (b) {\n      case 1:\n        System.out.println(\"Red\");\n        break;\n      case 3:\n        System.out.println(\"Blue\");\n        break;\n      default:\n        System.out.println(\"Unknown\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "Blue",
+    "Red",
+    "Unknown"
+   ],
+   "answer": 0,
+   "why": "b = 3 بتطابق case 3 فبيطبع Blue."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int b = 9;\n    switch (b) {\n      case 1:\n        System.out.println(\"Red\");\n        break;\n      default:\n        System.out.println(\"Unknown\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "Red",
+    "Unknown",
+    "9"
+   ],
+   "answer": 1,
+   "why": "9 مش مطابقة لأي case، فبيتنفذ default."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int b = 1;\n    switch (b) {\n      case 1:\n        System.out.println(\"One\");\n      case 2:\n        System.out.println(\"Two\");\n        break;\n      default:\n        System.out.println(\"Other\");\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "One",
+    "Two",
+    "One ثم Two"
+   ],
+   "answer": 2,
+   "why": "case 1 مفيهاش break، فالتنفيذ بيكمل في case 2: بيطبع One ثم Two."
+  },
+  {
+   "q": "وظيفة break في case؟",
+   "options": [
+    "توقف التنفيذ بعد الفرع",
+    "تبدأ switch",
+    "تمسح المتغير"
+   ],
+   "answer": 0,
+   "why": "من غير break بيكمل التنفيذ في case اللي بعده."
+  }
+ ],
+ "java-5-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    for (int i = 2; i <= 4; i++) {\n      System.out.println(i * 3);\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "2 ثم 3 ثم 4",
+    "6 ثم 9 ثم 12",
+    "6 ثم 9"
+   ],
+   "answer": 1,
+   "why": "i بتمشي 2 و3 و4 وبتتضرب في 3: 6 ثم 9 ثم 12."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    for (int i = 0; i < 2; i++) {\n      System.out.println(i + 5);\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "6 ثم 7",
+    "5 ثم 6 ثم 7",
+    "5 ثم 6"
+   ],
+   "answer": 2,
+   "why": "i = 0 و1 بس وبنزوّد 5: 5 ثم 6."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int t = 0;\n    for (int i = 1; i <= 5; i++) {\n      t = t + i;\n    }\n    System.out.println(t);\n  }\n}",
+   "run": "java",
+   "options": [
+    "15",
+    "5",
+    "10"
+   ],
+   "answer": 0,
+   "why": "المجموع 1 + 2 + 3 + 4 + 5 = 15."
+  },
+  {
+   "q": "for (int i = 0; i < 4; i++) بتشتغل كام مرة؟",
+   "options": [
+    "3",
+    "4",
+    "5"
+   ],
+   "answer": 1,
+   "why": "i بتاخد 0 و1 و2 و3 وبتقف قبل 4، فـ 4 دورات."
+  }
+ ],
+ "java-5-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int n = 4;\n    while (n > 1) {\n      System.out.println(n);\n      n = n - 1;\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "1 ثم 2 ثم 3 ثم 4",
+    "4 ثم 3 ثم 2 ثم 1",
+    "4 ثم 3 ثم 2"
+   ],
+   "answer": 2,
+   "why": "n بتنقص كل دورة وبتقف لما n توصل 1، فبيطبع 4 ثم 3 ثم 2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int n = 0;\n    while (n > 0) {\n      System.out.println(\"y\");\n    }\n    System.out.println(\"stop\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "stop",
+    "y ثم stop",
+    "y"
+   ],
+   "answer": 0,
+   "why": "الشرط غلط من الأول، فبيطبع stop بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int n = 3;\n    while (n < 50) {\n      n = n * 3;\n    }\n    System.out.println(n);\n  }\n}",
+   "run": "java",
+   "options": [
+    "27",
+    "81",
+    "50"
+   ],
+   "answer": 1,
+   "why": "n بتبقى 9 و27 و81، وبتقف عند 81."
+  },
+  {
+   "q": "لو نسينا نغيّر العداد في while؟",
+   "options": [
+    "هتشتغل مرة واحدة",
+    "Java بتعدّله لوحدها",
+    "ممكن تفضل شغالة للأبد"
+   ],
+   "answer": 2,
+   "why": "لو الشرط فضل صح مش هتوقف."
+  }
+ ],
+ "java-5-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int c = 0;\n    for (int r = 1; r <= 2; r++) {\n      for (int s = 1; s <= 3; s++) {\n        c++;\n      }\n    }\n    System.out.println(c);\n  }\n}",
+   "run": "java",
+   "options": [
+    "6",
+    "5",
+    "2"
+   ],
+   "answer": 0,
+   "why": "الحلقة الداخلية بتشتغل 3 مرات لكل مرة من الخارجية: 2 × 3 = 6."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    for (int r = 1; r <= 2; r++) {\n      for (int s = 1; s <= 2; s++) {\n        System.out.print(r * s);\n      }\n      System.out.println();\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "12 ثم 36",
+    "12 ثم 24",
+    "1 ثم 2 ثم 2 ثم 4"
+   ],
+   "answer": 1,
+   "why": "الصف r=1 بيطبع 1 و2 جنب بعض، والصف r=2 بيطبع 2 و4 جنب بعض."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int c = 0;\n    for (int r = 0; r < 3; r++) {\n      for (int s = 0; s < 4; s++) {\n        c++;\n      }\n    }\n    System.out.println(c);\n  }\n}",
+   "run": "java",
+   "options": [
+    "7",
+    "4",
+    "12"
+   ],
+   "answer": 2,
+   "why": "3 × 4 = 12 تكرار للأمر الداخلي."
+  },
+  {
+   "q": "حلقة خارجية 4 دورات وداخلية 5، كام مرة بيتنفذ الأمر الداخلي؟",
+   "options": [
+    "20",
+    "9",
+    "45"
+   ],
+   "answer": 0,
+   "why": "بنضرب عدد دورات الخارجية في الداخلية: 4 × 5."
+  }
+ ],
+ "java-6-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int[] a = {4, 7, 9};\n    System.out.println(a[1]);\n  }\n}",
+   "run": "java",
+   "options": [
+    "4",
+    "9",
+    "7"
+   ],
+   "answer": 2,
+   "why": "الفهرس بيبدأ من 0، فـ a[1] هي 7."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int[] a = {2, 4, 6, 8};\n    System.out.println(a.length);\n  }\n}",
+   "run": "java",
+   "options": [
+    "4",
+    "3",
+    "8"
+   ],
+   "answer": 0,
+   "why": "المصفوفة فيها 4 عناصر."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int[] a = {1, 2, 3};\n    a[0] = 10;\n    System.out.println(a[0] + a[2]);\n  }\n}",
+   "run": "java",
+   "options": [
+    "4",
+    "13",
+    "6"
+   ],
+   "answer": 1,
+   "why": "a[0] بقت 10 وa[2] = 3 فالمجموع 13."
+  },
+  {
+   "q": "مصفوفة فيها 5 عناصر، إيه آخر فهرس؟",
+   "options": [
+    "5",
+    "6",
+    "4"
+   ],
+   "answer": 2,
+   "why": "الفهارس من 0 لـ 4."
+  }
+ ],
+ "java-6-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int[] a = {4, 7, 9};\n    for (int i = 0; i < a.length; i++) {\n      System.out.println(a[i]);\n    }\n  }\n}",
+   "run": "java",
+   "options": [
+    "4 ثم 7 ثم 9",
+    "7 ثم 9 ثم 4",
+    "4 ثم 7"
+   ],
+   "answer": 0,
+   "why": "الحلقة بتزور كل العناصر بالترتيب: 4 ثم 7 ثم 9."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int[] a = {1, 2, 3};\n    int t = 0;\n    for (int i = 0; i < a.length; i++) {\n      t = t + a[i];\n    }\n    System.out.println(t);\n  }\n}",
+   "run": "java",
+   "options": [
+    "3",
+    "6",
+    "5"
+   ],
+   "answer": 1,
+   "why": "1 + 2 + 3 = 6 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  public static void main(String[] args) {\n    int[] a = {5, 1, 8};\n    int m = a[0];\n    for (int i = 1; i < a.length; i++) {\n      if (a[i] > m) {\n        m = a[i];\n      }\n    }\n    System.out.println(m);\n  }\n}",
+   "run": "java",
+   "options": [
+    "5",
+    "1",
+    "8"
+   ],
+   "answer": 2,
+   "why": "m بتبقى أكبر عنصر وهو 8."
+  },
+  {
+   "q": "ليه نستخدم i < a.length مش i <= a.length؟",
+   "options": [
+    "لأن a[a.length] خارج الحدود",
+    "لأن <= ممنوعة",
+    "لأن length بتبدأ من 1"
+   ],
+   "answer": 0,
+   "why": "آخر فهرس صالح هو length - 1."
+  }
+ ],
+ "java-6-3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import java.util.ArrayList;\n\npublic class Main {\n  public static void main(String[] args) {\n    ArrayList<String> t = new ArrayList<>();\n    t.add(\"a\");\n    t.add(\"b\");\n    t.add(\"c\");\n    System.out.println(t.size());\n  }\n}",
+   "run": "java",
+   "options": [
+    "2",
+    "3",
+    "4"
+   ],
+   "answer": 1,
+   "why": "أضفنا 3 عناصر، فالحجم 3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import java.util.ArrayList;\n\npublic class Main {\n  public static void main(String[] args) {\n    ArrayList<String> t = new ArrayList<>();\n    t.add(\"x\");\n    t.add(\"y\");\n    System.out.println(t.get(1));\n  }\n}",
+   "run": "java",
+   "options": [
+    "x",
+    "2",
+    "y"
+   ],
+   "answer": 2,
+   "why": "الفهرس 1 هو العنصر التاني y."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "import java.util.ArrayList;\n\npublic class Main {\n  public static void main(String[] args) {\n    ArrayList<Integer> t = new ArrayList<>();\n    t.add(5);\n    t.add(6);\n    int s = t.get(0) + t.get(1);\n    System.out.println(s);\n  }\n}",
+   "run": "java",
+   "options": [
+    "11",
+    "56",
+    "2"
+   ],
+   "answer": 0,
+   "why": "5 + 6 = 11 وده اللي بيتطبع."
+  },
+  {
+   "q": "الفرق بين المصفوفة وArrayList؟",
+   "options": [
+    "المصفوفة بتكبر وArrayList ثابتة",
+    "ArrayList بتكبر بالإضافة، والمصفوفة حجمها ثابت",
+    "مفيش فرق"
+   ],
+   "answer": 1,
+   "why": "ArrayList بتضيف عناصر بـ add، والمصفوفة بتتحدد في الإنشاء."
+  }
+ ],
+ "java-7-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static void hi() {\n    System.out.println(\"hi\");\n  }\n  public static void main(String[] args) {\n    hi();\n    hi();\n  }\n}",
+   "run": "java",
+   "options": [
+    "hi ثم hi",
+    "hi",
+    "hi ثم hi ثم hi"
+   ],
+   "answer": 0,
+   "why": "في استدعاءين، فبيطبع hi مرتين."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static void hi() {\n    System.out.println(\"hi\");\n  }\n  public static void main(String[] args) {\n    System.out.println(\"a\");\n    hi();\n  }\n}",
+   "run": "java",
+   "options": [
+    "hi ثم a",
+    "a ثم hi",
+    "a"
+   ],
+   "answer": 1,
+   "why": "a بتتطبع الأول وبعدها hi."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static void hi() {\n    System.out.println(\"hi\");\n  }\n  public static void main(String[] args) {\n    System.out.println(\"end\");\n  }\n}",
+   "run": "java",
+   "options": [
+    "hi ثم end",
+    "hi",
+    "end"
+   ],
+   "answer": 2,
+   "why": "الدالة اتعرّفت وما اتندهتش، فبيطبع end بس."
+  },
+  {
+   "q": "إزاي نشغّل static void report() من main؟",
+   "options": [
+    "report();",
+    "void report;",
+    "Main.report"
+   ],
+   "answer": 0,
+   "why": "بنكتب اسمها وأقواس وفاصلة منقوطة."
+  }
+ ],
+ "java-7-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static int sq(int x) {\n    return x * x;\n  }\n  public static void main(String[] args) {\n    int r = sq(3);\n    System.out.println(r + 1);\n  }\n}",
+   "run": "java",
+   "options": [
+    "9",
+    "10",
+    "16"
+   ],
+   "answer": 1,
+   "why": "sq(3) بترجع 9 ونزيد 1، فالناتج 10."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static int f(int x) {\n    return x + 1;\n  }\n  public static void main(String[] args) {\n    System.out.println(f(f(1)));\n  }\n}",
+   "run": "java",
+   "options": [
+    "2",
+    "4",
+    "3"
+   ],
+   "answer": 2,
+   "why": "f(1) = 2 ثم f(2) = 3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static int add(int a, int b) {\n    return a + b;\n  }\n  public static void main(String[] args) {\n    System.out.println(add(2, 3) * add(1, 1));\n  }\n}",
+   "run": "java",
+   "options": [
+    "10",
+    "5",
+    "7"
+   ],
+   "answer": 0,
+   "why": "add(2, 3) = 5 وadd(1, 1) = 2، والضرب 10."
+  },
+  {
+   "q": "static int total(int x, int y) بترجع نوعها إيه؟",
+   "options": [
+    "void",
+    "int",
+    "String"
+   ],
+   "answer": 1,
+   "why": "النوع قبل اسم الدالة هو نوع القيمة المرجعة."
+  }
+ ],
+ "java-8-1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static class Robot {\n    int e;\n  }\n  public static void main(String[] args) {\n    Robot a = new Robot();\n    Robot b = new Robot();\n    a.e = 3;\n    b.e = 9;\n    System.out.println(a.e);\n    System.out.println(b.e);\n  }\n}",
+   "run": "java",
+   "options": [
+    "3 ثم 3",
+    "3 ثم 9",
+    "9 ثم 3"
+   ],
+   "answer": 1,
+   "why": "كل كائن له حقوله المستقلة: a.e = 3 وb.e = 9."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static class Robot {\n    int e;\n  }\n  public static void main(String[] args) {\n    Robot a = new Robot();\n    Robot b = a;\n    b.e = 5;\n    System.out.println(a.e);\n  }\n}",
+   "run": "java",
+   "options": [
+    "0",
+    "10",
+    "5"
+   ],
+   "answer": 2,
+   "why": "b بتشاور على نفس الكائن بتاع a، فتغيير b.e بقى 5 في a.e."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static class Robot {\n    int e;\n  }\n  public static void main(String[] args) {\n    Robot a = new Robot();\n    System.out.println(a.e);\n  }\n}",
+   "run": "java",
+   "options": [
+    "0",
+    "null",
+    "1"
+   ],
+   "answer": 0,
+   "why": "الحقل int من غير قيمة بيبدأ بـ 0."
+  },
+  {
+   "q": "Robot a = new Robot(); Robot b = new Robot(); هل a و b نفس الكائن؟",
+   "options": [
+    "أيوه نفس الكائن",
+    "لا، كائنان مستقلان",
+    "أيوه لأن الفئة واحدة"
+   ],
+   "answer": 1,
+   "why": "كل new بتنشئ كائن جديد."
+  }
+ ],
+ "java-8-2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static class Robot {\n    int e;\n    Robot(int s) {\n      e = s;\n    }\n  }\n  public static void main(String[] args) {\n    Robot a = new Robot(4);\n    Robot b = new Robot(8);\n    System.out.println(a.e + b.e);\n  }\n}",
+   "run": "java",
+   "options": [
+    "48",
+    "4",
+    "12"
+   ],
+   "answer": 2,
+   "why": "المنشئ بيحط 4 في a.e و8 في b.e والمجموع 12."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static class Robot {\n    int e;\n    Robot(int s) {\n      e = s;\n    }\n  }\n  public static void main(String[] args) {\n    Robot a = new Robot(5);\n    a.e = a.e + 1;\n    System.out.println(a.e);\n  }\n}",
+   "run": "java",
+   "options": [
+    "6",
+    "5",
+    "51"
+   ],
+   "answer": 0,
+   "why": "المنشئ حط 5 ثم زودنا 1، فالناتج 6."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "public class Main {\n  static class Robot {\n    int e;\n    Robot(int s) {\n      e = s;\n    }\n  }\n  public static void main(String[] args) {\n    Robot a = new Robot(7);\n    System.out.println(a.e * 2);\n  }\n}",
+   "run": "java",
+   "options": [
+    "7",
+    "14",
+    "72"
+   ],
+   "answer": 1,
+   "why": "a.e = 7 وبتتضرب في 2 فالناتج 14."
+  },
+  {
+   "q": "ليه المنشئ مفيهوش void؟",
+   "options": [
+    "لأن void ممنوعة في Java",
+    "لأن المنشئ بيرجع int",
+    "لأن المنشئ مش دالة عادية وبيجهّز الكائن"
+   ],
+   "answer": 2,
+   "why": "المنشئ ليه اسم الفئة نفسها ومالوش نوع إرجاع."
+  }
  ]
 }

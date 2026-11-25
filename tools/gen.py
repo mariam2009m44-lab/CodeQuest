@@ -12,14 +12,13 @@ def run(lang,code):
         o=subprocess.run([d+'/a'],capture_output=True,text=True,timeout=5)
     else:
         d=tempfile.mkdtemp();open(d+'/Main.java','w').write(code)
-        c=subprocess.run(['javac','-d',d,d+'/Main.java'],capture_output=True,text=True)
-        assert c.returncode==0,c.stderr+code
-        o=subprocess.run(['java','-cp',d,'Main'],capture_output=True,text=True,timeout=10)
+        o=subprocess.run(['java',d+'/Main.java'],capture_output=True,text=True,timeout=30)
     assert o.returncode==0,o.stderr+code
     return o.stdout.rstrip('\n').replace('\n',J)
 def build(lang,spec,bank,units):
     lid_lang={l['id']:p['language'] for p in units for l in p['lessons']}
     for lid,items in spec.items():
+        if os.environ.get('ONLY') and lid not in os.environ['ONLY'].split(','): continue
         assert lid_lang[lid]==lang,lid
         assert len(items)==4,lid
         out=[]

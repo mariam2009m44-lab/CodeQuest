@@ -3,7 +3,9 @@ import {validateItem,scoreLessonTest,QUESTIONS_PER_LESSON} from '../../learning-
 const rd=f=>JSON.parse(fs.readFileSync(new URL('../../learning-studio/'+f,import.meta.url),'utf8'));
 const bank=rd('lesson-tests.json'),units=rd('units.json'),quizzes=rd('quizzes.json');
 const lessons=new Map(units.flatMap(p=>p.lessons.map(l=>[l.id,{lang:p.language,lesson:l}])));
-const tok=s=>new Set(String(s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').split(' ').filter(x=>x.length>1));
+// Java/C++ wrapper words appear in every snippet, so they must not make different snippets look alike.
+const BOILER=new Set(['public','class','main','static','void','string','args','system','out','println','include','iostream','std','cout','endl','int','return']);
+const tok=s=>new Set(String(s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').split(' ').filter(x=>x.length>1&&!BOILER.has(x)));
 const jac=(a,b)=>{const A=tok(a),B=tok(b);let i=0;for(const x of A)if(B.has(x))i++;return i/Math.max(1,A.size+B.size-i)};
 const runners={python:['python3',['-c']],javascript:['node',['-e']]};
 import os from 'node:os';import path from 'node:path';
@@ -11,7 +13,7 @@ function runCode(lang,code){
  if(runners[lang]){const [cmd,args]=runners[lang];return execFileSync(cmd,[...args,code],{timeout:5000}).toString()}
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'lt-'));
  if(lang==='cpp'){fs.writeFileSync(path.join(dir,'a.cpp'),code);execFileSync('g++',['-std=c++17','-o',path.join(dir,'a'),path.join(dir,'a.cpp')],{timeout:60000});return execFileSync(path.join(dir,'a'),{timeout:5000}).toString()}
- if(lang==='java'){fs.writeFileSync(path.join(dir,'Main.java'),code);execFileSync('javac',['-d',dir,path.join(dir,'Main.java')],{timeout:60000});return execFileSync('java',['-cp',dir,'Main'],{timeout:10000}).toString()}
+ if(lang==='java'){fs.writeFileSync(path.join(dir,'Main.java'),code);return execFileSync('java',[path.join(dir,'Main.java')],{timeout:30000}).toString()}
  throw new Error('no runner for '+lang);
 }
 test('every banked lesson exists and has exactly the required number of valid questions',()=>{
