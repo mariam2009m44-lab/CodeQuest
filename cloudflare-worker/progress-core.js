@@ -10,25 +10,34 @@ export const MAX_DRAFT = 20000, DRAFT_RETENTION_MS = 30 * 24 * 3600 * 1000;
 export const RESUME_PHASES = ["prediction", "worked", "practice", "explanation", "transfer", "complete"];
 
 // Private resume checkpoint. Never used for scoring, never in public records.
-// Newer client checkpoint (savedAt) wins, so an older device cannot overwrite a newer one.
-export function saveResume(state, index, { language, lessonId, phase, draft, savedAt }, nowMs) {
+// Conflict handling does not trust device clocks: every accepted write gets a server revision.
+// A write built on the latest revision (baseRev) is accepted as is. A write built on an older
+// revision is a conflict and is ordered by its time after correcting for the device's clock
+// offset (server now minus the device's own sentAt). Skew above 30 days is rejected.
+export const MAX_SKEW_MS = 30 * 24 * 3600 * 1000;
+export function saveResume(state, index, { language, lessonId, phase, draft, savedAt, sentAt, baseRev }, nowMs) {
   const meta = index.lessons[lessonId];
   if (!meta || meta.language !== language) return { ok: false, reason: "unknown_lesson" };
   if (!RESUME_PHASES.includes(phase)) return { ok: false, reason: "bad_phase" };
   if (draft !== undefined && draft !== null && (typeof draft !== "string" || draft.length > MAX_DRAFT)) return { ok: false, reason: "bad_draft" };
-  if (!Number.isInteger(savedAt) || savedAt <= 0 || savedAt > nowMs + 5 * 60 * 1000) return { ok: false, reason: "bad_time" };
+  if (!Number.isInteger(savedAt) || !Number.isInteger(sentAt) || savedAt <= 0 || sentAt <= 0) return { ok: false, reason: "bad_time" };
+  if (savedAt > sentAt + 5 * 60 * 1000) return { ok: false, reason: "bad_time" };
+  const skew = nowMs - sentAt;
+  if (Math.abs(skew) > MAX_SKEW_MS) return { ok: false, reason: "bad_time" };
+  if (baseRev !== undefined && baseRev !== null && (!Number.isInteger(baseRev) || baseRev < 0)) return { ok: false, reason: "bad_rev" };
   state.resume = state.resume || {};
+  const adj = Math.min(savedAt + skew, nowMs);
   const cur = state.resume[language];
-  if (cur && cur.savedAt >= savedAt) return { ok: true, stale: true, resume: publicResume(cur, nowMs) };
-  // A completed lesson keeps no draft.
+  const sequential = !cur || baseRev === cur.rev;
+  if (!sequential && adj <= cur.adj) return { ok: true, stale: true, resume: publicResume(cur, nowMs) };
   const done = state.lessons[lessonId] && phase === "complete";
-  state.resume[language] = { lessonId, phase, draft: done || draft == null ? "" : draft, savedAt, storedAt: nowMs };
+  state.resume[language] = { lessonId, phase, draft: done || draft == null ? "" : draft, adj, rev: (cur?.rev ?? 0) + 1, storedAt: nowMs };
   return { ok: true, stale: false, resume: publicResume(state.resume[language], nowMs) };
 }
 
 export function publicResume(r, nowMs) {
   const expired = nowMs - r.storedAt > DRAFT_RETENTION_MS;
-  return { lessonId: r.lessonId, phase: r.phase, draft: expired ? "" : r.draft, savedAt: r.savedAt };
+  return { lessonId: r.lessonId, phase: r.phase, draft: expired ? "" : r.draft, savedAt: r.adj, rev: r.rev };
 }
 
 // Drops expired drafts. Returns number removed.

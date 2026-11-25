@@ -1264,7 +1264,7 @@ export class StudentProgress {
         const rq = (await tx.get("rwrites")) || { day: today, count: 0 };
         if (rq.day !== today) { rq.day = today; rq.count = 0; }
         if (rq.count >= 600) return { status: 429, data: { success: false, retryable: true, message: "وصلت للحد اليومي لحفظ نقطة التوقف." } };
-        const out = saveResume(state, CURRICULUM_INDEX, { language: body.language, lessonId: body.lessonId, phase: body.phase, draft: body.draft, savedAt: body.savedAt }, Date.now());
+        const out = saveResume(state, CURRICULUM_INDEX, { language: body.language, lessonId: body.lessonId, phase: body.phase, draft: body.draft, savedAt: body.savedAt, sentAt: body.sentAt, baseRev: body.baseRev }, Date.now());
         if (!out.ok) return { status: 400, data: { success: false, message: out.reason } };
         if (!out.stale) { rq.count += 1; await tx.put("state", state); await tx.put("rwrites", rq); }
         return { status: 200, data: { success: true, stale: out.stale, resume: out.resume } };
