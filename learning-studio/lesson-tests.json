@@ -3546,5 +3546,1109 @@
    "answer": 0,
    "why": "الدالة بتكتب المنطق مرة وتشتغل على أي كائن بنفس الشكل."
   }
+ ],
+ "cpp_l1": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  std::cout << \"A\" << std::endl;\n  std::cout << \"B\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "AB",
+    "B ثم A",
+    "A ثم B"
+   ],
+   "answer": 2,
+   "why": "كل std::endl بتنزّل سطر، فبيظهر A ثم B."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  std::cout << \"A\";\n  std::cout << \"B\";\n  std::cout << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "AB",
+    "A ثم B",
+    "BA"
+   ],
+   "answer": 0,
+   "why": "من غير endl بين الاتنين بيطبعوا ورا بعض في نفس السطر: AB."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  std::cout << \"1 + 1\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "2",
+    "1 + 1",
+    "1+1=2"
+   ],
+   "answer": 1,
+   "why": "اللي بين الاقتباسات نص فبيتطبع زي ما هو: 1 + 1."
+  },
+  {
+   "q": "أي جزء في std::cout << \"Ready\" << std::endl; هو الرسالة؟",
+   "options": [
+    "std::cout",
+    "std::endl",
+    "\"Ready\""
+   ],
+   "answer": 2,
+   "why": "اللي بين الاقتباسات هو النص اللي بيتعرض."
+  }
+ ],
+ "cpp_l2": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 5;\n  a = 8;\n  std::cout << a << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "8",
+    "5",
+    "13"
+   ],
+   "answer": 0,
+   "why": "a اتغيّرت لـ 8 قبل الطباعة."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 7;\n  int b = a;\n  a = 1;\n  std::cout << b << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "1",
+    "7",
+    "7 ثم 1"
+   ],
+   "answer": 1,
+   "why": "b خدت نسخة من 7، وتغيير a بعد كده ما بيأثرش فيها فبتفضل 7."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int n = 9;\n  std::cout << n + 1 << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "9",
+    "91",
+    "10"
+   ],
+   "answer": 2,
+   "why": "n + 1 بتحسب 10."
+  },
+  {
+   "q": "أنهي سطر بيعرّف متغير عدد صحيح اسمه n؟",
+   "options": [
+    "int n = 4;",
+    "n int = 4;",
+    "integer n = 4;"
+   ],
+   "answer": 0,
+   "why": "في C++ بنكتب النوع أولًا وبعده الاسم."
+  }
+ ],
+ "cpp_l3": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  // std::cout << \"no\";\n  std::cout << \"yes\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "no",
+    "yes",
+    "no ثم yes"
+   ],
+   "answer": 1,
+   "why": "السطر اللي أوله // تعليق ومش بيتنفذ، فبيطبع yes بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  std::cout << \"a\" << std::endl; // std::cout << \"b\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "a ثم b",
+    "b",
+    "a"
+   ],
+   "answer": 2,
+   "why": "اللي بعد // في نفس السطر تعليق، فبيطبع a بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  /* std::cout << \"x\" << std::endl; */\n  std::cout << \"y\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "y",
+    "x ثم y",
+    "x"
+   ],
+   "answer": 0,
+   "why": "الكلام بين /* و */ تعليق، فبيطبع y بس."
+  },
+  {
+   "q": "التعليق في C++ بيأثر على اللي بيتطبع؟",
+   "options": [
+    "أه، بيتطبع",
+    "لا، المترجم بيتجاهله",
+    "أه، بيعمل خطأ"
+   ],
+   "answer": 1,
+   "why": "التعليقات للقارئ ومش بتتنفذ."
+  }
+ ],
+ "cpp_l4": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 6;\n  int b = 4;\n  std::cout << a * b << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "10",
+    "2",
+    "24"
+   ],
+   "answer": 2,
+   "why": "6 × 4 = 24 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 10;\n  int b = 3;\n  std::cout << a - b << std::endl;\n  std::cout << a * b << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "7 ثم 30",
+    "13 ثم 30",
+    "7 ثم 13"
+   ],
+   "answer": 0,
+   "why": "10 - 3 = 7 و10 × 3 = 30."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  std::cout << 2 + 3 * 4 << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "20",
+    "14",
+    "14 ثم 20"
+   ],
+   "answer": 1,
+   "why": "الضرب قبل الجمع: 3 × 4 = 12 ثم 2 + 12 = 14."
+  },
+  {
+   "q": "ليه بنستخدم الضرب بدل جمع نفس الرقم كذا مرة؟",
+   "options": [
+    "لأن الجمع ممنوع",
+    "لأن الضرب بيطبع نص",
+    "لأنه أقصر وأوضح في الحساب"
+   ],
+   "answer": 2,
+   "why": "الضرب هو اختصار للجمع المتكرر وبيعبّر عن الفكرة مباشرة."
+  }
+ ],
+ "cpp_l5": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 0, b = 0;\n  a = 3;\n  b = 4;\n  std::cout << a * b << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "12",
+    "7",
+    "34"
+   ],
+   "answer": 0,
+   "why": "3 × 4 = 12 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int x = 2, y = 5;\n  std::cout << y - x << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "3 ثم 3",
+    "3",
+    "7"
+   ],
+   "answer": 1,
+   "why": "5 - 2 = 3 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 1, b = 2, c = 3;\n  std::cout << a + b + c << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "123",
+    "5",
+    "6"
+   ],
+   "answer": 2,
+   "why": "1 + 2 + 3 = 6 وده اللي بيتطبع."
+  },
+  {
+   "q": "std::cin >> a >> b; بتقرأ القيمتين إزاي؟",
+   "options": [
+    "بالترتيب: الأولى في a والتانية في b",
+    "التانية في a والأولى في b",
+    "القيمتين مع بعض في a"
+   ],
+   "answer": 0,
+   "why": "القراءة بتتم بنفس ترتيب الكتابة والتخزين."
+  }
+ ],
+ "cpp_l6": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int e = 3;\n  if (e >= 5) {\n    std::cout << \"Open\" << std::endl;\n  }\n  std::cout << \"End\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Open ثم End",
+    "End",
+    "Open"
+   ],
+   "answer": 1,
+   "why": "الشرط غلط، فبيتخطى الجسم ويطبع End بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int e = 5;\n  if (e >= 5) {\n    std::cout << \"A\" << std::endl;\n  }\n  if (e > 5) {\n    std::cout << \"B\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "A ثم B",
+    "B",
+    "A"
+   ],
+   "answer": 2,
+   "why": "5 >= 5 صح فبيطبع A، و5 > 5 غلط فمفيش B."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int e = 8;\n  if (e == 8) {\n    std::cout << \"eight\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "eight",
+    "8",
+    "بدون مخرجات"
+   ],
+   "answer": 0,
+   "why": "== بتقارن، و8 تساوي 8 فبيطبع eight."
+  },
+  {
+   "q": "الفرق بين = و == في C++؟",
+   "options": [
+    "= بتقارن و== بتسند",
+    "= بتسند و== بتقارن",
+    "هما نفس الشيء"
+   ],
+   "answer": 1,
+   "why": "علامة = بتحط قيمة، و== بتسأل هل القيمتين متساويتين."
+  }
+ ],
+ "cpp_l7": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int e = 9;\n  if (e >= 5) {\n    std::cout << \"Open\" << std::endl;\n  } else {\n    std::cout << \"Charge\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Charge",
+    "Open ثم Charge",
+    "Open"
+   ],
+   "answer": 2,
+   "why": "الشرط صح فبيتنفذ Open بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int e = 5;\n  if (e > 5) {\n    std::cout << \"Open\" << std::endl;\n  } else {\n    std::cout << \"Charge\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Charge",
+    "Open",
+    "Open ثم Charge"
+   ],
+   "answer": 0,
+   "why": "5 مش أكبر من 5، فالشرط غلط وبيتنفذ else ويطبع Charge."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int n = 4;\n  if (n % 2 == 0) {\n    std::cout << \"even\" << std::endl;\n  } else {\n    std::cout << \"odd\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "odd",
+    "even",
+    "even ثم odd"
+   ],
+   "answer": 1,
+   "why": "4 % 2 يساوي 0 فالعدد زوجي."
+  },
+  {
+   "q": "إمتى بيتنفذ else؟",
+   "options": [
+    "لما شرط if يطلع صح",
+    "دايمًا مع if",
+    "لما شرط if يطلع غلط"
+   ],
+   "answer": 2,
+   "why": "else هي المسار البديل لو الشرط ما اتحققش."
+  }
+ ],
+ "cpp_l8": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int t = 30;\n  if (t < 10) {\n    std::cout << \"Cold\" << std::endl;\n  } else if (t < 25) {\n    std::cout << \"Mild\" << std::endl;\n  } else {\n    std::cout << \"Hot\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Hot",
+    "Mild",
+    "Cold"
+   ],
+   "answer": 0,
+   "why": "30 مش أقل من 10 ولا من 25، فالناتج Hot."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int t = 5;\n  if (t < 25) {\n    std::cout << \"Mild\" << std::endl;\n  } else if (t < 10) {\n    std::cout << \"Cold\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Cold",
+    "Mild",
+    "Mild ثم Cold"
+   ],
+   "answer": 1,
+   "why": "أول شرط (t < 25) بيتحقق فبيتنفذ ويتخطى الباقي، فالناتج Mild. الترتيب بيفرق."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int s = 85;\n  if (s >= 90) {\n    std::cout << \"A\" << std::endl;\n  } else if (s >= 80) {\n    std::cout << \"B\" << std::endl;\n  } else {\n    std::cout << \"C\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "A",
+    "C",
+    "B"
+   ],
+   "answer": 2,
+   "why": "85 مش >= 90 لكن >= 80، فالناتج B."
+  },
+  {
+   "q": "ليه بنحط الشرط الأخص قبل الأعم؟",
+   "options": [
+    "لأن أول شرط صح هو اللي بيتنفذ",
+    "لأن C++ بتطلب كده",
+    "عشان الكود أسرع بس"
+   ],
+   "answer": 0,
+   "why": "لو الشرط العام جه أول، هيمنع الحالات الخاصة من إنها توصل."
+  }
+ ],
+ "cpp_l9": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  for (int i = 1; i <= 3; i++) {\n    std::cout << i * 2 << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "1 ثم 2 ثم 3",
+    "2 ثم 4 ثم 6",
+    "2 ثم 4"
+   ],
+   "answer": 1,
+   "why": "i بتمشي 1 و2 و3 وبتتضرب في 2: 2 ثم 4 ثم 6."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  for (int i = 0; i < 3; i++) {\n    std::cout << i << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "1 ثم 2 ثم 3",
+    "0 ثم 1 ثم 2 ثم 3",
+    "0 ثم 1 ثم 2"
+   ],
+   "answer": 2,
+   "why": "i < 3 بيوقف قبل 3، فالقيم 0 و1 و2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int t = 0;\n  for (int i = 1; i <= 4; i++) {\n    t = t + i;\n  }\n  std::cout << t << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "10",
+    "6",
+    "4"
+   ],
+   "answer": 0,
+   "why": "المجموع 1 + 2 + 3 + 4 = 10."
+  },
+  {
+   "q": "for (int i = 1; i <= 5; i++) بتشتغل كام مرة؟",
+   "options": [
+    "4",
+    "5",
+    "6"
+   ],
+   "answer": 1,
+   "why": "من 1 لـ 5 مشمولين، فـ 5 دورات."
+  }
+ ],
+ "cpp_l10": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int n = 3;\n  while (n > 0) {\n    std::cout << n << std::endl;\n    n = n - 1;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "1 ثم 2 ثم 3",
+    "3 ثم 2 ثم 1 ثم 0",
+    "3 ثم 2 ثم 1"
+   ],
+   "answer": 2,
+   "why": "n بتنقص كل دورة فبيطبع 3 ثم 2 ثم 1."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int n = 0;\n  while (n > 0) {\n    std::cout << \"x\" << std::endl;\n  }\n  std::cout << \"done\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "done",
+    "x ثم done",
+    "x"
+   ],
+   "answer": 0,
+   "why": "الشرط غلط من الأول، فالحلقة ما بتتنفذش وبيطبع done بس."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int n = 1;\n  while (n < 20) {\n    n = n * 2;\n  }\n  std::cout << n << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "16",
+    "32",
+    "20"
+   ],
+   "answer": 1,
+   "why": "n بتبقى 2 و4 و8 و16 و32، وبتقف عند 32."
+  },
+  {
+   "q": "إيه خطر while اللي ما بتغيّرش متغير الشرط؟",
+   "options": [
+    "هتتنفذ مرة واحدة بس",
+    "C++ هتعدّل المتغير لوحدها",
+    "ممكن تفضل شغالة للأبد"
+   ],
+   "answer": 2,
+   "why": "لو الشرط فضل صح مش هتوقف."
+  }
+ ],
+ "cpp_l11": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  for (int i = 1; i <= 5; i++) {\n    if (i == 3) { continue; }\n    std::cout << i << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "1 ثم 2 ثم 4 ثم 5",
+    "1 ثم 2",
+    "1 ثم 2 ثم 3 ثم 4 ثم 5"
+   ],
+   "answer": 0,
+   "why": "continue بتتخطى 3 بس، فالقيم 1 و2 و4 و5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  for (int i = 1; i <= 5; i++) {\n    if (i == 3) { break; }\n    std::cout << i << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "1 ثم 2 ثم 4 ثم 5",
+    "1 ثم 2",
+    "1 ثم 2 ثم 3"
+   ],
+   "answer": 1,
+   "why": "break بتوقف الحلقة عند 3، فبيتطبع 1 و2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int c = 0;\n  for (int i = 1; i <= 4; i++) {\n    if (i % 2 == 0) { continue; }\n    c++;\n  }\n  std::cout << c << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "4",
+    "1",
+    "2"
+   ],
+   "answer": 2,
+   "why": "1 و3 بس بيتعدوا، فc = 2."
+  },
+  {
+   "q": "الفرق بين break و continue؟",
+   "options": [
+    "break بتنهي الحلقة وcontinue بتتخطى دورة",
+    "break بتتخطى دورة وcontinue بتنهي الحلقة",
+    "مفيش فرق"
+   ],
+   "answer": 0,
+   "why": "break بتخرج من الحلقة، وcontinue بتروح للدورة اللي بعدها."
+  }
+ ],
+ "cpp_l12": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nvoid hi() {\n  std::cout << \"hi\" << std::endl;\n}\nint main() {\n  hi();\n  hi();\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "hi",
+    "hi ثم hi",
+    "hi ثم hi ثم hi"
+   ],
+   "answer": 1,
+   "why": "في استدعاءين فبيتطبع hi مرتين."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nvoid hi() {\n  std::cout << \"hi\" << std::endl;\n}\nint main() {\n  std::cout << \"a\" << std::endl;\n  hi();\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "hi ثم a",
+    "a",
+    "a ثم hi"
+   ],
+   "answer": 2,
+   "why": "a بتتطبع الأول وبعدها استدعاء hi بيطبع hi."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nvoid hi() {\n  std::cout << \"hi\" << std::endl;\n}\nint main() {\n  std::cout << \"end\" << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "end",
+    "hi ثم end",
+    "hi"
+   ],
+   "answer": 0,
+   "why": "الدالة اتعرّفت وما اتندهتش، فبيطبع end بس."
+  },
+  {
+   "q": "إزاي نشغّل دالة void اسمها report؟",
+   "options": [
+    "void report;",
+    "report();",
+    "report"
+   ],
+   "answer": 1,
+   "why": "بنكتب اسمها وأقواس وفاصلة منقوطة داخل main."
+  }
+ ],
+ "cpp_l13": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nvoid show(int x) {\n  std::cout << x * x << std::endl;\n}\nint main() {\n  show(2);\n  show(10);\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "4",
+    "2 ثم 10",
+    "4 ثم 100"
+   ],
+   "answer": 2,
+   "why": "2 × 2 = 4 و10 × 10 = 100."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nvoid add(int a, int b) {\n  std::cout << a - b << std::endl;\n}\nint main() {\n  add(2, 5);\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "-3",
+    "7",
+    "3"
+   ],
+   "answer": 0,
+   "why": "الدالة بتطرح: 2 - 5 = -3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nvoid show(int n) {\n  std::cout << n + 1 << std::endl;\n}\nint main() {\n  show(7);\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "7",
+    "8",
+    "71"
+   ],
+   "answer": 1,
+   "why": "n + 1 بتحسب 8 وده اللي بيتطبع."
+  },
+  {
+   "q": "int x في void show(int x) بيسمّى؟",
+   "options": [
+    "argument",
+    "return value",
+    "parameter"
+   ],
+   "answer": 2,
+   "why": "الـparameter هو المتغير اللي بيستقبل القيمة داخل الدالة."
+  }
+ ],
+ "cpp_l14": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint sq(int x) {\n  return x * x;\n}\nint main() {\n  int r = sq(3);\n  std::cout << r + 1 << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "10",
+    "9",
+    "16"
+   ],
+   "answer": 0,
+   "why": "sq(3) بترجع 9 ونزيد 1، فالناتج 10."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint f(int x) {\n  return x + 1;\n}\nint main() {\n  std::cout << f(f(1)) << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "2",
+    "3",
+    "4"
+   ],
+   "answer": 1,
+   "why": "f(1) = 2 ثم f(2) = 3."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint add(int x, int y) {\n  return x + y;\n}\nint main() {\n  int a = add(2, 3);\n  int b = add(a, 4);\n  std::cout << b << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "5",
+    "7 ثم 9",
+    "9"
+   ],
+   "answer": 2,
+   "why": "add(2, 3) بـ 5 ثم add(5, 4) بـ 9."
+  },
+  {
+   "q": "إيه اللي بيعمله return في int total(...)؟",
+   "options": [
+    "بيرجّع قيمة للمستدعي",
+    "بيطبع القيمة",
+    "بيعرّف متغير"
+   ],
+   "answer": 0,
+   "why": "return بيبعت النتيجة لمكان الاستدعاء."
+  }
+ ],
+ "cpp_l15": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a[] = {4, 7, 9};\n  std::cout << a[1] << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "4",
+    "7",
+    "9"
+   ],
+   "answer": 1,
+   "why": "الفهرس بيبدأ من 0، فـ a[1] هي 7."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a[] = {4, 7, 9};\n  std::cout << a[0] + a[2] << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "11",
+    "16",
+    "13"
+   ],
+   "answer": 2,
+   "why": "4 + 9 = 13 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a[3] = {1, 2, 3};\n  a[1] = 10;\n  std::cout << a[1] << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "10",
+    "2",
+    "1"
+   ],
+   "answer": 0,
+   "why": "عدّلنا a[1] إلى 10."
+  },
+  {
+   "q": "مصفوفة فيها 5 عناصر، إيه أكبر فهرس صالح؟",
+   "options": [
+    "5",
+    "4",
+    "6"
+   ],
+   "answer": 1,
+   "why": "الفهارس بتبدأ من 0، فآخرها 4."
+  }
+ ],
+ "cpp_l16": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\n#include <string>\nint main() {\n  std::string s = \"Nova\";\n  std::cout << s[1] << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "N",
+    "v",
+    "o"
+   ],
+   "answer": 2,
+   "why": "s[1] هو الحرف التاني وهو o."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\n#include <string>\nint main() {\n  std::string s = \"abc\";\n  std::cout << s.length() << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "3",
+    "2",
+    "4"
+   ],
+   "answer": 0,
+   "why": "abc فيها 3 حروف."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\n#include <string>\nint main() {\n  std::string a = \"Co\";\n  std::string b = \"dy\";\n  std::cout << a + b << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Co dy",
+    "Cody",
+    "dyCo"
+   ],
+   "answer": 1,
+   "why": "+ بتوصل النصين: Cody."
+  },
+  {
+   "q": "std::string s = \"Cody\"; إيه s[0]؟",
+   "options": [
+    "y",
+    "o",
+    "C"
+   ],
+   "answer": 2,
+   "why": "الفهرس 0 هو أول حرف."
+  }
+ ],
+ "cpp_l17": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a[] = {4, 7, 9};\n  for (int i = 0; i < 3; i++) {\n    std::cout << a[i] << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "4 ثم 7 ثم 9",
+    "7 ثم 9 ثم 4",
+    "4 ثم 7"
+   ],
+   "answer": 0,
+   "why": "الحلقة بتزور الفهارس 0 و1 و2 وبتطبع 4 ثم 7 ثم 9."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a[] = {1, 2, 3};\n  int t = 0;\n  for (int i = 0; i < 3; i++) {\n    t = t + a[i];\n  }\n  std::cout << t << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "3",
+    "6",
+    "5"
+   ],
+   "answer": 1,
+   "why": "1 + 2 + 3 = 6 وده اللي بيتطبع."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a[] = {5, 1, 8};\n  int m = a[0];\n  for (int i = 1; i < 3; i++) {\n    if (a[i] > m) { m = a[i]; }\n  }\n  std::cout << m << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "5",
+    "1",
+    "8"
+   ],
+   "answer": 2,
+   "why": "m بتبقى أكبر عنصر وهو 8."
+  },
+  {
+   "q": "ليه نستخدم i < 3 مش i <= 3 مع مصفوفة فيها 3 عناصر؟",
+   "options": [
+    "لأن الفهارس 0 و1 و2 فقط",
+    "لأن 3 رقم ممنوع",
+    "لأن <= بطيئة"
+   ],
+   "answer": 0,
+   "why": "a[3] خارج حدود المصفوفة ويعمل سلوك غير آمن."
+  }
+ ],
+ "cpp_l18": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 4;\n  int& r = a;\n  r = 9;\n  std::cout << a << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "4",
+    "9",
+    "13"
+   ],
+   "answer": 1,
+   "why": "r اسم تاني لنفس المتغير a، فتغيير r غيّر a إلى 9."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 4;\n  int b = a;\n  b = 9;\n  std::cout << a << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "9",
+    "13",
+    "4"
+   ],
+   "answer": 2,
+   "why": "b نسخة مستقلة، فتغييرها ما بيأثرش في a وبتفضل 4."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 1;\n  int& r = a;\n  a = 6;\n  std::cout << r << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "6",
+    "1",
+    "7"
+   ],
+   "answer": 0,
+   "why": "r مرجع لـ a، فبتشوف القيمة 6."
+  },
+  {
+   "q": "int& r = a; معناها إيه؟",
+   "options": [
+    "r نسخة من a",
+    "r اسم تاني لنفس المتغير a",
+    "r مؤشر فاضي"
+   ],
+   "answer": 1,
+   "why": "المرجع بيشاور على نفس المتغير ومش بيعمل نسخة."
+  }
+ ],
+ "cpp_l19": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 5;\n  int* p = &a;\n  std::cout << *p << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "6",
+    "a",
+    "5"
+   ],
+   "answer": 2,
+   "why": "p بتشاور على a، و*p بتقرأ القيمة اللي في a وهي 5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 2;\n  int* p = &a;\n  a = 9;\n  std::cout << *p << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "9",
+    "2",
+    "11"
+   ],
+   "answer": 0,
+   "why": "p بتشاور على a، فلما a تبقى 9 القراءة بـ*p بتدي 9."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 3, b = 9;\n  int* p = &b;\n  std::cout << *p + a << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "3",
+    "12",
+    "9"
+   ],
+   "answer": 1,
+   "why": "*p هي 9 وa هي 3 فالمجموع 12."
+  },
+  {
+   "q": "& قبل اسم متغير في int* p = &a; بتدي إيه؟",
+   "options": [
+    "قيمته",
+    "حجمه",
+    "عنوان المتغير"
+   ],
+   "answer": 2,
+   "why": "&a بيدّي عنوان a في الذاكرة."
+  }
+ ],
+ "cpp_l20": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 4;\n  int* p = &a;\n  *p = 10;\n  std::cout << a << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "10",
+    "4",
+    "14"
+   ],
+   "answer": 0,
+   "why": "الكتابة عبر *p بتغيّر a إلى 10."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 1, b = 2;\n  int* p = &a;\n  *p = 7;\n  std::cout << b << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "7",
+    "2",
+    "1"
+   ],
+   "answer": 1,
+   "why": "الكتابة عبر p غيّرت a بس، وb فضلت 2."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 3;\n  int* p = &a;\n  *p = *p + 2;\n  std::cout << a << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "3",
+    "2",
+    "5"
+   ],
+   "answer": 2,
+   "why": "*p كانت 3 وزودنا 2، فa بقت 5."
+  },
+  {
+   "q": "*p = 7; بتعمل إيه لو p بتشاور على a؟",
+   "options": [
+    "بتخلي a تساوي 7",
+    "بتغيّر عنوان p",
+    "بتمسح a"
+   ],
+   "answer": 0,
+   "why": "*p هي الخانة اللي بتشاور عليها p."
+  }
+ ],
+ "cpp_l21": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int* p = nullptr;\n  if (p == nullptr) {\n    std::cout << \"Empty\" << std::endl;\n  } else {\n    std::cout << \"Has target\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Has target",
+    "Empty",
+    "Empty ثم Has target"
+   ],
+   "answer": 1,
+   "why": "p فاضية، فشرط nullptr بيتحقق ويطبع Empty."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 5;\n  int* p = &a;\n  if (p != nullptr) {\n    std::cout << *p << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "Empty",
+    "لا شيء",
+    "5"
+   ],
+   "answer": 2,
+   "why": "p بتشاور على a ومش nullptr، فآمن نقرأ *p وبيطبع 5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 5;\n  int* p = nullptr;\n  if (p == nullptr) {\n    p = &a;\n  }\n  std::cout << *p << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "5",
+    "0",
+    "Empty"
+   ],
+   "answer": 0,
+   "why": "p اتربطت بـ a، فقراءة *p بتطبع 5."
+  },
+  {
+   "q": "ليه نفحص p == nullptr قبل *p؟",
+   "options": [
+    "لأن nullptr بيطبع صفر",
+    "لأن قراءة *p لمؤشر فاضي سلوك غير آمن",
+    "لأن *p ممنوعة دايمًا"
+   ],
+   "answer": 1,
+   "why": "مؤشر بدون هدف مفيهوش مكان نقرأ منه."
+  }
+ ],
+ "cpp_l22": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  double a = 4, b = 6;\n  std::cout << (a + b) / 2 << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "4",
+    "6",
+    "5"
+   ],
+   "answer": 2,
+   "why": "(4 + 6) / 2 = 5."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  double a = 4, b = 6;\n  std::cout << a + b / 2 << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "7",
+    "5",
+    "10"
+   ],
+   "answer": 0,
+   "why": "الأولوية للقسمة: 6 / 2 = 3 ثم 4 + 3 = 7."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  double x = 7;\n  std::cout << x / 2 << std::endl;\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "3",
+    "3.5",
+    "4"
+   ],
+   "answer": 1,
+   "why": "x من نوع double فالقسمة بتدي 3.5."
+  },
+  {
+   "q": "ليه بنحط المجموع بين أقواس قبل القسمة؟",
+   "options": [
+    "عشان C++ بتطلب كده",
+    "عشان الأرقام تتحول لنصوص",
+    "عشان الجمع يتم الأول"
+   ],
+   "answer": 2,
+   "why": "القسمة بتتنفذ قبل الجمع من غير الأقواس."
+  }
+ ],
+ "cpp_l23": [
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 8, b = 2;\n  char op = '-';\n  if (op == '+') {\n    std::cout << a + b << std::endl;\n  } else if (op == '-') {\n    std::cout << a - b << std::endl;\n  } else {\n    std::cout << \"Unsupported\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "6",
+    "10",
+    "Unsupported"
+   ],
+   "answer": 0,
+   "why": "op هي - فبيتنفذ الفرع التاني: 8 - 2 = 6."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  int a = 8, b = 2;\n  char op = '*';\n  if (op == '+') {\n    std::cout << a + b << std::endl;\n  } else if (op == '-') {\n    std::cout << a - b << std::endl;\n  } else {\n    std::cout << \"Unsupported\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "16",
+    "Unsupported",
+    "10"
+   ],
+   "answer": 1,
+   "why": "* مش مدعومة في الشروط، فبيروح لـ else ويطبع Unsupported."
+  },
+  {
+   "q": "إيه اللي هيظهر على الشاشة؟",
+   "code": "#include <iostream>\nint main() {\n  char c = 'a';\n  if (c == 'a') {\n    std::cout << \"A\" << std::endl;\n  }\n  if (c == 'b') {\n    std::cout << \"B\" << std::endl;\n  }\n  return 0;\n}",
+   "run": "cpp",
+   "options": [
+    "B",
+    "A ثم B",
+    "A"
+   ],
+   "answer": 2,
+   "why": "c تساوي a فالشرط الأول بس يتحقق."
+  },
+  {
+   "q": "ليه نحط else في آلة الحاسبة الصغيرة؟",
+   "options": [
+    "عشان نتعامل مع رمز غير مدعوم برسالة واضحة",
+    "عشان نمنع + و-",
+    "عشان نضاعف الناتج"
+   ],
+   "answer": 0,
+   "why": "else بتغطي أي رمز ما اتذكرش في الشروط."
+  }
  ]
 }
