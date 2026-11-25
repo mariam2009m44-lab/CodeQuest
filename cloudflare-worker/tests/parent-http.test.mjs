@@ -22,18 +22,25 @@ test("claim -> dashboard shows only the exact disclosed fields; revocation is en
   assert.equal((await w.call(P + "claim", { token: "tokB", body: { code: code.toLowerCase().replace(/^(....)/, "$1-") } })).status, 200, "case and dash tolerant");
   assert.equal((await w.call(P + "claim", { token: "tokV", body: { code } })).status, 404, "single use");
   const d = await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } });
-  assert.equal(d.status, 200); assert.deepEqual(Object.keys(d.data).sort(), ["available", "lessonTestsPassed", "success", "unitExamsPassed"]);
-  assert.deepEqual(d.data, { success: true, available: true, lessonTestsPassed: 0, unitExamsPassed: 0 });
+  assert.equal(d.status, 200); assert.deepEqual(d.data, { success: true, available: false, syncState: "unknown" }, "empty authoritative store is unknown, not 0/0");
+  w.env.PROGRESS_WRITES = "off"; const sp = w.env.STUDENT_PROGRESS.get("uidA"); await sp.fetch("https://progress.internal/lesson", { method: "POST", body: "{}" });
+  w.env.PROGRESS_WRITES = "on";
+  const st = w.stores.get("uidA"); st.m.set("state", { lessons: {}, exams: { "python-1": { percent: 80, passed: true } }, lessonTests: { l1: { percent: 50, passed: true }, l2: { percent: 40, passed: false } } });
+  const d2 = await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } });
+  assert.deepEqual(d2.data, { success: true, available: true, syncState: "assessed", lessonTestsPassed: 1, unitExamsPassed: 1 }, "exact disclosed fields");
+  assert.equal(d2.h.get("cache-control"), "no-store");
+  w.env.PROGRESS_WRITES = "off"; assert.deepEqual((await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } })).data, { success: true, available: false, syncState: "unknown" }, "writes off: unknown even with records"); w.env.PROGRESS_WRITES = "on";
   assert.equal((await w.call(P + "dashboard", { token: "tokV", body: { child: "uidA" } })).status, 403, "unlinked stranger");
   assert.equal((await w.call(P + "dashboard", { token: "tokB", body: { child: "uidE" } })).status, 403, "other child");
   assert.equal((await w.call(P + "unlink", { token: "tokV", body: { child: "uidA", parent: "uidB" } })).status, 403);
   assert.equal((await w.call(P + "unlink", { token: "tokA", body: { parent: "uidB" } })).status, 200);
   const after = await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } });
-  assert.equal(after.status, 403); assert.deepEqual(after.data, { success: false, message: "forbidden" });
+  assert.equal(after.status, 403); assert.deepEqual(after.data, { success: false, message: "forbidden" }); assert.equal(after.h.get("cache-control"), "no-store");
 });
 test("revocation DURING a read returns nothing (authorization is rechecked after the progress read)", async () => {
   const w = on(boot());
   const code = (await w.call(P + "create", { token: "tokA", body: { consent: true } })).data.code; await w.call(P + "claim", { token: "tokB", body: { code } });
+  w.env.STUDENT_PROGRESS.get("uidA"); w.stores.get("uidA").m.set("state", { lessons: {}, exams: { "python-1": { percent: 80, passed: true } } });
   const orig = w.env.STUDENT_PROGRESS.get; w.env.STUDENT_PROGRESS.get = id => { const s = orig(id); return { fetch: async (u, i) => { const r = await s.fetch(u, i); await w.call(P + "unlink", { token: "tokA", body: { parent: "uidB" } }); return r; } }; };
   const d = await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } });
   assert.equal(d.status, 403); assert.equal(JSON.stringify(d.data).includes("lessonTestsPassed"), false);
@@ -43,7 +50,7 @@ test("progress read failure shows available:false, not zeros", async () => {
   const code = (await w.call(P + "create", { token: "tokA", body: { consent: true } })).data.code; await w.call(P + "claim", { token: "tokB", body: { code } });
   w.env.STUDENT_PROGRESS.get = () => ({ fetch: async () => { throw new Error("down"); } });
   const d = await w.call(P + "dashboard", { token: "tokB", body: { child: "uidA" } });
-  assert.deepEqual(d.data, { success: true, available: false });
+  assert.deepEqual(d.data, { success: true, available: false, syncState: "read_failed" });
 });
 test("brute force: wrong codes are bounded per account, then even the right code is refused; children/parents lists are scoped", async () => {
   const w = on(boot());

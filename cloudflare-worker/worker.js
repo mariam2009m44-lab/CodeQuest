@@ -817,6 +817,11 @@ const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 async function sha256Hex(text) { const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text))); return Array.from(d, b => b.toString(16).padStart(2, "0")).join(""); }
 function newCode() { const r = crypto.getRandomValues(new Uint8Array(12)); return Array.from(r, b => CODE_ALPHABET[b % CODE_ALPHABET.length]).join(""); }
 async function handleParent(request, env, origin, action) {
+  const res = await handleParentInner(request, env, origin, action);
+  res.headers.set("Cache-Control", "no-store");
+  return res;
+}
+async function handleParentInner(request, env, origin, action) {
   let user;
   try { user = await verifyFirebaseUser(request, env); } catch { return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin); }
   if (!env.PARENT_LINKS) return jsonResponse({ success: false, message: "parent_unavailable" }, 503, origin);
@@ -852,11 +857,15 @@ async function handleParent(request, env, origin, action) {
     if (a1.status !== 200) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
     let st;
     try { const pr = await env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(child)).fetch("https://progress.internal/get", { method: "POST", body: "{}" }); st = await pr.json(); if (!pr.ok || !st.success) throw new Error("x"); }
-    catch { return jsonResponse({ success: true, available: false }, 200, origin); }
+    catch { return jsonResponse({ success: true, available: false, syncState: "read_failed" }, 200, origin); }
     // Authorization is checked again after the read: an unlink during the read means nothing is returned.
     const a2 = await send("authorize", { parent: user.uid, child });
     if (a2.status !== 200) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
-    return jsonResponse({ success: true, available: true, lessonTestsPassed: Object.values(st.lessonTests || {}).filter(x => x && x.passed === true).length, unitExamsPassed: Object.values(st.exams || {}).filter(x => x && x.passed === true).length }, 200, origin);
+    // Counts are shown only when server writes are on AND the account has server-assessed records. An empty store is "unknown", never 0:
+    // the learner may have results that were never synced, so zero would be a claim the server cannot back.
+    const any = ["lessons", "exams", "lessonTests", "codeTasks", "finals", "practice"].some(k => st[k] && Object.keys(st[k]).length > 0);
+    if (env.PROGRESS_WRITES !== "on" || !any) return jsonResponse({ success: true, available: false, syncState: "unknown" }, 200, origin);
+    return jsonResponse({ success: true, available: true, syncState: "assessed", lessonTestsPassed: Object.values(st.lessonTests || {}).filter(x => x && x.passed === true).length, unitExamsPassed: Object.values(st.exams || {}).filter(x => x && x.passed === true).length }, 200, origin);
   }
   return jsonResponse({ success: false }, 404, origin);
 }
