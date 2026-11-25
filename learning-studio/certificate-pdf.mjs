@@ -22,6 +22,7 @@ export function buildPdf(jpeg,pxW,pxH){
 }
 
 export const fmtDate=d=>{const t=new Date(d);if(Number.isNaN(t.getTime()))return '';return String(t.getDate()).padStart(2,'0')+' / '+String(t.getMonth()+1).padStart(2,'0')+' / '+t.getFullYear()};
+export const fmtTime=d=>{const t=new Date(d);if(Number.isNaN(t.getTime()))return '';return String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')};
 export const trackLabel=l=>({python:'Python',javascript:'JavaScript',cpp:'C++',java:'Java'}[l]||String(l||''));
 
 // record: {name, language, issuedAt, certId?, demo?}
@@ -52,16 +53,19 @@ export async function drawCertificate(canvas,record,codyUrl){
  c.fillStyle=ink;c.font='800 46px '+F;let name=record.name||'';while(name&&c.measureText(name).width>560)name=name.slice(0,-1);c.fillText(name,cx,292);
  c.strokeStyle=gold;c.lineWidth=2;c.beginPath();c.moveTo(cx-280,308);c.lineTo(cx+280,308);c.stroke();
  c.fillStyle=soft;c.font='400 18px '+F;c.fillText('أتمّ جميع دروس المسار واجتاز اختبارات فصوله',cx,350);
- const tl='مسار '+trackLabel(record.language);c.font='800 28px '+F;const tw=c.measureText(tl).width+60;
- c.fillStyle='#f3ecd8';c.fillRect(cx-tw/2,368,tw,50);c.strokeStyle=ink;c.lineWidth=2;c.strokeRect(cx-tw/2,368,tw,50);c.fillStyle=ink;c.fillText(tl,cx,404);
- c.fillStyle=soft;c.font='400 16px '+F;c.fillText('تاريخ الإصدار: '+(fmtDate(record.issuedAt)||'--'),cx,462);
+ const w1='مسار',w2=trackLabel(record.language);c.font='800 28px '+F;const m1=c.measureText(w1).width,m2=c.measureText(w2).width,gap=16,tw=m1+m2+gap+64;
+ c.fillStyle='#f3ecd8';c.fillRect(cx-tw/2,368,tw,50);c.strokeStyle=ink;c.lineWidth=2;c.strokeRect(cx-tw/2,368,tw,50);c.fillStyle=ink;
+ c.textAlign='right';c.fillText(w1,cx+tw/2-32,404);c.direction='ltr';c.textAlign='left';c.fillText(w2,cx-tw/2+32,404);c.direction='rtl';c.textAlign='center';
+ c.fillStyle=soft;c.font='400 16px '+F;c.fillText('تاريخ الإصدار: '+(fmtDate(record.issuedAt)||'--')+'      الوقت: '+(fmtTime(record.issuedAt)||'--:--'),cx,462);
  // signature (bottom right of the main column) and verification id (bottom left)
  c.save();c.translate(cx+200,722);c.rotate(-3*Math.PI/180);c.direction='ltr';c.fillStyle=ink;c.font='italic 38px "DejaVu Serif",Georgia,serif';c.fillText('mariam Fouad',0,0);c.restore();
  c.strokeStyle=ink;c.lineWidth=1.5;c.beginPath();c.moveTo(cx+68,732);c.lineTo(cx+332,728);c.stroke();c.direction='rtl';c.fillStyle=soft;c.font='400 13px '+F;c.fillText('التوقيع',cx+200,750);
  c.textAlign='left';c.direction='rtl';c.font='400 13px '+F;c.fillStyle=soft;c.textAlign='center';
  c.fillText(record.certId?'رقم الشهادة: '+record.certId:'رقم الشهادة: غير صادر',cx-215,742);
  c.font='400 13px '+F;c.fillStyle='#6a7590';c.fillText('شهادة إتمام من منصة CodeQuest، وليست معتمدة من جهة خارجية.',cx,520);
- if(record.demo){c.fillStyle='#fff';c.fillRect(46,44,150,24);c.strokeStyle='#a42828';c.lineWidth=1.5;c.strokeRect(46,44,150,24);c.fillStyle='#a42828';c.font='700 12px '+F;c.fillText('نموذج تصميم فقط، غير صادر',121,61)}
+ if(record.demo||record.synthetic){c.save();c.translate(cx,430);c.rotate(-0.38);c.globalAlpha=.16;c.fillStyle='#a42828';c.font='800 74px '+F;c.textAlign='center';c.fillText('نموذج تجريبي',0,0);c.font='800 44px '+F;c.fillText('غير صادر وليس شهادة حقيقية',0,62);c.restore();
+  c.fillStyle='#fff';c.fillRect(46,44,190,24);c.strokeStyle='#a42828';c.lineWidth=1.5;c.strokeRect(46,44,190,24);c.fillStyle='#a42828';c.font='700 12px '+F;c.textAlign='center';c.fillText('نموذج تصميم فقط، غير صادر',141,61)}
+ if(false){c.fillStyle='#fff';c.fillRect(46,44,150,24);c.strokeStyle='#a42828';c.lineWidth=1.5;c.strokeRect(46,44,150,24);c.fillStyle='#a42828';c.font='700 12px '+F;c.fillText('نموذج تصميم فقط، غير صادر',121,61)}
 }
 
 export async function certificatePdfBytes(record,codyUrl){
