@@ -25,7 +25,7 @@ export async function getUserProfile() { return { xp: 0, stars: 0 }; }
 before(async () => { browser = await chromium.launch(); });
 after(async () => { await browser?.close(); });
 
-test('languages page: each card opens course-path.html and renders one road node per lesson of its curriculum', { timeout: 60000 }, async t => {
+test('languages page: each card opens the new lessons and the previous path link opens course-path.html and renders one road node per lesson of its curriculum', { timeout: 60000 }, async t => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
   t.after(() => context.close());
   await context.route('**/*', async route => {
@@ -55,7 +55,7 @@ test('languages page: each card opens course-path.html and renders one road node
 
   for (const lang of langs) {
     await page.goto(`${origin}/languages.html`);
-    await page.click(`.lang-card[href$="lang=${lang}"]`);
+    assert.equal(await page.getAttribute(`.lang-card[href$="lang=${lang}"]`,'href'),`learning.html?lang=${lang}`,`${lang}: main card opens the new lessons`);await page.click(`.old-path a[href$="lang=${lang}"]`);
     await page.waitForURL(`**/course-path.html?lang=${lang}`);
     const data = JSON.parse(await readFile(resolve(root, curricula[lang]), 'utf8'));
     await page.waitForSelector('.cw-road-node', { timeout: 15000 });
