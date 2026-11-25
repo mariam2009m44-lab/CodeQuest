@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { boot } from "./helpers-boot.mjs";
+import { boot, SVC } from "./helpers-boot.mjs";
 const on = w => { w.env.PARENT_LINKS_ENABLED = "on"; return w; };
 const P = "/api/parent/";
 test("default OFF: every parent route is 503 after auth, anonymous 401, nothing stored", async () => {
@@ -62,10 +62,25 @@ test("brute force: wrong codes are bounded per account, then even the right code
   assert.deepEqual((await w.call(P + "children", { token: "tokB" })).data.children, []);
   assert.equal((await w.call(P + "parents", { token: "tokA" })).data.parents.length, 1);
 });
-test("a uid containing ':' can never address the internal service instances", async () => {
-  const w = on(boot());
-  for (const r of ["create", "claim", "children", "parents", "unlink", "dashboard"]) assert.equal((await w.call(P + r, { token: "colon", body: { consent: true, child: "x" } })).status, 401, r);
-  assert.equal((await w.call("/api/academy/my-status", { token: "colon" })).status, 401);
-  assert.equal((await w.call("/api/progress/get", { token: "colon" })).status, 401);
-  assert.equal(w.stores.size, 0);
+test("no uid can reach the service instances: colon uids still work normally, over-long uids are refused, progress routes ignore body-supplied actions, and nobody reads academy/parent storage through progress", async () => {
+  const w = on(boot()); w.env.ACADEMY_ADMIN_UIDS = "uidE"; w.env.ACADEMY_APPLICATIONS = "on";
+  const app = { fullName: "سارة أحمد", bio: "مدربة برمجة بخبرة سبع سنوات في تعليم الأطفال", specialties: ["python"], links: [], contact: "x" };
+  await w.call("/api/academy/instructor-application", { token: "tokE", body: app });
+  const code = (await w.call(P + "create", { token: "tokA", body: { consent: true } })).data.code; await w.call(P + "claim", { token: "tokB", body: { code } });
+  // a legitimate uid that contains ":" is accepted and gets its own empty progress store
+  const c = await w.call("/api/progress/get", { token: "colon" }); assert.equal(c.status, 200); assert.deepEqual(Object.keys(c.data.lessons), []);
+  // a uid equal to the OLD short service names reads only its own empty store
+  assert.deepEqual(Object.keys((await w.call("/api/progress/get", { token: "colon" })).data.lessons), []);
+  // a 129-char uid is refused everywhere
+  for (const r of ["/api/progress/get", "/api/academy/my-status", P + "children"]) assert.equal((await w.call(r, { token: "long129" })).status, 401, r);
+  // body-supplied action/path/host fields never change the internal route
+  const evil = await w.call("/api/progress/get", { token: "tokA", body: { action: "list", status: "pending", path: "/list", url: "https://academy.internal/list", host: "academy.internal" } });
+  assert.equal(evil.status, 200); assert.equal(JSON.stringify(evil.data).includes("fullName"), false); assert.equal(JSON.stringify(evil.data).includes("apps"), false);
+  const dashEvil = await w.call("/api/progress/get", { token: "tokB", body: { child: "uidA" } }); assert.equal(JSON.stringify(dashEvil.data).includes("uidA"), false);
+  // unknown progress actions are 404, not forwarded
+  for (const a of ["list", "review", "authorize", "claim", "children"]) assert.equal((await w.call("/api/progress/" + a, { token: "tokA", body: {} })).status, 404, a);
+  // service data lives only under the service names; user stores never contain it
+  for (const [k, v] of w.stores) if (k !== SVC.academy && k !== SVC.parent) assert.equal([...v.m.keys()].some(x => x === "dir" || x === "links"), false, k);
+  // the service names are 140+ chars, longer than any accepted uid, so no authenticated user can ever equal them
+  assert.equal((await w.call("/api/academy/admin/applications", { token: "svcAcademy", body: {} })).status, 401);
 });

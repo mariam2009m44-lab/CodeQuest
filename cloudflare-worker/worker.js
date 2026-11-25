@@ -185,10 +185,8 @@ async function verifyFirebaseUser(request, env) {
   if (
     typeof payload.sub !== "string" ||
     payload.sub.length === 0 ||
-    payload.sub.length > 128 ||
-    payload.sub.includes(":")
+    payload.sub.length > 128
   ) {
-    // ":" is reserved for internal service instance names ("svc:...") so a uid can never address them.
     throw new Error("INVALID_USER");
   }
 
@@ -785,6 +783,8 @@ async function handleProgress(request, env, origin, action) {
   return jsonResponse(data, response.status, origin);
 }
 
+// Service instances of the StudentProgress class. A verified uid is at most 128 characters, so these 140+ character names can never equal any user's instance name: no uid format is rejected and no user can address them.
+const SERVICE_INSTANCE = { academy: "svc-academy-" + "x".repeat(130), parent: "svc-parent-" + "x".repeat(130) };
 // Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on".
 // Admin = an exact uid listed in the ACADEMY_ADMIN_UIDS dashboard secret (never in the repo). Emails are never used.
 // Review records a decision only. It does not grant any role and sends no message.
@@ -800,7 +800,7 @@ async function handleAcademy(request, env, origin, action) {
   // Owner-only: exact Firebase uid match against the ACADEMY_ADMIN_UIDS dashboard secret. No email, domain, role, claim or approval ever grants admin.
   const isAdmin = list(env.ACADEMY_ADMIN_UIDS).includes(user.uid);
   if ((action === "list" || action === "review") && !isAdmin) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
-  const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName("svc:academy"));
+  const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(SERVICE_INSTANCE.academy));
   const send = payload => stub.fetch("https://academy.internal/" + action, { method: "POST", body: JSON.stringify(payload) });
   let res;
   if (action === "submit") {
@@ -831,7 +831,7 @@ async function handleParentInner(request, env, origin, action) {
   let body = {};
   try { body = await readBoundedJson(request, 2048); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
-  const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName("svc:parent"));
+  const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(SERVICE_INSTANCE.parent));
   const send = (act, payload) => stub.fetch("https://parent.internal/" + act, { method: "POST", body: JSON.stringify(payload) }).then(async r => ({ status: r.status, data: await r.json() }));
   const out = r => jsonResponse(r.data, r.status, origin);
   if (action === "create") {
