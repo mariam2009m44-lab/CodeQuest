@@ -783,7 +783,7 @@ async function handleProgress(request, env, origin, action) {
 }
 
 // Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on".
-// Admin = a verified email or exact uid listed in the ACADEMY_ADMIN_EMAILS / ACADEMY_ADMIN_UIDS dashboard secrets (never in the repo).
+// Admin = an exact uid listed in the ACADEMY_ADMIN_UIDS dashboard secret (never in the repo). Emails are never used.
 // Review records a decision only. It does not grant any role and sends no message.
 async function handleAcademy(request, env, origin, action) {
   let user;
@@ -794,7 +794,8 @@ async function handleAcademy(request, env, origin, action) {
   try { body = await readBoundedJson(request, 16384); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
   const list = v => String(v || "").split(",").map(x => x.trim()).filter(Boolean);
-  const isAdmin = list(env.ACADEMY_ADMIN_UIDS).includes(user.uid) || (user.emailVerified === true && typeof user.email === "string" && list(env.ACADEMY_ADMIN_EMAILS).map(x => x.toLowerCase()).includes(user.email.toLowerCase()));
+  // Owner-only: exact Firebase uid match against the ACADEMY_ADMIN_UIDS dashboard secret. No email, domain, role, claim or approval ever grants admin.
+  const isAdmin = list(env.ACADEMY_ADMIN_UIDS).includes(user.uid);
   if ((action === "list" || action === "review") && !isAdmin) return jsonResponse({ success: false, message: "forbidden" }, 403, origin);
   const stub = env.ACADEMY_DIRECTORY.get(env.ACADEMY_DIRECTORY.idFromName("directory"));
   const send = payload => stub.fetch("https://academy.internal/" + action, { method: "POST", body: JSON.stringify(payload) });

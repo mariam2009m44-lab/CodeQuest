@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { boot } from "./helpers-boot.mjs";
 const app = { fullName: "سارة أحمد", specialties: ["python"], bio: "مدرسة برمجة للأطفال لديها خبرة سنتين في التدريس.", portfolioUrl: "https://example.com/p" };
-const on = () => { const w = boot({}); w.env.ACADEMY_APPLICATIONS = "on"; w.env.ACADEMY_ADMIN_EMAILS = "pilot@example.com"; return w; };
+const on = () => { const w = boot({}); w.env.ACADEMY_APPLICATIONS = "on"; w.env.ACADEMY_ADMIN_UIDS = "uidE"; return w; };
 test("default OFF: every academy route is 503 after auth, anonymous is 401, nothing stored", async () => {
   const w = boot({});
   for (const r of ["instructor-application", "my-status", "admin/applications", "admin/review"]) {
@@ -22,7 +22,7 @@ test("submit validates like the Firebase callable and stores one pending record 
   assert.equal((await w.call("/api/academy/my-status", { token: "tokB", body: {} })).data.exists, false);
   const dir = [...w.adirs.values()][0].m.get("dir"); assert.equal(Object.keys(dir.apps).length, 1); assert.equal(dir.apps.uidA.fullName, "سارة محمد");
 });
-test("admin list/review: verified allowlisted email or exact uid only; an unverified same email and everyone else get 403", async () => {
+test("admin list/review: exact uid only; a verified token with the same email as an old email allowlist, unverified email, approved applicants and everyone else get 403", async () => {
   const w = on(); await w.call("/api/academy/instructor-application", { token: "tokA", body: app }); await w.call("/api/academy/instructor-application", { token: "tokV", body: app });
   for (const t of ["tokA", "tokB", "tokU"]) { assert.equal((await w.call("/api/academy/admin/applications", { token: t, body: {} })).status, 403, t); assert.equal((await w.call("/api/academy/admin/review", { token: t, body: { uid: "uidA", decision: "approved" } })).status, 403, t); }
   const l = await w.call("/api/academy/admin/applications", { token: "tokE", body: {} }); assert.equal(l.status, 200); assert.equal(l.data.applications.length, 2);
@@ -34,7 +34,7 @@ test("admin list/review: verified allowlisted email or exact uid only; an unveri
   assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidV", decision: "approved" } })).status, 200);
   assert.equal((await w.call("/api/academy/my-status", { token: "tokV", body: {} })).data.status, "approved");
   assert.equal((await w.call("/api/academy/instructor-application", { token: "tokV", body: app })).status, 409, "approved accounts cannot be overwritten");
-  w.env.ACADEMY_ADMIN_EMAILS = ""; w.env.ACADEMY_ADMIN_UIDS = "uidB"; assert.equal((await w.call("/api/academy/admin/applications", { token: "tokB", body: {} })).status, 200); assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 403);
+  w.env.ACADEMY_ADMIN_UIDS = "uidB"; assert.equal((await w.call("/api/academy/admin/applications", { token: "tokB", body: {} })).status, 200); assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 403);
 });
 test("a verified admin cannot review their own application", async () => {
   const w = on(); await w.call("/api/academy/instructor-application", { token: "tokE", body: app });
@@ -68,4 +68,13 @@ test("HTTP: replaying the same submission is idempotent (one record), cross-user
   assert.equal(JSON.stringify(other.data).includes("uidA"), false);
   const denied = await w.call("/api/academy/admin/applications", { token: "tokB", body: { limit: 100, cursor: "x" } }); assert.equal(denied.status, 403); assert.equal(JSON.stringify(denied.data).includes("سارة"), false);
   const page = await w.call("/api/academy/admin/applications", { token: "tokE", body: { limit: 1 } }); assert.equal(page.data.applications.length, 1); assert.equal(page.data.hasMore, false);
+});
+test("owner-only: an email allowlist is ignored, an approved applicant is not admin, a near-miss uid is refused", async () => {
+  const w = on(); delete w.env.ACADEMY_ADMIN_UIDS; w.env.ACADEMY_ADMIN_EMAILS = "pilot@example.com,v@example.com";
+  for (const t of ["tokE", "tokV", "tokA"]) assert.equal((await w.call("/api/academy/admin/applications", { token: t, body: {} })).status, 403, "no uid configured: nobody is admin, emails grant nothing");
+  w.env.ACADEMY_ADMIN_UIDS = "uidE"; await w.call("/api/academy/instructor-application", { token: "tokV", body: app });
+  assert.equal((await w.call("/api/academy/admin/review", { token: "tokE", body: { uid: "uidV", decision: "approved" } })).status, 200);
+  assert.equal((await w.call("/api/academy/admin/applications", { token: "tokV", body: {} })).status, 403, "approved applicant is not admin");
+  w.env.ACADEMY_ADMIN_UIDS = "uidEE"; assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 403, "exact match only");
+  w.env.ACADEMY_ADMIN_UIDS = "uide"; assert.equal((await w.call("/api/academy/admin/applications", { token: "tokE", body: {} })).status, 403, "case-sensitive");
 });

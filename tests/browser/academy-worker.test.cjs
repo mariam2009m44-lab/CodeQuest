@@ -16,7 +16,7 @@ before(async () => { browser = await chromium.launch(); ({ boot } = await import
 after(async () => { await browser?.close(); });
 
 async function setup(t, { workerOn, token, verified = true }) {
-  const w = boot({}); w.env.ALLOWED_ORIGINS = origin; if (workerOn) { w.env.ACADEMY_APPLICATIONS = 'on'; w.env.ACADEMY_ADMIN_EMAILS = 'pilot@example.com'; }
+  const w = boot({}); w.env.ALLOWED_ORIGINS = origin; if (workerOn) { w.env.ACADEMY_APPLICATIONS = 'on'; w.env.ACADEMY_ADMIN_UIDS = 'uidE'; }
   const fnCalls = [];
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
   t.after(() => context.close());
