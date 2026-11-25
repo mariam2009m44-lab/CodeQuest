@@ -1,5 +1,7 @@
 // Production adapter reuses the application's authenticated, isolated server runner.
 // It never downgrades to emulated output when the compiler is unavailable.
+// Read once when the module loads: the lesson page rewrites the query string later.
+const PYODIDE_FLAG=typeof location!=='undefined'&&new URLSearchParams(location.search).has('pyodide');
 export function compilerAdapter(language,runCodeOnServer){
  if(!['python','javascript','cpp','java'].includes(language)||typeof runCodeOnServer!=='function')throw new TypeError('compiler adapter');
  return async(code,stdin='')=>{
@@ -12,7 +14,7 @@ export function compilerAdapter(language,runCodeOnServer){
 export async function selectExecutor(language){
  // JavaScript runs in the learner's browser sandbox: no server quota, no external service.
  // Python in the browser (Pyodide) is experimental and OFF by default: only with ?pyodide.
- if(language==='python'&&typeof document!=='undefined'&&new URLSearchParams(location.search).has('pyodide')){const {runPython}=await import('./py-sandbox.mjs');return async(code,stdin='')=>{const r=await runPython(code,{stdin});return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message,errorCode:r.errorCode}}}
+ if(language==='python'&&typeof document!=='undefined'&&PYODIDE_FLAG){const {runPython}=await import('./py-sandbox.mjs');return async(code,stdin='')=>{const r=await runPython(code,{stdin});return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message,errorCode:r.errorCode}}}
  if(language==='javascript'&&typeof document!=='undefined'&&!new URLSearchParams(location.search).has('serverjs')){const {runJavaScript}=await import('./js-sandbox.mjs');return async(code)=>{const r=await runJavaScript(code);return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message}}}
  if(location.hostname==='localhost'||location.hostname==='127.0.0.1'){
   // The development endpoint exists only in the local verification server.
