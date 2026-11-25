@@ -2648,8 +2648,10 @@ const REALTIMEKIT_STUDENT_PRESET = defineString("REALTIMEKIT_STUDENT_PRESET", {
   default: "webinar-participant"
 });
 
+// Owner-only: besides the admin claim, the caller must be the exact uid in ACADEMY_OWNER_UID. With the variable unset every admin call is refused (fail closed).
 function requireLiveAdmin(request) {
-  if (!request.auth || (
+  const ownerUid = String(process.env.ACADEMY_OWNER_UID || "").trim();
+  if (!request.auth || !ownerUid || request.auth.uid !== ownerUid || (
     request.auth.token.admin !== true &&
     request.auth.token.liveRole !== "admin"
   )) {

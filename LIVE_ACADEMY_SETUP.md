@@ -194,3 +194,7 @@ The administrator overview loads a bounded first page for each directory to keep
 - admin audit events
 
 The cursor is a Firestore document snapshot ID and the server enforces the admin claim before returning private learner or instructor details. The pending-instructor query uses a composite index on `status` and descending `updatedAt`; deploy `firestore:indexes` with the Functions before relying on this endpoint. The dashboard exposes a consistent “load more” control under each section. Initial counts are separate aggregate queries; the first page size is not the total record count.
+
+## Owner-only admin (required)
+
+`requireLiveAdmin` in `functions/index.js` fails closed: an admin call is accepted only when the caller's uid equals the `ACADEMY_OWNER_UID` environment value AND carries the admin claim. With `ACADEMY_OWNER_UID` unset, every admin call is refused. Set it only to the owner's exact Firebase uid. No email, domain or role grants admin on its own.
