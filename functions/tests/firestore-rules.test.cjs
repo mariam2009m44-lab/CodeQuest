@@ -157,7 +157,7 @@ test('studio evidence cannot be read, forged or changed directly by any client',
 });
 
 test('Python final exam results are readable only by their owner and never client-writable', { skip: !host }, async t => {
-  assert.match(host, /^(127\\.0\\.0\\.1|localhost):\\d+$/);
+  assert.match(host, /^(127\.0\.0\.1|localhost):\d+$/);
   const env = await initializeTestEnvironment({
     projectId: 'demo-codequest-audit',
     firestore: {
