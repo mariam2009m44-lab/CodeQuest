@@ -237,3 +237,31 @@ export function issueCertificate(state, index, practice, language, nowMs, random
 export function listCertificates(state) {
   return Object.entries(state.certs || {}).map(([track, c]) => ({ track, trackName: CERT_TRACK_NAMES[track] || track, issuedAt: c.issuedAt, lessonsCompleted: c.lessonsTotal, lessonsTotal: c.lessonsTotal, unitExamsPassed: c.unitExamsTotal, unitExamsTotal: c.unitExamsTotal, codeTasksVerified: true, recordId: c.recordId }));
 }
+
+// ---- Python final exam (15 of a pool; ids are content hashes of the question the learner saw) ----
+export function scoreFinalExam(def, { language, answers }) {
+  if (language !== "python") return { ok: false, reason: "no_final_exam" };
+  if (!Array.isArray(answers) || answers.length !== def.size) return { ok: false, reason: "bad_answers" };
+  const seen = new Set();
+  let earned = 0;
+  for (const a of answers) {
+    if (!a || typeof a.id !== "string") return { ok: false, reason: "bad_answers" };
+    const q = def.questions[a.id];
+    if (!q) return { ok: false, reason: "refresh_needed", refresh: true };
+    if (seen.has(a.id)) return { ok: false, reason: "bad_answers" };
+    seen.add(a.id);
+    if (a.pick !== null && !(Number.isInteger(a.pick) && a.pick >= 0 && a.pick < q.n)) return { ok: false, reason: "bad_answers" };
+    if (a.pick === q.a) earned += 1;
+  }
+  const total = def.size;
+  // 50 percent inclusive, exact integers: 15 questions need 8.
+  return { ok: true, earned, total, percent: Math.round(earned * 100 / total), passed: earned * 100 >= PASS_PERCENT * total };
+}
+export function recordFinalExam(state, def, input, version) {
+  const r = scoreFinalExam(def, input);
+  if (!r.ok) return r;
+  state.finals = state.finals || {};
+  const prev = state.finals[input.language];
+  state.finals[input.language] = prev && (prev.passed || prev.percent > r.percent) ? prev : { percent: r.percent, passed: r.passed, version };
+  return { ok: true, result: r, best: state.finals[input.language] };
+}

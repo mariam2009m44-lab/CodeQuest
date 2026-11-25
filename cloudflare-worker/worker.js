@@ -2,10 +2,11 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
-import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, recordFinalExam, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
 import PRACTICE_INDEX from "./practice-index.json";
+import PYTHON_FINAL from "./python-final.json";
 import { checkIntroConcept } from "./studio/concept.mjs";
 
 // Per-account cap on verification executions per day. A policy placeholder, not a promise of provider capacity.
@@ -1237,6 +1238,9 @@ export default {
     if (url.pathname === "/api/progress/lesson-test" && request.method === "POST") {
       return handleProgress(request, env, origin, "lessontest");
     }
+    if (url.pathname === "/api/progress/final-exam" && request.method === "POST") {
+      return handleProgress(request, env, origin, "finalexam");
+    }
     if (url.pathname === "/api/certificates" && request.method === "GET") {
       return handleProgress(request, env, origin, "certificates");
     }
@@ -1349,7 +1353,7 @@ export class StudentProgress {
 
     const result = await this.state.storage.transaction(async tx => {
       const state = (await tx.get("state")) || emptyState();
-      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, codeTasks: state.codeTasks || {}, practice: state.practice || {}, lessonTests: state.lessonTests || {}, resume: resumeView(state, Date.now()) } }; }
+      if (action === "get") { purgeExpired(state, Date.now()); await tx.put("state", state); return { status: 200, data: { success: true, lessons: state.lessons, exams: state.exams, finals: state.finals || {}, codeTasks: state.codeTasks || {}, practice: state.practice || {}, lessonTests: state.lessonTests || {}, resume: resumeView(state, Date.now()) } }; }
 
       if (action === "resume") {
         const today = new Date().toISOString().slice(0, 10);
@@ -1383,6 +1387,12 @@ export class StudentProgress {
         if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
         await tx.put("state", state);
         return { status: 200, data: { success: true, passed: out.passed, best: out.best } };
+      }
+      if (action === "finalexam") {
+        const out = recordFinalExam(state, PYTHON_FINAL, { language: body.language, answers: body.answers }, typeof body.version === "string" ? body.version : "v1");
+        if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
+        await tx.put("state", state);
+        return { status: 200, data: { success: true, earned: out.result.earned, total: out.result.total, percent: out.result.percent, passed: out.result.passed, best: out.best } };
       }
       if (action === "certificates") return { status: 200, data: { certificates: listCertificates(state) } };
       if (action === "issue") {

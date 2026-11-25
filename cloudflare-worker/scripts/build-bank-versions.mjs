@@ -16,6 +16,21 @@ for (const un of units) for (const ls of un.lessons) {
   practice[ls.id] = entry;
 }
 fs.writeFileSync(new URL("../practice-index.json", import.meta.url), JSON.stringify(practice));
+// Python final exam pool: read from the page itself so the server key can never drift from what learners see.
+import vm from "node:vm";
+const html = fs.readFileSync(new URL("../../python-exam.html", import.meta.url), "utf8");
+const m = html.match(/const allQuestions = (\[[\s\S]*?\n    \]);/);
+if (!m) throw new Error("allQuestions not found");
+const pool = vm.runInNewContext("(" + m[1] + ")");
+const size = Number(html.match(/const EXAM_SIZE = (\d+)/)[1]);
+const fin = { size, questions: {} };
+for (const q of pool) {
+  const id = cyrb53(JSON.stringify([q.q, q.code ?? "", q.opts, q.a]));
+  if (fin.questions[id]) throw new Error("duplicate final question");
+  fin.questions[id] = { n: q.opts.length, a: q.a };
+}
+fs.writeFileSync(new URL("../python-final.json", import.meta.url), JSON.stringify(fin));
+console.log("final pool", pool.length, "size", size);
 const key = {};
 for (const [id, items] of Object.entries(lessons)) key[id] = { h: lessonBankHash(items), a: items.map(q => q.answer) };
 for (const [k, q] of Object.entries(quizzes)) { if (!index.quizzes[k]) throw new Error("quiz missing in index: " + k); index.quizzes[k].h = quizBankHash(q); }

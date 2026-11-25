@@ -27,7 +27,7 @@ test("Durable Object stores best exam, never trusts a client score, and returns 
   assert.equal(a.data.codeVerified, false);
   assert.ok(a.data.percent < 100);
   const g = await call(o, "get", {});
-  assert.deepEqual(Object.keys(g.data).sort(), ["codeTasks", "exams", "lessonTests", "lessons", "practice", "resume", "success"]);
+  assert.deepEqual(Object.keys(g.data).sort(), ["codeTasks", "exams", "finals", "lessonTests", "lessons", "practice", "resume", "success"]);
   assert.equal(JSON.stringify(g.data).includes("uid"), false);
 });
 test("Durable Object rejects bad input and enforces the daily write cap", async () => {

@@ -124,3 +124,26 @@ test("worker copies of the studio concept checker match the public ones byte for
   const units = rd("../../learning-studio/units.json"), p = rd("../practice-index.json");
   assert.equal(Object.keys(p).length, units.reduce((n, u) => n + u.lessons.length, 0));
 });
+test("python final exam: 15 answers, 8 passes and 7 fails, distinct known ids only, stale id means refresh", async () => {
+  const { scoreFinalExam, recordFinalExam } = await import("../progress-core.js");
+  const def = rd("../python-final.json"), ids = Object.keys(def.questions);
+  assert.equal(def.size, 15); assert.equal(ids.length, 31);
+  const mk = n => ids.slice(0, 15).map((id, i) => ({ id, pick: i < n ? def.questions[id].a : (def.questions[id].a + 1) % def.questions[id].n }));
+  assert.equal(scoreFinalExam(def, { language: "python", answers: mk(8) }).passed, true);
+  assert.equal(scoreFinalExam(def, { language: "python", answers: mk(7) }).passed, false);
+  assert.equal(scoreFinalExam(def, { language: "python", answers: mk(15), score: 0 }).earned, 15);
+  const dup = mk(15); dup[1] = dup[0]; assert.equal(scoreFinalExam(def, { language: "python", answers: dup }).reason, "bad_answers");
+  assert.equal(scoreFinalExam(def, { language: "python", answers: mk(15).slice(0, 14) }).reason, "bad_answers");
+  const stale = mk(15); stale[2] = { id: "0".repeat(14), pick: 0 }; assert.equal(scoreFinalExam(def, { language: "python", answers: stale }).refresh, true);
+  const oor = mk(15); oor[0].pick = 9; assert.equal(scoreFinalExam(def, { language: "python", answers: oor }).reason, "bad_answers");
+  assert.equal(scoreFinalExam(def, { language: "java", answers: mk(15) }).ok, false);
+  const s = emptyState();
+  recordFinalExam(s, def, { language: "python", answers: mk(15) }, "v1");
+  recordFinalExam(s, def, { language: "python", answers: mk(0) }, "v1");
+  assert.equal(s.finals.python.passed, true);
+});
+test("python final pool equals the page it was built from (no drift)", () => {
+  const html = fs.readFileSync(new URL("../../python-exam.html", import.meta.url), "utf8");
+  assert.match(html, /const PASS_PERCENTAGE = 50;/); assert.match(html, /const EXAM_SIZE = 15;/);
+  assert.equal((html.match(/\n        a: \d+,/g) || []).length, 31);
+});
