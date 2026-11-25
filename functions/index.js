@@ -47,6 +47,7 @@ const USER_RATE_LIMITS = Object.freeze({
   studioEvidence: Object.freeze({ windowMs: 60 * 1000, maxRequests: 12 }),
   studioRead: Object.freeze({ windowMs: 60 * 1000, maxRequests: 60 }),
   quizAnswer: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
+  recordPythonFinalExam: Object.freeze({ windowMs: 60 * 1000, maxRequests: 3 }),
   saveLessonProgress: Object.freeze({ windowMs: 60 * 1000, maxRequests: 30 }),
   runCode: Object.freeze({ windowMs: 60 * 1000, maxRequests: 10 }),
   verifyJavaChallenge: Object.freeze({ windowMs: 60 * 1000, maxRequests: 6 }),
@@ -853,6 +854,105 @@ exports.saveVerifiedLessonProgress = onCall(
     return { success: true, id: lessonId, language, chapter, lesson, completed: true };
   }
 );
+
+
+/*
+ * اعتماد نتيجة الامتحان الشامل لـPython من الخادم.
+ * ترتيب الإجابات هنا مطابق لمعرّفات الأسئلة الثابتة في python-exam.html.
+ * لا نعتمد الدرجة التي يرسلها المتصفح؛ نحسبها من مفتاح الإجابة الخادمي.
+ */
+const PYTHON_FINAL_EXAM_ANSWER_KEY = Object.freeze([
+  0, 1, 2, 1, 2, 0, 1, 2, 2, 1,
+  1, 2, 0, 1, 1, 1, 1, 0, 2, 1,
+  1, 0, 1, 1, 0, 2, 1, 0, 0, 0, 1
+]);
+
+function validatePythonFinalExamSubmission(questionIds, selectedAnswers) {
+  if (
+    !Array.isArray(questionIds) ||
+    !Array.isArray(selectedAnswers) ||
+    questionIds.length !== 15 ||
+    selectedAnswers.length !== 15
+  ) {
+    return { valid: false, reason: "invalid-size" };
+  }
+
+  const seen = new Set();
+  let score = 0;
+
+  for (let index = 0; index < questionIds.length; index++) {
+    const questionId = questionIds[index];
+    const selectedIndex = selectedAnswers[index];
+
+    if (
+      !Number.isSafeInteger(questionId) ||
+      questionId < 0 ||
+      questionId >= PYTHON_FINAL_EXAM_ANSWER_KEY.length ||
+      seen.has(questionId) ||
+      !Number.isSafeInteger(selectedIndex) ||
+      selectedIndex < 0 ||
+      selectedIndex > 3
+    ) {
+      return { valid: false, reason: "invalid-answer" };
+    }
+
+    seen.add(questionId);
+    if (selectedIndex === PYTHON_FINAL_EXAM_ANSWER_KEY[questionId]) {
+      score++;
+    }
+  }
+
+  const percentage = Math.round((score / 15) * 100);
+  return {
+    valid: true,
+    score,
+    total: 15,
+    percentage,
+    passed: percentage >= 80
+  };
+}
+
+exports.recordPythonFinalExam = onCall(CALL_OPTIONS, async request => {
+  const uid = requireAuth(request);
+  await enforceUserRateLimit(uid, "recordPythonFinalExam");
+
+  const validation = validatePythonFinalExamSubmission(
+    request.data?.questionIds,
+    request.data?.selectedAnswers
+  );
+
+  if (!validation.valid) {
+    throw new HttpsError("invalid-argument", "بيانات إجابات الامتحان غير صالحة.");
+  }
+
+  if (!validation.passed) {
+    throw new HttpsError("failed-precondition", "لم تتحقق درجة النجاح المطلوبة.");
+  }
+
+  const resultRef = db.collection("users").doc(uid)
+    .collection("examResults").doc("python_final_exam");
+
+  await resultRef.set({
+    uid,
+    examId: "python_final_exam",
+    passed: true,
+    serverVerified: true,
+    verificationVersion: 1,
+    score: validation.score,
+    total: validation.total,
+    percentage: validation.percentage,
+    questionIds: request.data.questionIds,
+    verifiedAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  return {
+    success: true,
+    passed: true,
+    score: validation.score,
+    total: validation.total,
+    percentage: validation.percentage
+  };
+});
 
 /*
  * التحقق من إجابة الاختبار من الخادم.

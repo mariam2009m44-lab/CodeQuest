@@ -479,9 +479,10 @@
   <script type="module">
     import {
       requireUser,
-      saveLessonProgress,
       getLessonProgress
     } from "./js/auth.js";
+    import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
+    import { functions } from "./js/firebase-config.js";
 
     const EXAM_SIZE = 15;
     const PASS_PERCENTAGE = 80;
@@ -802,6 +803,11 @@
       }
     ];
 
+    // معرّفات ثابتة للأسئلة؛ ترتيبها يطابق مفتاح الإجابات الخادمي.
+    allQuestions.forEach((question, index) => {
+      question.id = index;
+    });
+
     // عناصر الصفحة
     const statusMessage = document.getElementById("statusMessage");
     const examContent = document.getElementById("examContent");
@@ -834,6 +840,7 @@
         let score = 0;
         let answered = false;
         let examFinished = false;
+        const selectedAnswerByQuestionId = new Map();
 
         function migrateLegacyPythonStorage(uid) {
           if (!uid) return;
@@ -957,6 +964,7 @@
 
         // بدء الامتحان
         function startExam() {
+          selectedAnswerByQuestionId.clear();
           examQuestions = shuffleArray(allQuestions).slice(
             0,
             Math.min(EXAM_SIZE, allQuestions.length)
@@ -1043,6 +1051,7 @@
           answered = true;
 
           const question = examQuestions[currentQuestionIndex];
+          selectedAnswerByQuestionId.set(question.id, selectedIndex);
           const buttons = questionOptions.querySelectorAll(".opt-btn");
 
           const isCorrect = selectedIndex === question.a;
@@ -1108,16 +1117,32 @@
           );
 
           try {
-            await saveLessonProgress({
-              language: "python",
-              chapter: 12,
-              lesson: 105,
-              completed: true,
-              expectedUid: currentUser.uid
+            const recordResult = httpsCallable(
+              functions,
+              "recordPythonFinalExam"
+            );
+
+            const response = await recordResult({
+              questionIds: examQuestions.map(question => question.id),
+              selectedAnswers: examQuestions.map(question =>
+                selectedAnswerByQuestionId.get(question.id)
+              )
             });
 
+            const verified = response?.data || {};
+            if (verified.passed !== true || verified.percentage < PASS_PERCENTAGE) {
+              throw new Error("لم يؤكد الخادم اجتياز الامتحان.");
+            }
+
+            resultData.score = verified.score;
+            resultData.total = verified.total;
+            resultData.percentage = verified.percentage;
+            resultData.serverVerified = true;
+
+            localStorage.setItem(examKey, JSON.stringify(resultData));
+
             saveStatus.textContent =
-              "تم حفظ نتيجة الامتحان ومزامنتها مع الحساب.";
+              "تم التحقق من نتيجة الامتحان وحفظها في حسابك.";
 
             saveStatus.className = "success";
 

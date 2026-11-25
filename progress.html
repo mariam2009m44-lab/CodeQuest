@@ -426,6 +426,13 @@
             </span>
             <span id="finalExamStat">جارٍ التحميل...</span>
           </div>
+          <div class="stat-row">
+            <span>
+              <i class="ri-graduation-cap-line"></i>
+              الامتحان الشامل لـPython
+            </span>
+            <span id="pythonFinalExamStat">جارٍ التحميل...</span>
+          </div>
         </div>
 
         <p
@@ -782,6 +789,49 @@
         : "لا توجد دروس مكتملة مسجلة خلال آخر 7 أيام.";
     }
 
+    async function loadPythonFinalExamStatus(uid) {
+      const element = $("pythonFinalExamStat");
+      if (!element) return;
+
+      element.textContent = "لم يتم الاجتياز";
+
+      try {
+        const resultRef = doc(
+          db,
+          "users",
+          uid,
+          "examResults",
+          "python_final_exam"
+        );
+        const snapshot = await getDoc(resultRef);
+
+        if (
+          snapshot.exists() &&
+          snapshot.data()?.passed === true &&
+          snapshot.data()?.serverVerified === true
+        ) {
+          const result = snapshot.data();
+          element.textContent = `مجتاز — ${Number(result.percentage) || 0}%`;
+          return;
+        }
+      } catch (error) {
+        console.warn("تعذر تحميل نتيجة الامتحان الشامل من الحساب:", error);
+      }
+
+      // النتيجة المحلية لا تُعرض كاجتياز معتمد من الخادم.
+      try {
+        const raw = localStorage.getItem(
+          `codequest_python_exam_passed_${uid}`
+        );
+        const localResult = raw ? JSON.parse(raw) : null;
+        if (localResult?.passed === true) {
+          element.textContent = "محفوظ محليًا — بانتظار التحقق";
+        }
+      } catch (error) {
+        console.warn("تعذر قراءة نتيجة الامتحان المحلية:", error);
+      }
+    }
+
     async function loadAccountXP(uid) {
       const profileRef = doc(
         db,
@@ -1110,6 +1160,7 @@
       // عرض امتحانات الفصول المجتازة بشكل منفصل.
       const pythonExamResult =
         renderPythonExamProgress(pythonRecords);
+      await loadPythonFinalExamStatus(user.uid);
 
       const totalCompleted =
         pythonResult.completed +
