@@ -36,3 +36,19 @@ body.from-map .layout{display:block}
 .quiz-item .choices button{white-space:pre-line}
 
 bdi.code{font-family:ui-monospace,Consolas,monospace;background:rgba(120,140,200,.16);border-radius:5px;padding:0 5px;unicode-bidi:isolate;white-space:nowrap;display:inline-block;max-width:100%;overflow-x:auto;vertical-align:bottom}
+
+/* Practice workspace: framed editor and output */
+#practiceTask{margin-top:22px;padding:18px;border:1px solid #3f6fa8;border-radius:16px;background:linear-gradient(180deg,#0f1d3a,#0c1730);box-shadow:0 0 0 1px #36bfe51f,0 12px 28px #0006}
+#practiceTask #taskHeading{margin:0 0 6px;font-size:1.2rem;color:#ffd66b}
+#practiceTask #task{margin:0 0 14px}
+#practiceTask label[for=code],#practiceTask label[for=output]{display:flex;align-items:center;gap:8px;margin:0;padding:8px 14px;background:#1b2b4d;border:1px solid #3d5688;border-bottom:0;border-radius:12px 12px 0 0;font-size:.82rem;font-weight:700;color:#bcd0f2}
+#practiceTask label[for=code]:before{content:"";width:10px;height:10px;border-radius:50%;background:#36bfe5;box-shadow:-16px 0 #ffd66b,-32px 0 #43c99a;margin-inline-end:36px}
+#practiceTask label[for=output]{margin-top:16px}
+#practiceTask label[for=output]:before{content:"";width:8px;height:8px;border-radius:50%;background:#43c99a}
+#practiceTask #code{min-height:240px;margin:0;border-radius:0 0 12px 12px;border:1px solid #3d5688;font-size:15px;line-height:1.85;background:#060b1b;caret-color:#ffd66b;tab-size:4}
+#practiceTask #code:focus{border-color:#36bfe5;box-shadow:0 0 0 3px #36bfe533}
+#practiceTask #output{margin:0;min-height:4.2em;border-radius:0 0 12px 12px;border:1px solid #3d5688;background:#050914;font-size:15px;color:#9ff3c9}
+#practiceTask .actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
+#practiceTask .actions #run{flex:1 1 220px;min-height:48px;font-size:1.05rem;font-weight:800;border-radius:12px}
+#practiceTask .actions #hint,#practiceTask .actions #reset{flex:0 1 auto;min-height:48px;border-radius:12px}
+@media(max-width:560px){#practiceTask{padding:12px;margin-inline:-4px}#practiceTask #code{min-height:220px;font-size:14.5px}#practiceTask .actions #run{flex-basis:100%}#practiceTask .actions #hint,#practiceTask .actions #reset{flex:1 1 calc(50% - 5px)}}
