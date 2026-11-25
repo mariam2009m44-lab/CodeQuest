@@ -19,3 +19,8 @@ export function summarize(items,answers){
  const band=BANDS.find(b=>percent>=b[0])[1];
  return {earned,total,percent,band,missedLessons:[...new Set(missed)]};
 }
+export function byLesson(items,answers){
+ const m=new Map();
+ items.forEach((it,i)=>{const w=it.kind==='code'?CODE_POINTS:MCQ_POINTS;const e=m.get(it.lesson)||{lesson:it.lesson,earned:0,total:0};e.total+=w;if(answers[i]&&answers[i].correct)e.earned+=w;m.set(it.lesson,e)});
+ return [...m.values()].map(e=>({...e,percent:e.total?Math.round(e.earned*100/e.total):0}));
+}

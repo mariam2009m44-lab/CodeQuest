@@ -39,3 +39,11 @@ test('function tasks run hidden extra calls: reference passes, hardcoded and wro
   assert.equal((await gradeHidden(item,bad,runner(lang))).passed,false,k+' hardcoded/wrong rejected');
   assert.equal((await gradeHidden(item,alt,runner(lang))).passed,true,k+' alternative valid program accepted');}
 });
+
+import {byLesson as _byLesson} from '../../learning-studio/quiz-core.mjs';
+import _test from 'node:test';import _assert from 'node:assert/strict';
+_test('byLesson groups weighted scores per lesson',()=>{
+ const items=[{lesson:'a',kind:'mcq'},{lesson:'a',kind:'code'},{lesson:'b',kind:'mcq'}];
+ const r=_byLesson(items,[{correct:true},{correct:false},{correct:false}]);
+ _assert.deepEqual(r.map(x=>[x.lesson,x.earned,x.total,x.percent]),[['a',1,3,33],['b',0,1,0]]);
+});
