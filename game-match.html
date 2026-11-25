@@ -779,8 +779,10 @@
         targetZone.classList.remove("correct");
         targetZone.classList.add("incorrect");
 
+        const inPlace = userBuild.filter((piece, index) => piece.value === correctCode[index]).length;
+        const firstWrong = userBuild.findIndex((piece, index) => piece.value !== correctCode[index]) + 1;
         setFeedback(
-          "الترتيب غير صحيح. اضغط على قطعة داخل منطقة الكود لإزالتها، ثم حاول مرة أخرى.",
+          `الترتيب غير صحيح. ${inPlace} من ${correctCode.length} قطع في مكانها الصحيح. راجع القطعة رقم ${firstWrong} من أول الكود، واضغط عليها لإزالتها ثم حاول مرة أخرى.`,
           "error"
         );
 
