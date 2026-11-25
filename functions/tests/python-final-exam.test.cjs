@@ -21,22 +21,28 @@ const { validatePythonFinalExamSubmission, answerKey } = loadExamValidator();
 test("accepts a valid 15-question submission at the 80% threshold", () => {
   const questionIds = Array.from({ length: 15 }, (_, index) => index);
   const selectedAnswers = questionIds.map(id => answerKey[id]);
+  selectedAnswers[12] = (answerKey[12] + 1) % 4;
+  selectedAnswers[13] = (answerKey[13] + 1) % 4;
   selectedAnswers[14] = (answerKey[14] + 1) % 4;
   const result = validatePythonFinalExamSubmission(questionIds, selectedAnswers);
   assert.equal(result.valid, true);
-  assert.equal(result.score, 14);
+  assert.equal(result.score, 12);
   assert.equal(result.total, 15);
-  assert.equal(result.percentage, 93);
+  assert.equal(result.percentage, 80);
   assert.equal(result.passed, true);
 });
 
 test("rejects a submission below the passing threshold", () => {
   const questionIds = Array.from({ length: 15 }, (_, index) => index);
-  const selectedAnswers = questionIds.map(id => (answerKey[id] + 1) % 4);
+  const selectedAnswers = questionIds.map(id => answerKey[id]);
+  for (let index = 0; index < 4; index++) {
+    selectedAnswers[index] = (answerKey[index] + 1) % 4;
+  }
   const result = validatePythonFinalExamSubmission(questionIds, selectedAnswers);
   assert.equal(result.valid, true);
   assert.equal(result.passed, false);
-  assert.equal(result.percentage, 0);
+  assert.equal(result.score, 11);
+  assert.equal(result.percentage, 73);
 });
 
 test("rejects duplicate IDs and non-15-question submissions", () => {
