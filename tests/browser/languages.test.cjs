@@ -63,7 +63,7 @@ test('languages page: each card opens the new lessons and the previous path link
     // the other languages come straight from their curriculum JSON.
     const lessons = lang === 'python'
       ? await page.evaluate(() => Object.values(window.CHAPTERS).reduce((sum, chapter) => sum + chapter.lessons.length, 0))
-      : data.chapters.reduce((sum, chapter) => sum + chapter.lessons.length, 0);
+      : JSON.parse(await readFile(resolve(root, 'learning-studio/units.json'), 'utf8')).filter(pack => pack.language === lang).reduce((sum, pack) => sum + pack.lessons.length, 0); // the map appends studio-only lessons to each chapter
     if (lang === 'python') assert.equal(Object.keys(await page.evaluate(() => window.CHAPTERS)).length, data.chapters.length, 'python: 12 chapters loaded');
     assert.equal(await page.locator('.cw-road-node').count(), lessons, `${lang}: one road node per lesson`);
     assert.match(await page.textContent('#cwLessonCount'), new RegExp(`${lessons}`), `${lang}: lesson count shown`);
