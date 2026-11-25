@@ -257,6 +257,11 @@ export function scoreFinalExam(def, { language, answers }) {
   // 50 percent inclusive, exact integers: 15 questions need 8.
   return { ok: true, earned, total, percent: Math.round(earned * 100 / total), passed: earned * 100 >= PASS_PERCENT * total };
 }
+// The final exam opens only after every unit exam of the track is passed (server-recorded). Returns the missing unit keys.
+export function missingUnitExams(state, index, language) {
+  const keys = Object.keys(index.quizzes).filter(k => k.startsWith(language + "-"));
+  return keys.filter(k => !(state.exams && state.exams[k] && state.exams[k].passed === true));
+}
 export function recordFinalExam(state, def, input, version) {
   const r = scoreFinalExam(def, input);
   if (!r.ok) return r;

@@ -891,6 +891,29 @@
           }
         }
 
+        // Server mode gate: "passed" | "incomplete" | "unknown" (any failure, bad shape or missing token is unknown).
+        async function serverUnitsGate() {
+          try {
+            const { postProgress } = await import("./learning-studio/progress-api.mjs");
+            const { auth } = await import("./js/firebase-config.js");
+            const out = await postProgress({
+              enabled: true,
+              getToken: async force => auth.currentUser?.getIdToken(force === true) ?? null,
+              fetchFn: (u, o) => fetch(u, o),
+              path: "/api/progress/get",
+              payload: {}
+            });
+            if (!out || !out.ok || !out.data || out.data.success !== true || !out.data.exams || typeof out.data.exams !== "object") return "unknown";
+            for (let u = 1; u <= 12; u++) {
+              const e = out.data.exams["python-" + u];
+              if (!(e && e.passed === true)) return "incomplete";
+            }
+            return "passed";
+          } catch (error) {
+            return "unknown";
+          }
+        }
+
         // التحقق من إكمال الفصول الاثني عشر
         async function hasCompletedAllChapters() {
           const localProgress = readLocalProgress();
@@ -1286,8 +1309,23 @@
 
             showStatus("جارٍ التحقق من إكمال الفصول الاثني عشر...");
 
-            const completedAll =
-              await hasCompletedAllChapters();
+            // Server-assessment mode: only the Worker's recorded unit-exam passes can open the final.
+            // Unreachable/unknown Worker state is "unavailable", never allowed; legacy local/Firestore records do not apply here.
+            let completedAll;
+            if (serverMode) {
+              const gate = await serverUnitsGate();
+              if (gate === "unknown") {
+                showStatus("تعذّر التحقق من تقدمك على حسابك دلوقتي. جرّب تاني بعد شوية.", true);
+                return;
+              }
+              completedAll = gate === "passed";
+              if (!completedAll) {
+                showStatus("لازم تجتاز امتحانات الوحدات الاثنا عشر في مسار بايثون الأول، وبعدها يفتح الامتحان الشامل.", true);
+                return;
+              }
+            } else {
+              completedAll = await hasCompletedAllChapters();
+            }
 
             if (!completedAll) {
               showStatus(

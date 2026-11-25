@@ -138,6 +138,15 @@ function render(chapters,records,local){
  document.getElementById("cwLessonCount").textContent=completed+" من "+total+" درس";
  document.getElementById("cwProgressBar").style.width=percent+"%";
  {const old=document.getElementById("cwExamGate");if(old)old.remove();
+  // After the last lesson: link the last unit exam, then (Python only) the final exam. Local flags only choose which link to show; the Worker decides access.
+  let endLink=null;
+  if(!examGate&&flat.length&&first===flat.length){
+   const last=chapters.length;let lastPassed=false;
+   try{lastPassed=JSON.parse(localStorage.getItem("codequest_studio_quiz_"+language+"_"+last)||"null")?.passed===true}catch{}
+   if(!lastPassed)endLink={href:"/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+last,text:"اختبار الوحدة "+last+": انجح فيه (٥٠٪ أو أكثر) علشان تكمل المسار"};
+   else if(language==="python")endLink={href:"/python-exam.html",text:"الامتحان الشامل لبايثون: بيفتح بعد ما تنجح في امتحانات الوحدات كلها"};
+  }
+  if(endLink){const a=document.createElement("a");a.id="cwExamGate";a.className="cw-exam-gate";a.href=endLink.href;a.textContent=endLink.text;a.style.cssText="display:block;margin:12px auto;max-width:520px;padding:12px 16px;border-radius:12px;background:#674ac1;color:#fff;text-align:center;font-weight:700;text-decoration:none";document.getElementById("cwProgressBar").closest("section,div")?.after(a)}
   if(examGate){const a=document.createElement("a");a.id="cwExamGate";a.className="cw-exam-gate";a.href="/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+examGate;a.textContent="اختبار الوحدة "+examGate+": انجح فيه (٥٠٪ أو أكثر) علشان تفتح الوحدة اللي بعدها";a.style.cssText="display:block;margin:12px auto;max-width:520px;padding:12px 16px;border-radius:12px;background:#674ac1;color:#fff;text-align:center;font-weight:700;text-decoration:none";document.getElementById("cwProgressBar").closest("section,div")?.after(a)}}
  const units=chapters.map((chapter,ci)=>{
   const lessons=chapter.lessons||[],unitDone=lessons.filter((lesson,li)=>isDone(lesson,ci,li,records,local)).length;

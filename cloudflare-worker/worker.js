@@ -2,7 +2,7 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
-import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, recordFinalExam, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, recordFinalExam, missingUnitExams, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
 import { emptyLinks, createCode, claimCode, canRead, childrenOf, parentsOf, unlink } from "./parent-core.js";
 import { validateApplication, emptyDirectory, submitApplication, myStatus, listApplications, reviewApplication } from "./academy-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
@@ -1576,6 +1576,8 @@ export class StudentProgress {
         return { status: 200, data: { success: true, passed: out.passed, best: out.best } };
       }
       if (action === "finalexam") {
+        const missing = missingUnitExams(state, CURRICULUM_INDEX, "python");
+        if (body.language === "python" && missing.length) return { status: 409, data: { success: false, message: "prerequisites_missing", remaining: missing.length } };
         const out = recordFinalExam(state, PYTHON_FINAL, { language: body.language, answers: body.answers }, typeof body.version === "string" ? body.version : "v1");
         if (!out.ok) return out.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: out.reason } };
         await tx.put("state", state);
