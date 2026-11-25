@@ -63,5 +63,13 @@ try{
 
  // 7. flag OFF: no request at all and no notice.
  {const {c,seen}=await ctxFor('u1',()=>({status:200}),{flag:false});const p=await takeTest(c,'u1',3);assert.equal(seen.length,0);assert.equal(await p.locator('#pendingNotice').count(),0);await c.close()}
+ // 8. pilot opt-in: features OFF, the account's own opt-in makes lesson-test post; another account's opt-in or sign-out does not.
+ {const mk=async(uid,optUid)=>{const x=await ctxFor(uid,()=>({status:200}),{flag:false});const p0=await x.c.newPage();await p0.goto(L+'/learning-studio/index.html');if(optUid)await p0.evaluate(u=>localStorage.setItem('cq_server_pilot',JSON.stringify({uid:u,on:true,at:Date.now()})),optUid);await p0.close();return x};
+  const mine=await mk('u1','u1');const p=await takeTest(mine.c,'u1',3);assert.equal(mine.seen.filter(lt).length,1,'own opt-in posts');assert.match(mine.seen.filter(lt)[0].auth,/tok-u1/);await mine.c.close();
+  const theirs=await mk('u2','u1');const p2=await takeTest(theirs.c,'u2',3);assert.equal(theirs.seen.length,0,'another account opt-in is ignored');await theirs.c.close();
+  const never=await mk('u1',null);await takeTest(never.c,'u1',3);assert.equal(never.seen.length,0,'no opt-in, no post');await never.c.close();
+  const pg=await b.newContext();const pp=await pg.newPage();await pp.goto(L+'/learning-studio/pilot.html?uid=u1');await pp.waitForSelector('#toggle:not([disabled])');assert.match(await pp.locator('#state').innerText(),/موقوفة/);
+  await pp.locator('#toggle').click();assert.match(await pp.locator('#state').innerText(),/شغالة/);assert.ok(await pp.evaluate(()=>JSON.parse(localStorage.cq_server_pilot).uid==='u1'));
+  await pp.locator('#toggle').click();assert.equal(await pp.evaluate(()=>localStorage.cq_server_pilot||null),null);await pg.close()}
  console.log('server-assessment flag-on (mock worker) ok');
 }finally{await b.close();srv.close()}})().catch(e=>{console.error(e);process.exit(1)});

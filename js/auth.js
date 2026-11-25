@@ -441,6 +441,7 @@ export async function resetPassword(email) {
 export async function logoutUser() {
   try {
     await signOut(auth);
+    try { localStorage.removeItem("cq_server_pilot"); } catch { /* storage unavailable */ }
 
     const sessionKeys = [
       "currentProjectId",

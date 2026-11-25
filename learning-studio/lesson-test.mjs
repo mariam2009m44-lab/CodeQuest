@@ -4,6 +4,7 @@ import {writeMapProgress} from './map-flow.mjs';
 import {setProse} from './prose.mjs';
 import {buildLessonTestPayload} from './lesson-test-sync.mjs';
 import {postDurable,flushPending} from './progress-api.mjs';
+import {pilotActive} from './pilot.mjs';
 const $=id=>document.getElementById(id),q=new URLSearchParams(location.search),lang=q.get('lang')||'python',lessonId=q.get('lesson')||'';
 const [bank,units]=await Promise.all([fetch('lesson-tests.json').then(r=>r.json()),fetch('units.json').then(r=>r.json())]);
 const pack=units.find(u=>u.language===lang&&u.lessons.some(l=>l.id===lessonId)),lesson=pack?.lessons.find(l=>l.id===lessonId),items=bank[lessonId];
@@ -63,7 +64,7 @@ else{
    if(!answers[i].correct){const why=document.createElement('p');why.className='lt-why';setProse(why,it.why);li.append(why)}
    ol.append(li)});
   r.append(ol);
-  fetch('features.json').then(r=>r.json()).catch(()=>({})).then(async f=>{if(f.serverAssessment!==true)return;const {auth}=await import('/js/firebase-config.js');const ctx={uid:auth.currentUser?.uid||null,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)};await postDurable({...ctx,key:'lt:'+lang+':'+lessonId,path:'/api/progress/lesson-test',payload:buildLessonTestPayload({language:lang,lessonId,answers,items})});await flushPending(ctx);const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:ctx.uid,storage:localStorage,sendOpts:()=>({getToken:ctx.getToken,fetchFn:ctx.fetchFn})})}).catch(()=>{});
+  fetch('features.json').then(r=>r.json()).catch(()=>({})).then(async f=>{if(!(f.serverAssessment===true||pilotActive(uid,localStorage)))return;const {auth}=await import('/js/firebase-config.js');const ctx={uid:auth.currentUser?.uid||null,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)};await postDurable({...ctx,key:'lt:'+lang+':'+lessonId,path:'/api/progress/lesson-test',payload:buildLessonTestPayload({language:lang,lessonId,answers,items})});await flushPending(ctx);const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:ctx.uid,storage:localStorage,sendOpts:()=>({getToken:ctx.getToken,fetchFn:ctx.fetchFn})})}).catch(()=>{});
   const prev=(()=>{try{return JSON.parse(localStorage.getItem(lessonTestKey(lang,lessonId,uid))||'null')}catch{return null}})();
   // A pass is never removed by a later lower attempt.
   const keep=prev?.passed===true;try{localStorage.setItem(lessonTestKey(lang,lessonId,uid),JSON.stringify({percent:keep?Math.max(prev.percent,s.percent):s.percent,passed:keep||s.passed,at:Date.now(),source:'studio-device-only'}))}catch{}
@@ -80,4 +81,4 @@ else{
  }
 }
 // Reopening this page (Back, reload) also retries anything of this account that is still waiting, and shows the honest status. OFF unless serverAssessment is true.
-fetch('features.json').then(r=>r.json()).catch(()=>({})).then(async f=>{if(f.serverAssessment!==true||!uid)return;const {auth}=await import('/js/firebase-config.js');const ctx={uid:auth.currentUser?.uid||uid,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)};await flushPending(ctx);const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:ctx.uid,storage:localStorage,sendOpts:()=>({getToken:ctx.getToken,fetchFn:ctx.fetchFn})})}).catch(()=>{});
+fetch('features.json').then(r=>r.json()).catch(()=>({})).then(async f=>{if(!uid||!(f.serverAssessment===true||pilotActive(uid,localStorage)))return;const {auth}=await import('/js/firebase-config.js');const ctx={uid:auth.currentUser?.uid||uid,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)};await flushPending(ctx);const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:ctx.uid,storage:localStorage,sendOpts:()=>({getToken:ctx.getToken,fetchFn:ctx.fetchFn})})}).catch(()=>{});
