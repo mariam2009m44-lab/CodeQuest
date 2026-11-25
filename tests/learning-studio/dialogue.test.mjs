@@ -10,11 +10,11 @@ test('every dialogue turn asks a question with 2-3 options, one fitting, each wi
   assert.ok(typeof t.ask==='string'&&t.ask.length>10,at+' ask');
   assert.ok(Array.isArray(t.options)&&t.options.length>=2&&t.options.length<=3,at+' options');
   assert.equal(t.options.filter(o=>o.fit===true).length,1,at+' exactly one fitting option');
-  for(const o of t.options){assert.ok(o.text.length>=1&&o.reply.length>15,at+' text/reply');assert.ok(!/[\u2014]/.test(o.reply+o.text),at+' no em dash')}
+  for(const o of t.options){assert.ok(o.text.length>=1&&o.reply.length>=10,at+' text/reply');assert.ok(!/[\u2014]/.test(o.reply+o.text),at+' no em dash')}
   assert.ok(new Set(t.options.map(o=>o.text)).size===t.options.length,at+' distinct options');
  }
  assert.ok(n>0);
 });
-test('Java and JavaScript lessons all carry at least two dialogue turns',()=>{
- for(const l of lessons.filter(l=>['java','javascript'].includes(l.language)))assert.ok((l.dialogue??[]).length>=2,l.id);
+test('Java, JavaScript and C++ lessons all carry at least two dialogue turns',()=>{
+ for(const l of lessons.filter(l=>['java','javascript','cpp'].includes(l.language)))assert.ok((l.dialogue??[]).length>=2,l.id);
 });

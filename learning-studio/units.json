@@ -967,7 +967,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "في C++ البرنامج بيبدأ من أنهي جزء؟",
+            "options": [
+              {
+                "text": "دالة main",
+                "reply": "صح. التنفيذ بيبدأ من main.",
+                "fit": true
+              },
+              {
+                "text": "سطر #include",
+                "reply": "#include بيجيب أدوات الإدخال والإخراج بس، والتنفيذ مش بيبدأ منه."
+              }
+            ]
+          },
+          {
+            "ask": "std::cout << \"Ready\" بتعمل إيه؟",
+            "options": [
+              {
+                "text": "بتبعت النص للشاشة",
+                "reply": "تمام. << بتدفع النص للإخراج.",
+                "fit": true
+              },
+              {
+                "text": "بتقرا نص من المستخدم",
+                "reply": "القراءة بتتم بـ std::cin مش std::cout."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l2",
@@ -1074,6 +1104,36 @@
             "code": "#include <iostream>\n#include <string>\nint main() {\n int samples = 4;\n double temperature = 21.5;\n std::string station = \"Nova\";\n bool ready = true;\n std::cout << samples << std::endl;\n std::cout << temperature << std::endl;\n std::cout << station << std::endl;\n std::cout << ready << std::endl;\n}",
             "output": "4\n21.5\nNova\n1"
           }
+        ],
+        "dialogue": [
+          {
+            "ask": "int samples = 4; ليه كتبنا int؟",
+            "options": [
+              {
+                "text": "عشان نحدد إنها عدد صحيح",
+                "reply": "صح. C++ بتطلب نوع المتغير وقت تعريفه.",
+                "fit": true
+              },
+              {
+                "text": "عشان نطبعها",
+                "reply": "الطباعة بتتم بـ std::cout. int بتحدد النوع."
+              }
+            ]
+          },
+          {
+            "ask": "لو كتبنا int samples = 4.5؟",
+            "options": [
+              {
+                "text": "الجزء الكسري هيتقطع وتتخزن 4",
+                "reply": "صح. int بتخزن أعداد صحيحة بس، وC++ بتقطع الكسر.",
+                "fit": true
+              },
+              {
+                "text": "هتتخزن 4.5",
+                "reply": "int مش بتشيل كسر. للكسور بنستخدم double."
+              }
+            ]
+          }
         ]
       },
       {
@@ -1174,7 +1234,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد."
+        "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
+        "dialogue": [
+          {
+            "ask": "السطر اللي بيبدأ بـ // هيظهر في الإخراج؟",
+            "options": [
+              {
+                "text": "لأ، التعليق للقارئ مش للمترجم",
+                "reply": "صح. المترجم بيتجاهله.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "التعليق ما بيتنفذش ولا بيظهر."
+              }
+            ]
+          },
+          {
+            "ask": "أنهي تعليق أحسن؟",
+            "options": [
+              {
+                "text": "// تقرير المحرك قبل الطباعة",
+                "reply": "تمام. بيشرح الغرض، مش بيكرر السطر.",
+                "fit": true
+              },
+              {
+                "text": "// سطر",
+                "reply": "ده ما بيقولش حاجة مفيدة لحد."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l4",
@@ -1280,6 +1370,36 @@
             "purpose": "قسمة عددين int تعطي خارج قسمة صحيحًا هنا. وجود7.0 يجعل العملية عائمة. % للباقي مع الأعداد الصحيحة. نستخدم أعدادًا موجبة الآن.",
             "code": "#include <iostream>\nint main() {\n std::cout << 7 / 2 << std::endl;\n std::cout << 7.0 / 2 << std::endl;\n std::cout << 7 % 2 << std::endl;\n}",
             "output": "3\n3.5\n1"
+          }
+        ],
+        "dialogue": [
+          {
+            "ask": "3 صناديق في كل واحد 4 أدوات. ليه بنضرب؟",
+            "options": [
+              {
+                "text": "عشان نكرر نفس العدد بسرعة",
+                "reply": "صح. 3 × 4 اختصار لـ 4 + 4 + 4.",
+                "fit": true
+              },
+              {
+                "text": "عشان نطرح",
+                "reply": "الطرح هيقلل. إحنا بنحسب مجموعات متساوية."
+              }
+            ]
+          },
+          {
+            "ask": "boxes * perBox ناتجها كام؟",
+            "options": [
+              {
+                "text": "12",
+                "reply": "صح. 3 × 4 = 12.",
+                "fit": true
+              },
+              {
+                "text": "7",
+                "reply": "7 هو الجمع. العلامة هنا *."
+              }
+            ]
           }
         ]
       },
@@ -1403,7 +1523,37 @@
           }
         ],
         "testingLimits": "تشغيل الحلول المرجعية لا يثبت اكتمال المصحح أو واجهة الفروع. التحليل البنيوي واختبارات القبول والرفض والتنفيذ المعزول لم تُدمج بعد.",
-        "inputScope": "مدخلات صحيحة من أعداد int داخل المدى فقط في هذه الوحدة. معالجة الإدخال غير الصحيح تأتي لاحقًا. المتغيرات غير المهيأة ليست آمنة إن فشلت القراءة، لذلك نحدّث المثال إلى تهيئة الصفر ونختبر فشل الإدخال في مرحلة لاحقة."
+        "inputScope": "مدخلات صحيحة من أعداد int داخل المدى فقط في هذه الوحدة. معالجة الإدخال غير الصحيح تأتي لاحقًا. المتغيرات غير المهيأة ليست آمنة إن فشلت القراءة، لذلك نحدّث المثال إلى تهيئة الصفر ونختبر فشل الإدخال في مرحلة لاحقة.",
+        "dialogue": [
+          {
+            "ask": "std::cin >> a >> b والمدخلات 3 ثم 4. a بتاخد كام؟",
+            "options": [
+              {
+                "text": "3",
+                "reply": "صح. القيم بتتقرا بالترتيب.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "4 هي b. الأولى بتاخد أول قيمة."
+              }
+            ]
+          },
+          {
+            "ask": "ليه بنبدأ a و b بصفر قبل القراءة؟",
+            "options": [
+              {
+                "text": "عشان يبقى لهم قيمة معروفة لو القراءة فشلت",
+                "reply": "صح. تعريف بقيمة أول أحسن من ترك قيمة عشوائية.",
+                "fit": true
+              },
+              {
+                "text": "عشان cin بتحتاج صفر",
+                "reply": "cin ما بتحتاج. ده سلوك آمن."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -2923,7 +3073,37 @@
             "في هذه الصيغة يتخطى الجسم إذا كان الشرط خطأ.",
             "صحيح، فالمقارنة تقود القرار."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "energy = 3 والشرط energy >= 5. هتظهر Open؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. الشرط false فالجسم بيتخطى.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "3 أقل من 5."
+              }
+            ]
+          },
+          {
+            "ask": "الأقواس { } حوالين الجسم بتعمل إيه؟",
+            "options": [
+              {
+                "text": "بتحدد الأوامر اللي تتنفذ مع الشرط",
+                "reply": "صح. من غيرها بتتأثر أول جملة بس.",
+                "fit": true
+              },
+              {
+                "text": "مجرد زينة",
+                "reply": "مش زينة. بتحدد نطاق الجسم."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l7",
@@ -3054,7 +3234,37 @@
             "فرع else للحالة التي لا يتحقق فيها الشرط.",
             "اختيار الفرع يعتمد على الشرط لا النص المعروض."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "energy = 3 ومعانا if/else. الفرعين هيتنفذوا مع بعض؟",
+            "options": [
+              {
+                "text": "لأ، فرع واحد بس",
+                "reply": "صح. الشرط فشل فبينفذ else فقط وبيطبع Charge.",
+                "fit": true
+              },
+              {
+                "text": "أيوه الاتنين",
+                "reply": "دايمًا واحد بس من الفرعين بيتنفذ."
+              }
+            ]
+          },
+          {
+            "ask": "لو energy = 5 بالظبط؟",
+            "options": [
+              {
+                "text": "هيطبع Open",
+                "reply": "صح. >= بتشمل المساواة.",
+                "fit": true
+              },
+              {
+                "text": "هيطبع Charge",
+                "reply": "5 >= 5 صح، فبيدخل if."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l8",
@@ -3190,7 +3400,37 @@
             "صحيح، 9 يحقق الشرطين لكن يجب تصنيفه Cold.",
             "25 عدد صالح للمقارنة."
           ]
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "temperature = 18. ليه Hot مش هتتنفذ؟",
+            "options": [
+              {
+                "text": "عشان else if قبلها اتحقق",
+                "reply": "صح. 18 < 25 فطبع Mild وخلاص.",
+                "fit": true
+              },
+              {
+                "text": "عشان 18 باردة",
+                "reply": "السبب الترتيب. أول شرط متحقق ينهي السلسلة."
+              }
+            ]
+          },
+          {
+            "ask": "لو الحرارة 30؟",
+            "options": [
+              {
+                "text": "else وبيطبع Hot",
+                "reply": "صح. مفيش شرط قبلها اتحقق.",
+                "fit": true
+              },
+              {
+                "text": "Mild",
+                "reply": "Mild شرطها < 25 و30 مش أقل."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -4539,7 +4779,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "for (int gate = 1; gate <= 3; gate++) الجسم بيشتغل كام مرة؟",
+            "options": [
+              {
+                "text": "3",
+                "reply": "صح. gate بياخد 1 و2 و3.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "4 هي القيمة اللي بتوقف الحلقة."
+              }
+            ]
+          },
+          {
+            "ask": "الأجزاء التلاتة في for بترتيبها؟",
+            "options": [
+              {
+                "text": "بداية، شرط، تحديث",
+                "reply": "صح. البداية مرة، والشرط قبل كل لفة، والتحديث بعدها.",
+                "fit": true
+              },
+              {
+                "text": "شرط، بداية، تحديث",
+                "reply": "البداية بتتنفذ الأول مرة واحدة."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l10",
@@ -4637,7 +4907,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "كودي نسي count = count - 1. إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "الحلقة مش هتقف",
+                "reply": "صح. count ما بيقربش من الصفر.",
+                "fit": true
+              },
+              {
+                "text": "هتقف بعد 3 مرات",
+                "reply": "مفيش حاجة بتقلل count."
+              }
+            ]
+          },
+          {
+            "ask": "while بتفحص الشرط إمتى؟",
+            "options": [
+              {
+                "text": "قبل كل لفة",
+                "reply": "صح. ولو أول مرة false ما تدخلش خالص.",
+                "fit": true
+              },
+              {
+                "text": "بعد كل لفة",
+                "reply": "ده شغل do while. while العادية بتفحص الأول."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l11",
@@ -4735,7 +5035,37 @@
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
         },
-        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified."
+        "testingLimits": "Local integration under test. Comic is a development placeholder. Live authenticated runner not yet verified.",
+        "dialogue": [
+          {
+            "ask": "gate == 2 وفيه continue. إيه اللي بيحصل؟",
+            "options": [
+              {
+                "text": "بنتخطى الطباعة ونكمل اللفة التالية",
+                "reply": "صح. continue بتنقلنا للفة الجاية.",
+                "fit": true
+              },
+              {
+                "text": "الحلقة بتقف",
+                "reply": "دي break. continue بتتخطى لفة واحدة."
+              }
+            ]
+          },
+          {
+            "ask": "و gate == 5 مع break؟",
+            "options": [
+              {
+                "text": "الحلقة بتنتهي خالص",
+                "reply": "صح. break بتخرجنا من الحلقة.",
+                "fit": true
+              },
+              {
+                "text": "بنتخطى لفة بس",
+                "reply": "ده continue."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -5888,7 +6218,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "كتبنا void report() ومنادناش عليها من main. هتطبع؟",
+            "options": [
+              {
+                "text": "لأ",
+                "reply": "صح. التعريف بيجهّز الدالة والاستدعاء بيشغلها.",
+                "fit": true
+              },
+              {
+                "text": "أيوه",
+                "reply": "التعريف لوحده ما بينفذش."
+              }
+            ]
+          },
+          {
+            "ask": "void معناها إيه؟",
+            "options": [
+              {
+                "text": "الدالة ما بترجعش قيمة",
+                "reply": "صح. بتنفذ شغل وخلاص.",
+                "fit": true
+              },
+              {
+                "text": "الدالة فاضية",
+                "reply": "مش فاضية. بس مش بترجع قيمة."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l13",
@@ -5982,7 +6342,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "report(3) ثم report(5). ليه النتيجة 3 ثم 5؟",
+            "options": [
+              {
+                "text": "عشان كل استدعاء بيبعت قيمة مختلفة",
+                "reply": "صح. القيمة بتتحط في count وقت الاستدعاء.",
+                "fit": true
+              },
+              {
+                "text": "عشان count ثابتة",
+                "reply": "count بتاخد قيمة جديدة كل استدعاء."
+              }
+            ]
+          },
+          {
+            "ask": "int count جوه القوسين اسمها إيه؟",
+            "options": [
+              {
+                "text": "parameter",
+                "reply": "صح. والقيم 3 و5 هي arguments.",
+                "fit": true
+              },
+              {
+                "text": "argument",
+                "reply": "الـ arguments هي 3 و5 وقت الاستدعاء."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l14",
@@ -6076,7 +6466,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "أنهي سطر بيرجع المجموع للمستدعي؟",
+            "options": [
+              {
+                "text": "return x + y;",
+                "reply": "صح. return بترجع القيمة.",
+                "fit": true
+              },
+              {
+                "text": "int total",
+                "reply": "ده تعريف الدالة بس. القيمة بتتبعت بـ return."
+              }
+            ]
+          },
+          {
+            "ask": "int answer = total(3, 4); answer بتساوي كام؟",
+            "options": [
+              {
+                "text": "7",
+                "reply": "صح. القيمة اللي رجعت اتخزنت.",
+                "fit": true
+              },
+              {
+                "text": "34",
+                "reply": "ما بنلصق أرقام. بنجمع."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -7214,7 +7634,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "readings[] = {4, 7, 9}. فهرس أول عنصر كام؟",
+            "options": [
+              {
+                "text": "0",
+                "reply": "صح. الفهرس بيبدأ من الصفر.",
+                "fit": true
+              },
+              {
+                "text": "1",
+                "reply": "1 هو العنصر التاني."
+              }
+            ]
+          },
+          {
+            "ask": "لو طلبنا readings[3]؟",
+            "options": [
+              {
+                "text": "خطر. برا حدود المصفوفة وسلوكه غير محدد",
+                "reply": "صح. C++ ما بتتحققش من الحدود، فقد يطلع رقم عشوائي أو يقع البرنامج.",
+                "fit": true
+              },
+              {
+                "text": "هترجع 0",
+                "reply": "مش مضمون. بتقرا ذاكرة مش بتاعتنا."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l16",
@@ -7308,7 +7758,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "station = \"Nova\". station[0] بتدي إيه؟",
+            "options": [
+              {
+                "text": "N",
+                "reply": "صح. أول حرف في الفهرس 0.",
+                "fit": true
+              },
+              {
+                "text": "o",
+                "reply": "o هو الحرف التاني."
+              }
+            ]
+          },
+          {
+            "ask": "std::string بتحتاج إيه في الأول؟",
+            "options": [
+              {
+                "text": "#include <string>",
+                "reply": "صح. من غيرها المترجم مش هيعرف النوع.",
+                "fit": true
+              },
+              {
+                "text": "مفيش",
+                "reply": "لازم نضمّن المكتبة."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l17",
@@ -7402,7 +7882,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "ليه index < 3 ومش index <= 3؟",
+            "options": [
+              {
+                "text": "عشان آخر فهرس هو 2",
+                "reply": "صح. <= هتقرا خانة مش موجودة.",
+                "fit": true
+              },
+              {
+                "text": "مفيش فرق",
+                "reply": "في فرق. اللفة الإضافية تقرا خارج المصفوفة."
+              }
+            ]
+          },
+          {
+            "ask": "لو المصفوفة بقت 5 عناصر؟",
+            "options": [
+              {
+                "text": "لازم نعدل الحد في الحلقة",
+                "reply": "صح. فيه الرقم 3 مكتوب ثابت. لاحقًا نتعلم نحسبه.",
+                "fit": true
+              },
+              {
+                "text": "هتتعدل لوحدها",
+                "reply": "الحد مكتوب بإيدينا."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -8664,7 +9174,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "int& alias = count; alias = 7. count بقت كام؟",
+            "options": [
+              {
+                "text": "7",
+                "reply": "صح. alias اسم تاني لنفس المتغير.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "alias مش نسخة. ده مرجع لنفس count."
+              }
+            ]
+          },
+          {
+            "ask": "المرجع alias نسخة من count؟",
+            "options": [
+              {
+                "text": "لأ، نفس المتغير باسم تاني",
+                "reply": "صح. أي تعديل عن طريق أي اسم يظهر في الاتنين.",
+                "fit": true
+              },
+              {
+                "text": "أيوه، نسخة مستقلة",
+                "reply": "لو نسخة كانت count فضلت 4."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l19",
@@ -8758,7 +9298,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "pointer = &count. العلامة & هنا بتدي إيه؟",
+            "options": [
+              {
+                "text": "عنوان count",
+                "reply": "صح. المؤشر بيخزن العنوان.",
+                "fit": true
+              },
+              {
+                "text": "قيمة count",
+                "reply": "القيمة بنوصلها بـ *pointer."
+              }
+            ]
+          },
+          {
+            "ask": "*pointer في الطباعة بتدي كام؟",
+            "options": [
+              {
+                "text": "4",
+                "reply": "صح. * بتقرا القيمة اللي في العنوان.",
+                "fit": true
+              },
+              {
+                "text": "العنوان نفسه",
+                "reply": "العنوان هو pointer من غير *."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l20",
@@ -8852,7 +9422,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "*pointer = 7 بتغير إيه؟",
+            "options": [
+              {
+                "text": "قيمة count",
+                "reply": "صح. بنكتب في المكان اللي المؤشر بيشاور عليه.",
+                "fit": true
+              },
+              {
+                "text": "المؤشر نفسه",
+                "reply": "المؤشر لسه بيشاور على count. اللي اتغير القيمة."
+              }
+            ]
+          },
+          {
+            "ask": "بعد الأمر، count بتساوي كام؟",
+            "options": [
+              {
+                "text": "7",
+                "reply": "صح. count والمكان اللي بيشاور عليه واحد.",
+                "fit": true
+              },
+              {
+                "text": "4",
+                "reply": "count اتغيرت عن طريق المؤشر."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l21",
@@ -8946,7 +9546,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "pointer = nullptr. نقدر نقرا *pointer؟",
+            "options": [
+              {
+                "text": "لأ، مفيش هدف وده خطر",
+                "reply": "صح. القراءة من nullptr سلوك غير محدد وبتوقع البرنامج غالبًا.",
+                "fit": true
+              },
+              {
+                "text": "أيوه وهتدي 0",
+                "reply": "مش مضمون. لازم نفحص الأول."
+              }
+            ]
+          },
+          {
+            "ask": "نتأكد إزاي قبل القراءة؟",
+            "options": [
+              {
+                "text": "if (pointer != nullptr)",
+                "reply": "صح. نفحص ثم نقرا.",
+                "fit": true
+              },
+              {
+                "text": "نقرا ونشوف",
+                "reply": "القراءة قبل الفحص هي الخطر."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
@@ -10084,7 +10714,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "(first + second + third) / 3. ليه الأقواس؟",
+            "options": [
+              {
+                "text": "عشان المجموع يتحسب قبل القسمة",
+                "reply": "صح. من غيرها القسمة تيجي على third بس.",
+                "fit": true
+              },
+              {
+                "text": "عشان الشكل",
+                "reply": "الأقواس بتغير ترتيب الحساب."
+              }
+            ]
+          },
+          {
+            "ask": "لو الأعداد int مش double؟",
+            "options": [
+              {
+                "text": "القسمة هتقطع الكسر",
+                "reply": "صح. قسمة int على int بتدي عدد صحيح.",
+                "fit": true
+              },
+              {
+                "text": "مفيش فرق",
+                "reply": "في فرق. double بتحافظ على الكسر."
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "cpp_l23",
@@ -10178,7 +10838,37 @@
           "noSpeedPenalty": true,
           "noAccountRewardsInPreview": true,
           "reviewStatus": "authored draft; full scripted path tested locally with real compiler; production authentication and final editorial review pending"
-        }
+        },
+        "dialogue": [
+          {
+            "ask": "operation = '*' مش + ولا -. إيه اللي هيحصل؟",
+            "options": [
+              {
+                "text": "else بيشتغل",
+                "reply": "صح. لازم نكتب رسالة واضحة للرمز غير المدعوم.",
+                "fit": true
+              },
+              {
+                "text": "هيحسب ضرب",
+                "reply": "احنا ما كتبناش فرع للضرب."
+              }
+            ]
+          },
+          {
+            "ask": "ليه نستخدم char للعملية؟",
+            "options": [
+              {
+                "text": "عشان رمز واحد بين علامتي اقتباس مفردة",
+                "reply": "صح. '+' من نوع char مش نص.",
+                "fit": true
+              },
+              {
+                "text": "عشان نحسب بيه",
+                "reply": "مش بنحسب بيه. بنقارنه."
+              }
+            ]
+          }
+        ]
       }
     ],
     "checkpoint": {
