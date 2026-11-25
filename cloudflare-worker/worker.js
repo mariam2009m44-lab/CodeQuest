@@ -11,6 +11,12 @@ import { checkIntroConcept } from "./studio/concept.mjs";
 
 // Per-account cap on verification executions per day. A policy placeholder, not a promise of provider capacity.
 const CODE_VERIFY_DAILY_RUNS = 20;
+// Code credit in a unit exam comes only from tasks this server already verified for this account, never from the client.
+function serverCodeResults(state, language, unit) {
+  const quiz = CURRICULUM_INDEX.quizzes[`${language}-${unit}`];
+  if (!quiz) return undefined;
+  return quiz.code.map((_, i) => Boolean(state.codeTasks && state.codeTasks[`${language}-${unit}#${i}`] && state.codeTasks[`${language}-${unit}#${i}`].passed));
+}
 const FIREBASE_KEYS = createRemoteJWKSet(
   new URL(
     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
@@ -1412,7 +1418,7 @@ export class StudentProgress {
       const version = typeof body.version === "string" ? body.version : "";
       if (action === "lesson") outcome = recordLesson(state, CURRICULUM_INDEX, { language: body.language, lessonId: body.lessonId, version });
       else if (action === "lessontest") outcome = recordLessonTest(state, CURRICULUM_INDEX, LESSON_ANSWERS, { language: body.language, lessonId: body.lessonId, picks: body.picks, bank: body.bank }, version);
-      else if (action === "exam") outcome = recordExam(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), choices: body.choices, bank: body.bank }, version);
+      else if (action === "exam") outcome = recordExam(state, CURRICULUM_INDEX, { language: body.language, unit: Number(body.unit), choices: body.choices, bank: body.bank, codeResults: serverCodeResults(state, body.language, Number(body.unit)) }, version);
       else return { status: 404, data: { success: false, message: "unknown action" } };
       if (!outcome.ok) return outcome.refresh ? { status: 409, data: { success: false, refreshNeeded: true, message: "refresh_needed" } } : { status: 400, data: { success: false, message: outcome.reason } };
 

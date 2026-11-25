@@ -24,7 +24,7 @@ test("Durable Object stores best exam, never trusts a client score, and returns 
   const st = fakeState(); const o = new StudentProgress(st);
   const a = await call(o, "exam", { language: "python", unit: 1, bank: quiz.h, version: "v1", choices: quiz.mcq.map(m => m.answer), percent: 100, passed: true });
   assert.equal(a.status, 200);
-  assert.equal(a.data.codeVerified, false);
+  assert.equal(a.data.codeVerified, true); // code credit now comes only from tasks this server verified for the account (none yet)
   assert.ok(a.data.percent < 100);
   const g = await call(o, "get", {});
   assert.deepEqual(Object.keys(g.data).sort(), ["codeTasks", "exams", "finals", "lessonTests", "lessons", "practice", "resume", "success"]);

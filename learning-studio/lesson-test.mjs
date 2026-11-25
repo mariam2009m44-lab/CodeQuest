@@ -2,6 +2,8 @@ import {scoreLessonTest,lessonTestKey} from './lesson-test-core.mjs';
 import {PASS_PERCENT} from './quiz-core.mjs';
 import {writeMapProgress} from './map-flow.mjs';
 import {setProse} from './prose.mjs';
+import {buildLessonTestPayload} from './lesson-test-sync.mjs';
+import {postProgress} from './progress-api.mjs';
 const $=id=>document.getElementById(id),q=new URLSearchParams(location.search),lang=q.get('lang')||'python',lessonId=q.get('lesson')||'';
 const [bank,units]=await Promise.all([fetch('lesson-tests.json').then(r=>r.json()),fetch('units.json').then(r=>r.json())]);
 const pack=units.find(u=>u.language===lang&&u.lessons.some(l=>l.id===lessonId)),lesson=pack?.lessons.find(l=>l.id===lessonId),items=bank[lessonId];
@@ -61,6 +63,7 @@ else{
    if(!answers[i].correct){const why=document.createElement('p');why.className='lt-why';setProse(why,it.why);li.append(why)}
    ol.append(li)});
   r.append(ol);
+  fetch('features.json').then(r=>r.json()).catch(()=>({})).then(f=>{if(f.serverAssessment!==true)return;postProgress({enabled:true,getToken:async()=>{const {auth}=await import('/js/firebase-config.js');return auth.currentUser?.getIdToken()??null},fetchFn:(u,o)=>fetch(u,o),path:'/api/progress/lesson-test',payload:buildLessonTestPayload({language:lang,lessonId,answers,items})})});
   const prev=(()=>{try{return JSON.parse(localStorage.getItem(lessonTestKey(lang,lessonId,uid))||'null')}catch{return null}})();
   // A pass is never removed by a later lower attempt.
   const keep=prev?.passed===true;try{localStorage.setItem(lessonTestKey(lang,lessonId,uid),JSON.stringify({percent:keep?Math.max(prev.percent,s.percent):s.percent,passed:keep||s.passed,at:Date.now(),source:'studio-device-only'}))}catch{}
