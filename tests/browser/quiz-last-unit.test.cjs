@@ -11,7 +11,7 @@ async function run(flag,shot){const c=await b.newContext({viewport:{width:390,he
  await c.route('https://codequest.mariam2009m44.workers.dev/**',r=>r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"success":true}'}));
  await c.route(/^https?:\/\/(?!localhost)(?!codequest\.mariam)/,r=>r.abort());
  const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
- await p.goto(L+'/learning-studio/quiz.html?lang=python&unit=12');await p.waitForSelector('.quiz-item');
+ await p.goto(L+'/learning-studio/quiz.html?lang=python&unit=12&uid=u1');await p.waitForSelector('.quiz-item');
  // answer every MCQ correctly by option text, then submit the code task
  for(let i=0;i<quiz.mcq.length;i++){const item=p.locator('.quiz-item').nth(i);await item.locator('.choices button',{hasText:new RegExp('^\\s*'+quiz.mcq[i].options[quiz.mcq[i].answer].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*$')}).first().click()}
  await p.locator('.quiz-item').nth(quiz.mcq.length).locator('button.primary').click();

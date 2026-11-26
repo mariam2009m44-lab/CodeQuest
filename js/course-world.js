@@ -57,7 +57,8 @@ function examIndex(ci){
  const pack=studioUnits.find(x=>x.language===language&&x.unit===ci+1),n=pack?.lessons?.length||0,last=(curriculumChapters[ci]?.lessons||[]).length;
  return n&&last===n+1&&/^امتحان|^الامتحان/.test(String(curriculumChapters[ci].lessons[n]?.title||""))?n:-1;
 }
-function unitExamPassed(ci){try{return JSON.parse(localStorage.getItem("codequest_studio_quiz_"+language+"_"+(ci+1))||"null")?.passed===true}catch{return false}}
+// Per account on this device: a different signed-in learner, or nobody, never inherits a pass.
+function unitExamPassed(ci){if(!uid)return false;try{return JSON.parse(localStorage.getItem("codequest_studio_quiz_"+uid+"_"+language+"_"+(ci+1))||"null")?.passed===true}catch{return false}}
 function isDone(item,ci,li,records,local){
  if(li===examIndex(ci)&&unitExamPassed(ci))return true;
  const id=String(item.id||""),pythonKey=(ci+1)+"_"+li;
@@ -136,7 +137,7 @@ function render(chapters,records,local){
  let examGate=0;
  if(first<flat.length&&flat[first].ci>0&&flat[first].li===0){
   const prev=flat[first].ci;let passed=false;
-  try{passed=JSON.parse(localStorage.getItem("codequest_studio_quiz_"+language+"_"+prev)||"null")?.passed===true}catch{}
+  passed=unitExamPassed(prev-1)
   if(!passed)examGate=prev;
  }
  const completed=flat.filter(item=>item.done).length,total=flat.length,percent=total?Math.round(completed/total*100):0;
@@ -151,7 +152,7 @@ function render(chapters,records,local){
   let endLink=null;
   if(!examGate&&flat.length&&first===flat.length){
    const last=chapters.length;let lastPassed=false;
-   try{lastPassed=JSON.parse(localStorage.getItem("codequest_studio_quiz_"+language+"_"+last)||"null")?.passed===true}catch{}
+   lastPassed=unitExamPassed(last-1)
    if(!lastPassed)endLink={href:"/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+last,text:"اختبار الوحدة "+last+": انجح فيه (٥٠٪ أو أكثر) علشان تكمل المسار"};
    else if(language==="python"&&finalLinkOn)endLink={href:"/python-exam.html",text:"الامتحان الشامل لبايثون: بيفتح بعد ما تنجح في امتحانات الوحدات كلها"};
   }

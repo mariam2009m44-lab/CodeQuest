@@ -3,6 +3,11 @@ import {selectExecutor} from './execution.mjs';
 import {setProse} from './prose.mjs';
 import {postProgress,postDurable,flushPending,examPayload,codeTaskPayload} from './progress-api.mjs';
 const q=new URLSearchParams(location.search),lang=q.get('lang')||'python',unit=Number(q.get('unit')||1);
+const localHost=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+// The pass flag is kept per signed-in account on this device (never shared between accounts, never a server record).
+let uid=null;
+if(localHost){uid=q.get('uid')||null}
+else{try{const {requireUser}=await import('/js/auth.js');const u=await requireUser();if(!u?.uid)throw new Error('sign-in required');uid=u.uid}catch{location.replace('/login.html?'+new URLSearchParams({next:'learning-studio/quiz.html'+location.search}));await new Promise(()=>{})}}
 const $=id=>document.getElementById(id);
 const quizzes=await (await fetch('quizzes.json')).json();const data=quizzes[lang+'-'+unit];
 const features=await fetch('features.json').then(r=>r.json()).catch(()=>({}));
@@ -59,7 +64,7 @@ else{
   if(ok&&nu){const g=document.createElement('a');g.className='primary';g.href='/learning.html?lang='+encodeURIComponent(lang)+'&unit='+nu.unit+'&lesson='+encodeURIComponent(nu.lessons[0].id);g.textContent='كمّل: الوحدة '+nu.unit+' - '+nu.title;g.style.marginInlineEnd='10px';r.append(g)}
   else if(ok){const e=document.createElement('p');e.textContent='ده آخر اختبار في المسار.';r.append(e);const fl=afterLastUnit({language:lang,passed:ok,hasNextUnit:!!nu,serverOn});if(fl){const g=document.createElement('a');g.className='primary';g.href=fl.href;g.textContent=fl.text;g.style.marginInlineEnd='10px';r.append(g)}}
   const again=document.createElement('a');again.className='primary';again.href=location.href;again.textContent='ابدأ اختبار جديد';r.append(again);
-  try{localStorage.setItem('codequest_studio_quiz_'+lang+'_'+unit,JSON.stringify({percent:s.percent,passed:ok,earned:s.earned,total:s.total,lessons:byLesson(items,answers),at:Date.now(),source:'studio-device-only'}))}catch{}
+  if(uid)try{localStorage.setItem('codequest_studio_quiz_'+uid+'_'+lang+'_'+unit,JSON.stringify({percent:s.percent,passed:ok,earned:s.earned,total:s.total,lessons:byLesson(items,answers),at:Date.now(),source:'studio-device-only'}))}catch{}
   r.scrollIntoView();
  }
 }
