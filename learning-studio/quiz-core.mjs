@@ -27,3 +27,8 @@ export function byLesson(items,answers){
  items.forEach((it,i)=>{const w=it.kind==='code'?CODE_POINTS:MCQ_POINTS;const e=m.get(it.lesson)||{lesson:it.lesson,earned:0,total:0};e.total+=w;if(answers[i]&&answers[i].correct)e.earned+=w;m.set(it.lesson,e)});
  return [...m.values()].map(e=>({...e,percent:e.total?Math.round(e.earned*100/e.total):0}));
 }
+// Where a passed last-unit exam leads. Only Python has a final exam, and its page is usable only with server assessment ON.
+export function afterLastUnit({language,passed,hasNextUnit,serverOn}){
+ if(!passed||hasNextUnit)return null;
+ return language==='python'&&serverOn===true?{href:'/python-exam.html',text:'كمّل: الامتحان الشامل لبايثون'}:null;
+}

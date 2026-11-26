@@ -56,3 +56,13 @@ _test('pass threshold is 50 percent inclusive',()=>{
  _assert.equal(isPassed(_summ(items,[{correct:true},{correct:false}]).percent),true);
  _assert.equal(isPassed(_summ(items,[{correct:false},{correct:false}]).percent),false);
 });
+
+test("after the last unit: Python links the final only when server assessment is ON and the unit exam is passed", async () => {
+  const { afterLastUnit } = await import("../../learning-studio/quiz-core.mjs");
+  const assertEq = (await import("node:assert/strict")).default.deepEqual;
+  assertEq(afterLastUnit({ language: "python", passed: true, hasNextUnit: false, serverOn: true }), { href: "/python-exam.html", text: "كمّل: الامتحان الشامل لبايثون" });
+  assertEq(afterLastUnit({ language: "python", passed: true, hasNextUnit: false, serverOn: false }), null);
+  assertEq(afterLastUnit({ language: "python", passed: false, hasNextUnit: false, serverOn: true }), null);
+  assertEq(afterLastUnit({ language: "python", passed: true, hasNextUnit: true, serverOn: true }), null);
+  assertEq(afterLastUnit({ language: "java", passed: true, hasNextUnit: false, serverOn: true }), null);
+});

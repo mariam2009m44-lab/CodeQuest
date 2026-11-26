@@ -1,4 +1,4 @@
-import {gradeCode,summarize,byLesson,isPassed,PASS_PERCENT,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
+import {gradeCode,summarize,byLesson,isPassed,afterLastUnit,PASS_PERCENT,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
 import {selectExecutor} from './execution.mjs';
 import {setProse} from './prose.mjs';
 import {postProgress,postDurable,flushPending,examPayload,codeTaskPayload} from './progress-api.mjs';
@@ -57,7 +57,7 @@ else{
   const cov=document.createElement('p');cov.className='small';cov.textContent='دي أسئلة قليلة (من '+items.length+') بتغطي بعض مفاهيم الدرس بس، فمش تقييم كامل للدرس.';r.append(cov);const note=document.createElement('p');note.textContent='النسبة دي نتيجة هذا الاختبار فقط ومحفوظة على هذا الجهاز، مش تقييم لمستواك الكامل ولا مكافأة.';r.append(note);
   const nu=units.find(u=>u.language===lang&&u.unit===unit+1);
   if(ok&&nu){const g=document.createElement('a');g.className='primary';g.href='/learning.html?lang='+encodeURIComponent(lang)+'&unit='+nu.unit+'&lesson='+encodeURIComponent(nu.lessons[0].id);g.textContent='كمّل: الوحدة '+nu.unit+' - '+nu.title;g.style.marginInlineEnd='10px';r.append(g)}
-  else if(ok){const e=document.createElement('p');e.textContent='ده آخر اختبار في المسار.';r.append(e)}
+  else if(ok){const e=document.createElement('p');e.textContent='ده آخر اختبار في المسار.';r.append(e);const fl=afterLastUnit({language:lang,passed:ok,hasNextUnit:!!nu,serverOn});if(fl){const g=document.createElement('a');g.className='primary';g.href=fl.href;g.textContent=fl.text;g.style.marginInlineEnd='10px';r.append(g)}}
   const again=document.createElement('a');again.className='primary';again.href=location.href;again.textContent='ابدأ اختبار جديد';r.append(again);
   try{localStorage.setItem('codequest_studio_quiz_'+lang+'_'+unit,JSON.stringify({percent:s.percent,passed:ok,earned:s.earned,total:s.total,lessons:byLesson(items,answers),at:Date.now(),source:'studio-device-only'}))}catch{}
   r.scrollIntoView();
