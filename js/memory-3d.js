@@ -61,7 +61,7 @@ import * as THREE from '../assets/vendor/three.module.min.js';
       g.fillStyle = '#fff'; g.shadowColor = 'rgba(40,20,120,.45)'; g.shadowBlur = 12; g.shadowOffsetY = 6; g.font = '900 ' + Math.round(W * 0.5) + 'px Cairo, Arial, sans-serif'; g.fillText('?', W / 2, H / 2 + 6);
     } else {
       // Fit the label: wrap greedily into at most 3 lines and keep the largest size that fits the plate. Long labels get a taller plate (the icon moves up and shrinks) instead of shrinking the text further.
-      const font = z => '900 ' + z + 'px Cairo, Arial, sans-serif', maxW = W - 64, words = String(text).split(/\s+/);
+      const font = z => '900 ' + z + 'px Cairo, Arial, sans-serif', maxW = W - 50, words = String(text).split(/\s+/);
       const wrap = z => { g.font = font(z); const out = []; let cur = ''; for (const w of words) { const t = cur ? cur + ' ' + w : w; if (cur && g.measureText(t).width > maxW) { out.push(cur); cur = w; } else cur = t; } out.push(cur); return out; };
       const fits = (z, ls, hh) => ls.length <= 3 && Math.max(...ls.map(l => g.measureText(l).width)) <= maxW && ls.length * z * 1.15 <= hh - 14;
       let size = 52, lines = wrap(size), tall = false;
