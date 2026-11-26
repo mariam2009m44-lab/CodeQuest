@@ -15,6 +15,7 @@ const win=async(p,wait)=>{await p.waitForSelector('#tray .free-piece');const tot
 (async()=>{const b=await chromium.launch();const log=[];
  const c=await ctx(b,390,false);const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
  await p.goto(origin+'/game-image-puzzle.html');await p.waitForFunction(()=>window.CQGameStore&&window.CQGameStore.ready);await p.evaluate(()=>{document.getElementById('difficulty').value='3'});
+ assert.ok(await p.evaluate(()=>[...document.querySelectorAll('.mobile-nav span')].every(e=>parseFloat(getComputedStyle(e).fontSize)>=12)),'bottom-nav labels are at least 12px');
  const before=await p.evaluate(()=>Number(CQGameStore.get('codyTotalScore')||0));assert.equal(before,0,'fixture starts with no points');
  await p.click('#startBtn');const w1=await win(p,0);
  assert.match(w1.text,/^رقم قياسي جديد/,'first win is a new record');assert.equal(w1.rec.plays,1);assert.equal(w1.total,w1.points,'device points go up by exactly the earned points');assert.ok(w1.points>=30&&w1.points<=100,'earned points in the 3x3 range: '+w1.points);assert.equal(w1.stars,'★★★','a clean 9-move win gives 3 stars (moves '+w1.moves+')');assert.equal(w1.rec.time,w1.seconds);
