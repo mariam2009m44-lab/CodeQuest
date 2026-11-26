@@ -52,7 +52,14 @@ function celebration(){
   if(c&&uid&&c.uid===uid&&c.language===language&&Date.now()-Number(c.at)<10*60*1000)return c}catch{}
  return null;
 }
+// The unit exam is the map node after the studio lessons of a unit (Python: lesson 5 of each chapter). It opens the unit exam page and is done when that exam is passed (or a record exists).
+function examIndex(ci){
+ const pack=studioUnits.find(x=>x.language===language&&x.unit===ci+1),n=pack?.lessons?.length||0,last=(curriculumChapters[ci]?.lessons||[]).length;
+ return n&&last===n+1&&/^امتحان|^الامتحان/.test(String(curriculumChapters[ci].lessons[n]?.title||""))?n:-1;
+}
+function unitExamPassed(ci){try{return JSON.parse(localStorage.getItem("codequest_studio_quiz_"+language+"_"+(ci+1))||"null")?.passed===true}catch{return false}}
 function isDone(item,ci,li,records,local){
+ if(li===examIndex(ci)&&unitExamPassed(ci))return true;
  const id=String(item.id||""),pythonKey=(ci+1)+"_"+li;
  const match=x=>x?.completed===true&&(
   (Number.isInteger(Number(x.chapter))&&Number.isInteger(Number(x.lesson))&&Number(x.chapter)===ci&&Number(x.lesson)===li)||
@@ -137,7 +144,7 @@ function render(chapters,records,local){
  document.getElementById("cwTitle").textContent="رحلة "+cfg.name;
  document.getElementById("cwDescription").textContent=cfg.description;
  document.getElementById("cwProgressText").textContent=percent+"% مكتمل";
- document.getElementById("cwLessonCount").textContent=completed+" من "+total+" درس";
+ document.getElementById("cwLessonCount").textContent=completed+" من "+total+" محطة";
  document.getElementById("cwProgressBar").style.width=percent+"%";
  {const old=document.getElementById("cwExamGate");if(old)old.remove();
   // After the last lesson: link the last unit exam, then (Python only) the final exam. Local flags only choose which link to show; the Worker decides access.
@@ -161,12 +168,12 @@ function render(chapters,records,local){
    const current=!done&&globalIndex===first&&!examGate,locked=!done&&!current;
    const icon=done?"ri-check-line":locked?"ri-lock-2-line":"ri-play-fill";
    const pt=pendingTest(),needsTest=current&&pt&&pt.lessonId===lesson.id&&pt.unit===ci+1&&pt.index===li;
-   const title=lesson.title||("الدرس "+(li+1)),href=needsTest?"/learning-studio/lesson-test.html?lang="+encodeURIComponent(language)+"&lesson="+encodeURIComponent(lesson.id):cfg.url(ci,li,lesson.id),{x,y}=points[li];
+   const title=lesson.title||("الدرس "+(li+1)),href=needsTest?"/learning-studio/lesson-test.html?lang="+encodeURIComponent(language)+"&lesson="+encodeURIComponent(lesson.id):li===examIndex(ci)?"/learning-studio/quiz.html?lang="+encodeURIComponent(language)+"&unit="+(ci+1):cfg.url(ci,li,lesson.id),{x,y}=points[li];
    return `<div data-ci="${ci}" data-li="${li}" class="cw-road-node ${current?"is-current":done?"is-done":"is-locked"}${needsTest?" needs-test":""}" data-lesson-index="${globalIndex}" style="left:${x}%;top:${y}px">${current?'<div class="cw-cody cw-cody--node">'+CODY+'</div>':""}<button class="cw-node ${done?"is-done":current?"is-current":""}" type="button" ${locked?'disabled aria-label="درس مقفول"':'data-href="'+escapeHTML(href)+'" aria-label="'+escapeHTML(title)+'"'}><i class="${icon}"></i></button><span class="cw-node-label">${escapeHTML(title)}</span><span class="cw-node-sub">${done?"مكتمل":needsTest?"خلصت الدرس، فاضل الاختبار":current?"ابدأ هنا":"افتح بعد السابق"}</span></div>`;
   }).join("");
   const unitPercent=lessons.length?Math.round(unitDone/lessons.length*100):0;
   const projectId=UNIT_PROJECTS[language]?.[ci+1],projectLink=projectsOn&&unitPercent===100&&projectId?`<a class="cw-project-link" id="cwProject${ci+1}" href="/learning-studio/project.html?project=${projectId}" style="display:inline-block;margin-top:8px;padding:8px 14px;border-radius:10px;background:#674ac1;color:#fff;font-weight:700;text-decoration:none">مشروع الوحدة: ابنِ بنفسك</a>`:"";
-  return `<section class="cw-unit ${unitPercent===100?"is-complete":""}"><header class="cw-unit-head"><span class="cw-unit-number">${ci+1}</span><div class="cw-unit-title"><h3>${escapeHTML(chapter.title||("الوحدة "+(ci+1)))}</h3><p>${lessons.length} دروس · ${unitDone} مكتمل</p><div class="cw-unit-progress"><span style="width:${unitPercent}%"></span></div>${projectLink}</div><span class="cw-unit-status">${unitPercent===100?"✓ مكتملة":unitDone+" من "+lessons.length}</span></header><div class="cw-road" style="height:${height}px"><svg class="cw-road-svg" viewBox="0 0 100 ${height}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}"></path><path class="cw-road-glow" d="${progressPath}"></path></svg>${nodes}</div><div class="cw-unit-foot"><strong><i class="${unitPercent===100?"ri-trophy-line":"ri-flag-2-line"}"></i> ${unitPercent===100?"أنهيت الوحدة بنجاح!":"محطة نهاية الوحدة"}</strong><span>${unitPercent===100?"أحسنت! كل دروس الوحدة اكتملت. كودي فخور بيك.":"أكمل الدروس بالترتيب عشان تفتح الوحدة التالية."}</span></div></section>`;
+  return `<section class="cw-unit ${unitPercent===100?"is-complete":""}"><header class="cw-unit-head"><span class="cw-unit-number">${ci+1}</span><div class="cw-unit-title"><h3>${escapeHTML(chapter.title||("الوحدة "+(ci+1)))}</h3><p>${examIndex(ci)>0?examIndex(ci)+" دروس + امتحان الوحدة":lessons.length+" دروس"} · ${unitDone} مكتمل</p><div class="cw-unit-progress"><span style="width:${unitPercent}%"></span></div>${projectLink}</div><span class="cw-unit-status">${unitPercent===100?"✓ مكتملة":unitDone+" من "+lessons.length}</span></header><div class="cw-road" style="height:${height}px"><svg class="cw-road-svg" viewBox="0 0 100 ${height}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}"></path><path class="cw-road-glow" d="${progressPath}"></path></svg>${nodes}</div><div class="cw-unit-foot"><strong><i class="${unitPercent===100?"ri-trophy-line":"ri-flag-2-line"}"></i> ${unitPercent===100?"أنهيت الوحدة بنجاح!":"محطة نهاية الوحدة"}</strong><span>${unitPercent===100?"أحسنت! كل دروس الوحدة اكتملت. كودي فخور بيك.":"أكمل الدروس بالترتيب عشان تفتح الوحدة التالية."}</span></div></section>`;
  }).join("");
  map.innerHTML=units||'<div class="cw-empty">المنهج لسه مفيهوش دروس متاحة.</div>';
  map.querySelectorAll("[data-href]").forEach(button=>button.addEventListener("click",()=>{
