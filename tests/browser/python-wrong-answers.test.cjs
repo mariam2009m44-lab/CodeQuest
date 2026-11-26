@@ -13,14 +13,14 @@ for(const pack of units.filter(x=>x.language==='python'&&x.unit>=from&&x.unit<=t
   for(const t of lesson.dialogue){const o=t.options.find(o=>o.fit);const k=t.options.indexOf(o);await p.locator('#dialogue .choices button').nth(k).click();await p.waitForTimeout(150)}
   const pred=lesson.steps.find(s=>s.type==='prediction');await p.locator('#question button').nth(pred.correctIndex).click();
   await p.click('#runWorked');
-  const stage=()=>p.evaluate(()=>document.getElementById('stageLabel').textContent);
+  const stage=()=>p.evaluate(()=>document.getElementById('stageLabel').textContent);const idle=()=>p.waitForFunction(()=>!document.getElementById('run').disabled);await p.waitForFunction(()=>/٣/.test(document.getElementById('stageLabel').textContent));await idle();
   const pr=lesson.steps.find(s=>s.type==='practice');const s0=await stage();
   const hack=pr.expectedOutput.split('\n').map(l=>'print('+JSON.stringify(l)+')').join('\n');
-  const nz=t=>t.replace(/\s/g,'');for(const code of [hack,'print(']){if(code===hack&&nz(hack)===nz(pr.referenceSolution))continue;await p.fill('#code',code);await p.click('#run');await p.waitForTimeout(250);const st=await stage();if(st!==s0)throw new Error('false pass on practice: '+code.slice(0,20));const fb=await p.locator('#feedback').innerText();if(!fb.trim())throw new Error('no feedback for wrong practice')}
+  const nz=t=>t.replace(/\s/g,'');for(const code of [hack,'print(']){if(code===hack&&nz(hack)===nz(pr.referenceSolution))continue;await p.fill('#code',code);await p.click('#run');await p.waitForTimeout(250);await idle();const st=await stage();if(st!==s0||!/٣/.test(st))throw new Error('false pass on practice: '+code.slice(0,20));const fb=await p.locator('#feedback').innerText();if(!fb.trim())throw new Error('no feedback for wrong practice')}
   await p.fill('#code',pr.referenceSolution);await p.click('#run');
   await p.locator('#question button').nth(expl[lesson.id].answer).click();
   const tr=lesson.steps.find(s=>s.type==='transfer');const s1=await stage();
-  for(const code of [tr.expectedOutput.split('\n').map(l=>'print('+JSON.stringify(l)+')').join('\n'),'print(']){if(code!=='print('&&nz(code)===nz(tr.referenceSolution))continue;await p.fill('#code',code);await p.click('#run');await p.waitForTimeout(250);if(await stage()!==s1)throw new Error('false pass on transfer: '+code.slice(0,20));if(!(await p.locator('#feedback').innerText()).trim())throw new Error('no feedback for wrong transfer')}
+  for(const code of [tr.expectedOutput.split('\n').map(l=>'print('+JSON.stringify(l)+')').join('\n'),'print(']){if(code!=='print('&&nz(code)===nz(tr.referenceSolution))continue;await p.fill('#code',code);await p.click('#run');await p.waitForTimeout(250);await idle();if(await stage()!==s1||!/٥/.test(s1))throw new Error('false pass on transfer: '+code.slice(0,20));if(!(await p.locator('#feedback').innerText()).trim())throw new Error('no feedback for wrong transfer')}
   await p.fill('#code',tr.referenceSolution);await p.click('#run');
   await p.waitForFunction(()=>/اكتملت/.test(document.getElementById('stageLabel').textContent));n++;
  }catch(e){bad.push(lesson.id+': '+e.message.split('\n')[0].slice(0,80))}
