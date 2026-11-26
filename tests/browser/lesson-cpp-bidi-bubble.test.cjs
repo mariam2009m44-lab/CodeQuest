@@ -1,0 +1,15 @@
+// C++ lesson titles keep C++ in order (not ++C) in RTL, and inline code in dialogue bubbles is fully visible (wrapped, not clipped) at 320px. Static server, stubbed sign-in; fixture only.
+const {chromium}=require('playwright'),http=require('http'),fs=require('fs'),path=require('path');
+const assert=require('assert/strict');const root=path.resolve(__dirname,'../..');const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json','.css':'text/css','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png'};
+(async()=>{const srv=http.createServer((q,s)=>{const f=path.join(root,decodeURIComponent(q.url.split('?')[0]));try{s.writeHead(200,{'content-type':types[path.extname(f)]||'text/plain'});s.end(fs.readFileSync(f))}catch{s.writeHead(404);s.end('x')}});
+await new Promise(r=>srv.listen(0,r));const L='http://localhost:'+srv.address().port;const b=await chromium.launch();
+const units=JSON.parse(fs.readFileSync(root+'/learning-studio/units.json','utf8'));
+const c=await b.newContext({viewport:{width:320,height:844}});await c.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname==='localhost')return r.continue();if(/firebase|auth\.js/.test(u.href))return r.fulfill({contentType:'text/javascript',body:''});r.abort()});
+const bad=[];let seen=0;
+for(const pack of units.filter(x=>x.language==='cpp'&&x.unit<=2))for(const [index,lesson] of pack.lessons.entries()){const p=await c.newPage();
+ await p.goto(L+`/learning.html?from=map&lang=cpp&unit=${pack.unit}&index=${index}`);await p.waitForSelector('#dialogue .chatlog');
+ for(const t of lesson.dialogue){const k=t.options.findIndex(o=>o.fit);await p.locator('#dialogue .choices button').nth(k).click();await p.waitForTimeout(120)}
+ const r=await p.evaluate(()=>{const order=[...document.querySelectorAll('#title bdi,#position bdi')].map(e=>{const t=e.firstChild;const a=document.createRange();a.setStart(t,0);a.setEnd(t,1);const z=document.createRange();z.setStart(t,t.length-1);z.setEnd(t,t.length);return {text:e.textContent,ok:a.getBoundingClientRect().left<z.getBoundingClientRect().left||t.length<2}});
+  const clipped=[...document.querySelectorAll('bdi.code')].filter(e=>e.offsetParent&&e.scrollWidth>e.clientWidth+1).map(e=>e.textContent.slice(0,30));return {order,clipped,sw:document.documentElement.scrollWidth}});
+ seen++;for(const o of r.order)if(!o.ok)bad.push(`${lesson.id}: "${o.text}" reversed`);if(!r.order.some(o=>o.text==='C++'))bad.push(lesson.id+': C++ not isolated in title/position');if(r.clipped.length)bad.push(lesson.id+' clipped code: '+r.clipped.join('|'));if(r.sw>320)bad.push(lesson.id+' overflow '+r.sw);await p.close()}
+await b.close();srv.close();assert.ok(seen>=8);assert.deepEqual(bad,[]);console.log('cpp titles and bubble code ok (fixture):',seen,'lessons')})().catch(e=>{console.error(e.message||e);process.exit(1)});
