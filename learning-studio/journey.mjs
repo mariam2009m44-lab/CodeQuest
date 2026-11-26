@@ -85,14 +85,18 @@ export function startJourney({anchor,pack,lesson,next,goNext,quizUrl,testUrl=nul
    secondary.textContent='اختبار الدرس الحالي';
    secondary.onclick=()=>{stopJourney();location.assign(testUrl)};
   }
- }else if(testUrl){
-  p.textContent='انتهت دروس الوحدة. تقدر تبدأ اختبار الدرس، وبعدها تكمل اختبار الوحدة.';
-  main.textContent='ابدأ اختبار الدرس';
-  main.onclick=()=>{stopJourney();location.assign(testUrl)};
  }else{
   p.textContent='اكتملت دروس الوحدة. الخطوة التالية اختبار الوحدة لفتح المسار التالي.';
   main.textContent='ابدأ اختبار الوحدة';
   main.onclick=()=>{stopJourney();location.assign(quizUrl)};
+  if(testUrl){
+   const optional=document.createElement('button');
+   optional.type='button';
+   optional.className='journey-secondary';
+   optional.textContent='اختبار الدرس للمراجعة (اختياري)';
+   optional.onclick=()=>{stopJourney();location.assign(testUrl)};
+   row.append(optional);
+  }
  }
 
  row.append(main);
