@@ -28,11 +28,19 @@ try{
  t=await check(p);assert.match(t,/نجح في كل الحالات/);assert.match(t,/كل الحالات المخفية/);assert.match(t,/مش بتتحسب في الشهادة/);
  await p.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));await p.waitForTimeout(200);await p.screenshot({path:process.env.SHOT_PASS||'/tmp/pj-pass.png'});
  assert.deepEqual(p.__errs,[]);
- {const p2=await c.newPage();await p2.goto(L+'/learning-studio/project.html?project=py-p1&uid=u1');p=p2}assert.match(await p.textContent('#pjBody'),/حللت المشروع ده قبل كده/);assert.equal(await p.inputValue('textarea.quiz-code'),REF['py-p1'],'code resumes');
- {const p3=await c.newPage();await p3.goto(L+'/learning-studio/project.html?project=py-p1&uid=u2');p=p3}assert.doesNotMatch(await p.textContent('#pjBody'),/حللت المشروع ده قبل كده/,'another account does not inherit');await c.close();
+ {const p2=await c.newPage();await p2.goto(L+'/learning-studio/project.html?project=py-p1&uid=u1');p=p2}assert.match(await p.textContent('#pjStatus'),/الكود الحالي نجح في كل الحالات/);await p.fill('textarea.quiz-code',REF['py-p1']+'# edit');assert.match(await p.textContent('#pjStatus'),/نجحت قبل كده بنسخة تانية/,'an edit makes the old pass stale');assert.equal(await p.locator('#pjResult').innerText(),'','old test list is cleared on edit');await p.fill('textarea.quiz-code',REF['py-p1']);assert.match(await p.textContent('#pjStatus'),/الكود الحالي نجح/);assert.equal(await p.inputValue('textarea.quiz-code'),REF['py-p1'],'code resumes');
+ {const p3=await c.newPage();await p3.goto(L+'/learning-studio/project.html?project=py-p1&uid=u2');p=p3}assert.equal(await p.textContent('#pjStatus'),'','another account has no pass status');assert.equal(await p.locator('.pj-hint').count(),0,'hints do not carry over');assert.match(await p.inputValue('textarea.quiz-code'),/fuel بتتحدد/,'code is the starter, not the other account code');await c.close();
  // 6 the other two projects accept their reference solutions
  for(const id of ['py-p2','py-p3']){({c,p}=await page('/learning-studio/project.html?project='+id+'&uid=u1'));await setCode(p,REF[id]);t=await check(p);assert.match(t,/نجح في كل الحالات/,id);await c.close()}
  ({c,p}=await page('/learning-studio/project.html?project=nope&uid=u1'));assert.match(await p.textContent('#pjTitle'),/مش موجود/);await c.close();
+ // 6b service unavailable and slow states (stubbed 503 / delay), nothing is graded
+ {const c3=await b.newContext({viewport:{width:390,height:844}});await c3.route(/^https?:\/\/(?!localhost)/,r=>r.abort());await c3.route('**/__local_verify',async r=>{await new Promise(x=>setTimeout(x,1200));r.fulfill({status:503,body:'x'})});
+  const p3=await c3.newPage();await p3.goto(L+'/learning-studio/project.html?project=py-p1&uid=u1');await p3.fill('textarea.quiz-code',REF['py-p1']);
+  await p3.click('button.primary');await p3.waitForTimeout(300);assert.match(await p3.locator('#pjResult').innerText(),/بنصحح/,'loading state is shown');
+  await p3.waitForFunction(()=>!/بنصحح/.test(document.getElementById('pjResult').innerText),null,{timeout:15000});assert.match(await p3.locator('#pjResult').innerText(),/ما اتحسبش/);assert.doesNotMatch(await p3.locator('#pjResult').innerText(),/نجح في كل الحالات/);
+  assert.equal(await p3.evaluate(()=>JSON.parse(localStorage.getItem('codequest_studio_project_u1_py-p1')||'{}').passed||false),false,'an unavailable service never records a pass');
+  await p3.click('button:has-text("مش بيتحسب")');await p3.waitForFunction(()=>/تعذر/.test(document.querySelector('.quiz-out').textContent),null,{timeout:15000});
+  await p3.screenshot({path:process.env.SHOT_ERR||'/tmp/pj-unavailable.png'});await c3.close()}
  // 7 map entry: only completed units 4/8/12 show the link; an unfinished unit shows none
  for(const [done,expect] of [[20,0],[40,0],[60,0],[3,0]]){
   const c2=await b.newContext({viewport:{width:390,height:844}});await c2.route(/^https?:\/\/(?!localhost)/,r=>r.abort());

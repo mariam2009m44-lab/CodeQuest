@@ -30,16 +30,22 @@ else{
  hintBtn.onclick=()=>{if(used<pj.hints.length){used++;saved.hints=used;persist();drawHints();hintBox.querySelector('.pj-hint:last-child')?.scrollIntoView({block:'nearest'})}};
  drawHints();body.append(hintBtn,hintBox);
  const ta=el('textarea',{className:'quiz-code',dir:'ltr',rows:12,value:typeof saved.code==='string'&&saved.code!==''?saved.code:pj.starter});ta.setAttribute('aria-label','كود المشروع');
- ta.addEventListener('input',()=>{saved.code=ta.value;persist()});
- body.append(el('h2',{textContent:'كودك'}),ta);
+ 
+ const status=el('p',{id:'pjStatus',className:'pj-note'});status.setAttribute('role','status');
+ const drawStatus=()=>{status.textContent=saved.passed&&saved.passedCode===ta.value?'الكود الحالي نجح في كل الحالات.':(saved.passed?'نجحت قبل كده بنسخة تانية من الكود. الكود الحالي لسه ما اتحققش: اضغط تحقق.':'')};
+ ta.addEventListener('input',()=>{saved.code=ta.value;persist();if(res.childNodes.length){res.replaceChildren()}drawStatus()});
+ body.append(el('h2',{textContent:'كودك'}),ta,status);
  const tryTa=el('textarea',{className:'quiz-stdin pj-try',dir:'ltr',rows:3,value:pj.trySetup});tryTa.setAttribute('aria-label',pj.tryLabel);
  body.append(el('p',{className:'pj-note',textContent:pj.tryLabel}),tryTa);
  const out=el('pre',{className:'quiz-out',dir:'ltr'}),res=el('div',{id:'pjResult'});res.setAttribute('role','status');res.setAttribute('aria-live','polite');
  const tryBtn=el('button',{type:'button',textContent:'جرّب (مش بيتحسب)'}),checkBtn=el('button',{type:'button',className:'primary',textContent:'تحقق من الحل'});
  let busy=false;
- tryBtn.onclick=async()=>{if(busy)return;busy=true;out.textContent='بيشتغل...';try{const ex=await selectExecutor(pj.language);
+ // Account guard (hosted only): if the signed-in account changed in another tab since this page loaded, never run or save under the old one.
+ const sameAccount=async()=>{if(localHost)return true;try{const {auth}=await import('/js/firebase-config.js');return !auth.currentUser||auth.currentUser.uid===uid}catch{return true}};
+ const accountChanged=()=>{res.replaceChildren(el('p',{className:'bubble reply retry',textContent:'الحساب اتغيّر في تبويب تاني. حدّث الصفحة علشان تكمل بحسابك.'}))};
+ tryBtn.onclick=async()=>{if(busy)return;if(!(await sameAccount())){accountChanged();return}busy=true;out.textContent='بيشتغل...';try{const ex=await selectExecutor(pj.language);
    const code=pj.tryMode==='prelude'?tryTa.value+'\n'+ta.value:ta.value+'\n'+tryTa.value;const r=await ex(code,'');out.textContent=r.ok?(r.stdout||'(مفيش ناتج: استخدم print)'):(r.message||r.stdout||'حصل خطأ')}catch{out.textContent='تعذر التشغيل دلوقتي.'}busy=false};
- checkBtn.onclick=async()=>{if(busy)return;busy=true;checkBtn.disabled=true;res.replaceChildren(el('p',{textContent:'بنصحح...'}));
+ checkBtn.onclick=async()=>{if(busy)return;if(!(await sameAccount())){accountChanged();return}busy=true;checkBtn.disabled=true;res.replaceChildren(el('p',{textContent:'بنصحح...'}));
   let g;try{g=await gradeCode({tests:pj.tests},ta.value,await selectExecutor(pj.language))}catch{g={passed:false,results:[],ran:false}}
   busy=false;checkBtn.disabled=false;res.replaceChildren();
   if(!g.results.length||g.results.every(r=>!r.ran)){res.append(el('p',{className:'bubble reply retry',textContent:'الكود ما اشتغلش أو خدمة التشغيل مش متاحة، فالتحقق ما اتحسبش. '+(g.results[0]?.message||'صلّح الخطأ وجرّب تاني.')}));return}
@@ -49,10 +55,10 @@ else{
    if(!r.ok){li.append(el('pre',{textContent:'المتوقع:\n'+t.expected+'\nالناتج:\n'+(r.ran?r.stdout:(r.message||'خطأ في التشغيل'))}))}list.append(li)});
   res.append(list);
   const note=hiddenTotal?(hiddenFail===0?'كل الحالات المخفية ('+hiddenTotal+') نجحت كمان.':'في '+hiddenFail+' من '+hiddenTotal+' حالات مخفية فشلت. فكّر في الحالات الحدّية: قيمة على الحد، قائمة فاضية، تكرار.'):'';
-  if(g.passed){res.append(el('p',{className:'bubble reply fit',textContent:'مشروعك نجح في كل الحالات. '+note}));saved.passed=true;saved.passedAt=Date.now();saved.hintsAtPass=used;persist();
+  if(g.passed){res.append(el('p',{className:'bubble reply fit',textContent:'مشروعك نجح في كل الحالات. '+note}));saved.passed=true;saved.passedCode=ta.value;saved.passedAt=Date.now();saved.hintsAtPass=used;persist();drawStatus();
    res.append(el('h3',{textContent:'جرّب تطوّر مشروعك'}),el('p',{textContent:pj.extension}),el('a',{className:'primary',href:'/playground.html',textContent:'افتح مختبر الأكواد'}))}
   else res.append(el('p',{className:'bubble reply retry',textContent:'لسه في حالات فاشلة. '+note}));
-  res.append(el('p',{className:'pj-note',textContent:'النتيجة محفوظة على هذا الجهاز لحسابك بس، ومش بتتحسب في الشهادة أو المكافآت.'}))};
+  res.append(el('p',{className:'pj-note',textContent:'ده تدريب: النتيجة محفوظة على هذا الجهاز لحسابك بس، ومش بتتحسب في الشهادة أو المكافآت، والحالات المخفية دي فحص تدريبي مش امتحان رسمي.'}))};
  body.append(el('div',{className:'pj-actions'},tryBtn,checkBtn),out,res);
- if(saved.passed)res.append(el('p',{className:'bubble reply fit',textContent:'انت حللت المشروع ده قبل كده على هذا الجهاز. تقدر تعدّل وتجرّب تاني.'}));
+ drawStatus();
 }
