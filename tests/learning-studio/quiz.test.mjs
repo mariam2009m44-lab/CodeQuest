@@ -66,3 +66,8 @@ test("after the last unit: Python links the final only when server assessment is
   assertEq(afterLastUnit({ language: "python", passed: true, hasNextUnit: true, serverOn: true }), null);
   assertEq(afterLastUnit({ language: "java", passed: true, hasNextUnit: false, serverOn: true }), null);
 });
+test('student errors are graded (ran) while service failures stay ungraded',async()=>{
+ const item={tests:[{stdin:'',expected:'1'}]};
+ const stu=await gradeCode(item,'x',async()=>({ok:false,stdout:'',message:'SyntaxError: x',student:true}));assert.equal(stu.passed,false);assert.equal(stu.ran,true);assert.equal(stu.results[0].student,true);
+ const svc=await gradeCode(item,'x',async()=>({ok:false,stdout:'',message:'down',student:false,errorCode:'JUDGE0_INTERNAL_ERROR'}));assert.equal(svc.ran,false);
+});

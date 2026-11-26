@@ -4,14 +4,14 @@ export function compilerAdapter(language,runCodeOnServer){
  if(!['python','javascript','cpp','java'].includes(language)||typeof runCodeOnServer!=='function')throw new TypeError('compiler adapter');
  return async(code,stdin='')=>{
   const result=await runCodeOnServer(language,code,stdin);
-  if(result?.ok!==true){const message=[result?.compileOutput,result?.stderr,result?.message,result?.status].filter(Boolean).join('\n')||'لم يكتمل تشغيل الكود.';return {ok:false,stdout:result?.stdout??'',message,errorCode:result?.errorCode}}
+  if(result?.ok!==true){const message=[result?.compileOutput,result?.stderr,result?.message,result?.status].filter(Boolean).join('\n')||'لم يكتمل تشغيل الكود.';return {ok:false,stdout:result?.stdout??'',message,errorCode:result?.errorCode,student:!result?.errorCode&&Boolean(result?.compileOutput||result?.stderr)}}
   if(typeof result.stdout!=='string')throw new Error('لم يصل ناتج نصي صحيح من خدمة التنفيذ.');
   return {ok:true,stdout:result.stdout};
  };
 }
 export async function selectExecutor(language){
  // JavaScript runs in the learner's browser sandbox: no server quota, no external service.
- if(language==='javascript'&&typeof document!=='undefined'&&!new URLSearchParams(location.search).has('serverjs')){const {runJavaScript}=await import('./js-sandbox.mjs');return async(code)=>{const r=await runJavaScript(code);return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message}}}
+ if(language==='javascript'&&typeof document!=='undefined'&&!new URLSearchParams(location.search).has('serverjs')){const {runJavaScript}=await import('./js-sandbox.mjs');return async(code)=>{const r=await runJavaScript(code);return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message,student:!/المتصفح منع/.test(r.message||'')}}}
  if(location.hostname==='localhost'||location.hostname==='127.0.0.1'){
   // The development endpoint exists only in the local verification server.
   // Never include a process-execution server in a hosted static page.

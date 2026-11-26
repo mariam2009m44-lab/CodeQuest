@@ -49,7 +49,7 @@ else{
     let g;try{g=await gradeCode(it,ta.value,await selectExecutor(lang))}catch(e){g={passed:false,results:[],ran:false}}
     if(!await sameAccount()){lockOut();return}
     if(!g.ran&&!g.passed&&g.results.every(r=>!r.ran)){answers[i]=undefined;sub.disabled=tryBtn.disabled=false;ta.readOnly=false;fb.className='bubble reply retry';fb.textContent='الكود ما اشتغلش أو الخدمة مش متاحة، فالتسليم ما اتحسبش. صلّح الخطأ وسلّم تاني. '+(g.results[0]?.message||'');busy=false;return}
-    answers[i]={correct:g.passed};if(serverOn)pendingSync.push(durable('ct:'+lang+':'+unit+':'+(i-data.mcq.length),'/api/progress/code-task',codeTaskPayload({language:lang,unit,quiz:data,item:i-data.mcq.length,code:ta.value})));fb.className='bubble reply '+(g.passed?'fit':'retry');setProse(fb,(g.passed?'صح. الناتج مطابق في كل الحالات. ':'الناتج مش مطابق في حالة أو أكتر. ')+it.why);busy=false;upd();done()};
+    answers[i]={correct:g.passed};if(serverOn)pendingSync.push(durable('ct:'+lang+':'+unit+':'+(i-data.mcq.length),'/api/progress/code-task',codeTaskPayload({language:lang,unit,quiz:data,item:i-data.mcq.length,code:ta.value})));fb.className='bubble reply '+(g.passed?'fit':'retry');const se=g.results.find(r=>r.student)?.message;setProse(fb,(g.passed?'صح. الناتج مطابق في كل الحالات. ':se?'في الكود خطأ فالإجابة اتحسبت غلط: '+se+'. ':'الناتج مش مطابق في حالة أو أكتر. ')+it.why);busy=false;upd();done()};
    card.append(ta);if(stdinBox)card.append(stdinBox);card.append(tryBtn,sub,out,fb);
   }
   $('quizBody').append(card);cards.push(card);

@@ -53,11 +53,11 @@ else{
  checkBtn.onclick=async()=>{if(busy)return;if(!(await sameAccount())){accountChanged();return}busy=true;checkBtn.disabled=true;res.replaceChildren(el('p',{textContent:'بنصحح...'}));
   let g;try{g=await gradeCode({tests:pj.tests},ta.value,await selectExecutor(pj.language))}catch{g={passed:false,results:[],ran:false}}
   busy=false;checkBtn.disabled=false;res.replaceChildren();
-  if(!g.results.length||g.results.every(r=>!r.ran)){res.append(el('p',{className:'bubble reply retry',textContent:'الكود ما اشتغلش أو خدمة التشغيل مش متاحة، فالتحقق ما اتحسبش. '+(g.results[0]?.message||'صلّح الخطأ وجرّب تاني.')}));return}
+  if(!g.results.length||g.results.every(r=>!r.ran||r.student)){res.append(el('p',{className:'bubble reply retry',textContent:'الكود ما اشتغلش أو خدمة التشغيل مش متاحة، فالتحقق ما اتحسبش. '+(g.results[0]?.message||'صلّح الخطأ وجرّب تاني.')}));return}
   const list=el('ul',{className:'pj-tests'});let hiddenFail=0,hiddenTotal=0;
   pj.tests.forEach((t,i)=>{const r=g.results[i];if(!t.visible){hiddenTotal++;if(!r.ok)hiddenFail++;return}
    const li=el('li',{className:r.ok?'ok':'bad'});li.append(el('strong',{textContent:(r.ok?'نجحت الحالة ':'فشلت الحالة ')+(i+1)}));
-   if(!r.ok){li.append(el('pre',{textContent:'المتوقع:\n'+t.expected+'\nالناتج:\n'+(r.ran?r.stdout:(r.message||'خطأ في التشغيل'))}))}list.append(li)});
+   if(!r.ok){li.append(el('pre',{textContent:'المتوقع:\n'+t.expected+'\nالناتج:\n'+(r.ran&&!r.student?r.stdout:(r.message||'خطأ في التشغيل'))}))}list.append(li)});
   res.append(list);
   const note=hiddenTotal?(hiddenFail===0?'كل الحالات المخفية ('+hiddenTotal+') نجحت كمان.':'في '+hiddenFail+' من '+hiddenTotal+' حالات مخفية فشلت. فكّر في الحالات الحدّية: قيمة على الحد، قائمة فاضية، تكرار.'):'';
   if(g.passed){res.append(el('p',{className:'bubble reply fit',textContent:'مشروعك نجح في كل الحالات. '+note}));saved.passed=true;saved.passedCode=ta.value;saved.passedAt=Date.now();saved.hintsAtPass=used;persist();drawStatus();
