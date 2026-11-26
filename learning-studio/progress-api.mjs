@@ -12,7 +12,7 @@ export async function postProgress({enabled,endpoint=ENDPOINT,getToken,fetchFn,p
   if(a.r.status===401){a=await once(true);if(a.noToken)return {sent:false,reason:'no-token'};if(a.r.status===401)return {sent:true,ok:false,status:401,needsLogin:true}}
   const r=a.r;
   if(r.status===409)return {sent:true,ok:false,refreshNeeded:true};
-  if(r.status===429||r.status===503){let code='';try{const m=(await r.clone().json())?.message;if(typeof m==='string'&&/^[A-Za-z0-9_-]{1,40}$/.test(m))code=m}catch{}return {sent:true,ok:false,retryable:true,status:r.status,code}}
+  if(r.status===429||r.status===503){let code='';try{const m=(await (r.clone?r.clone():r).json())?.message;if(typeof m==='string'&&/^[A-Za-z0-9_-]{1,40}$/.test(m))code=m}catch{}return {sent:true,ok:false,retryable:true,status:r.status,code}}
   if(!r.ok)return {sent:true,ok:false,status:r.status};
   return {sent:true,ok:true,data:await r.json()};
  }catch{return {sent:false,reason:'network'}}
@@ -43,6 +43,8 @@ export function practicePayload({language,lesson,phase,code,version}){
 // KEPT as "exhausted" for a deliberate learner retry (retryExhausted) and is never silently dropped. It is removed only on a confirmed
 // receipt (200) or a definitive rejection (409 stale bank: fresh assessment needed; other 4xx). Old answers are never replayed against a new bank.
 export const MAX_ATTEMPTS=3;
+// "request_in_progress" means the server is still running that very request: it is not a failed attempt, so it does not use one up; it waits this long first.
+export const BUSY_WAIT_MS=30000;
 const qkey=uid=>'cq_pending_'+uid;
 const readQ=(storage,uid)=>{try{const v=JSON.parse(storage.getItem(qkey(uid))||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch{return {}}};
 const writeQ=(storage,uid,q)=>{try{Object.keys(q).length?storage.setItem(qkey(uid),JSON.stringify(q)):storage.removeItem(qkey(uid))}catch{}};
@@ -65,7 +67,7 @@ export async function postDurable({uid,storage,key,enabled,endpoint,getToken,fet
  const id=newId();
  const r=await postProgress({enabled,endpoint,getToken:ownerBound(uid,getToken),fetchFn,path,payload,requestId:id});
  const out=settle(r);const q=readQ(storage,uid);
- if(out.keep)q[key]={path,payload,attempts:1,needsLogin:out.state==='needs-login',id,why:whyOf(r)};else delete q[key];
+ if(out.keep){const busy=r.code==='request_in_progress';q[key]={path,payload,attempts:busy?0:1,needsLogin:out.state==='needs-login',id,why:whyOf(r),...(busy?{nextAt:Date.now()+BUSY_WAIT_MS}:{})}}else delete q[key];
  writeQ(storage,uid,q);return out;
 }
 async function run(opts,includeExhausted){
@@ -75,10 +77,11 @@ async function run(opts,includeExhausted){
  for(const key of Object.keys(q)){
   const e=q[key];if(!e||typeof e.path!=='string'||!e.payload||!Number.isInteger(e.attempts)){delete q[key];continue}
   if(exhausted(e)&&!includeExhausted)break; // an exhausted item holds the later ones back (order); the learner retries deliberately
+  if(!includeExhausted&&Number(e.nextAt)>Date.now())break; // the server said the same request is still running: wait before sending it again
   const id=typeof e.id==='string'&&e.id?e.id:newId();
   const r=await postProgress({enabled,endpoint,getToken:ownerBound(uid,getToken),fetchFn,path:e.path,payload:e.payload,requestId:id});
   const out=settle(r);
-  if(out.keep){q[key]={...e,id,attempts:e.attempts+1,needsLogin:out.state==='needs-login',why:whyOf(r)};break}
+  if(out.keep){const busy=r.code==='request_in_progress';const {nextAt,...rest}=e;q[key]={...rest,id,attempts:busy?e.attempts:e.attempts+1,needsLogin:out.state==='needs-login',why:whyOf(r),...(busy?{nextAt:Date.now()+BUSY_WAIT_MS}:{})};break}
   delete q[key];if(out.state==='saved')sent++;
  }
  writeQ(storage,uid,q);return {sent,left:Object.keys(q).length};

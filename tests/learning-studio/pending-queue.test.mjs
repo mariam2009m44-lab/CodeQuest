@@ -16,3 +16,10 @@ test('order kept: a still-busy first item blocks later items (code tasks before 
 test('same key resent while pending replaces, not duplicates',async()=>{const s=mem();const o=base(s,'u1',R(503));await send(o);await send(o);assert.equal(Object.keys(JSON.parse(s.getItem('cq_pending_u1'))).length,1)});
 test('flag OFF: nothing stored, nothing sent',async()=>{const s=mem();let n=0;const r=await send({...base(s,'u1',async()=>{n++}),enabled:false});assert.equal(r.state,'off');assert.equal(n,0);assert.equal(s.m.size,0)});
 test('the same request id is sent on every retry of one entry (so the server can dedupe a lost response), and differs between entries',async()=>{const s=mem();const ids=[];const f=async(u,o)=>{ids.push(o.headers['X-Request-Id']);return R(503)()};await send(base(s,'u1',f));await flushPending(base(s,'u1',f));assert.equal(ids.length,2);assert.equal(ids[0],ids[1]);assert.match(ids[0],/^[A-Za-z0-9_-]{8,64}$/);const s2=mem();await send(base(s2,'u1',f),'other');assert.notEqual(ids[2],ids[0])});
+test('request_in_progress: does not use up an attempt, waits before auto-resend, a deliberate retry bypasses the wait',async()=>{
+ const s=mem();const busy=R(503,{message:'request_in_progress'});
+ await send(base(s,'u1',busy));
+ for(let i=0;i<5;i++){const e=JSON.parse(s.getItem('cq_pending_u1')).k1;e.nextAt=Date.now()-1;s.setItem('cq_pending_u1',JSON.stringify({k1:e}));await flushPending(base(s,'u1',busy))}
+ assert.equal(pendingStatus({uid:'u1',storage:s}).exhausted,0,'5 busy answers never exhaust');
+ let n=0;const spy=async()=>{n++;return busy()};await flushPending(base(s,'u1',spy));assert.equal(n,0,'inside the wait: no send');
+ const ok=await retryExhausted(base(s,'u1',R(200,{})));assert.equal(ok.sent,1);assert.equal(s.m.size,0)});
