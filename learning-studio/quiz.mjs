@@ -12,7 +12,7 @@ const $=id=>document.getElementById(id);
 const quizzes=await (await fetch('quizzes.json')).json();const data=quizzes[lang+'-'+unit];
 const features=await fetch('features.json').then(r=>r.json()).catch(()=>({}));
 const serverOn=features.serverAssessment===true;
-const durable=async(key,path,payload,extra={})=>{const {auth}=await import('/js/firebase-config.js');return postDurable({uid:auth.currentUser?.uid||null,storage:localStorage,key,enabled:serverOn,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o),path,payload,...extra})};
+const durable=async(key,path,payload,extra={})=>{const {auth}=await import('/js/firebase-config.js');if(auth.currentUser?.uid&&auth.currentUser.uid!==uid)return {state:'off'};return postDurable({uid:auth.currentUser?.uid||null,storage:localStorage,key,enabled:serverOn,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o),path,payload,...extra})};
 if(serverOn)import('/js/firebase-config.js').then(({auth})=>flushPending({uid:auth.currentUser?.uid||null,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)}).then(async()=>{const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:auth.currentUser?.uid||null,storage:localStorage,sendOpts:()=>({getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)})})})).catch(()=>{});
 const pendingSync=[];
 const units=await (await fetch('units.json')).json();const pack=units.find(u=>u.language===lang&&u.unit===unit);
@@ -50,8 +50,11 @@ else{
   }
   $('quizBody').append(card);cards.push(card);
  });
+ async function sameAccount(){try{const {auth}=await import('/js/firebase-config.js');const cu=auth.currentUser?.uid||null;return localHost?(!cu||cu===uid):cu===uid}catch{return localHost}}
  function done(){
   if(answers.filter(Boolean).length<items.length)return;
+  sameAccount().then(ok=>{if(ok)finish();else{const r=$('quizResult');r.hidden=false;r.replaceChildren();const p=document.createElement('p');p.className='quiz-status review';p.textContent='الحساب اتغيّر أثناء الاختبار، فالنتيجة ما اتسجّلتش. افتح الاختبار من جديد بالحساب الصحيح.';r.append(p);$('quizBody').hidden=true}})}
+ function finish(){
   if(serverOn)Promise.all(pendingSync).then(states=>durable('ex:'+lang+':'+unit,'/api/progress/exam',examPayload({language:lang,unit,quiz:data,answers}),{defer:states.some(x=>x.state!=='saved'&&x.state!=='off')}));
   const s=summarize(items,answers);const r=$('quizResult');r.hidden=false;r.replaceChildren();
   const h=document.createElement('h2');h.textContent='نتيجتك: '+s.percent+'% ('+s.earned+' من '+s.total+') - '+s.band;r.append(h);const ok=isPassed(s.percent);const st=document.createElement('p');st.className='quiz-status '+(ok?'pass':'review');st.textContent=ok?'ناجح: تقدر تكمّل للوحدة الجاية.':'محتاج مراجعة: النجاح من '+PASS_PERCENT+'%. راجع الدروس تحت ثم أعد الاختبار.';r.append(st);
