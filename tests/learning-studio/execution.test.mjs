@@ -11,3 +11,9 @@ test('server runner: compile/stderr output is a student error, a service errorCo
  const svc=await compilerAdapter('java',async()=>({ok:false,message:'down',errorCode:'JUDGE0_INTERNAL_ERROR'}))('x');assert.equal(svc.student,false);
  const none=await compilerAdapter('java',async()=>({ok:false}))('x');assert.equal(none.student,false);
 });
+test('server runner: time limit and runtime statuses are student errors, status 13 and missing status are not',async()=>{
+ const {compilerAdapter}=await import('../../learning-studio/execution.mjs');
+ for(const id of [5,6,11,12]){assert.equal((await compilerAdapter('cpp',async()=>({ok:false,statusId:id}))('x')).student,true,'status '+id)}
+ assert.equal((await compilerAdapter('cpp',async()=>({ok:false,statusId:13,errorCode:'JUDGE0_INTERNAL_ERROR'}))('x')).student,false);
+ assert.equal((await compilerAdapter('cpp',async()=>({ok:false,statusId:null}))('x')).student,false);
+});

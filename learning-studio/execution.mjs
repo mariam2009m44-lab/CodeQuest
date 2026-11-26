@@ -4,7 +4,7 @@ export function compilerAdapter(language,runCodeOnServer){
  if(!['python','javascript','cpp','java'].includes(language)||typeof runCodeOnServer!=='function')throw new TypeError('compiler adapter');
  return async(code,stdin='')=>{
   const result=await runCodeOnServer(language,code,stdin);
-  if(result?.ok!==true){const message=[result?.compileOutput,result?.stderr,result?.message,result?.status].filter(Boolean).join('\n')||'لم يكتمل تشغيل الكود.';return {ok:false,stdout:result?.stdout??'',message,errorCode:result?.errorCode,student:!result?.errorCode&&Boolean(result?.compileOutput||result?.stderr)}}
+  if(result?.ok!==true){const message=[result?.compileOutput,result?.stderr,result?.message,result?.status].filter(Boolean).join('\n')||'لم يكتمل تشغيل الكود.';return {ok:false,stdout:result?.stdout??'',message,errorCode:result?.errorCode,student:!result?.errorCode&&(Boolean(result?.compileOutput||result?.stderr)||(Number(result?.statusId)>=5&&Number(result?.statusId)<=12))}}
   if(typeof result.stdout!=='string')throw new Error('لم يصل ناتج نصي صحيح من خدمة التنفيذ.');
   return {ok:true,stdout:result.stdout};
  };
