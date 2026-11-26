@@ -1,0 +1,5 @@
+{
+ "py-p1": "if fuel >= 50:\n    print(\"Ready\")\nelif fuel >= 20:\n    print(\"Low\")\nelse:\n    print(\"Refuel\")\n",
+ "py-p2": "def report(items):\n    if len(items) == 0:\n        return \"items: 0, longest: none\"\n    longest = items[0]\n    for item in items:\n        if len(item) > len(longest):\n            longest = item\n    return \"items: \" + str(len(items)) + \", longest: \" + longest\n",
+ "py-p3": "def add_points(scores, name, points):\n    if name in scores:\n        scores[name] = scores[name] + points\n    else:\n        scores[name] = points\n\ndef top_player(scores):\n    if not scores:\n        return \"nobody\"\n    best = None\n    for name in scores:\n        if best is None or scores[name] > scores[best]:\n            best = name\n    return name_points(best, scores)\n\ndef name_points(n, scores):\n    return n + \": \" + str(scores[n])\n"
+}

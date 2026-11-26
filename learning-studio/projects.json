@@ -1,0 +1,159 @@
+[
+ {
+  "id": "py-p1",
+  "language": "python",
+  "unit": 4,
+  "level": "موجّه",
+  "title": "مؤشر وقود كودي",
+  "goal": "اكتب برنامجًا يقرأ كمية الوقود في المتغير fuel ويعرض حالة المركبة. المتغير fuel بيتحدد قبل كودك، فمتكتبش سطر fuel = ... بنفسك.",
+  "requirements": [
+   "لو fuel من 50 لفوق اعرض Ready",
+   "لو fuel من 20 لحد 49 اعرض Low",
+   "لو fuel أقل من 20 اعرض Refuel",
+   "يتعرض سطر واحد بس في كل مرة"
+  ],
+  "hints": [
+   "فكّر في ثلاث حالات مرتبة: الأكبر أولًا. أول شرط يتحقق هو اللي بيتنفذ.",
+   "هتحتاج if ثم elif ثم else. الشرط الأول: fuel >= 50.",
+   "الهيكل: if fuel >= 50: ... ثم elif fuel >= 20: ... ثم else: ... وكل فرع فيه print."
+  ],
+  "starter": "# fuel بتتحدد قبل الكود ده. متكتبش fuel = ... هنا.\n# 1) لو الوقود كبير اعرض Ready\n# 2) لو متوسط اعرض Low\n# 3) غير كده اعرض Refuel\n",
+  "tryMode": "prelude",
+  "trySetup": "fuel = 80",
+  "tryLabel": "قيمة التجربة (سطر بيتنفذ قبل كودك)",
+  "tests": [
+   {
+    "prelude": "fuel = 80\n",
+    "expected": "Ready",
+    "visible": true
+   },
+   {
+    "prelude": "fuel = 50\n",
+    "expected": "Ready",
+    "visible": true
+   },
+   {
+    "prelude": "fuel = 49\n",
+    "expected": "Low",
+    "visible": true
+   },
+   {
+    "prelude": "fuel = 20\n",
+    "expected": "Low",
+    "visible": false
+   },
+   {
+    "prelude": "fuel = 19\n",
+    "expected": "Refuel",
+    "visible": false
+   },
+   {
+    "prelude": "fuel = 0\n",
+    "expected": "Refuel",
+    "visible": false
+   }
+  ],
+  "extension": "عدّل البرنامج: لو fuel أكبر من 100 اعرض Overfilled. فين تحط الشرط الجديد؟ ولماذا؟"
+ },
+ {
+  "id": "py-p2",
+  "language": "python",
+  "unit": 8,
+  "level": "نصف موجّه",
+  "title": "تقرير حقيبة كودي",
+  "goal": "اكتب دالة report(items) بترجع نصًا واحدًا بيلخّص قائمة الأغراض: عددها وأطول اسم فيها.",
+  "requirements": [
+   "الدالة اسمها report وبتاخد قائمة نصوص",
+   "الناتج بالشكل: items: 3, longest: rope",
+   "لو في أكتر من اسم بنفس الطول اختار الأول في القائمة",
+   "لو القائمة فاضية ارجع: items: 0, longest: none",
+   "الدالة ترجع النص (return) ومتطبعش جواها"
+  ],
+  "hints": [
+   "احسب العدد بـ len. ابدأ بحالة القائمة الفاضية لوحدها.",
+   "لقيت أطول اسم؟ لفّ على القائمة وقارن len كل اسم بأطول اسم لحد دلوقتي. استخدم > مش >= علشان الأول يكسب في التعادل."
+  ],
+  "starter": "def report(items):\n    # اكتب الدالة هنا\n    pass\n",
+  "tryMode": "append",
+  "trySetup": "print(report([\"rope\", \"lamp\", \"map\"]))",
+  "tryLabel": "سطر التجربة (بيتنفذ بعد كودك)",
+  "tests": [
+   {
+    "append": "print(report([\"rope\", \"lamp\", \"map\"]))",
+    "expected": "items: 3, longest: rope",
+    "visible": true
+   },
+   {
+    "append": "print(report([\"map\", \"flashlight\", \"rope\"]))",
+    "expected": "items: 3, longest: flashlight",
+    "visible": true
+   },
+   {
+    "append": "print(report([]))",
+    "expected": "items: 0, longest: none",
+    "visible": false
+   },
+   {
+    "append": "print(report([\"a\"]))",
+    "expected": "items: 1, longest: a",
+    "visible": false
+   },
+   {
+    "append": "print(report([\"ab\", \"cd\", \"e\"]))",
+    "expected": "items: 3, longest: ab",
+    "visible": false
+   }
+  ],
+  "extension": "عدّل الدالة بحيث تعرض كمان أقصر اسم. إيه الحالة اللي ممكن تكسر الدالة لو القائمة فاضية؟"
+ },
+ {
+  "id": "py-p3",
+  "language": "python",
+  "unit": 12,
+  "level": "مفتوح",
+  "title": "لوحة متصدّري المحطة",
+  "goal": "ابنِ أداتين لإدارة نقاط اللاعبين في قاموس scores (الاسم ← النقاط). المطلوب مكتوب تحت، والتصميم عليك.",
+  "requirements": [
+   "add_points(scores, name, points): لو الاسم موجود زوّد نقاطه، لو جديد ضيفه بالنقاط دي",
+   "add_points بتعدّل القاموس نفسه ومش بترجع حاجة",
+   "top_player(scores): ترجع النص name: points لأعلى لاعب",
+   "لو القاموس فاضي top_player ترجع nobody",
+   "لو في تعادل في أعلى نقاط اختار اللي اتضاف الأول"
+  ],
+  "hints": [
+   "فكّر: إيه اللي بيحصل لو الاسم مش موجود في القاموس أصلًا؟"
+  ],
+  "starter": "# اكتب الدالتين هنا\n",
+  "tryMode": "append",
+  "trySetup": "s = {}\nadd_points(s, \"Nova\", 5)\nprint(top_player(s))",
+  "tryLabel": "كود التجربة (بيتنفذ بعد كودك)",
+  "tests": [
+   {
+    "append": "s = {}\nadd_points(s, \"Nova\", 5)\nadd_points(s, \"Zed\", 8)\nprint(top_player(s))",
+    "expected": "Zed: 8",
+    "visible": true
+   },
+   {
+    "append": "s = {\"Ali\": 3}\nadd_points(s, \"Ali\", 4)\nprint(s[\"Ali\"])\nprint(top_player(s))",
+    "expected": "7\nAli: 7",
+    "visible": true
+   },
+   {
+    "append": "print(top_player({}))",
+    "expected": "nobody",
+    "visible": false
+   },
+   {
+    "append": "s = {}\nadd_points(s, \"Nova\", 5)\nadd_points(s, \"Zed\", 5)\nprint(top_player(s))",
+    "expected": "Nova: 5",
+    "visible": false
+   },
+   {
+    "append": "s = {}\nprint(add_points(s, \"Mia\", 1))\nprint(s)",
+    "expected": "None\n{'Mia': 1}",
+    "visible": false
+   }
+  ],
+  "extension": "أضف دالة remove_player(scores, name) بتتعامل بأمان لو الاسم مش موجود. هتحتاج إيه بدل الوصول المباشر بالمفتاح؟"
+ }
+]
