@@ -215,6 +215,7 @@
       winScreen.style.display = 'none'; gameGrid.style.display = 'grid'; document.getElementById('matchNote').textContent = ''; startMemoryTimer();
       let cols = window.innerWidth <= 360 ? 3 : (pairsCount === 15 && window.innerWidth > 520 ? 5 : 4);
       gameGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      gameGrid.style.gridAutoFlow = 'dense';
       const selected = allPairs.slice(0, pairsCount);
       // Each pair must contain one term card and one definition card.
       // Randomizing the label independently could previously create two terms
@@ -236,6 +237,8 @@
         cardEl.setAttribute('aria-label', 'بطاقة مخفية');
         cardEl.setAttribute('aria-pressed', 'false');
         cardEl.innerHTML = `<span class="card-inner"><span class="card-front" aria-hidden="true">?</span><span class="card-back" aria-hidden="true" data-kind="${cardData.type}" data-label="${cardData.type==='term'?'مصطلح':'تعريف'}">${cardData.text}</span></span>`;
+        // Long labels get a double-width card on narrow phones so the text can stay large enough to read.
+        if (window.innerWidth <= 520 && String(cardData.text).length > 14) { cardEl.style.gridColumn = 'span 2'; cardEl.style.aspectRatio = '2 / 1'; }
         cardEl.addEventListener('click', () => flipCard(cardEl, cardData));
         gameGrid.appendChild(cardEl);
       });
