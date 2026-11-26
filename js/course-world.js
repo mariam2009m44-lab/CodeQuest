@@ -76,14 +76,23 @@ async function loadServerPasses(){
  }catch{return false}
 }
 function unitExamPassed(ci){if(!uid)return false;if(serverPasses.uid===uid&&serverPasses.units.has(ci+1))return true;try{return JSON.parse(localStorage.getItem("codequest_studio_quiz_"+uid+"_"+language+"_"+(ci+1))||"null")?.passed===true}catch{return false}}
-function isDone(item,ci,li,records,local){
- if(li===examIndex(ci)&&unitExamPassed(ci))return true;
+function lessonRecordDone(item,ci,li,records,local){
  const id=String(item.id||""),pythonKey=(ci+1)+"_"+li;
  const match=x=>x?.completed===true&&(
   (Number.isInteger(Number(x.chapter))&&Number.isInteger(Number(x.lesson))&&Number(x.chapter)===ci&&Number(x.lesson)===li)||
   (id!==""&&String(x.lessonId||x.id||"")===id)||String(x.id||"")===pythonKey
  );
  return records.some(match)||local.some(match);
+}
+// The unit exam node is done only when its unit's lessons are done too: a stored exam pass on this device (for example from opening the exam page directly) never marks the exam done on the map while lessons are still locked.
+function isDone(item,ci,li,records,local){
+ const ex=examIndex(ci);
+ if(ex>0&&li===ex){
+  const lessons=curriculumChapters[ci]?.lessons||[];
+  if(!unitExamPassed(ci))return lessonRecordDone(item,ci,li,records,local)&&lessons.slice(0,ex).every((l,i)=>lessonRecordDone(l,ci,i,records,local));
+  return lessons.slice(0,ex).every((l,i)=>lessonRecordDone(l,ci,i,records,local));
+ }
+ return lessonRecordDone(item,ci,li,records,local);
 }
 function makeRoadPath(points){
  if(!points.length)return "";
