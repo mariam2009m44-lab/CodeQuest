@@ -29,5 +29,20 @@ const win=async(p,wait)=>{await p.waitForSelector('#tray .free-piece');const tot
  await p.evaluate(()=>document.getElementById('replayBtn').scrollIntoView({block:'center'}));await p.click('#replayBtn');const w2=await win(p,3500);
  assert.match(w2.text,/^أحسنت/,'slower second win is not a record');assert.equal(w2.rec.plays,2);assert.equal(w2.rec.time,w1.seconds,'best time stays the faster first time');assert.equal(w2.best,w1.time);assert.equal(w2.total,w1.points+w2.points,'points accumulate: '+w1.points+' + '+w2.points);assert.ok(w2.seconds>w1.seconds);
  assert.deepEqual(errs,[]);log.push('win 1: new record, '+w1.points+' pts, '+w1.stars+', plays 1; win 2 (slower, '+w2.seconds+'s vs '+w1.seconds+'s): not a record, best time kept, +'+w2.points+' pts, plays 2, total '+w2.total);
+
+ // ?return= handling: same-origin target gets the lesson button with gameDone=1; a foreign origin is ignored.
+ for(const [ret,ok] of [['/lecture.html?lesson=1',true],['https://evil.example/steal',false]]){
+  const q=await c.newPage();await q.goto(origin+'/game-image-puzzle.html?return='+encodeURIComponent(ret));await q.waitForFunction(()=>window.CQGameStore&&window.CQGameStore.ready);await q.evaluate(()=>{document.getElementById('difficulty').value='3'});await q.click('#startBtn');
+  await win(q,0);const r=await q.evaluate(()=>document.getElementById('newPictureBtn').textContent.trim());
+  if(ok){assert.equal(r,'العودة إلى الدرس');let nav='';await q.route('**/lecture.html*',rt=>{nav=rt.request().url();rt.fulfill({contentType:'text/html',body:'<p>lesson</p>'})});await q.evaluate(()=>document.getElementById('newPictureBtn').scrollIntoView({block:'center'}));await q.click('#newPictureBtn');await q.waitForURL(/lecture\.html/);assert.match(q.url(),/lesson=1/);assert.match(q.url(),/gameDone=1/)}
+  else assert.notEqual(r,'العودة إلى الدرس','foreign-origin return is ignored');
+  await q.close()}
+ log.push('?return=: same-origin gives "back to lesson" with gameDone=1 and navigates; foreign origin ignored');
+
+ // 5x5: its own best-record key, points in the 5x5 range, separate from the 3x3 record.
+ {const q=await c.newPage();await q.goto(origin+'/game-image-puzzle.html');await q.waitForFunction(()=>window.CQGameStore&&window.CQGameStore.ready);await q.evaluate(()=>{document.getElementById('difficulty').value='5'});await q.click('#startBtn');
+  const w5=await win(q,0);assert.match(w5.text,/^رقم قياسي جديد/);assert.equal(w5.rec.plays,1);assert.ok(w5.points>=30&&w5.points<=280);assert.ok(w5.total>=w5.points);
+  const keys=await q.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('codeQuestPuzzleBest_')));assert.ok(keys.some(k=>k.endsWith('_5')),'5x5 has its own best key');
+  log.push('5x5: new record, '+w5.points+' pts, own best key '+keys.filter(k=>k.endsWith('_5')).length);await q.close()}
  await b.close();console.log(log.join('\n'));
 })().catch(e=>{console.error(e.message||e);process.exit(1)});
