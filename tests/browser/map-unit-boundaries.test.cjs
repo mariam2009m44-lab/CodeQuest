@@ -19,9 +19,9 @@ for(let u=0;u<12;u++){
  {const {c,p}=await mk(u,4,Array.from({length:u},(_,i)=>i+1));const ex=await st(p,u,4);
   assert.match(ex.cls,/is-current/,'unit '+(u+1)+' exam node is current');assert.ok(ex.href.includes('quiz.html')&&ex.href.includes('unit='+(u+1)),'exam node opens unit exam: '+ex.href);
   if(u<11){const nx=await st(p,u+1,0);assert.equal(nx.disabled,true,'next unit locked before exam pass')}
-  const hdr=await p.evaluate(ci=>document.querySelectorAll('.cw-unit')[ci].querySelector('.cw-unit-title p').textContent,u);assert.match(hdr,/4 دروس \+ امتحان الوحدة/,hdr);await c.close()}
+  const hdr=await p.evaluate(ci=>document.querySelectorAll('.cw-unit')[ci].querySelector('.cw-unit-title p').textContent,u);assert.match(hdr,/4 دروس \+ امتحان الوحدة/,hdr);const foot=await p.evaluate(ci=>document.querySelectorAll('.cw-unit-foot')[ci].textContent,u);assert.match(foot,/باقي امتحان الوحدة/,foot);assert.doesNotMatch(foot,/أحسنت/,foot);await c.close()}
  // exam passed: exam node done and the FIRST node of the next unit is open and navigates to that unit's first lesson
- {const {c,p}=await mk(u,4,Array.from({length:u+1},(_,i)=>i+1));const ex=await st(p,u,4);assert.match(ex.cls,/is-done/,'unit '+(u+1)+' exam node done after pass');
+ {const {c,p}=await mk(u,4,Array.from({length:u+1},(_,i)=>i+1));const ex=await st(p,u,4);assert.match(ex.cls,/is-done/,'unit '+(u+1)+' exam node done after pass');{const foot=await p.evaluate(ci=>document.querySelectorAll('.cw-unit-foot')[ci].textContent,u);assert.match(foot,/أنهيت الوحدة بنجاح/,foot)}
   if(u<11){const nx=await st(p,u+1,0);assert.match(nx.cls,/is-current/,'unit '+(u+2)+' first node current');assert.equal(nx.disabled,false);
    await p.locator(`.cw-road-node[data-ci="${u+1}"][data-li="0"] button`).click();await p.waitForURL(/learning\.html/,{timeout:6000});assert.ok(p.url().includes('unit='+(u+2)),p.url());await p.waitForFunction(id=>location.search.includes(id),'py-'+(u+2)+'-1',{timeout:6000});assert.equal(await p.evaluate(()=>document.getElementById('title').textContent.length>0),true)}
   await c.close()}
