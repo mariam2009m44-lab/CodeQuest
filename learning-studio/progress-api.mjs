@@ -12,7 +12,7 @@ export async function postProgress({enabled,endpoint=ENDPOINT,getToken,fetchFn,p
   if(a.r.status===401){a=await once(true);if(a.noToken)return {sent:false,reason:'no-token'};if(a.r.status===401)return {sent:true,ok:false,status:401,needsLogin:true}}
   const r=a.r;
   if(r.status===409)return {sent:true,ok:false,refreshNeeded:true};
-  if(r.status===429||r.status===503)return {sent:true,ok:false,retryable:true,status:r.status};
+  if(r.status===429||r.status===503){let code='';try{const m=(await r.clone().json())?.message;if(typeof m==='string'&&/^[A-Za-z0-9_-]{1,40}$/.test(m))code=m}catch{}return {sent:true,ok:false,retryable:true,status:r.status,code}}
   if(!r.ok)return {sent:true,ok:false,status:r.status};
   return {sent:true,ok:true,data:await r.json()};
  }catch{return {sent:false,reason:'network'}}
@@ -46,6 +46,8 @@ export const MAX_ATTEMPTS=3;
 const qkey=uid=>'cq_pending_'+uid;
 const readQ=(storage,uid)=>{try{const v=JSON.parse(storage.getItem(qkey(uid))||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch{return {}}};
 const writeQ=(storage,uid,q)=>{try{Object.keys(q).length?storage.setItem(qkey(uid),JSON.stringify(q)):storage.removeItem(qkey(uid))}catch{}};
+// A short, non-secret reason (HTTP status, or "network"/"no-token", plus the server's English code when it sent one) so the learner or the owner can read why a save did not land.
+const whyOf=r=>String(r.status?r.status+(r.code?' '+r.code:''):(r.reason||'')).slice(0,48);
 function settle(r){
  if(r.ok)return {state:'saved',data:r.data,keep:false};
  if(r.refreshNeeded)return {state:'stale',keep:false};
@@ -63,7 +65,7 @@ export async function postDurable({uid,storage,key,enabled,endpoint,getToken,fet
  const id=newId();
  const r=await postProgress({enabled,endpoint,getToken:ownerBound(uid,getToken),fetchFn,path,payload,requestId:id});
  const out=settle(r);const q=readQ(storage,uid);
- if(out.keep)q[key]={path,payload,attempts:1,needsLogin:out.state==='needs-login',id};else delete q[key];
+ if(out.keep)q[key]={path,payload,attempts:1,needsLogin:out.state==='needs-login',id,why:whyOf(r)};else delete q[key];
  writeQ(storage,uid,q);return out;
 }
 async function run(opts,includeExhausted){
@@ -76,7 +78,7 @@ async function run(opts,includeExhausted){
   const id=typeof e.id==='string'&&e.id?e.id:newId();
   const r=await postProgress({enabled,endpoint,getToken:ownerBound(uid,getToken),fetchFn,path:e.path,payload:e.payload,requestId:id});
   const out=settle(r);
-  if(out.keep){q[key]={...e,id,attempts:e.attempts+1,needsLogin:out.state==='needs-login'};break}
+  if(out.keep){q[key]={...e,id,attempts:e.attempts+1,needsLogin:out.state==='needs-login',why:whyOf(r)};break}
   delete q[key];if(out.state==='saved')sent++;
  }
  writeQ(storage,uid,q);return {sent,left:Object.keys(q).length};
@@ -86,7 +88,7 @@ export const retryExhausted=opts=>run(opts,true);
 // What the page may say: counts only, from storage. "exhausted" and "needsLogin" need a learner action.
 export function pendingStatus({uid,storage}){
  const q=uid?readQ(storage,uid):{};const es=Object.values(q).filter(e=>e&&typeof e==='object');
- return {total:es.length,exhausted:es.filter(exhausted).length,needsLogin:es.filter(e=>e.needsLogin===true).length};
+ return {total:es.length,exhausted:es.filter(exhausted).length,needsLogin:es.filter(e=>e.needsLogin===true).length,why:(es.find(e=>typeof e.why==='string'&&e.why)||{}).why||''};
 }
 
 // Token for the signed-in account only when it is the account the record belongs to (checked before and after the async token call, and against the token's sub).
