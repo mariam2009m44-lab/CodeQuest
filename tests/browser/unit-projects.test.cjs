@@ -12,7 +12,7 @@ const check=async p=>{await p.click('button.primary');await p.waitForFunction(()
 try{
  // 1 starter fails, hint ladder
  let {c,p}=await page('/learning-studio/project.html?project=py-p1&uid=u1');
- assert.match(await p.textContent('#pjTitle'),/مؤشر وقود/);assert.equal(await p.locator('.pj-hint').count(),0,'no hint before the learner asks');
+ assert.ok(await p.locator('.pj-reqs bdi[dir=ltr]').count()>0,'code fragments in requirements are isolated LTR');assert.match(await p.textContent('#pjTitle'),/مؤشر وقود/);assert.equal(await p.locator('.pj-hint').count(),0,'no hint before the learner asks');
  let t=await check(p);assert.match(t,/لسه في حالات فاشلة/);assert.match(t,/المتوقع/);
  await p.click('.pj-hint-btn');assert.equal(await p.locator('.pj-hint').count(),1);await p.click('.pj-hint-btn');assert.equal(await p.locator('.pj-hint').count(),2);
  await p.reload();await p.waitForLoadState('networkidle');assert.equal(await p.locator('.pj-hint').count(),2,'hint count survives reload for this account');

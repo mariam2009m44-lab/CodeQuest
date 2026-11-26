@@ -3,8 +3,10 @@
 // no server record, no certificate or reward credit (the page says so).
 import {gradeCode} from './quiz-core.mjs';
 import {selectExecutor} from './execution.mjs';
+import {setProse} from './prose.mjs';
 const q=new URLSearchParams(location.search),id=q.get('project')||'';
 const $=i=>document.getElementById(i);
+const prose=(tag,text,props={})=>{const e=document.createElement(tag);Object.assign(e,props);setProse(e,text);return e};
 const el=(tag,props={},...kids)=>{const e=document.createElement(tag);Object.assign(e,props);kids.forEach(k=>e.append(k));return e};
 const projects=await (await fetch('projects.json')).json().catch(()=>[]);
 const pj=projects.find(p=>p.id===id);
@@ -23,12 +25,12 @@ else{
  const key=uid?'codequest_studio_project_'+uid+'_'+pj.id:null;
  let saved={};if(key){try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch{saved={}}}
  const persist=()=>{if(!key)return;try{localStorage.setItem(key,JSON.stringify(saved))}catch{}};
- body.append(el('p',{textContent:pj.goal}),el('h2',{textContent:'المطلوب'}));
- const ul=el('ul',{className:'pj-reqs'});pj.requirements.forEach(r=>ul.append(el('li',{textContent:r})));body.append(ul);
+ body.append(prose('p',pj.goal),el('h2',{textContent:'المطلوب'}));
+ const ul=el('ul',{className:'pj-reqs'});pj.requirements.forEach(r=>ul.append(prose('li',r)));body.append(ul);
  // Hint ladder: closed by default, one step at a time, count kept so the learner sees how much help was used.
  const hintBox=el('div',{className:'pj-hints'});hintBox.setAttribute('role','status');const hintBtn=el('button',{type:'button',className:'pj-hint-btn'});
  let used=Math.min(Number(saved.hints)||0,pj.hints.length);
- const drawHints=()=>{hintBox.replaceChildren();for(let i=0;i<used;i++)hintBox.append(el('div',{className:'pj-hint',textContent:'تلميح '+(i+1)+': '+pj.hints[i]}));
+ const drawHints=()=>{hintBox.replaceChildren();for(let i=0;i<used;i++)hintBox.append(prose('div','تلميح '+(i+1)+': '+pj.hints[i],{className:'pj-hint'}));
   hintBtn.textContent=used<pj.hints.length?(used===0?'محتاج تلميح؟ (جرّب الأول بنفسك)':'تلميح تاني ('+(used+1)+' من '+pj.hints.length+')'):'مفيش تلميحات تانية';hintBtn.disabled=used>=pj.hints.length};
  hintBtn.onclick=()=>{if(used<pj.hints.length){used++;saved.hints=used;persist();drawHints();hintBox.querySelector('.pj-hint:last-child')?.scrollIntoView({block:'nearest'})}};
  drawHints();body.append(hintBtn,hintBox);
@@ -39,7 +41,7 @@ else{
  ta.addEventListener('input',()=>{saved.code=ta.value;persist();if(res.childNodes.length){res.replaceChildren()}drawStatus()});
  body.append(el('h2',{textContent:'كودك'}),ta,status);
  const tryTa=el('textarea',{className:'quiz-stdin pj-try',dir:'ltr',rows:3,value:pj.trySetup});tryTa.setAttribute('aria-label',pj.tryLabel);
- body.append(el('p',{className:'pj-note',textContent:pj.tryLabel}),tryTa);
+ body.append(prose('p',pj.tryLabel,{className:'pj-note'}),tryTa);
  const out=el('pre',{className:'quiz-out',dir:'ltr'}),res=el('div',{id:'pjResult'});res.setAttribute('role','status');res.setAttribute('aria-live','polite');
  const tryBtn=el('button',{type:'button',textContent:'جرّب (مش بيتحسب)'}),checkBtn=el('button',{type:'button',className:'primary',textContent:'تحقق من الحل'});
  let busy=false;
@@ -59,7 +61,7 @@ else{
   res.append(list);
   const note=hiddenTotal?(hiddenFail===0?'كل الحالات المخفية ('+hiddenTotal+') نجحت كمان.':'في '+hiddenFail+' من '+hiddenTotal+' حالات مخفية فشلت. فكّر في الحالات الحدّية: قيمة على الحد، قائمة فاضية، تكرار.'):'';
   if(g.passed){res.append(el('p',{className:'bubble reply fit',textContent:'مشروعك نجح في كل الحالات. '+note}));saved.passed=true;saved.passedCode=ta.value;saved.passedAt=Date.now();saved.hintsAtPass=used;persist();drawStatus();
-   res.append(el('h3',{textContent:'جرّب تطوّر مشروعك'}),el('p',{textContent:pj.extension}),el('a',{className:'primary',href:'/playground.html',textContent:'افتح مختبر الأكواد'}))}
+   res.append(el('h3',{textContent:'جرّب تطوّر مشروعك'}),prose('p',pj.extension),el('a',{className:'primary',href:'/playground.html',textContent:'افتح مختبر الأكواد'}))}
   else res.append(el('p',{className:'bubble reply retry',textContent:'لسه في حالات فاشلة. '+note}));
   res.append(el('p',{className:'pj-note',textContent:'ده تدريب: النتيجة محفوظة على هذا الجهاز لحسابك بس، ومش بتتحسب في الشهادة أو المكافآت، والحالات المخفية دي فحص تدريبي مش امتحان رسمي.'}))};
  body.append(el('div',{className:'pj-actions'},tryBtn,checkBtn),out,res);
