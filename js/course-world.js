@@ -58,7 +58,24 @@ function examIndex(ci){
  return n&&last===n+1&&/^امتحان|^الامتحان/.test(String(curriculumChapters[ci].lessons[n]?.title||""))?n:-1;
 }
 // Per account on this device: a different signed-in learner, or nobody, never inherits a pass.
-function unitExamPassed(ci){if(!uid)return false;try{return JSON.parse(localStorage.getItem("codequest_studio_quiz_"+uid+"_"+language+"_"+(ci+1))||"null")?.passed===true}catch{return false}}
+// Account record (only when server assessment is ON and the Worker answered for THIS account): lets a pass made on another device show here.
+// Unknown (Worker down, not signed in, token for a different account, flag OFF) adds nothing and never removes a device pass.
+let serverPasses={uid:null,units:new Set()};
+async function loadServerPasses(){
+ if(!finalLinkOn||!uid)return false;const owner=uid;
+ try{
+  const {auth}=await import('/js/firebase-config.js');if(auth.currentUser?.uid!==owner)return false;
+  const {ENDPOINT,ownerBound}=await import('/learning-studio/progress-api.mjs');
+  const token=await ownerBound(owner,async force=>auth.currentUser?.uid===owner?auth.currentUser.getIdToken(force===true):null)(false);if(!token||auth.currentUser?.uid!==owner)return false;
+  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),6000);
+  const res=await fetch(ENDPOINT+'/api/progress/get',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:'{}',signal:ctl.signal,cache:'no-store'}).finally(()=>clearTimeout(to));
+  if(!res.ok)return false;const d=await res.json();if(!d||d.success!==true||!d.exams||typeof d.exams!=='object')return false;
+  if(uid!==owner)return false;
+  const units=new Set();for(const [k,v] of Object.entries(d.exams)){const m=k.match(/^(.+)-(\d+)$/);if(m&&m[1]===language&&v&&v.passed===true)units.add(Number(m[2]))}
+  serverPasses={uid:owner,units};return true;
+ }catch{return false}
+}
+function unitExamPassed(ci){if(!uid)return false;if(serverPasses.uid===uid&&serverPasses.units.has(ci+1))return true;try{return JSON.parse(localStorage.getItem("codequest_studio_quiz_"+uid+"_"+language+"_"+(ci+1))||"null")?.passed===true}catch{return false}}
 function isDone(item,ci,li,records,local){
  if(li===examIndex(ci)&&unitExamPassed(ci))return true;
  const id=String(item.id||""),pythonKey=(ci+1)+"_"+li;
@@ -269,6 +286,7 @@ async function init(){
   }
   lastLocal=getLocalDone();
   render(curriculumChapters,lastRecords,lastLocal);
+  loadServerPasses().then(ok=>{if(ok){lastLocal=getLocalDone();render(curriculumChapters,lastRecords,lastLocal)}});
   try{const profile=await getUserProfile();document.getElementById("cwXp").textContent=String(profile?.xp??0);document.getElementById("cwStars").textContent=String(profile?.stars??0)}
   catch{document.getElementById("cwXp").textContent="—";document.getElementById("cwStars").textContent="—"}
   showWelcome();
