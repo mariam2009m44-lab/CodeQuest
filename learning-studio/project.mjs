@@ -8,12 +8,15 @@ const $=i=>document.getElementById(i);
 const el=(tag,props={},...kids)=>{const e=document.createElement(tag);Object.assign(e,props);kids.forEach(k=>e.append(k));return e};
 const projects=await (await fetch('projects.json')).json().catch(()=>[]);
 const pj=projects.find(p=>p.id===id);
+// Containment: the unit-project run path is OFF until an authorized signed-in production run is evidenced. OFF means no execution is attempted here.
+const projectsOn=(await fetch('features.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>({}))).unitProjects===true;
 const localHost=location.hostname==='localhost'||location.hostname==='127.0.0.1';
 let uid=null;
 if(localHost){uid=q.get('uid')||null}
 else{try{const {requireUser}=await import('/js/auth.js');const u=await requireUser();if(!u?.uid)throw new Error('sign-in required');uid=u.uid}catch{location.replace('/login.html?'+new URLSearchParams({next:'learning-studio/project.html'+location.search}));await new Promise(()=>{})}}
 const body=$('pjBody');
 if(!pj){$('pjTitle').textContent='المشروع ده مش موجود.';body.append(el('p',{textContent:'ارجع للخريطة واختار مشروع من وحدة خلصتها.'}))}
+else if(!projectsOn){$('mapLink').href='/course-path.html?lang='+encodeURIComponent(pj.language);$('pjTitle').textContent=pj.title;body.append(el('p',{id:'pjOff',textContent:'مشروع الوحدة لسه مش متاح دلوقتي. بنتأكد إنه بيشتغل صح على المنصة قبل ما نفتحه. مفيش حاجة اتأثرت من تقدمك، وتقدر تكمل دروسك من الخريطة.'}))}
 else{
  $('mapLink').href='/course-path.html?lang='+encodeURIComponent(pj.language);
  $('pjTitle').textContent=pj.title;$('pjTitle').append(el('span',{className:'pj-level',textContent:pj.level}));

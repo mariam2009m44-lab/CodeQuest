@@ -165,7 +165,7 @@ function render(chapters,records,local){
    return `<div data-ci="${ci}" data-li="${li}" class="cw-road-node ${current?"is-current":done?"is-done":"is-locked"}${needsTest?" needs-test":""}" data-lesson-index="${globalIndex}" style="left:${x}%;top:${y}px">${current?'<div class="cw-cody cw-cody--node">'+CODY+'</div>':""}<button class="cw-node ${done?"is-done":current?"is-current":""}" type="button" ${locked?'disabled aria-label="درس مقفول"':'data-href="'+escapeHTML(href)+'" aria-label="'+escapeHTML(title)+'"'}><i class="${icon}"></i></button><span class="cw-node-label">${escapeHTML(title)}</span><span class="cw-node-sub">${done?"مكتمل":needsTest?"خلصت الدرس، فاضل الاختبار":current?"ابدأ هنا":"افتح بعد السابق"}</span></div>`;
   }).join("");
   const unitPercent=lessons.length?Math.round(unitDone/lessons.length*100):0;
-  const projectId=UNIT_PROJECTS[language]?.[ci+1],projectLink=unitPercent===100&&projectId?`<a class="cw-project-link" id="cwProject${ci+1}" href="/learning-studio/project.html?project=${projectId}" style="display:inline-block;margin-top:8px;padding:8px 14px;border-radius:10px;background:#674ac1;color:#fff;font-weight:700;text-decoration:none">مشروع الوحدة: ابنِ بنفسك</a>`:"";
+  const projectId=UNIT_PROJECTS[language]?.[ci+1],projectLink=projectsOn&&unitPercent===100&&projectId?`<a class="cw-project-link" id="cwProject${ci+1}" href="/learning-studio/project.html?project=${projectId}" style="display:inline-block;margin-top:8px;padding:8px 14px;border-radius:10px;background:#674ac1;color:#fff;font-weight:700;text-decoration:none">مشروع الوحدة: ابنِ بنفسك</a>`:"";
   return `<section class="cw-unit ${unitPercent===100?"is-complete":""}"><header class="cw-unit-head"><span class="cw-unit-number">${ci+1}</span><div class="cw-unit-title"><h3>${escapeHTML(chapter.title||("الوحدة "+(ci+1)))}</h3><p>${lessons.length} دروس · ${unitDone} مكتمل</p><div class="cw-unit-progress"><span style="width:${unitPercent}%"></span></div>${projectLink}</div><span class="cw-unit-status">${unitPercent===100?"✓ مكتملة":unitDone+" من "+lessons.length}</span></header><div class="cw-road" style="height:${height}px"><svg class="cw-road-svg" viewBox="0 0 100 ${height}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}"></path><path class="cw-road-glow" d="${progressPath}"></path></svg>${nodes}</div><div class="cw-unit-foot"><strong><i class="${unitPercent===100?"ri-trophy-line":"ri-flag-2-line"}"></i> ${unitPercent===100?"أنهيت الوحدة بنجاح!":"محطة نهاية الوحدة"}</strong><span>${unitPercent===100?"أحسنت! كل دروس الوحدة اكتملت. كودي فخور بيك.":"أكمل الدروس بالترتيب عشان تفتح الوحدة التالية."}</span></div></section>`;
  }).join("");
  map.innerHTML=units||'<div class="cw-empty">المنهج لسه مفيهوش دروس متاحة.</div>';
@@ -212,9 +212,9 @@ async function refreshProgress(){
  }catch(error){console.error("Could not refresh course progress",error)}
 }
 // The Python final link shows only when server assessment is ON: with it OFF the exam page still uses its legacy chapter-record gate, which Studio progress does not satisfy.
-let finalLinkOn=false;
+let finalLinkOn=false,projectsOn=false;
 async function init(){
- try{finalLinkOn=(await fetch('/learning-studio/features.json',{cache:'no-store'}).then(r=>r.json())).serverAssessment===true}catch{finalLinkOn=false}
+ try{const ft=await fetch('/learning-studio/features.json',{cache:'no-store'}).then(r=>r.json());finalLinkOn=ft.serverAssessment===true;projectsOn=ft.unitProjects===true}catch{finalLinkOn=false;projectsOn=false}
  if(!cfg){map.innerHTML='<div class="cw-empty">المسار المطلوب غير موجود. ارجع واختار لغة من المسارات.</div>';return}
  try{
   // Load the curriculum before account data so a temporary authentication
