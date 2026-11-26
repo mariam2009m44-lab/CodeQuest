@@ -41,19 +41,23 @@ else{
    const stdinBox=it.tests.some(t=>t.stdin)?Object.assign(document.createElement('textarea'),{rows:2,dir:'ltr',className:'quiz-stdin',placeholder:'مدخلات للتجربة (اختياري)'}):null;
    const tryBtn=document.createElement('button');tryBtn.type='button';tryBtn.textContent='جرّب (مش بيتحسب)';
    const sub=document.createElement('button');sub.type='button';sub.className='primary';sub.textContent='سلّم الحل (مرة واحدة)';
-   tryBtn.onclick=async()=>{if(busy)return;busy=true;out.textContent='بيشتغل...';try{const ex=await selectExecutor(lang);const r=await ex(ta.value,stdinBox?stdinBox.value:'');out.textContent=r.ok?r.stdout:(r.message||r.stdout||'حصل خطأ')}catch(e){out.textContent='تعذر التشغيل دلوقتي.'}busy=false};
+   tryBtn.onclick=async()=>{if(busy)return;busy=true;out.textContent='بيشتغل...';try{const ex=await selectExecutor(lang);const r=await ex(ta.value,stdinBox?stdinBox.value:'');if(!await sameAccount()){lockOut();return}out.textContent=r.ok?r.stdout:(r.message||r.stdout||'حصل خطأ')}catch(e){out.textContent='تعذر التشغيل دلوقتي.'}busy=false};
    sub.onclick=async()=>{if(busy||answers[i])return;busy=true;sub.disabled=tryBtn.disabled=true;ta.readOnly=true;fb.hidden=false;fb.className='bubble reply';fb.textContent='بنصحح...';
     let g;try{g=await gradeCode(it,ta.value,await selectExecutor(lang))}catch(e){g={passed:false,results:[],ran:false}}
+    if(!await sameAccount()){lockOut();return}
     if(!g.ran&&!g.passed&&g.results.every(r=>!r.ran)){answers[i]=undefined;sub.disabled=tryBtn.disabled=false;ta.readOnly=false;fb.className='bubble reply retry';fb.textContent='الكود ما اشتغلش أو الخدمة مش متاحة، فالتسليم ما اتحسبش. صلّح الخطأ وسلّم تاني. '+(g.results[0]?.message||'');busy=false;return}
     answers[i]={correct:g.passed};if(serverOn)pendingSync.push(durable('ct:'+lang+':'+unit+':'+(i-data.mcq.length),'/api/progress/code-task',codeTaskPayload({language:lang,unit,quiz:data,item:i-data.mcq.length,code:ta.value})));fb.className='bubble reply '+(g.passed?'fit':'retry');setProse(fb,(g.passed?'صح. الناتج مطابق في كل الحالات. ':'الناتج مش مطابق في حالة أو أكتر. ')+it.why);busy=false;upd();done()};
    card.append(ta);if(stdinBox)card.append(stdinBox);card.append(tryBtn,sub,out,fb);
   }
   $('quizBody').append(card);cards.push(card);
  });
- async function sameAccount(){try{const {auth}=await import('/js/firebase-config.js');const cu=auth.currentUser?.uid||null;return localHost?(!cu||cu===uid):cu===uid}catch{return localHost}}
+ const cu0=import('/js/firebase-config.js').then(({auth})=>auth.currentUser?.uid||null).catch(()=>null);
+ let dead=false;
+ async function sameAccount(){if(dead)return false;try{const {auth}=await import('/js/firebase-config.js');const cu=auth.currentUser?.uid||null;const base=await cu0;return localHost?(base?cu===base&&(!uid||cu===uid):(!cu||cu===uid)):cu===uid}catch{return localHost}}
+ function lockOut(){dead=true;const r=$('quizResult');r.hidden=false;r.replaceChildren();const p=document.createElement('p');p.className='quiz-status review';p.textContent='الحساب اتغيّر أثناء الاختبار، فالنتيجة ما اتسجّلتش. افتح الاختبار من جديد بالحساب الصحيح.';r.append(p);$('quizBody').hidden=true}
  function done(){
   if(answers.filter(Boolean).length<items.length)return;
-  sameAccount().then(ok=>{if(ok)finish();else{const r=$('quizResult');r.hidden=false;r.replaceChildren();const p=document.createElement('p');p.className='quiz-status review';p.textContent='الحساب اتغيّر أثناء الاختبار، فالنتيجة ما اتسجّلتش. افتح الاختبار من جديد بالحساب الصحيح.';r.append(p);$('quizBody').hidden=true}})}
+  sameAccount().then(ok=>{if(ok)finish();else lockOut()})}
  function finish(){
   if(serverOn)Promise.all(pendingSync).then(states=>durable('ex:'+lang+':'+unit,'/api/progress/exam',examPayload({language:lang,unit,quiz:data,answers}),{defer:states.some(x=>x.state!=='saved'&&x.state!=='off')}));
   const s=summarize(items,answers);const r=$('quizResult');r.hidden=false;r.replaceChildren();
