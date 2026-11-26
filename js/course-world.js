@@ -232,12 +232,25 @@ function playCelebration(){
  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
  doneNode.classList.add("just-done");
  const next=map.querySelector(".cw-road-node.is-current");
- if(next)next.classList.add("cody-arrives");
  const burst=document.createElement("div");burst.className="cw-burst";burst.setAttribute("aria-hidden","true");
  for(let i=0;i<14;i++){const s=document.createElement("i");s.style.setProperty("--a",(i*360/14)+"deg");s.style.setProperty("--d",(46+(i%3)*14)+"px");burst.append(s)}
  doneNode.append(burst);
- setCody("happy","عاشت! الدرس اتحسب ومحطة جديدة اتفتحت. أنا جاي معاكي للي بعده!");
- setTimeout(()=>{burst.remove();doneNode.classList.remove("just-done");next?.classList.remove("cody-arrives")},reduce?300:2600);
+ let lockFx=null;
+ if(next&&next!==doneNode){
+  next.classList.add("cody-arrives");
+  const btn=next.querySelector(".cw-node");
+  if(!reduce&&btn){
+   next.classList.add("unlocking");
+   // The next station was locked a moment ago: a lock shakes, opens and fades, then Cody travels from the finished station to it.
+   lockFx=document.createElement("span");lockFx.className="cw-lock-fx";lockFx.setAttribute("aria-hidden","true");lockFx.innerHTML='<i class="ri-lock-2-line"></i><i class="ri-lock-unlock-line"></i>';btn.append(lockFx);
+   const cody=next.querySelector(".cw-cody--node");
+   const from=doneNode.querySelector(".cw-node"),a=from.getBoundingClientRect(),b=btn.getBoundingClientRect();
+   const dx=a.left-b.left,dy=a.top-b.top;
+   if(cody&&cody.animate)cody.animate([{transform:`translate(${dx}px,${dy}px) translateX(50%) scale(.56)`,offset:0},{transform:`translate(${dx*.45}px,${dy*.45-46}px) translateX(50%) scale(.56)`,offset:.45},{transform:"translateX(50%) scale(.56)",offset:1}],{duration:1500,delay:1100,easing:"cubic-bezier(.4,0,.2,1)",fill:"both"});
+  }
+ }
+ setCody("happy","عاشت! الدرس اتحسب والقفل اتفتح. أنا جاي معاكي للمحطة اللي بعدها!");
+ setTimeout(()=>{burst.remove();lockFx?.remove();doneNode.classList.remove("just-done");next?.classList.remove("cody-arrives","unlocking")},reduce?300:3200);
  scrollToCurrent();
 }
 async function refreshProgress(){

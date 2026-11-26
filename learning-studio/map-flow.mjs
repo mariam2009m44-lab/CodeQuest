@@ -24,3 +24,12 @@ export function writeMapProgress(language,unit,index,uid){
   localStorage.setItem(key,JSON.stringify(records));return true;
  }catch{return false}
 }
+
+// Set once when a lesson is newly completed, so the map plays the celebration (unlock, Cody travels). Consumed and expired by js/course-world.js.
+export function hasMapProgress(language,unit,index,uid){
+ try{const l=JSON.parse(localStorage.getItem('codequest_lesson_progress_'+uid+'_'+language)||'[]');return Array.isArray(l)&&l.some(x=>x?.completed===true&&x.chapter===unit-1&&x.lesson===index)}catch{return false}
+}
+export function markCelebration(language,unit,index,uid){
+ if(!uid||!Number.isSafeInteger(unit)||!Number.isSafeInteger(index))return false;
+ try{localStorage.setItem('cq_map_celebrate',JSON.stringify({uid,language,unit,index,at:Date.now()}));return true}catch{return false}
+}

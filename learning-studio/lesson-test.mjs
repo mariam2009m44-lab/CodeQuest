@@ -71,11 +71,13 @@ else{
   const keep=prev?.passed===true;try{localStorage.setItem(lessonTestKey(lang,lessonId,uid),JSON.stringify({percent:keep?Math.max(prev.percent,s.percent):s.percent,passed:keep||s.passed,at:Date.now(),source:'studio-device-only'}))}catch{}
   // Passing is what completes the node on the map (the lesson page only records the node after this).
   if(s.passed)try{const pend=pending;if(pend){if(writeMapProgress(pend.language,pend.unit,pend.index,pend.uid))localStorage.setItem('cq_map_celebrate',JSON.stringify({uid:pend.uid,language:pend.language,unit:pend.unit,index:pend.index,at:Date.now()}));localStorage.removeItem('cq_lt_pending')}}catch{}
+  // The map celebration (done node, unlocked next node, Cody travelling) is set for every first pass of a lesson test, however the lesson was opened.
+  if(s.passed&&prev?.passed!==true&&uid&&pack&&idx>=0)try{localStorage.setItem('cq_map_celebrate',JSON.stringify({uid,language:lang,unit:pack.unit,index:idx,at:Date.now()}))}catch{}
   const n=nextTarget();const actions=document.createElement('div');actions.className='lt-actions';
   const mk=(href,text,cls)=>{const a=document.createElement('a');a.className=cls;a.href=href;a.textContent=text;a.onclick=e=>{e.preventDefault();location.replace(href)};return a};
-  if(s.passed&&n){actions.append(mk(n.href,n.text,'lt-btn lt-primary'),mk(retakeUrl,'إعادة الاختبار','lt-btn lt-secondary'))}
+  if(s.passed&&n){actions.append(mk(mapUrl,'شوف كودي على الخريطة','lt-btn lt-primary'),mk(n.href,n.text,'lt-btn lt-secondary'),mk(retakeUrl,'إعادة الاختبار','lt-btn lt-secondary'))}
   else{actions.append(mk(retakeUrl,'إعادة الاختبار','lt-btn lt-primary'),mk('/learning.html?lang='+encodeURIComponent(lang)+'&unit='+pack.unit+'&lesson='+encodeURIComponent(lessonId)+fm,'مراجعة الدرس','lt-btn lt-secondary'))}
-  actions.append(mk(mapUrl,'الرجوع إلى الخريطة','lt-btn lt-secondary'));r.append(actions);
+  if(!(s.passed&&n))actions.append(mk(mapUrl,'الرجوع إلى الخريطة','lt-btn lt-secondary'));r.append(actions);
   const note=document.createElement('p');note.className='small';note.textContent='النتيجة محفوظة على هذا الجهاز فقط، وغير مرتبطة بالحساب حتى الآن.';r.append(note);
  };
  draw();

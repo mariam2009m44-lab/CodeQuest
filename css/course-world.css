@@ -491,3 +491,16 @@ body.cw-welcome-open{overflow:hidden}
 @media(max-width:760px){.cw-cody.cw-cody--node{transform:translateX(50%) scale(.56);transform-origin:bottom center;margin-bottom:0}}
 .cw-language-points span,.cw-language-bubble span{font-size:.78rem!important}.cw-languages-page .lang-card p{font-size:.82rem!important}.cw-languages-page .cw-card-tags i{font-size:.74rem!important}
 @media(max-width:620px){.cw-language-bubble{position:relative!important;right:auto!important;bottom:auto!important;max-width:none!important;width:100%;margin-top:6px;animation:none!important}.cw-language-bubble:before{right:auto;left:50%}}
+
+/* Lock opening on the station that just unlocked: the lock shakes, opens, then fades to the play button. Cody then travels there (js/course-world.js). */
+.cw-road-node.unlocking .cw-node{position:relative;animation:cwUnlockGlow 1.9s ease-out .6s both}
+.cw-road-node.unlocking .cw-cody--node{animation:none}
+.cw-lock-fx{position:absolute;inset:-4px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#b2c8e5,#738baa);border:4px solid #e9f2ff;color:#344969;z-index:3;pointer-events:none;animation:cwLockOverlay 1.5s ease-in .1s both}
+.cw-lock-fx i{grid-area:1/1;font-size:1.7rem}
+.cw-lock-fx i:first-child{animation:cwLockShake .7s ease-in-out .1s both}
+.cw-lock-fx i:last-child{opacity:0;animation:cwLockOpen .5s ease-out .8s both}
+@keyframes cwLockShake{0%,100%{transform:rotate(0)}15%{transform:rotate(-16deg)}35%{transform:rotate(14deg)}55%{transform:rotate(-10deg)}75%{transform:rotate(7deg)}}
+@keyframes cwLockOpen{from{opacity:0;transform:translateY(5px) rotate(-12deg) scale(.8)}to{opacity:1;transform:none}}
+@keyframes cwLockOverlay{0%,60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.35)}}
+@keyframes cwUnlockGlow{0%{box-shadow:0 8px 0 #176f90,0 0 0 0 #72ddf600}35%{box-shadow:0 8px 0 #176f90,0 0 0 12px #72ddf655,0 0 40px #72ddf6aa}100%{box-shadow:0 8px 0 #176f90,0 0 0 0 #72ddf600}}
+@media (prefers-reduced-motion:reduce){.cw-lock-fx{display:none}.cw-road-node.unlocking .cw-node{animation:none}}
