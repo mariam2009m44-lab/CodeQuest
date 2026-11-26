@@ -485,6 +485,8 @@
   </main>
 
   <script type="module">
+        // Keep code fragments such as 17 // 5 left-to-right inside Arabic text (same helper the studio uses).
+        import { setProse } from "/learning-studio/prose.mjs";
     import {
       requireUser,
       saveLessonProgress,
@@ -1029,7 +1031,7 @@
             `السؤال ${currentQuestionIndex + 1} من ${examQuestions.length}`;
 
           questionCategory.textContent = question.category;
-          questionText.textContent = question.q;
+          setProse(questionText, question.q);
 
           if (question.code) {
             questionCode.textContent = question.code;
@@ -1056,7 +1058,7 @@
 
             button.type = "button";
             button.className = "opt-btn";
-            button.textContent = option;
+            setProse(button, option);
 
             button.addEventListener("click", () => {
               selectAnswer(index);
@@ -1099,12 +1101,10 @@
             currentScoreElement.textContent = score;
 
             feedbackBox.className = "feedback show success";
-            feedbackBox.textContent =
-              `إجابة صحيحة! ${question.explanation}`;
+            setProse(feedbackBox, `إجابة صحيحة! ${question.explanation}`);
           } else {
             feedbackBox.className = "feedback show error";
-            feedbackBox.textContent =
-              `الإجابة غير صحيحة. الإجابة الصحيحة: ${question.opts[question.a]}. ${question.explanation}`;
+            setProse(feedbackBox, `الإجابة غير صحيحة. الإجابة الصحيحة: ${question.opts[question.a]}. ${question.explanation}`);
           }
 
           nextButton.disabled = false;
@@ -1184,10 +1184,10 @@
           missed.forEach(q => {
             const item = document.createElement("div");
             item.className = "missed-item";
-            const t = document.createElement("p"); t.className = "missed-q"; t.textContent = q.q;
-            const mine = document.createElement("p"); mine.textContent = "إجابتك: " + q.opts[q.__pick];
-            const right = document.createElement("p"); right.textContent = "الإجابة الصحيحة: " + q.opts[q.a];
-            const why = document.createElement("p"); why.textContent = q.explanation;
+            const t = document.createElement("p"); t.className = "missed-q"; setProse(t, q.q);
+            const mine = document.createElement("p"); setProse(mine, "إجابتك: " + q.opts[q.__pick]);
+            const right = document.createElement("p"); setProse(right, "الإجابة الصحيحة: " + q.opts[q.a]);
+            const why = document.createElement("p"); setProse(why, q.explanation);
             item.append(t, mine, right, why);
             if (q.code) { const pre = document.createElement("pre"); pre.dir = "ltr"; pre.textContent = q.code; item.insertBefore(pre, mine); }
             box.append(item);
