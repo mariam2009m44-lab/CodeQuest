@@ -80,3 +80,12 @@ test("only a recorded 200 is kept for replay; the id table is bounded", async ()
   for (let i = 0; i < 3; i++) await call("/api/progress/code-task", { token: "tokA", body, headers: H("req-gggg-000" + i) });
   const reqs = stores.get("uidA").m.get("reqs"); assert.ok(Object.keys(reqs).length <= 200); assert.ok(Object.values(reqs).every(e => e.done === true));
 });
+test("an exception after the id was claimed releases it: the retry with the same id is NOT told request_in_progress", async () => {
+  let boom = true; const ok = exec();
+  const { call } = boot({ fetchImpl: async (u, o) => { if (boom) throw new Error("provider exploded"); return ok.f(u, o); } });
+  const a = await call("/api/progress/code-task", { token: "tokA", body, headers: H("req-eeee-0009") });
+  assert.equal(a.status, 503); assert.notEqual(a.data.message, "request_in_progress");
+  boom = false;
+  const b = await call("/api/progress/code-task", { token: "tokA", body, headers: H("req-eeee-0009") });
+  assert.equal(b.status, 200, JSON.stringify(b.data));
+});

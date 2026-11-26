@@ -691,7 +691,15 @@ async function dedupeFinish(stub, reqId, status, data) {
   await stub.fetch("https://progress.internal/reqdone", { method: "POST", body: JSON.stringify({ id: reqId, status, resp: data }) });
 }
 
+// Any failure after a request id was claimed releases that claim, so the learner's retry is not told "request_in_progress" for the next 5 minutes.
 async function handleProgress(request, env, origin, action) {
+  const ctx = { stub: null, reqId: "" };
+  try { return await handleProgressInner(request, env, origin, action, ctx); } catch (error) {
+    if (ctx.stub && ctx.reqId) { try { await dedupeFinish(ctx.stub, ctx.reqId, 503, null); } catch {} }
+    return jsonResponse({ success: false, retryable: true, message: "progress_unavailable" }, 503, origin);
+  }
+}
+async function handleProgressInner(request, env, origin, action, ctx) {
   let user;
   try { user = await verifyFirebaseUser(request, env); } catch {
     return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin);
@@ -731,6 +739,7 @@ async function handleProgress(request, env, origin, action) {
     if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
     const reqId = requestIdOf(request);
     const ds = await dedupeStart(stub, reqId, await bodyHash([action, input, body.code, body.version || ""]));
+    ctx.stub = stub; ctx.reqId = reqId;
     if (!ds.none) {
       if (ds.data.replay) return jsonResponse(ds.data.resp, ds.data.rstatus, origin);
       if (!ds.res.ok) return jsonResponse(ds.data, ds.res.status, origin);
@@ -741,7 +750,7 @@ async function handleProgress(request, env, origin, action) {
     const results = [];
     if (conceptApproved) {
       const begin = await stub.fetch("https://progress.internal/codebegin", { method: "POST", body: JSON.stringify({ n: plan.cases.length }) });
-      if (!begin.ok) return jsonResponse(await begin.json(), begin.status, origin);
+      if (!begin.ok) { const bd = await begin.json(); await dedupeFinish(stub, reqId, begin.status, null); return jsonResponse(bd, begin.status, origin); }
       for (const c of plan.cases) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
       if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
         await dedupeFinish(stub, reqId, 503, null);
@@ -761,6 +770,7 @@ async function handleProgress(request, env, origin, action) {
     if (typeof body.code !== "string" || !body.code.trim() || body.code.length > 15000) return jsonResponse({ success: false, message: "bad_code" }, 400, origin);
     const reqId = requestIdOf(request);
     const ds = await dedupeStart(stub, reqId, await bodyHash([action, input, body.code, body.version || ""]));
+    ctx.stub = stub; ctx.reqId = reqId;
     if (!ds.none) {
       if (ds.data.replay) return jsonResponse(ds.data.resp, ds.data.rstatus, origin);
       if (!ds.res.ok) return jsonResponse(ds.data, ds.res.status, origin);
