@@ -10,7 +10,7 @@ for(const [lang,unit,index] of [['python',1,0],['python',5,2],['javascript',1,0]
  const p=await b.newPage({viewport:{width:390,height:844}});await p.goto(L+`/learning.html?from=map&lang=${lang}&unit=${unit}&index=${index}`);await p.waitForSelector('#dialogue .chatlog');
  const l=units.find(x=>x.language===lang&&x.unit===unit).lessons[index];
  assert.equal(await p.locator('#story').isVisible(),false,lang+' story box hidden when chat is shown');
- const n=await p.evaluate(s=>{const N=t=>t.replace(/[\u200e\u200f]/g,'').trim();return [...document.querySelectorAll('main *')].filter(e=>e.offsetParent&&N(e.textContent).includes(N(s))&&![...e.children].some(c=>N(c.textContent).includes(N(s)))).length},l.story);
+ const n=await p.evaluate(s=>{const N=t=>t.replace(/[\u200e\u200f\u2060]/g,'').trim();return [...document.querySelectorAll('main *')].filter(e=>e.offsetParent&&N(e.textContent).includes(N(s))&&![...e.children].some(c=>N(c.textContent).includes(N(s)))).length},l.story);
  assert.equal(n,1,lang+' opening line shown once, got '+n);
  if(lang==='python'&&unit===1)await p.screenshot({path:process.env.SHOT||'/tmp/story-once.png'});
  await p.close()}
