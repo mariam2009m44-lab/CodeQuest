@@ -213,7 +213,7 @@ function render(chapters,records,local){
  if(percent===100){
   setCody("happy","يا سلام! خلصت المسار كله. أنت وصلت للنهاية!");
   const finish=document.getElementById("cwFinish");
-  if(finish){finish.hidden=false;finish.innerHTML=`<div class="cw-finish-card"><div class="cw-finish-confetti">✦ ✧ ★ ✦</div><div class="cw-finish-icon"><i class="ri-trophy-fill"></i></div><span class="cw-kicker">إنجاز يستحق الاحتفال</span><h2>أكملت مسار ${escapeHTML(cfg.name)}!</h2><p>وصلت لنهاية الرحلة. كل درس أنهيته كان خطوة في بناء مهاراتك.</p><div class="cw-finish-stats"><div><strong>${completed}</strong><span>درس مكتمل</span></div><div><strong>${chapters.length}</strong><span>وحدة مكتملة</span></div><div><strong>100%</strong><span>إنجاز المسار</span></div></div><button type="button" id="cwReviewPath"><i class="ri-refresh-line"></i> راجع دروس المسار</button></div>`;document.getElementById("cwReviewPath")?.addEventListener("click",()=>{finish.hidden=true;scrollToCurrent()})}
+  if(finish){finish.hidden=false;finish.innerHTML=`<div class="cw-finish-card"><div class="cw-finish-confetti">✦ ✧ ★ ✦</div><div class="cw-finish-icon"><i class="ri-trophy-fill"></i></div><span class="cw-kicker">إنجاز يستحق الاحتفال</span><h2>أكملت مسار ${escapeHTML(cfg.name)}!</h2><p>وصلت لنهاية الرحلة. كل درس أنهيته كان خطوة في بناء مهاراتك.</p><div class="cw-finish-stats"><div><strong>${completed}</strong><span>درس مكتمل</span></div><div><strong>${chapters.length}</strong><span>وحدة مكتملة</span></div><div><strong>100%</strong><span>إنجاز المسار</span></div></div>${certOn?'<div id="cwCertBox" class="cw-cert-box" role="status"></div>':""}<button type="button" id="cwReviewPath"><i class="ri-refresh-line"></i> راجع دروس المسار</button></div>`;if(certOn)requestCertificate();document.getElementById("cwReviewPath")?.addEventListener("click",()=>{finish.hidden=true;scrollToCurrent()})}
  }else{
   const finish=document.getElementById("cwFinish");if(finish)finish.hidden=true;
   const currentUnit=flat[first]?.ci??0;
@@ -260,9 +260,29 @@ async function refreshProgress(){
  }catch(error){console.error("Could not refresh course progress",error)}
 }
 // The Python final link shows only when server assessment is ON: with it OFF the exam page still uses its legacy chapter-record gate, which Studio progress does not satisfy.
-let finalLinkOn=false,projectsOn=false;
+let finalLinkOn=false,projectsOn=false,certOn=false;
+// Server-verified certificate. OFF unless features.json has serverAssessment AND certificateIssue true. The server decides eligibility from its own
+// records (lesson tests, unit exams, code tasks, practice); the page only asks and shows what the server returns. Nothing is derived or stored on the device.
+async function requestCertificate(){
+ const box=()=>document.getElementById("cwCertBox"),owner=uid,lang=language;if(!owner||!box())return;
+ const say=(text,href)=>{const b=box();if(!b||uid!==owner||language!==lang)return;b.textContent="";
+  if(href){const a=document.createElement("a");a.className="cw-cert-btn";a.id="cwCertificate";a.href=href;a.textContent=text;b.append(a)}else{const p=document.createElement("p");p.className="cw-cert-note";p.textContent=text;b.append(p)}};
+ say("بنتأكد من إتمام المسار على حسابك...");
+ try{
+  const {auth}=await import('/js/firebase-config.js');if(auth.currentUser?.uid!==owner)return;
+  const token=await auth.currentUser.getIdToken();if(auth.currentUser?.uid!==owner)return;
+  const {ENDPOINT}=await import('/learning-studio/progress-api.mjs');
+  const res=await fetch(ENDPOINT+'/api/certificates/issue',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({language:lang}),cache:'no-store'});
+  if(auth.currentUser?.uid!==owner||uid!==owner)return;
+  if(res.status===409){say("الشهادة بتتصدر بعد ما كل الاختبارات والتمارين تتسجل على حسابك. لسه فيه جزء ناقص.");return}
+  if(!res.ok){say("الشهادة مش متاحة دلوقتي. جرّب بعد شوية.");return}
+  const d=await res.json(),rec=(d?.certificates||[]).find(c=>c?.track===lang&&/^[A-Za-z0-9_-]{8,64}$/.test(String(c.recordId||"")));
+  if(!rec){say("الشهادة مش متاحة دلوقتي. جرّب بعد شوية.");return}
+  say("اطبع شهادة إتمام المسار","/learning-studio/certificate.html?id="+encodeURIComponent(rec.recordId));
+ }catch{say("الشهادة مش متاحة دلوقتي. جرّب بعد شوية.")}
+}
 async function init(){
- try{const ft=await fetch('/learning-studio/features.json',{cache:'no-store'}).then(r=>r.json());finalLinkOn=ft.serverAssessment===true;projectsOn=ft.unitProjects===true}catch{finalLinkOn=false;projectsOn=false}
+ try{const ft=await fetch('/learning-studio/features.json',{cache:'no-store'}).then(r=>r.json());finalLinkOn=ft.serverAssessment===true;projectsOn=ft.unitProjects===true;certOn=ft.serverAssessment===true&&ft.certificateIssue===true}catch{finalLinkOn=false;projectsOn=false;certOn=false}
  if(!cfg){map.innerHTML='<div class="cw-empty">المسار المطلوب غير موجود. ارجع واختار لغة من المسارات.</div>';return}
  try{
   // Load the curriculum before account data so a temporary authentication
