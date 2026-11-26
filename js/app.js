@@ -480,7 +480,7 @@ function readLocalLessonProgress(uid) {
     }
   };
 
-  for (const language of ["javascript", "cpp"]) {
+  for (const language of ["python", "javascript", "cpp", "java"]) {
     for (const item of readArray(`codequest_lesson_progress_${uid}_${language}`)) {
       if (
         item?.completed === true &&

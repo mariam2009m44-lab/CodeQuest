@@ -818,7 +818,18 @@
         if (language === "java") {
           const raw = localStorage.getItem(`cody_java_progress_${uid}`);
           const parsed = raw ? JSON.parse(raw) : {};
-          return Object.entries(parsed).flatMap(([id, value]) => {
+          let studioRecords = [];
+          try {
+            const studioList = JSON.parse(localStorage.getItem(`codequest_lesson_progress_${uid}_java`) || "[]");
+            if (Array.isArray(studioList)) {
+              studioRecords = studioList.filter(item =>
+                item?.completed === true &&
+                Number.isSafeInteger(item.chapter) && item.chapter >= 0 &&
+                Number.isSafeInteger(item.lesson) && item.lesson >= 0
+              ).map(item => ({ language: "java", chapter: item.chapter, lesson: item.lesson, completed: true, localOnly: true, serverVerified: false }));
+            }
+          } catch { studioRecords = []; }
+          const javaRecords = Object.entries(parsed).flatMap(([id, value]) => {
             const match = /^java-(\d+)-(\d+)$/.exec(id);
             if (!match || value?.completed !== true) return [];
             return [{
@@ -831,6 +842,8 @@
               serverVerified: value.serverVerified === true
             }];
           });
+          const seen = new Set(javaRecords.map(item => `${item.chapter}:${item.lesson}`));
+          return [...javaRecords, ...studioRecords.filter(item => !seen.has(`${item.chapter}:${item.lesson}`))];
         }
 
         const raw = localStorage.getItem(

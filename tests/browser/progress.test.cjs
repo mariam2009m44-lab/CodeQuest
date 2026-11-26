@@ -41,14 +41,15 @@ export function onSnapshot(path, ...args) {
 before(async () => { browser = await chromium.launch(); });
 after(async () => { await browser?.close(); });
 
-async function openFixture(t, pageName, viewport, { uid = 'learner-a', failProfile = false } = {}) {
+async function openFixture(t, pageName, viewport, { uid = 'learner-a', failProfile = false, seed = {} } = {}) {
   const context = await browser.newContext({ viewport, serviceWorkers: 'block' });
   t.after(() => context.close());
-  await context.addInitScript(({ uid, failProfile }) => {
+  await context.addInitScript(({ uid, failProfile, seed }) => {
     window.fixture = { uid, failProfile };
+    for (const [k, v] of Object.entries(seed)) localStorage.setItem(k, v);
     localStorage.setItem('codequest_learner-a_cody_python_completed_lessons', '["1_0", "1_0", "1_104"]');
     localStorage.setItem('codequest_learner-b_cody_python_completed_lessons', '["2_0", "2_1"]');
-  }, { uid, failProfile });
+  }, { uid, failProfile, seed });
   await context.route('**/*', async route => {
     const url = new URL(route.request().url());
     const path = url.pathname.slice('/CodeQuest/'.length);
@@ -116,4 +117,17 @@ test('local progress only reads the active learner and ignores a former learnerâ
     window.fixture.send(records, { fromCache: false });
   }, [python(0, 0), python(0, 1), python(0, 2)]);
   await expectText(page, count, '2');
+});
+
+test('dashboard counts lessons finished in the studio (map records, all four tracks) for this account only', { timeout: 25000 }, async t => {
+  const rec = (c, l) => ({ chapter: c, lesson: l, completed: true, source: 'studio-device-only' });
+  const seed = {
+    'codequest_lesson_progress_learner-c_python': JSON.stringify([rec(0, 0), rec(0, 1)]),
+    'codequest_lesson_progress_learner-c_java': JSON.stringify([rec(0, 0)]),
+    'codequest_lesson_progress_anon_python': JSON.stringify([rec(1, 0), rec(1, 1), rec(1, 2)]),
+    'codequest_lesson_progress_learner-d_python': JSON.stringify([rec(2, 0)])
+  };
+  const page = await openFixture(t, 'dashboard.html', { width: 390, height: 800 }, { uid: 'learner-c', seed });
+  await expectText(page, count, '3');
+  await page.waitForFunction(() => { const e = document.querySelector('.js-python-progress-label'); return e && e.textContent.trim() !== '0%'; });
 });
