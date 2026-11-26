@@ -88,3 +88,6 @@ export function pendingStatus({uid,storage}){
  const q=uid?readQ(storage,uid):{};const es=Object.values(q).filter(e=>e&&typeof e==='object');
  return {total:es.length,exhausted:es.filter(exhausted).length,needsLogin:es.filter(e=>e.needsLogin===true).length};
 }
+
+// Token for the signed-in account only when it is the account the record belongs to (checked before and after the async token call, and against the token's sub).
+export async function accountToken(uid,auth,force){if(!uid||auth?.currentUser?.uid!==uid)return null;return ownerBound(uid,async f=>auth.currentUser?.uid===uid?auth.currentUser.getIdToken(f===true):null)(force===true)}

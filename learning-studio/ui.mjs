@@ -9,7 +9,7 @@ const lessonTestPassed=(lang,id)=>{try{return JSON.parse(localStorage.getItem('c
 const manifest=await (await fetch('curriculum-version.json')).json();const progress=progressPanel({account,version:manifest.version,element:$('accountProgress'),retryButton:$('retryProgress')});
 const syncLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
 const sync=await (async()=>{try{const {ResumeSync}=await import('./resume-sync.mjs');const uid=window.studioAccountUser?.uid||(syncLocal?'local':null);if(!uid)return null;
- const getToken=async()=>{if(features.resumeSync!==true)return null;const {auth}=await import('/js/firebase-config.js');return auth.currentUser?.getIdToken()??null};
+ const getToken=async()=>{if(features.resumeSync!==true)return null;const {auth}=await import('/js/firebase-config.js');if(uid==='local')return auth.currentUser?.getIdToken()??null;const {accountToken}=await import('./progress-api.mjs');return accountToken(uid,auth)};
  const el=document.getElementById('resumeStatus');let hide;const texts={saved:'اتحفظ على حسابك',device:'محفوظ على هذا الجهاز',pending:'جارٍ الحفظ…',failed:'محفوظ على جهازك. هنحاول نحفظه على حسابك تاني.'};
  const inst=new ResumeSync({uid,accountSync:features.resumeSync===true,getToken,storage:localStorage,fetchFn:(u,o)=>fetch(u,o),endpoint:'https://codequest.mariam2009m44.workers.dev',onStatus:s=>{if(!el)return;clearTimeout(hide);el.hidden=!texts[s];el.textContent=texts[s]??'';el.dataset.state=s;if(s==='saved'||s==='device')hide=setTimeout(()=>{el.hidden=true},2500)}});
  const lastKey='cq_resume_last:'+uid;inst.lastKey=lastKey;
