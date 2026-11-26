@@ -122,6 +122,8 @@
 
 /* CodeQuest 2026 game-wide polish */
 :root{color-scheme:dark}body{background-color:#080e1c;background-image:radial-gradient(ellipse at 10% 0%,rgba(75,105,190,.18),transparent 36%),radial-gradient(ellipse at 90% 12%,rgba(27,181,190,.11),transparent 32%),linear-gradient(155deg,#080e1c,#0c1427 58%,#080e1b)!important;background-attachment:fixed}main,.level-box,.game-card,.game-container,.result-box,.panel{border-color:rgba(151,177,218,.19)}button{font-family:inherit;-webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible{outline:3px solid #75e2ef!important;outline-offset:3px!important}button:disabled{cursor:not-allowed;filter:saturate(.65)}.level-box,.game-card,.result-box{box-shadow:0 18px 48px rgba(0,0,0,.22)}.lvl-btn,.btn,.opt-btn,.line,.piece{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}.lvl-btn:active,.btn:active,.opt-btn:active,.line:active,.piece:active{transform:scale(.985)}.progress,.timer-bar{overflow:hidden;border-radius:999px}.progress>span,.timer-bar>span{transition:width .25s ease}.result-emoji{filter:drop-shadow(0 8px 18px rgba(111,190,255,.2))}@media(max-width:640px){body{background-attachment:scroll!important}.level-box,.game-card,.result-box{width:min(100%,100%)!important;max-width:100%!important}.actions{gap:10px}.btn-restart,.btn-back{min-height:48px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+    .q-code{direction:ltr;text-align:left;unicode-bidi:isolate;white-space:pre-wrap;overflow-wrap:anywhere;font-family:'Fira Code',monospace;font-size:.95em;margin:10px 0 0;padding:12px 14px;border:1px solid rgba(255,255,255,.15);border-radius:10px;background:rgba(0,0,0,.3);color:#6be8ff}
+    @media (max-width:360px){.q-code{font-size:.78em;padding:10px 10px}}
 </style>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/codequest-games.css">
@@ -226,6 +228,16 @@
     let currentQs = [], curr = 0, score = 0, timeLeft = 20, timerInt, streak = 0, currentLevel = 'easy', answerLocked = false;
     const qEl = document.getElementById('question'), optsEl = document.getElementById('options'), timeEl = document.getElementById('time'), scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), progressEl = document.getElementById('progress');
 
+    // Multi-statement code in a question goes in its own left-to-right block, one statement per line, so it never wraps inside the Arabic sentence.
+    function renderQuestion(el, text) {
+      const m = /^(ما هو ناتج الكود:)\s*([^;]+;\s.*;)\s*$/.exec(String(text));
+      if (!m) { setBidiText(el, text); return; }
+      el.textContent = '';
+      const lead = document.createElement('div'); lead.textContent = m[1]; el.appendChild(lead);
+      const pre = document.createElement('pre'); pre.className = 'q-code'; pre.dir = 'ltr';
+      pre.textContent = m[2].split(/;\s+/).map((x, i, a) => i < a.length - 1 ? x + ';' : x).join('\n');
+      el.appendChild(pre);
+    }
     // Show Latin runs (C++, console.log(), code) left-to-right inside Arabic text. Each run is wrapped in an
     // isolated LTR span built with createElement/textContent, so the text is never parsed as HTML and
     // textContent stays identical to the original string.
@@ -287,7 +299,7 @@
     function loadQ() {
       if (curr >= currentQs.length) return endGame();
       const q = currentQs[curr];
-      setBidiText(qEl, q.q);
+      renderQuestion(qEl, q.q);
       optsEl.innerHTML = '';
       progressEl.style.width = `${(curr / currentQs.length) * 100}%`;
       progressEl.setAttribute('aria-label',`السؤال ${curr+1} من ${currentQs.length}`);

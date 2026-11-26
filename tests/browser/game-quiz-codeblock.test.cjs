@@ -1,0 +1,16 @@
+// game-quiz: multi-statement code questions render the code in a separate LTR block, one statement per line, with exact statements kept. 320 and 390px. Fixture states.
+const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
+const root=path.resolve(__dirname,'../..');const origin='http://codequest.test';const types={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'application/javascript','.svg':'image/svg+xml','.png':'image/png','.json':'application/json','.webp':'image/webp','.jpg':'image/jpeg'};
+(async()=>{const b=await chromium.launch();const out=[];
+for(const w of [390,320]){const c=await b.newContext({viewport:{width:w,height:844},serviceWorkers:'block'});
+await c.route('**/*',async r=>{const u=new URL(r.request().url());if(u.origin!==origin)return r.abort();if(u.pathname==='/js/auth.js')return r.fulfill({contentType:'text/javascript',body:'export async function requireUser(){return {uid:"fixtureA"}}'});if(u.pathname==='/js/firebase-config.js')return r.fulfill({contentType:'text/javascript',body:'export const functions={};'});if(['/js/route-guard.js','/js/reminders.js','/js/game-audio.js'].includes(u.pathname))return r.fulfill({contentType:'application/javascript',body:''});try{await r.fulfill({contentType:types[path.extname(u.pathname)]||'x',body:fs.readFileSync(path.join(root,u.pathname.slice(1)))})}catch{await r.fulfill({status:404,body:'nf'})}});
+const p=await c.newPage();await p.goto(origin+'/game-quiz.html');await p.waitForFunction(()=>window.CQGameStore&&window.CQGameStore.ready);
+const res=await p.evaluate(()=>{const rows=[];for(const l of ['easy','medium','hard'])questionBank[l].forEach((q,i)=>{if(!/ناتج الكود:/.test(q.q))return;currentLevel=l;currentQs=[q];curr=0;document.getElementById('levelScreen').classList.remove('active');document.getElementById('gameScreen').classList.add('active');loadQ();const el=document.getElementById('question'),pre=el.querySelector('pre.q-code');const multi=(q.q.match(/;/g)||[]).length>1;
+ const lines=pre?pre.textContent.split('\n'):[];const r=pre&&pre.getBoundingClientRect();const e=el.getBoundingClientRect();
+ rows.push({l,i,multi,hasPre:!!pre,lines,left:pre?getComputedStyle(pre).textAlign:'',dir:pre?getComputedStyle(pre).direction:'',fits:pre?(r.right<=innerWidth+1&&r.left>=-1&&pre.scrollWidth<=pre.clientWidth+1):true,joined:pre?lines.join(' '):'',orig:q.q.replace(/^ما هو ناتج الكود:\s*/,''),opts:[...document.querySelectorAll('#options button')].length,optsOk:q.opts.every((o,k)=>[...document.querySelectorAll('#options button')].some(b=>b.textContent.includes(o)))})});return rows});
+out.push({w,res});await c.close()}
+await b.close();
+for(const {w,res} of out){const multi=res.filter(r=>r.multi);assert.ok(multi.length>=3,'multi-statement code questions: '+multi.length);
+ for(const r of res){if(r.multi){assert.ok(r.hasPre,`${r.l}${r.i}@${w}: code block`);assert.equal(r.dir,'ltr');assert.equal(r.left,'left');assert.ok(r.lines.length>1);assert.equal(r.joined,r.orig,'exact code preserved');assert.ok(r.fits,`${r.l}${r.i}@${w}: block fits`)}else assert.ok(!r.hasPre);assert.ok(r.optsOk,'option values preserved')}}
+console.log('game-quiz multi-statement code blocks ok:',out[0].res.filter(r=>r.multi).length,'questions at 390 and 320');
+})().catch(e=>{console.error(e.message||e);process.exit(1)});
