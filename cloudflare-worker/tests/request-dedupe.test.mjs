@@ -89,3 +89,15 @@ test("an exception after the id was claimed releases it: the retry with the same
   const b = await call("/api/progress/code-task", { token: "tokA", body, headers: H("req-eeee-0009") });
   assert.equal(b.status, 200, JSON.stringify(b.data));
 });
+test("daily verification budget: runs that gave no verdict are refunded, so a down executor never uses the learner's daily budget", async () => {
+  const { call } = boot({ fetchImpl: async () => ({ ok: false, status: 500, json: async () => ({}) }) });
+  let last;
+  for (let i = 0; i < 130; i++) last = await call("/api/progress/code-task", { token: "tokA", body, headers: H("req-ffff-" + String(i).padStart(4, "0")) });
+  assert.equal(last.status, 503); assert.equal(last.data.message, "executor_unavailable", "never verification_limit_reached");
+});
+test("daily verification budget: real verdicts do use it, and the cap is 100 runs, not 20", async () => {
+  const ex = exec(); const { call } = boot({ fetchImpl: ex.f });
+  const per = t.length; let ok = 0, limited = 0;
+  for (let i = 0; i < Math.ceil(110 / per); i++) { const r = await call("/api/progress/code-task", { token: "tokA", body, headers: H("req-gggg-" + String(i).padStart(4, "0")) }); if (r.status === 200) ok++; if (r.status === 429) limited++; }
+  assert.ok(ok >= Math.floor(100 / per), "at least " + Math.floor(100 / per) + " verified runs fit"); assert.ok(limited >= 1, "the cap still exists");
+});

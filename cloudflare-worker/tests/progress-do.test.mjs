@@ -93,8 +93,10 @@ test("Durable Object records a code task only from server results, enforces bank
   assert.equal(later.data.best.passed, true);
   assert.equal((await call(o, "codetask", { ...base, bank: "old", results: [] })).status, 409);
   assert.equal((await call(o, "codetask", { ...base, item: 9, results: [] })).status, 400);
-  assert.equal((await call(o, "codebegin", { n: 10 })).status, 200);
-  assert.equal((await call(o, "codebegin", { n: 10 })).status, 200);
+  for (let i = 0; i < 10; i++) assert.equal((await call(o, "codebegin", { n: 10 })).status, 200, "100 runs per account per day");
+  assert.equal((await call(o, "codebegin", { n: 1 })).status, 429);
+  assert.equal((await call(o, "coderefund", { n: 3 })).status, 200);
+  assert.equal((await call(o, "codebegin", { n: 3 })).status, 200, "refunded runs are usable again");
   assert.equal((await call(o, "codebegin", { n: 1 })).status, 429);
   assert.equal((await call(o, "codebegin", { n: 0 })).status, 400);
 });

@@ -12,7 +12,8 @@ import PYTHON_FINAL from "./python-final.json";
 import { checkIntroConcept } from "./studio/concept.mjs";
 
 // Per-account cap on verification executions per day. A policy placeholder, not a promise of provider capacity.
-const CODE_VERIFY_DAILY_RUNS = 20;
+// Per account and UTC day, counted in test-case runs. A full track needs at most 14 runs (python), so 100 leaves room for retries. Runs that produced no verdict are refunded.
+const CODE_VERIFY_DAILY_RUNS = 100;
 // Code credit in a unit exam comes only from tasks this server already verified for this account, never from the client.
 function serverCodeResults(state, language, unit) {
   const quiz = CURRICULUM_INDEX.quizzes[`${language}-${unit}`];
@@ -753,6 +754,7 @@ async function handleProgressInner(request, env, origin, action, ctx) {
       if (!begin.ok) { const bd = await begin.json(); await dedupeFinish(stub, reqId, begin.status, null); return jsonResponse(bd, begin.status, origin); }
       for (const c of plan.cases) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
       if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
+        await stub.fetch("https://progress.internal/coderefund", { method: "POST", body: JSON.stringify({ n: plan.cases.length }) });
         await dedupeFinish(stub, reqId, 503, null);
         return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
       }
@@ -780,6 +782,7 @@ async function handleProgressInner(request, env, origin, action, ctx) {
     const results = [];
     for (const c of t.tests) results.push(await executeForVerification(env, input.language, body.code, c.stdin));
     if (results.some(r => !r.ok && (!String(r.reason || "").startsWith("status_") || r.reason === "status_13"))) {
+      await stub.fetch("https://progress.internal/coderefund", { method: "POST", body: JSON.stringify({ n: t.tests.length }) });
       await dedupeFinish(stub, reqId, 503, null);
       return jsonResponse({ success: false, retryable: true, message: "executor_unavailable" }, 503, origin);
     }
@@ -1571,6 +1574,13 @@ export class StudentProgress {
         if (!Number.isInteger(n) || n < 1 || n > 10) return { status: 400, data: { success: false, message: "bad_request" } };
         if (cq.count + n > CODE_VERIFY_DAILY_RUNS) return { status: 429, data: { success: false, message: "verification_limit_reached" } };
         cq.count += n; await tx.put("cexec", cq);
+        return { status: 200, data: { success: true } };
+      }
+      if (action === "coderefund") {
+        const today = new Date().toISOString().slice(0, 10);
+        const cq = (await tx.get("cexec")) || { day: today, count: 0 };
+        const n = Number(body.n);
+        if (cq.day === today && Number.isInteger(n) && n >= 1 && n <= 10) { cq.count = Math.max(0, cq.count - n); await tx.put("cexec", cq); }
         return { status: 200, data: { success: true } };
       }
       if (action === "codetask") {
