@@ -184,6 +184,12 @@
       gap: 11px;
     }
 
+    #missedReview{margin-top:18px;text-align:right}
+    #missedReview h3{margin:0 0 10px;font-size:1.05rem}
+    #missedReview .missed-item{border:1px solid rgba(251,113,133,.35);border-radius:12px;padding:12px;margin-bottom:10px;background:rgba(251,113,133,.08)}
+    #missedReview .missed-item p{margin:4px 0;line-height:1.7}
+    #missedReview .missed-q{font-weight:700}
+    #missedReview pre{direction:ltr;text-align:left;white-space:pre-wrap;overflow-x:auto;background:rgba(0,0,0,.35);padding:8px;border-radius:8px}
     .opt-btn {
       width: 100%;
       background: rgba(255,255,255,.035);
@@ -446,6 +452,7 @@
         <p id="resultDetails"></p>
         <p id="saveStatus"></p>
         <p id="serverRecord" role="status" hidden></p>
+        <section id="missedReview" hidden aria-label="مراجعة الأسئلة اللي اتجاوبت غلط"></section>
 
         <div class="result-actions">
           <a
@@ -1164,6 +1171,30 @@
           }
         }
 
+        // Review of the questions answered wrongly: the learner's pick, the right answer and why. Built with textContent only.
+        function renderMissedReview() {
+          const box = document.getElementById("missedReview");
+          if (!box) return;
+          box.replaceChildren();
+          const missed = examQuestions.filter(q => Number.isInteger(q.__pick) && q.__pick !== q.a);
+          if (!missed.length) { box.hidden = true; return; }
+          const h = document.createElement("h3");
+          h.textContent = "راجع الأسئلة اللي اتجاوبت غلط (" + missed.length + ")";
+          box.append(h);
+          missed.forEach(q => {
+            const item = document.createElement("div");
+            item.className = "missed-item";
+            const t = document.createElement("p"); t.className = "missed-q"; t.textContent = q.q;
+            const mine = document.createElement("p"); mine.textContent = "إجابتك: " + q.opts[q.__pick];
+            const right = document.createElement("p"); right.textContent = "الإجابة الصحيحة: " + q.opts[q.a];
+            const why = document.createElement("p"); why.textContent = q.explanation;
+            item.append(t, mine, right, why);
+            if (q.code) { const pre = document.createElement("pre"); pre.dir = "ltr"; pre.textContent = q.code; item.insertBefore(pre, mine); }
+            box.append(item);
+          });
+          box.hidden = false;
+        }
+
         // إنهاء الامتحان
         async function finishExam() {
           if (examFinished) return;
@@ -1190,6 +1221,7 @@
 
           saveStatus.textContent = "";
           saveStatus.className = "";
+          renderMissedReview();
 
           if (passed) {
             resultTitle.textContent = "أحسنت! تم اجتياز الامتحان";
