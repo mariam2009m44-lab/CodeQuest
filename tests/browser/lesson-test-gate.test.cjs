@@ -5,7 +5,7 @@ const bank=JSON.parse(fs.readFileSync(root+'/learning-studio/lesson-tests.json',
 (async()=>{const srv=http.createServer((q,s)=>{const f=path.join(root,decodeURIComponent(q.url.split('?')[0]));try{s.writeHead(200,{'content-type':types[path.extname(f)]||'text/plain'});s.end(fs.readFileSync(f))}catch{s.writeHead(404);s.end()}});
 await new Promise(r=>srv.listen(0,r));const L='http://localhost:'+srv.address().port;const b=await chromium.launch();
 try{
-async function run(uid,nright,fm=true){const c=await b.newContext({viewport:{width:390,height:900}}),p=await c.newPage();
+async function run(uid,nright,fm=true){const c=await b.newContext({viewport:{width:390,height:900}});await c.route(/^https?:\/\/(?!localhost)/,r=>r.abort());const p=await c.newPage();
 await p.goto(L+'/learning-studio/index.html');
 await p.evaluate(([u,f])=>localStorage.setItem('cq_lt_pending',JSON.stringify({lessonId:'py-1-1',language:'python',unit:1,index:0,uid:u,fromMap:f})),[uid,fm]);
 await p.goto(L+'/learning-studio/lesson-test.html?lang=python&lesson=py-1-1');await p.waitForSelector('#ltBody .choices button');

@@ -7,6 +7,8 @@ const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript
 await new Promise(r=>srv.listen(0,r));const L=process.env.BASE||('http://localhost:'+srv.address().port);const b=await chromium.launch();
 try{
  async function check(w,h,seed,uid,shot,wait){const c=await b.newContext({viewport:{width:w,height:h}});
+  // No external requests: a slow third-party font or script host must not stall the load event (CI timed out on page.goto waiting for load).
+  if(!process.env.BASE)await c.route(/^https?:\/\/(?!localhost)/,r=>r.abort());
   await c.route('**/js/auth.js',r=>r.fulfill({contentType:'text/javascript',body:`export const requireUser=async()=>({uid:${JSON.stringify(uid)}});export const getLessonProgress=async()=>[];export const getUserProfile=async()=>({xp:0,stars:0});`}));
   const p=await c.newPage();await p.addInitScript(()=>{for(const l of['javascript','python','cpp','java'])sessionStorage.setItem('cq_cody_intro_u1_'+l,'1')});
   await p.goto(L+'/learning-studio/index.html');await p.evaluate(s=>{for(const[k,v]of Object.entries(s))localStorage.setItem(k,v)},seed);

@@ -234,7 +234,16 @@
       const parts = String(text).split(/([\x21-\x7E](?:[\x20-\x7E]*[\x21-\x7E])?)/);
       parts.forEach((part, i) => {
         if (!part) return;
-        if (i % 2 === 1) { const span = document.createElement('span'); span.dir = 'ltr'; span.style.unicodeBidi = 'isolate'; span.textContent = part; el.appendChild(span); }
+        if (i % 2 === 1) {
+          // Sentence punctuation around a code run belongs to the Arabic sentence: keep it outside the LTR isolate; textContent stays identical to the original string.
+          // Peel only punctuation that sits between Arabic text and the code run; code that starts or ends the string (for example "!=" or "for x in y:") stays whole.
+          const hasBefore = i > 0 && parts[i - 1], hasAfter = i < parts.length - 1 && parts[i + 1];
+          const lead = hasBefore ? part.match(/^[\s:]*/)[0] : '', rest = part.slice(lead.length), trail = hasAfter ? (rest.match(/[\s.,:;]*$/) || [''])[0] : '', value = rest.slice(0, rest.length - trail.length);
+          if (!value) { el.appendChild(document.createTextNode(part)); return; }
+          if (lead) el.appendChild(document.createTextNode(lead));
+          const span = document.createElement('span'); span.dir = 'ltr'; span.style.unicodeBidi = 'isolate'; span.textContent = value; el.appendChild(span);
+          if (trail) el.appendChild(document.createTextNode(trail));
+        }
         else el.appendChild(document.createTextNode(part));
       });
     }

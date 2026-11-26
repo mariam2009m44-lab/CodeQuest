@@ -6,7 +6,7 @@ const assert=require('assert/strict');const root=path.resolve(__dirname,'../..')
 await new Promise(r=>srv.listen(0,r));const L='http://localhost:'+srv.address().port;const b=await chromium.launch();
 // Default is the platform dark theme even when the device prefers light; a saved choice persists across reload.
 for(const url of ['/learning.html?from=map&lang=python&unit=1&index=0','/learning-studio/quiz.html?lang=python&unit=1','/learning-studio/project.html?project=py-p1&uid=u1']){
- const c=await b.newContext({viewport:{width:390,height:844},colorScheme:'light'});const p=await c.newPage();await p.goto(L+url);await p.waitForSelector('#themeToggle');
+ const c=await b.newContext({viewport:{width:390,height:844},colorScheme:'light'});await c.route(/^https?:\/\/(?!localhost)/,r=>r.abort());const p=await c.newPage();await p.goto(L+url);await p.waitForSelector('#themeToggle');
  assert.equal(await p.evaluate(()=>document.documentElement.dataset.theme),'dark',url+' default dark under light device');
  assert.equal(await p.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(9, 15, 37)',url+' navy background');
  await p.click('#themeToggle');assert.equal(await p.evaluate(()=>document.documentElement.dataset.theme),'light');
