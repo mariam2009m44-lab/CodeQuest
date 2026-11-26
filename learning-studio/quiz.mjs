@@ -20,7 +20,15 @@ if(serverOn)import('/js/firebase-config.js').then(({auth})=>flushPending({uid:au
 const pendingSync=[];
 const units=await (await fetch('units.json')).json();const pack=units.find(u=>u.language===lang&&u.unit===unit);
 $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
-if(!data||!pack){$('quizTitle').textContent='لا يوجد اختبار لهذه الوحدة بعد.'}
+// The unit exam opens only after every lesson test of the unit is passed on this account (and, from unit 2, the previous unit exam). Pages on localhost skip this unless ?gate=1 (so fixture specs can open the exam directly).
+const lessonBankForGate=pack?await fetch('lesson-tests.json').then(r=>r.json()).catch(()=>({})):{};
+const gateOpen=(()=>{if(!pack)return true;if(localHost&&q.get('gate')!=='1')return true;if(!uid)return false;
+ const ok=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')?.passed===true}catch{return false}};
+ const lessonsOk=pack.lessons.every(l=>!lessonBankForGate[l.id]||ok('codequest_studio_lessontest_'+uid+'_'+lang+'_'+l.id));
+ const prevOk=unit<=1||ok('codequest_studio_quiz_'+uid+'_'+lang+'_'+(unit-1));
+ return lessonsOk&&prevOk})();
+if(!gateOpen){$('quizTitle').textContent='اختبار الوحدة لسه مقفول';$('quizIntro').textContent='لازم تخلصي دروس الوحدة وتنجحي في اختبار كل درس الأول، وبعدها يتفتح اختبار الوحدة. ارجعي للخريطة وكمّلي من آخر محطة مفتوحة.';const a=document.createElement('a');a.className='primary';a.href='/course-path.html?lang='+encodeURIComponent(lang);a.textContent='ارجعي للخريطة';a.id='examLockedMap';$('quizIntro').after(a)}
+else if(!data||!pack){$('quizTitle').textContent='لا يوجد اختبار لهذه الوحدة بعد.'}
 else{
  $('quizTitle').textContent='اختبار: '+pack.title;
  const items=[...data.mcq.map(x=>({...x,kind:'mcq'})),...data.code.map(x=>({...x,kind:'code'}))];
