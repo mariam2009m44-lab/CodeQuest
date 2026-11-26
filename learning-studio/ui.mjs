@@ -51,5 +51,5 @@ $('skipStory').onclick=()=>{$('comic').hidden=!$('comic').hidden;$('skipStory').
 $('next').onclick=()=>{const next=nextLesson(packs,pack,lesson);if(next){selectPack(next.pack,next.lesson);reveal('title')}else message('أكملت دروس المسار في هذه الجلسة. ارجع لمفهوم سابق بقيم جديدة واختبر قدرتك على شرحه، وليس حفظ ناتجه. لا تُسجل هذه الجلسة مكافآت حساب.');};
 window.accountProgressEvidence=()=>progress.snapshot();window.unitEvidence=()=>session.snapshot();let initial=resolveRoute(packs,location.search);
 if(sync&&!new URLSearchParams(location.search).get('lesson')){try{const lang=new URLSearchParams(location.search).get('lang')||localStorage.getItem(sync.lastKey);if(lang){const rec=await Promise.race([sync.restore(lang),new Promise(r=>setTimeout(()=>r(null),2500))]);if(rec&&rec.phase!=='complete'){for(const p of packs.filter(x=>x.language===lang)){const l=p.lessons.find(x=>x.id===rec.lessonId);if(l){initial={pack:p,lesson:l};break}}}}}catch{}}
-if(!accessible(initial.pack,initial.lesson)){location.replace('/course-path.html?lang='+encodeURIComponent(initial.pack.language));await new Promise(()=>{})}
+if(!fromMap&&!accessible(initial.pack,initial.lesson)){location.replace('/course-path.html?lang='+encodeURIComponent(initial.pack.language));await new Promise(()=>{})}
 selectPack(initial.pack,initial.lesson);
