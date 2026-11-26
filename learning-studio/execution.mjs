@@ -12,6 +12,14 @@ export function compilerAdapter(language,runCodeOnServer){
 export async function selectExecutor(language){
  // JavaScript runs in the learner's browser sandbox: no server quota, no external service.
  if(language==='javascript'&&typeof document!=='undefined'&&!new URLSearchParams(location.search).has('serverjs')){const {runJavaScript}=await import('./js-sandbox.mjs');return async(code)=>{const r=await runJavaScript(code);return r.ok?{ok:true,stdout:r.stdout}:{ok:false,stdout:r.stdout,message:r.message,student:!/المتصفح منع/.test(r.message||'')}}}
+ if(language==='python'&&typeof document!=='undefined'&&!new URLSearchParams(location.search).has('serverpy')){
+  // Python runs in the learner's browser when possible; the server runner stays as the fallback if the runtime cannot load.
+  const {runPython,pyodideAvailable}=await import('./pyodide-runner.mjs');
+  if(pyodideAvailable()){let server;return async(code,stdin='')=>{try{return await runPython(code,stdin)}catch(e){if(e?.code!=='NO_PYODIDE')throw e;server??=await serverExecutor(language);return server(code,stdin)}}}
+ }
+ return serverExecutor(language);
+}
+async function serverExecutor(language){
  if(location.hostname==='localhost'||location.hostname==='127.0.0.1'){
   // The development endpoint exists only in the local verification server.
   // Never include a process-execution server in a hosted static page.

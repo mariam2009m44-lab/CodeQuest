@@ -8,7 +8,7 @@ await new Promise(r=>srv.listen(0,r));const L='http://localhost:'+srv.address().
 const units=JSON.parse(fs.readFileSync(path.join(root,'learning-studio/units.json'),'utf8')),expl=JSON.parse(fs.readFileSync(path.join(root,'learning-studio/explanations.json'),'utf8'));
 const from=+(process.env.FROM_UNIT||1),to=+(process.env.TO_UNIT||12);let n=0;const bad=[];
 for(const pack of units.filter(x=>x.language==='python'&&x.unit>=from&&x.unit<=to))for(const [index,lesson] of pack.lessons.entries()){
- const p=await b.newPage({viewport:{width:390,height:844}});p.setDefaultTimeout(5000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
+ const p=await b.newPage({viewport:{width:390,height:844}});await p.route('https://cdn.jsdelivr.net/**',r=>r.abort());p.setDefaultTimeout(5000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
  try{await p.goto(L+`/learning.html?from=map&lang=python&unit=${pack.unit}&index=${index}`);await p.waitForSelector('#dialogue .chatlog');
   for(const t of lesson.dialogue){const o=t.options.find(o=>o.fit);const k=t.options.indexOf(o);await p.locator('#dialogue .choices button').nth(k).click();await p.waitForTimeout(150)}
   const pred=lesson.steps.find(s=>s.type==='prediction');await p.locator('#question button').nth(pred.correctIndex).click();
