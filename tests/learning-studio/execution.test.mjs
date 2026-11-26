@@ -4,3 +4,10 @@ test('compiler error returned without synthetic success',async()=>{const execute
 test('unavailable service propagates without fallback',async()=>{let count=0;const execute=compilerAdapter('python',async()=>{count++;throw Error('service unavailable')});await assert.rejects(execute('print(1)'),/unavailable/);assert.equal(count,1)});
 test('missing or malformed server output cannot pass',async()=>{const execute=compilerAdapter('javascript',async()=>({ok:true}));await assert.rejects(execute('console.log(1)'),/ناتج/)});
 test('unsupported language rejected before execution',()=>assert.throws(()=>compilerAdapter('other',()=>{}),/adapter/));
+test('server runner: compile/stderr output is a student error, a service errorCode is not',async()=>{
+ const {compilerAdapter}=await import('../../learning-studio/execution.mjs');
+ const stu=await compilerAdapter('cpp',async()=>({ok:false,compileOutput:'error: expected ;'}))('x');assert.equal(stu.student,true);
+ const rt=await compilerAdapter('python',async()=>({ok:false,stderr:'NameError'}))('x');assert.equal(rt.student,true);
+ const svc=await compilerAdapter('java',async()=>({ok:false,message:'down',errorCode:'JUDGE0_INTERNAL_ERROR'}))('x');assert.equal(svc.student,false);
+ const none=await compilerAdapter('java',async()=>({ok:false}))('x');assert.equal(none.student,false);
+});
