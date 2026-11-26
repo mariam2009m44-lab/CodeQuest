@@ -1,12 +1,12 @@
 import { requireUser, getLessonProgress, getUserProfile } from "./auth.js";
 
 // Lessons open in the interactive studio lesson from the same map. Chapter/lesson indexes match the studio units one to one.
-const studioUrl=(lang,c,l)=>`learning.html?from=map&lang=${lang}&unit=${c+1}&index=${l}`;
+const studioUrl=(lang,c,l,lessonId)=>`/learning.html?from=map&lang=${encodeURIComponent(lang)}&unit=${c+1}&index=${l}&lesson=${encodeURIComponent(lessonId||'')}`;
 const CONFIG = {
- python:{name:"Python",description:"من أول أمر طباعة لحد بناء مشروعك الأول.",file:"json/python_curriculum.json",url:(c,l)=>studioUrl('python',c,l),legacyUrl:(c,l)=>`python-lesson.html?ch=${c+1}&lesson=${l+1}`},
- javascript:{name:"JavaScript",description:"اصنع صفحات ويب تفاعلية وتعلّم التفكير البرمجي.",file:"json/js_curriculum.json",url:(c,l)=>studioUrl('javascript',c,l)},
- cpp:{name:"C++",description:"ابنِ أساسًا قويًا في البرمجة والخوارزميات وحل المشكلات.",file:"json/cpp_curriculum.json",url:(c,l)=>studioUrl('cpp',c,l)},
- java:{name:"Java",description:"تعلّم بناء البرامج المنظمة خطوة بخطوة.",file:"json/java_curriculum.json",url:(c,l)=>studioUrl('java',c,l)}
+ python:{name:"Python",description:"من أول أمر طباعة لحد بناء مشروعك الأول.",file:"json/python_curriculum.json",url:(c,l,id)=>studioUrl('python',c,l,id),legacyUrl:(c,l)=>`python-lesson.html?ch=${c+1}&lesson=${l+1}`},
+ javascript:{name:"JavaScript",description:"اصنع صفحات ويب تفاعلية وتعلّم التفكير البرمجي.",file:"json/js_curriculum.json",url:(c,l,id)=>studioUrl('javascript',c,l,id)},
+ cpp:{name:"C++",description:"ابنِ أساسًا قويًا في البرمجة والخوارزميات وحل المشكلات.",file:"json/cpp_curriculum.json",url:(c,l,id)=>studioUrl('cpp',c,l,id)},
+ java:{name:"Java",description:"تعلّم بناء البرامج المنظمة خطوة بخطوة.",file:"json/java_curriculum.json",url:(c,l,id)=>studioUrl('java',c,l,id)}
 };
 const params=new URLSearchParams(location.search);
 const language=(params.get("lang")||"python").toLowerCase();
