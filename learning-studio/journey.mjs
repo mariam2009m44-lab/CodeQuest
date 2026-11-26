@@ -1,3 +1,4 @@
+import {CODY_HTML} from './cody-markup.mjs';
 // A completed lesson leads into a short Cody transition and a clear next action.
 // Lesson checks remain available, but they do not interrupt the next lesson in the same unit.
 let shownFor=null;
@@ -23,7 +24,8 @@ export function startJourney({anchor,pack,lesson,next,goNext,quizUrl,testUrl=nul
  style.textContent=`
  #journey{animation:cqJourneyIn .45s ease-out both}
  #journey .journey-cody{display:flex;align-items:center;gap:12px;margin:0 0 12px}
- #journey .journey-cody-avatar{display:grid;place-items:center;width:54px;height:54px;flex:none;border-radius:18px;background:linear-gradient(145deg,#7955e8,#36bfe5);font-size:30px;box-shadow:0 6px 18px #0003;animation:cqCodyArrive .85s cubic-bezier(.2,.8,.2,1) both}
+ #journey .journey-cody-avatar{display:grid;place-items:center;position:relative;width:52px;height:56px;flex:none;animation:cqCodyArrive .85s cubic-bezier(.2,.8,.2,1) both}
+ #journey .journey-cody-avatar .cody-character{position:absolute;left:50%;bottom:0;transform:translateX(-50%) scale(.52);transform-origin:center bottom}
  #journey .journey-cody-bubble{padding:9px 13px;border-radius:14px;background:#1c2c49;border:1px solid #465a80}
  #journey .journey-cody-bubble strong{display:block;color:#b2f1ff}
  #journey .journey-cody-bubble span{font-size:13px}
@@ -45,7 +47,7 @@ export function startJourney({anchor,pack,lesson,next,goNext,quizUrl,testUrl=nul
  cody.className='journey-cody';
  const avatar=document.createElement('span');
  avatar.className='journey-cody-avatar';
- avatar.textContent='🤖';
+ avatar.innerHTML=CODY_HTML;
  avatar.setAttribute('aria-hidden','true');
  const bubble=document.createElement('div');
  bubble.className='journey-cody-bubble';

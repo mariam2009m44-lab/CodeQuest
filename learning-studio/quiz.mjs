@@ -1,9 +1,9 @@
+import {CODY_HTML} from './cody-markup.mjs';
 import {gradeCode,summarize,byLesson,isPassed,afterLastUnit,PASS_PERCENT,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
 import './snippet-hint.mjs';
 import {selectExecutor} from './execution.mjs';
 import {setProse} from './prose.mjs';
 import {postProgress,postDurable,flushPending,examPayload,codeTaskPayload} from './progress-api.mjs';
-const CODY_HTML='<span class="cody-character is-waving"><span class="cody-character__antenna"></span><span class="cody-character__head"><span class="cody-character__eye cody-character__eye--left"></span><span class="cody-character__eye cody-character__eye--right"></span><span class="cody-character__mouth"></span></span><span class="cody-character__body"><span class="cody-character__core">✦</span></span><span class="cody-character__arm cody-character__arm--left"></span><span class="cody-character__arm cody-character__arm--right"></span><span class="cody-character__leg cody-character__leg--left"></span><span class="cody-character__leg cody-character__leg--right"></span></span>';
 const q=new URLSearchParams(location.search),lang=q.get('lang')||'python',unit=Number(q.get('unit')||1);
 const localHost=location.hostname==='localhost'||location.hostname==='127.0.0.1';
 // The pass flag is kept per signed-in account on this device (never shared between accounts, never a server record).
@@ -25,13 +25,16 @@ $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
 const lessonBankForGate=pack?await fetch('lesson-tests.json').then(r=>r.json()).catch(()=>({})):{};
 const gateOpen=(()=>{if(!pack)return true;if(localHost&&q.get('gate')!=='1')return true;if(!uid)return false;
  const ok=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')?.passed===true}catch{return false}};
- const lessonsOk=pack.lessons.every(l=>!lessonBankForGate[l.id]||ok('codequest_studio_lessontest_'+uid+'_'+lang+'_'+l.id));
+ // A lesson counts as done when its chat steps were finished and recorded on the map for THIS account (records are per account key), or its test was passed.
+ const rec=(()=>{try{const r=JSON.parse(localStorage.getItem('codequest_lesson_progress_'+uid+'_'+lang)||'[]');return Array.isArray(r)?r:[]}catch{return []}})();
+ const py=(()=>{if(lang!=='python')return [];try{const r=JSON.parse(localStorage.getItem('codequest_'+uid+'_cody_python_completed_lessons')||'[]');return Array.isArray(r)?r.map(String):[]}catch{return []}})();
+ const lessonsOk=pack.lessons.every((l,i)=>ok('codequest_studio_lessontest_'+uid+'_'+lang+'_'+l.id)||rec.some(x=>x?.completed===true&&x.chapter===unit-1&&x.lesson===i)||py.includes(unit+'_'+i));
  const prevOk=unit<=1||ok('codequest_studio_quiz_'+uid+'_'+lang+'_'+(unit-1));
  return lessonsOk&&prevOk})();
 if(!gateOpen){document.head.append(Object.assign(document.createElement('link'),{rel:'stylesheet',href:'cody-character.css'}));
  $('quizTitle').textContent='اختبار الوحدة';$('quizIntro').hidden=true;
  const card=document.createElement('section');card.className='exam-locked';card.setAttribute('role','status');
- card.innerHTML='<div class="exam-locked__cody" aria-hidden="true">'+CODY_HTML+'</div><h2>اختبار الوحدة لسه مقفول</h2><p>خلّص دروس الوحدة بالترتيب، وانجح في اختبار كل درس (٥٠٪ أو أكتر)، وبعدها يتفتح اختبار الوحدة.</p><a class="exam-locked__btn" id="examLockedMap" href="/course-path.html?lang='+encodeURIComponent(lang)+'">الرجوع للخريطة وإكمال الرحلة</a>';
+ card.innerHTML='<div class="exam-locked__cody" aria-hidden="true">'+CODY_HTML+'</div><h2>اختبار الوحدة لسه مقفول</h2><p>خلّص دروس الوحدة بالترتيب، وبعدها يتفتح اختبار الوحدة.</p><a class="exam-locked__btn" id="examLockedMap" href="/course-path.html?lang='+encodeURIComponent(lang)+'">الرجوع للخريطة وإكمال الرحلة</a>';
  $('quizIntro').after(card)}
 else if(!data||!pack){$('quizTitle').textContent='لا يوجد اختبار لهذه الوحدة بعد.'}
 else{

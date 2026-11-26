@@ -18,6 +18,12 @@ for(const lang of ['python','javascript','cpp','java']){
  o=await open(lang,1,'u1',all);assert.equal(o.r.locked,false,lang+' opens when all lesson tests are passed');assert.ok(o.r.cards>0);await o.c.close();
  o=await open(lang,1,'u1',{},false);assert.equal(o.r.locked,false,lang+' fixture bypass is localhost-only without gate=1');await o.c.close();
 }
+// Lessons finished (chat steps recorded on the map) open the exam even with no lesson test; records of another account key (guest "anon") never count
+{const lang='python';const recs=[0,1,2,3].map(i=>({chapter:0,lesson:i,completed:true}));
+ let o=await open(lang,1,'u1',{codequest_lesson_progress_u1_python:JSON.stringify(recs)});assert.equal(o.r.locked,false,'records of this account open the exam');await o.c.close();
+ o=await open(lang,1,'u1',{codequest_lesson_progress_anon_python:JSON.stringify(recs)});assert.equal(o.r.locked,true,'guest anon records are never used by another account');await o.c.close();
+ o=await open(lang,1,'u2',{codequest_lesson_progress_u1_python:JSON.stringify(recs)});assert.equal(o.r.locked,true,'another account key is ignored');await o.c.close();
+ o=await open(lang,1,'u1',{codequest_lesson_progress_u1_python:JSON.stringify(recs.slice(0,3))});assert.equal(o.r.locked,true,'3 of 4 lessons: still locked');await o.c.close()}
 // unit 2 needs unit 1 exam too
 {const lang='python';const all=passes(lang,2,'u1');let o=await open(lang,2,'u1',all);assert.equal(o.r.locked,true,'unit 2 exam locked without unit 1 exam pass');await o.c.close();
  o=await open(lang,2,'u1',{...all,codequest_studio_quiz_u1_python_1:JSON.stringify({passed:true})});assert.equal(o.r.locked,false);await o.c.close()}
@@ -25,4 +31,8 @@ for(const lang of ['python','javascript','cpp','java']){
 {const c=await b.newContext({viewport:{width:390,height:844}});await c.route(/^https?:\/\/(?!localhost)/,r=>r.abort());const p=await c.newPage();
  await p.goto(L+'/learning-studio/index.html?lang=python&unit=1&uid=u1');await p.waitForSelector('#unitQuiz',{state:'attached'});await p.waitForTimeout(600);
  assert.equal(await p.evaluate(()=>document.getElementById('unitQuiz').hidden),true,'exam link hidden at lesson 1');await c.close()}
+// journey box shows the real Cody (not an emoji)
+{const c=await b.newContext({viewport:{width:390,height:844}});await c.route(/^https?:\/\/(?!localhost)/,r=>r.abort());const p=await c.newPage();await p.goto(L+'/learning-studio/index.html?lang=python&unit=1&uid=u1');await p.waitForTimeout(600);
+ const r=await p.evaluate(async()=>{const {startJourney}=await import('/learning-studio/journey.mjs');const packs=await (await fetch('/learning-studio/units.json')).json();const pack=packs.find(x=>x.language==='python'&&x.unit===1);const a=document.getElementById('completion')||document.body.firstElementChild;a.hidden=false;startJourney({anchor:a,pack,lesson:pack.lessons[0],next:{pack,lesson:pack.lessons[1]},goNext(){},quizUrl:'quiz.html',testUrl:'lesson-test.html?lang=python&lesson=py-1-1'});const av=document.querySelector('#journey .journey-cody-avatar');document.getElementById('journey').scrollIntoView();return {cody:!!av?.querySelector('.cody-character'),emoji:/🤖/.test(av?.textContent||'')}});
+ assert.equal(r.cody,true,'real Cody in the journey box');assert.equal(r.emoji,false);await p.waitForTimeout(1100);await p.screenshot({path:'/tmp/journey-cody.png'});await c.close()}
 console.log('unit exam gate ok (fixtures)')}finally{await b.close();srv.close()}})().catch(e=>{console.error(String(e.stack||e).slice(0,500));process.exit(1)});
