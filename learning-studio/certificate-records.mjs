@@ -1,7 +1,7 @@
 // Single boundary for the signed-in learner's own certificates. DISABLED until the backend ships
 // GET /api/certificates (see docs/certificate-record-contract.md). Never uses localStorage as authority.
 // Result states: disabled | signedout | ok (records, may be empty) | error (can't load; NOT "no certificates").
-export const CERT_ENDPOINT_ENABLED=false;
+export const CERT_ENDPOINT_ENABLED=true;
 const TRACKS=['python','javascript','cpp','java'];
 const LABELS={python:'Python',javascript:'JavaScript',cpp:'C++',java:'Java'};
 // Issuable only when every lesson and every unit exam passed AND code tasks were verified server-side. MCQ alone never qualifies.

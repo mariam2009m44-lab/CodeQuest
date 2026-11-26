@@ -7,6 +7,6 @@ test('profile shows a certificates section whose default state is empty and neve
 });
 test('profile wires the adapter behind the disabled flag and does not claim a fetched empty list',()=>{
  assert.match(h,/profile-certificates\.mjs/);assert.match(h,/CERT_ENDPOINT_ENABLED/);assert.match(h,/غير مفعّل حاليًا/);
- const m=fs.readFileSync(new URL('../../learning-studio/certificate-records.mjs',import.meta.url),'utf8');assert.match(m,/CERT_ENDPOINT_ENABLED=false/);
+ const m=fs.readFileSync(new URL('../../learning-studio/certificate-records.mjs',import.meta.url),'utf8');assert.match(m,/CERT_ENDPOINT_ENABLED=true/);
  const c=fs.readFileSync(new URL('../../learning-studio/certificate.mjs',import.meta.url),'utf8');assert.ok(/CERT_ENDPOINT_ENABLED/.test(c)&&!/localStorage/.test(c));
 });

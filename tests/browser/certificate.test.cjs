@@ -11,7 +11,7 @@ try{
  // 1. no record: honest empty state, no canvas, no actions
  await p.goto(L+'/learning-studio/certificate.html');await p.waitForSelector('#certNone:not([hidden])');
  assert(await p.locator('#certCanvas').isHidden());assert(await p.locator('#certActions').isHidden());
- const dtxt=await p.textContent('#certNone');assert.match(dtxt,/غير مفعّل/);assert.doesNotMatch(dtxt,/لا توجد شهادة صادرة/);
+ const dtxt=await p.textContent('#certNone');assert.match(dtxt,/سجّل الدخول لعرض شهادتك/);assert.doesNotMatch(dtxt,/لا توجد شهادة صادرة/);
  // 2. demo record: marked, PDF download + print
  for(const lang of ['python','cpp']){
   await p.goto(L+'/learning-studio/certificate.html?demo=1&lang='+lang);await p.waitForSelector('#certCanvas:not([hidden])');

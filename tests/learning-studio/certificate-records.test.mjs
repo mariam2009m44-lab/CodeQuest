@@ -3,7 +3,7 @@ import {loadMyCertificates,validateCertificates,renderCertificates,latestOnly} f
 const rec={track:'python',trackName:'Python',issuedAt:'2026-11-25T10:00:00Z',lessonsCompleted:48,lessonsTotal:48,unitExamsPassed:12,unitExamsTotal:12,codeTasksVerified:true,recordId:'FIXTURE-0001'};
 const body=(...r)=>({certificates:r.length?r:[rec]});
 const D=(o={})=>({enabled:true,getUid:()=>'u1',fetchCertificates:async()=>body(),...o});
-test('disabled by default',async()=>{assert.equal((await loadMyCertificates()).state,'disabled');assert.equal((await loadMyCertificates({fetchCertificates:async()=>body(),getUid:()=>'u1'})).state,'disabled')});
+test('disabled without an adapter or when switched off',async()=>{assert.equal((await loadMyCertificates()).state,'disabled');assert.equal((await loadMyCertificates({enabled:false,fetchCertificates:async()=>body(),getUid:()=>'u1'})).state,'disabled')});
 test('signed out',async()=>{assert.equal((await loadMyCertificates(D({getUid:()=>null}))).state,'signedout')});
 test('valid synthetic fixture',async()=>{const r=await loadMyCertificates(D());assert.equal(r.state,'ok');assert.equal(r.records[0].recordId,'FIXTURE-0001')});
 test('empty list is ok, not error',async()=>{const r=await loadMyCertificates(D({fetchCertificates:async()=>({certificates:[]})}));assert.equal(r.state,'ok');assert.equal(r.records.length,0)});

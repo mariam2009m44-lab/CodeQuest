@@ -3,7 +3,7 @@ import {postProgress,examPayload,codeTaskPayload} from '../../learning-studio/pr
 const quizzes=JSON.parse(fs.readFileSync(new URL('../../learning-studio/quizzes.json',import.meta.url),'utf8'));
 const idx=JSON.parse(fs.readFileSync(new URL('../../cloudflare-worker/curriculum-index.json',import.meta.url),'utf8'));
 const feats=JSON.parse(fs.readFileSync(new URL('../../learning-studio/features.json',import.meta.url),'utf8'));
-test('serverAssessment flag is OFF in the shipped features file',()=>assert.equal(feats.serverAssessment,false));
+test('serverAssessment flag is ON (owner-approved global activation 2026-11-26) and the unrelated flags stay OFF',()=>{assert.equal(feats.serverAssessment,true);assert.equal(feats.certificateIssue,true);assert.equal(feats.unitProjects,false);assert.equal(feats.accountEvidence,false)});
 test('disabled sends nothing',async()=>{let n=0;const r=await postProgress({enabled:false,getToken:async()=>'t',fetchFn:async()=>{n++},path:'/x',payload:{a:1}});assert.equal(n,0);assert.equal(r.reason,'disabled')});
 test('exam payload carries picks and the bank hash the server stores, never a score',()=>{
  const q=quizzes['python-1'];const p=examPayload({language:'python',unit:1,quiz:q,answers:[{picked:0,correct:true},{picked:2},{},{correct:true}]});
