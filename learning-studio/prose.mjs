@@ -6,7 +6,7 @@ export function proseNodes(text,documentRef=document){
   const raw=match[0],lead=raw.match(/^[\s:;,.!?]*/)[0],trail=raw.slice(lead.length).match(/[\s:,.!?]*$/)[0],value=raw.slice(lead.length,raw.length-trail.length);
   if(!value)continue;const leading=lead,trailing=trail;
   fragment.append(documentRef.createTextNode(text.slice(start,match.index)+leading));
-  const span=documentRef.createElement('bdi');span.dir='ltr';span.className='code';span.textContent=value;fragment.append(span,documentRef.createTextNode(trailing?'\u200f'+trailing:''));start=match.index+raw.length;
+  const span=documentRef.createElement('bdi');span.dir='ltr';span.className='code';span.textContent=value;fragment.append(span,documentRef.createTextNode(trailing?'\u2060\u200f'+trailing:''));start=match.index+raw.length;
  }
  fragment.append(documentRef.createTextNode(text.slice(start)));return fragment;
 }
