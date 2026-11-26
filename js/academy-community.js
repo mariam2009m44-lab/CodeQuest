@@ -124,7 +124,7 @@ async function loadAll(){
   await loadGroups();
   await loadMyGroups();
   setMessage(state,"تم تحميل بيانات المدرّسين والمجموعات من قاعدة البيانات.");
- }catch(error){setMessage(state,error.message||"تعذر تحميل المجتمع. تأكدي من نشر وظائف Firebase.",true);}
+ }catch(error){setMessage(state,error.message||"تعذر تحميل المجتمع. تأكد من نشر وظائف Firebase.",true);}
  finally{refreshButton.disabled=false;}
 }
 postForm.addEventListener("submit",async event=>{
@@ -152,7 +152,7 @@ refreshButton.addEventListener("click",loadAll);
 await authPersistenceReady;
 onAuthStateChanged(auth,async user=>{
  currentUser=user;
- if(!user){setMessage(state,"سجّلي الدخول بحساب CodeQuest لعرض المجتمع.");const link=el("a","","تسجيل الدخول");link.href="login.html?next=academy-community.html";state.append(" ",link);return;}
+ if(!user){setMessage(state,"سجّل الدخول بحساب CodeQuest لعرض المجتمع.");const link=el("a","","تسجيل الدخول");link.href="login.html?next=academy-community.html";state.append(" ",link);return;}
  try{
   const token=await user.getIdTokenResult();isInstructor=token.claims.liveRole==="instructor"&&token.claims.liveInstructorApproved===true;
   teacherTools.hidden=!isInstructor;

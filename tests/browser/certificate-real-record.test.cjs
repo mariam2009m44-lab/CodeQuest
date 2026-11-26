@@ -32,7 +32,7 @@ try{
  // endpoint not configured: error state, not empty, no request
  r=await scenario({base:null});assert(!r.shown);assert.match(r.none,/تعذر تحميل/);assert.doesNotMatch(r.none,/لا توجد/);assert.equal(r.apiHits,0);await r.c.close();
  // signed out
- r=await scenario({uid:null});assert(!r.shown);assert.match(r.none,/سجّلي الدخول/);assert.equal(r.apiHits,0);await r.c.close();
+ r=await scenario({uid:null});assert(!r.shown);assert.match(r.none,/سجّل الدخول/);assert.equal(r.apiHits,0);await r.c.close();
  // server error: can't load, not "no certificate"
  r=await scenario({fetchMode:'fail'});assert(!r.shown);assert.match(r.none,/تعذر تحميل/);assert.doesNotMatch(r.none,/لا توجد/);await r.c.close();
  // invalid record (code tasks unverified) rejects whole response

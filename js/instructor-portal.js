@@ -13,7 +13,7 @@ function message(text, error = false) {
 await authPersistenceReady;
 onAuthStateChanged(auth, async user => {
   if (!user) {
-    message("سجّلي الدخول بحساب CodeQuest للمتابعة.");
+    message("سجّل الدخول بحساب CodeQuest للمتابعة.");
     action.href = "login.html?next=instructor-portal.html";
     action.textContent = "تسجيل الدخول للمتابعة";
     fallback.hidden = false;
@@ -43,7 +43,7 @@ onAuthStateChanged(auth, async user => {
       fallback.hidden = true;
     }
   } catch (error) {
-    message("تعذّر التحقق من صلاحيات الحساب. حدّثي الصفحة أو سجّلي الدخول مرة أخرى.", true);
+    message("تعذّر التحقق من صلاحيات الحساب. حدّثي الصفحة أو سجّل الدخول مرة أخرى.", true);
     action.href = "login.html?next=instructor-portal.html";
     action.textContent = "إعادة تسجيل الدخول";
     fallback.hidden = false;

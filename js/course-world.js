@@ -219,7 +219,7 @@ function render(chapters,records,local){
   const currentUnit=flat[first]?.ci??0;
   setCody("wave",`أهلًا بعودتك! أنت خلصت ${completed} من ${total} درس. كمل من الوحدة ${currentUnit+1}، وأنا معاك!`);
   const waiting=map.querySelector(".cw-road-node.needs-test");
-  if(waiting)setCody("thinking","خلصتي الدرس! فاضل اختبار قصير ونعدّي للدرس اللي بعده. دوسي على المحطة المضيئة.");
+  if(waiting)setCody("thinking","خلصت الدرس! فاضل اختبار قصير ونعدّي للدرس اللي بعده. دوس على المحطة المضيئة.");
   playCelebration();
  }
 }
@@ -249,7 +249,7 @@ function playCelebration(){
    if(cody&&cody.animate)cody.animate([{transform:`translate(${dx}px,${dy}px) translateX(50%) scale(.56)`,offset:0},{transform:`translate(${dx*.45}px,${dy*.45-46}px) translateX(50%) scale(.56)`,offset:.45},{transform:"translateX(50%) scale(.56)",offset:1}],{duration:1500,delay:1100,easing:"cubic-bezier(.4,0,.2,1)",fill:"both"});
   }
  }
- setCody("happy","عاشت! الدرس اتحسب والقفل اتفتح. أنا جاي معاكي للمحطة اللي بعدها!");
+ setCody("happy","عاش! الدرس اتحسب والقفل اتفتح. أنا جاي معاك للمحطة اللي بعدها!");
  setTimeout(()=>{burst.remove();lockFx?.remove();doneNode.classList.remove("just-done");next?.classList.remove("cody-arrives","unlocking")},reduce?300:3200);
  scrollToCurrent();
 }

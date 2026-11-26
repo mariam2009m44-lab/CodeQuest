@@ -19,7 +19,7 @@ try{
  const pass=JSON.stringify({passed:true,score:4,total:4});
  const cel=(uid)=>({'codequest_studio_lessontest_u1_javascript_js_ch1_l1':pass,cq_map_celebrate:JSON.stringify({uid,language:'javascript',unit:1,index:0,at:Date.now()})});
  const c1=await open('u1',cel('u1'),{shot:{path:process.env.SHOT_CELEBRATE||'/tmp/map-celebrate.png',wait:700}});
- assert.equal(c1.just,true,'celebration plays for the just-completed lesson');assert.ok(c1.burst>=10);assert.equal(c1.arrive,true);assert.match(c1.speech,/عاشت/);assert.equal(c1.flag,null,'celebration is consumed once');assert.equal(c1.done,1);
+ assert.equal(c1.just,true,'celebration plays for the just-completed lesson');assert.ok(c1.burst>=10);assert.equal(c1.arrive,true);assert.match(c1.speech,/عاش/);assert.equal(c1.flag,null,'celebration is consumed once');assert.equal(c1.done,1);
  const c2=await open('u2',{'codequest_studio_lessontest_u2_javascript_js_ch1_l1':pass,cq_map_celebrate:JSON.stringify({uid:'u1',language:'javascript',unit:1,index:0,at:Date.now()})});
  assert.equal(c2.just,false,'another account never sees the celebration');
  const stale=await open('u1',{'codequest_studio_lessontest_u1_javascript_js_ch1_l1':pass,cq_map_celebrate:JSON.stringify({uid:'u1',language:'javascript',unit:1,index:0,at:Date.now()-3600000})});

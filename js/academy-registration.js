@@ -19,8 +19,8 @@ const submitInstructorCallable=httpsCallable(functions,"submitInstructorApplicat
 async function submitInstructor(payload){
  const w=await academyWorker(currentUser,"instructor-application",payload);
  if(w.ok)return {data:w.data,worker:true};
- if(w.unreachable)throw new Error("لم نتأكد من وصول طلبك. افتحي الصفحة من جديد وتحققي من حالة الطلب قبل إعادة الإرسال.");
- if(!w.off)throw new Error(w.data.message==="rate_limited"?"وصلتِ للحد اليومي لإرسال الطلب. حاولي غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
+ if(w.unreachable)throw new Error("لم نتأكد من وصول طلبك. افتح الصفحة من جديد وتحققي من حالة الطلب قبل إعادة الإرسال.");
+ if(!w.off)throw new Error(w.data.message==="rate_limited"?"وصلتِ للحد اليومي لإرسال الطلب. حاول غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
  return submitInstructorCallable(payload);
 }
 const callableStatus=httpsCallable(functions,"getMyAcademyRegistrationStatus");
@@ -50,7 +50,7 @@ function checkedValues(form,name){return [...form.querySelectorAll('input[name="
 await authPersistenceReady;
 onAuthStateChanged(auth,async user=>{
  currentUser=user;
- if(!user){accountState.textContent="سجّلي الدخول بحساب CodeQuest الحالي أولًا، ثم عودي لإكمال بيانات الأكاديمية.";const link=document.createElement("a");link.href="login.html?next=academy-registration.html";link.textContent="تسجيل الدخول";link.style.color="#a78bfa";accountState.append(" ",link);studentForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);instructorForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);return;}
+ if(!user){accountState.textContent="سجّل الدخول بحساب CodeQuest الحالي أولًا، ثم عودي لإكمال بيانات الأكاديمية.";const link=document.createElement("a");link.href="login.html?next=academy-registration.html";link.textContent="تسجيل الدخول";link.style.color="#a78bfa";accountState.append(" ",link);studentForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);instructorForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);return;}
  try{
   const state=await getStatus({});
   const student=state.data?.studentProfile;const instructor=state.data?.instructorApplication;
@@ -64,15 +64,15 @@ onAuthStateChanged(auth,async user=>{
    ["specialties","teachingStyles","ageGroups","teachingLevels"].forEach(name=>(instructor[name]||[]).forEach(value=>{const input=instructorForm.querySelector('input[name="'+name+'"][value="'+value+'"]');if(input)input.checked=true;}));
    instructorForm.elements.sampleWorkLinks.value=(instructor.sampleWorkLinks||[]).join("\\n");
   }
- }catch(error){accountState.textContent="تعذر تحميل حالة التسجيل. "+(error.message||"حاولي مرة أخرى.");}
+ }catch(error){accountState.textContent="تعذر تحميل حالة التسجيل. "+(error.message||"حاول مرة أخرى.");}
 });
-verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتحي الرسالة ثم أعيدي تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
+verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتح الرسالة ثم أعيدي تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
 studentForm.addEventListener("submit",async event=>{
  event.preventDefault();if(!currentUser)return;
  const button=studentForm.querySelector('button[type="submit"]');button.disabled=true;
  try{
   const interests=checkedValues(studentForm,"interests");
-  if(!interests.length)throw new Error("اختاري مجالًا واحدًا على الأقل.");
+  if(!interests.length)throw new Error("اختار مجالًا واحدًا على الأقل.");
   const saved=await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked,learningGoals:studentForm.elements.learningGoals.value.trim(),learningNeeds:studentForm.elements.learningNeeds.value.trim(),preferredSchedule:studentForm.elements.preferredSchedule.value.trim()});
   setFeedback(studentFeedback,saved.data?.status==="pending_guardian"?"تم حفظ الملف. سيظل التسجيل في الفصول المباشرة معلقًا حتى تتحقق الإدارة من موافقة ولي الأمر.":"تم حفظ ملف الطالب وتفعيله بنجاح.");
  }catch(error){setFeedback(studentFeedback,error.message||"تعذر حفظ البيانات.",true);}
@@ -83,7 +83,7 @@ instructorForm.addEventListener("submit",async event=>{
  const button=instructorForm.querySelector('button[type="submit"]');button.disabled=true;
  try{
   const specialties=checkedValues(instructorForm,"specialties");
-  if(!specialties.length)throw new Error("اختاري تخصصًا واحدًا على الأقل.");
+  if(!specialties.length)throw new Error("اختار تخصصًا واحدًا على الأقل.");
   const sampleWorkLinks=instructorForm.elements.sampleWorkLinks.value.split(/\\r?\\n/).map(value=>value.trim()).filter(Boolean);
   await submitInstructor({
    fullName:instructorForm.elements.fullName.value.trim(),specialties,

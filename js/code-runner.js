@@ -59,7 +59,7 @@ export async function runCodeOnServer(language, code, stdin = "") {
   }
 
   if (typeof code !== "string" || !code.trim()) {
-    throw new Error("اكتبي الكود أولًا قبل التشغيل.");
+    throw new Error("اكتب الكود أولًا قبل التشغيل.");
   }
 
   if (code.length > 50000) {
@@ -102,7 +102,7 @@ export async function runCodeOnServer(language, code, stdin = "") {
 
     if (!response.ok) {
       if (response.status === 401) {
-        throw new Error("انتهت جلسة تسجيل الدخول. سجّلي الدخول مرة أخرى.");
+        throw new Error("انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى.");
       }
 
       throw new Error(

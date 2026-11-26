@@ -213,7 +213,7 @@ if (root) {
       startTimer();
     } catch (error) {
       console.error("تعذر تحميل المجلة التعليمية:", error);
-      grid.replaceChildren(make("p", "magazine-load-error", "تعذر تحميل المجلة الآن. حاولي تحديث الصفحة بعد قليل."));
+      grid.replaceChildren(make("p", "magazine-load-error", "تعذر تحميل المجلة الآن. حاول تحديث الصفحة بعد قليل."));
     }
   }
   loadMagazine();

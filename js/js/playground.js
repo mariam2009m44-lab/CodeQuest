@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!window.ace) {
     show(
-      'تعذر تحميل المحرر. تأكدي من الإنترنت وأعيدي تحميل الصفحة.',
+      'تعذر تحميل المحرر. تأكد من الإنترنت وأعيدي تحميل الصفحة.',
       'error'
     );
     runButton.disabled = true;
@@ -113,7 +113,7 @@ int main() {
 
     if (resetCode) editor.setValue(config.code, -1);
 
-    show('اكتبي الكود واضغطي «تشغيل الكود» لعرض النتيجة.');
+    show('اكتب الكود واضغطي «تشغيل الكود» لعرض النتيجة.');
   }
 
   languageSelect.addEventListener('change', () => {
@@ -143,7 +143,7 @@ int main() {
     }
 
     if (!sourceCode.trim()) {
-      show('اكتبي الكود أولًا.', 'error');
+      show('اكتب الكود أولًا.', 'error');
       editor.focus();
       return;
     }
@@ -199,7 +199,7 @@ int main() {
       );
     } catch (error) {
       if (error.name === 'AbortError') {
-        throw new Error('انتهت مهلة الاتصال. حاولي مرة أخرى.');
+        throw new Error('انتهت مهلة الاتصال. حاول مرة أخرى.');
       }
 
       throw new Error(
@@ -270,7 +270,7 @@ int main() {
       );
     }
 
-    throw new Error('استغرق التنفيذ وقتًا طويلًا. حاولي مرة أخرى.');
+    throw new Error('استغرق التنفيذ وقتًا طويلًا. حاول مرة أخرى.');
   }
 
   function displayResult(result) {

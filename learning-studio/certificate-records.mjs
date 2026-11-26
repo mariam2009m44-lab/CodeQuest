@@ -41,6 +41,6 @@ export function renderCertificates(doc,listEl,emptyEl,result){
  }
  listEl.hidden=true;emptyEl.hidden=false;
  emptyEl.textContent=result.state==='error'?'تعذر تحميل شهاداتك الآن. جرّبي مرة أخرى بعد قليل.'
-  :result.state==='signedout'?'سجّلي الدخول لعرض شهاداتك.'
+  :result.state==='signedout'?'سجّل الدخول لعرض شهاداتك.'
   :'عرض الشهادات غير مفعّل حاليًا. لا يعني هذا أن حسابك بلا شهادات أو أن مسارًا اكتمل. ستظهر هنا بعد تفعيل تسجيل الإكمال على حسابك.';
 }

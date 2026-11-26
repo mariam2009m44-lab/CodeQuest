@@ -11,7 +11,7 @@ const open=async(lang,unit,uid,seed,gate=true)=>{const c=await b.newContext({vie
  const r=await p.evaluate(()=>({locked:!!document.getElementById('examLockedMap'),cards:document.querySelectorAll('#quizBody .quiz-card,#quizBody .card,#quizBody>*').length,title:document.getElementById('quizTitle').textContent,ov:document.documentElement.scrollWidth>innerWidth+1}));return {c,p,r}};
 const passes=(lang,unit,uid)=>Object.fromEntries(units.find(u=>u.language===lang&&u.unit===unit).lessons.map(l=>['codequest_studio_lessontest_'+uid+'_'+lang+'_'+l.id,JSON.stringify({passed:true,percent:100})]));
 for(const lang of ['python','javascript','cpp','java']){
- let o=await open(lang,1,'u1',{});assert.equal(o.r.locked,true,lang+' locked with no lesson passes');assert.equal(o.r.ov,false);if(lang==='python')await o.p.screenshot({path:'/tmp/examlocked.png'});await o.c.close();
+ let o=await open(lang,1,'u1',{});assert.equal(o.r.locked,true,lang+' locked with no lesson passes');assert.equal(o.r.ov,false);if(lang==='python')await o.p.screenshot({path:'/tmp/examlocked.png'});await o.p.setViewportSize({width:1200,height:700});await o.p.screenshot({path:'/tmp/examlocked-wide.png'});await o.c.close();
  const all=passes(lang,1,'u1');const part={};Object.entries(all).slice(0,-1).forEach(([k,v])=>part[k]=v);
  o=await open(lang,1,'u1',part);assert.equal(o.r.locked,true,lang+' locked when one lesson test is missing');await o.c.close();
  o=await open(lang,1,'u2',all);assert.equal(o.r.locked,true,lang+' another account never inherits passes');await o.c.close();

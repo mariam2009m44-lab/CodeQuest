@@ -20,7 +20,7 @@ if(!record&&CERT_ENDPOINT_ENABLED){
   if(hit){const prof=await auth.getUserProfile();const nm=String(prof?.name||prof?.displayName||'').trim();if(nm)record={name:nm,language:hit.language,issuedAt:hit.issuedAt,certId:hit.recordId,demo:false}}
  }catch{failed=true;st='error'}
 }
-if(!record){const msg={disabled:'عرض الشهادات غير مفعّل حاليًا.',error:'تعذر تحميل الشهادة الآن. جرّبي مرة أخرى بعد قليل.',signedout:'سجّلي الدخول لعرض شهادتك.',ok:'لا توجد شهادة بهذا المعرّف في حسابك.'};$('certNone').textContent=msg[st]||msg.error;$('certNone').hidden=false}
+if(!record){const msg={disabled:'عرض الشهادات غير مفعّل حاليًا.',error:'تعذر تحميل الشهادة الآن. جرّبي مرة أخرى بعد قليل.',signedout:'سجّل الدخول لعرض شهادتك.',ok:'لا توجد شهادة بهذا المعرّف في حسابك.'};$('certNone').textContent=msg[st]||msg.error;$('certNone').hidden=false}
 else{
  await drawCertificate($('certCanvas'),record,CODY);$('certCanvas').hidden=false;$('certActions').hidden=false;
  $('certNote').textContent=(record.demo||record.synthetic)?'هذا نموذج تصميم بيانات تجريبية، وليس شهادة صادرة.':'';

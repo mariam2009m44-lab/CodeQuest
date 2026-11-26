@@ -118,7 +118,7 @@ function renderClass(item) {
 }
 async function runAction(action) {
   try { await action(); }
-  catch(error) { showMessage(account,error?.message || "تعذر تنفيذ العملية. حاولي مرة أخرى.",true); }
+  catch(error) { showMessage(account,error?.message || "تعذر تنفيذ العملية. حاول مرة أخرى.",true); }
 }
 async function loadClasses() {
   if (!currentUser) return;
@@ -129,12 +129,12 @@ async function loadClasses() {
     const classes=Array.isArray(result.data?.classes)?result.data.classes:[];
     list.replaceChildren();
     if (!classes.length) {
-      const empty=document.createElement("div");empty.className="live-empty";empty.textContent="لا توجد فصول متاحة حاليًا. ارجعي لاحقًا للاطلاع على المواعيد الجديدة.";list.append(empty);return;
+      const empty=document.createElement("div");empty.className="live-empty";empty.textContent="لا توجد فصول متاحة حاليًا. ارجع لاحقًا للاطلاع على المواعيد الجديدة.";list.append(empty);return;
     }
     classes.forEach(item=>list.append(renderClass(item)));
   } catch(error) {
     list.replaceChildren();
-    const empty=document.createElement("div");empty.className="live-empty";empty.textContent="تعذر تحميل الفصول. تأكدي من إعداد خدمة الأكاديمية ثم حاولي مرة أخرى.";list.append(empty);
+    const empty=document.createElement("div");empty.className="live-empty";empty.textContent="تعذر تحميل الفصول. تأكد من إعداد خدمة الأكاديمية ثم حاول مرة أخرى.";list.append(empty);
     showMessage(account,error?.message || "تعذر الاتصال بخدمة الأكاديمية.",true);
   }
 }
@@ -146,7 +146,7 @@ bootstrapButton.addEventListener("click",async()=>{
     await currentUser.getIdToken(true);
     showMessage(account,"تم إعداد صلاحية مسؤول الأكاديمية. حدّثي الصفحة إذا لم تظهر أدوات الإدارة.");
     location.reload();
-  }catch(error){showMessage(account,error?.message||"تعذر إعداد المسؤول. تأكدي من إعداد بريد المالك على الخادم.",true);}
+  }catch(error){showMessage(account,error?.message||"تعذر إعداد المسؤول. تأكد من إعداد بريد المالك على الخادم.",true);}
   finally{bootstrapButton.disabled=false;}
 });
 approveSelfButton.addEventListener("click",async()=>{
@@ -174,7 +174,7 @@ createForm.addEventListener("submit",async event=>{
   const localDate=String(form.get("startsAt")||"");
   const startsAt=new Date(localDate);
   try {
-    if(!Number.isFinite(startsAt.getTime()))throw new Error("اختاري موعدًا صحيحًا.");
+    if(!Number.isFinite(startsAt.getTime()))throw new Error("اختار موعدًا صحيحًا.");
     await createClass({
       title:String(form.get("title")||"").trim(),
       description:String(form.get("description")||"").trim(),
@@ -194,7 +194,7 @@ await authPersistenceReady;
 onAuthStateChanged(auth,async user=>{
   currentUser=user;
   if(!user){
-    account.textContent="سجّلي الدخول لمشاهدة الفصول والتسجيل فيها.";
+    account.textContent="سجّل الدخول لمشاهدة الفصول والتسجيل فيها.";
     const link=document.createElement("a");link.href="login.html?next=live-academy.html";link.textContent="تسجيل الدخول";link.className="live-pill";account.append(" ",link);
     list.replaceChildren();const empty=document.createElement("div");empty.className="live-empty";empty.textContent="تحتاجين إلى تسجيل الدخول لعرض الفصول.";list.append(empty);return;
   }
@@ -210,7 +210,7 @@ onAuthStateChanged(auth,async user=>{
         const ownedGroups=groupsResult.data?.groups||[];
         groupSelect.replaceChildren(new Option("فصل مفتوح لجميع الطلاب المسجلين",""));
         ownedGroups.forEach(group=>groupSelect.add(new Option(group.name,group.id)));
-      }catch(error){showMessage(account,"تعذر تحميل مجموعاتك: "+(error.message||"حاولي تحديث الصفحة."),true);}
+      }catch(error){showMessage(account,"تعذر تحميل مجموعاتك: "+(error.message||"حاول تحديث الصفحة."),true);}
     }
     bootstrapButton.hidden=Boolean(isInstructor||isAdmin)||!user.emailVerified;
     account.textContent=isAdmin?"تم التحقق من صلاحيات مسؤول الأكاديمية.":isInstructor?"تم التحقق من حساب المدرّب المعتمد.":"أهلًا بك في أكاديمية CodeQuest المباشرة.";

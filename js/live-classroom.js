@@ -100,7 +100,7 @@ function connectWorkspace(){
 await authPersistenceReady;
 onAuthStateChanged(auth,async user=>{
  if(requested)return;
- if(!user){setStatus("سجّلي الدخول أولًا للانضمام إلى الفصل.",true);return;}
+ if(!user){setStatus("سجّل الدخول أولًا للانضمام إلى الفصل.",true);return;}
  if(!classId){setStatus("رابط الفصل غير مكتمل.",true);return;}
  requested=true;currentUser=user;
  try{

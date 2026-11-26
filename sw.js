@@ -56,7 +56,7 @@ self.addEventListener("fetch", event => {
           if (startPage) return startPage;
 
           return new Response(
-            "لا يوجد اتصال بالإنترنت. حاولي مرة أخرى عند عودة الاتصال.",
+            "لا يوجد اتصال بالإنترنت. حاول مرة أخرى عند عودة الاتصال.",
             {
               status: 503,
               headers: {

@@ -28,7 +28,7 @@ test('renderer shows list, empty, error, signedout states',()=>{
  const doc={createElement:t=>({t,children:[],append(c){this.children.push(c)}})};
  const list=mk(),empty=mk();
  renderCertificates(doc,list,empty,{state:'error',records:[]});assert.ok(list.hidden&&!empty.hidden);assert.match(empty.textContent,/تعذر/);
- renderCertificates(doc,list,empty,{state:'signedout',records:[]});assert.match(empty.textContent,/سجّلي/);
+ renderCertificates(doc,list,empty,{state:'signedout',records:[]});assert.match(empty.textContent,/سجّل/);
  renderCertificates(doc,list,empty,{state:'disabled',records:[]});assert.match(empty.textContent,/غير مفعّل/);assert.doesNotMatch(empty.textContent,/^لا توجد/);
  renderCertificates(doc,list,empty,{state:'ok',records:[{language:'cpp',recordId:'A_b-12345',issuedAt:'x'}]});assert.ok(!list.hidden&&empty.hidden);assert.match(list.children[0].children[0].href,/id=A_b-12345$/);
 });

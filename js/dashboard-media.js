@@ -106,7 +106,7 @@ async function loadLearningVideos() {
     renderCards();
   } catch (error) {
     console.error("تعذر تحميل فيديوهات الشرح:", error);
-    grid.replaceChildren(makeElement("p", "learning-videos-empty", "تعذر تحميل المجلة التعليمية حاليًا. حاولي مرة أخرى لاحقًا."));
+    grid.replaceChildren(makeElement("p", "learning-videos-empty", "تعذر تحميل المجلة التعليمية حاليًا. حاول مرة أخرى لاحقًا."));
   }
 }
 loadLearningVideos();

@@ -40,7 +40,7 @@ try{
   const sec=p.locator('#profileCerts');
   const r1=await run(p,'ok');assert.equal(r1.items,1);assert(!r1.listHidden&&r1.emptyHidden);assert.match(r1.href,/id=FIXTURE-0001$/);await sec.screenshot({path:`${out}/certs-ok-${vpn}-${theme}.png`});
   const r2=await run(p,'error');assert(r2.listHidden&&r2.items===0);assert.match(r2.empty,/تعذر تحميل/);await sec.screenshot({path:`${out}/certs-error-${vpn}-${theme}.png`});
-  const r3=await run(p,'signedout');assert(r3.listHidden);assert.match(r3.empty,/سجّلي الدخول/);
+  const r3=await run(p,'signedout');assert(r3.listHidden);assert.match(r3.empty,/سجّل الدخول/);
   const r4=await run(p,'invalid');assert(r4.listHidden&&r4.items===0);assert.match(r4.empty,/تعذر تحميل/);
   const r5=await run(p,'wrong');assert(r5.listHidden&&r5.items===0,'wrong account drops response');
   const r6=await run(p,'stale');assert(r6.listHidden&&r6.items===0,'late old response must not overwrite newer one');
