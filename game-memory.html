@@ -213,7 +213,7 @@
       document.getElementById('levelScreen').classList.remove('active');
       document.getElementById('gameScreen').classList.add('active');
       winScreen.style.display = 'none'; gameGrid.style.display = 'grid'; document.getElementById('matchNote').textContent = ''; startMemoryTimer();
-      let cols = pairsCount === 15 ? (window.innerWidth > 520 ? 5 : window.innerWidth <= 360 ? 3 : 4) : 4;
+      let cols = window.innerWidth <= 360 ? 3 : (pairsCount === 15 && window.innerWidth > 520 ? 5 : 4);
       gameGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       const selected = allPairs.slice(0, pairsCount);
       // Each pair must contain one term card and one definition card.

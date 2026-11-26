@@ -60,18 +60,27 @@ import * as THREE from '../assets/vendor/three.module.min.js';
       [[.22,.2,.07],[.8,.25,.05],[.2,.8,.05],[.78,.82,.07]].forEach(([x, y, r]) => icon(g, 'star', W * x, H * y, W * r * 1.6, 'rgba(255,255,255,.35)'));
       g.fillStyle = '#fff'; g.shadowColor = 'rgba(40,20,120,.45)'; g.shadowBlur = 12; g.shadowOffsetY = 6; g.font = '900 ' + Math.round(W * 0.5) + 'px Cairo, Arial, sans-serif'; g.fillText('?', W / 2, H / 2 + 6);
     } else {
-      icon(g, ICONS[pair % ICONS.length], W / 2, H * 0.26, W * 0.15, 'rgba(255,255,255,.95)');
-      rr(g, 20, H * 0.43, W - 40, H * 0.46, W * 0.07); g.fillStyle = role === 'definition' ? '#fff1c2' : '#ffffff'; g.fill();
-      g.lineWidth = 5; g.strokeStyle = role === 'definition' ? '#f59f00' : '#1c7ed6'; g.stroke();
-      g.fillStyle = c2; let size = 52; const maxW = W - 64;
-      const font = z => '900 ' + z + 'px Cairo, Arial, sans-serif'; g.font = font(size);
-      const words = text.split(/\s+/); let lines = [text];
-      while (size > 20 && Math.max(...lines.map(l => g.measureText(l).width)) > maxW) {
-        size -= 3; g.font = font(size);
-        if (words.length > 1) { const h = Math.ceil(words.length / 2); lines = [words.slice(0, h).join(' '), words.slice(h).join(' ')]; }
+      // Fit the label: wrap greedily into at most 3 lines and keep the largest size that fits the plate. Long labels get a taller plate (the icon moves up and shrinks) instead of shrinking the text further.
+      const font = z => '900 ' + z + 'px Cairo, Arial, sans-serif', maxW = W - 64, words = String(text).split(/\s+/);
+      const wrap = z => { g.font = font(z); const out = []; let cur = ''; for (const w of words) { const t = cur ? cur + ' ' + w : w; if (cur && g.measureText(t).width > maxW) { out.push(cur); cur = w; } else cur = t; } out.push(cur); return out; };
+      const fits = (z, ls, hh) => ls.length <= 3 && Math.max(...ls.map(l => g.measureText(l).width)) <= maxW && ls.length * z * 1.15 <= hh - 14;
+      let size = 52, lines = wrap(size), tall = false;
+      const normalH = H * 0.46;
+      while (size > 20 && !fits(size, lines, normalH)) { size -= 2; lines = wrap(size); }
+      if (!fits(size, lines, normalH) || lines.length > 1) {
+        // try the taller plate and take the larger size it allows
+        const tallH = H * 0.6; let s2 = 52, l2 = wrap(s2);
+        while (s2 > 20 && !fits(s2, l2, tallH)) { s2 -= 2; l2 = wrap(s2); }
+        if (s2 > size || !fits(size, lines, normalH)) { size = s2; lines = l2; tall = true; }
       }
-      const lh = size * 1.15, y0 = H * 0.66 - (lines.length - 1) * lh / 2;
+      const plateTop = tall ? H * 0.31 : H * 0.43, plateH = tall ? H * 0.6 : normalH;
+      icon(g, ICONS[pair % ICONS.length], W / 2, tall ? H * 0.17 : H * 0.26, tall ? W * 0.11 : W * 0.15, 'rgba(255,255,255,.95)');
+      rr(g, 20, plateTop, W - 40, plateH, W * 0.07); g.fillStyle = role === 'definition' ? '#fff1c2' : '#ffffff'; g.fill();
+      g.lineWidth = 5; g.strokeStyle = role === 'definition' ? '#f59f00' : '#1c7ed6'; g.stroke();
+      g.fillStyle = c2; g.font = font(size);
+      const lh = size * 1.15, y0 = plateTop + plateH / 2 - (lines.length - 1) * lh / 2;
       lines.forEach((l, i) => g.fillText(l, W / 2, y0 + i * lh));
+      (window.__cqFaceMetrics = window.__cqFaceMetrics || {})[text] = { size, lines: lines.length, tall, plateTop, plateH, canvasW: W };
     }
     const t = new THREE.CanvasTexture(c); t.anisotropy = 4; t.colorSpace = THREE.SRGBColorSpace; texCache.set(k, t); return t;
   }
