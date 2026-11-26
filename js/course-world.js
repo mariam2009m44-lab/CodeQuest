@@ -262,7 +262,7 @@ async function refreshProgress(){
 // The Python final link shows only when server assessment is ON: with it OFF the exam page still uses its legacy chapter-record gate, which Studio progress does not satisfy.
 let finalLinkOn=false,projectsOn=false,certOn=false;
 // Server-verified certificate. OFF unless features.json has serverAssessment AND certificateIssue true. The server decides eligibility from its own
-// records (lesson tests, unit exams, code tasks, practice); the page only asks and shows what the server returns. Nothing is derived or stored on the device.
+// records (all unit exams passed, plus the Python final exam for Python); the page only asks and shows what the server returns. Nothing is derived or stored on the device.
 async function requestCertificate(){
  const box=()=>document.getElementById("cwCertBox"),owner=uid,lang=language;if(!owner||!box())return;
  const say=(text,href)=>{const b=box();if(!b||uid!==owner||language!==lang)return;b.textContent="";
@@ -274,7 +274,8 @@ async function requestCertificate(){
   const {ENDPOINT}=await import('/learning-studio/progress-api.mjs');
   const res=await fetch(ENDPOINT+'/api/certificates/issue',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({language:lang}),cache:'no-store'});
   if(auth.currentUser?.uid!==owner||uid!==owner)return;
-  if(res.status===409){say("الشهادة بتتصدر بعد ما كل الاختبارات والتمارين تتسجل على حسابك. لسه فيه جزء ناقص.");return}
+  if(res.status===409){let left=0,fin=false;try{const d=await res.clone().json();for(const x of d?.blockers||[]){if(x?.code==="unit_exams")left=Number(x.remaining)||0;if(x?.code==="final_exam")fin=true}}catch{}
+   say(left?"الشهادة بتتصدر بعد ما تنجح في اختبارات الوحدات كلها على حسابك. فاضل "+left+" اختبار وحدة.":fin?"الشهادة بتتصدر بعد ما تنجح في الاختبار النهائي على حسابك.":"الشهادة بتتصدر بعد ما تنجح في اختبارات الوحدات كلها على حسابك.");return}
   if(!res.ok){say("الشهادة مش متاحة دلوقتي. جرّب بعد شوية.");return}
   const d=await res.json(),rec=(d?.certificates||[]).find(c=>c?.track===lang&&/^[A-Za-z0-9_-]{8,64}$/.test(String(c.recordId||"")));
   if(!rec){say("الشهادة مش متاحة دلوقتي. جرّب بعد شوية.");return}

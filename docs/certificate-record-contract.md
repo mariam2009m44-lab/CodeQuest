@@ -18,7 +18,7 @@ Emitted only when, for that uid, every lesson and lesson test of the track passe
 - localStorage is never used as a source.
 
 ## Backend implementation notes (branch progress-backend, not deployed)
-- `GET /api/certificates` returns only records the server wrote. `POST /api/certificates/issue {language}` creates one only when `certificateEligibility` is met for that uid (all lesson tests, unit exams, python final exam, unit-exam code tasks and lesson practice/transfer tasks server-verified). It ignores any client-supplied name, id or score.
+- `GET /api/certificates` returns only records the server wrote. `POST /api/certificates/issue {language}` creates one only when `certificateEligibility` is met for that uid (owner rule of Nov 26 10:33 PM: every unit exam of the track passed on the server, plus the Python final exam for Python. Lesson tests, lesson practice and separately verified code tasks are not required). It ignores any client-supplied name, id or score.
 - `recordId` is a private opaque random 32-hex id. It is NOT a public verification ID: there is no QR, no public lookup and no directory. It is only the handle the learner's own account uses to open its own certificate.
 - Issuance has its own switch (`CERT_ISSUANCE=on` in the Worker environment), off by default, separate from deployment.
 - The learner name is not stored in the record; the page reads the account profile.

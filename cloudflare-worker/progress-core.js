@@ -195,13 +195,12 @@ export function recordPractice(state, practice, { language, lessonId, phase, ban
   return { ok: true, passed, best: state.practice[key] };
 }
 
+// Owner rule (10:33 PM Nov 26, replaces the earlier stricter one): the certificate needs every UNIT EXAM of the track passed (server-scored, 50% inclusive;
+// the exam's code part counts inside the exam score), plus the Python final exam for Python. Lesson tests and lesson practice are NOT required.
 export function certificateEligibility(state, index, language, practice) {
   const blockers = [];
   const lessonIds = Object.keys(index.lessons).filter(id => index.lessons[id].language === language);
   if (lessonIds.length === 0) return { eligible: false, blockers: ["unknown_track"] };
-  const lt = state.lessonTests || {};
-  const missingTests = lessonIds.filter(id => !(lt[id] && lt[id].passed));
-  if (missingTests.length) blockers.push({ code: "lesson_tests", remaining: missingTests.length, of: lessonIds.length });
   const unitKeys = Object.keys(index.quizzes).filter(k => k.startsWith(language + "-"));
   const missingUnits = unitKeys.filter(k => !(state.exams[k] && state.exams[k].passed));
   if (missingUnits.length) blockers.push({ code: "unit_exams", remaining: missingUnits.length, of: unitKeys.length });
@@ -209,14 +208,6 @@ export function certificateEligibility(state, index, language, practice) {
     const f = state.finals && state.finals[language];
     if (!(f && f.passed)) blockers.push({ code: "final_exam" });
   }
-  let codeTotal = 0, codeDone = 0;
-  for (const k of unitKeys) index.quizzes[k].code.forEach((_, i) => { codeTotal += 1; if (state.codeTasks && state.codeTasks[`${k}#${i}`] && state.codeTasks[`${k}#${i}`].passed) codeDone += 1; });
-  if (codeDone < codeTotal) blockers.push({ code: "code_tasks_not_server_verified", remaining: codeTotal - codeDone, of: codeTotal });
-  if (practice) {
-    let pt = 0, pd = 0;
-    for (const id of lessonIds) for (const ph of ["practice", "transfer"]) if (practice[id] && practice[id][ph]) { pt += 1; if (state.practice && state.practice[`${id}:${ph}`] && state.practice[`${id}:${ph}`].passed) pd += 1; }
-    if (pd < pt) blockers.push({ code: "lesson_practice_not_server_verified", remaining: pt - pd, of: pt });
-  } else blockers.push({ code: "lesson_practice_not_server_verified" });
   return { eligible: blockers.length === 0, blockers };
 }
 

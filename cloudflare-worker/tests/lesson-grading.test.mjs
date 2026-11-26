@@ -38,28 +38,24 @@ test("best result kept, a later fail never removes a pass", () => {
   assert.equal(r.result.passed, false); assert.equal(r.best.passed, true); assert.equal(s.lessonTests[id].passed, true);
   assert.equal(recordLessonTest(s, index, key, { language: "python", lessonId: id, bank, picks: a }, "").ok, false);
 });
-test("eligibility needs every lesson test, unit exam, python final, and server-verified code tasks", () => {
+test("eligibility (owner rule 10:33 PM Nov 26): every unit exam passed, plus the python final for python; lesson tests, code tasks and practice are NOT required", () => {
   const s = emptyState();
   let e = certificateEligibility(s, index, "java");
   assert.equal(e.eligible, false);
-  assert.ok(e.blockers.some(b => b.code === "lesson_tests" && b.of === 22));
-  assert.ok(e.blockers.some(b => b.code === "unit_exams" && b.of === 8));
-  assert.equal(e.blockers.some(b => b.code === "final_exam"), false);
+  assert.deepEqual(e.blockers.map(b => b.code), ["unit_exams"]);
+  assert.ok(e.blockers.some(b => b.code === "unit_exams" && b.of === 8 && b.remaining === 8));
   assert.ok(certificateEligibility(s, index, "python").blockers.some(b => b.code === "final_exam"));
-  for (const k of Object.keys(key)) s.lessonTests = { ...(s.lessonTests || {}), [k]: { passed: true, percent: 100 } };
-  for (const q of Object.keys(index.quizzes)) s.exams[q] = { passed: true, percent: 100 };
+  for (const q of Object.keys(index.quizzes).filter(k => k.startsWith("python-"))) s.exams[q] = { passed: true, percent: 50 };
+  e = certificateEligibility(s, index, "python", practice);
+  assert.deepEqual(e.blockers.map(b => b.code), ["final_exam"]);
   s.finals = { python: { passed: true } };
-  e = certificateEligibility(s, index, "python");
-  assert.equal(e.eligible, false);
-  assert.deepEqual(e.blockers.map(b => b.code), ["code_tasks_not_server_verified", "lesson_practice_not_server_verified"]);
-  assert.equal(e.blockers[0].remaining, 12);
-  for (const k of Object.keys(index.quizzes).filter(k => k.startsWith("python-"))) index.quizzes[k].code.forEach((_, i) => { s.codeTasks = { ...(s.codeTasks || {}), [`${k}#${i}`]: { passed: true } }; });
   e = certificateEligibility(s, index, "python", practice);
-  assert.deepEqual(e.blockers.map(b => b.code), ["lesson_practice_not_server_verified"]);
-  assert.equal(e.blockers[0].remaining, 96);
-  for (const [id, v] of Object.entries(practice)) if (v.language === "python") for (const ph of ["practice", "transfer"]) s.practice = { ...(s.practice || {}), [`${id}:${ph}`]: { passed: true } };
-  e = certificateEligibility(s, index, "python", practice);
-  assert.equal(e.eligible, true);
+  assert.equal(e.eligible, true, "no lesson tests, no code tasks, no practice recorded");
+  for (const q of Object.keys(index.quizzes).filter(k => k.startsWith("java-")).slice(0, 7)) s.exams[q] = { passed: true };
+  e = certificateEligibility(s, index, "java");
+  assert.equal(e.eligible, false); assert.equal(e.blockers[0].remaining, 1);
+  s.exams["java-8"] = { passed: false, percent: 40 };
+  assert.equal(certificateEligibility(s, index, "java").eligible, false, "a failed exam does not count");
   assert.equal(certificateEligibility(s, index, "ruby").eligible, false);
 });
 test("picks are canonical option indexes, so any display shuffle grades the same", () => {
