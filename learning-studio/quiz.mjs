@@ -1,4 +1,5 @@
 import {gradeCode,summarize,byLesson,isPassed,afterLastUnit,PASS_PERCENT,MCQ_POINTS,CODE_POINTS} from './quiz-core.mjs';
+import './snippet-hint.mjs';
 import {selectExecutor} from './execution.mjs';
 import {setProse} from './prose.mjs';
 import {postProgress,postDurable,flushPending,examPayload,codeTaskPayload} from './progress-api.mjs';

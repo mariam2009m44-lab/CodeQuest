@@ -1,4 +1,5 @@
 import {scoreLessonTest,lessonTestKey} from './lesson-test-core.mjs';
+import './snippet-hint.mjs';
 import {PASS_PERCENT} from './quiz-core.mjs';
 import {writeMapProgress} from './map-flow.mjs';
 import {setProse} from './prose.mjs';
