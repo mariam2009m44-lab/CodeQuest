@@ -32,3 +32,5 @@ test('renderer shows list, empty, error, signedout states',()=>{
  renderCertificates(doc,list,empty,{state:'disabled',records:[]});assert.match(empty.textContent,/غير مفعّل/);assert.doesNotMatch(empty.textContent,/^لا توجد/);
  renderCertificates(doc,list,empty,{state:'ok',records:[{language:'cpp',recordId:'A_b-12345',issuedAt:'x'}]});assert.ok(!list.hidden&&empty.hidden);assert.match(list.children[0].children[0].href,/id=A_b-12345$/);
 });
+
+test('ON with no certificates yet: says none issued, never says the feature is off',()=>{const mk=()=>({textContent:'',hidden:false});const list={textContent:'',hidden:false,append(){}},empty=mk();renderCertificates({createElement:()=>({append(){}})},list,empty,{state:'ok',records:[]});assert.match(empty.textContent,/لا توجد شهادات صادرة بعد/);assert.doesNotMatch(empty.textContent,/غير مفعّل/)});

@@ -13,6 +13,8 @@ async function open(theme,vp){const c=await b.newContext({viewport:vp}),p=await 
  p.on('pageerror',e=>errs.push(String(e)));p.on('request',r=>reqs.push(r.url()));
  await c.addInitScript(t=>{try{localStorage.setItem('cq_theme',t)}catch{}},theme);
  for(const [g,body] of Object.entries(stubs))await p.route(g,r=>r.fulfill({status:200,headers:JS,body}));
+ // These checks exercise the profile wiring in the endpoint-OFF state; the shipped flag is now ON, so the module is served with it OFF here.
+ await p.route('**/learning-studio/certificate-records.mjs',r=>r.fulfill({status:200,headers:JS,body:fs.readFileSync(root+'/learning-studio/certificate-records.mjs','utf8').replace('CERT_ENDPOINT_ENABLED=true','CERT_ENDPOINT_ENABLED=false')}));
  await p.goto(L+'/profile.html');await p.waitForSelector('#profileCerts');await p.waitForFunction(()=>document.getElementById('certsEmpty').textContent.includes('غير مفعّل'));
  return {p,errs,reqs,c};}
 const rec={track:'python',trackName:'Python',issuedAt:'2026-11-25T10:00:00Z',lessonsCompleted:48,lessonsTotal:48,unitExamsPassed:12,unitExamsTotal:12,codeTasksVerified:true,recordId:'FIXTURE-0001'};
