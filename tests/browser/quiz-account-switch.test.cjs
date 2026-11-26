@@ -28,6 +28,6 @@ await p.evaluate(()=>{window.__cu='u2'}); // another account signs in (another t
 await p.locator('.quiz-item').nth(quiz.mcq.length).locator('button.primary').click();await p.waitForSelector('#quizResult:not([hidden]) .quiz-status',{timeout:8000});await p.waitForTimeout(300);
 const out=await p.evaluate(()=>({status:document.querySelector('#quizResult .quiz-status').textContent,pass:!!document.querySelector('#quizResult .quiz-status.pass'),keys:Object.keys(localStorage).filter(x=>x.startsWith('codequest_studio_quiz_')),h2:!!document.querySelector('#quizResult h2'),bodyHidden:document.getElementById('quizBody').hidden}));
 assert.equal(out.pass,false);assert.equal(out.h2,false,'no score shown');assert.deepEqual(out.keys,[],'nothing stored for either account');assert.equal(out.bodyHidden,true);
-await p.screenshot({path:'/downloads/quiz-switch.png'});
+if(process.env.SHOT)await p.screenshot({path:'/downloads/quiz-switch.png'});
 console.log('in-flight account switch ok (stubbed)');
 await b.close();srv.close()})().catch(e=>{console.error(e);process.exit(1)});

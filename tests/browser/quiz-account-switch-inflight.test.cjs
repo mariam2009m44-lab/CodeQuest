@@ -34,7 +34,7 @@ async function scenario(name,action,mode){
  await p.evaluate(action);release();gate=null;await p.waitForTimeout(800);
  const out=await p.evaluate(()=>({keys:Object.keys(localStorage).filter(x=>x.startsWith('codequest_studio_quiz_')),h2:!!document.querySelector('#quizResult h2'),pass:!!document.querySelector('#quizResult .quiz-status.pass'),hidden:document.getElementById('quizBody').hidden,note:document.querySelector('#quizResult .quiz-status')?.textContent||'',pre:(window.__seen||[]).join('|'),kids:document.getElementById('quizBody').children.length,prog:document.querySelectorAll('.quiz-progress').length}));
  assert.deepEqual(out.keys,[],name+': nothing stored');assert.equal(out.h2,false,name+': no score');assert.equal(out.pass,false);assert.equal(out.hidden,true,name+': quiz hidden');assert.equal(out.kids,0,name+': quiz content removed');assert.equal(out.prog,0,name+': progress removed');assert.match(out.note,/الحساب اتغيّر/);assert.ok(!out.pre.includes(quiz.code[0].tests[0].expected),name+': stale output never inserted at any time');
- if(name==='switch during grading')await p.screenshot({path:'/downloads/quiz-switch2.png'});await p.close();console.log('ok',name)}
+ if(process.env.SHOT&&name==='switch during grading')await p.screenshot({path:'/downloads/quiz-switch2.png'});await p.close();console.log('ok',name)}
 await scenario('switch during grading',()=>{window.__cu='u2'},'submit');
 await scenario('signout during grading',()=>{window.__cu=null},'submit');
 await scenario('switch during try-run',()=>{window.__cu='u2'},'try');
