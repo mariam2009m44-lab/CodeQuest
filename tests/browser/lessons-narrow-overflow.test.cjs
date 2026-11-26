@@ -1,0 +1,14 @@
+// Every lesson page (all 4 languages), first dialogue stage at 320px: no horizontal overflow, no text under 11.5px, no page errors. Static server, stubbed sign-in; fixture only.
+const {chromium}=require('playwright'),http=require('http'),fs=require('fs'),path=require('path');
+const assert=require('assert/strict');const root=path.resolve(__dirname,'../..');const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json','.css':'text/css','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png'};
+(async()=>{const srv=http.createServer((q,s)=>{const f=path.join(root,decodeURIComponent(q.url.split('?')[0]));try{s.writeHead(200,{'content-type':types[path.extname(f)]||'text/plain'});s.end(fs.readFileSync(f))}catch{s.writeHead(404);s.end('x')}});
+await new Promise(r=>srv.listen(0,r));const L='http://localhost:'+srv.address().port;const b=await chromium.launch();
+const units=JSON.parse(fs.readFileSync(root+'/learning-studio/units.json','utf8'));const out=[];let n=0;
+for(const w of [320]){const c=await b.newContext({viewport:{width:w,height:844}});
+await c.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname==='localhost'||u.protocol==='data:')return r.continue();if(/firebase-(functions|auth|app)|auth\.js|firebase-config/.test(u.href))return r.fulfill({contentType:'text/javascript',body:''});r.abort()});
+for(const pack of units.filter(x=>!process.env.LANGS||process.env.LANGS.split(',').includes(x.language)))for(const [i,l] of pack.lessons.entries()){const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message.slice(0,60)));
+ try{await p.goto(L+`/learning.html?from=map&lang=${pack.language}&unit=${pack.unit}&index=${i}`,{timeout:8000});await p.waitForSelector('#dialogue .chatlog',{timeout:5000});await p.waitForTimeout(300);
+ const r=await p.evaluate(()=>{const bad=[];document.querySelectorAll('body *').forEach(e=>{if(!e.offsetParent)return;const cs=getComputedStyle(e);if(!e.children.length&&e.textContent.trim()&&parseFloat(cs.fontSize)<11.5)bad.push('small:'+e.textContent.trim().slice(0,20)+':'+cs.fontSize);const r=e.getBoundingClientRect();if(r.right>innerWidth+1&&r.width>0&&!e.closest('pre,.code-wrap,textarea'))bad.push('over:'+e.tagName+'.'+String(e.className).slice(0,20)+':'+Math.round(r.right)); });return {sw:document.documentElement.scrollWidth,bad:[...new Set(bad)].slice(0,5)}});
+ n++;if(r.sw>w||r.bad.length||errs.length)out.push(`${pack.language}-${pack.unit}-${i}@${w} sw=${r.sw} ${r.bad.join(' ')} ${errs.join(';')}`)}catch(e){out.push(`${pack.language}-${pack.unit}-${i}@${w} ERR ${e.message.slice(0,60)}`)}await p.close()}
+ await c.close()}
+await b.close();srv.close();assert.ok(n>=(process.env.LANGS?20:90),'scanned '+n);assert.deepEqual(out,[]);console.log('lesson pages (first stage, 320px) no overflow/small text/page errors, all languages:',n)})().catch(e=>{console.error(e.message||e);process.exit(1)});
