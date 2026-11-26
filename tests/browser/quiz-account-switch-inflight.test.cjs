@@ -29,13 +29,25 @@ async function scenario(name,action,mode){
  const p=await c.newPage();await p.addInitScript(()=>{window.__cu='u1'});await p.goto(L+'/learning-studio/quiz.html?lang=python&unit=1&uid=u1');await p.waitForSelector('.quiz-item');await answerMcq(p);
  const last=p.locator('.quiz-item').nth(quiz.mcq.length);
  if(mode==='try'){await last.locator('button',{hasText:'جرّب'}).click()}else{await last.locator('button.primary').click()}
+ await p.evaluate(()=>{window.__seen=[];new MutationObserver(()=>{document.querySelectorAll('.quiz-out').forEach(o=>window.__seen.push(o.textContent))}).observe(document.body,{subtree:true,childList:true,characterData:true})});
  await p.waitForTimeout(300); // executor request is now held open
  await p.evaluate(action);release();gate=null;await p.waitForTimeout(800);
- const out=await p.evaluate(()=>({keys:Object.keys(localStorage).filter(x=>x.startsWith('codequest_studio_quiz_')),h2:!!document.querySelector('#quizResult h2'),pass:!!document.querySelector('#quizResult .quiz-status.pass'),hidden:document.getElementById('quizBody').hidden,note:document.querySelector('#quizResult .quiz-status')?.textContent||'',pre:[...document.querySelectorAll('.quiz-out')].map(x=>x.textContent).join('')}));
- assert.deepEqual(out.keys,[],name+': nothing stored');assert.equal(out.h2,false,name+': no score');assert.equal(out.pass,false);assert.equal(out.hidden,true,name+': quiz hidden');assert.match(out.note,/الحساب اتغيّر/);assert.ok(!out.pre.includes(quiz.code[0].tests[0].expected)||!quiz.code[0].tests[0].expected,name+': A output not shown');
+ const out=await p.evaluate(()=>({keys:Object.keys(localStorage).filter(x=>x.startsWith('codequest_studio_quiz_')),h2:!!document.querySelector('#quizResult h2'),pass:!!document.querySelector('#quizResult .quiz-status.pass'),hidden:document.getElementById('quizBody').hidden,note:document.querySelector('#quizResult .quiz-status')?.textContent||'',pre:(window.__seen||[]).join('|'),kids:document.getElementById('quizBody').children.length,prog:document.querySelectorAll('.quiz-progress').length}));
+ assert.deepEqual(out.keys,[],name+': nothing stored');assert.equal(out.h2,false,name+': no score');assert.equal(out.pass,false);assert.equal(out.hidden,true,name+': quiz hidden');assert.equal(out.kids,0,name+': quiz content removed');assert.equal(out.prog,0,name+': progress removed');assert.match(out.note,/الحساب اتغيّر/);assert.ok(!out.pre.includes(quiz.code[0].tests[0].expected),name+': stale output never inserted at any time');
  if(name==='switch during grading')await p.screenshot({path:'/downloads/quiz-switch2.png'});await p.close();console.log('ok',name)}
 await scenario('switch during grading',()=>{window.__cu='u2'},'submit');
 await scenario('signout during grading',()=>{window.__cu=null},'submit');
 await scenario('switch during try-run',()=>{window.__cu='u2'},'try');
 assert.equal(posts.filter(u=>/progress\/exam/.test(u)).length,0,'no exam sync posted');
+
+// Token retrieval: owner switches while the ID token is being fetched. Nothing may be posted with a replacement user's token.
+await c.unroute('**/js/firebase-config.js');
+await c.route('**/js/firebase-config.js',r=>r.fulfill({contentType:'text/javascript',body:"export const auth={get currentUser(){return window.__cu?{uid:window.__cu,getIdToken:async()=>{if(window.__tokGate)await window.__tokGate;return 'tok-'+window.__cu}}:null}};"}));
+await c.route('**/learning-studio/features.json',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({serverAssessment:true})}));
+const auths=[];c.on('request',q=>{if(q.method()==='POST'&&/workers\.dev/.test(q.url()))auths.push(q.url()+' '+(q.headers()['authorization']||''))});
+{verifyOk=true;await as('u1');const p=await c.newPage();await p.addInitScript(()=>{window.__cu='u1';let rel;window.__tokGate=new Promise(r=>rel=r);window.__rel=rel});await p.goto(L+'/learning-studio/quiz.html?lang=python&unit=1&uid=u1');await p.waitForSelector('.quiz-item');await answerMcq(p);
+ await p.locator('.quiz-item').nth(quiz.mcq.length).locator('button.primary').click();await p.waitForTimeout(600);
+ await p.evaluate(()=>{window.__cu='u2';window.__rel()});await p.waitForTimeout(800);
+ assert.deepEqual(auths,[],'no POST was sent while the owner changed during token fetch');
+ const o=await p.evaluate(()=>({keys:Object.keys(localStorage).filter(x=>x.startsWith('codequest_studio_quiz_')),pend:Object.keys(localStorage).filter(x=>x.startsWith('cq_pending_u2'))}));assert.ok(o.keys.every(k=>k.includes('_u1_')),'any pass flag belongs to u1 only (the owner of the page), never u2');assert.deepEqual(o.pend,[],'nothing queued under u2');console.log('ok token fetch owner switch');await p.close()}
 await b.close();srv.close()})().catch(e=>{console.error(e);process.exit(1)});

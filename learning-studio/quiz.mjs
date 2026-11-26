@@ -12,8 +12,10 @@ const $=id=>document.getElementById(id);
 const quizzes=await (await fetch('quizzes.json')).json();const data=quizzes[lang+'-'+unit];
 const features=await fetch('features.json').then(r=>r.json()).catch(()=>({}));
 const serverOn=features.serverAssessment===true;
-const durable=async(key,path,payload,extra={})=>{const {auth}=await import('/js/firebase-config.js');if(auth.currentUser?.uid&&auth.currentUser.uid!==uid)return {state:'off'};return postDurable({uid:auth.currentUser?.uid||null,storage:localStorage,key,enabled:serverOn,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o),path,payload,...extra})};
-if(serverOn)import('/js/firebase-config.js').then(({auth})=>flushPending({uid:auth.currentUser?.uid||null,storage:localStorage,enabled:true,getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)}).then(async()=>{const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:auth.currentUser?.uid||null,storage:localStorage,sendOpts:()=>({getToken:async force=>auth.currentUser?.getIdToken(force===true)??null,fetchFn:(u,o)=>fetch(u,o)})})})).catch(()=>{});
+// A token is only ever used for the account that owns this page: no token is returned (so nothing is posted) if the signed-in account changed before or while it was fetched.
+const ownerToken=async(auth,force)=>{if(!uid||auth.currentUser?.uid!==uid)return null;const t=await auth.currentUser.getIdToken(force===true);return auth.currentUser?.uid===uid?t:null};
+const durable=async(key,path,payload,extra={})=>{const {auth}=await import('/js/firebase-config.js');if(auth.currentUser?.uid&&auth.currentUser.uid!==uid)return {state:'off'};return postDurable({uid:auth.currentUser?.uid||null,storage:localStorage,key,enabled:serverOn,getToken:force=>ownerToken(auth,force),fetchFn:(u,o)=>fetch(u,o),path,payload,...extra})};
+if(serverOn)import('/js/firebase-config.js').then(({auth})=>flushPending({uid:auth.currentUser?.uid||null,storage:localStorage,enabled:true,getToken:force=>ownerToken(auth,force),fetchFn:(u,o)=>fetch(u,o)}).then(async()=>{const {mountPendingNotice}=await import('./pending-notice.mjs');mountPendingNotice({uid:auth.currentUser?.uid||null,storage:localStorage,sendOpts:()=>({getToken:force=>ownerToken(auth,force),fetchFn:(u,o)=>fetch(u,o)})})})).catch(()=>{});
 const pendingSync=[];
 const units=await (await fetch('units.json')).json();const pack=units.find(u=>u.language===lang&&u.unit===unit);
 $('mapLink').href='/course-path.html?lang='+encodeURIComponent(lang);
@@ -54,7 +56,7 @@ else{
  const cu0=import('/js/firebase-config.js').then(({auth})=>auth.currentUser?.uid||null).catch(()=>null);
  let dead=false;
  async function sameAccount(){if(dead)return false;try{const {auth}=await import('/js/firebase-config.js');const cu=auth.currentUser?.uid||null;const base=await cu0;return localHost?(base?cu===base&&(!uid||cu===uid):(!cu||cu===uid)):cu===uid}catch{return localHost}}
- function lockOut(){dead=true;const r=$('quizResult');r.hidden=false;r.replaceChildren();const p=document.createElement('p');p.className='quiz-status review';p.textContent='الحساب اتغيّر أثناء الاختبار، فالنتيجة ما اتسجّلتش. افتح الاختبار من جديد بالحساب الصحيح.';r.append(p);$('quizBody').hidden=true}
+ function lockOut(){dead=true;document.querySelectorAll('.quiz-progress').forEach(x=>x.remove());$('quizBody').replaceChildren();const r=$('quizResult');r.hidden=false;r.replaceChildren();const p=document.createElement('p');p.className='quiz-status review';p.textContent='الحساب اتغيّر أثناء الاختبار، فالنتيجة ما اتسجّلتش. افتح الاختبار من جديد بالحساب الصحيح.';r.append(p);$('quizBody').hidden=true}
  function done(){
   if(answers.filter(Boolean).length<items.length)return;
   sameAccount().then(ok=>{if(ok)finish();else lockOut()})}
