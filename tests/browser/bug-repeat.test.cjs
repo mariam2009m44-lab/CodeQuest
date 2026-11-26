@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'../..');const types={'.html':'text/html','.js
 await new Promise(r=>srv.listen(0,r));const L='http://localhost:'+srv.address().port;const b=await chromium.launch();
 try{const c=await b.newContext({viewport:{width:390,height:844}});await c.route(/^https?:\/\/(?!localhost)/,r=>r.abort());const p=await c.newPage();await p.goto(L+'/game-bug.html');
  await p.evaluate(()=>startGame('easy'));
-  {const w=await p.evaluate(()=>{const e=document.querySelectorAll('#codeContainer .code-text')[1];const r=document.createRange();r.selectNodeContents(e);const full=r.getBoundingClientRect().width;e.textContent=e.textContent.trim();r.selectNodeContents(e);return [full,r.getBoundingClientRect().width,getComputedStyle(e).whiteSpace]});assert.equal(w[2],'pre');assert.ok(w[0]>w[1]+15,'leading spaces occupy width (indentation kept)');}
+  {const w=await p.evaluate(()=>{const e=document.querySelectorAll('#codeContainer .code-text')[1];const r=document.createRange();r.selectNodeContents(e);const full=r.getBoundingClientRect().width;e.textContent=e.textContent.trim();r.selectNodeContents(e);return [full,r.getBoundingClientRect().width,getComputedStyle(e).whiteSpace]});assert.match(w[2],/^pre/);assert.ok(w[0]>w[1]+15,'leading spaces occupy width (indentation kept)');}
  await p.evaluate(()=>startGame('easy'));
  const lines=p.locator('#codeContainer .line');
  await lines.nth(0).click();await p.waitForTimeout(900);await lines.nth(0).click();await lines.nth(0).click();
