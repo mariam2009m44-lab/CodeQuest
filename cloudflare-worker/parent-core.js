@@ -7,7 +7,8 @@ export const MAX_PARENTS_PER_CHILD = 4;
 export const MAX_CHILDREN_PER_PARENT = 10;
 export function emptyLinks() { return { codes: {}, links: {}, fails: {} }; }
 const key = (child, parent) => child + "\u0000" + parent;
-function prune(s, now) { for (const h of Object.keys(s.codes)) { const c = s.codes[h]; if (c.exp <= now || c.claimed) { if (now - c.exp > 86400000 || c.claimed) delete s.codes[h]; } } }
+// Expired and used codes stay for 24 h as small markers, so a late or repeated entry gets a specific answer instead of "wrong code".
+function prune(s, now) { for (const h of Object.keys(s.codes)) { const c = s.codes[h]; const ended = c.claimed ? (c.claimedAt || c.exp) : c.exp; if (ended <= now && now - ended > 86400000) delete s.codes[h]; } }
 export function createCode(s, child, hash, now) {
   prune(s, now);
   const active = Object.values(s.codes).filter(c => c.child === child && !c.claimed && c.exp > now);
@@ -21,13 +22,15 @@ export function claimCode(s, parent, hash, now) {
   if (f.n >= MAX_FAILED_CLAIMS_PER_HOUR) return { ok: false, status: 429, reason: "too_many_attempts" };
   const c = s.codes[hash];
   const fail = reason => { f.n += 1; s.fails[parent] = f; return { ok: false, status: 404, reason, failed: true }; };
-  if (!c || c.claimed || c.exp <= now) return fail("code_invalid");
+  if (!c) return fail("code_invalid");
+  if (c.claimed) return fail("code_used");
+  if (c.exp <= now) return fail("code_expired");
   // Own code entered in the same account: say so (the code is the caller's own, so nothing is revealed) and do not count it as a failed guess.
   if (c.child === parent) return { ok: false, status: 400, reason: "self_link" };
   const parents = Object.keys(s.links).filter(k => k.startsWith(c.child + "\u0000")).length;
   const children = Object.keys(s.links).filter(k => k.endsWith("\u0000" + parent)).length;
   if (!s.links[key(c.child, parent)] && (parents >= MAX_PARENTS_PER_CHILD || children >= MAX_CHILDREN_PER_PARENT)) return { ok: false, status: 409, reason: "link_limit" };
-  c.claimed = true; s.links[key(c.child, parent)] = { at: now };
+  c.claimed = true; c.claimedAt = now; s.links[key(c.child, parent)] = { at: now };
   return { ok: true, child: c.child };
 }
 // Authorization at read time. Call it again after reading the child's data and drop the data if it is no longer linked.

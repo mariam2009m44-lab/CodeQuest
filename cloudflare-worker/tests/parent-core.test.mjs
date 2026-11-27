@@ -34,3 +34,15 @@ test("brute force is bounded per parent per hour and resets next hour; limits on
 test("no raw code or uid appears in the stored state keys beyond the hash", () => {
   const s = p.emptyLinks(); p.createCode(s, "kid", "HASHONLY", T); assert.deepEqual(Object.keys(s.codes), ["HASHONLY"]);
 });
+test("claim answers are specific: unknown, expired, used, own account; valid until the 30 minute mark", () => {
+  const T = 1_800_000_000_000; const s = p.emptyLinks();
+  assert.equal(p.createCode(s, "kid", "h1", T).ok, true);
+  assert.equal(p.claimCode(s, "x", "nope", T + 1000).reason, "code_invalid");
+  assert.equal(p.claimCode(s, "kid", "h1", T + 1000).reason, "self_link");
+  assert.equal(p.claimCode(s, "aunt", "h1", T + p.CODE_TTL_MS - 1).ok, true, "still valid 1 ms before 30 min");
+  assert.equal(p.claimCode(s, "other", "h1", T + p.CODE_TTL_MS - 1).reason, "code_used");
+  p.createCode(s, "kid", "h2", T);
+  assert.equal(p.claimCode(s, "aunt", "h2", T + p.CODE_TTL_MS).reason, "code_expired");
+  p.createCode(s, "kid", "h3", T + 25 * 3600000);
+  assert.equal(s.codes.h1 && s.codes.h2, undefined, "markers older than 24 h are removed");
+});
