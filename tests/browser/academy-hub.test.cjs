@@ -20,13 +20,13 @@ async function open(role,vp={width:390,height:900}){const b=await chromium.launc
  await p.goto('http://localhost:9/academy-hub.html');await p.waitForTimeout(900);return {p,b}}
 test('student sees sessions, join link opens in a new tab, code is view-only, groups open a chat with report buttons',async()=>{const {p,b}=await open('student');try{
  assert.equal(await p.isHidden('#sessionCreate'),true);const a=p.locator('#sessionList a');assert.equal(await a.getAttribute('target'),'_blank');assert.match(await a.getAttribute('rel'),/noopener/);
- await p.screenshot({path:'/downloads/hub-student-sessions.png'});
+ await p.screenshot({path:require('os').tmpdir()+'/hub-student-sessions.png'});
  await p.click('#sessionList button:has-text("عرض كود المدرب")');await p.waitForTimeout(300);assert.match(await p.textContent('#codeView'),/print/);assert.equal(await p.isHidden('#codeEditor'),true);
  await p.click('#tabGroups');await p.waitForTimeout(300);await p.click('#groupList button:has-text("فتح المحادثة")');await p.waitForTimeout(500);
  assert.equal(await p.locator('.hub-msg').count(),2);assert.equal(await p.locator('.hub-msg.ann').count(),1);assert.ok(await p.locator('.hub-msg button:has-text("إبلاغ")').count()>=1);assert.equal(await p.isHidden('#manage'),true);assert.equal(await p.isHidden('#annLabel'),true);
- await p.screenshot({path:'/downloads/hub-student-chat.png'})}finally{await b.close()}});
+ await p.screenshot({path:require('os').tmpdir()+'/hub-student-chat.png'})}finally{await b.close()}});
 test('trainer sees create forms, announcement toggle and join requests',async()=>{const {p,b}=await open('trainer');try{
  assert.equal(await p.isVisible('#sessionCreate'),true);await p.click('#tabGroups');await p.waitForTimeout(300);assert.equal(await p.isVisible('#groupCreate'),true);
  await p.click('#groupList button:has-text("فتح المحادثة")');await p.waitForTimeout(500);assert.equal(await p.isVisible('#annLabel'),true);assert.match(await p.textContent('#pendingList'),/سلمى/);
- await p.screenshot({path:'/downloads/hub-trainer-chat.png',fullPage:true})}finally{await b.close()}});
+ await p.screenshot({path:require('os').tmpdir()+'/hub-trainer-chat.png',fullPage:true})}finally{await b.close()}});
 test('server switch off shows the clean Arabic line, never a raw code',async()=>{const {p,b}=await open('off');try{const t=await p.textContent('#hubState');assert.match(t,/لم تُفتح بعد/);assert.doesNotMatch(t,/internal|academy_off/);assert.equal(await p.isHidden('#hubBody'),true)}finally{await b.close()}});
