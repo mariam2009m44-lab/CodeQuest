@@ -856,20 +856,10 @@
 
         renderLanguageCards(progress, totals);
         renderBadges(completedCount, totalCount);
-        // "Continue learning" opens the map of the track the learner is in the middle of: the unfinished track with the most finished lessons.
-        const current = languages.filter(k => progress[k].length > 0 && progress[k].length < totals[k]).sort((a, b) => progress[b].length - progress[a].length)[0];
+        // "Continue learning" opens the tracks page (المسارات), where each track shows its own progress.
         const link = $("continueLink");
-        const next = ["python", "cpp", "java", "javascript"].find(k => progress[k].length < totals[k]);
-        if (current) {
-          link.href = `course-path.html?lang=${current}`;
-          link.textContent = `تابع التعلم في ${LANGUAGES[current].name} ←`;
-        } else if (completedCount > 0 && next) {
-          link.href = `course-path.html?lang=${next}`;
-          link.textContent = `ابدأ المسار التالي: ${LANGUAGES[next].name} ←`;
-        } else {
-          link.href = "languages.html";
-          link.textContent = completedCount > 0 ? "اختر مسارًا ←" : "ابدأ رحلتك ←";
-        }
+        link.href = "languages.html";
+        link.textContent = "تابع التعلم ←";
         $("vaultCta").href = "languages.html";
         $("pageStatus").hidden = true;
 
