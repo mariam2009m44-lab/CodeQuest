@@ -28,7 +28,7 @@ async function submitInstructor(payload){
  if(w.ok)return {data:w.data,worker:true};
  if(w.unreachable)throw new Error("لم نتأكد من وصول طلبك. افتح الصفحة من جديد وتحقق من حالة الطلب قبل إعادة الإرسال.");
  if(!w.off)throw new Error(w.data.message==="rate_limited"?"تم الوصول للحد اليومي لإرسال الطلب. حاول غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
- return submitInstructorCallable(payload);
+ throw new Error(ACADEMY_DOWN_TEXT);
 }
 let workerInstructor=false;
 async function getStatus(){

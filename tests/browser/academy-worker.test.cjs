@@ -55,8 +55,8 @@ test('worker ON: applicant submits through the Worker, reload shows pending and 
   const b = await browser.newContext({ viewport: { width: 390, height: 1000 }, serviceWorkers: 'block' }); t.after(() => b.close());
   const dirs = a.w; const adminSetup = await setup(t, { workerOn: true, token: 'tokE' }); const svcKey = 'svc-academy-' + 'x'.repeat(130); adminSetup.w.stores.set(svcKey, a.w.stores.get(svcKey));
   const admin = await page(adminSetup.context, 'academy-admin.html'); await admin.p.waitForSelector('#pendingInstructors .admin-application');
-  assert.match(await admin.p.textContent('#adminStats'), /طلبات قيد المراجعة/);
-  assert.match(await admin.p.textContent('#adminStudents'), /لم يُنفَّذ بعد/); assert.match(await admin.p.textContent('#adminClasses'), /لم يُنفَّذ بعد/); assert.match(await admin.p.textContent('.academy-intro p'), /مراجعة طلبات المدربين فقط/); assert.doesNotMatch(await admin.p.textContent('.academy-intro p'), /في مكان واحد/); assert.match(await admin.p.textContent('#adminState'), /باقي الأقسام لم تُنفَّذ بعد/);
+  assert.match(await admin.p.textContent('#adminStats'), /طلبات مدربين جديدة/);
+  assert.match(await admin.p.textContent('#adminStudents'), /لا توجد موافقات أولياء أمور معلقة/); assert.match(await admin.p.textContent('#adminClasses'), /لم يُنفَّذ بعد/); assert.match(await admin.p.textContent('.academy-intro p'), /تراجع طلبات المدربين/); assert.doesNotMatch(await admin.p.textContent('.academy-intro p'), /في مكان واحد/); assert.match(await admin.p.textContent('#adminState'), /تم تحديث الطلبات والملفات والمجموعات/);
   await admin.p.screenshot({ path: path.join(artifactDir, 'academy-admin-worker.png'), fullPage: true });
   await admin.p.locator('#pendingInstructors .admin-action').first().click();
   await admin.p.waitForFunction(() => document.querySelector('#pendingInstructors').textContent.includes('لا توجد طلبات'));
@@ -69,12 +69,12 @@ test('worker ON: a non-admin sees the admin refusal and no applications', async 
   const { p } = await page(a.context, 'academy-admin.html'); await p.waitForFunction(() => document.getElementById('adminState').textContent.includes('مخصص لمسؤول'));
   assert.equal(await p.locator('#adminContent').isVisible(), false);
 });
-test('worker OFF: the page falls back to the Firebase callable (and reports its failure honestly)', async t => {
+test('worker OFF: clean Arabic line, the dead Firebase callable is never called, nothing stored', async t => {
   const a = await setup(t, { workerOn: false, token: 'tokV' });
-  const { p } = await page(a.context, 'academy-registration.html'); await p.waitForFunction(() => document.getElementById('accountState').textContent.includes('تعذر تحميل'));
+  const { p } = await page(a.context, 'academy-registration.html'); await p.waitForFunction(() => document.getElementById('accountState').textContent.includes('لم تُفتح بعد'));
   await p.click('#instructorTab'); await fill(p); await p.click('#instructorForm button[type=submit]');
-  await p.waitForFunction(() => /callable unavailable/.test(document.getElementById('instructorFeedback').textContent));
-  assert.equal(await p.evaluate(() => window.__fn.includes('submitInstructorApplication')), true); assert.equal(a.w.adirs.size, 0);
+  await p.waitForFunction(() => /لم تُفتح بعد/.test(document.getElementById('instructorFeedback').textContent));
+  assert.equal(await p.evaluate(() => (window.__fn||[]).length), 0); assert.equal(a.w.adirs.size, 0);
 });
 
 test('worker unreachable during submit: no fallback to the callable (no duplicate store), honest message', async t => {
