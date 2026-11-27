@@ -1,0 +1,12 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),fs=require('fs/promises'),path=require('path');const root=path.resolve(__dirname,'../..');
+// Each place plays its own track; unknown pages fall back to Orbit; a missing area file falls back to Orbit; music stays off unless enabled.
+const CASES={'index.html':'area-home','achievements.html':'area-home','dashboard.html':'area-home','course-path.html':'area-lesson','python-lesson.html':'area-lesson','java-lessons.html':'area-lesson','game-memory.html':'area-games','games.html':'area-games','python-exam.html':'area-exam','shop.html':'area-shop','store.html':'area-shop','login.html':'orbit-loop'};
+async function run(page,{missingArea=false,enable=true}={}){const b=await chromium.launch({args:['--autoplay-policy=no-user-gesture-required']});try{const p=await b.newPage();const asked=[];
+ await p.route('**/*',async r=>{const u=r.request().url();if(u.endsWith('.ogg')){asked.push(path.basename(u,'.ogg'));if(missingArea&&/area-/.test(u))return r.fulfill({status:404,body:''});return r.fulfill({contentType:'audio/ogg',body:await fs.readFile(root+'/assets/audio/orbit-loop.ogg')})}return r.fulfill({contentType:'text/html',body:'<button id="tap">Test</button>'})});
+ await p.goto('http://fixture/'+page);let s=await fs.readFile(root+'/js/game-audio.js','utf8');s=s.replace('function mountControls() {','window.audioTest={startMusic,get playing(){return !!orbitSource}};\n  function mountControls() {');
+ await p.evaluate(()=>localStorage.removeItem('cq_music'));await p.addScriptTag({content:s});await p.waitForTimeout(200);
+ const offAsked=asked.length;if(enable){await p.evaluate(()=>window.audioTest.startMusic());await p.waitForTimeout(900)}
+ return {asked,offAsked,playing:await p.evaluate(()=>window.audioTest.playing)}}finally{await b.close()}}
+for(const [page,track] of Object.entries(CASES))test(page+' plays '+track,async()=>{const r=await run(page);assert.equal(r.offAsked,0,'nothing loads while music is off');assert.deepEqual(r.asked,[track]);assert.equal(r.playing,true)});
+test('missing area file falls back to Orbit',async()=>{const r=await run('shop.html',{missingArea:true});assert.deepEqual(r.asked,['area-shop','orbit-loop']);assert.equal(r.playing,true)});
+test('music off by default: no track is fetched',async()=>{const r=await run('index.html',{enable:false});assert.deepEqual(r.asked,[]);assert.equal(r.playing,false)});

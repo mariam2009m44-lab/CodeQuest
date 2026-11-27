@@ -28,12 +28,32 @@
   let orbitBuffer = null, orbitLoading = null, orbitSource = null;
   const retiringMusic = new Set();
   const ORBIT_URL = new URL("../assets/audio/orbit-loop.ogg", SCRIPT_URL).href;
+  // Each place has its own original loop (all in the Orbit sound family). Pages are separate documents, so the track for the
+  // current page loads on its own and fades in; Orbit stays the fallback for any other page or if a file cannot load.
+  const AREA_PAGES = {
+    lesson: /^(course-path|python-lesson|java-lessons|lecture|lang-intro|learning|levels|python-chapters|java-chapters|python-welcome|python-projects|playground|languages|projects|studio)$/,
+    exam: /^(python-exam|exam|quiz|final-exam)$/,
+    games: /^(games|game-[a-z-]+)$/,
+    shop: /^(shop|store)$/,
+    home: /^(index|dashboard|achievements|profile|leaderboard|progress|avatar|settings|parent|live-academy)$/
+  };
+  function musicArea() {
+    const page = (location.pathname.split("/").pop() || "index").replace(/\.html?$/i, "") || "index";
+    for (const [area, rx] of Object.entries(AREA_PAGES)) if (rx.test(page)) return area;
+    return null;
+  }
+  const AREA = musicArea();
+  const AREA_URL = AREA ? new URL(`../assets/audio/area-${AREA}.ogg`, SCRIPT_URL).href : ORBIT_URL;
+  async function fetchTrack(ctx, url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Music unavailable");
+    return ctx.decodeAudioData(await response.arrayBuffer());
+  }
   async function loadOrbit(ctx) {
     if (orbitBuffer) return orbitBuffer;
-    if (!orbitLoading) orbitLoading = fetch(ORBIT_URL).then(response => {
-      if (!response.ok) throw new Error("Music unavailable");
-      return response.arrayBuffer();
-    }).then(data => ctx.decodeAudioData(data)).then(buffer => (orbitBuffer = buffer)).catch(error => { orbitLoading = null; throw error; });
+    if (!orbitLoading) orbitLoading = fetchTrack(ctx, AREA_URL)
+      .catch(error => { if (AREA_URL === ORBIT_URL) throw error; return fetchTrack(ctx, ORBIT_URL); })
+      .then(buffer => (orbitBuffer = buffer)).catch(error => { orbitLoading = null; throw error; });
     return orbitLoading;
   }
   const musicSources = new Set();
