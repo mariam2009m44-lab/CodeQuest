@@ -1,0 +1,10 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),fs=require('fs/promises'),path=require('path'),os=require('os');const root=path.resolve(__dirname,'../..');
+const STUB={'/js/auth.js':'export const requireUser=async()=>({uid:"FIXTURE_UID_123",displayName:""});export const getCurrentUser=()=>({uid:"FIXTURE_UID_123",getIdToken:async()=>"t"});export const logoutUser=async()=>{};export const updateCurrentUserName=async()=>{};','/js/ui.js':'export const showToast=(m)=>{window.__toast=m};','/js/learner-parent-link.js':''};
+test('settings shows only the signed-in user\'s own account id with a copy button',async()=>{const b=await chromium.launch();try{const p=await b.newPage({viewport:{width:390,height:800}});
+ await p.route('**/*',async r=>{const u=new URL(r.request().url());if(u.hostname!=='localhost')return r.abort();if(STUB[u.pathname]!==undefined)return r.fulfill({contentType:'application/javascript',body:STUB[u.pathname]});
+  try{const f=path.join(root,u.pathname==='/'?'settings.html':u.pathname);const body=await fs.readFile(f);return r.fulfill({contentType:{'.html':'text/html;charset=utf-8','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml'}[path.extname(f)]||'application/octet-stream',body})}catch{return r.fulfill({status:404,body:''})}});
+ await p.context().grantPermissions(['clipboard-read','clipboard-write'],{origin:'http://localhost:9'}).catch(()=>{});
+ await p.goto('http://localhost:9/settings.html#accountIdCard');await p.waitForTimeout(900);
+ assert.equal(await p.isVisible('#accountIdCard'),true);assert.equal((await p.textContent('#accountIdValue')).trim(),'FIXTURE_UID_123');
+ await p.click('#copyAccountId');await p.waitForTimeout(200);assert.match(await p.textContent('#copyAccountIdStatus'),/نسخ/);
+ await p.screenshot({path:os.tmpdir()+'/account-id-card.png'});await p.screenshot({path:'/downloads/account-id-card.png'}).catch(()=>{})}finally{await b.close()}});

@@ -483,6 +483,15 @@
         <button type="submit" class="btn-secondary" id="saveDisplayNameButton" style="margin-top:12px">حفظ الاسم</button>
         <p id="displayNameStatus" class="page-status" role="status" aria-live="polite"></p>
       </form>
+      <div id="accountIdCard" class="setting-row" style="display:block;margin-top:14px" hidden>
+        <div class="setting-info">
+          <h3>رقم حسابي</h3>
+          <p>رقم حسابك في CodeQuest. يظهر لك أنت فقط، ولا يكفي وحده للدخول إلى حسابك. قد تحتاج لنسخه عند ضبط إعدادات الإدارة.</p>
+        </div>
+        <bdi id="accountIdValue" dir="ltr" style="display:block;margin-top:10px;padding:12px;border:1px solid var(--border-soft,#30395a);border-radius:10px;word-break:break-all;font-family:Consolas,monospace;font-size:13px;user-select:all"></bdi>
+        <button type="button" class="btn-secondary" id="copyAccountId" style="margin-top:12px">نسخ الرقم</button>
+        <p id="copyAccountIdStatus" class="page-status" role="status" aria-live="polite"></p>
+      </div>
     </section>
 
     <!-- الخصوصية -->
@@ -999,6 +1008,18 @@
         throw new Error("تغيّر الحساب أثناء تحميل الإعدادات. أعد تحميل الصفحة.");
       }
       authenticatedNameUid = currentUser.uid;
+      document.getElementById("accountIdValue").textContent = currentUser.uid;
+      document.getElementById("accountIdCard").hidden = false;
+      document.getElementById("copyAccountId").addEventListener("click", async () => {
+        const status = document.getElementById("copyAccountIdStatus");
+        try { await navigator.clipboard.writeText(currentUser.uid); status.textContent = "تم نسخ الرقم."; }
+        catch (_) {
+          const r = document.createRange(); r.selectNodeContents(document.getElementById("accountIdValue"));
+          const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+          status.textContent = "حدّد الرقم أعلاه وانسخه يدويًا.";
+        }
+      });
+      if (location.hash === "#accountIdCard") document.getElementById("accountIdCard").scrollIntoView({ block: "center" });
       elements.nameInput.value = currentUser.displayName || "";
       elements.nameInput.disabled = false;
       elements.nameSave.disabled = false;
