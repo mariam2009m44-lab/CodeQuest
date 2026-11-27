@@ -1,7 +1,7 @@
 import { auth, functions, authPersistenceReady } from "./firebase-config.js";
 import { onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
-import { acadMsg } from "./academy-errors.js";
+import { acadMsg, ACADEMY_DOWN_TEXT } from "./academy-errors.js";
 const accountState=document.getElementById("accountState");
 const studentForm=document.getElementById("studentForm");
 const instructorForm=document.getElementById("instructorForm");
@@ -15,7 +15,13 @@ const consentRow=document.getElementById("guardianConsentRow");
 const ageSelect=studentForm.elements.ageBand;
 const verifyButton=document.getElementById("verifyEmailButton");
 import { academyWorker } from "./academy-api.js";
-const submitStudent=httpsCallable(functions,"submitStudentAcademyProfile");
+async function submitStudent(payload){
+ const w=await academyWorker(currentUser,"student-profile",payload);
+ if(w.ok)return {data:w.data};
+ if(w.unreachable)throw new Error("لم نتأكد من حفظ الملف. افتح الصفحة من جديد وتحقق من حالتك قبل إعادة الإرسال.");
+ if(w.off)throw new Error(ACADEMY_DOWN_TEXT);
+ throw new Error(w.data.message==="guardian_consent_required"?"يلزم تأكيد موافقة ولي الأمر للطلاب دون 18 عامًا.":w.data.message==="invalid"?"راجع بيانات الطالب واختياراته.":"تعذر حفظ البيانات. حاول مرة أخرى.");
+}
 const submitInstructorCallable=httpsCallable(functions,"submitInstructorApplication");
 async function submitInstructor(payload){
  const w=await academyWorker(currentUser,"instructor-application",payload);
@@ -24,15 +30,15 @@ async function submitInstructor(payload){
  if(!w.off)throw new Error(w.data.message==="rate_limited"?"تم الوصول للحد اليومي لإرسال الطلب. حاول غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
  return submitInstructorCallable(payload);
 }
-const callableStatus=httpsCallable(functions,"getMyAcademyRegistrationStatus");
 let workerInstructor=false;
 async function getStatus(){
  const w=await academyWorker(currentUser,"my-status",{});
  workerInstructor=w.ok;
- let data={};let failure=null;
- try{data=(await callableStatus({})).data||{};}catch(error){failure=error;}
+ let data={};
+ const r=await academyWorker(currentUser,"my-role",{});
+ if(!w.ok&&!r.ok){const e=new Error("down");e.code="unavailable";throw e;}
+ if(r.ok&&r.data.studentProfile)data.studentProfile=r.data.studentProfile;
  if(w.ok&&w.data.exists)data={...data,instructorApplication:{...w.data.application,status:w.data.status}};
- if(failure&&!w.ok)throw failure;
  return {data};
 }
 let currentUser=null;
@@ -51,7 +57,7 @@ function checkedValues(form,name){return [...form.querySelectorAll('input[name="
 await authPersistenceReady;
 onAuthStateChanged(auth,async user=>{
  currentUser=user;
- if(!user){accountState.textContent="سجّل الدخول بحساب CodeQuest الحالي أولًا، ثم عودي لإكمال بيانات الأكاديمية.";const link=document.createElement("a");link.href="login.html?next=academy-registration.html";link.textContent="تسجيل الدخول";link.style.color="#a78bfa";accountState.append(" ",link);studentForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);instructorForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);return;}
+ if(!user){accountState.textContent="سجّل الدخول بحساب CodeQuest الحالي أولًا، ثم العودة لإكمال بيانات الأكاديمية.";const link=document.createElement("a");link.href="login.html?next=academy-registration.html";link.textContent="تسجيل الدخول";link.style.color="#a78bfa";accountState.append(" ",link);studentForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);instructorForm.querySelectorAll("input,select,button,textarea").forEach(x=>x.disabled=true);return;}
  try{
   const state=await getStatus({});
   const student=state.data?.studentProfile;const instructor=state.data?.instructorApplication;
@@ -75,7 +81,7 @@ studentForm.addEventListener("submit",async event=>{
   const interests=checkedValues(studentForm,"interests");
   if(!interests.length)throw new Error("اختار مجالًا واحدًا على الأقل.");
   const saved=await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked,learningGoals:studentForm.elements.learningGoals.value.trim(),learningNeeds:studentForm.elements.learningNeeds.value.trim(),preferredSchedule:studentForm.elements.preferredSchedule.value.trim()});
-  setFeedback(studentFeedback,saved.data?.status==="pending_guardian"?"تم حفظ الملف. سيظل التسجيل في الفصول المباشرة معلقًا حتى تتحقق الإدارة من موافقة ولي الأمر.":"تم حفظ ملف الطالب وتفعيله بنجاح.");
+  setFeedback(studentFeedback,saved.data?.status==="pending_guardian"?"تم حفظ الملف. تبقى الجلسات والمجموعات مغلقة حتى تتحقق الإدارة من موافقة ولي الأمر.":"تم حفظ ملف الطالب وتفعيله. يمكنك الآن فتح الجلسات والمجموعات.");
  }catch(error){setFeedback(studentFeedback,acadMsg(error)||"تعذر حفظ البيانات.",true);}
  finally{button.disabled=false;}
 });

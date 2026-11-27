@@ -5,6 +5,7 @@ import { classifyCodyQuestion } from "./cody-classifier.js";
 import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, recordFinalExam, missingUnitExams, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
 import { generateVapid, vapidHeader, validSubscription, validEndpoint, isDue, localParts, MAX_PER_RUN } from "./push-core.js";
 import { emptyLinks, createCode, claimCode, canRead, childrenOf, parentsOf, unlink } from "./parent-core.js";
+import { handleExtra, EXTRA } from "./academy-do.js";
 import { validateApplication, emptyDirectory, submitApplication, myStatus, listApplications, reviewApplication } from "./academy-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
@@ -839,7 +840,7 @@ async function handleAcademy(request, env, origin, action) {
   const adminProbe = mode === "admin-only" && action === "list";
   if (mode !== "on" && !adminProbe) return jsonResponse({ success: false, retryable: true, message: "academy_off" }, 503, origin);
   let body = {};
-  try { body = await readBoundedJson(request, 16384); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
+  try { body = await readBoundedJson(request, action === "cput" ? 32768 : 16384); } catch (error) { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, error?.message === "REQUEST_BODY_TOO_LARGE" ? 413 : 400, origin); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin);
   const list = v => String(v || "").split(",").map(x => x.trim()).filter(Boolean);
   // Owner-only: exact Firebase uid match against the ACADEMY_ADMIN_UIDS dashboard secret. No email, domain, role, claim or approval ever grants admin.
@@ -849,6 +850,12 @@ async function handleAcademy(request, env, origin, action) {
   if (adminProbe) return jsonResponse({ success: true, probeOnly: true, adminVerified: true }, 200, origin);
   const stub = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(SERVICE_INSTANCE.academy));
   const send = payload => stub.fetch("https://academy.internal/" + action, { method: "POST", body: JSON.stringify(payload) });
+  if (EXTRA.has(action)) {
+    const pick = k => (typeof body[k] === "string" ? body[k].slice(0, 7000) : undefined);
+    const payload = { uid: user.uid, admin: isAdmin, email: user.email, value: body, id: pick("id"), gid: pick("gid"), target: pick("target"), decision: pick("decision"), nick: pick("nick"), text: pick("text"), kind: pick("kind"), mid: pick("mid"), lang: pick("lang"), code: pick("code"), since: Number.isFinite(Number(body.since)) ? Number(body.since) : 0, on: body.on === true };
+    const rx = await send(payload);
+    return jsonResponse(await rx.json(), rx.status, origin);
+  }
   let res;
   if (action === "submit") {
     const v = validateApplication(body);
@@ -1514,7 +1521,8 @@ export default {
       return handleProgress(request, env, origin, "exam");
     }
 
-    for (const [path, act] of [["/api/academy/instructor-application", "submit"], ["/api/academy/my-status", "status"], ["/api/academy/admin/applications", "list"], ["/api/academy/admin/review", "review"]]) {
+    const ACADEMY_EXTRA = [["student-profile", "student"], ["my-role", "myrole"], ["admin/summary", "summary"], ["admin/guardians", "guardians"], ["admin/guardian-review", "greview"], ["admin/groups", "agroups"], ["sessions/create", "scr"], ["sessions/list", "sls"], ["sessions/cancel", "scn"], ["sessions/code-put", "cput"], ["sessions/code-get", "cget"], ["groups/create", "gcr"], ["groups/list", "gls"], ["groups/join", "gjoin"], ["groups/review", "grev"], ["groups/remove", "grem"], ["groups/mute", "gmute"], ["groups/archive", "garch"], ["groups/post", "gpost"], ["groups/read", "gread"], ["groups/delete-msg", "gdel"], ["groups/report", "grep"]].map(([p, a]) => ["/api/academy/" + p, a]);
+    for (const [path, act] of [...ACADEMY_EXTRA, ["/api/academy/instructor-application", "submit"], ["/api/academy/my-status", "status"], ["/api/academy/admin/applications", "list"], ["/api/academy/admin/review", "review"]]) {
       if (url.pathname === path && request.method === "POST") return handleAcademy(request, env, origin, act);
     }
 
@@ -1740,6 +1748,7 @@ class AcademyDirectory {
     const out = await this.state.storage.transaction(async tx => {
       const dir = (await tx.get("dir")) || emptyDirectory(); const now = Date.now();
       if (action === "submit") { const r = submitApplication(dir, b.uid, b.email, b.emailVerified, b.value, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason, retryable: r.status === 429 || r.status === 503 } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }
+      if (EXTRA.has(action)) return handleExtra(tx, action, b, now, () => crypto.randomUUID().replace(/-/g, "").slice(0, 16));
       if (action === "status") return { status: 200, data: { success: true, ...myStatus(dir, b.uid) } };
       if (action === "list") return { status: 200, data: { success: true, ...(() => { const l = listApplications(dir, b.status, b.cursor, b.limit); return { applications: l.items, hasMore: l.hasMore }; })() } };
       if (action === "review") { const r = reviewApplication(dir, b.admin, b.target, b.decision, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }

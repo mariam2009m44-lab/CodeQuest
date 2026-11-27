@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10132b">
+<title>مساحة الأكاديمية | CodeQuest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css"><link rel="stylesheet" href="css/academy-portal.css"><link rel="stylesheet" href="css/academy-hub.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<header class="academy-header"><a class="academy-brand" href="index.html"><span>&lt;/&gt;</span> CodeQuest</a><nav><a href="dashboard.html">مساحة التعلّم</a><a href="live-academy.html">الأكاديمية</a><a href="academy-registration.html">التسجيل</a></nav></header>
+<main class="academy-wrap hub-wrap">
+<section class="academy-intro"><span class="academy-eyebrow">CODEQUEST · ACADEMY SPACE</span><h1>مساحة <span>الأكاديمية</span></h1><p>الجلسات المباشرة مع المدربين، ومجموعات الطلاب، وكود المدرب أمامك أثناء الشرح.</p></section>
+<div class="hub-state" id="hubState" role="status">جارٍ التحقق من حسابك…</div>
+<div id="hubBody" hidden>
+<div class="academy-tabs hub-tabs" role="tablist"><button id="tabSessions" class="is-active" role="tab" aria-selected="true" type="button">الجلسات</button><button id="tabGroups" role="tab" aria-selected="false" type="button">المجموعات</button></div>
+
+<section id="paneSessions">
+ <div class="academy-card hub-card" id="sessionCreate" hidden>
+  <h2>جلسة جديدة</h2>
+  <p class="hub-hint">الصق رابط اجتماع من Google Meet أو Zoom أو Jitsi أو Teams أو Whereby. يفتح الطلاب الرابط في نافذة جديدة.</p>
+  <form id="sessionForm" class="hub-form">
+   <label>العنوان<input name="title" required minlength="3" maxlength="80"></label>
+   <label>وصف مختصر<textarea name="description" maxlength="500" rows="2"></textarea></label>
+   <div class="hub-row"><label>المسار<select name="track"><option value="python">Python</option><option value="javascript">JavaScript</option><option value="cpp">C++</option><option value="java">Java</option><option value="web">الويب</option><option value="ai">الذكاء الاصطناعي</option></select></label>
+   <label>المدة بالدقائق<input name="durationMin" type="number" min="15" max="240" value="60" required></label></div>
+   <label>الموعد<input name="startsAt" type="datetime-local" required></label>
+   <label>رابط الاجتماع<input name="linkUrl" type="url" required placeholder="https://meet.google.com/..." dir="ltr"></label>
+   <label>المجموعة (اختياري)<select name="groupId" id="sessionGroup"><option value="">متاحة لكل الطلاب المفعّلين</option></select></label>
+   <button class="hub-btn" type="submit">نشر الجلسة</button><p class="hub-feedback" id="sessionFeedback" aria-live="polite"></p>
+  </form>
+ </div>
+ <div id="sessionList" class="hub-list"></div>
+ <div class="academy-card hub-card" id="codePanel" hidden>
+  <div class="hub-head"><h2 id="codeTitle">كود الجلسة</h2><button class="hub-ghost" id="codeClose" type="button">إغلاق</button></div>
+  <p class="hub-hint" id="codeHint"></p>
+  <textarea id="codeEditor" class="hub-code" dir="ltr" spellcheck="false" maxlength="6000" hidden></textarea>
+  <pre id="codeView" class="hub-code" dir="ltr"></pre>
+  <div class="hub-actions"><select id="codeLang" hidden><option value="python">Python</option><option value="javascript">JavaScript</option><option value="cpp">C++</option><option value="java">Java</option></select><button class="hub-btn" id="codePublish" type="button" hidden>نشر الكود للطلاب</button></div>
+  <p class="hub-feedback" id="codeFeedback" aria-live="polite"></p>
+ </div>
+</section>
+
+<section id="paneGroups" hidden>
+ <div class="academy-card hub-card" id="groupCreate" hidden>
+  <h2>مجموعة جديدة</h2>
+  <form id="groupForm" class="hub-form">
+   <label>اسم المجموعة<input name="name" required minlength="3" maxlength="60"></label>
+   <label>وصف<textarea name="description" maxlength="300" rows="2"></textarea></label>
+   <label>المسار<select name="track"><option value="python">Python</option><option value="javascript">JavaScript</option><option value="cpp">C++</option><option value="java">Java</option><option value="web">الويب</option><option value="ai">الذكاء الاصطناعي</option></select></label>
+   <button class="hub-btn" type="submit">إنشاء المجموعة</button><p class="hub-feedback" id="groupFeedback" aria-live="polite"></p>
+  </form>
+ </div>
+ <div id="groupList" class="hub-list"></div>
+ <div class="academy-card hub-card hub-chat" id="chat" hidden>
+  <div class="hub-head"><div><h2 id="chatTitle"></h2><p class="hub-hint" id="chatMeta"></p></div><button class="hub-ghost" id="chatClose" type="button">رجوع</button></div>
+  <div class="hub-safety">الرسائل نصية فقط. لا تُرسل روابط أو أرقام هاتف أو حسابات. المدرب يشرف على المجموعة، ويمكنك الإبلاغ عن أي رسالة.</div>
+  <div id="chatMessages" class="hub-messages" aria-live="polite"></div>
+  <form id="chatForm" class="hub-compose"><input id="chatInput" maxlength="500" autocomplete="off" placeholder="اكتب رسالة…" required><label class="hub-ann" id="annLabel" hidden><input type="checkbox" id="annCheck"> إعلان</label><button class="hub-btn" type="submit">إرسال</button></form>
+  <p class="hub-feedback" id="chatFeedback" aria-live="polite"></p>
+  <div id="manage" class="hub-manage" hidden><h3>الطلبات</h3><div id="pendingList"></div><h3>الأعضاء</h3><div id="memberList"></div><button class="hub-ghost hub-danger" id="archiveBtn" type="button">أرشفة المجموعة</button></div>
+ </div>
+</section>
+</div>
+</main>
+<footer class="academy-footer"><a href="index.html">CodeQuest</a><a href="live-academy.html">العودة للأكاديمية</a></footer>
+<script type="module" src="js/academy-hub.js"></script>
+</body></html>
