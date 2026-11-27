@@ -19,14 +19,14 @@ try{
   const [dl]=await Promise.all([p.waitForEvent('download'),p.click('#certPdf')]);
   assert.match(dl.suggestedFilename(),/^CodeQuest-certificate-.*\.pdf$/);const f=out+'/demo-'+lang+'.pdf';await dl.saveAs(f);
   const buf=fs.readFileSync(f),txt=buf.toString('latin1');
-  assert(txt.startsWith('%PDF-1.4'));assert(txt.trimEnd().endsWith('%%EOF'));assert.match(txt,/\/Count 1/);assert.match(txt,/\/MediaBox \[0 0 841\.89 595\.28\]/);assert(buf.length>50000,'embedded raster image');
+  assert(txt.startsWith('%PDF-1.4'));assert(txt.trimEnd().endsWith('%%EOF'));assert.match(txt,/\/Count 1/);assert.match(txt,/\/MediaBox \[0 0 841\.89 56[01]\.\d+\]/);assert(buf.length>50000,'embedded raster image');
   assert(await p.locator('#certPdf').isEnabled(),'button re-enabled');
   if(lang==='python'){await p.screenshot({path:out+'/page-desktop.png'});}
   // print emulation: one A4 landscape page, chrome hidden
   await p.emulateMedia({media:'print'});
   assert(await p.locator('#certActions').isHidden());assert(await p.locator('h1').isHidden());assert(await p.locator('#certCanvas').isVisible());
   const pdf=await p.pdf({preferCSSPageSize:true,printBackground:true});fs.writeFileSync(out+'/print-'+lang+'.pdf',pdf);
-  const info=require('child_process').spawnSync('pdfinfo',[out+'/print-'+lang+'.pdf'],{encoding:'utf8'});if(info.status===0){assert.match(info.stdout,/Pages:\s+1\b/,'print is one page');assert.match(info.stdout,/Page size:\s+8(41|42)\.\d+ x 59[45]\.\d+ pts/,'A4 landscape')}
+  const info=require('child_process').spawnSync('pdfinfo',[out+'/print-'+lang+'.pdf'],{encoding:'utf8'});if(info.status===0){assert.match(info.stdout,/Pages:\s+1\b/,'print is one page');assert.match(info.stdout,/Page size:\s+8(41|42)\.\d+ x 56[01]\.\d+ pts/,'A4 width, template proportions (297 x 198 mm)')}
   await p.emulateMedia({media:'screen'});
  }
  // 3. real-looking synthetic query on a non-localhost host must not render a record
