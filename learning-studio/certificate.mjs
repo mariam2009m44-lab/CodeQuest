@@ -14,6 +14,8 @@ let failed=false,st='disabled';
 if(!record&&CERT_ENDPOINT_ENABLED){
  try{
   const auth=await import('../js/auth.js');
+  // Firebase restores the saved session asynchronously: wait for it, or a signed-in learner is told to sign in.
+  try{await auth.requireUser()}catch{}
   const res=await loadMyCertificates({enabled:true,getUid:()=>auth.getCurrentUser()?.uid||null,fetchCertificates:makeCertificateFetcher(()=>auth.getCurrentUser())});
   st=res.state;if(res.state==='error')failed=true;
   const hit=res.state==='ok'?res.records.find(r=>r.recordId===q.get('id')):null;

@@ -1437,7 +1437,8 @@
   import { makeCertificateFetcher } from "./learning-studio/certificate-source.mjs";
   import { initProfileCertificates } from "./learning-studio/profile-certificates.mjs";
   const certs = initProfileCertificates({ deps: { enabled: CERT_ENDPOINT_ENABLED, getUid: () => getCurrentUser()?.uid || null, fetchCertificates: makeCertificateFetcher(() => getCurrentUser()) } });
-  certs.refresh();
+  // The saved session is restored asynchronously: wait for it before asking for certificates.
+  import("./js/auth.js").then(m => m.requireUser()).catch(() => null).then(() => certs.refresh());
 </script>
 <script type="module" src="js/reminders.js"></script>
 </body>
