@@ -22,7 +22,8 @@ export function claimCode(s, parent, hash, now) {
   const c = s.codes[hash];
   const fail = reason => { f.n += 1; s.fails[parent] = f; return { ok: false, status: 404, reason, failed: true }; };
   if (!c || c.claimed || c.exp <= now) return fail("code_invalid");
-  if (c.child === parent) return fail("code_invalid");
+  // Own code entered in the same account: say so (the code is the caller's own, so nothing is revealed) and do not count it as a failed guess.
+  if (c.child === parent) return { ok: false, status: 400, reason: "self_link" };
   const parents = Object.keys(s.links).filter(k => k.startsWith(c.child + "\u0000")).length;
   const children = Object.keys(s.links).filter(k => k.endsWith("\u0000" + parent)).length;
   if (!s.links[key(c.child, parent)] && (parents >= MAX_PARENTS_PER_CHILD || children >= MAX_CHILDREN_PER_PARENT)) return { ok: false, status: 409, reason: "link_limit" };

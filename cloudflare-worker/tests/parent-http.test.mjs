@@ -84,3 +84,9 @@ test("no uid can reach the service instances: colon uids still work normally, ov
   // the service names are 140+ chars, longer than any accepted uid, so no authenticated user can ever equal them
   assert.equal((await w.call("/api/academy/admin/applications", { token: "svcAcademy", body: {} })).status, 401);
 });
+test("entering your own code in the same account says so (400 self_link), does not burn the code or count as a failed guess", async () => {
+  const w = on(boot());
+  const code = (await w.call(P + "create", { token: "tokA", body: { consent: true } })).data.code;
+  for (let i = 0; i < 12; i++) { const r = await w.call(P + "claim", { token: "tokA", body: { code } }); assert.equal(r.status, 400); assert.equal(r.data.message, "self_link"); }
+  assert.equal((await w.call(P + "claim", { token: "tokB", body: { code } })).status, 200, "the code still works for another account");
+});
