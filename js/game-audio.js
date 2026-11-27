@@ -56,6 +56,34 @@
       .then(buffer => (orbitBuffer = buffer)).catch(error => { orbitLoading = null; throw error; });
     return orbitLoading;
   }
+  // Music position is remembered across page loads so the same track continues instead of restarting.
+  const RESUME_KEY = "cq_music_pos";
+  const RESUME_MAX_GAP_MS = 20000;
+  let playStartedAt = 0, playOffset = 0, playDuration = 0, positionTimer = null;
+  function currentPosition() {
+    if (!context || !orbitSource || !playDuration) return null;
+    return (playOffset + (context.currentTime - playStartedAt)) % playDuration;
+  }
+  function savePosition() {
+    const position = currentPosition();
+    if (position === null || document.hidden && context?.state !== "running") return;
+    try { localStorage.setItem(RESUME_KEY, JSON.stringify({ url: AREA_URL, pos: position, at: Date.now() })); } catch {}
+  }
+  function readResume(duration) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(RESUME_KEY) || "null");
+      if (!saved || saved.url !== AREA_URL || !Number.isFinite(saved.pos) || !Number.isFinite(saved.at)) return null;
+      const gap = Date.now() - saved.at;
+      if (gap < 0 || gap > RESUME_MAX_GAP_MS) return null;
+      return { offset: (saved.pos + gap / 1000) % duration };
+    } catch { return null; }
+  }
+  function startPositionSaver() {
+    if (positionTimer) clearInterval(positionTimer);
+    positionTimer = setInterval(savePosition, 500);
+    savePosition();
+  }
+  window.addEventListener("pagehide", savePosition);
   const musicSources = new Set();
   function trackSource(source, nodes, channel) {
     if (channel !== "sound") musicSources.add(source);
@@ -277,8 +305,10 @@
     save(MUSIC_KEY, true);
     const generation = ++musicGeneration;
     try {
+      // Fetch and decode the track first (works while the context is still suspended), then wait for the browser to allow sound.
+      const bufferPromise = loadOrbit(ctx);
       await ctx.resume();
-      const buffer = await loadOrbit(ctx);
+      const buffer = await bufferPromise;
       if (generation !== musicGeneration || !musicEnabled || document.hidden) return;
       if (orbitSource) { setVolumes({}); return; }
       clearMusicSources();
@@ -291,10 +321,15 @@
       orbitSource = source;
       source.onended = () => { retiringMusic.delete(source); source.disconnect(); if (orbitSource === source) orbitSource = null; };
       const now = ctx.currentTime;
+      // Same track as the page we just left, left a moment ago: continue from where it was, with only a very short fade.
+      const resume = readResume(buffer.duration);
+      const offset = resume ? resume.offset : 0;
       musicBus.gain.cancelScheduledValues(now);
       musicBus.gain.setValueAtTime(0, now);
-      musicBus.gain.linearRampToValueAtTime(musicVolume * 0.72, now + 0.8);
-      source.start(now);
+      musicBus.gain.linearRampToValueAtTime(musicVolume * 0.72, now + (resume ? 0.12 : 0.8));
+      source.start(now, offset);
+      playStartedAt = now; playOffset = offset; playDuration = buffer.duration;
+      startPositionSaver();
     } catch (error) {
       // Keep the stored preference and controls usable if an asset cannot load.
       console.warn("CodeQuest music could not start:", error);
@@ -305,6 +340,9 @@
     musicEnabled = false;
     ++musicGeneration;
     save(MUSIC_KEY, false);
+    if (positionTimer) clearInterval(positionTimer);
+    positionTimer = null;
+    try { localStorage.removeItem(RESUME_KEY); } catch {}
     if (musicTimer) clearInterval(musicTimer);
     musicTimer = null;
     if (orbitSource) {
@@ -465,5 +503,7 @@
   document.addEventListener("visibilitychange",()=>{if(document.hidden){if(musicTimer)clearInterval(musicTimer);musicTimer=null;++musicGeneration;if(orbitSource){try{orbitSource.stop()}catch{}orbitSource=null}if(context?.state==="running")context.suspend().catch(()=>{})}else if(musicEnabled&&context?.state==="suspended")startMusic()});
   soundEnabled=read(SOUND_KEY);
   musicEnabled=read(MUSIC_KEY);
+  // Remembered music: start loading and playing as soon as the page is ready; if the browser blocks sound until a tap, the same call finishes on the first tap.
+  if(musicEnabled&&!document.hidden)startMusic();
   window.CodeQuestAudio=Object.freeze({play,refreshGemBalance,setGemBalance,setVolumes});
 })();
