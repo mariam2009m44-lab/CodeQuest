@@ -360,16 +360,20 @@
     }
 
     /* Gem vault hero and gem badges (own SVG art, no external images) */
-    .vault{position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center;gap:8px 24px;margin:22px 0 34px;padding:22px 26px;border:1px solid rgba(129,140,248,.35);border-radius:24px;overflow:hidden;background:radial-gradient(ellipse at 28% 55%,rgba(59,91,219,.55),rgba(17,22,60,.95) 62%),linear-gradient(145deg,#0d1236,#160f3a)}
-    .vault::before,.vault::after{content:"";position:absolute;inset:auto;left:-6%;top:12%;width:62%;aspect-ratio:2.4;border:2px solid rgba(96,165,250,.45);border-radius:50%;transform:rotate(-14deg);box-shadow:0 0 18px rgba(56,150,255,.5);pointer-events:none}
-    .vault::after{top:22%;left:-2%;width:54%;border-width:1px;transform:rotate(10deg);opacity:.6}
-    .vault-stage{position:relative;min-height:250px;display:grid;place-items:center;z-index:1}
-    .vault-cody{width:min(210px,52%);height:auto;filter:drop-shadow(0 0 18px rgba(80,160,255,.6));animation:cody-bob 4.5s ease-in-out infinite}
-    .vault-gems{position:absolute;inset:0;pointer-events:none}
-    .vault-gem{position:absolute;width:64px;height:64px;animation:gem-float 3.6s ease-in-out infinite}
-    .vault-gem svg{width:100%;height:100%;overflow:visible}
-    .vault-gem.slot{opacity:.55}
-    .vault-info{position:relative;z-index:1;display:grid;gap:14px;justify-items:start}
+    .vault{position:relative;display:grid;direction:ltr;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:stretch;margin:22px 0 34px;border:1px solid rgba(129,140,248,.4);border-radius:24px;overflow:hidden;background:linear-gradient(145deg,#080b33,#140d3d);box-shadow:0 0 34px rgba(99,102,241,.28)}
+    .vault-art{position:relative;min-height:350px;overflow:hidden}
+    .vault-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:left top;-webkit-mask-image:linear-gradient(to right,#000 68%,transparent 100%);mask-image:linear-gradient(to right,#000 68%,transparent 100%)}
+    .vault-info{direction:rtl;position:relative;z-index:1;display:grid;gap:12px;justify-items:start;align-content:center;padding:22px 26px 22px 18px}
+    .gem-chip{display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 12px;border:1px solid rgba(167,139,250,.5);border-radius:16px;background:rgba(20,14,70,.7);box-shadow:0 0 16px rgba(139,92,246,.35)}
+    .gem-chip svg{width:34px;height:34px;overflow:visible}
+    .gem-chip b{font-size:26px;font-weight:900}
+    .gem-chip span{color:var(--muted);font-size:13px}
+    .vault-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .ring{width:104px!important;height:104px!important}
+    .ring b{font-size:26px!important}
+    .ring small{bottom:20px!important}
+    .vault-title{display:none}
+    .vault-hello{margin:0;font-size:clamp(21px,3.6vw,28px);font-weight:900;background:linear-gradient(90deg,#fff,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
     .vault-title{margin:0;font-size:clamp(20px,3.6vw,27px);font-weight:900}
     .ring{--p:0;position:relative;width:132px;height:132px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#38bdf8 calc(var(--p)*1%),rgba(148,163,184,.2) 0);box-shadow:0 0 22px rgba(56,189,248,.35)}
     .ring::before{content:"";position:absolute;inset:10px;border-radius:50%;background:#0d1236}
@@ -379,7 +383,10 @@
     .vault-line strong{color:var(--text)}
     .vault-cta[hidden]{display:none}
     .vault-cta{display:inline-flex;align-items:center;min-height:42px;padding:8px 18px;border-radius:12px;background:linear-gradient(120deg,#0891b2,#6366f1);color:#fff;font-weight:800;text-decoration:none}
-    .gem-art{display:block;width:78px;height:78px;margin:0 auto 10px;overflow:visible}
+    .gem-art{display:block;width:86px;height:86px;margin:0 auto 10px;overflow:visible}
+    .badge-card{position:relative;background:linear-gradient(160deg,rgba(32,24,92,.55),rgba(10,14,40,.9))!important;border-color:rgba(129,140,248,.28)!important}
+    .badge-card.unlocked{border-color:rgba(167,139,250,.6)!important;box-shadow:0 0 22px rgba(124,92,255,.25)}
+    .badge-card::before{content:"";position:absolute;left:50%;top:22px;width:92px;height:92px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(129,140,248,.3),transparent 70%);pointer-events:none}
     .badge-card.unlocked .gem-art{filter:drop-shadow(0 0 10px var(--gem-glow,rgba(96,165,250,.7)));animation:gem-float 3.6s ease-in-out infinite}
     .badge-card.locked{opacity:1}
     .badge-card.locked .gem-art{opacity:.9}
@@ -390,8 +397,8 @@
     @keyframes gem-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
     @keyframes cody-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
     @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}
-    @media (max-width:700px){.vault{grid-template-columns:1fr;padding:18px 16px;text-align:center}.vault-info{justify-items:center}.vault-stage{min-height:230px}}
-    @media (prefers-reduced-motion:reduce){.vault-cody,.vault-gem,.sparkle,.badge-card.unlocked .gem-art{animation:none!important}}
+    @media (max-width:700px){.vault{grid-template-columns:1fr}.vault-art{min-height:250px}.vault-art img{-webkit-mask-image:linear-gradient(to bottom,#000 70%,transparent 100%);mask-image:linear-gradient(to bottom,#000 70%,transparent 100%);object-position:center top}.vault-info{justify-items:center;text-align:center;padding:4px 16px 22px}.vault-row{justify-content:center}}
+    @media (prefers-reduced-motion:reduce){.sparkle,.badge-card.unlocked .gem-art{animation:none!important}}
   </style>
   <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
@@ -418,14 +425,14 @@
     </div>
 
     <section class="vault" id="vault" aria-label="كنز الجواهر">
-      <div class="vault-stage">
-        <img class="vault-cody" src="assets/cody-achievements.png" alt="كودي" width="228" height="263">
-        <div class="vault-gems" id="vaultGems" aria-hidden="true"></div>
-      </div>
+      <div class="vault-art"><img src="assets/cody-gem-hero.jpg" alt="كودي يرفع جوهرة" width="545" height="420"></div>
       <div class="vault-info">
-        <h2 class="vault-title" id="vaultTitle">كنزك من الجواهر</h2>
-        <div class="ring" id="ring" role="img" aria-label="نسبة الدروس المكتملة"><b id="ringNum">—</b><small id="ringTotal"></small></div>
+        <h2 class="vault-hello" id="vaultHello">عمل رائع!</h2>
         <p class="vault-line" id="vaultLine"></p>
+        <div class="vault-row">
+          <div class="gem-chip" id="gemChip"><span id="gemChipArt"></span><b id="gemChipNum">0</b><span>جواهر</span></div>
+          <div class="ring" id="ring" role="img" aria-label="نسبة الدروس المكتملة"><b id="ringNum">—</b><small id="ringTotal"></small></div>
+        </div>
         <a class="vault-cta" id="vaultCta" href="levels.html" hidden>ابدأ أول درس</a>
       </div>
     </section>
@@ -551,7 +558,9 @@
       return "#" + c.map(v => Math.round(t >= 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, "0")).join("");
     };
     const pts = a => a.map(p => p.join(",")).join(" ");
-    const poly = (a, fill) => `<polygon points="${pts(a)}" fill="${fill}" stroke="rgba(255,255,255,.35)" stroke-width=".8" stroke-linejoin="round"/>`;
+    let gid = 0;
+    // Each facet gets its own light-to-dark gradient so the stone looks glassy instead of flat.
+    const poly = (a, fill) => { const id = "gf" + (++gid); return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${mix(fill, .22)}"/><stop offset="1" stop-color="${mix(fill, -.2)}"/></linearGradient></defs><polygon points="${pts(a)}" fill="url(#${id})" stroke="rgba(255,255,255,.55)" stroke-width=".9" stroke-linejoin="round"/>`; };
     function gemFacets(cut, col) {
       const sh = t => mix(col, t);
       if (cut === "classic") {
@@ -575,7 +584,8 @@
         return `<svg class="gem-art" viewBox="0 0 100 100" aria-hidden="true">${gemFacets(gem.cut, "#2a3358")}<g opacity=".92">${lock}</g></svg>`;
       }
       const sp = (x, y, d) => `<path class="sparkle" style="animation-delay:${d}s" d="M${x} ${y - 7}L${x + 2} ${y - 2}L${x + 7} ${y}L${x + 2} ${y + 2}L${x} ${y + 7}L${x - 2} ${y + 2}L${x - 7} ${y}L${x - 2} ${y - 2}Z" fill="#fff"/>`;
-      return `<svg class="gem-art" viewBox="0 0 100 100" aria-hidden="true">${gemFacets(gem.cut, gem.color)}${sp(30, 30, 0)}${sp(76, 66, 1.1)}</svg>`;
+      const g = "gl" + (++gid);
+      return `<svg class="gem-art" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="${g}" cx=".3" cy=".22" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>${gemFacets(gem.cut, gem.color)}<ellipse cx="38" cy="30" rx="26" ry="18" fill="url(#${g})"/>${sp(30, 30, 0)}${sp(76, 66, 1.1)}</svg>`;
     }
     const GEMS = [
       { cut: "round", color: "#22c55e" }, { cut: "hex", color: "#38bdf8" }, { cut: "classic", color: "#a855f7" }, { cut: "octa", color: "#f97316" },
@@ -760,30 +770,19 @@
       $("badgeSummary").textContent = `${unlocked} من ${BADGES.length} جواهر`;
       renderVault(completedCount, totalCount, unlocked);
     }
-    // Cody with the gems he earned: up to 4 float around him; empty dashed slots when nothing is earned yet.
+    // Hero text and counters. The art is the owner's own reference image (Cody holding a gem).
     function renderVault(completed, total, unlocked) {
-      const layer = $("vaultGems");
-      layer.replaceChildren();
-      const spots = [["64%", "6%"], ["70%", "52%"], ["8%", "46%"], ["22%", "4%"]];
-      const owned = BADGES.filter(b => completed >= b.requirement).slice(-4);
-      const shown = owned.length ? owned : [null, null];
-      shown.forEach((b, i) => {
-        const box = document.createElement("div");
-        box.className = "vault-gem" + (b ? "" : " slot");
-        box.style.insetInlineStart = spots[i][0];
-        box.style.top = spots[i][1];
-        box.style.animationDelay = (i * .7) + "s";
-        box.innerHTML = b ? gemSVG(b.gem, false) : `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M28 20h44l22 20-44 54L6 40z" fill="none" stroke="#7c8bd1" stroke-width="2.5" stroke-dasharray="6 6"/></svg>`;
-        if (b) box.style.filter = `drop-shadow(0 0 12px ${b.gem.color}cc)`;
-        layer.append(box);
-      });
       const pct = total > 0 ? Math.min(100, Math.floor(completed * 100 / total)) : 0;
       $("ring").style.setProperty("--p", String(pct));
       $("ring").setAttribute("aria-label", `${completed} من ${total} درسًا`);
       $("ringNum").textContent = String(completed);
       $("ringTotal").textContent = `/ ${total}`;
-      $("vaultLine").innerHTML = completed > 0
-        ? `جمعت <strong>${unlocked}</strong> من ${BADGES.length} جواهر. ${unlocked < BADGES.length ? "كل درس جديد يقرّبك من الجوهرة التالية." : "جمعت كل الجواهر!"}`
+      $("gemChipNum").textContent = String(unlocked);
+      const last = BADGES.filter(b => completed >= b.requirement).pop();
+      $("gemChipArt").innerHTML = gemSVG((last || BADGES[0]).gem, !last);
+      $("vaultHello").textContent = completed > 0 ? "عمل رائع!" : "رحلتك تبدأ هنا";
+      $("vaultLine").textContent = completed > 0
+        ? (unlocked < BADGES.length ? "كل درس جديد يقرّبك من الجوهرة التالية." : "جمعت كل الجواهر!")
         : "كودي ينتظر جوهرتك الأولى. أكمل درسًا واحدًا لتفتحها.";
       $("vaultCta").hidden = completed > 0;
     }

@@ -16,12 +16,12 @@ const run=async(name,records,vp)=>{const c=await b.newContext({viewport:vp}),p=a
  for(const [g,body] of Object.entries(stubs))await p.route(g,r=>r.fulfill({status:200,headers:JS,body}));
  await p.route('https://fonts.**',r=>r.fulfill({status:200,body:''}));
  await p.goto(L+'/achievements.html');await p.waitForFunction(()=>document.getElementById('ringNum').textContent!=='—',null,{timeout:10000});
- const r=await p.evaluate(()=>({ring:document.getElementById('ringNum').textContent,total:document.getElementById('ringTotal').textContent,unlocked:document.querySelectorAll('.badge-card.unlocked').length,locked:document.querySelectorAll('.badge-card.locked').length,vg:document.querySelectorAll('.vault-gem:not(.slot)').length,slots:document.querySelectorAll('.vault-gem.slot').length,cta:getComputedStyle(document.getElementById('vaultCta')).display!=='none',stats:!!document.getElementById('completedCount'),over:document.documentElement.scrollWidth>innerWidth}));
+ const r=await p.evaluate(()=>({ring:document.getElementById('ringNum').textContent,total:document.getElementById('ringTotal').textContent,unlocked:document.querySelectorAll('.badge-card.unlocked').length,locked:document.querySelectorAll('.badge-card.locked').length,chip:document.getElementById('gemChipNum').textContent,hero:document.querySelector('.vault-art img').naturalWidth,cta:getComputedStyle(document.getElementById('vaultCta')).display!=='none',stats:!!document.getElementById('completedCount'),over:document.documentElement.scrollWidth>innerWidth}));
  await p.waitForTimeout(300);await p.screenshot({path:OUT+'/ach-'+name+'.png',fullPage:true});assert.deepEqual(errs,[]);assert.equal(r.over,false,'no horizontal overflow '+name);await c.close();return r};
  const full=await run('m-26',recs,{width:390,height:844});
- assert.equal(full.ring,'26');assert.equal(full.unlocked,4);assert.equal(full.locked,4);assert.equal(full.vg,4);assert.equal(full.cta,false);assert.equal(full.stats,false);
+ assert.equal(full.ring,'26');assert.equal(full.unlocked,4);assert.equal(full.locked,4);assert.equal(full.chip,'4');assert(full.hero>400,'hero art loads');assert.equal(full.cta,false);assert.equal(full.stats,false);
  const empty=await run('m-0',[],{width:390,height:844});
- assert.equal(empty.ring,'0');assert.equal(empty.unlocked,0);assert.equal(empty.slots,2);assert.equal(empty.cta,true);
+ assert.equal(empty.ring,'0');assert.equal(empty.unlocked,0);assert.equal(empty.chip,'0');assert.equal(empty.cta,true);
  await run('d-26',recs,{width:1280,height:900});
  console.log('achievements gems regression ok (fixtures)',JSON.stringify(full),JSON.stringify(empty));
 await b.close();srv.close()})().catch(e=>{console.error(e);process.exit(1)});
