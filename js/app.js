@@ -466,7 +466,7 @@ function calculateLessonStats(documents, totals) {
  * These records are displayed as device-local progress only; Firestore remains
  * authoritative for synced progress and trusted rewards.
  */
-function readLocalLessonProgress(uid) {
+export function readLocalLessonProgress(uid) {
   if (!uid) return [];
 
   const records = [];

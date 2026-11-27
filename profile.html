@@ -1341,7 +1341,7 @@
       });
 
       badgeSystemNote.textContent =
-        `أكملت ${completedCount} درسًا محفوظًا. حصلت على ${unlockedCount} من أصل ${BADGES.length} أوسمة.`;
+        `أكملت ${completedCount} درسًا (على حسابك وعلى هذا الجهاز). حصلت على ${unlockedCount} من أصل ${BADGES.length} أوسمة.`;
     }
 
     function showAchievementError(error) {
@@ -1380,6 +1380,11 @@
 
         const curriculums = await loadCurriculums();
 
+        // Lessons finished on the map are recorded per account on this device; cloud lesson records are written only by a server step that may be off.
+        // Count both, so the badges match the map. Device-only records never grant XP or stars.
+        let readLocal = null;
+        try { readLocal = (await import("./js/app.js?v=3001")).readLocalLessonProgress; } catch (error) { console.warn("Local lesson progress unavailable", error); }
+
         const progressCollection = collection(
           db,
           "users",
@@ -1396,6 +1401,10 @@
             snapshot.forEach((documentSnapshot) => {
               documents.push(documentSnapshot.data());
             });
+
+            if (typeof readLocal === "function") {
+              try { documents.push(...readLocal(user.uid)); } catch (error) { console.warn(error); }
+            }
 
             const completedSets = calculateCompletedLessonSet(
               documents,
