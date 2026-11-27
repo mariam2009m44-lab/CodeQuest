@@ -14,6 +14,10 @@ CERT_ISSUANCE = "on"
 # Parent linking pilot ON after the owner's WhatsApp "اصلحهم كلهم" (2026-11-27 22:44 EET) answering the offer to enable it as a pilot. Rollback = a commit that removes this line.
 PARENT_LINKS_ENABLED = "on"
 
+# Daily reminder push: runs every 15 minutes, sends only to devices whose chosen local time has arrived (see push-core.js).
+[triggers]
+crons = ["*/15 * * * *"]
+
 [[kv_namespaces]]
 binding = "QUIZ_ANSWERS"
 id = "99de09069f1a4c82b5155b5a70739f5b"

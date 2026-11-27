@@ -95,6 +95,18 @@ self.addEventListener("fetch", event => {
   );
 });
 
+// Daily reminder pushed by the Worker (no payload: the text is fixed here).
+self.addEventListener("push", event => {
+  event.waitUntil(self.registration.showNotification("موعد رحلة التعلم مع كودي!", {
+    body: "خصص بضع دقائق اليوم لتكمل درسًا جديدًا في البرمجة.",
+    icon: "./cody-avatar.svg",
+    badge: "./cody-avatar.svg",
+    tag: "cody-daily-learning-reminder",
+    renotify: false,
+    data: { url: "./dashboard.html" }
+  }));
+});
+
 self.addEventListener("notificationclick", event => {
   event.notification.close();
 

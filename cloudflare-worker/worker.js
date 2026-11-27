@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 import { describeGeminiFailure } from "./cody-errors.js";
 import { classifyCodyQuestion } from "./cody-classifier.js";
 import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, recordCodeTask, practicePlan, recordPractice, issueCertificate, listCertificates, recordFinalExam, missingUnitExams, certificateEligibility, saveResume, purgeExpired, resumeView } from "./progress-core.js";
+import { generateVapid, vapidHeader, validSubscription, validEndpoint, isDue, localParts, MAX_PER_RUN } from "./push-core.js";
 import { emptyLinks, createCode, claimCode, canRead, childrenOf, parentsOf, unlink } from "./parent-core.js";
 import { validateApplication, emptyDirectory, submitApplication, myStatus, listApplications, reviewApplication } from "./academy-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
@@ -918,6 +919,61 @@ async function handleParentInner(request, env, origin, action) {
   return jsonResponse({ success: false }, 404, origin);
 }
 
+// Daily reminder push. Subscriptions live in the existing KV namespace under "push:" (no new binding). The VAPID key pair is created on first use
+// and kept in KV, so there is no secret to set up by hand. Signed-in users only; the response never includes other devices.
+async function pushVapid(env) {
+  if (!env.QUIZ_ANSWERS) return null;
+  const saved = await env.QUIZ_ANSWERS.get("push:vapid", "json");
+  if (saved?.publicKey && saved?.privateJwk) return saved;
+  const fresh = await generateVapid();
+  await env.QUIZ_ANSWERS.put("push:vapid", JSON.stringify(fresh));
+  return fresh;
+}
+async function handlePush(request, env, origin, action) {
+  const res = await handlePushInner(request, env, origin, action);
+  res.headers.set("Cache-Control", "no-store");
+  return res;
+}
+async function handlePushInner(request, env, origin, action) {
+  if (!env.QUIZ_ANSWERS) return jsonResponse({ success: false, message: "push_unavailable" }, 503, origin);
+  if (action === "key") { const v = await pushVapid(env); return v ? jsonResponse({ success: true, publicKey: v.publicKey }, 200, origin) : jsonResponse({ success: false, message: "push_unavailable" }, 503, origin); }
+  try { await verifyFirebaseUser(request, env); } catch { return jsonResponse({ success: false, message: "سجّل الدخول مرة أخرى." }, 401, origin); }
+  let body = {};
+  try { body = await readBoundedJson(request, 2048); } catch { return jsonResponse({ success: false, message: "بيانات الطلب غير صالحة." }, 400, origin); }
+  if (action === "subscribe") {
+    const sub = validSubscription(body);
+    if (!sub) return jsonResponse({ success: false, message: "subscription_invalid" }, 400, origin);
+    const key = "push:sub:" + await sha256Hex(sub.endpoint);
+    const prev = await env.QUIZ_ANSWERS.get(key, "json");
+    await env.QUIZ_ANSWERS.put(key, JSON.stringify({ ...sub, sent: prev?.sent || "" }), { expirationTtl: 90 * 86400 });
+    return jsonResponse({ success: true }, 200, origin);
+  }
+  if (action === "unsubscribe") {
+    if (!validEndpoint(body.endpoint)) return jsonResponse({ success: false, message: "subscription_invalid" }, 400, origin);
+    await env.QUIZ_ANSWERS.delete("push:sub:" + await sha256Hex(body.endpoint));
+    return jsonResponse({ success: true }, 200, origin);
+  }
+  return jsonResponse({ success: false, message: "المسار المطلوب غير موجود." }, 404, origin);
+}
+async function sendDailyPushes(env, nowMs = Date.now(), fetchImpl = fetch) {
+  if (!env.QUIZ_ANSWERS) return { sent: 0 };
+  const vapid = await pushVapid(env); if (!vapid) return { sent: 0 };
+  const listed = await env.QUIZ_ANSWERS.list({ prefix: "push:sub:", limit: 1000 });
+  let sent = 0, removed = 0, failed = 0;
+  for (const { name } of listed.keys) {
+    if (sent + failed >= MAX_PER_RUN) break;
+    const sub = await env.QUIZ_ANSWERS.get(name, "json");
+    if (!sub || !validEndpoint(sub.endpoint)) { await env.QUIZ_ANSWERS.delete(name); removed++; continue; }
+    if (!isDue(sub, nowMs)) continue;
+    let r;
+    try { r = await fetchImpl(sub.endpoint, { method: "POST", headers: { Authorization: await vapidHeader(sub.endpoint, vapid, nowMs), TTL: "7200", Urgency: "normal", "Content-Length": "0" } }); } catch { failed++; continue; }
+    if (r.status === 201 || r.status === 202 || r.status === 200) {
+      await env.QUIZ_ANSWERS.put(name, JSON.stringify({ ...sub, sent: localParts(nowMs, sub.tz).date }), { expirationTtl: 90 * 86400 }); sent++;
+    } else if (r.status === 404 || r.status === 410) { await env.QUIZ_ANSWERS.delete(name); removed++; } else failed++;
+  }
+  return { sent, removed, failed };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1462,6 +1518,10 @@ export default {
       if (url.pathname === path && request.method === "POST") return handleAcademy(request, env, origin, act);
     }
 
+    for (const [path, act, method] of [["/api/push/key", "key", "GET"], ["/api/push/subscribe", "subscribe", "POST"], ["/api/push/unsubscribe", "unsubscribe", "POST"]]) {
+      if (url.pathname === path && request.method === method) return handlePush(request, env, origin, act);
+    }
+
     for (const act of ["create", "claim", "children", "parents", "unlink", "dashboard"]) {
       if (url.pathname === "/api/parent/" + act && request.method === "POST") return handleParent(request, env, origin, act);
     }
@@ -1470,6 +1530,9 @@ export default {
       success: false,
       message: "المسار المطلوب غير موجود."
     }, 404, origin);
+  },
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(sendDailyPushes(env));
   }
 };
 

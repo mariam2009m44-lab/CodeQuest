@@ -54,7 +54,15 @@ function scheduleReminder() {
   const next = new Date(now);
   next.setHours(hour, minute, 0, 0);
 
-  if (next <= now) next.setDate(next.getDate() + 1);
+  // Catch-up: the page was closed at the reminder time. If today's reminder was not shown yet, show it now (same day only).
+  if (next <= now) {
+    const key = SENT_PREFIX + localDateKey();
+    if (localStorage.getItem(key) !== "yes") {
+      localStorage.setItem(key, "yes");
+      deliverReminder();
+    }
+    next.setDate(next.getDate() + 1);
+  }
 
   reminderTimer = window.setTimeout(async () => {
     const key = SENT_PREFIX + localDateKey();

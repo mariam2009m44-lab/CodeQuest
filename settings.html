@@ -525,6 +525,7 @@
 
   <script type="module" src="./js/learner-parent-link.js"></script>
   <script type="module">
+    import { enablePush, disablePush } from "./js/push-reminders.js";
     import {
       requireUser,
       getCurrentUser,
@@ -791,13 +792,23 @@
       if (next <= now) next.setDate(next.getDate() + 1);
 
       reminderTimer = window.setTimeout(async () => {
-        const todayKey = "cq_reminder_sent_" + new Date().toISOString().slice(0, 10);
+        const _d = new Date(), todayKey = "cq_reminder_sent_" + _d.getFullYear() + "-" + String(_d.getMonth() + 1).padStart(2, "0") + "-" + String(_d.getDate()).padStart(2, "0");
         if (localStorage.getItem(todayKey) !== "yes") {
           await showDailyReminder();
           localStorage.setItem(todayKey, "yes");
         }
         scheduleDailyReminder();
       }, Math.max(1000, next.getTime() - now.getTime()));
+    }
+
+    function markReminderSentIfPast() {
+      const [hour, minute] = (document.getElementById("reminderTime").value || "18:00").split(":").map(Number);
+      const now = new Date(), at = new Date(now);
+      at.setHours(hour, minute, 0, 0);
+      if (at <= now) {
+        const key = "cq_reminder_sent_" + now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+        saveSetting(key, "yes");
+      }
     }
 
     async function requestNotificationPermission() {
@@ -831,8 +842,12 @@
       elements.notifications.checked = true;
       saveSetting(STORAGE_KEYS.notifications, "on");
       await showDailyReminder();
+      markReminderSentIfPast();
       scheduleDailyReminder();
-      showToast("تم تفعيل إشعار التذكير اليومي على هذا الجهاز.", "success");
+      const pushed = await enablePush(getCurrentUser(), document.getElementById("reminderTime").value || "18:00");
+      showToast(pushed.ok
+        ? "تم تفعيل التذكير اليومي. هيوصلك إشعار حتى لو الموقع مقفول."
+        : "تم تفعيل التذكير داخل الصفحة. الإشعار وهو مقفول مش متاح دلوقتي على هذا الجهاز.", "success");
       return true;
     }
 
@@ -841,6 +856,7 @@
         await requestNotificationPermission();
       } else {
         saveSetting(STORAGE_KEYS.notifications, "off");
+        disablePush(getCurrentUser());
         if (reminderTimer) clearTimeout(reminderTimer);
         reminderTimer = null;
         showToast("تم إيقاف التذكير اليومي.", "success");
@@ -854,6 +870,7 @@
       .addEventListener("change", () => {
         saveSetting("cq_reminder_time", document.getElementById("reminderTime").value);
         scheduleDailyReminder();
+        if (elements.notifications.checked) enablePush(getCurrentUser(), document.getElementById("reminderTime").value || "18:00");
         showToast("تم حفظ موعد التذكير.", "success");
       });
 
@@ -970,6 +987,8 @@
       elements.nameInput.value = currentUser.displayName || "";
       elements.nameInput.disabled = false;
       elements.nameSave.disabled = false;
+      // Keep the device's push registration fresh (time zone, expiry) while reminders are on.
+      if (elements.notifications.checked) enablePush(currentUser, document.getElementById("reminderTime").value || "18:00");
     } catch (error) {
       authenticatedNameUid = null;
       elements.nameInput.disabled = true;
