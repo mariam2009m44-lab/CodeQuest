@@ -38,17 +38,8 @@ export async function drawCertificate(canvas,record,_unused){
  try{await document.fonts.load('800 40px "Noto Sans Arabic"')}catch{}
  const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=TPL_URL});
  c.drawImage(img,0,0,CERT_W,CERT_H);
- // Cody panel in the style of the owner's reference: navy glow, blue orbit rings, gold frame, Cody holding the scroll. Drawn in the empty cream area on the left.
- {const X=52,Y=418,W=282,H=272,R=22;c.save();
-  const rr=(x,y,w,h,r)=>{c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()};
-  c.shadowColor='rgba(11,26,58,.35)';c.shadowBlur=14;c.shadowOffsetY=4;rr(X,Y,W,H,R);c.fillStyle='#0a1a4d';c.fill();c.shadowColor='transparent';
-  rr(X,Y,W,H,R);c.clip();
-  const g=c.createRadialGradient(X+W/2,Y+H*.55,10,X+W/2,Y+H*.55,W*.75);g.addColorStop(0,'#2a58c8');g.addColorStop(.45,'#12307f');g.addColorStop(1,'#060f33');c.fillStyle=g;c.fillRect(X,Y,W,H);
-  c.lineCap='round';
-  for(const [rx,ry,rot,a,w] of [[118,40,-.28,.9,2.4],[132,52,.22,.55,1.6],[104,30,-.12,.5,1.2]]){c.save();c.translate(X+W/2,Y+H*.62);c.rotate(rot);c.shadowColor='#4aa8ff';c.shadowBlur=12;c.strokeStyle='rgba(110,190,255,'+a+')';c.lineWidth=w;c.beginPath();c.ellipse(0,0,rx,ry,0,0,Math.PI*2);c.stroke();c.restore()}
-  c.fillStyle='rgba(180,220,255,.85)';for(const [dx,dy,r] of [[28,30,1.6],[240,44,1.4],[262,120,1.8],[22,150,1.3],[60,236,1.5],[236,226,1.6],[150,22,1.2],[208,28,1.1]]){c.beginPath();c.arc(X+dx,Y+dy,r,0,7);c.fill()}
-  try{const cody=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=CODY_URL});const ch=236,cw=ch*cody.naturalWidth/cody.naturalHeight;c.shadowColor='rgba(70,160,255,.7)';c.shadowBlur=20;c.drawImage(cody,X+(W-cw)/2,Y+(H-ch)/2+4,cw,ch)}catch{}
-  c.restore();c.save();rr(X,Y,W,H,R);c.strokeStyle='#d9ad45';c.lineWidth=3.5;c.stroke();rr(X+7,Y+7,W-14,H-14,R-6);c.strokeStyle='rgba(235,200,110,.7)';c.lineWidth=1;c.stroke();c.restore()}
+ // Cody as a transparent cutout (no box, frame or panel) in the navy corner at the bottom right of the template, above "منصة تعلم تكنولوجية".
+ try{const cody=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=CODY_URL});const ch=196,cw=ch*cody.naturalWidth/cody.naturalHeight;c.save();c.shadowColor='rgba(70,160,255,.75)';c.shadowBlur=18;c.drawImage(cody,1170-cw/2,762-ch,cw,ch);c.restore()}catch{}
  const ink='#0b1a3a',fit=(txt,font,max)=>{c.font=font;let t=txt;while(t.length>1&&c.measureText(t).width>max)t=t.slice(0,-1);return t};
  c.textAlign='center';c.textBaseline='alphabetic';c.fillStyle=ink;
  // learner name: the open space between "تشهد منصة CodeQuest بأن" and the gold divider

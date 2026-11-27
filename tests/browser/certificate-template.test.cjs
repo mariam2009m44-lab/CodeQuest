@@ -8,7 +8,7 @@ try{const p=await (await b.newContext()).newPage();const errs=[];p.on('pageerror
  await p.goto(L+'/learning-studio/certificate.html?demo=1');await p.waitForSelector('#certCanvas:not([hidden])');
  const r=await p.evaluate(async()=>{const m=await import('/learning-studio/certificate-pdf.mjs');const mk=async rec=>{const cv=document.createElement('canvas');await m.drawCertificate(cv,rec);const c=cv.getContext('2d'),S=m.SCALE;
    const ink=(x,y,w,h)=>{const d=c.getImageData(x*S,y*S,w*S,h*S).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]<90&&d[i+1]<90&&d[i+2]<140)n++;return n};
-   return {w:cv.width,h:cv.height,name:ink(300,340,680,70),track:ink(450,505,380,45),date:ink(585,585,140,28),time:ink(358,585,110,28),qr:ink(430,690,120,120),cody:ink(60,425,270,260),noWatermark:ink(0,0,1,1)>=0}};
+   return {w:cv.width,h:cv.height,name:ink(300,340,680,70),track:ink(450,505,380,45),date:ink(585,585,140,28),time:ink(358,585,110,28),qr:ink(430,690,120,120),cody:ink(1090,560,170,210),noWatermark:ink(0,0,1,1)>=0}};
   const empty=await mk({name:'',language:'',issuedAt:''});
   const full=await mk({name:'مريم فؤاد',language:'javascript',issuedAt:'2026-11-27T10:45:00',certId:'0123456789abcdef0123456789abcdef'});return {empty,full}});
  assert.equal(r.full.w,1280*2);assert.equal(r.full.h,853*2);
