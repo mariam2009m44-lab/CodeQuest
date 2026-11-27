@@ -22,3 +22,12 @@ Emitted only when, for that uid, every lesson and lesson test of the track passe
 - `recordId` is a private opaque random 32-hex id. It is NOT a public verification ID: there is no QR, no public lookup and no directory. It is only the handle the learner's own account uses to open its own certificate.
 - Issuance has its own switch (`CERT_ISSUANCE=on` in the Worker environment), off by default, separate from deployment.
 - The learner name is not stored in the record; the page reads the account profile.
+
+
+## Public verification (QR)
+
+The certificate carries a QR that opens `learning-studio/verify.html?id=<recordId>`. The page calls `GET /api/certificates/verify?id=<32 hex>` on the Worker.
+
+- The server registers `{recordId, track, issuedAt}` in a certificate registry (a named instance of the existing StudentProgress class, no new Durable Object namespace) when a certificate is issued, and idempotently when the learner reads their own certificates. A registered number is never overwritten.
+- The endpoint needs no sign-in but still requires an allowed Origin. It returns only `valid`, `track`, `trackName` and `issuedAt`. It never stores or returns a uid, email or learner name. Unknown or malformed numbers answer a clean 404.
+- The number is 128 random bits, so it works as the lookup key. There is still no directory or listing. Showing a name publicly would need a per-learner opt-in and is not done.

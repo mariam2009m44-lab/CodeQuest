@@ -28,6 +28,8 @@ export const trackLabel=l=>({python:'Python',javascript:'JavaScript',cpp:'C++',j
 // record: {name, language, issuedAt, certId?, demo?}
 // The design is the owner's template image (certificate-template.jpg, 1280x853). Only the empty slots are filled with the server-verified
 // record: learner name, track, issue date and time, and a small certificate number under the signature. Nothing else is drawn over the design.
+import qrcode from './vendor/qrcode.mjs';
+export const verifyUrl=id=>new URL('./verify.html?id='+encodeURIComponent(id),import.meta.url).href;
 const CODY_URL=new URL('./certificate-cody.png',import.meta.url).href;
 const TPL_URL=new URL('./certificate-template.jpg',import.meta.url).href;
 export async function drawCertificate(canvas,record,_unused){
@@ -36,8 +38,17 @@ export async function drawCertificate(canvas,record,_unused){
  try{await document.fonts.load('800 40px "Noto Sans Arabic"')}catch{}
  const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=TPL_URL});
  c.drawImage(img,0,0,CERT_W,CERT_H);
- // Cody with the scroll, in the empty cream area on the left. If the image fails to load the certificate is still complete.
- try{const cody=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=CODY_URL});const ch=252,cw=ch*cody.naturalWidth/cody.naturalHeight;c.drawImage(cody,92,438,cw,ch)}catch{}
+ // Cody panel in the style of the owner's reference: navy glow, blue orbit rings, gold frame, Cody holding the scroll. Drawn in the empty cream area on the left.
+ {const X=52,Y=418,W=282,H=272,R=22;c.save();
+  const rr=(x,y,w,h,r)=>{c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()};
+  c.shadowColor='rgba(11,26,58,.35)';c.shadowBlur=14;c.shadowOffsetY=4;rr(X,Y,W,H,R);c.fillStyle='#0a1a4d';c.fill();c.shadowColor='transparent';
+  rr(X,Y,W,H,R);c.clip();
+  const g=c.createRadialGradient(X+W/2,Y+H*.55,10,X+W/2,Y+H*.55,W*.75);g.addColorStop(0,'#2a58c8');g.addColorStop(.45,'#12307f');g.addColorStop(1,'#060f33');c.fillStyle=g;c.fillRect(X,Y,W,H);
+  c.lineCap='round';
+  for(const [rx,ry,rot,a,w] of [[118,40,-.28,.9,2.4],[132,52,.22,.55,1.6],[104,30,-.12,.5,1.2]]){c.save();c.translate(X+W/2,Y+H*.62);c.rotate(rot);c.shadowColor='#4aa8ff';c.shadowBlur=12;c.strokeStyle='rgba(110,190,255,'+a+')';c.lineWidth=w;c.beginPath();c.ellipse(0,0,rx,ry,0,0,Math.PI*2);c.stroke();c.restore()}
+  c.fillStyle='rgba(180,220,255,.85)';for(const [dx,dy,r] of [[28,30,1.6],[240,44,1.4],[262,120,1.8],[22,150,1.3],[60,236,1.5],[236,226,1.6],[150,22,1.2],[208,28,1.1]]){c.beginPath();c.arc(X+dx,Y+dy,r,0,7);c.fill()}
+  try{const cody=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=CODY_URL});const ch=236,cw=ch*cody.naturalWidth/cody.naturalHeight;c.shadowColor='rgba(70,160,255,.7)';c.shadowBlur=20;c.drawImage(cody,X+(W-cw)/2,Y+(H-ch)/2+4,cw,ch)}catch{}
+  c.restore();c.save();rr(X,Y,W,H,R);c.strokeStyle='#d9ad45';c.lineWidth=3.5;c.stroke();rr(X+7,Y+7,W-14,H-14,R-6);c.strokeStyle='rgba(235,200,110,.7)';c.lineWidth=1;c.stroke();c.restore()}
  const ink='#0b1a3a',fit=(txt,font,max)=>{c.font=font;let t=txt;while(t.length>1&&c.measureText(t).width>max)t=t.slice(0,-1);return t};
  c.textAlign='center';c.textBaseline='alphabetic';c.fillStyle=ink;
  // learner name: the open space between "تشهد منصة CodeQuest بأن" and the gold divider
@@ -51,6 +62,11 @@ export async function drawCertificate(canvas,record,_unused){
  c.fillStyle='#46536f';c.direction='rtl';c.font='400 15px '+F;
  c.fillText(record.certId?'رقم الشهادة:':'رقم الشهادة: غير صادر',212,780);
  if(record.certId){c.direction='ltr';c.font='400 13px '+F;c.fillText(String(record.certId),212,798)}
+ // Verification QR: opens the public verify page for this certificate number (track and issue date only, never a name). Drawn only for an issued number.
+ if(record.certId&&/^[a-f0-9]{32}$/.test(String(record.certId))){const q=qrcode(0,'L');q.addData(verifyUrl(record.certId));q.make();const n=q.getModuleCount(),m=3,cell=3,sz=cell*n,X=428,Y=678,P=8;
+  c.save();c.fillStyle='#fff';c.strokeStyle='#d9ad45';c.lineWidth=2;c.beginPath();c.roundRect(X,Y,sz+2*P,sz+2*P+19,10);c.fill();c.stroke();c.fillStyle='#000';
+  for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))c.fillRect(X+P+k*cell,Y+P+r*cell,cell,cell);
+  c.fillStyle='#0b1a3a';c.direction='rtl';c.textAlign='center';c.font='700 12px '+F;c.fillText('امسح للتحقق',X+(sz+2*P)/2,Y+sz+2*P+14);c.restore()}
  if(record.demo||record.synthetic){c.save();c.translate(640,500);c.rotate(-0.28);c.globalAlpha=.16;c.fillStyle='#a42828';c.textAlign='center';c.direction='rtl';c.font='800 96px '+F;c.fillText('نموذج تجريبي',0,0);c.font='800 52px '+F;c.fillText('غير صادر وليس شهادة',0,70);c.restore();
   c.fillStyle='#fff';c.fillRect(24,24,230,28);c.strokeStyle='#a42828';c.lineWidth=1.5;c.strokeRect(24,24,230,28);c.fillStyle='#a42828';c.font='700 13px '+F;c.textAlign='center';c.direction='rtl';c.fillText('نموذج تصميم فقط، غير صادر',139,43)}
 }

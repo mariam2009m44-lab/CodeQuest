@@ -793,11 +793,40 @@ async function handleProgressInner(request, env, origin, action, ctx) {
   }
   const response = await stub.fetch(`https://progress.internal/${action}`, { method: "POST", body: JSON.stringify(body) });
   const data = await response.json();
+  // The learner's own issued certificates are registered for public verification (number, track, time only). Idempotent; a failure never blocks the learner.
+  if ((action === "issue" || action === "certificates") && response.ok && Array.isArray(data.certificates)) await registerCertificates(env, data.certificates);
   return jsonResponse(data, response.status, origin);
 }
 
 // Service instances of the StudentProgress class. A verified uid is at most 128 characters, so these 140+ character names can never equal any user's instance name: no uid format is rejected and no user can address them.
-const SERVICE_INSTANCE = { academy: "svc-academy-" + "x".repeat(130), parent: "svc-parent-" + "x".repeat(130) };
+const SERVICE_INSTANCE = { academy: "svc-academy-" + "x".repeat(130), parent: "svc-parent-" + "x".repeat(130), certs: "svc-certs-" + "x".repeat(130) };
+// Certificate verification registry (a named instance of this same class, like academy and parent). It keeps ONLY the private certificate number,
+// the track and the issue time, written by the server from the learner's own certificate record. No uid, name or email is ever stored or returned.
+const CERT_TRACKS = { python: "Python", javascript: "JavaScript", cpp: "C++", java: "Java" };
+const CERT_ID_RE = /^[a-f0-9]{32}$/;
+async function registerCertificates(env, certs) {
+  try {
+    const reg = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(SERVICE_INSTANCE.certs));
+    for (const c of certs.slice(0, 8)) {
+      if (!c || !CERT_ID_RE.test(String(c.recordId || "")) || !CERT_TRACKS[c.track] || typeof c.issuedAt !== "string") continue;
+      await reg.fetch("https://certs.internal/put", { method: "POST", body: JSON.stringify({ id: c.recordId, track: c.track, issuedAt: c.issuedAt }) });
+    }
+  } catch {}
+}
+// Public, read-only. The 128-bit number is the only key; nothing else is accepted or returned.
+async function handleCertVerify(request, env, origin) {
+  const id = new URL(request.url).searchParams.get("id") || "";
+  if (!CERT_ID_RE.test(id)) return jsonResponse({ success: false, valid: false, message: "not_found" }, 404, origin);
+  if (!env.STUDENT_PROGRESS) return jsonResponse({ success: false, message: "verify_unavailable" }, 503, origin);
+  try {
+    const reg = env.STUDENT_PROGRESS.get(env.STUDENT_PROGRESS.idFromName(SERVICE_INSTANCE.certs));
+    const r = await reg.fetch("https://certs.internal/get", { method: "POST", body: JSON.stringify({ id }) });
+    if (r.status === 404) return jsonResponse({ success: false, valid: false, message: "not_found" }, 404, origin);
+    const d = await r.json();
+    if (!r.ok || !CERT_TRACKS[d.track]) return jsonResponse({ success: false, message: "verify_unavailable" }, 503, origin);
+    return jsonResponse({ success: true, valid: true, track: d.track, trackName: CERT_TRACKS[d.track], issuedAt: d.issuedAt }, 200, origin);
+  } catch { return jsonResponse({ success: false, message: "verify_unavailable" }, 503, origin); }
+}
 // Academy (trainer applications) on the free Worker path. Default OFF: ACADEMY_APPLICATIONS must be "on". "admin-only" enables ONLY an identity probe for the exact admin uid (no record is read or returned); submit, status and review stay off for everyone.
 // Admin = an exact uid listed in the ACADEMY_ADMIN_UIDS dashboard secret (never in the repo). Emails are never used.
 // Review records a decision only. It does not grant any role and sends no message.
@@ -1407,6 +1436,9 @@ export default {
     if (url.pathname === "/api/progress/final-exam" && request.method === "POST") {
       return handleProgress(request, env, origin, "finalexam");
     }
+    if (url.pathname === "/api/certificates/verify" && request.method === "GET") {
+      return handleCertVerify(request, env, origin);
+    }
     if (url.pathname === "/api/certificates" && request.method === "GET") {
       return handleProgress(request, env, origin, "certificates");
     }
@@ -1525,6 +1557,7 @@ export class StudentProgress {
     const host = new URL(request.url).hostname;
     if (host === "academy.internal") return new AcademyDirectory(this.state).fetch(request);
     if (host === "parent.internal") return new ParentLinks(this.state).fetch(request);
+    if (host === "certs.internal") return new CertRegistry(this.state).fetch(request);
     const action = new URL(request.url).pathname.slice(1);
     let body = {};
     try { body = JSON.parse(await request.text() || "{}"); } catch { return Response.json({ success: false, message: "bad request" }, { status: 400 }); }
@@ -1647,6 +1680,27 @@ class AcademyDirectory {
       if (action === "status") return { status: 200, data: { success: true, ...myStatus(dir, b.uid) } };
       if (action === "list") return { status: 200, data: { success: true, ...(() => { const l = listApplications(dir, b.status, b.cursor, b.limit); return { applications: l.items, hasMore: l.hasMore }; })() } };
       if (action === "review") { const r = reviewApplication(dir, b.admin, b.target, b.decision, now); if (!r.ok) return { status: r.status, data: { success: false, message: r.reason } }; await tx.put("dir", dir); return { status: 200, data: { success: true, status: r.status } }; }
+      return { status: 404, data: { success: false } };
+    });
+    return Response.json(out.data, { status: out.status });
+  }
+}
+
+class CertRegistry {
+  constructor(state) { this.state = state; }
+  async fetch(request) {
+    const action = new URL(request.url).pathname.slice(1);
+    let b = {}; try { b = JSON.parse(await request.text() || "{}"); } catch { return Response.json({ success: false }, { status: 400 }); }
+    const id = String(b.id || "");
+    if (!CERT_ID_RE.test(id)) return Response.json({ success: false }, { status: 400 });
+    const out = await this.state.storage.transaction(async tx => {
+      const key = "c:" + id, cur = await tx.get(key);
+      if (action === "put") {
+        if (!CERT_TRACKS[b.track] || typeof b.issuedAt !== "string" || b.issuedAt.length > 40) return { status: 400, data: { success: false } };
+        if (!cur) await tx.put(key, { track: b.track, issuedAt: b.issuedAt });
+        return { status: 200, data: { success: true } };
+      }
+      if (action === "get") return cur ? { status: 200, data: { success: true, track: cur.track, issuedAt: cur.issuedAt } } : { status: 404, data: { success: false } };
       return { status: 404, data: { success: false } };
     });
     return Response.json(out.data, { status: out.status });
