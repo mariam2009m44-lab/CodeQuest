@@ -8,6 +8,14 @@
   const DEFAULT_MOTION = "on";
 
   const root = document.documentElement;
+  // Platform emblem (vector redraw of the certificate emblem) as the tab icon on every themed page.
+  if (!document.querySelector('link[rel~="icon"]')) {
+    const icon = document.createElement("link");
+    icon.rel = "icon";
+    icon.type = "image/svg+xml";
+    icon.href = new URL("../assets/brand/codequest-logo.svg", document.currentScript.src).href;
+    document.head.append(icon);
+  }
   const THEME_ENHANCEMENTS_URL = new URL("../css/theme-enhancements.css", document.currentScript.src).href;
 
   function readStorage(key, fallback) {

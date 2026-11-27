@@ -1,0 +1,7 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),fs=require('fs'),path=require('path'),http=require('http');
+const root=path.resolve(__dirname,'../..');
+// The platform emblem (vector redraw) shows in the header/brand of index, login and signup and is the tab icon.
+function serve(){return new Promise(res=>{const s=http.createServer((q,r)=>{const f=path.join(root,decodeURIComponent(q.url.split('?')[0]));if(!fs.existsSync(f)||fs.statSync(f).isDirectory()){r.statusCode=404;return r.end()}r.setHeader('content-type',{'.html':'text/html;charset=utf-8','.css':'text/css','.js':'application/javascript','.svg':'image/svg+xml'}[path.extname(f)]||'application/octet-stream');r.end(fs.readFileSync(f))});s.listen(0,()=>res(s))})}
+for(const pg of ['index','login','signup','dashboard'])test(pg+' has the emblem icon'+(pg==='dashboard'?'':' and brand mark'),async()=>{const s=await serve(),base='http://localhost:'+s.address().port,b=await chromium.launch();try{const p=await b.newPage();await p.route(u=>!u.href.startsWith(base),r=>r.abort());await p.goto(base+'/'+pg+'.html');await p.waitForTimeout(400);
+ assert.match(await p.evaluate(()=>document.querySelector('link[rel~=icon]')?.href||''),/assets\/brand\/codequest-logo\.svg$/);
+ if(pg!=='dashboard'){const ok=await p.evaluate(()=>{const i=document.querySelector('img[src*="codequest-logo"]');return !!i&&i.naturalWidth>0&&i.getBoundingClientRect().height>=36});assert.ok(ok)}}finally{await b.close();s.close()}});
