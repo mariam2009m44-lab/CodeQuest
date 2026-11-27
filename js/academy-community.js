@@ -1,6 +1,7 @@
 import { auth, functions, authPersistenceReady } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
+import { acadMsg } from "./academy-errors.js";
 
 const state=document.getElementById("communityState");
 const teacherTools=document.getElementById("teacherTools");
@@ -64,7 +65,7 @@ async function loadPosts(uid,name){
   postsNode.replaceChildren();
   for(const post of items){const card=el("article","community-card");card.append(el("h3","",post.instructorName),el("p","",""+post.text),el("p","community-meta",post.createdAt?new Intl.DateTimeFormat("ar-EG",{dateStyle:"medium",timeStyle:"short"}).format(new Date(post.createdAt)):""));const links=el("div","community-links");for(const [i,url] of (post.links||[]).entries()){const a=safeLink(url,"رابط "+(i+1));if(a)links.append(a);}card.append(links);postsNode.append(card);}
   postsPanel.scrollIntoView({behavior:"smooth",block:"start"});
- }catch(error){empty(postsNode,error.message||"تعذر تحميل المنشورات.");}
+ }catch(error){empty(postsNode,acadMsg(error)||"تعذر تحميل المنشورات.");}
 }
 async function loadGroups(){
  const response=await calls.groups({});const items=response.data?.groups||[];
@@ -75,7 +76,7 @@ async function loadGroups(){
   if(!isInstructor){
    const actions=el("div","community-actions");
    const join=el("button","","طلب الانضمام");join.type="button";
-   join.addEventListener("click",async()=>{join.disabled=true;try{await calls.requestJoin({groupId:group.id});join.textContent="تم إرسال الطلب";}catch(error){join.disabled=false;join.textContent="طلب الانضمام";setMessage(state,error.message||"تعذر إرسال الطلب.",true);}});
+   join.addEventListener("click",async()=>{join.disabled=true;try{await calls.requestJoin({groupId:group.id});join.textContent="تم إرسال الطلب";}catch(error){join.disabled=false;join.textContent="طلب الانضمام";setMessage(state,acadMsg(error)||"تعذر إرسال الطلب.",true);}});
    actions.append(join);card.append(actions);
   }
   groupDirectory.append(card);
@@ -103,12 +104,12 @@ async function loadMyGroups(){
       const actions=el("div","community-actions");
       for(const [label,decision] of [["قبول","approve"],["رفض","reject"]]){
        const action=el("button","",label);action.type="button";
-       action.addEventListener("click",async()=>{action.disabled=true;try{await calls.reviewMembership({groupId:group.id,studentUid:request.uid,decision});row.remove();}catch(error){action.disabled=false;setMessage(state,error.message||"تعذر تحديث الطلب.",true);}});
+       action.addEventListener("click",async()=>{action.disabled=true;try{await calls.reviewMembership({groupId:group.id,studentUid:request.uid,decision});row.remove();}catch(error){action.disabled=false;setMessage(state,acadMsg(error)||"تعذر تحديث الطلب.",true);}});
        actions.append(action);
       }
       row.append(actions);requestWrap.append(row);
      }
-    }catch(error){requestWrap.replaceChildren(el("p","community-meta",error.message||"تعذر تحميل الطلبات."));}
+    }catch(error){requestWrap.replaceChildren(el("p","community-meta",acadMsg(error)||"تعذر تحميل الطلبات."));}
     finally{button.disabled=false;}
    });
    card.append(button,requestWrap);
@@ -124,7 +125,7 @@ async function loadAll(){
   await loadGroups();
   await loadMyGroups();
   setMessage(state,"تم تحميل بيانات المدرّسين والمجموعات من قاعدة البيانات.");
- }catch(error){setMessage(state,error.message||"تعذر تحميل المجتمع. تأكد من نشر وظائف Firebase.",true);}
+ }catch(error){setMessage(state,acadMsg(error)||"تعذر تحميل المجتمع.",true);}
  finally{refreshButton.disabled=false;}
 }
 postForm.addEventListener("submit",async event=>{
@@ -134,7 +135,7 @@ postForm.addEventListener("submit",async event=>{
   const links=postForm.elements.links.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   await calls.createPost({text:postForm.elements.text.value.trim(),links});
   postForm.reset();setMessage(document.getElementById("postFeedback"),"تم نشر التحديث وحفظه في قاعدة البيانات.");
- }catch(error){setMessage(document.getElementById("postFeedback"),error.message||"تعذر نشر التحديث.",true);}
+ }catch(error){setMessage(document.getElementById("postFeedback"),acadMsg(error)||"تعذر نشر التحديث.",true);}
  finally{button.disabled=false;}
 });
 groupForm.addEventListener("submit",async event=>{
@@ -144,7 +145,7 @@ groupForm.addEventListener("submit",async event=>{
   await calls.createGroup({name:groupForm.elements.name.value.trim(),topic:groupForm.elements.topic.value.trim(),description:groupForm.elements.description.value.trim()});
   groupForm.reset();setMessage(document.getElementById("groupFeedback"),"تم إنشاء المجموعة وحفظها. ستظهر في دليل المجموعات.");
   await loadGroups();await loadMyGroups();
- }catch(error){setMessage(document.getElementById("groupFeedback"),error.message||"تعذر إنشاء المجموعة.",true);}
+ }catch(error){setMessage(document.getElementById("groupFeedback"),acadMsg(error)||"تعذر إنشاء المجموعة.",true);}
  finally{button.disabled=false;}
 });
 document.getElementById("closePosts").addEventListener("click",()=>{postsPanel.hidden=true;});
@@ -158,5 +159,5 @@ onAuthStateChanged(auth,async user=>{
   teacherTools.hidden=!isInstructor;
   setMessage(state,isInstructor?"تم التحقق من اعتماد المدرّس. يمكنك إدارة منشوراتك ومجموعاتك.":"تم تسجيل الدخول. يمكنك استكشاف المدرّسين والمجموعات وإرسال طلبات الانضمام.");
   await loadAll();
- }catch(error){setMessage(state,error.message||"تعذر التحقق من الحساب.",true);}
+ }catch(error){setMessage(state,acadMsg(error)||"تعذر التحقق من الحساب.",true);}
 });

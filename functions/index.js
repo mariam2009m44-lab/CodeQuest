@@ -2811,7 +2811,7 @@ exports.createLiveClass = onCall(
       if (!/^[A-Za-z0-9_-]{10,40}$/.test(groupId)) throw new HttpsError("invalid-argument", "المجموعة المختارة غير صالحة.");
       const groupSnapshot = await db.collection("teacherGroups").doc(groupId).get();
       if (!groupSnapshot.exists || groupSnapshot.data()?.instructorUid !== instructorUid || groupSnapshot.data()?.status !== "active") {
-        throw new HttpsError("permission-denied", "يمكن ربط الفصل بمجموعة نشطة تملكينها فقط.");
+        throw new HttpsError("permission-denied", "يمكن ربط الفصل بمجموعة نشطة تملكها فقط.");
       }
       linkedGroup = { id: groupId, name: String(groupSnapshot.data()?.name || "") };
     }
@@ -3671,7 +3671,7 @@ exports.listInstructorClassRoster = onCall({ region: "europe-west1" }, async req
   const data = snapshot.data();
   const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
   const isOwner = data.instructorUid === uid && request.auth.token.liveRole === "instructor" && request.auth.token.liveInstructorApproved === true;
-  if (!isAdmin && !isOwner) throw new HttpsError("permission-denied", "لا تملكين صلاحية عرض قائمة هذا الفصل.");
+  if (!isAdmin && !isOwner) throw new HttpsError("permission-denied", "لا تملك صلاحية عرض قائمة هذا الفصل.");
   const enrollments = await classRef.collection("enrollments").orderBy("enrolledAt", "asc").limit(150).get();
   const activeEnrollments = enrollments.docs.filter(item => item.data()?.status === "enrolled").slice(0, 100);
   const students = await Promise.all(activeEnrollments.map(async item => {
@@ -3944,7 +3944,7 @@ exports.listTeacherGroupJoinRequests = onCall({ region: "europe-west1" }, async 
   const groupRef = db.collection("teacherGroups").doc(groupId);
   const group = await groupRef.get();
   if (!group.exists || group.data()?.instructorUid !== uid) {
-    throw new HttpsError("permission-denied", "لا يمكنك عرض طلبات مجموعة لا تملكينها.");
+    throw new HttpsError("permission-denied", "لا يمكنك عرض طلبات مجموعة لا تملكها.");
   }
   const snapshot = await groupRef.collection("membershipRequests")
     .where("status", "==", "pending").orderBy("requestedAt", "asc").limit(50).get();

@@ -1,4 +1,4 @@
-const CACHE_NAME = "cody-academy-v7";
+const CACHE_NAME = "cody-academy-v8";
 const START_URL = "./index.html";
 
 self.addEventListener("install", event => {

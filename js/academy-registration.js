@@ -1,6 +1,7 @@
 import { auth, functions, authPersistenceReady } from "./firebase-config.js";
 import { onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
+import { acadMsg } from "./academy-errors.js";
 const accountState=document.getElementById("accountState");
 const studentForm=document.getElementById("studentForm");
 const instructorForm=document.getElementById("instructorForm");
@@ -64,9 +65,9 @@ onAuthStateChanged(auth,async user=>{
    ["specialties","teachingStyles","ageGroups","teachingLevels"].forEach(name=>(instructor[name]||[]).forEach(value=>{const input=instructorForm.querySelector('input[name="'+name+'"][value="'+value+'"]');if(input)input.checked=true;}));
    instructorForm.elements.sampleWorkLinks.value=(instructor.sampleWorkLinks||[]).join("\\n");
   }
- }catch(error){accountState.textContent="تعذر تحميل حالة التسجيل. "+(error.message||"حاول مرة أخرى.");}
+ }catch(error){accountState.textContent=acadMsg(error)||"تعذر تحميل حالة التسجيل. حاول مرة أخرى.";}
 });
-verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتح الرسالة ثم أعد تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
+verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتح الرسالة ثم أعد تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,acadMsg(error)||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
 studentForm.addEventListener("submit",async event=>{
  event.preventDefault();if(!currentUser)return;
  const button=studentForm.querySelector('button[type="submit"]');button.disabled=true;
@@ -75,7 +76,7 @@ studentForm.addEventListener("submit",async event=>{
   if(!interests.length)throw new Error("اختار مجالًا واحدًا على الأقل.");
   const saved=await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked,learningGoals:studentForm.elements.learningGoals.value.trim(),learningNeeds:studentForm.elements.learningNeeds.value.trim(),preferredSchedule:studentForm.elements.preferredSchedule.value.trim()});
   setFeedback(studentFeedback,saved.data?.status==="pending_guardian"?"تم حفظ الملف. سيظل التسجيل في الفصول المباشرة معلقًا حتى تتحقق الإدارة من موافقة ولي الأمر.":"تم حفظ ملف الطالب وتفعيله بنجاح.");
- }catch(error){setFeedback(studentFeedback,error.message||"تعذر حفظ البيانات.",true);}
+ }catch(error){setFeedback(studentFeedback,acadMsg(error)||"تعذر حفظ البيانات.",true);}
  finally{button.disabled=false;}
 });
 instructorForm.addEventListener("submit",async event=>{
@@ -97,6 +98,6 @@ instructorForm.addEventListener("submit",async event=>{
   });
   if(!currentUser.emailVerified){try{await sendEmailVerification(currentUser);}catch{}}
   setFeedback(instructorFeedback,currentUser.emailVerified?"تم إرسال طلبك إلى إدارة CodeQuest للمراجعة.":"تم إرسال طلبك، وأرسلنا رابط توثيق البريد. يجب توثيق البريد قبل اعتماد حسابك.");
- }catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال الطلب.",true);}
+ }catch(error){setFeedback(instructorFeedback,acadMsg(error)||"تعذر إرسال الطلب.",true);}
  finally{button.disabled=false;}
 });
