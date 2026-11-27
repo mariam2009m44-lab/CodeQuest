@@ -341,9 +341,12 @@
     }
 
     @media (max-width: 420px) {
-      .badges-grid {
-        grid-template-columns: 1fr;
-      }
+      .badges-grid { gap: 10px; }
+      .badge-card { padding: 16px 10px; min-height: 0; }
+      .badge-description { font-size: 11px; }
+    }
+    @media (max-width: 330px) {
+      .badges-grid { grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -355,6 +358,40 @@
         animation-duration: .01ms !important;
       }
     }
+
+    /* Gem vault hero and gem badges (own SVG art, no external images) */
+    .vault{position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center;gap:8px 24px;margin:22px 0 34px;padding:22px 26px;border:1px solid rgba(129,140,248,.35);border-radius:24px;overflow:hidden;background:radial-gradient(ellipse at 28% 55%,rgba(59,91,219,.55),rgba(17,22,60,.95) 62%),linear-gradient(145deg,#0d1236,#160f3a)}
+    .vault::before,.vault::after{content:"";position:absolute;inset:auto;left:-6%;top:12%;width:62%;aspect-ratio:2.4;border:2px solid rgba(96,165,250,.45);border-radius:50%;transform:rotate(-14deg);box-shadow:0 0 18px rgba(56,150,255,.5);pointer-events:none}
+    .vault::after{top:22%;left:-2%;width:54%;border-width:1px;transform:rotate(10deg);opacity:.6}
+    .vault-stage{position:relative;min-height:250px;display:grid;place-items:center;z-index:1}
+    .vault-cody{width:min(210px,52%);height:auto;filter:drop-shadow(0 0 18px rgba(80,160,255,.6));animation:cody-bob 4.5s ease-in-out infinite}
+    .vault-gems{position:absolute;inset:0;pointer-events:none}
+    .vault-gem{position:absolute;width:64px;height:64px;animation:gem-float 3.6s ease-in-out infinite}
+    .vault-gem svg{width:100%;height:100%;overflow:visible}
+    .vault-gem.slot{opacity:.55}
+    .vault-info{position:relative;z-index:1;display:grid;gap:14px;justify-items:start}
+    .vault-title{margin:0;font-size:clamp(20px,3.6vw,27px);font-weight:900}
+    .ring{--p:0;position:relative;width:132px;height:132px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#38bdf8 calc(var(--p)*1%),rgba(148,163,184,.2) 0);box-shadow:0 0 22px rgba(56,189,248,.35)}
+    .ring::before{content:"";position:absolute;inset:10px;border-radius:50%;background:#0d1236}
+    .ring b{position:relative;font-size:30px;font-weight:900;direction:ltr}
+    .ring small{position:absolute;bottom:26px;color:var(--muted);font-size:11px;direction:ltr}
+    .vault-line{margin:0;color:var(--muted);font-size:14px;line-height:1.9}
+    .vault-line strong{color:var(--text)}
+    .vault-cta[hidden]{display:none}
+    .vault-cta{display:inline-flex;align-items:center;min-height:42px;padding:8px 18px;border-radius:12px;background:linear-gradient(120deg,#0891b2,#6366f1);color:#fff;font-weight:800;text-decoration:none}
+    .gem-art{display:block;width:78px;height:78px;margin:0 auto 10px;overflow:visible}
+    .badge-card.unlocked .gem-art{filter:drop-shadow(0 0 10px var(--gem-glow,rgba(96,165,250,.7)));animation:gem-float 3.6s ease-in-out infinite}
+    .badge-card.locked{opacity:1}
+    .badge-card.locked .gem-art{opacity:.9}
+    .badge-card.locked .badge-title{color:#cbd5e1}
+    .badge-progress{height:6px;margin:10px auto 0;max-width:140px;border-radius:99px;background:rgba(148,163,184,.2);overflow:hidden}
+    .badge-progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#22d3ee,#a78bfa)}
+    .sparkle{animation:twinkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+    @keyframes gem-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    @keyframes cody-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}
+    @media (max-width:700px){.vault{grid-template-columns:1fr;padding:18px 16px;text-align:center}.vault-info{justify-items:center}.vault-stage{min-height:230px}}
+    @media (prefers-reduced-motion:reduce){.vault-cody,.vault-gem,.sparkle,.badge-card.unlocked .gem-art{animation:none!important}}
   </style>
   <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/codequest-icons.css">
@@ -380,23 +417,18 @@
       جارٍ تحميل إنجازاتك...
     </div>
 
-    <section class="summary" aria-label="ملخص الإنجازات">
-      <article class="stat">
-        <span class="stat-label">الدروس المكتملة</span>
-        <strong class="stat-value" id="completedCount">—</strong>
-      </article>
-
-      <article class="stat">
-        <span class="stat-label">الشارات المفتوحة</span>
-        <strong class="stat-value" id="unlockedCount">—</strong>
-      </article>
-
-      <article class="stat">
-        <span class="stat-label">إجمالي الدروس</span>
-        <strong class="stat-value" id="totalCount">—</strong>
-      </article>
+    <section class="vault" id="vault" aria-label="كنز الجواهر">
+      <div class="vault-stage">
+        <img class="vault-cody" src="assets/cody-achievements.png" alt="كودي" width="228" height="263">
+        <div class="vault-gems" id="vaultGems" aria-hidden="true"></div>
+      </div>
+      <div class="vault-info">
+        <h2 class="vault-title" id="vaultTitle">كنزك من الجواهر</h2>
+        <div class="ring" id="ring" role="img" aria-label="نسبة الدروس المكتملة"><b id="ringNum">—</b><small id="ringTotal"></small></div>
+        <p class="vault-line" id="vaultLine"></p>
+        <a class="vault-cta" id="vaultCta" href="levels.html" hidden>ابدأ أول درس</a>
+      </div>
     </section>
-
     <section>
       <div class="section-heading">
         <h2>تقدم لغات البرمجة</h2>
@@ -512,6 +544,44 @@
       }
     ];
 
+
+    // ---- Gem art: faceted SVG gems drawn from a base colour. Locked gems are dark silhouettes with a lock.
+    const mix = (hex, t) => {
+      const n = parseInt(hex.slice(1), 16), c = [n >> 16 & 255, n >> 8 & 255, n & 255];
+      return "#" + c.map(v => Math.round(t >= 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, "0")).join("");
+    };
+    const pts = a => a.map(p => p.join(",")).join(" ");
+    const poly = (a, fill) => `<polygon points="${pts(a)}" fill="${fill}" stroke="rgba(255,255,255,.35)" stroke-width=".8" stroke-linejoin="round"/>`;
+    function gemFacets(cut, col) {
+      const sh = t => mix(col, t);
+      if (cut === "classic") {
+        const T1 = [28, 20], T2 = [72, 20], L = [6, 40], R = [94, 40], P = [50, 94], M1 = [33, 40], M2 = [67, 40], M = [50, 40];
+        return poly([T1, T2, M2, M1], sh(.45)) + poly([T1, L, M1], sh(.12)) + poly([T2, R, M2], sh(-.12)) +
+          poly([L, M1, P], sh(-.18)) + poly([M1, M, P], sh(.12)) + poly([M, M2, P], sh(.3)) + poly([M2, R, P], sh(-.32));
+      }
+      const ring = (n, r, rot) => Array.from({ length: n }, (_, i) => { const a = rot + i * 2 * Math.PI / n; return [50 + r * Math.cos(a), 50 + r * Math.sin(a)]; });
+      const bands = (outer, inner, shade) => outer.map((p, i) => { const j = (i + 1) % outer.length; return poly([p, outer[j], inner[j], inner[i]], sh(shade(i, outer.length))); }).join("");
+      if (cut === "hex") {
+        const o = ring(6, 44, -Math.PI / 2), m = ring(6, 28, -Math.PI / 2 + Math.PI / 6), c = ring(6, 14, -Math.PI / 2);
+        return bands(o, c, (i, n) => [.3, .05, -.2, -.3, -.1, .2][i % n]) + poly(c, sh(.5));
+      }
+      const o = ring(8, 46, Math.PI / 8), i1 = ring(8, 34, Math.PI / 8), i2 = ring(8, 21, Math.PI / 8);
+      const tone = i => [.35, .2, -.05, -.25, -.35, -.2, .05, .25][i];
+      return bands(o, i1, (i) => tone(i)) + bands(i1, i2, (i) => tone(i) * .6 + .1) + poly(i2, sh(.55));
+    }
+    function gemSVG(gem, locked) {
+      const lock = `<g transform="translate(50 52)"><rect x="-11" y="-3" width="22" height="17" rx="4" fill="#0b1230" stroke="#94a3b8" stroke-width="1.6"/><path d="M-6 -3v-5a6 6 0 0 1 12 0v5" fill="none" stroke="#94a3b8" stroke-width="2"/><circle cx="0" cy="5.5" r="2" fill="#94a3b8"/></g>`;
+      if (locked) {
+        return `<svg class="gem-art" viewBox="0 0 100 100" aria-hidden="true">${gemFacets(gem.cut, "#2a3358")}<g opacity=".92">${lock}</g></svg>`;
+      }
+      const sp = (x, y, d) => `<path class="sparkle" style="animation-delay:${d}s" d="M${x} ${y - 7}L${x + 2} ${y - 2}L${x + 7} ${y}L${x + 2} ${y + 2}L${x} ${y + 7}L${x - 2} ${y + 2}L${x - 7} ${y}L${x - 2} ${y - 2}Z" fill="#fff"/>`;
+      return `<svg class="gem-art" viewBox="0 0 100 100" aria-hidden="true">${gemFacets(gem.cut, gem.color)}${sp(30, 30, 0)}${sp(76, 66, 1.1)}</svg>`;
+    }
+    const GEMS = [
+      { cut: "round", color: "#22c55e" }, { cut: "hex", color: "#38bdf8" }, { cut: "classic", color: "#a855f7" }, { cut: "octa", color: "#f97316" },
+      { cut: "classic", color: "#ec4899" }, { cut: "hex", color: "#facc15" }, { cut: "octa", color: "#3b82f6" }, { cut: "classic", color: "#ef4444" }
+    ];
+    BADGES.forEach((b, i) => { b.gem = GEMS[i % GEMS.length]; });
     const $ = (id) => document.getElementById(id);
 
     function showStatus(message, type = "info") {
@@ -643,54 +713,86 @@
 
         const caption = document.createElement("div");
         caption.className = "progress-caption";
-        caption.textContent = `اكتمل ${percentage}% من المنهج`;
+        caption.textContent = `اكتمل \u2066${percentage}%\u2069 من المنهج`;
 
         card.append(heading, track, caption);
         grid.append(card);
       }
     }
 
-    function renderBadges(completedCount) {
+    function renderBadges(completedCount, totalCount) {
       const grid = $("badgesGrid");
       grid.replaceChildren();
-
       let unlocked = 0;
-
       for (const badge of BADGES) {
         const isUnlocked = completedCount >= badge.requirement;
-
         if (isUnlocked) unlocked++;
-
         const card = document.createElement("article");
         card.className = `badge-card ${isUnlocked ? "unlocked" : "locked"}`;
-
-        const icon = document.createElement("div");
-        icon.className = "badge-icon";
-        icon.textContent = badge.icon;
-
+        card.style.setProperty("--gem-glow", badge.gem.color + "bb");
+        const art = document.createElement("div");
+        art.innerHTML = gemSVG(badge.gem, !isUnlocked);
         const title = document.createElement("h3");
         title.className = "badge-title";
         title.textContent = badge.title;
-
         const description = document.createElement("p");
         description.className = "badge-description";
         description.textContent = badge.description;
-
         const status = document.createElement("span");
         status.className = "badge-status";
-        status.textContent = isUnlocked ? "✓ تم الحصول عليها" : "🔒 لم تُفتح بعد";
-
-        card.append(icon, title, description, status);
+        if (isUnlocked) status.textContent = "✓ تم الحصول عليها";
+        else status.textContent = `${Math.min(completedCount, badge.requirement)} من ${badge.requirement} درسًا`;
+        card.append(art.firstElementChild, title, description, status);
+        if (!isUnlocked) {
+          const bar = document.createElement("div");
+          bar.className = "badge-progress";
+          bar.setAttribute("role", "progressbar");
+          bar.setAttribute("aria-valuemin", "0");
+          bar.setAttribute("aria-valuemax", String(badge.requirement));
+          bar.setAttribute("aria-valuenow", String(Math.min(completedCount, badge.requirement)));
+          const fill = document.createElement("i");
+          fill.style.width = `${Math.round(Math.min(completedCount, badge.requirement) * 100 / badge.requirement)}%`;
+          bar.append(fill);
+          card.append(bar);
+        }
         grid.append(card);
       }
-
-      $("unlockedCount").textContent = String(unlocked);
-      $("badgeSummary").textContent = `${unlocked} من ${BADGES.length} شارات`;
+      $("badgeSummary").textContent = `${unlocked} من ${BADGES.length} جواهر`;
+      renderVault(completedCount, totalCount, unlocked);
     }
-
+    // Cody with the gems he earned: up to 4 float around him; empty dashed slots when nothing is earned yet.
+    function renderVault(completed, total, unlocked) {
+      const layer = $("vaultGems");
+      layer.replaceChildren();
+      const spots = [["64%", "6%"], ["70%", "52%"], ["8%", "46%"], ["22%", "4%"]];
+      const owned = BADGES.filter(b => completed >= b.requirement).slice(-4);
+      const shown = owned.length ? owned : [null, null];
+      shown.forEach((b, i) => {
+        const box = document.createElement("div");
+        box.className = "vault-gem" + (b ? "" : " slot");
+        box.style.insetInlineStart = spots[i][0];
+        box.style.top = spots[i][1];
+        box.style.animationDelay = (i * .7) + "s";
+        box.innerHTML = b ? gemSVG(b.gem, false) : `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M28 20h44l22 20-44 54L6 40z" fill="none" stroke="#7c8bd1" stroke-width="2.5" stroke-dasharray="6 6"/></svg>`;
+        if (b) box.style.filter = `drop-shadow(0 0 12px ${b.gem.color}cc)`;
+        layer.append(box);
+      });
+      const pct = total > 0 ? Math.min(100, Math.floor(completed * 100 / total)) : 0;
+      $("ring").style.setProperty("--p", String(pct));
+      $("ring").setAttribute("aria-label", `${completed} من ${total} درسًا`);
+      $("ringNum").textContent = String(completed);
+      $("ringTotal").textContent = `/ ${total}`;
+      $("vaultLine").innerHTML = completed > 0
+        ? `جمعت <strong>${unlocked}</strong> من ${BADGES.length} جواهر. ${unlocked < BADGES.length ? "كل درس جديد يقرّبك من الجوهرة التالية." : "جمعت كل الجواهر!"}`
+        : "كودي ينتظر جوهرتك الأولى. أكمل درسًا واحدًا لتفتحها.";
+      $("vaultCta").hidden = completed > 0;
+    }
     async function start() {
       try {
-        await requireUser();
+        const user = await requireUser();
+        // Lessons finished on the map are stored per account on this device; cloud records may be empty. Count both, like the profile does.
+        let localRecords = [];
+        try { localRecords = (await import("./js/app.js?v=3001")).readLocalLessonProgress(user?.uid) || []; } catch (e) { console.warn("Local lesson progress unavailable", e); }
 
         const progress = {};
         const totals = {};
@@ -711,7 +813,7 @@
             ]);
 
             const validItems = getValidCompletedRecords(
-              items,
+              [...(Array.isArray(items) ? items : []), ...localRecords.filter(r => r.language === key)],
               curriculum.chapters
             );
 
@@ -738,17 +840,9 @@
           0
         );
 
-        $("completedCount").textContent = String(completedCount);
-        $("totalCount").textContent = String(totalCount);
-
         renderLanguageCards(progress, totals);
-        renderBadges(completedCount);
-
-        showStatus(
-          completedCount > 0
-            ? "إنجازاتك محدثة بناءً على الدروس التي أكملتها وحُفظت في حسابك."
-            : "لم تكمل أي دروس بعد. ابدأ أول درس لتحصل على شارتك الأولى!"
-        );
+        renderBadges(completedCount, totalCount);
+        $("pageStatus").hidden = true;
 
       } catch (error) {
         console.error("Achievements loading error:", error);
@@ -760,9 +854,7 @@
 
         $("languageGrid").replaceChildren();
         $("badgesGrid").replaceChildren();
-        $("completedCount").textContent = "—";
-        $("unlockedCount").textContent = "—";
-        $("totalCount").textContent = "—";
+        $("ringNum").textContent = "—";
       }
     }
 

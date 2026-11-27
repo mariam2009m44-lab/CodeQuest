@@ -1,0 +1,27 @@
+const {chromium}=(()=>{try{return require('playwright')}catch{return require('playwright-core')}})(),http=require('http'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
+const root=path.resolve(__dirname,'../..');
+const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.svg':'image/svg+xml'};
+// FIXTURES: sign-in and cloud lesson records are stubbed (cloud is EMPTY); lessons finished on the map live in account-scoped device storage, read by the real readLocalLessonProgress source.
+const appSrc=fs.readFileSync(root+'/js/app.js','utf8');const m=appSrc.match(/export function readLocalLessonProgress[\s\S]*?\n}\n/);assert(m,'readLocalLessonProgress is exported');
+const cur=JSON.parse(fs.readFileSync(root+'/json/js_curriculum.json','utf8'));
+const recs=[];for(let c=0;c<cur.chapters.length&&recs.length<26;c++)for(let l=0;l<cur.chapters[c].lessons.length&&recs.length<26;l++)recs.push({chapter:c,lesson:l,completed:true});
+const OUT=process.env.CERT_OUT||'/tmp';
+(async()=>{const srv=http.createServer((q,s)=>{const f=path.join(root,decodeURIComponent(q.url.split('?')[0]));let d;try{d=fs.readFileSync(f)}catch{s.writeHead(404);return s.end()}s.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'});s.end(d)});
+await new Promise(r=>srv.listen(0,r));const L='http://localhost:'+srv.address().port;
+const b=await chromium.launch(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH,args:['--no-sandbox']}:{});
+const JS={'content-type':'text/javascript'};
+const run=async(name,records,vp)=>{const c=await b.newContext({viewport:vp}),p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e)));
+ await c.addInitScript(r=>{if(r.length)localStorage.setItem('codequest_lesson_progress_fixture-u1_javascript',JSON.stringify(r))},records);
+ const stubs={'**/js/auth.js':'export async function requireUser(){return {uid:"fixture-u1"}};export async function getLessonProgress(){return []}','**/js/app.js*':m[0]};
+ for(const [g,body] of Object.entries(stubs))await p.route(g,r=>r.fulfill({status:200,headers:JS,body}));
+ await p.route('https://fonts.**',r=>r.fulfill({status:200,body:''}));
+ await p.goto(L+'/achievements.html');await p.waitForFunction(()=>document.getElementById('ringNum').textContent!=='—',null,{timeout:10000});
+ const r=await p.evaluate(()=>({ring:document.getElementById('ringNum').textContent,total:document.getElementById('ringTotal').textContent,unlocked:document.querySelectorAll('.badge-card.unlocked').length,locked:document.querySelectorAll('.badge-card.locked').length,vg:document.querySelectorAll('.vault-gem:not(.slot)').length,slots:document.querySelectorAll('.vault-gem.slot').length,cta:getComputedStyle(document.getElementById('vaultCta')).display!=='none',stats:!!document.getElementById('completedCount'),over:document.documentElement.scrollWidth>innerWidth}));
+ await p.waitForTimeout(300);await p.screenshot({path:OUT+'/ach-'+name+'.png',fullPage:true});assert.deepEqual(errs,[]);assert.equal(r.over,false,'no horizontal overflow '+name);await c.close();return r};
+ const full=await run('m-26',recs,{width:390,height:844});
+ assert.equal(full.ring,'26');assert.equal(full.unlocked,4);assert.equal(full.locked,4);assert.equal(full.vg,4);assert.equal(full.cta,false);assert.equal(full.stats,false);
+ const empty=await run('m-0',[],{width:390,height:844});
+ assert.equal(empty.ring,'0');assert.equal(empty.unlocked,0);assert.equal(empty.slots,2);assert.equal(empty.cta,true);
+ await run('d-26',recs,{width:1280,height:900});
+ console.log('achievements gems regression ok (fixtures)',JSON.stringify(full),JSON.stringify(empty));
+await b.close();srv.close()})().catch(e=>{console.error(e);process.exit(1)});
