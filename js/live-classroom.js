@@ -50,7 +50,7 @@ async function saveSharedCode(){
     setSync("تمت مزامنة الكود مع الفصل","ok");
   }catch(error){
     pendingLocalEdit=false;
-    setSync(error?.message||"تعذرت مزامنة الكود. تحققي من اتصالك وصلاحية التسجيل.","error");
+    setSync(error?.message||"تعذرت مزامنة الكود. تحقق من اتصالك وصلاحية التسجيل.","error");
   }
 }
 async function saveLanguage(){
@@ -117,7 +117,7 @@ onAuthStateChanged(auth,async user=>{
   setStatus("تم التحقق من تسجيلك. يمكنك الانضمام إلى الجلسة واستخدام محرر الأكواد المشترك.");
   connectWorkspace();
  }catch(error){
-  setStatus(error?.message||"تعذر الانضمام إلى الفصل. تحققي من التسجيل وموعد الجلسة.",true);
+  setStatus(error?.message||"تعذر الانضمام إلى الفصل. تحقق من التسجيل وموعد الجلسة.",true);
   setSync("مساحة الأكواد غير متاحة قبل التحقق من الفصل.","error");
  }
 });

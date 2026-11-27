@@ -97,7 +97,7 @@ function renderStudents(items){
    const verify=node("button","admin-action","تأكيد الموافقة بعد التحقق");
    verify.type="button";
    verify.addEventListener("click",async()=>{
-    if(!window.confirm("لا تستخدمي هذا الإجراء إلا بعد التحقق فعليًا من موافقة ولي الأمر خارج المنصة. هل تم التحقق؟"))return;
+    if(!window.confirm("لا تستخدم هذا الإجراء إلا بعد التحقق فعليًا من موافقة ولي الأمر خارج المنصة. هل تم التحقق؟"))return;
     verify.disabled=true;
     try{await reviewGuardian({studentUid:item.uid,decision:"verify"});await load();}
     catch(error){message(error.message||"تعذر تحديث حالة الموافقة.",true);verify.disabled=false;}

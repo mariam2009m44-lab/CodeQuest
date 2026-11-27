@@ -117,11 +117,11 @@ export function authError(error) {
     "auth/cancelled-popup-request":
       "تم إلغاء طلب تسجيل الدخول. حاول مرة أخرى.",
     "auth/popup-closed-by-user":
-      "أُغلقت نافذة Google قبل اكتمال تسجيل الدخول. افتحيها مرة أخرى وأكملي الخطوات.",
+      "لم يكتمل تسجيل الدخول لأن نافذة Google أُغلقت. يمكن الضغط على الزر مرة أخرى وإكمال الخطوات.",
     "auth/popup-blocked":
-      "المتصفح منع نافذة Google المنبثقة. اسمحي بالنوافذ المنبثقة لهذا الموقع أو افتحيه في Chrome.",
+      "المتصفح منع نافذة Google المنبثقة. يلزم السماح بالنوافذ المنبثقة لهذا الموقع أو فتحه في Chrome.",
     "auth/web-storage-unsupported":
-      "المتصفح لا يسمح بحفظ جلسة تسجيل الدخول. افتح الموقع في Chrome وتأكدي من تفعيل ملفات تعريف الارتباط.",
+      "المتصفح لا يسمح بحفظ جلسة تسجيل الدخول. يلزم فتح الموقع في Chrome والتأكد من تفعيل ملفات تعريف الارتباط.",
     "auth/invalid-action-code":
       "الرابط غير صالح أو انتهت صلاحيته.",
     "auth/expired-action-code":
@@ -135,7 +135,7 @@ export function authError(error) {
     "failed-precondition":
       "إعداد مطلوب في Firebase غير مكتمل. راجع إعدادات الخدمة.",
     "deadline-exceeded":
-      "استغرق الاتصال بـ Firebase وقتًا أطول من اللازم. تحققي من الإنترنت وحاولي مجددًا.",
+      "استغرق الاتصال بـ Firebase وقتًا أطول من اللازم. تحقق من الإنترنت وحاول مجددًا.",
     "unauthenticated":
       "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى.",
     "unavailable": "الخدمة غير متاحة حاليًا."
@@ -365,6 +365,16 @@ export async function loginUser(email, password) {
  * بدء تسجيل الدخول باستخدام Google عبر إعادة التوجيه، وهو المسار الأنسب
  * لتفادي قيود النوافذ المنبثقة على متصفحات الهاتف.
  */
+export function isMobileBrowser() {
+  try {
+    const ua = String(globalThis.navigator?.userAgent || "");
+    if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return true;
+    return Boolean(globalThis.matchMedia?.("(pointer: coarse)")?.matches);
+  } catch (_) {
+    return false;
+  }
+}
+
 export async function signInWithGoogle() {
   await authPersistenceReady;
   try {
@@ -382,6 +392,14 @@ export async function signInWithGoogle() {
         "auth/popup-blocked",
         "auth/operation-not-supported-in-this-environment"
       ]);
+
+      // On phones the popup is often closed by the browser when the user
+      // switches tabs or apps, which reports popup-closed-by-user even
+      // though nobody cancelled. Continue with the redirect flow there.
+      if (isMobileBrowser()) {
+        fallbackCodes.add("auth/popup-closed-by-user");
+        fallbackCodes.add("auth/cancelled-popup-request");
+      }
 
       if (!fallbackCodes.has(popupError?.code)) {
         throw popupError;

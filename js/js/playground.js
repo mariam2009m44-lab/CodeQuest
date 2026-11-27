@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!window.ace) {
     show(
-      'تعذر تحميل المحرر. تأكد من الإنترنت وأعيدي تحميل الصفحة.',
+      'تعذر تحميل المحرر. تأكد من الإنترنت وأعد تحميل الصفحة.',
       'error'
     );
     runButton.disabled = true;
@@ -113,7 +113,7 @@ int main() {
 
     if (resetCode) editor.setValue(config.code, -1);
 
-    show('اكتب الكود واضغطي «تشغيل الكود» لعرض النتيجة.');
+    show('اكتب الكود واضغط «تشغيل الكود» لعرض النتيجة.');
   }
 
   languageSelect.addEventListener('change', () => {
@@ -203,7 +203,7 @@ int main() {
       }
 
       throw new Error(
-        'فشل الاتصال بالخدمة. تحققي من الإنترنت أو إعدادات CORS.'
+        'فشل الاتصال بالخدمة. تحقق من الإنترنت أو إعدادات CORS.'
       );
     } finally {
       clearTimeout(timeout);
@@ -212,7 +212,7 @@ int main() {
     if (!response.ok) {
       throw new Error(
         'خدمة التنفيذ أعادت HTTP ' + response.status +
-        '. جرّبي لاحقًا أو استخدمي خدمة تنفيذ أخرى.'
+        '. جرّب لاحقًا أو استخدم خدمة تنفيذ أخرى.'
       );
     }
 

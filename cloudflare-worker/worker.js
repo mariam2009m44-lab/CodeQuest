@@ -266,7 +266,7 @@ async function handleCodeRun(request, env, origin) {
   } catch {
     return jsonResponse({
       success: false,
-      message: "سجّلي الدخول أولًا لتشغيل الأكواد."
+      message: "سجّل الدخول أولًا لتشغيل الأكواد."
     }, 401, origin);
   }
 
@@ -479,8 +479,8 @@ async function handleCodeRun(request, env, origin) {
     return jsonResponse({
       success: false,
       message: lastPollingError
-        ? "تعذر الاتصال بخدمة النتائج بعد عدة محاولات. حاولي مرة أخرى."
-        : "استغرق تنفيذ الكود وقتًا طويلًا. حاولي مرة أخرى."
+        ? "تعذر الاتصال بخدمة النتائج بعد عدة محاولات. حاول مرة أخرى."
+        : "استغرق تنفيذ الكود وقتًا طويلًا. حاول مرة أخرى."
     }, lastPollingError ? 503 : 504, origin);
   }
 
@@ -852,7 +852,7 @@ async function handleAcademy(request, env, origin, action) {
   let res;
   if (action === "submit") {
     const v = validateApplication(body);
-    if (!v.ok) return jsonResponse({ success: false, message: "راجعي بيانات طلب المدرب والروابط والتخصصات." }, 400, origin);
+    if (!v.ok) return jsonResponse({ success: false, message: "راجع بيانات طلب المدرب والروابط والتخصصات." }, 400, origin);
     res = await send({ uid: user.uid, email: user.email, emailVerified: user.emailVerified, value: v.value });
   } else if (action === "status") res = await send({ uid: user.uid });
   else if (action === "list") res = await send({ status: typeof body.status === "string" ? body.status : "", cursor: typeof body.cursor === "string" ? body.cursor.slice(0, 200) : "", limit: Number.isInteger(body.limit) ? body.limit : 25 });
@@ -1085,7 +1085,7 @@ export default {
       }
 
       if (!env.GEMINI_API_KEY) {
-        return jsonResponse({ success: false, message: "مساعد كودي غير مُعدّ بعد. أضيفي مفتاح Gemini في أسرار Cloudflare." }, 503, origin);
+        return jsonResponse({ success: false, message: "مساعد كودي غير مُعدّ بعد. أضف مفتاح Gemini في أسرار Cloudflare." }, 503, origin);
       }
 
       let body;
@@ -1389,7 +1389,7 @@ export default {
         if (upstream.status === 401 || upstream.status === 403) {
           await refundCodyQuestionQuota(env, authenticatedUser.uid);
           console.error("Gemini authentication/permission error:", upstream.status);
-          return jsonResponse({ success: false, message: "تعذر التحقق من إعداد Gemini. راجعي المفتاح وصلاحية النموذج في Cloudflare." }, 503, origin);
+          return jsonResponse({ success: false, message: "تعذر التحقق من إعداد Gemini. راجع المفتاح وصلاحية النموذج في Cloudflare." }, 503, origin);
         }
 
         if (!upstream.ok) {

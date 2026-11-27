@@ -31,7 +31,7 @@ self.addEventListener("fetch", event => {
   // لا تخزني استجابات Firebase أو الخدمات الخارجية.
   if (url.origin !== self.location.origin) return;
 
-  // التنقل بين الصفحات: جرّبي الشبكة ثم النسخة المخزنة.
+  // التنقل بين الصفحات: جرّب الشبكة ثم النسخة المخزنة.
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -70,8 +70,8 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // الملفات الثابتة: استخدمي النسخة المخزنة إن وجدت،
-  // وحدّثيها من الشبكة في الخلفية.
+  // الملفات الثابتة: استخدم النسخة المخزنة إن وجدت،
+  // وحدّثها من الشبكة في الخلفية.
   event.respondWith(
     caches.match(request).then(cached => {
       const networkRequest = fetch(request).then(response => {

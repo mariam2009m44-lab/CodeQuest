@@ -43,7 +43,7 @@ onAuthStateChanged(auth, async user => {
       fallback.hidden = true;
     }
   } catch (error) {
-    message("تعذّر التحقق من صلاحيات الحساب. حدّثي الصفحة أو سجّل الدخول مرة أخرى.", true);
+    message("تعذّر التحقق من صلاحيات الحساب. حدّث الصفحة أو سجّل الدخول مرة أخرى.", true);
     action.href = "login.html?next=instructor-portal.html";
     action.textContent = "إعادة تسجيل الدخول";
     fallback.hidden = false;

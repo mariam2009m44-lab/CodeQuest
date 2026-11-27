@@ -144,14 +144,14 @@ bootstrapButton.addEventListener("click",async()=>{
   try{
     await bootstrapAdmin();
     await currentUser.getIdToken(true);
-    showMessage(account,"تم إعداد صلاحية مسؤول الأكاديمية. حدّثي الصفحة إذا لم تظهر أدوات الإدارة.");
+    showMessage(account,"تم إعداد صلاحية مسؤول الأكاديمية. حدّث الصفحة إذا لم تظهر أدوات الإدارة.");
     location.reload();
   }catch(error){showMessage(account,error?.message||"تعذر إعداد المسؤول. تأكد من إعداد بريد المالك على الخادم.",true);}
   finally{bootstrapButton.disabled=false;}
 });
 approveSelfButton.addEventListener("click",async()=>{
   approveSelfButton.disabled=true;
-  try{await approveInstructor({instructorUid:currentUser.uid});await currentUser.getIdToken(true);showMessage(adminFeedback,"تم اعتماد حسابك كمدرّب. حدّثي الصفحة.");location.reload();}
+  try{await approveInstructor({instructorUid:currentUser.uid});await currentUser.getIdToken(true);showMessage(adminFeedback,"تم اعتماد حسابك كمدرّب. حدّث الصفحة.");location.reload();}
   catch(error){showMessage(adminFeedback,error?.message||"تعذر اعتماد الحساب.",true);}
   finally{approveSelfButton.disabled=false;}
 });
@@ -216,6 +216,6 @@ onAuthStateChanged(auth,async user=>{
     account.textContent=isAdmin?"تم التحقق من صلاحيات مسؤول الأكاديمية.":isInstructor?"تم التحقق من حساب المدرّب المعتمد.":"أهلًا بك في أكاديمية CodeQuest المباشرة.";
     await loadClasses();
   } catch(error) {
-    account.textContent="تعذر التحقق من صلاحيات الحساب. حدّثي الصفحة بعد قليل.";
+    account.textContent="تعذر التحقق من صلاحيات الحساب. حدّث الصفحة بعد قليل.";
   }
 });

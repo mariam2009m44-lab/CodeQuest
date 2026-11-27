@@ -40,7 +40,7 @@ export function renderCertificates(doc,listEl,emptyEl,result){
   listEl.hidden=false;emptyEl.hidden=true;return;
  }
  listEl.hidden=true;emptyEl.hidden=false;
- emptyEl.textContent=result.state==='error'?'تعذر تحميل شهاداتك الآن. جرّبي مرة أخرى بعد قليل.'
+ emptyEl.textContent=result.state==='error'?'تعذر تحميل شهاداتك الآن. جرّب مرة أخرى بعد قليل.'
   :result.state==='signedout'?'سجّل الدخول لعرض شهاداتك.'
   :result.state==='ok'?'لا توجد شهادات صادرة بعد. تظهر هنا بعد إكمال مسار كامل بكل اختباراته وتمارينه، وتسجيل ذلك على حسابك.'
   :'عرض الشهادات غير مفعّل حاليًا. لا يعني هذا أن حسابك بلا شهادات أو أن مسارًا اكتمل. ستظهر هنا بعد تفعيل تسجيل الإكمال على حسابك.';

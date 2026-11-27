@@ -19,8 +19,8 @@ const submitInstructorCallable=httpsCallable(functions,"submitInstructorApplicat
 async function submitInstructor(payload){
  const w=await academyWorker(currentUser,"instructor-application",payload);
  if(w.ok)return {data:w.data,worker:true};
- if(w.unreachable)throw new Error("لم نتأكد من وصول طلبك. افتح الصفحة من جديد وتحققي من حالة الطلب قبل إعادة الإرسال.");
- if(!w.off)throw new Error(w.data.message==="rate_limited"?"وصلتِ للحد اليومي لإرسال الطلب. حاول غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
+ if(w.unreachable)throw new Error("لم نتأكد من وصول طلبك. افتح الصفحة من جديد وتحقق من حالة الطلب قبل إعادة الإرسال.");
+ if(!w.off)throw new Error(w.data.message==="rate_limited"?"تم الوصول للحد اليومي لإرسال الطلب. حاول غدًا.":w.data.message==="already_approved"?"هذا الحساب معتمد بالفعل.":(w.data.message||"تعذر إرسال الطلب."));
  return submitInstructorCallable(payload);
 }
 const callableStatus=httpsCallable(functions,"getMyAcademyRegistrationStatus");
@@ -66,7 +66,7 @@ onAuthStateChanged(auth,async user=>{
   }
  }catch(error){accountState.textContent="تعذر تحميل حالة التسجيل. "+(error.message||"حاول مرة أخرى.");}
 });
-verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتح الرسالة ثم أعيدي تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
+verifyButton.addEventListener("click",async()=>{if(!currentUser)return;verifyButton.disabled=true;try{await sendEmailVerification(currentUser);setFeedback(instructorFeedback,"تم إرسال رابط توثيق البريد. افتح الرسالة ثم أعد تسجيل الدخول لتحديث حالة التوثيق.");}catch(error){setFeedback(instructorFeedback,error.message||"تعذر إرسال رسالة التوثيق.",true);}finally{verifyButton.disabled=false;}});
 studentForm.addEventListener("submit",async event=>{
  event.preventDefault();if(!currentUser)return;
  const button=studentForm.querySelector('button[type="submit"]');button.disabled=true;

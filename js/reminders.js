@@ -23,7 +23,7 @@ async function deliverReminder() {
   };
 
   try {
-    const registration = await navigator.serviceWorker?.getRegistration();
+    const registration = await Promise.race([navigator.serviceWorker?.ready, new Promise(resolve => setTimeout(() => resolve(null), 3000))]);
     if (registration?.showNotification) {
       await registration.showNotification(title, options);
     } else {

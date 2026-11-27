@@ -365,7 +365,7 @@
       <div class="setting-row">
         <div class="setting-info">
           <h3>مستوى صوت الموسيقى</h3>
-          <p>ارفعي صوت المقطوعة أو اخفضيه حسب رغبتك.</p>
+          <p>ارفع صوت المقطوعة أو اخفضيه حسب رغبتك.</p>
           <input id="musicVolume" type="range" min="0" max="100" step="1" value="62" style="width:min(100%,280px);accent-color:var(--primary);margin-top:12px" aria-label="مستوى صوت الموسيقى">
           <output id="musicVolumeValue" for="musicVolume">62%</output>
         </div>
@@ -416,6 +416,7 @@
           <p id="notificationPermissionStatus">يلزم السماح للمتصفح بإرسال الإشعارات.</p>
         </div>
         <button type="button" id="enableNotificationsBtn" class="btn-secondary">تفعيل الإشعارات</button>
+        <button type="button" id="testNotificationBtn" class="btn-secondary" style="display:none">إشعار تجريبي</button>
       </div>
 
       <div class="setting-row">
@@ -525,7 +526,7 @@
 
   <script type="module" src="./js/learner-parent-link.js"></script>
   <script type="module">
-    import { enablePush, disablePush } from "./js/push-reminders.js";
+    import { enablePush, disablePush, pushStatus, notificationRegistration } from "./js/push-reminders.js";
     import {
       requireUser,
       getCurrentUser,
@@ -732,21 +733,27 @@
 
     let reminderTimer = null;
 
-    function updateNotificationPermissionStatus() {
+    const STEPS_BLOCKED = "الإشعارات محظورة لهذا الموقع. الخطوات على الهاتف:\n1) اضغط على أيقونة القفل بجانب عنوان الموقع، ثم الأذونات، ثم الإشعارات، واختر سماح.\n2) إن لم تجد الخيار: إعدادات الهاتف، التطبيقات، Chrome، الإشعارات، وشغّلها.\n3) ارجع إلى هذه الصفحة وأعد تحميلها، ثم شغّل التذكير اليومي.";
+    async function updateNotificationPermissionStatus() {
       const status = document.getElementById("notificationPermissionStatus");
-      const permission = "Notification" in window
-        ? Notification.permission
-        : "unsupported";
-
       if (!status) return;
-
-      status.textContent = permission === "granted"
-        ? "إشعارات الجهاز مسموح بها."
-        : permission === "denied"
-          ? "الإشعارات محظورة من إعدادات المتصفح. غيّر الإذن من إعدادات الموقع."
-          : permission === "unsupported"
-            ? "هذا المتصفح لا يدعم إشعارات الويب."
-            : "اضغط «تفعيل الإشعارات» واسمح للمتصفح بإرسالها.";
+      status.style.whiteSpace = "pre-line";
+      const st = await pushStatus();
+      const lines = [];
+      if (!st.supported && st.permission === "unsupported") lines.push("هذا المتصفح لا يدعم إشعارات الويب. جرّب Chrome على الهاتف.");
+      else if (st.permission === "denied") {
+        lines.push(STEPS_BLOCKED);
+        if (elements.notifications.checked) { elements.notifications.checked = false; saveSetting(STORAGE_KEYS.notifications, "off"); }
+      }
+      else if (st.permission === "default") lines.push("لم يُطلب الإذن بعد. اضغط «تفعيل الإشعارات» ثم اختر سماح.");
+      else {
+        lines.push("إذن الإشعارات: مسموح.");
+        lines.push(st.subscribed ? "التسجيل لإشعار الخادم: مفعّل على هذا الجهاز (يصل الإشعار حتى لو الموقع مقفول)." : (elements.notifications.checked ? "التسجيل لإشعار الخادم: غير مكتمل. اضغط «تفعيل الإشعارات» وأنت مسجّل الدخول." : "شغّل «تذكير المهام اليومية» ليكتمل التسجيل."));
+        lines.push("استخدم «إشعار تجريبي» للتأكد أن الهاتف يعرض الإشعارات.");
+      }
+      status.textContent = lines.join("\n");
+      const test = document.getElementById("testNotificationBtn");
+      if (test) test.style.display = st.permission === "granted" ? "" : "none";
     }
 
     async function showDailyReminder() {
@@ -760,14 +767,16 @@
       };
 
       try {
-        const registration = await navigator.serviceWorker?.getRegistration();
+        const registration = await notificationRegistration();
         if (registration?.showNotification) {
           await registration.showNotification(title, options);
-        } else {
-          new Notification(title, options);
+          return true;
         }
+        new Notification(title, options);
+        return true;
       } catch (error) {
         console.warn("تعذر عرض التذكير:", error);
+        return false;
       }
     }
 
@@ -845,6 +854,7 @@
       markReminderSentIfPast();
       scheduleDailyReminder();
       const pushed = await enablePush(getCurrentUser(), document.getElementById("reminderTime").value || "18:00");
+      updateNotificationPermissionStatus();
       showToast(pushed.ok
         ? "تم تفعيل التذكير اليومي. هيوصلك إشعار حتى لو الموقع مقفول."
         : "تم تفعيل التذكير داخل الصفحة. الإشعار وهو مقفول مش متاح دلوقتي على هذا الجهاز.", "success");
@@ -864,7 +874,12 @@
     });
 
     document.getElementById("enableNotificationsBtn")
-      .addEventListener("click", requestNotificationPermission);
+      .addEventListener("click", async () => { await requestNotificationPermission(); updateNotificationPermissionStatus(); });
+    document.getElementById("testNotificationBtn")
+      .addEventListener("click", async () => {
+        const shown = await showDailyReminder();
+        showToast(shown ? "أُرسل إشعار تجريبي. إن لم يظهر، افحص إعدادات إشعارات Chrome في الهاتف." : "تعذر عرض الإشعار على هذا الجهاز.", shown ? "success" : "error");
+      });
 
     document.getElementById("reminderTime")
       .addEventListener("change", () => {

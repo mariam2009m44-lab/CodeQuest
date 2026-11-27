@@ -2797,7 +2797,7 @@ exports.createLiveClass = onCall(
     if (!Number.isFinite(startsAtDate.getTime()) ||
         startsAtDate.getTime() < now + 5 * 60 * 1000 ||
         startsAtDate.getTime() > now + 60 * 24 * 60 * 60 * 1000) {
-      throw new HttpsError("invalid-argument", "اختاري موعدًا بعد خمس دقائق وخلال الستين يومًا القادمة.");
+      throw new HttpsError("invalid-argument", "اختر موعدًا بعد خمس دقائق وخلال الستين يومًا القادمة.");
     }
     if (!Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 180) {
       throw new HttpsError("invalid-argument", "مدة الفصل يجب أن تكون بين 15 و180 دقيقة.");
@@ -2958,7 +2958,7 @@ exports.enrollInLiveClass = onCall(
         throw new HttpsError("failed-precondition", "حالة التسجيل الحالية لا تسمح بحجز مقعد جديد.");
       }
       if (enrolledCount >= capacity) {
-        throw new HttpsError("resource-exhausted", "اكتملت مقاعد هذا الفصل. اختاري فصلًا آخر.");
+        throw new HttpsError("resource-exhausted", "اكتملت مقاعد هذا الفصل. اختر فصلًا آخر.");
       }
       if (enrollmentSnapshot.exists) {
         transaction.update(enrollmentRef, {
@@ -3105,7 +3105,7 @@ exports.joinLiveClass = onCall(
       request.auth.token.liveInstructorApproved === true;
     const isAdmin = request.auth.token.liveRole === "admin" || request.auth.token.admin === true;
     if (!isInstructor && !isAdmin && (!enrollmentSnapshot.exists || enrollmentSnapshot.data()?.status !== "enrolled")) {
-      throw new HttpsError("permission-denied", "سجّلي في الفصل أولًا قبل الانضمام.");
+      throw new HttpsError("permission-denied", "سجّل في الفصل أولًا قبل الانضمام.");
     }
     if (classData.status !== "live") {
       throw new HttpsError("failed-precondition", "الفصل لم يبدأ بعد أو انتهى.");
@@ -3169,7 +3169,7 @@ exports.submitStudentAcademyProfile = onCall({ region: "europe-west1" }, async r
   if (!allowedAges.includes(ageBand) || grade.length > 60 || !allowedLevels.includes(skillLevel) ||
       interests.length < 1 || interests.length > 5 || interests.some(value => !allowedInterests.includes(value)) ||
       learningGoals.length > 500 || learningNeeds.length > 500 || preferredSchedule.length > 200) {
-    throw new HttpsError("invalid-argument", "راجعي بيانات الطالب واختياراته.");
+    throw new HttpsError("invalid-argument", "راجع بيانات الطالب واختياراته.");
   }
   if (ageBand !== "18+" && !guardianConsent) throw new HttpsError("failed-precondition", "يلزم تأكيد موافقة ولي الأمر للطلاب دون 18 عامًا.");
   const user = await getAuth().getUser(uid);
@@ -3239,7 +3239,7 @@ exports.submitInstructorApplication = onCall({ region: "europe-west1" }, async r
       sampleWorkLinks.length > 5 || sampleWorkLinks.some(value => !validHttpsUrl(value)) ||
       !validHttpsUrl(portfolioUrl) || !validHttpsUrl(linkedinUrl) ||
       !validHttpsUrl(introVideoUrl) || !validHttpsUrl(teachingDemoUrl)) {
-    throw new HttpsError("invalid-argument", "راجعي بيانات طلب المدرب والروابط والتخصصات.");
+    throw new HttpsError("invalid-argument", "راجع بيانات طلب المدرب والروابط والتخصصات.");
   }
   const user = await getAuth().getUser(uid);
   if (user.disabled) throw new HttpsError("permission-denied", "هذا الحساب غير مفعّل.");
@@ -3458,7 +3458,7 @@ exports.listAcademyAdminRecords = onCall({ region: "europe-west1", timeoutSecond
   query = query.orderBy(sortField, "desc");
   if (cursorId) {
     const cursor = await collection.doc(cursorId).get();
-    if (!cursor.exists) throw new HttpsError("failed-precondition", "تعذر استكمال الصفحة؛ حدّثي القائمة وحاولي مرة أخرى.");
+    if (!cursor.exists) throw new HttpsError("failed-precondition", "تعذر استكمال الصفحة؛ حدّث القائمة وحاول مرة أخرى.");
     query = query.startAfter(cursor);
   }
   const snapshot = await query.limit(pageSize + 1).get();
@@ -3571,7 +3571,7 @@ exports.manageAcademyLiveClass = onCall({ region: "europe-west1", secrets: [REAL
         !Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 180 ||
         !Number.isInteger(capacity) || capacity < 1 || capacity > 30 ||
         capacity < activeEnrollments.size) {
-      throw new HttpsError("invalid-argument", "راجعي الموعد والمدة والسعة؛ لا يمكن تقليل المقاعد عن عدد المسجلين.");
+      throw new HttpsError("invalid-argument", "راجع الموعد والمدة والسعة؛ لا يمكن تقليل المقاعد عن عدد المسجلين.");
     }
     transaction.update(classRef, {
       startsAt: require("firebase-admin/firestore").Timestamp.fromDate(startsAt),
@@ -3846,9 +3846,9 @@ exports.requestTeacherGroupMembership = onCall({ region: "europe-west1" }, async
     if (!group.exists || group.data()?.status !== "active" || group.data()?.visibility !== "listed") {
       throw new HttpsError("not-found", "المجموعة غير متاحة.");
     }
-    if (group.data()?.instructorUid === uid) throw new HttpsError("failed-precondition", "أنتِ صاحبة هذه المجموعة.");
+    if (group.data()?.instructorUid === uid) throw new HttpsError("failed-precondition", "أنت صاحب هذه المجموعة.");
     if (member.exists && member.data()?.status === "active") {
-      throw new HttpsError("already-exists", "أنتِ عضوة بالفعل في هذه المجموعة.");
+      throw new HttpsError("already-exists", "أنت عضو بالفعل في هذه المجموعة.");
     }
     if (existingRequest.exists && existingRequest.data()?.status === "pending") return;
     transaction.set(requestRef, {

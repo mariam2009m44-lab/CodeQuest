@@ -137,7 +137,7 @@ export async function runCodeOnServer(language, code, stdin = "") {
     }
 
     throw new Error(
-      "تعذّر تشغيل الكود. تحققي من الاتصال بالإنترنت."
+      "تعذّر تشغيل الكود. تحقق من الاتصال بالإنترنت."
     );
   } finally {clearTimeout(timeoutId);}
 }

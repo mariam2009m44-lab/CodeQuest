@@ -85,7 +85,7 @@ function renderCards() {
     empty.append(makeElement("span", "learning-videos-empty-icon", "✦"));
     empty.append(makeElement("strong", "", activeCategory === "الكل" ? "مجلة كودي التعليمية" : "قريبًا في هذا القسم"));
     empty.append(makeElement("p", "", activeCategory === "الكل"
-      ? "المجلة جاهزة لاستقبال مقاطع قصيرة ومركزة. أضيفي فيديوهات تعليمية مختارة، وسيظهر لكل فيديو غلاف وتصنيف ومستوى."
+      ? "المجلة جاهزة لاستقبال مقاطع قصيرة ومركزة. أضف فيديوهات تعليمية مختارة، وسيظهر لكل فيديو غلاف وتصنيف ومستوى."
       : "سنضيف محتوى هذا القسم قريبًا."));
     grid.replaceChildren(empty);
     return;
