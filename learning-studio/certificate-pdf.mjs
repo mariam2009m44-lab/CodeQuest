@@ -29,7 +29,7 @@ export const trackLabel=l=>({python:'Python',javascript:'JavaScript',cpp:'C++',j
 // The design is the owner's template image (certificate-template.jpg, 1280x853). Only the empty slots are filled with the server-verified
 // record: learner name, track, issue date and time, and a small certificate number under the signature. Nothing else is drawn over the design.
 import qrcode from './vendor/qrcode.mjs';
-export const verifyUrl=id=>new URL('./verify.html?id='+encodeURIComponent(id),import.meta.url).href;
+export const verifyUrl=id=>new URL('../v.html?id='+encodeURIComponent(id),import.meta.url).href;
 const CODY_URL=new URL('./certificate-cody.png',import.meta.url).href;
 const TPL_URL=new URL('./certificate-template.jpg',import.meta.url).href;
 export async function drawCertificate(canvas,record,_unused){
@@ -54,10 +54,10 @@ export async function drawCertificate(canvas,record,_unused){
  c.fillText(record.certId?'رقم الشهادة:':'رقم الشهادة: غير صادر',212,780);
  if(record.certId){c.direction='ltr';c.font='400 13px '+F;c.fillText(String(record.certId),212,798)}
  // Verification QR: opens the public verify page for this certificate number (track and issue date only, never a name). Drawn only for an issued number.
- if(record.certId&&/^[a-f0-9]{32}$/.test(String(record.certId))){const q=qrcode(0,'L');q.addData(verifyUrl(record.certId));q.make();const n=q.getModuleCount(),m=3,cell=3,sz=cell*n,X=428,Y=678,P=8;
-  c.save();c.fillStyle='#fff';c.strokeStyle='#d9ad45';c.lineWidth=2;c.beginPath();c.roundRect(X,Y,sz+2*P,sz+2*P+19,10);c.fill();c.stroke();c.fillStyle='#000';
+ if(record.certId&&/^[a-f0-9]{32}$/.test(String(record.certId))){const q=qrcode(0,'L');q.addData(verifyUrl(record.certId));q.make();const n=q.getModuleCount(),m=3,cell=n<=33?4:3,sz=cell*n,X=424,Y=680,P=8;
+  c.save();c.fillStyle='#fff';c.strokeStyle='#d9ad45';c.lineWidth=2;c.beginPath();c.roundRect(X,Y,sz+2*P,sz+2*P,10);c.fill();c.stroke();c.fillStyle='#000';
   for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))c.fillRect(X+P+k*cell,Y+P+r*cell,cell,cell);
-  c.fillStyle='#0b1a3a';c.direction='rtl';c.textAlign='center';c.font='700 12px '+F;c.fillText('امسح للتحقق',X+(sz+2*P)/2,Y+sz+2*P+14);c.restore()}
+  c.restore();c.fillStyle='#46536f';c.direction='rtl';c.textAlign='center';c.font='700 14px '+F;c.fillText('امسح رمز QR للتحقق من الشهادة',212,822)}
  if(record.demo||record.synthetic){c.save();c.translate(640,500);c.rotate(-0.28);c.globalAlpha=.16;c.fillStyle='#a42828';c.textAlign='center';c.direction='rtl';c.font='800 96px '+F;c.fillText('نموذج تجريبي',0,0);c.font='800 52px '+F;c.fillText('غير صادر وليس شهادة',0,70);c.restore();
   c.fillStyle='#fff';c.fillRect(24,24,230,28);c.strokeStyle='#a42828';c.lineWidth=1.5;c.strokeRect(24,24,230,28);c.fillStyle='#a42828';c.font='700 13px '+F;c.textAlign='center';c.direction='rtl';c.fillText('نموذج تصميم فقط، غير صادر',139,43)}
 }

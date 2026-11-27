@@ -9,7 +9,7 @@ else{
   const r=await fetch(CERT_API_BASE+'/api/certificates/verify?id='+id,{headers:{Accept:'application/json'}});
   const d=await r.json().catch(()=>({}));
   if(r.ok&&d.valid===true&&d.trackName){say('✔ شهادة صحيحة صادرة من منصة CodeQuest','ok');$('vfTrack').textContent=String(d.trackName);$('vfDate').textContent=fmt(d.issuedAt);$('vfDl').hidden=false;$('vfNote').hidden=false}
-  else if(r.status===404)say('لا توجد شهادة بهذا الرقم في سجلات CodeQuest.');
+  else if(r.status===404)say('هذه الشهادة لم تُسجَّل للتحقق بعد، أو الرقم غير صحيح. إن كنت صاحب الشهادة، سجّل الدخول وافتح صفحة "شهادتي" مرة واحدة ثم امسح الرمز مرة أخرى.');
   else say('تعذر التحقق الآن. حاول مرة أخرى بعد قليل.');
  }catch{say('تعذر الاتصال بخدمة التحقق. حاول مرة أخرى بعد قليل.')}
 }

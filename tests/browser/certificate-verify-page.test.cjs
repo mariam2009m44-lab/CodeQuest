@@ -8,12 +8,12 @@ const b=await chromium.launch(process.env.CHROME_PATH?{executablePath:process.en
 try{
  const run=async(query,reply)=>{const p=await (await b.newContext()).newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e)));let hit=null;
   await p.route(/workers\.dev/,r=>{hit=r.request().url();r.fulfill(reply)});
-  await p.goto(L+'/learning-studio/verify.html'+query);await p.waitForFunction(()=>document.getElementById('vfMsg').textContent!=='جاري التحقق...');
+  await p.goto(L+(process.env.VP||'/learning-studio/verify.html')+query);await p.waitForFunction(()=>document.getElementById('vfMsg').textContent!=='جاري التحقق...');
   return {text:await p.innerText('#vf'),hit,errs}};
  const ok=await run('?id='+ID,{status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({success:true,valid:true,track:'python',trackName:'Python',issuedAt:'2026-11-27T08:45:00.000Z'})});
  assert(ok.text.includes('شهادة صحيحة')&&ok.text.includes('Python')&&ok.text.includes('27 / 11 / 2026'),ok.text);assert(ok.hit.endsWith('/api/certificates/verify?id='+ID));assert.deepEqual(ok.errs,[]);
  const nf=await run('?id='+'f'.repeat(32),{status:404,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"success":false,"valid":false,"message":"not_found"}'});
- assert(nf.text.includes('لا توجد شهادة')&&!nf.text.includes('صحيحة'));
+ assert(nf.text.includes('لم تُسجَّل للتحقق')&&!nf.text.includes('صحيحة'));
  const bad=await run('?id=zzz',{status:500,body:''});assert.equal(bad.hit,null);assert(bad.text.includes('غير صحيح'));
  const down=await run('?id='+ID,{status:503,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"success":false}'});assert(down.text.includes('تعذر')&&!down.text.includes('صحيحة'));
  console.log('verify page regression ok (stubbed Worker fixtures)');
