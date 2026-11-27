@@ -26,8 +26,8 @@ npx wrangler deploy --dry-run --outdir /tmp/codequest-worker-dist
 
 The dry run validates the bundle without publishing it. Production publishing is handled by the protected GitHub Actions workflow.
 
-## ParentLinks (flag off) - limits to settle before wider rollout
-- `PARENT_LINKS_ENABLED` must stay unset until privacy wording, auth denial evidence and a CPU/cost check are done. Not tested for real authenticated CPU on the free Worker.
+## ParentLinks (pilot ON since 2026-11-27) - limits to settle before wider rollout
+- `PARENT_LINKS_ENABLED = "on"` in wrangler.toml as a pilot (owner asked on 2026-11-27). Requests without a valid Firebase sign-in get 401 before the flag is read (see parent-http tests). Still open: Not tested for real authenticated CPU on the free Worker.
 - All links and codes live under ONE Durable Object storage key (`links`). That is fine for a small pilot; it has a storage-size ceiling and one object serialises every request. Move to per-account keys before broad use.
 - Bounds (3 active codes per child, 10 failed claims per hour per parent, 4 parents per child, 10 children per parent, 30 minute codes) are provisional, not user-approved.
 - The parent dashboard shows only lessonTestsPassed and unitExamsPassed from server-assessed results. An empty server record, or PROGRESS_WRITES not "on", returns syncState "unknown" (never 0).
