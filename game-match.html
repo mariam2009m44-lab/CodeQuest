@@ -706,7 +706,7 @@
           "تم حل التحدي، لكن تعذر تسجيل المكافأة. تحقق من اتصال الإنترنت والضغط على إعادة محاولة تسجيل المكافأة.";
 
         if (error.code === "functions/unauthenticated") {
-          message = "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى ثم حاول.";
+          message = "انتهت جلسة تسجيل الدخول. يلزم تسجيل الدخول مرة أخرى ثم إعادة المحاولة.";
         } else if (error.code === "functions/not-found" || error.code === "functions/unimplemented") {
           // The reward service is not deployed: the puzzle itself is solved and saved on this device. No retry loop.
           message = "حل صحيح! التدريب اتحفظ على جهازك. مكافأة الحساب غير متاحة حاليًا.";
@@ -715,7 +715,7 @@
           setFeedback(message, "success");
           return;
         } else if (error.code === "functions/failed-precondition") {
-          message = "لم يتم قبول الحل من الخادم. أعد المحاولة وتأكد من ترتيب القطع.";
+          message = "لم يتم قبول الحل من الخادم. يمكن إعادة المحاولة مع التحقق من ترتيب القطع.";
           solved = false;
         }
 
