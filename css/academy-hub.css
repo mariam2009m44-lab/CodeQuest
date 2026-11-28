@@ -23,7 +23,7 @@
 .hub-code{min-height:150px;margin:10px 0;font-family:Consolas,Menlo,monospace;font-size:13px;white-space:pre-wrap;overflow:auto;text-align:left;direction:ltr}
 .hub-empty{padding:30px 18px;border:1px dashed #3a428a;border-radius:16px;color:#b3bbe6;text-align:center;font-size:13.5px;line-height:1.9}
 .hub-safety{margin:8px 0 12px;padding:10px 14px;border-right:3px solid #6d4aff;background:#10173f;color:#b3bbe6;font-size:12px;line-height:1.9;border-radius:6px}
-.hub-messages{display:flex;flex-direction:column;gap:9px;height:min(52vh,420px);overflow:auto;padding:12px;border:1px solid #2e3570;border-radius:14px;background:#0b1030}
+.hub-messages-unused{display:flex;flex-direction:column;gap:9px;height:min(52vh,420px);overflow:auto;padding:12px;border:1px solid #2e3570;border-radius:14px;background:#0b1030}
 .hub-msg{max-width:84%;padding:9px 12px;border-radius:14px;background:#1a2260;color:#eef0ff;font-size:14px;line-height:1.7;word-break:break-word}
 .hub-msg.mine{align-self:flex-start;background:#4b36b5}.hub-msg.other{align-self:flex-end}
 .hub-msg.ann{align-self:stretch;max-width:100%;background:linear-gradient(135deg,#2c2275,#1d3f8f);border:1px solid #6d4aff}
@@ -32,4 +32,41 @@
 .hub-compose{display:flex;gap:9px;align-items:center;margin-top:12px}.hub-ann{display:flex;gap:5px;align-items:center;color:#c4b8ff;font-size:12px;white-space:nowrap}
 .hub-person{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #232a63;color:#d6dbff;font-size:13px}
 @media(max-width:640px){.hub-row{grid-template-columns:1fr}.hub-msg{max-width:92%}.hub-compose{flex-wrap:wrap}.hub-compose #chatInput{flex:1 1 100%}}
+
+
+/* Chat-app layout: list + conversation. Phones show one pane at a time. */
+.wa{display:grid;grid-template-columns:minmax(260px,330px) 1fr;gap:0;border:1px solid #2e3570;border-radius:20px;overflow:hidden;background:#0b1030;min-height:560px;box-shadow:0 0 26px rgba(80,110,255,.1)}
+.wa-side{border-inline-end:1px solid #232a63;background:#0e1438;display:flex;flex-direction:column;min-width:0}
+.wa-side-head{padding:16px 18px;border-bottom:1px solid #232a63}.wa-side-head h2{margin:0;font-size:17px}
+.wa-list{overflow:auto;max-height:640px}
+.wa-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #1b2255;cursor:pointer;color:#e8ebff}
+.wa-row:hover,.wa-row:focus-visible{background:#151c52;outline:none}.wa-row.is-open{background:#1c2470;box-shadow:inset -3px 0 #6d4aff}.wa-row.is-locked{cursor:default}
+.wa-row-body{flex:1;min-width:0}.wa-row-body strong{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wa-row-body small{display:block;margin-top:2px;color:#9aa3d6;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-avatar{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 18px Cairo,sans-serif;box-shadow:0 0 12px rgba(109,74,255,.3)}
+.wa-main{display:flex;flex-direction:column;min-width:0;background:radial-gradient(circle at 80% 0,#141b4d 0,#0b1030 55%)}
+.wa-empty{margin:auto;text-align:center;color:#9aa3d6;padding:40px 20px}.wa-empty-ico{font-size:44px;margin-bottom:6px}
+.wa-chat{display:flex;flex-direction:column;flex:1;min-height:0;padding:0 0 12px}
+.wa-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#10173f;border-bottom:1px solid #232a63}
+.wa-title{flex:1;min-width:0}.wa-title h2{margin:0;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wa-title p{margin:2px 0 0;color:#9aa3d6;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-tools{display:flex;gap:8px;flex-wrap:wrap}
+.wa-back{display:none;width:38px;height:38px;border:0;border-radius:50%;background:#1a2260;color:#fff;font-size:24px;line-height:1;cursor:pointer}
+.wa-live{margin:12px 16px;padding:14px;border:1px solid #3a428a;border-radius:14px;background:#10173f}
+.wa-sessions{margin:10px 16px 0;display:grid;gap:8px}.wa-session{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:14px;background:linear-gradient(135deg,#2c2275,#1d3f8f);border:1px solid #6d4aff}
+.wa-session-t strong{display:block;font-size:13.5px}.wa-session-t small{color:#c4cbf0;font-size:11.5px}.wa-session .hub-btn{display:inline-flex;align-items:center;text-decoration:none;min-height:38px}
+.wa-chat .hub-safety{margin:10px 16px 0}
+.wa-messages{flex:1;display:flex;flex-direction:column;gap:7px;height:min(52vh,460px);min-height:260px;overflow:auto;padding:14px 16px}
+.wa-day{align-self:center;padding:3px 12px;border-radius:999px;background:#1a2260;color:#b3bbe6;font-size:11px;margin:6px 0}
+.wa-chat .hub-msg{max-width:78%;padding:8px 12px 6px;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.wa-chat .hub-msg.mine{background:#4b36b5;border-top-right-radius:4px}.wa-chat .hub-msg.other{background:#1a2260;border-top-left-radius:4px}
+.wa-text a{color:#9fd0ff;font-weight:800}
+.wa-compose{display:flex;gap:8px;align-items:center;margin:0 12px;padding:6px 8px;border:1px solid #363e80;border-radius:999px;background:#0c1233}
+.wa-compose #chatInput{flex:1;min-height:42px;border:0;background:transparent;color:#fff;padding:0 10px;outline:none;font:500 14px Cairo,sans-serif}
+.wa-send{flex:none;width:44px;height:44px;border:0;border-radius:50%;background:linear-gradient(135deg,#6d4aff,#3b82f6);color:#fff;font-size:17px;cursor:pointer;transform:scaleX(-1)}.wa-send:disabled{opacity:.5}
+.wa-ann{display:flex;align-items:center;gap:5px;padding:0 8px;color:#c4b8ff;font-size:12px;white-space:nowrap}
+.wa-chat .hub-feedback{margin:6px 16px 0}.wa-chat .hub-manage{margin:10px 16px 0;padding:12px;border:1px solid #2e3570;border-radius:14px;background:#0e1438}
+@media(max-width:860px){
+ .wa{grid-template-columns:1fr;min-height:0}.wa-main{display:none}.wa--chat .wa-side{display:none}.wa--chat .wa-main{display:flex}
+ .wa-back{display:grid;place-items:center}.wa-messages{height:min(58vh,520px)}.wa-chat .hub-msg{max-width:88%}
+ .wa-tools .hub-ghost{padding:0 11px}
+}
 [hidden]{display:none!important}

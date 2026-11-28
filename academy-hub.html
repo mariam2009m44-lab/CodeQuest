@@ -53,14 +53,21 @@
    <button class="hub-btn" type="submit">إنشاء المجموعة</button><p class="hub-feedback" id="groupFeedback" aria-live="polite"></p>
   </form>
  </div>
- <div id="groupList" class="hub-list"></div>
- <div class="academy-card hub-card hub-chat" id="chat" hidden>
-  <div class="hub-head"><div><h2 id="chatTitle"></h2><p class="hub-hint" id="chatMeta"></p></div><button class="hub-ghost" id="chatClose" type="button">رجوع</button></div>
-  <div class="hub-safety">الرسائل نصية فقط. لا تُرسل روابط أو أرقام هاتف أو حسابات. المدرب يشرف على المجموعة، ويمكنك الإبلاغ عن أي رسالة.</div>
-  <div id="chatMessages" class="hub-messages" aria-live="polite"></div>
-  <form id="chatForm" class="hub-compose"><input id="chatInput" maxlength="500" autocomplete="off" placeholder="اكتب رسالة…" required><label class="hub-ann" id="annLabel" hidden><input type="checkbox" id="annCheck"> إعلان</label><button class="hub-btn" type="submit">إرسال</button></form>
-  <p class="hub-feedback" id="chatFeedback" aria-live="polite"></p>
-  <div id="manage" class="hub-manage" hidden><h3>الطلبات</h3><div id="pendingList"></div><h3>الأعضاء</h3><div id="memberList"></div><button class="hub-ghost hub-danger" id="archiveBtn" type="button">أرشفة المجموعة</button></div>
+ <div class="wa" id="wa">
+  <aside class="wa-side" aria-label="المجموعات"><div class="wa-side-head"><h2>المحادثات</h2></div><div id="groupList" class="wa-list"></div></aside>
+  <section class="wa-main" aria-label="المحادثة">
+   <div class="wa-empty" id="waEmpty"><div class="wa-empty-ico" aria-hidden="true">💬</div><p>اختر مجموعة لعرض المحادثة.</p></div>
+   <div class="wa-chat" id="chat" hidden>
+    <header class="wa-head"><button class="wa-back" id="chatClose" type="button" aria-label="رجوع إلى المجموعات">‹</button><span class="wa-avatar" id="chatAvatar" aria-hidden="true"></span><div class="wa-title"><h2 id="chatTitle"></h2><p id="chatMeta"></p></div><div class="wa-tools"><button class="hub-ghost" id="liveBtn" type="button" hidden>بدء جلسة مباشرة</button><button class="hub-ghost" id="manageBtn" type="button" hidden>الأعضاء</button></div></header>
+    <form class="wa-live hub-form" id="liveForm" hidden><label>عنوان الجلسة<input name="title" required minlength="3" maxlength="80" placeholder="مثال: شرح الحلقات التكرارية"></label><label>رابط الاجتماع<input name="linkUrl" type="url" required dir="ltr" placeholder="https://meet.google.com/..."></label><div class="hub-actions"><button class="hub-btn" type="submit">ابدأ ونبّه المجموعة</button><button class="hub-ghost" id="liveCancel" type="button">إلغاء</button></div><p class="hub-hint">يُنشر الرابط في المحادثة كإعلان، ويفتحه الطلاب في نافذة جديدة. يدعم Google Meet وZoom وJitsi وTeams وWhereby.</p><p class="hub-feedback" id="liveFeedback" aria-live="polite"></p></form>
+    <div class="wa-sessions" id="groupSessions" hidden></div>
+    <div class="hub-safety">الرسائل نصية فقط. لا تُرسل روابط أو أرقام هاتف أو حسابات. المدرب يشرف على المجموعة، ويمكنك الإبلاغ عن أي رسالة.</div>
+    <div id="chatMessages" class="wa-messages" aria-live="polite"></div>
+    <form id="chatForm" class="wa-compose"><label class="wa-ann" id="annLabel" hidden><input type="checkbox" id="annCheck"><span>إعلان</span></label><input id="chatInput" maxlength="500" autocomplete="off" placeholder="اكتب رسالة…" required><button class="wa-send" type="submit" aria-label="إرسال">➤</button></form>
+    <p class="hub-feedback" id="chatFeedback" aria-live="polite"></p>
+    <div id="manage" class="hub-manage" hidden><h3>الطلبات</h3><div id="pendingList"></div><h3>الأعضاء</h3><div id="memberList"></div><button class="hub-ghost hub-danger" id="archiveBtn" type="button">أرشفة المجموعة</button></div>
+   </div>
+  </section>
  </div>
 </section>
 </div>

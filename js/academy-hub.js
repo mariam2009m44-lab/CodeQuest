@@ -84,7 +84,10 @@ $("codePublish").addEventListener("click", async () => {
   try { await api("sessions/code-put", { id: state.codeId, code: $("codeEditor").value, lang: $("codeLang").value }); say($("codeFeedback"), "تم النشر."); } catch (e) { say($("codeFeedback"), e.message, true); } finally { b.disabled = false; }
 });
 
-// ---------- Groups ----------
+// ---------- Groups (chat-app layout) ----------
+const HUES = [262, 222, 198, 286, 172, 322, 244, 210];
+function hue(text) { let h = 0; for (const c of String(text)) h = (h * 31 + c.codePointAt(0)) >>> 0; return HUES[h % HUES.length]; }
+function avatar(node, name) { node.textContent = Array.from(String(name).replace(/^نموذج:\s*/, "")).find(c => /[\p{L}\p{N}]/u.test(c)) || "؟"; node.style.background = "linear-gradient(135deg,hsl(" + hue(name) + " 70% 52%),hsl(" + ((hue(name) + 40) % 360) + " 70% 40%))"; }
 async function loadGroups() {
   const list = $("groupList");
   try {
@@ -94,18 +97,22 @@ async function loadGroups() {
     list.replaceChildren();
     if (!state.groups.length) { list.append(el("div", "hub-empty", isTrainer() ? "لم تنشئ مجموعات بعد. أنشئ أول مجموعة لطلابك." : "لا توجد مجموعات الآن. ستظهر هنا مجموعات المدربين.")); return; }
     for (const g of state.groups) {
-      const card = el("article", "hub-item"); card.append(el("h3", "", g.name));
-      const meta = el("div", "hub-meta"); meta.append(el("span", "hub-pill", TRACKS[g.track] || g.track), el("span", "", "المدرب: " + (g.ownerName || "—")), el("span", "", g.members + " عضو")); if (g.archived) meta.append(el("span", "hub-pill", "مؤرشفة"));
-      card.append(meta); if (g.description) card.append(el("p", "", g.description));
-      const act = el("div", "hub-actions");
-      if (g.role === "owner" || g.role === "member" || state.role === "admin") { const o = el("button", "hub-btn", "فتح المحادثة"); o.type = "button"; o.addEventListener("click", () => openChat(g)); act.append(o); }
-      else if (g.role === "pending") act.append(el("span", "hub-pill", "طلبك بانتظار موافقة المدرب"));
+      const canOpen = g.role === "owner" || g.role === "member" || state.role === "admin";
+      const row = el("div", "wa-row" + (g.id === state.chatId ? " is-open" : "") + (canOpen ? "" : " is-locked")); row.dataset.gid = g.id;
+      const av = el("span", "wa-avatar"); avatar(av, g.name);
+      const body = el("div", "wa-row-body"); body.append(el("strong", "", g.name));
+      const sub = [TRACKS[g.track] || g.track, g.members + " عضو", "المدرب: " + (g.ownerName || "—")].join(" · ");
+      body.append(el("small", "", sub));
+      row.append(av, body);
+      if (g.archived) row.append(el("span", "hub-pill", "مؤرشفة"));
+      if (canOpen) { row.tabIndex = 0; row.setAttribute("role", "button"); const go = () => openChat(g); row.addEventListener("click", go); row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }); }
+      else if (g.role === "pending") row.append(el("span", "hub-pill", "بانتظار الموافقة"));
       else if (state.role === "student") {
-        const j = el("button", "hub-btn", "اطلب الانضمام"); j.type = "button";
+        const j = el("button", "hub-ghost", "اطلب الانضمام"); j.type = "button";
         j.addEventListener("click", async () => { const nick = prompt("اكتب اسمًا مستعارًا يظهر للمجموعة (بدون اسمك الحقيقي):"); if (!nick) return; try { await api("groups/join", { gid: g.id, nick }); loadGroups(); } catch (e) { alert(e.message); } });
-        act.append(j);
+        row.append(j);
       }
-      card.append(act); list.append(card);
+      list.append(row);
     }
   } catch (e) { list.replaceChildren(el("div", "hub-empty", e.message)); }
 }
@@ -113,28 +120,48 @@ $("groupForm").addEventListener("submit", async ev => {
   ev.preventDefault(); const f = ev.target, fb = $("groupFeedback"), b = f.querySelector("button"); b.disabled = true; say(fb, "");
   try { await api("groups/create", { name: f.elements.name.value, description: f.elements.description.value, track: f.elements.track.value }); f.reset(); say(fb, "تم إنشاء المجموعة."); loadGroups(); } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; }
 });
-function stopChat() { clearInterval(state.chatTimer); state.chatId = ""; }
+function stopChat() { clearInterval(state.chatTimer); state.chatId = ""; state.lastDay = ""; }
+function showChat(on) { $("chat").hidden = !on; $("waEmpty").hidden = on; $("wa").classList.toggle("wa--chat", on); }
 async function openChat(g) {
-  stopChat(); state.chatId = g.id; state.since = 0; $("chat").hidden = false; $("groupList").hidden = true; $("groupCreate").hidden = true;
-  $("chatTitle").textContent = g.name; $("chatMeta").textContent = "المدرب: " + (g.ownerName || "—"); $("chatMessages").replaceChildren(); say($("chatFeedback"), "");
+  stopChat(); state.chatId = g.id; state.since = 0; state.chat = g; showChat(true); $("groupCreate").hidden = true;
+  document.querySelectorAll(".wa-row").forEach(r => r.classList.toggle("is-open", r.dataset.gid === g.id));
+  avatar($("chatAvatar"), g.name); $("chatTitle").textContent = g.name; $("chatMeta").textContent = (TRACKS[g.track] || g.track) + " · المدرب: " + (g.ownerName || "—") + " · " + g.members + " عضو";
+  $("chatMessages").replaceChildren(); say($("chatFeedback"), ""); $("manage").hidden = true; $("liveForm").hidden = true;
   const poll = async () => { if (document.hidden || state.chatId !== g.id) return; await refreshChat(); };
+  loadGroupSessions(g.id);
   await refreshChat(true); state.chatTimer = setInterval(poll, 5000);
+  if (matchMedia("(max-width:860px)").matches) $("chat").scrollIntoView({ block: "start" });
 }
+async function loadGroupSessions(gid) {
+  const box = $("groupSessions");
+  try {
+    const d = await api("sessions/list"); const mine = (d.sessions || []).filter(s => s.groupId === gid);
+    box.replaceChildren(); box.hidden = !mine.length;
+    for (const s of mine) {
+      const row = el("div", "wa-session"); const t = el("div", "wa-session-t"); t.append(el("strong", "", "🔴 " + s.title), el("small", "", fmt(s.startsAt)));
+      const j = el("a", "hub-btn", "انضم"); j.href = s.linkUrl; j.target = "_blank"; j.rel = "noopener noreferrer";
+      row.append(t, j); box.append(row);
+    }
+  } catch { box.hidden = true; }
+}
+function dayLabel(ts) { const d = new Date(ts), t = new Date(); const same = (a, b) => a.toDateString() === b.toDateString(); const y = new Date(t); y.setDate(t.getDate() - 1); return same(d, t) ? "اليوم" : same(d, y) ? "أمس" : d.toLocaleDateString("ar-EG", { day: "numeric", month: "long" }); }
 async function refreshChat(first) {
   const box = $("chatMessages");
   try {
     const d = await api("groups/read", { gid: state.chatId, since: state.since });
     const owner = d.role === "owner" || d.role === "admin";
-    $("annLabel").hidden = !owner; $("manage").hidden = !owner;
+    $("annLabel").hidden = !owner; $("manageBtn").hidden = !owner; $("liveBtn").hidden = !owner;
     const near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
     for (const m of d.items) {
       state.since = Math.max(state.since, m.at);
+      const dl = dayLabel(m.at); if (dl !== state.lastDay) { state.lastDay = dl; box.append(el("div", "wa-day", dl)); }
       const row = el("div", "hub-msg " + (m.kind === "ann" ? "ann" : m.mine ? "mine" : "other"));
       row.dataset.id = m.id;
-      row.append(el("b", "", (m.kind === "ann" ? "إعلان · " : "") + m.nick + (m.role === "trainer" ? " (المدرب)" : m.role === "admin" ? "" : "")));
-      row.append(el("span", "", m.text)); row.append(el("small", "", new Date(m.at).toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit" })));
-      if (!m.mine && d.role === "member") { const r = el("button", "", "إبلاغ"); r.type = "button"; r.addEventListener("click", async () => { try { await api("groups/report", { gid: state.chatId, mid: m.id }); r.textContent = "تم الإبلاغ"; r.disabled = true; } catch (e) { alert(e.message); } }); row.querySelector("small").append(r); }
-      if (owner || m.mine) { const x = el("button", "", "حذف"); x.type = "button"; x.addEventListener("click", async () => { try { await api("groups/delete-msg", { gid: state.chatId, mid: m.id }); row.remove(); } catch (e) { alert(e.message); } }); row.querySelector("small").append(x); }
+      if (!m.mine || m.kind === "ann") row.append(el("b", "", (m.kind === "ann" ? "📢 إعلان · " : "") + m.nick + (m.role === "trainer" ? " (المدرب)" : "")));
+      const body = el("span", "wa-text"); if (m.kind === "ann" && /^https?:\/\/\S+$/i.test(m.text.split(/\s+/).pop() || "")) { const parts = m.text.split(/\s+/); const url = parts.pop(); body.append(parts.join(" ") + " "); const a = el("a", "", "فتح الرابط"); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; body.append(a); } else body.textContent = m.text;
+      row.append(body); const meta = el("small", "", new Date(m.at).toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit" })); row.append(meta);
+      if (!m.mine && d.role === "member") { const r = el("button", "", "إبلاغ"); r.type = "button"; r.addEventListener("click", async () => { try { await api("groups/report", { gid: state.chatId, mid: m.id }); r.textContent = "تم الإبلاغ"; r.disabled = true; } catch (e) { alert(e.message); } }); meta.append(r); }
+      if (owner || m.mine) { const x = el("button", "", "حذف"); x.type = "button"; x.addEventListener("click", async () => { try { await api("groups/delete-msg", { gid: state.chatId, mid: m.id }); row.remove(); } catch (e) { alert(e.message); } }); meta.append(x); }
       box.append(row);
     }
     if (first || near) box.scrollTop = box.scrollHeight;
@@ -164,7 +191,19 @@ $("chatForm").addEventListener("submit", async ev => {
   try { await api("groups/post", { gid: state.chatId, text: input.value, kind: $("annCheck").checked ? "ann" : "msg" }); input.value = ""; $("annCheck").checked = false; say($("chatFeedback"), ""); await refreshChat(true); }
   catch (e) { say($("chatFeedback"), e.message, true); } finally { b.disabled = false; input.focus(); }
 });
-$("chatClose").addEventListener("click", () => { stopChat(); $("chat").hidden = true; $("groupList").hidden = false; $("groupCreate").hidden = !isTrainer(); loadGroups(); });
+$("chatClose").addEventListener("click", () => { stopChat(); showChat(false); $("groupCreate").hidden = !isTrainer(); loadGroups(); });
+$("manageBtn").addEventListener("click", () => { $("manage").hidden = !$("manage").hidden; });
+$("liveBtn").addEventListener("click", () => { $("liveForm").hidden = !$("liveForm").hidden; });
+$("liveCancel").addEventListener("click", () => { $("liveForm").hidden = true; });
+$("liveForm").addEventListener("submit", async ev => {
+  ev.preventDefault(); const f = ev.target, fb = $("liveFeedback"), b = f.querySelector("button[type=submit]"); b.disabled = true; say(fb, "");
+  try {
+    const title = f.elements.title.value.trim(), link = f.elements.linkUrl.value.trim(), g = state.chat;
+    await api("sessions/create", { title, description: "", track: g.track || "python", durationMin: 60, startsAt: Date.now() + 60000, linkUrl: link, groupId: g.id });
+    await api("groups/post", { gid: g.id, text: "بدأت جلسة مباشرة: " + title + " " + link, kind: "ann" });
+    f.reset(); f.hidden = true; say(fb, ""); await refreshChat(true); loadGroupSessions(g.id);
+  } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; }
+});
 $("archiveBtn").addEventListener("click", async () => { if (!confirm("أرشفة المجموعة؟ لن يتمكن الأعضاء من المراسلة.")) return; try { await api("groups/archive", { gid: state.chatId }); $("chatClose").click(); } catch (e) { alert(e.message); } });
 
 // ---------- Boot ----------
