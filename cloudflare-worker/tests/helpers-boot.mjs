@@ -6,6 +6,7 @@ import * as academy from "../academy-core.js";
 import * as parentCore from "../parent-core.js";
 import * as pushCore from "../push-core.js";
 import { handleExtra, EXTRA } from "../academy-do.js";
+import { sendAdminNotice } from "../academy-notify.js";
 const rd = f => JSON.parse(fs.readFileSync(new URL(f, import.meta.url), "utf8"));
 const index = rd("../curriculum-index.json"), key = rd("../lesson-answers.json"), practice = rd("../practice-index.json");
 export const ORIGIN = "https://codequest-mu-six.vercel.app";
@@ -13,7 +14,7 @@ export const SVC = { academy: "svc-academy-" + "x".repeat(130), parent: "svc-par
 export function boot({ fetchImpl, jose } = {}) {
   let source = fs.readFileSync(new URL("../worker.js", import.meta.url), "utf8");
   source = source.replace(/^import .*;$/gm, "").replace("export default {", "globalThis.worker = {").replace(/export class (\w+)/g, "globalThis.$1 = class $1");
-  const sb = { globalThis: null, URL, Response, console: { log() {}, warn() {}, error() {} }, AbortSignal, setTimeout, Date, JSON, Number, Promise, TextEncoder, TextDecoder, Request, Headers, crypto, ...core, ...academy, ...parentCore, ...pushCore, handleExtra, EXTRA, checkIntroConcept, CURRICULUM_INDEX: index, LESSON_ANSWERS: key, PRACTICE_INDEX: practice, PYTHON_FINAL: rd("../python-final.json"), fetch: fetchImpl,
+  const sb = { globalThis: null, URL, Response, console: { log() {}, warn() {}, error() {} }, AbortSignal, setTimeout, Date, JSON, Number, Promise, TextEncoder, TextDecoder, Request, Headers, crypto, ...core, ...academy, ...parentCore, ...pushCore, handleExtra, EXTRA, sendAdminNotice, checkIntroConcept, CURRICULUM_INDEX: index, LESSON_ANSWERS: key, PRACTICE_INDEX: practice, PYTHON_FINAL: rd("../python-final.json"), fetch: fetchImpl,
     createRemoteJWKSet() {},
     // Mock Firebase verification: token names map to claims. Anything else (expired, wrong audience, bad signature) throws like jose.
     async jwtVerify(token, _k, opts) {

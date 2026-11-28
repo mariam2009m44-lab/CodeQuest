@@ -6,6 +6,7 @@ import { emptyState, recordLesson, recordExam, recordLessonTest, codeTaskTests, 
 import { generateVapid, vapidHeader, validSubscription, validEndpoint, isDue, localParts, MAX_PER_RUN } from "./push-core.js";
 import { emptyLinks, createCode, claimCode, canRead, childrenOf, parentsOf, unlink } from "./parent-core.js";
 import { handleExtra, EXTRA } from "./academy-do.js";
+import { sendAdminNotice } from "./academy-notify.js";
 import { validateApplication, emptyDirectory, submitApplication, myStatus, listApplications, reviewApplication } from "./academy-core.js";
 import LESSON_ANSWERS from "./lesson-answers.json";
 import CURRICULUM_INDEX from "./curriculum-index.json";
@@ -854,6 +855,7 @@ async function handleAcademy(request, env, origin, action) {
     const pick = k => (typeof body[k] === "string" ? body[k].slice(0, 7000) : undefined);
     const payload = { uid: user.uid, admin: isAdmin, email: user.email, value: body, id: pick("id"), gid: pick("gid"), target: pick("target"), decision: pick("decision"), nick: pick("nick"), text: pick("text"), kind: pick("kind"), mid: pick("mid"), lang: pick("lang"), code: pick("code"), since: Number.isFinite(Number(body.since)) ? Number(body.since) : 0, on: body.on === true };
     const rx = await send(payload);
+    if (action === "student" && rx.ok) await sendAdminNotice(env, "student", user.uid);
     return jsonResponse(await rx.json(), rx.status, origin);
   }
   let res;
@@ -861,6 +863,7 @@ async function handleAcademy(request, env, origin, action) {
     const v = validateApplication(body);
     if (!v.ok) return jsonResponse({ success: false, message: "راجع بيانات طلب المدرب والروابط والتخصصات." }, 400, origin);
     res = await send({ uid: user.uid, email: user.email, emailVerified: user.emailVerified, value: v.value });
+    if (res.ok) { try { const c = res.clone(); const d = await c.json(); if (d && d.success) await sendAdminNotice(env, "trainer", user.uid); } catch {} }
   } else if (action === "status") res = await send({ uid: user.uid });
   else if (action === "list") res = await send({ status: typeof body.status === "string" ? body.status : "", cursor: typeof body.cursor === "string" ? body.cursor.slice(0, 200) : "", limit: Number.isInteger(body.limit) ? body.limit : 25 });
   else res = await send({ admin: user.uid, target: String(body.uid || ""), decision: String(body.decision || "") });
