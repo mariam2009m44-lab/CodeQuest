@@ -417,10 +417,7 @@
       if(document.hidden){clearInterval(timerInt);stopMatrix();}
       else {if(document.getElementById('gameScreen').classList.contains('active')&&!answerLocked)startTimer(false);startMatrix();}
     });
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;const count=Math.ceil(canvas.width/fontSize);while(drops.length<count)drops.push(1);if(drops.length>count)drops.length=count;});
   </script>
 <script type="module" src="js/route-guard.js"></script>
   <script src="js/game-audio.js"></script>
