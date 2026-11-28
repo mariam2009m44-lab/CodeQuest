@@ -1,6 +1,9 @@
 // Pure logic for trainer-led student groups (free Worker path, no I/O). Text only, no direct messages, no links from students.
 export const GROUP_CAP = 200;
-export const MEMBER_CAP = 8;
+// Group size: owner decision (Nov 28 2026), no 8-seat limit for any group. Joining still needs trainer approval; students show by nickname only.
+export const MEMBER_CAP = 256;
+export const capOf = () => MEMBER_CAP;
+export const isMod = (g, actor, isAdmin) => !!g && (g.owner === actor || !!isAdmin || !!(g.co && g.co[actor]));
 export const MSG_KEEP = 200;
 export const MSG_MAX = 500;
 const TRACKS = ["python", "javascript", "cpp", "java", "web", "ai"];
@@ -14,34 +17,34 @@ export function validateGroup(d) {
   return { ok: true, value: v };
 }
 export function cleanNick(n) { return str(n).replace(/[^\p{L}\p{N} _-]/gu, "").slice(0, 20); }
-export function createGroup(g, id, uid, ownerName, value, now) {
+export function createGroup(g, id, uid, ownerName, value, now, byAdmin) {
   if (Object.values(g).filter(x => x.owner === uid && !x.archived).length >= 10) return { ok: false, status: 429, reason: "too_many_groups" };
   if (Object.keys(g).length >= GROUP_CAP) return { ok: false, status: 503, reason: "groups_full" };
-  g[id] = { ...value, id, owner: uid, ownerName: String(ownerName || "").slice(0, 80), archived: false, createdAt: now, members: {}, pending: {}, muted: {} };
+  g[id] = { ...value, id, owner: uid, ownerName: String(ownerName || "").slice(0, 80), archived: false, createdAt: now, members: {}, pending: {}, muted: {}, co: {} };
   return { ok: true, group: g[id] };
 }
 export function roleOf(group, uid) { return !group ? "none" : group.owner === uid ? "owner" : group.members[uid] ? "member" : group.pending[uid] ? "pending" : "none"; }
 // Discovery shows only what is needed to ask to join. No member names.
 export function listGroups(g, uid, isAdmin) {
   return Object.values(g).filter(x => !x.archived || isAdmin).sort((a, b) => b.createdAt - a.createdAt).slice(0, 100).map(x => ({
-    id: x.id, name: x.name, description: x.description, track: x.track, ownerName: x.ownerName, members: Object.keys(x.members).length, role: roleOf(x, uid), archived: x.archived,
+    id: x.id, name: x.name, description: x.description, track: x.track, ownerName: x.ownerName, members: Object.keys(x.members).length, cap: capOf(x), role: roleOf(x, uid), archived: x.archived,
     ...(roleOf(x, uid) === "owner" || roleOf(x, uid) === "member" || isAdmin ? { lastAt: x.lastAt || 0 } : {}), ...(x.rejected && x.rejected[uid] ? { rejected: true } : {}) }));
 }
 export function requestJoin(group, uid, nick, now) {
   if (!group || group.archived) return { ok: false, status: 404, reason: "not_found" };
   if (roleOf(group, uid) !== "none") return { ok: false, status: 409, reason: "already_" + roleOf(group, uid) };
-  if (Object.keys(group.members).length + Object.keys(group.pending).length >= MEMBER_CAP * 2) return { ok: false, status: 503, reason: "group_full" };
+  if (Object.keys(group.members).length + Object.keys(group.pending).length >= capOf(group) * 2) return { ok: false, status: 503, reason: "group_full" };
   const n = cleanNick(nick); if (n.length < 2) return { ok: false, status: 400, reason: "nickname_required" };
   if (group.rejected) delete group.rejected[uid];
   group.pending[uid] = { nick: n, at: now }; return { ok: true };
 }
 export function reviewJoin(group, actor, isAdmin, target, decision, now) {
   if (!group) return { ok: false, status: 404, reason: "not_found" };
-  if (group.owner !== actor && !isAdmin) return { ok: false, status: 403, reason: "forbidden" };
+  if (!isMod(group, actor, isAdmin)) return { ok: false, status: 403, reason: "forbidden" };
   const p = group.pending[target]; if (!p) return { ok: false, status: 404, reason: "no_request" };
   if (!["approve", "reject"].includes(decision)) return { ok: false, status: 400, reason: "bad_decision" };
   if (decision === "approve") {
-    if (Object.keys(group.members).length >= MEMBER_CAP) return { ok: false, status: 409, reason: "group_full" };
+    if (Object.keys(group.members).length >= capOf(group)) return { ok: false, status: 409, reason: "group_full" };
     group.members[target] = { nick: p.nick, at: now };
   }
   if (decision === "reject") { group.rejected = group.rejected || {}; if (Object.keys(group.rejected).length >= 100) delete group.rejected[Object.keys(group.rejected)[0]]; group.rejected[target] = now; }
@@ -51,15 +54,22 @@ export function removeMember(group, actor, isAdmin, target) {
   if (!group) return { ok: false, status: 404, reason: "not_found" };
   if (actor === target && group.pending[target]) { delete group.pending[target]; return { ok: true }; } // withdraw own join request
   const self = actor === target && !!group.members[target];
-  if (group.owner !== actor && !isAdmin && !self) return { ok: false, status: 403, reason: "forbidden" };
+  if (!isMod(group, actor, isAdmin) && !self) return { ok: false, status: 403, reason: "forbidden" };
   if (!group.members[target]) return { ok: false, status: 404, reason: "not_member" };
-  delete group.members[target]; delete group.muted[target]; return { ok: true };
+  delete group.members[target]; delete group.muted[target]; if (group.co) delete group.co[target]; return { ok: true };
 }
 export function setMute(group, actor, isAdmin, target, on) {
   if (!group) return { ok: false, status: 404, reason: "not_found" };
-  if (group.owner !== actor && !isAdmin) return { ok: false, status: 403, reason: "forbidden" };
+  if (!isMod(group, actor, isAdmin)) return { ok: false, status: 403, reason: "forbidden" };
   if (!group.members[target]) return { ok: false, status: 404, reason: "not_member" };
   if (on) group.muted[target] = 1; else delete group.muted[target]; return { ok: true };
+}
+// Supervisor (co-admin): only a current member; set by the owner or admin.
+export function setCoAdmin(group, actor, isAdmin, target, on) {
+  if (!group) return { ok: false, status: 404, reason: "not_found" };
+  if (group.owner !== actor && !isAdmin) return { ok: false, status: 403, reason: "forbidden" };
+  if (!group.members[target]) return { ok: false, status: 404, reason: "not_member" };
+  group.co = group.co || {}; if (on) group.co[target] = 1; else delete group.co[target]; return { ok: true };
 }
 export function archiveGroup(group, actor, isAdmin) {
   if (!group) return { ok: false, status: 404, reason: "not_found" };
@@ -75,7 +85,7 @@ export function textProblem(text, trainer) {
 // kind "ann" (announcement) is for the group's trainer only.
 export function postMessage(group, msgs, actor, isAdmin, text, kind, mid, now) {
   if (!group || group.archived) return { ok: false, status: 404, reason: "not_found" };
-  const role = roleOf(group, actor), owner = role === "owner";
+  const role = roleOf(group, actor), owner = role === "owner" || (role === "member" && !!(group.co && group.co[actor]));
   if (!owner && role !== "member" && !isAdmin) return { ok: false, status: 403, reason: "not_member" };
   if (group.muted[actor]) return { ok: false, status: 403, reason: "muted" };
   const k = kind === "ann" ? "ann" : "msg";
@@ -83,8 +93,8 @@ export function postMessage(group, msgs, actor, isAdmin, text, kind, mid, now) {
   const bad = textProblem(text, owner || isAdmin); if (bad) return { ok: false, status: 400, reason: bad };
   const last = [...msgs].reverse().find(m => m.uid === actor);
   if (last && now - last.at < 2000) return { ok: false, status: 429, reason: "slow_down" };
-  const nick = owner ? group.ownerName : isAdmin && !group.members[actor] ? "الإدارة" : group.members[actor].nick;
-  msgs.push({ id: mid, uid: actor, nick, role: owner ? "trainer" : isAdmin && !group.members[actor] ? "admin" : "student", text: str(text), kind: k, at: now });
+  const nick = role === "owner" ? group.ownerName : isAdmin && !group.members[actor] ? "الإدارة" : group.members[actor].nick;
+  msgs.push({ id: mid, uid: actor, nick, role: role === "owner" ? "trainer" : owner ? "supervisor" : isAdmin && !group.members[actor] ? "admin" : "student", text: str(text), kind: k, at: now });
   if (msgs.length > MSG_KEEP) msgs.splice(0, msgs.length - MSG_KEEP);
   return { ok: true };
 }
@@ -94,14 +104,14 @@ export function readMessages(group, msgs, actor, isAdmin, since) {
   if (role !== "owner" && role !== "member" && !isAdmin) return { ok: false, status: 403, reason: "not_member" };
   const s = Number(since) || 0;
   const items = msgs.filter(m => m.at > s && !m.deleted).map(m => ({ id: m.id, nick: m.nick, role: m.role, text: m.text, kind: m.kind, at: m.at, mine: m.uid === actor }));
-  const members = Object.entries(group.members).map(([uid, m]) => ({ uid: role === "owner" || isAdmin ? uid : undefined, nick: m.nick, muted: !!group.muted[uid] }));
-  const pending = role === "owner" || isAdmin ? Object.entries(group.pending).map(([uid, p]) => ({ uid, nick: p.nick, at: p.at })) : [];
-  return { ok: true, items, members, pending, group: { id: group.id, name: group.name, description: group.description, track: group.track, ownerName: group.ownerName, archived: group.archived }, role: role === "none" ? "admin" : role };
+  const members = Object.entries(group.members).map(([uid, m]) => ({ uid: isMod(group, actor, isAdmin) ? uid : undefined, nick: m.nick, muted: !!group.muted[uid], co: !!(group.co && group.co[uid]) }));
+  const pending = isMod(group, actor, isAdmin) ? Object.entries(group.pending).map(([uid, p]) => ({ uid, nick: p.nick, at: p.at })) : [];
+  return { ok: true, items, members, pending, group: { id: group.id, name: group.name, description: group.description, track: group.track, ownerName: group.ownerName, archived: group.archived, cap: capOf(group) }, role: role === "none" ? "admin" : role === "member" && group.co && group.co[actor] ? "co" : role };
 }
 export function deleteMessage(group, msgs, actor, isAdmin, mid) {
   if (!group) return { ok: false, status: 404, reason: "not_found" };
   const m = msgs.find(x => x.id === mid); if (!m) return { ok: false, status: 404, reason: "not_found" };
-  if (group.owner !== actor && !isAdmin && m.uid !== actor) return { ok: false, status: 403, reason: "forbidden" };
+  if (!isMod(group, actor, isAdmin) && m.uid !== actor) return { ok: false, status: 403, reason: "forbidden" };
   m.deleted = true; m.text = ""; return { ok: true };
 }
 export function reportMessage(group, msgs, reports, actor, mid, now) {

@@ -1,7 +1,7 @@
 // Extra Academy Directory actions: student profiles, sessions, code share, groups. Runs inside the Durable Object transaction (free plan).
 import * as S from "./academy-sessions-core.js";
 import * as G from "./academy-groups-core.js";
-export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole", "satt", "sattl", "acr", "als", "amk", "adl", "tls"]);
+export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole", "satt", "sattl", "acr", "als", "amk", "adl", "tls", "gco", "gdelg"]);
 const fail = (r) => ({ status: r.status || 400, data: { success: false, message: r.reason } });
 const ok = (data = {}) => ({ status: 200, data: { success: true, ...data } });
 export async function handleExtra(tx, action, b, now, newId) {
@@ -93,7 +93,7 @@ export async function handleExtra(tx, action, b, now, newId) {
   if (action === "gcr") {
     if (!privileged) return fail({ status: 403, reason: "trainer_only" });
     const v = G.validateGroup(b.value); if (!v.ok) return fail({ status: 400, reason: v.reason });
-    const r = G.createGroup(grp, newId(), uid, trainerName, v.value, now); if (!r.ok) return fail(r);
+    const r = G.createGroup(grp, newId(), uid, admin && !trainer ? "الإدارة" : trainerName, v.value, now, admin && !trainer); if (!r.ok) return fail(r);
     await tx.put("grp", grp); return ok({ id: r.group.id });
   }
   if (action === "gls") { if (!canBrowse) return fail({ status: 403, reason: "profile_required" }); return ok({ groups: G.listGroups(grp, uid, false), role }); }
@@ -106,6 +106,13 @@ export async function handleExtra(tx, action, b, now, newId) {
   else if (action === "grem") r = G.removeMember(group, uid, admin, String(b.target || uid));
   else if (action === "gmute") r = G.setMute(group, uid, admin, String(b.target || ""), b.on === true);
   else if (action === "garch") r = G.archiveGroup(group, uid, admin);
+  else if (action === "gco") r = G.setCoAdmin(group, uid, admin, String(b.target || ""), b.on === true);
+  else if (action === "gdelg") {
+    if (!admin) return fail({ status: 403, reason: "forbidden" });
+    if (!group) return fail({ status: 404, reason: "not_found" });
+    delete grp[gid]; const asg = (await tx.get("asg")) || {}; for (const k of Object.keys(asg)) if (asg[k] && asg[k].gid === gid) delete asg[k];
+    await tx.put("grp", grp); await tx.put("asg", asg); await tx.put("msg:" + gid, []); return ok();
+  }
   if (r) { if (!r.ok) return fail(r); await tx.put("grp", grp); return ok(); }
   const msgs = (await tx.get("msg:" + gid)) || [];
   if (action === "gpost") { r = G.postMessage(group, msgs, uid, admin, b.text, b.kind, newId(), now); if (!r.ok) return fail(r); group.lastAt = now; await tx.put("grp", grp); await tx.put("msg:" + gid, msgs); return ok(); }

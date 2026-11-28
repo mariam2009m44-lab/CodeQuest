@@ -102,12 +102,12 @@ test("attendance: an active student's join tap is recorded once; only the owner 
 });
 
 import { MEMBER_CAP, reviewJoin } from "../academy-groups-core.js";
-test("group size cap is 8: the 9th approval is refused", () => {
-  assert.equal(MEMBER_CAP, 8);
+test("group size cap is 256 for every group (owner decision): the 257th approval is refused", () => {
+  assert.equal(MEMBER_CAP, 256);
   const g = { owner: "o", members: {}, pending: {}, muted: {} };
-  for (let i = 0; i < 9; i++) g.pending["u" + i] = { nick: "n" + i, at: 1 };
-  for (let i = 0; i < 8; i++) assert.equal(reviewJoin(g, "o", false, "u" + i, "approve", 2).ok, true);
-  const r = reviewJoin(g, "o", false, "u8", "approve", 3); assert.equal(r.ok, false); assert.equal(r.reason, "group_full");
+  for (let i = 0; i < 257; i++) g.pending["u" + i] = { nick: "n" + i, at: 1 };
+  for (let i = 0; i < 256; i++) assert.equal(reviewJoin(g, "o", false, "u" + i, "approve", 2).ok, true);
+  const r = reviewJoin(g, "o", false, "u256", "approve", 3); assert.equal(r.ok, false); assert.equal(r.reason, "group_full");
 });
 
 test("demo day: session kind is kept, unknown kinds fall back to lesson", async () => {
@@ -167,4 +167,36 @@ test("trainer directory lists approved trainers only and exposes no private fiel
   assert.deepEqual(Object.keys(l[0]).sort(), ["ageGroups", "bio", "groups", "levels", "name", "specialties"]);
   const { c } = await world(); const r = await c("trainers/list", "tokA"); assert.equal(r.status, 200); assert.ok(Array.isArray(r.data.trainers));
   assert.equal((await c("trainers/list", "tokB")).status, 403); assert.equal((await c("trainers/list", "")).status, 401);
+});
+
+import * as GC from "../academy-groups-core.js";
+test("admin groups: larger cap, supervisor can moderate, no 8 cap anywhere, supervisor can moderate", () => {
+  const g = {}; const a = GC.createGroup(g, "A", "adm", "الإدارة", { name: "مجموعة كبيرة", description: "", track: "python" }, 1, true).group;
+  const t = GC.createGroup(g, "T", "trn", "مدرب", { name: "مجموعة صغيرة", description: "", track: "python" }, 1, false).group;
+  assert.equal(GC.capOf(a), 256); assert.equal(GC.capOf(t), 256);
+  for (let i = 0; i < 20; i++) { a.pending["s" + i] = { nick: "طالب" + i, at: 1 }; assert.equal(GC.reviewJoin(a, "adm", true, "s" + i, "approve", 2).ok, true); }
+  assert.equal(Object.keys(a.members).length, 20);
+  for (let i = 0; i < 12; i++) { t.pending["s" + i] = { nick: "طالب" + i, at: 1 }; assert.equal(GC.reviewJoin(t, "trn", false, "s" + i, "approve", 2).ok, true); }
+  for (let i = 0; i < 256; i++) a.members["f" + i] = { nick: "ن" + i, at: 1 }; a.pending.y = { nick: "زائد", at: 1 }; assert.equal(GC.reviewJoin(a, "adm", true, "y", "approve", 3).reason, "group_full"); for (let i = 0; i < 256; i++) delete a.members["f" + i]; delete a.pending.y;
+  assert.equal(GC.reviewJoin(t, "stranger", false, "x", "approve", 3).reason, "forbidden");
+  assert.equal(GC.setCoAdmin(a, "s2", false, "s1", true).reason, "forbidden");
+  assert.equal(GC.setCoAdmin(a, "adm", true, "nobody", true).reason, "not_member");
+  assert.equal(GC.setCoAdmin(a, "adm", true, "s1", true).ok, true);
+  a.pending.p = { nick: "جديد", at: 1 };
+  assert.equal(GC.reviewJoin(a, "s1", false, "p", "approve", 4).ok, true);   // supervisor approves
+  assert.equal(GC.setMute(a, "s1", false, "s5", true).ok, true);
+  assert.equal(GC.setMute(a, "s3", false, "s5", false).reason, "forbidden"); // plain member cannot
+  const msgs = []; assert.equal(GC.postMessage(a, msgs, "s1", false, "إعلان", "ann", "m1", 10).ok, true); assert.equal(msgs[0].role, "supervisor");
+  const r = GC.readMessages(a, msgs, "s1", false, 0); assert.equal(r.role, "co"); assert.equal(r.members.filter(m => m.co).length, 1); assert.ok(r.members.every(m => typeof m.nick === "string"));
+  assert.equal(GC.readMessages(a, msgs, "s3", false, 0).members[0].uid, undefined);
+  GC.removeMember(a, "adm", true, "s1"); assert.equal(a.co.s1, undefined);
+});
+test("only the admin deletes a whole group; trainer cannot", async () => {
+  const { c } = await world();
+  const mk = await c("groups/create", "tokE", { name: "مجموعة الإدارة", description: "", track: "python" }); assert.equal(mk.status, 200);
+  const l = await c("groups/list", "tokE"); const g = l.data.groups.find(x => x.id === mk.data.id); assert.equal(g.cap, 256); assert.equal(g.ownerName, "الإدارة");
+  const tg = await c("groups/create", "tokV", { name: "مجموعة مدرب", description: "", track: "python" }); assert.equal((await c("groups/list", "tokV")).data.groups.find(x => x.id === tg.data.id).cap, 256);
+  assert.equal((await c("groups/delete", "tokV", { gid: tg.data.id })).status, 403);
+  assert.equal((await c("groups/delete", "tokE", { gid: mk.data.id })).status, 200);
+  assert.ok(!(await c("groups/list", "tokE")).data.groups.some(x => x.id === mk.data.id));
 });

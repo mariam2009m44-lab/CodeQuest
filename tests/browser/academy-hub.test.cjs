@@ -2,14 +2,14 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),fs=require('fs/promises'),path=require('path');const root=path.resolve(__dirname,'../..');
 const API=(role)=>`globalThis.__calls=[];const role=${JSON.stringify(role)};const now=Date.now();
 const S=[{id:"s1",title:"نموذج: أساسيات Python",description:"بيانات تجريبية",track:"python",startsAt:now+3600e3,durationMin:60,linkUrl:"https://meet.google.com/abc-defg-hij",ownerName:"مدربة تجريبية",mine:role==="trainer"}];
-const G=[{id:"g1",name:"نموذج: مجموعة المبتدئين",description:"",track:"python",ownerName:"مدربة تجريبية",members:3,role:role==="trainer"?"owner":"member",archived:false,lastAt:2},{id:"g2",name:"نموذج: أساسيات جافاسكربت",description:"",track:"javascript",ownerName:"مدرب تجريبي",members:5,role:"none",archived:false,rejected:role==="student"}];
+const G=[...(role==="admin"?[{id:"gA",name:"نموذج: مجتمع كبير",description:"",track:"python",ownerName:"الإدارة",members:40,cap:256,role:"admin",archived:false,lastAt:1}]:[]),{id:"g1",name:"نموذج: مجموعة المبتدئين",description:"",track:"python",ownerName:"مدربة تجريبية",members:3,role:role==="trainer"?"owner":"member",archived:false,lastAt:2},{id:"g2",name:"نموذج: أساسيات جافاسكربت",description:"",track:"javascript",ownerName:"مدرب تجريبي",members:5,role:"none",archived:false,rejected:role==="student"}];
 const M=[{id:"m1",nick:"مدربة تجريبية",role:"trainer",text:"الجلسة غدًا الساعة ٨",kind:"ann",at:1,mine:false},{id:"m2",nick:"نور",role:"student",text:"تمام",kind:"msg",at:2,mine:false}];
 export async function academyWorker(u,p,body){const ok=d=>({ok:true,status:200,data:{success:true,...d},off:false,unreachable:false});
  if(role==="off")return {ok:false,status:503,data:{message:"academy_off"},off:true,unreachable:false};
  if(p==="my-role")return ok({role});if(p==="sessions/list")return ok({sessions:S});if(p==="trainers/list")return ok({trainers:[{name:"نموذج: مدرّس بايثون",specialties:["python","web"],levels:["beginner"],ageGroups:["10-12"],bio:"بيانات تجريبية للعرض فقط.",groups:1}]});if(p==="groups/list")return ok({groups:G});
  if(p==="assignments/list")return ok({role:role==="trainer"?"owner":"member",items:[{id:"a1",title:"نموذج: تمرين الحلقات",text:"بيانات تجريبية",due:now+864e5,done:false,doneCount:1,doneNames:["نور"],memberCount:3}]});if(p==="assignments/create"||p==="assignments/mark")globalThis.__calls.push([p,body]);
  if(p==="sessions/code-get")return ok({v:1,changed:true,code:"print('hi')"});
- if(p==="groups/read")return ok({items:M,members:[{uid:"u9",nick:"نور",muted:false}],pending:role==="trainer"?[{uid:"u8",nick:"سلمى",at:1}]:[],role:role==="trainer"?"owner":"member"});
+ if(p==="groups/read")return ok({items:M,members:[{uid:"u9",nick:"نور",muted:false},{uid:"u7",nick:"ليلى",muted:false,co:true}],group:{cap:p==="groups/read"&&role==="admin"?256:8},pending:role==="trainer"?[{uid:"u8",nick:"سلمى",at:1}]:[],role:role==="trainer"?"owner":role==="admin"?"admin":"member"});
  if(p==="sessions/create"||p==="groups/post"||p==="sessions/attend")globalThis.__calls.push([p,body]);return ok({});}`;
 const STUB=(role)=>({'/js/firebase-config.js':'export const auth={};export const authPersistenceReady=Promise.resolve();','/js/academy-api.js':API(role)});
 async function open(role,vp={width:390,height:900}){const b=await chromium.launch();const p=await b.newPage({viewport:vp,deviceScaleFactor:1});const st=STUB(role);
@@ -32,7 +32,7 @@ test('trainer sees create forms, announcement toggle and join requests',async()=
  await p.screenshot({path:require('os').tmpdir()+'/hub-trainer-chat.png',fullPage:true})}finally{await b.close()}});
 test('server switch off shows the clean Arabic line, never a raw code',async()=>{const {p,b}=await open('off');try{const t=await p.textContent('#hubState');assert.match(t,/لم تُفتح بعد/);assert.doesNotMatch(t,/internal|academy_off/);assert.equal(await p.isHidden('#hubBody'),true)}finally{await b.close()}});
 
-test('safety rules are visible and state the 8-student cap',async()=>{const {p,b}=await open('student');try{await p.click('#safetyRules summary');const t=await p.textContent('#safetyRules');assert.match(t,/8 طلاب/);assert.match(t,/بطلب فقط/)}finally{await b.close()}});
+test('safety rules are visible and state joining by request and nickname-only',async()=>{const {p,b}=await open('student');try{await p.click('#safetyRules summary');const t=await p.textContent('#safetyRules');assert.doesNotMatch(t,/8 طلاب/);assert.match(t,/لقب/);assert.match(t,/بطلب فقط/)}finally{await b.close()}});
 test('assignments: student ticks done, trainer sees the count and can post',async()=>{
  const st=await open('student',{width:1100,height:900});try{await st.p.dispatchEvent('#tabChats','click');await st.p.waitForTimeout(300);await st.p.click('#groupList .wa-row >> nth=0');await st.p.click('#stWork');await st.p.waitForTimeout(300);assert.match(await st.p.textContent('#workList'),/تمرين الحلقات/);assert.equal(await st.p.isVisible('#workBtn'),false);await st.p.click('#workList button');await st.p.waitForTimeout(200);assert.ok((await st.p.evaluate(()=>globalThis.__calls||[])).some(c=>c[0]==='assignments/mark'&&c[1].on===true))}finally{await st.b.close()}
  const tr=await open('trainer',{width:1100,height:900});try{await tr.p.dispatchEvent('#tabChats','click');await tr.p.waitForTimeout(300);await tr.p.click('#groupList .wa-row >> nth=0');await tr.p.click('#stWork');await tr.p.waitForTimeout(300);assert.match(await tr.p.textContent('#workList'),/أنجز 1 من 3/);await tr.p.click('#workBtn');await tr.p.fill('#workForm [name=title]','نموذج: واجب جديد');await tr.p.screenshot({path:require('os').tmpdir()+'/hub-desktop-work.png',fullPage:true});await tr.p.click('#workForm button[type=submit]');await tr.p.waitForTimeout(300);assert.ok((await tr.p.evaluate(()=>globalThis.__calls||[])).some(c=>c[0]==='assignments/create'&&c[1].title.includes('واجب')))}finally{await tr.b.close()}});
@@ -85,8 +85,17 @@ test('merged community: trainers tab, group cards with real counts, profile dial
  await p.click('#trainerList .hub-trainer button');assert.equal(await p.isVisible('#trDlg'),true);assert.match(await p.textContent('#trSpec'),/Python/);
  await p.screenshot({path:require('os').tmpdir()+'/cq-merge-profile.png'});await p.click('#trClose');
  await p.screenshot({path:require('os').tmpdir()+'/cq-merge-trainers.png',fullPage:true});
- await p.click('#bottomNav [data-tab=groups]');await p.waitForSelector('#groupDir .hub-group');assert.ok(await p.locator('#groupDir .hub-seats').first().textContent().then(t=>/من 8/.test(t)));
+ await p.click('#bottomNav [data-tab=groups]');await p.waitForSelector('#groupDir .hub-group');assert.ok(await p.locator('#groupDir .hub-seats').first().textContent().then(t=>/عضو/.test(t)));
  await p.screenshot({path:require('os').tmpdir()+'/cq-merge-groups.png',fullPage:true});
  await p.click('#bottomNav [data-tab=chats]');await p.waitForSelector('#groupList .wa-row');
  await p.screenshot({path:require('os').tmpdir()+'/cq-merge-chats.png',fullPage:true});
+}finally{await b.close();}});
+
+test('admin group: no 8 cap text, member list, supervisor and delete controls (fixture)',async()=>{const {p,b}=await open('admin',{width:1100,height:900});try{
+ await p.dispatchEvent('#tabGroups','click');await p.waitForSelector('#groupDir .hub-group');
+ assert.match(await p.textContent('#groupDir'),/40 عضو/);assert.doesNotMatch(await p.textContent('#groupDir'),/من 8/);
+ await p.dispatchEvent('#tabChats','click');await p.click('#groupList .wa-row >> nth=0');await p.waitForTimeout(500);await p.click('#stPeople');await p.waitForTimeout(300);
+ assert.match(await p.textContent('#memberList'),/ليلى · مشرف/);assert.ok(await p.locator('#memberList button:has-text("تعيين مشرف")').count()>=1);
+ assert.equal(await p.isVisible('#delGroupBtn'),true);
+ await p.screenshot({path:require('os').tmpdir()+'/cq-admin-group.png'});
 }finally{await b.close();}});
