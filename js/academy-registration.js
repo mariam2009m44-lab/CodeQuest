@@ -43,6 +43,7 @@ async function getStatus(){
 }
 let currentUser=null;
 function setFeedback(node,text,error=false){node.textContent=text;node.style.color=error?"#dc626e":"#26a77f";}
+function hubLink(node,label){const a=document.createElement("a");a.href="academy-hub.html";a.textContent=label;a.style.cssText="color:#a78bfa;margin-inline-start:8px;font-weight:700";node.append(a);}
 function switchTab(which){
  const student=which==="student";
  studentPanel.hidden=!student;instructorPanel.hidden=student;
@@ -81,7 +82,7 @@ studentForm.addEventListener("submit",async event=>{
   const interests=checkedValues(studentForm,"interests");
   if(!interests.length)throw new Error("اختار مجالًا واحدًا على الأقل.");
   const saved=await submitStudent({ageBand:studentForm.elements.ageBand.value,grade:studentForm.elements.grade.value.trim(),skillLevel:studentForm.elements.skillLevel.value,interests,guardianConsent:studentForm.elements.guardianConsent.checked,learningGoals:studentForm.elements.learningGoals.value.trim(),learningNeeds:studentForm.elements.learningNeeds.value.trim(),preferredSchedule:studentForm.elements.preferredSchedule.value.trim()});
-  setFeedback(studentFeedback,saved.data?.status==="pending_guardian"?"تم حفظ الملف. تبقى الجلسات والمجموعات مغلقة حتى تتحقق الإدارة من موافقة ولي الأمر.":"تم حفظ ملف الطالب وتفعيله. يمكنك الآن فتح الجلسات والمجموعات.");
+  setFeedback(studentFeedback,saved.data?.status==="pending_guardian"?"تم حفظ الملف. تبقى الجلسات والمجموعات مغلقة حتى تتحقق الإدارة من موافقة ولي الأمر.":"تم حفظ ملف الطالب وتفعيله. يمكنك الآن فتح الجلسات والمجموعات.");if(saved.data?.status!=="pending_guardian")hubLink(studentFeedback,"افتح مجتمع الأكاديمية ←");
  }catch(error){setFeedback(studentFeedback,acadMsg(error)||"تعذر حفظ البيانات.",true);}
  finally{button.disabled=false;}
 });

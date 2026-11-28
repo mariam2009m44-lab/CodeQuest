@@ -92,6 +92,8 @@ if (!form) {
     "academy-registration.html",
     "academy-admin.html",
     "academy-community.html",
+    "academy-hub.html",
+    "placement.html",
     "live-academy.html",
     "live-classroom.html"
   ]);
