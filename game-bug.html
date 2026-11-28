@@ -129,7 +129,7 @@
   <section class="game-art-banner" aria-label="صائد الأخطاء"><img src="assets/games/game-bug.svg" alt="" decoding="async"></section>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
-      <h2>اختر مستوى التحدي</h2>
+      <h2>اختيار مستوى التحدي</h2>
       <div class="levels-grid">
         <button class="lvl-btn lvl-easy" onclick="startGame('easy')"><span>مبتدئ</span> <span>خطأ بسيط</span></button>
         <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>خطأ منطقي</span></button>
@@ -148,7 +148,7 @@
   <div class="screen" id="resultScreen">
     <div class="level-box result-box">
       <div class="result-emoji" id="resultEmoji">🏆</div>
-      <h2 id="resultTitle">أحسنت!</h2>
+      <h2 id="resultTitle">إنجاز رائع!</h2>
       <p class="result-message" id="resultMessage"></p>
       <button class="btn-restart" onclick="restartGame()">العب مستوى آخر</button>
       <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
@@ -167,7 +167,7 @@
   </style>
   <script>
     const levels = {
-      easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, hint:'راجع اسم المتغير في سطر الإرجاع؛ هل يطابق الاسم الذي تم إنشاؤه؟', explanation:'تم إنشاء المتغير باسم result، لكن سطر الإرجاع يستخدم reslt. أسماء المتغيرات يجب أن تتطابق تمامًا.' },
+      easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, hint:'مراجعة اسم المتغير في سطر الإرجاع؛ هل يطابق الاسم الذي تم إنشاؤه؟', explanation:'تم إنشاء المتغير باسم result، لكن سطر الإرجاع يستخدم reslt. أسماء المتغيرات يجب أن تتطابق تمامًا.' },
       medium: { lines: ['let x = 10;', 'let y = "5";', 'let sum = x + y;', 'console.log(sum);'], bugIndex: 2, hint:'انتبه لاختلاف نوع البيانات: أحد المتغيرين رقم والآخر نص.', explanation:'في JavaScript، استخدام + مع رقم ونص قد يؤدي إلى دمج النصوص بدل الجمع الحسابي. حوّل النص إلى رقم عند الحاجة.' },
       hard: { lines: ['function findMax(arr) { // مصفوفة أرقام غير فارغة', '  let max = arr[0];', '  for (let i = 0; i <= arr.length; i++) {', '    if (arr[i] > max) max = arr[i];', '  }', '  return max;', '}'], bugIndex: 2, hint:'تذكّر أن آخر فهرس في المصفوفة يساوي طولها ناقص واحد.', explanation:'الفهارس تبدأ من صفر؛ لذلك يجب أن يتوقف الشرط قبل arr.length. استخدام <= يجعل الحلقة تصل إلى فهرس غير موجود.' }
     };
@@ -214,7 +214,7 @@
           document.getElementById('resultEmoji').textContent = '🏆';
           document.getElementById('resultTitle').textContent = 'تم اكتشاف الخطأ!';
           document.getElementById('resultMessage').textContent = `حصلت على ${earned} نقطة. ` + levels[currentLevel].explanation;
-          window.CodeQuestExperience?.reward({ gems: 0, title: 'تم اصطياد الخطأ!', message: 'اكتشفت المشكلة وحليتها بنجاح. برافو!' });
+          window.CodeQuestExperience?.reward({ gems: 0, title: 'تم اصطياد الخطأ!', message: 'تم اكتشاف المشكلة وحلها بنجاح. رائع!' });
         }, 1000);
       } else {
         // Pressing a line already ruled out again is not a new attempt: no extra penalty.
@@ -225,7 +225,7 @@
         document.getElementById('attemptStatus').textContent = 'المحاولات: ' + attempts;
         lineEl.classList.add('wrong');
         lineEl.classList.add('ruled-out');
-        msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود وحاول مرة أخرى.';
+        msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود ويمكن المحاولة مرة أخرى.';
         msg.style.color = 'var(--red)';
         setTimeout(() => lineEl.classList.remove('wrong'), 800);
       }
