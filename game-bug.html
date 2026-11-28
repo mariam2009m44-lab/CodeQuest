@@ -220,12 +220,12 @@
         // Pressing a line already ruled out again is not a new attempt: no extra penalty.
         const repeated = lineEl.dataset.tried === '1';
         lineEl.dataset.tried = '1';
-        if (repeated) { msg.textContent = 'السطر ده يمكن تجربةته قبل كده وطلع سليم. يمكن تيمكن تجربةة سطر تاني.'; msg.style.color = 'var(--red)'; return; }
+        if (repeated) { msg.textContent = 'تم اختبار هذا السطر سابقًا وتبين أنه صحيح. يمكن اختيار سطر آخر.'; msg.style.color = 'var(--red)'; return; }
         attempts++;
         document.getElementById('attemptStatus').textContent = 'المحاولات: ' + attempts;
         lineEl.classList.add('wrong');
         lineEl.classList.add('ruled-out');
-        msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'ليس هذا السطر. افحص الكود ويمكن المحاولة مرة أخرى.';
+        msg.textContent = attempts >= 2 ? 'تلميح: ' + levels[currentLevel].hint : 'هذا ليس السطر المطلوب. مراجعة الكود ثم المحاولة مرة أخرى.';
         msg.style.color = 'var(--red)';
         setTimeout(() => lineEl.classList.remove('wrong'), 800);
       }
