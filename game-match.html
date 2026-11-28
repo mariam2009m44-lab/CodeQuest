@@ -429,10 +429,10 @@
       <span class="section-label">الكود الذي تبنيه</span>
 
       <div class="target-zone" id="targetZone" aria-label="قطع الكود المختارة" aria-live="polite">
-        <span class="empty-message">اضغط على القطع بالترتيب المطلوب</span>
+        <span class="empty-message">الضغط على القطع بالترتيب المطلوب</span>
       </div>
 
-      <span class="section-label">القطع المتاحة — اضغط لإضافتها</span>
+      <span class="section-label">القطع المتاحة — الضغط لإضافتها</span>
 
       <div class="pieces" id="piecesContainer" aria-label="قطع الكود المتاحة"></div>
 
@@ -444,7 +444,7 @@
 
         <button type="button" class="action-button" id="undoButton">
           <i class="ri-arrow-go-back-line" aria-hidden="true"></i>
-          تراجع
+          تمراجعة
         </button>
 
         <button type="button" class="action-button" id="resetButton">
@@ -457,7 +457,7 @@
 
       <section class="reward" id="rewardPanel" aria-live="polite">
         <h2>🎉 إنجاز رائع! الحل صحيح</h2>
-        <p id="rewardMessage">أكملت التحدي بنجاح.</p>
+        <p id="rewardMessage">استكمالت التحدي بنجاح.</p>
       </section>
     </section>
   </main>
@@ -500,7 +500,7 @@
 
     const lessons = [
       {title:'الطباعة في JavaScript',pieces:['console.log','(', '"Hello World"',')',';'],output:'Hello World',explain:'console.log تطبع القيمة داخل الأقواس. علامتا التنصيص تحددان النص، ولا تظهران في الناتج.'},
-      {title:'متغير يتغير',pieces:['let score = 2;','score = score + 3;','console.log(score);'],output:'5',explain:'عرّفنا score بقيمة 2، ثم أضفنا 3 إلى القيمة الحالية. لذلك تطبع console.log العدد 5.'},
+      {title:'متغير يتغير',pieces:['let score = 2;','score = score + 3;','console.log(score);'],output:'5',explain:'عرّفنا score بقيمة 2، ثم إضافةنا 3 إلى القيمة الحالية. لذلك تطبع console.log العدد 5.'},
       {title:'حلقة تكرار',pieces:['for (let i = 0; i < 3; i++) {','    console.log(i);','}'],output:'0\n1\n2',explain:'تبدأ i من 0. تطبع الحلقة ثم تزيد i بمقدار 1. تتوقف عندما تصبح i مساوية 3.'},
       {title:'دالة تعيد قيمة',pieces:['function double(x) {','    return x * 2;','}','console.log(double(4));'],output:'8',explain:'الدالة double تضرب المدخل في 2 وتعيد الناتج. نمرر 4، فتطبع console.log العدد 8.'}
     ];
@@ -581,7 +581,7 @@
       if (!piecesContainer.children.length && !solved) {
         const message = document.createElement("span");
         message.className = "empty-message";
-        message.textContent = "أضفت كل القطع إلى الكود.";
+        message.textContent = "إضافةت كل القطع إلى الكود.";
         piecesContainer.appendChild(message);
       }
     }
@@ -592,7 +592,7 @@
       if (userBuild.length === 0) {
         const message = document.createElement("span");
         message.className = "empty-message";
-        message.textContent = "اضغط على القطع بالترتيب المطلوب";
+        message.textContent = "الضغط على القطع بالترتيب المطلوب";
         targetZone.appendChild(message);
         return;
       }
@@ -674,7 +674,7 @@
             gems: 1,
             balance: data.stars,
             title: "جوهرة جديدة!",
-            message: "كودي بيحتفل بيك! أضفنا جوهرة جديدة إلى رصيدك."
+            message: "كودي بيحتفل بيك! إضافةنا جوهرة جديدة إلى رصيدك."
           });
         } else {
           window.CodeQuestAudio?.setGemBalance(data.stars);
@@ -703,7 +703,7 @@
         console.error("Game reward claim failed:", error);
 
         let message =
-          "تم حل التحدي، لكن تعذر تسجيل المكافأة. تحقق من اتصال الإنترنت واضغط على إعادة محاولة تسجيل المكافأة.";
+          "تم حل التحدي، لكن تعذر تسجيل المكافأة. تحقق من اتصال الإنترنت والضغط على إعادة محاولة تسجيل المكافأة.";
 
         if (error.code === "functions/unauthenticated") {
           message = "انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى ثم حاول.";
@@ -742,7 +742,7 @@
       targetZone.classList.remove("correct", "incorrect");
       rewardPanel.classList.remove("visible");
 
-      rewardMessage.textContent = "أكملت التحدي بنجاح.";
+      rewardMessage.textContent = "استكمالت التحدي بنجاح.";
 
       setFeedback("رتّب القطع لتكوين الكود الصحيح.");
       renderAll();
@@ -779,7 +779,7 @@
         targetZone.classList.add("incorrect");
 
         setFeedback(
-          "أكمل كل القطع أولًا، ثم تحقّق من الحل.",
+          "استكمال كل القطع أولًا، ثم تحقّق من الحل.",
           "error"
         );
 
@@ -797,7 +797,7 @@
         const inPlace = userBuild.filter((piece, index) => piece.value === correctCode[index]).length;
         const firstWrong = userBuild.findIndex((piece, index) => piece.value !== correctCode[index]) + 1;
         setFeedback(
-          `الترتيب غير صحيح. ${inPlace} من ${correctCode.length} قطع في مكانها الصحيح. راجع القطعة رقم ${firstWrong} من أول الكود، واضغط عليها لإزالتها ثم يمكن المحاولة مرة أخرى.`,
+          `الترتيب غير صحيح. ${inPlace} من ${correctCode.length} قطع في مكانها الصحيح. مراجعة القطعة رقم ${firstWrong} من أول الكود، والضغط عليها لإزالتها ثم يمكن المحاولة مرة أخرى.`,
           "error"
         );
 
@@ -816,7 +816,7 @@
       rewardPanel.classList.add("visible");
       rewardMessage.textContent=lessonIndex===0?'إجابة صحيحة! جارٍ التحقق من تسجيل المكافأة.':'حل صحيح! تدريب محفوظ على الجهاز، بلا مكافأة حساب.';
 
-      setFeedback("إجابة صحيحة! أحسنت، جارٍ تسجيل المكافأة.", "success");
+      setFeedback("إجابة صحيحة! إنجاز رائع، جارٍ تسجيل المكافأة.", "success");
 
       renderAll();
 
