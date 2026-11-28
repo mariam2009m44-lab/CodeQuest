@@ -56,6 +56,7 @@ test('memory: term and definition are marked, a match names the pair, a miss say
   const { page, errors } = await d.open('accountA', 'game-memory.html');
   await page.click('.lvl-btn[data-pairs="6"]');
   await page.waitForSelector('#gameGrid .card');
+  { const sizes = await page.$$eval('#gameGrid .card', cs => cs.map(c => { const r = c.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); })); assert.equal(new Set(sizes).size, 1, 'all memory cards are the same size: ' + [...new Set(sizes)]); await page.evaluate(() => document.querySelectorAll('#gameGrid .card').forEach(c => c.classList.add('flipped'))); await page.waitForTimeout(1500); await page.screenshot({ path: require('os').tmpdir() + '/cq-memory-grid.png', fullPage: true }); await page.evaluate(() => document.querySelectorAll('#gameGrid .card').forEach(c => c.classList.remove('flipped'))); await page.waitForTimeout(700); }
   const info = await page.$$eval('#gameGrid .card', cs => cs.map((c, i) => ({ i, id: c.dataset.id, kind: c.querySelector('.card-back').dataset.kind, text: c.querySelector('.card-back').textContent })));
   assert.equal(info.length, 12);
   assert.equal(info.filter(x => x.kind === 'term').length, 6);
@@ -66,7 +67,7 @@ test('memory: term and definition are marked, a match names the pair, a miss say
   // a miss: two cards of different pairs
   const a = info[0], b = info.find(x => x.id !== a.id);
   await cards.nth(a.i).click(); await cards.nth(b.i).click();
-  assert.match(await page.textContent('#matchNote'), /مش نفس الزوج/);
+  assert.match(await page.textContent('#matchNote'), /غير متطابقتين/);
   await page.waitForFunction(() => !document.querySelector('#gameGrid .card.flipped'));
   // a match
   const term = info.find(x => x.kind === 'term'), def = info.find(x => x.id === term.id && x.kind === 'definition');

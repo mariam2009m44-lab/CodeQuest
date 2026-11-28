@@ -54,6 +54,7 @@
     .btn-back:hover { background: rgba(255,255,255,0.05); }
     .result-emoji { font-size: 5rem; margin-bottom: 15px; animation: bounce 1s infinite alternate; }
     @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+    @media (max-width: 520px) { .card { aspect-ratio: 1 / 1.12; } }
     @media (max-width: 500px) { .memory-grid { gap: 8px; } .card-front { font-size: 1.5rem; } .card-back { font-size: 0.75rem; } }
   
     /* Shared touch-first and reduced-motion refinements */
@@ -228,15 +229,8 @@
         const j = Math.floor(Math.random() * (i + 1));
         [cards[i], cards[j]] = [cards[j], cards[i]];
       }
-      // Long labels get a double-width card on phones so the text stays large. The count of wide cards is rounded up
-      // (next-longest labels) so the grid cells fill whole rows and no row is left ragged.
+      // All cards are the same size (uniform grid); long labels wrap inside the card.
       const wideCards = new Set();
-      if (window.innerWidth <= 520) {
-        const byLen = [...cards].sort((x, y) => String(y.text).length - String(x.text).length);
-        let k = byLen.filter(c => String(c.text).length > 14).length;
-        while (k > 0 && (cards.length + k) % cols !== 0) k++;
-        byLen.slice(0, k).forEach(c => wideCards.add(c));
-      }
       gameGrid.innerHTML = '';
       cards.forEach(cardData => {
         const cardEl = document.createElement('button');
