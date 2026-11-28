@@ -34,5 +34,8 @@
 <a class="community-float-link" href="#community-groups" aria-label="مجموعات التعلم">
 <span class="community-float-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5v9a2.5 2.5 0 0 1-2.5 2.5H9l-5 4V5.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 8h10M7 11.5h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span>المجموعات</span></a>
 </nav>
+<script>
+(()=>{const links=[...document.querySelectorAll('.community-float-link')];const sections=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);if(!links.length||!sections.length)return;const setActive=id=>links.forEach(a=>a.classList.toggle('is-active',a.getAttribute('href')==='#'+id));setActive(sections[0].id);if('IntersectionObserver' in window){const io=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible)setActive(visible.target.id)},{rootMargin:'-20% 0px -55% 0px',threshold:[0,.15,.35,.6]});sections.forEach(s=>io.observe(s));}})();
+</script>
 <script type="module" src="js/academy-community.js"></script>
 </body></html>
