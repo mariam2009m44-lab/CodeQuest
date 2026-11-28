@@ -149,3 +149,12 @@ test("a student can withdraw a pending request and leave a group; nobody else ca
   assert.equal(removeMember(g, "p", false, "p").ok, true); assert.equal(Object.keys(g.pending).length, 0);
   assert.equal(removeMember(g, "m", false, "m").ok, true); assert.equal(Object.keys(g.members).length, 0);
 });
+
+import { listGroups } from "../academy-groups-core.js";
+test("rejected request is shown to the student once and can be re-sent; lastAt only for members", () => {
+  const g = { id: "g", name: "n", owner: "o", members: { m: { nick: "a" } }, pending: {}, muted: {}, lastAt: 77, createdAt: 1 };
+  requestJoin(g, "p", "سلمى", 1); assert.equal(reviewJoin(g, "o", false, "p", "reject", 2).ok, true);
+  assert.equal(listGroups({ g }, "p", false)[0].rejected, true); assert.equal("lastAt" in listGroups({ g }, "p", false)[0], false);
+  assert.equal(listGroups({ g }, "m", false)[0].lastAt, 77); assert.equal("rejected" in listGroups({ g }, "m", false)[0], false);
+  assert.equal(requestJoin(g, "p", "سلمى", 3).ok, true); assert.equal("rejected" in listGroups({ g }, "p", false)[0], false);
+});

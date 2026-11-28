@@ -89,6 +89,9 @@ $("codePublish").addEventListener("click", async () => {
 const HUES = [240, 252, 264, 276];
 function hue(text) { let h = 0; for (const c of String(text)) h = (h * 31 + c.codePointAt(0)) >>> 0; return HUES[h % HUES.length]; }
 function avatar(node, name) { node.textContent = Array.from(String(name).replace(/^نموذج:\s*/, "")).find(c => /[\p{L}\p{N}]/u.test(c)) || "؟"; node.style.background = "hsl(" + hue(name) + " 38% 36%)"; }
+const seenKey = gid => "cq-seen:" + gid;
+const getSeen = gid => { try { return Number(localStorage.getItem(seenKey(gid))) || 0; } catch { return 0; } };
+const setSeen = (gid, at) => { try { if (at > getSeen(gid)) localStorage.setItem(seenKey(gid), String(at)); } catch {} };
 function askNick(g) {
   const dlg = $("nickDlg"), f = $("nickForm"), fb = $("nickFeedback"); $("nickGroup").textContent = g.name; f.reset(); say(fb, "");
   f.onsubmit = async ev => { ev.preventDefault(); const b = f.querySelector("button[type=submit]"); b.disabled = true; try { await api("groups/join", { gid: g.id, nick: f.elements.nick.value }); dlg.close(); loadGroups(); loadNext(); } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; } };
@@ -112,10 +115,12 @@ async function loadGroups() {
       body.append(el("small", "", sub)); if (g.description) body.append(el("small", "", g.description));
       row.append(av, body);
       if (g.archived) row.append(el("span", "hub-pill", "مؤرشفة"));
+      if (canOpen && g.lastAt && g.lastAt > getSeen(g.id) && g.id !== state.chatId) { const nb = el("span", "hub-pill hub-new", "جديد"); nb.title = "رسائل جديدة"; row.append(nb); }
       if (canOpen) { row.tabIndex = 0; row.setAttribute("role", "button"); const go = () => openChat(g); row.addEventListener("click", go); row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }); }
       else if (g.role === "pending") { row.append(el("span", "hub-pill", "بانتظار موافقة المدرب")); const w = el("button", "hub-ghost", "إلغاء الطلب"); w.type = "button"; w.addEventListener("click", async () => { try { await api("groups/remove", { gid: g.id }); loadGroups(); loadNext(); } catch (e) { alert(e.message); } }); row.append(w); }
       else if (state.role === "student") {
-        const j = el("button", "hub-ghost", "اطلب الانضمام"); j.type = "button";
+        if (g.rejected) row.append(el("span", "hub-pill", "لم يُقبل طلبك"));
+        const j = el("button", "hub-ghost", g.rejected ? "اطلب مجددًا" : "اطلب الانضمام"); j.type = "button";
         j.addEventListener("click", async () => { askNick(g) });
         row.append(j);
       }
@@ -179,7 +184,7 @@ async function refreshChat(first) {
     $("annLabel").hidden = !owner; $("liveBtn").hidden = !owner; $("archiveBtn").hidden = !owner;
     const near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
     for (const m of d.items) {
-      state.since = Math.max(state.since, m.at);
+      state.since = Math.max(state.since, m.at); setSeen(state.chatId, m.at);
       const dl = dayLabel(m.at); if (dl !== state.lastDay) { state.lastDay = dl; box.append(el("div", "wa-day", dl)); }
       const row = el("div", "hub-msg " + (m.kind === "ann" ? "ann" : m.mine ? "mine" : "other"));
       row.dataset.id = m.id;
@@ -304,6 +309,7 @@ function loadNext() {
   const member = gs.filter(g => g.role === "member"), pend = gs.filter(g => g.role === "pending");
   if (member.length) return step("افتح مجموعتك", "تابع إعلانات المدرب في «المحادثة»، وموعد الجلسة في «الجدول»، وواجباتك في «الواجبات».", []);
   if (pend.length) return step("طلبك بانتظار المدرب", "يقبل المدرب طلبك قريبًا فتظهر مجموعتك هنا. يمكنك إلغاء الطلب وتجربة مجموعة أخرى.", []);
+  if (gs.some(g => g.rejected)) return step("لم يُقبل طلبك", "لم يقبل المدرب الطلب هذه المرة، وقد تكون المجموعة ممتلئة. جرّب مجموعة أخرى من تبويب «المجموعات»، أو اطلب مجددًا.", []);
   return step("انضم إلى مجموعة", "افتح تبويب «المجموعات»، اختر مجموعة مناسبة لمسارك، واضغط «اطلب الانضمام» بلقب تختاره (دون اسمك الحقيقي).", [["اختبار تحديد المستوى", "placement.html", false]]);
 }
 

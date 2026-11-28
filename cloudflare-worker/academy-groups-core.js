@@ -24,13 +24,15 @@ export function roleOf(group, uid) { return !group ? "none" : group.owner === ui
 // Discovery shows only what is needed to ask to join. No member names.
 export function listGroups(g, uid, isAdmin) {
   return Object.values(g).filter(x => !x.archived || isAdmin).sort((a, b) => b.createdAt - a.createdAt).slice(0, 100).map(x => ({
-    id: x.id, name: x.name, description: x.description, track: x.track, ownerName: x.ownerName, members: Object.keys(x.members).length, role: roleOf(x, uid), archived: x.archived }));
+    id: x.id, name: x.name, description: x.description, track: x.track, ownerName: x.ownerName, members: Object.keys(x.members).length, role: roleOf(x, uid), archived: x.archived,
+    ...(roleOf(x, uid) === "owner" || roleOf(x, uid) === "member" || isAdmin ? { lastAt: x.lastAt || 0 } : {}), ...(x.rejected && x.rejected[uid] ? { rejected: true } : {}) }));
 }
 export function requestJoin(group, uid, nick, now) {
   if (!group || group.archived) return { ok: false, status: 404, reason: "not_found" };
   if (roleOf(group, uid) !== "none") return { ok: false, status: 409, reason: "already_" + roleOf(group, uid) };
   if (Object.keys(group.members).length + Object.keys(group.pending).length >= MEMBER_CAP * 2) return { ok: false, status: 503, reason: "group_full" };
   const n = cleanNick(nick); if (n.length < 2) return { ok: false, status: 400, reason: "nickname_required" };
+  if (group.rejected) delete group.rejected[uid];
   group.pending[uid] = { nick: n, at: now }; return { ok: true };
 }
 export function reviewJoin(group, actor, isAdmin, target, decision, now) {
@@ -42,6 +44,7 @@ export function reviewJoin(group, actor, isAdmin, target, decision, now) {
     if (Object.keys(group.members).length >= MEMBER_CAP) return { ok: false, status: 409, reason: "group_full" };
     group.members[target] = { nick: p.nick, at: now };
   }
+  if (decision === "reject") { group.rejected = group.rejected || {}; if (Object.keys(group.rejected).length >= 100) delete group.rejected[Object.keys(group.rejected)[0]]; group.rejected[target] = now; }
   delete group.pending[target]; return { ok: true };
 }
 export function removeMember(group, actor, isAdmin, target) {

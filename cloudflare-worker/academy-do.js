@@ -107,7 +107,7 @@ export async function handleExtra(tx, action, b, now, newId) {
   else if (action === "garch") r = G.archiveGroup(group, uid, admin);
   if (r) { if (!r.ok) return fail(r); await tx.put("grp", grp); return ok(); }
   const msgs = (await tx.get("msg:" + gid)) || [];
-  if (action === "gpost") { r = G.postMessage(group, msgs, uid, admin, b.text, b.kind, newId(), now); if (!r.ok) return fail(r); await tx.put("msg:" + gid, msgs); return ok(); }
+  if (action === "gpost") { r = G.postMessage(group, msgs, uid, admin, b.text, b.kind, newId(), now); if (!r.ok) return fail(r); group.lastAt = now; await tx.put("grp", grp); await tx.put("msg:" + gid, msgs); return ok(); }
   if (action === "gread") { r = G.readMessages(group, msgs, uid, admin, b.since); if (!r.ok) return fail(r); return ok(r); }
   if (action === "gdel") { r = G.deleteMessage(group, msgs, uid, admin, String(b.mid || "")); if (!r.ok) return fail(r); await tx.put("msg:" + gid, msgs); return ok(); }
   if (action === "grep") { const rep = (await tx.get("rep")) || []; r = G.reportMessage(group, msgs, rep, uid, String(b.mid || ""), now); if (!r.ok) return fail(r); await tx.put("rep", rep); return ok(); }

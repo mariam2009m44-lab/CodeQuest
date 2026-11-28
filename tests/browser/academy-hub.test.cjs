@@ -2,7 +2,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),fs=require('fs/promises'),path=require('path');const root=path.resolve(__dirname,'../..');
 const API=(role)=>`globalThis.__calls=[];const role=${JSON.stringify(role)};const now=Date.now();
 const S=[{id:"s1",title:"نموذج: أساسيات Python",description:"بيانات تجريبية",track:"python",startsAt:now+3600e3,durationMin:60,linkUrl:"https://meet.google.com/abc-defg-hij",ownerName:"مدربة تجريبية",mine:role==="trainer"}];
-const G=[{id:"g1",name:"نموذج: مجموعة المبتدئين",description:"",track:"python",ownerName:"مدربة تجريبية",members:3,role:role==="trainer"?"owner":"member",archived:false},{id:"g2",name:"نموذج: أساسيات جافاسكربت",description:"",track:"javascript",ownerName:"مدرب تجريبي",members:5,role:role==="trainer"?"none":"none",archived:false}];
+const G=[{id:"g1",name:"نموذج: مجموعة المبتدئين",description:"",track:"python",ownerName:"مدربة تجريبية",members:3,role:role==="trainer"?"owner":"member",archived:false,lastAt:2},{id:"g2",name:"نموذج: أساسيات جافاسكربت",description:"",track:"javascript",ownerName:"مدرب تجريبي",members:5,role:"none",archived:false,rejected:role==="student"}];
 const M=[{id:"m1",nick:"مدربة تجريبية",role:"trainer",text:"الجلسة غدًا الساعة ٨",kind:"ann",at:1,mine:false},{id:"m2",nick:"نور",role:"student",text:"تمام",kind:"msg",at:2,mine:false}];
 export async function academyWorker(u,p,body){const ok=d=>({ok:true,status:200,data:{success:true,...d},off:false,unreachable:false});
  if(role==="off")return {ok:false,status:503,data:{message:"academy_off"},off:true,unreachable:false};
@@ -46,6 +46,12 @@ test('next step: each role sees one clear instruction; messages show per-sender 
  const tr=await open('trainer',{width:1100,height:900});try{assert.match(await tr.p.textContent('#nextStep'),/أدر مجموعتك/)}finally{await tr.b.close()}});
 test('next step covers visitors with no profile, pending guardian and admin',async()=>{
  for(const [r,re] of [['none',/أكمل التسجيل/],['student_pending',/بانتظار تأكيد ولي الأمر/],['admin',/لوحة الإدارة/]]){const x=await open(r);try{assert.match(await x.p.textContent('#nextStep'),re,r);if(r!=='admin')assert.equal(await x.p.isVisible('#hubBody'),false,r);if(r==='none')await x.p.screenshot({path:require('os').tmpdir()+'/hub-none-next.png',fullPage:true})}finally{await x.b.close()}}});
+test('unread badge shows until the group is opened; a rejected request says so and can be re-sent',async()=>{
+ const st=await open('student',{width:1100,height:900});try{await st.p.click('#tabGroups');await st.p.waitForTimeout(300);
+  assert.equal(await st.p.locator('#groupList .hub-new').count(),1);assert.match(await st.p.textContent('#groupList'),/لم يُقبل طلبك/);assert.match(await st.p.textContent('#groupList'),/اطلب مجددًا/);
+  await st.p.click('#groupList .wa-row >> nth=0');await st.p.waitForTimeout(500);
+  await st.p.reload();await st.p.waitForTimeout(800);await st.p.click('#tabGroups');await st.p.waitForTimeout(300);
+  assert.equal(await st.p.locator('#groupList .hub-new').count(),0)}finally{await st.b.close()}});
 test('chat-app layout: desktop two panes, mobile one pane at a time; trainer starts a live session from the group',async()=>{
  const {p,b}=await open('trainer',{width:1280,height:900});try{
   assert.equal(await p.locator('#groupList .wa-row').count(),2);await p.click('#tabGroups');await p.waitForTimeout(300);
