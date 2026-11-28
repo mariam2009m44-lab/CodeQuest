@@ -1,7 +1,7 @@
 // Extra Academy Directory actions: student profiles, sessions, code share, groups. Runs inside the Durable Object transaction (free plan).
 import * as S from "./academy-sessions-core.js";
 import * as G from "./academy-groups-core.js";
-export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole", "satt", "sattl"]);
+export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole", "satt", "sattl", "acr", "als", "amk", "adl"]);
 const fail = (r) => ({ status: r.status || 400, data: { success: false, message: r.reason } });
 const ok = (data = {}) => ({ status: 200, data: { success: true, ...data } });
 export async function handleExtra(tx, action, b, now, newId) {
@@ -65,6 +65,17 @@ export async function handleExtra(tx, action, b, now, newId) {
     const att = s.att || {}, g = s.groupId && grp[s.groupId];
     const names = g ? Object.keys(att).map(u => (g.members[u] && g.members[u].nick) || "").filter(Boolean) : [];
     return ok({ count: Object.keys(att).length, names: names.slice(0, 100) });
+  }
+  if (["acr", "als", "amk", "adl"].includes(action)) {
+    if (!canBrowse) return fail({ status: 403, reason: "profile_required" });
+    const asg = (await tx.get("asg")) || {}; const gid = String(b.gid || ""), g = grp[gid]; let r;
+    if (action === "acr") r = G.createAssignment(asg, g, uid, admin, b.value, newId(), now);
+    else if (action === "als") r = G.listAssignments(asg, g, uid, admin);
+    else if (action === "amk") r = G.markAssignment(asg, g, uid, String(b.id || ""), b.on !== false, now);
+    else r = G.deleteAssignment(asg, g, uid, admin, String(b.id || ""));
+    if (!r.ok) return fail(r);
+    if (action !== "als") await tx.put("asg", asg);
+    return ok(r);
   }
   if (action === "scn") { const r = S.cancelSession(ses, String(b.id || ""), uid, admin); if (!r.ok) return fail(r); await tx.put("ses", ses); return ok(); }
   if (action === "cput") {

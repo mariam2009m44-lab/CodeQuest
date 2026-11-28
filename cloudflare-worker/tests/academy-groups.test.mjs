@@ -116,3 +116,28 @@ test("demo day: session kind is kept, unknown kinds fall back to lesson", async 
   const l = (await c("sessions/list", "tokV")).data.sessions;
   assert.equal(l.find(x => x.id === a.data.id).kind, "demo"); assert.equal(l.find(x => x.id === b.data.id).kind, "lesson");
 });
+
+import { createAssignment, listAssignments, markAssignment, deleteAssignment } from "../academy-groups-core.js";
+test("assignments: owner posts, members tick done, owner sees names, outsiders refused", () => {
+  const g = { id: "g1", owner: "o", members: { a: { nick: "نور" }, b: { nick: "سلمى" } }, pending: { p: { nick: "x" } }, muted: {} }, asg = {};
+  assert.equal(createAssignment(asg, g, "a", false, { title: "تمرين 1" }, "i1", 1000).status, 403);
+  assert.equal(createAssignment(asg, g, "o", false, { title: "x" }, "i1", 1000).reason, "invalid");
+  assert.equal(createAssignment(asg, g, "o", false, { title: "تمرين الحلقات", text: "حل 3 مسائل", due: 5000 }, "i1", 1000).ok, true);
+  assert.equal(markAssignment(asg, g, "p", "i1", true, 2000).status, 403);
+  assert.equal(markAssignment(asg, g, "a", "i1", true, 2000).ok, true); markAssignment(asg, g, "a", "i1", true, 3000);
+  const m = listAssignments(asg, g, "a", false); assert.equal(m.items[0].done, true); assert.equal("doneCount" in m.items[0], false);
+  const o = listAssignments(asg, g, "o", false); assert.equal(o.items[0].doneCount, 1); assert.deepEqual(o.items[0].doneNames, ["نور"]);
+  assert.equal(listAssignments(asg, g, "z", false).status, 403);
+  assert.equal(markAssignment(asg, g, "a", "i1", false, 4000).ok, true); assert.equal(listAssignments(asg, g, "o", false).items[0].doneCount, 0);
+  assert.equal(deleteAssignment(asg, g, "a", false, "i1").status, 403); assert.equal(deleteAssignment(asg, g, "o", false, "i1").ok, true); assert.equal(listAssignments(asg, g, "o", false).items.length, 0);
+});
+test("assignments routes work end to end through the Worker", async () => {
+  const { c } = await world();
+  const gid = (await c("groups/create", "tokV", { name: "مجموعة بايثون", description: "", track: "python" })).data.id;
+  await c("groups/join", "tokA", { gid, nick: "علي" }); await c("groups/review", "tokV", { gid, target: "uidA", decision: "approve" });
+  assert.equal((await c("assignments/create", "tokA", { gid, title: "تمرين 1" })).status, 403);
+  const mk = await c("assignments/create", "tokV", { gid, title: "تمرين الحلقات", text: "حل مسألتين" }); assert.equal(mk.status, 200);
+  assert.equal((await c("assignments/mark", "tokA", { gid, id: mk.data.id, on: true })).status, 200);
+  assert.equal((await c("assignments/list", "tokV", { gid })).data.items[0].doneCount, 1);
+  assert.equal((await c("assignments/list", "tokA", { gid })).data.items[0].done, true);
+});

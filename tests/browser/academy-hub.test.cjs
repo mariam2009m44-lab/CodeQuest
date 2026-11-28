@@ -7,6 +7,7 @@ const M=[{id:"m1",nick:"مدربة تجريبية",role:"trainer",text:"الجل
 export async function academyWorker(u,p,body){const ok=d=>({ok:true,status:200,data:{success:true,...d},off:false,unreachable:false});
  if(role==="off")return {ok:false,status:503,data:{message:"academy_off"},off:true,unreachable:false};
  if(p==="my-role")return ok({role});if(p==="sessions/list")return ok({sessions:S});if(p==="groups/list")return ok({groups:G});
+ if(p==="assignments/list")return ok({role:role==="trainer"?"owner":"member",items:[{id:"a1",title:"نموذج: تمرين الحلقات",text:"بيانات تجريبية",due:now+864e5,done:false,doneCount:1,doneNames:["نور"],memberCount:3}]});if(p==="assignments/create"||p==="assignments/mark")globalThis.__calls.push([p,body]);
  if(p==="sessions/code-get")return ok({v:1,changed:true,code:"print('hi')"});
  if(p==="groups/read")return ok({items:M,members:[{uid:"u9",nick:"نور",muted:false}],pending:role==="trainer"?[{uid:"u8",nick:"سلمى",at:1}]:[],role:role==="trainer"?"owner":"member"});
  if(p==="sessions/create"||p==="groups/post"||p==="sessions/attend")globalThis.__calls.push([p,body]);return ok({});}`;
@@ -32,6 +33,9 @@ test('trainer sees create forms, announcement toggle and join requests',async()=
 test('server switch off shows the clean Arabic line, never a raw code',async()=>{const {p,b}=await open('off');try{const t=await p.textContent('#hubState');assert.match(t,/لم تُفتح بعد/);assert.doesNotMatch(t,/internal|academy_off/);assert.equal(await p.isHidden('#hubBody'),true)}finally{await b.close()}});
 
 test('safety rules are visible and state the 8-student cap',async()=>{const {p,b}=await open('student');try{await p.click('#safetyRules summary');const t=await p.textContent('#safetyRules');assert.match(t,/8 طلاب/);assert.match(t,/بطلب فقط/)}finally{await b.close()}});
+test('assignments: student ticks done, trainer sees the count and can post',async()=>{
+ const st=await open('student',{width:1100,height:900});try{await st.p.click('#tabGroups');await st.p.waitForTimeout(300);await st.p.click('#groupList .wa-row >> nth=0');await st.p.click('#stWork');await st.p.waitForTimeout(300);assert.match(await st.p.textContent('#workList'),/تمرين الحلقات/);assert.equal(await st.p.isVisible('#workBtn'),false);await st.p.click('#workList button');await st.p.waitForTimeout(200);assert.ok((await st.p.evaluate(()=>globalThis.__calls||[])).some(c=>c[0]==='assignments/mark'&&c[1].on===true))}finally{await st.b.close()}
+ const tr=await open('trainer',{width:1100,height:900});try{await tr.p.click('#tabGroups');await tr.p.waitForTimeout(300);await tr.p.click('#groupList .wa-row >> nth=0');await tr.p.click('#stWork');await tr.p.waitForTimeout(300);assert.match(await tr.p.textContent('#workList'),/أنجز 1 من 3/);await tr.p.click('#workBtn');await tr.p.fill('#workForm [name=title]','نموذج: واجب جديد');await tr.p.screenshot({path:require('os').tmpdir()+'/hub-desktop-work.png',fullPage:true});await tr.p.click('#workForm button[type=submit]');await tr.p.waitForTimeout(300);assert.ok((await tr.p.evaluate(()=>globalThis.__calls||[])).some(c=>c[0]==='assignments/create'&&c[1].title.includes('واجب')))}finally{await tr.b.close()}});
 test('chat-app layout: desktop two panes, mobile one pane at a time; trainer starts a live session from the group',async()=>{
  const {p,b}=await open('trainer',{width:1280,height:900});try{
   assert.equal(await p.locator('#groupList .wa-row').count(),2);await p.click('#tabGroups');await p.waitForTimeout(300);

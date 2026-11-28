@@ -108,3 +108,39 @@ export function reportMessage(group, msgs, reports, actor, mid, now) {
   if (reports.length > 200) reports.splice(0, reports.length - 200);
   return { ok: true };
 }
+
+// Assignments: text only, per group. Trainer posts, members tick "done". Owner sees the count and nicknames.
+export const ASG_CAP = 40;
+export function createAssignment(asg, group, actor, isAdmin, d, id, now) {
+  if (!group) return { ok: false, status: 404, reason: "not_found" };
+  if (group.owner !== actor && !isAdmin) return { ok: false, status: 403, reason: "forbidden" };
+  if (group.archived) return { ok: false, status: 409, reason: "archived" };
+  const title = str(d && d.title), text = str(d && d.text), due = Number(d && d.due) || 0;
+  if (title.length < 3 || title.length > 80 || text.length > 500) return { ok: false, status: 400, reason: "invalid" };
+  if (due && (due < now - 86400000 || due > now + 120 * 86400000)) return { ok: false, status: 400, reason: "invalid" };
+  if (Object.values(asg).filter(a => a.gid === group.id && !a.deleted).length >= ASG_CAP) return { ok: false, status: 429, reason: "too_many" };
+  asg[id] = { id, gid: group.id, title, text, due, createdAt: now, done: {} };
+  return { ok: true, id };
+}
+export function listAssignments(asg, group, actor, isAdmin) {
+  const role = roleOf(group, actor);
+  if (!group) return { ok: false, status: 404, reason: "not_found" };
+  if (role !== "owner" && role !== "member" && !isAdmin) return { ok: false, status: 403, reason: "not_member" };
+  const boss = role === "owner" || isAdmin;
+  const items = Object.values(asg).filter(a => a.gid === group.id && !a.deleted).sort((a, b) => (a.due || 9e15) - (b.due || 9e15) || b.createdAt - a.createdAt)
+    .map(a => ({ id: a.id, title: a.title, text: a.text, due: a.due, done: !!a.done[actor], ...(boss ? { doneCount: Object.keys(a.done).length, doneNames: Object.keys(a.done).map(u => group.members[u] && group.members[u].nick).filter(Boolean), memberCount: Object.keys(group.members).length } : {}) }));
+  return { ok: true, items, role: role === "none" ? "admin" : role };
+}
+export function markAssignment(asg, group, actor, id, on, now) {
+  const a = asg[id];
+  if (!a || a.deleted || !group || a.gid !== group.id) return { ok: false, status: 404, reason: "not_found" };
+  if (roleOf(group, actor) !== "member") return { ok: false, status: 403, reason: "not_member" };
+  if (on) a.done[actor] = a.done[actor] || now; else delete a.done[actor];
+  return { ok: true };
+}
+export function deleteAssignment(asg, group, actor, isAdmin, id) {
+  const a = asg[id];
+  if (!a || a.deleted || !group || a.gid !== group.id) return { ok: false, status: 404, reason: "not_found" };
+  if (group.owner !== actor && !isAdmin) return { ok: false, status: 403, reason: "forbidden" };
+  a.deleted = true; return { ok: true };
+}

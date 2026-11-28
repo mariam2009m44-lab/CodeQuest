@@ -122,13 +122,13 @@ $("groupForm").addEventListener("submit", async ev => {
   try { await api("groups/create", { name: f.elements.name.value, description: f.elements.description.value, track: f.elements.track.value }); f.reset(); say(fb, "تم إنشاء المجموعة."); loadGroups(); } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; }
 });
 function setSub(name) {
-  for (const [k, t, p] of [["chat", "stChat", "wpChat"], ["sched", "stSched", "wpSched"], ["people", "stPeople", "wpPeople"]]) { const on = k === name; $(p).hidden = !on; $(t).classList.toggle("is-active", on); $(t).setAttribute("aria-selected", String(on)); }
+  for (const [k, t, p] of [["chat", "stChat", "wpChat"], ["sched", "stSched", "wpSched"], ["work", "stWork", "wpWork"], ["people", "stPeople", "wpPeople"]]) { const on = k === name; $(p).hidden = !on; $(t).classList.toggle("is-active", on); $(t).setAttribute("aria-selected", String(on)); }
 }
-$("stChat").addEventListener("click", () => setSub("chat")); $("stSched").addEventListener("click", () => setSub("sched")); $("stPeople").addEventListener("click", () => setSub("people"));
+$("stChat").addEventListener("click", () => setSub("chat")); $("stSched").addEventListener("click", () => setSub("sched")); $("stPeople").addEventListener("click", () => setSub("people")); $("stWork").addEventListener("click", () => { setSub("work"); loadWork(); });
 function stopChat() { clearInterval(state.chatTimer); state.chatId = ""; state.lastDay = ""; }
 function showChat(on) { $("chat").hidden = !on; $("waEmpty").hidden = on; $("wa").classList.toggle("wa--chat", on); }
 async function openChat(g) {
-  stopChat(); state.chatId = g.id; state.since = 0; state.chat = g; state.pin = null; setSub("chat"); $("pinned").hidden = true; showChat(true); $("groupCreate").hidden = true;
+  stopChat(); state.chatId = g.id; state.since = 0; state.chat = g; state.pin = null; setSub("chat"); $("pinned").hidden = true; $("workForm").hidden = true; showChat(true); $("groupCreate").hidden = true;
   document.querySelectorAll(".wa-row").forEach(r => r.classList.toggle("is-open", r.dataset.gid === g.id));
   avatar($("chatAvatar"), g.name); $("chatTitle").textContent = g.name; $("chatMeta").textContent = (TRACKS[g.track] || g.track) + " · المدرب: " + (g.ownerName || "—") + " · " + g.members + " من 8 أعضاء";
   $("chatMessages").replaceChildren(); say($("chatFeedback"), ""); $("liveForm").hidden = true;
@@ -234,6 +234,39 @@ $("liveForm").addEventListener("submit", async ev => {
     await api("sessions/create", { title, description: "", track: g.track || "python", durationMin: 60, startsAt: later ? w : Date.now() + 60000, linkUrl: link, groupId: g.id, kind });
     await api("groups/post", { gid: g.id, text: (kind === "demo" ? "يوم العرض: " : "جلسة مباشرة: ") + title + (later ? " (" + fmt(w) + ") " : " ") + link, kind: "ann" });
     f.reset(); f.hidden = true; say(fb, ""); await refreshChat(true); loadGroupSessions(g.id);
+  } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; }
+});
+async function loadWork() {
+  const box = $("workList"), gid = state.chatId; if (!gid) return;
+  try {
+    const d = await api("assignments/list", { gid }); box.replaceChildren(); const boss = d.role === "owner" || d.role === "admin";
+    $("workBtn").hidden = d.role !== "owner" && d.role !== "admin";
+    if (!d.items.length) { box.append(el("div", "hub-empty", "لا توجد واجبات بعد.")); return; }
+    for (const a of d.items) {
+      const row = el("div", "wa-session"); const t = el("div", "wa-session-t"); t.append(el("strong", "", a.title));
+      if (a.text) t.append(el("small", "", a.text));
+      if (a.due) t.append(el("small", "", "التسليم: " + new Date(a.due).toLocaleDateString("ar-EG")));
+      const act = el("div", "hub-actions"); act.style.margin = 0;
+      if (boss) {
+        const c = el("span", "hub-pill", "أنجز " + a.doneCount + " من " + a.memberCount); act.append(c);
+        if (a.doneNames && a.doneNames.length) t.append(el("small", "", "أنجزه: " + a.doneNames.join("، ")));
+        const x = el("button", "hub-ghost hub-danger", "حذف"); x.type = "button"; x.addEventListener("click", async () => { if (!confirm("حذف هذا الواجب؟")) return; try { await api("assignments/delete", { gid, id: a.id }); loadWork(); } catch (e) { alert(e.message); } }); act.append(x);
+      } else {
+        const b = el("button", a.done ? "hub-ghost" : "hub-btn", a.done ? "✓ تم الإنجاز" : "تم الإنجاز"); b.type = "button";
+        b.addEventListener("click", async () => { try { await api("assignments/mark", { gid, id: a.id, on: !a.done }); loadWork(); } catch (e) { alert(e.message); } }); act.append(b);
+      }
+      row.append(t, act); box.append(row);
+    }
+  } catch (e) { box.replaceChildren(el("div", "hub-empty", e.message)); }
+}
+$("workBtn").addEventListener("click", () => { $("workForm").hidden = !$("workForm").hidden; });
+$("workCancel").addEventListener("click", () => { $("workForm").hidden = true; });
+$("workForm").addEventListener("submit", async ev => {
+  ev.preventDefault(); const f = ev.target, fb = $("workFeedback"), b = f.querySelector("button[type=submit]"); b.disabled = true; say(fb, "");
+  try {
+    const due = f.elements.due.value ? new Date(f.elements.due.value + "T23:59:00").getTime() : 0;
+    await api("assignments/create", { gid: state.chatId, title: f.elements.title.value.trim(), text: f.elements.text.value.trim(), due });
+    f.reset(); f.hidden = true; loadWork();
   } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; }
 });
 $("archiveBtn").addEventListener("click", async () => { if (!confirm("أرشفة المجموعة؟ لن يتمكن الأعضاء من المراسلة.")) return; try { await api("groups/archive", { gid: state.chatId }); $("chatClose").click(); } catch (e) { alert(e.message); } });
