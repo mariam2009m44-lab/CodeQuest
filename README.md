@@ -483,10 +483,10 @@ CodeQuest combines frontend technologies, backend services, cloud integrations, 
   <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js">
 </p>
 
-- Python
-- FastAPI
+- Python and FastAPI (optional local backend)
 - Node.js
-- Firebase Functions
+- Cloudflare Workers with Durable Objects (live academy and progress backend)
+- Firebase Functions (kept in the repository, not deployed)
 
 ### Database and Cloud Services
 
@@ -497,8 +497,8 @@ CodeQuest combines frontend technologies, backend services, cloud integrations, 
 
 - Firebase Authentication
 - Cloud Firestore
-- Firebase Functions
-- Cloudflare Workers
+- Cloudflare Workers and Durable Objects (free plan)
+- Vercel and GitHub Pages (frontend hosting)
 
 ### AI and Machine Learning
 
@@ -744,6 +744,8 @@ leaderboardPublic/{uid}
 
 ### Firebase Functions
 
+> **Current status:** the Firebase Functions code is kept in the repository, but it is **not deployed**. Deploying it needs a paid Firebase plan, and CodeQuest runs on free tiers only. The live academy, progress and Cody features run on the Cloudflare Worker instead.
+
 The Firebase Functions implementation is located in:
 
 `functions/index.js`
@@ -786,7 +788,23 @@ cloudflare-worker/
 └── wrangler.toml
 ```
 
-### Routes
+### Academy and Progress
+
+Besides the first routes below, the Worker now handles:
+
+| Area | Files |
+|---|---|
+| Academy (trainers, registration, placement) | `academy-core.js`, `academy-do.js` |
+| Groups, group chat, supervisors | `academy-groups-core.js` |
+| Live sessions | `academy-sessions-core.js` |
+| Academy notices | `academy-notify.js` |
+| Student progress | `progress-core.js` |
+| Parent links | `parent-core.js` |
+| Cody classifier | `cody-classifier.js` |
+
+Tests are in `cloudflare-worker/tests/` and run with `node --test`.
+
+### Routes (first version)
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -1062,17 +1080,17 @@ Deployment requirements include:
 
 ### Firebase Deployment
 
-Firebase Functions and Firestore require their own project configuration and deployment setup.
+Firestore rules and indexes are deployed with the Firebase project. Firebase Functions are not deployed, because they need a paid plan.
 
 ### Cloudflare Worker Deployment
 
-The Cloudflare Worker has a separate deployment configuration:
+The Cloudflare Worker is the live backend for the academy and student progress. It runs on the Cloudflare free plan, with Durable Objects for academy and progress data. Its deployment configuration is:
 
 ```text
 cloudflare-worker/wrangler.toml
 ```
 
-It must be configured and deployed independently from the FastAPI backend.
+It is deployed from the `main` branch by the GitHub Actions workflow and is separate from the FastAPI backend. Feature switches (for example the parent links flag) are set in `wrangler.toml` and change only through a reviewed commit.
 
 ### Deployment Considerations
 
@@ -1237,7 +1255,7 @@ If you would like to contribute:
 | Primary Interface Language | Arabic |
 | Layout Direction | Right-to-Left (RTL) |
 | Frontend | HTML, CSS, JavaScript, React, Vite |
-| Backend | Python, FastAPI, Node.js, Firebase Functions |
+| Backend | Cloudflare Workers (Durable Objects), Python and FastAPI (optional), Node.js |
 | AI Integration | Google Gemini API |
 | Machine Learning | Scikit-learn |
 | Code Execution | Judge0 Integration |
