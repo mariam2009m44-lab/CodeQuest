@@ -1,6 +1,6 @@
 // Pure logic for trainer-led student groups (free Worker path, no I/O). Text only, no direct messages, no links from students.
 export const GROUP_CAP = 200;
-export const MEMBER_CAP = 50;
+export const MEMBER_CAP = 8;
 export const MSG_KEEP = 200;
 export const MSG_MAX = 500;
 const TRACKS = ["python", "javascript", "cpp", "java", "web", "ai"];

@@ -31,6 +31,7 @@ test('trainer sees create forms, announcement toggle and join requests',async()=
  await p.screenshot({path:require('os').tmpdir()+'/hub-trainer-chat.png',fullPage:true})}finally{await b.close()}});
 test('server switch off shows the clean Arabic line, never a raw code',async()=>{const {p,b}=await open('off');try{const t=await p.textContent('#hubState');assert.match(t,/لم تُفتح بعد/);assert.doesNotMatch(t,/internal|academy_off/);assert.equal(await p.isHidden('#hubBody'),true)}finally{await b.close()}});
 
+test('safety rules are visible and state the 8-student cap',async()=>{const {p,b}=await open('student');try{await p.click('#safetyRules summary');const t=await p.textContent('#safetyRules');assert.match(t,/8 طلاب/);assert.match(t,/بطلب فقط/)}finally{await b.close()}});
 test('chat-app layout: desktop two panes, mobile one pane at a time; trainer starts a live session from the group',async()=>{
  const {p,b}=await open('trainer',{width:1280,height:900});try{
   assert.equal(await p.locator('#groupList .wa-row').count(),2);await p.click('#tabGroups');await p.waitForTimeout(300);

@@ -130,7 +130,7 @@ function showChat(on) { $("chat").hidden = !on; $("waEmpty").hidden = on; $("wa"
 async function openChat(g) {
   stopChat(); state.chatId = g.id; state.since = 0; state.chat = g; state.pin = null; setSub("chat"); $("pinned").hidden = true; showChat(true); $("groupCreate").hidden = true;
   document.querySelectorAll(".wa-row").forEach(r => r.classList.toggle("is-open", r.dataset.gid === g.id));
-  avatar($("chatAvatar"), g.name); $("chatTitle").textContent = g.name; $("chatMeta").textContent = (TRACKS[g.track] || g.track) + " · المدرب: " + (g.ownerName || "—") + " · " + g.members + " عضو";
+  avatar($("chatAvatar"), g.name); $("chatTitle").textContent = g.name; $("chatMeta").textContent = (TRACKS[g.track] || g.track) + " · المدرب: " + (g.ownerName || "—") + " · " + g.members + " من 8 أعضاء";
   $("chatMessages").replaceChildren(); say($("chatFeedback"), ""); $("liveForm").hidden = true;
   const poll = async () => { if (document.hidden || state.chatId !== g.id) return; await refreshChat(); };
   loadGroupSessions(g.id);

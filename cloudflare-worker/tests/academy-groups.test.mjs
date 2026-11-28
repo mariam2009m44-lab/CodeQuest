@@ -100,3 +100,12 @@ test("attendance: an active student's join tap is recorded once; only the owner 
   const mine = (await c("sessions/list", "tokV")).data.sessions.find(x => x.id === id); assert.equal(mine.attended, 1);
   const theirs = (await c("sessions/list", "tokA")).data.sessions.find(x => x.id === id); assert.equal("attended" in theirs, false);
 });
+
+import { MEMBER_CAP, reviewJoin } from "../academy-groups-core.js";
+test("group size cap is 8: the 9th approval is refused", () => {
+  assert.equal(MEMBER_CAP, 8);
+  const g = { owner: "o", members: {}, pending: {}, muted: {} };
+  for (let i = 0; i < 9; i++) g.pending["u" + i] = { nick: "n" + i, at: 1 };
+  for (let i = 0; i < 8; i++) assert.equal(reviewJoin(g, "o", false, "u" + i, "approve", 2).ok, true);
+  const r = reviewJoin(g, "o", false, "u8", "approve", 3); assert.equal(r.ok, false); assert.equal(r.reason, "group_full");
+});
