@@ -166,7 +166,7 @@
     <div class="level-box result-box">
       <div class="result-emoji" id="resultEmoji">🏆</div>
       <h2 id="resultTitle">انتهى التحدي!</h2>
-      <p class="result-message" id="resultMessage"></p><div id="learningReview"></div><p>انتهت الجولة. خذ راحة أو اختر مستوى عندما تحب.</p>
+      <p class="result-message" id="resultMessage"></p><div id="learningReview"></div><p>انتهت الجولة. خذ راحة أو اختيار مستوى عندما تحب.</p>
       <p class="final-score-text">لقد جمعت <span id="final" style="color: var(--green);">0</span> نقطة.</p>
       <button class="btn-restart" onclick="restartGame()">العب مجدداً</button>
       <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
@@ -288,12 +288,12 @@
       document.getElementById('final').textContent = score;
       const emoji = document.getElementById('resultEmoji');
       const msg = document.getElementById('resultMessage');
-      const review=document.getElementById('learningReview');review.replaceChildren();for(const r of reviews){const line=document.createElement('p');line.textContent=(r.correct?'✓ ':'راجع: ')+r.concept;const code=document.createElement('pre');code.dir='ltr';code.textContent=r.code+'\n# Output: '+r.output;line.appendChild(code);if(!r.correct){const why=document.createElement('span');why.textContent=r.explain;line.appendChild(why);}review.appendChild(line);}
+      const review=document.getElementById('learningReview');review.replaceChildren();for(const r of reviews){const line=document.createElement('p');line.textContent=(r.correct?'✓ ':'للمراجعة: ')+r.concept;const code=document.createElement('pre');code.dir='ltr';code.textContent=r.code+'\n# Output: '+r.output;line.appendChild(code);if(!r.correct){const why=document.createElement('span');why.textContent=r.explain;line.appendChild(why);}review.appendChild(line);}
       // Same thresholds as the stars in js/game-levels.js: 80% correct = 3 stars, 60% = 2 stars.
       const speedRatio = reviews.filter(r => r.correct).length / (currentQs.length || 6);
-      if (speedRatio >= 0.8) { emoji.textContent = '🏆'; msg.textContent = 'فهم رائع للكود! حصلت على 3 نجوم. راجع ما تعلمته في الجولة.'; }
+      if (speedRatio >= 0.8) { emoji.textContent = '🏆'; msg.textContent = 'فهم رائع للكود! حصلت على 3 نجوم. مراجعة ما تم تعلمه في الجولة.'; }
       else if (speedRatio >= 0.6) { emoji.textContent = '🌟'; msg.textContent = 'جيد جداً! حصلت على نجمتين وفتحت المستوى التالي. يمكنك التحسن.'; }
-      else { emoji.textContent = '🚀'; msg.textContent = 'لم تحصل على نجمة هذه المرة. لفتح المستوى التالي أجب عن 4 أسئلة صحيحة من 6 على الأقل، وراجع الشرح بالأسفل ثم حاول مرة أخرى.'; }
+      else { emoji.textContent = '🚀'; msg.textContent = 'لم تحصل على نجمة هذه المرة. لفتح المستوى التالي أجب عن 4 أسئلة صحيحة من 6 على الأقل، وراجع الشرح بالأسفل ثم يمكن المحاولة مرة أخرى.'; }
       if (speedRatio >= 0.6) window.CodeQuestExperience?.reward({ gems: 0, title: 'سرعة وتركيز!', message: 'أكملت التحدي وحققت نتيجة تستحق الاحتفال.' });
     }
 
