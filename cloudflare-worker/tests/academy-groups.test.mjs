@@ -141,3 +141,11 @@ test("assignments routes work end to end through the Worker", async () => {
   assert.equal((await c("assignments/list", "tokV", { gid })).data.items[0].doneCount, 1);
   assert.equal((await c("assignments/list", "tokA", { gid })).data.items[0].done, true);
 });
+
+import { removeMember, requestJoin } from "../academy-groups-core.js";
+test("a student can withdraw a pending request and leave a group; nobody else can remove them", () => {
+  const g = { id: "g", owner: "o", members: { m: { nick: "نور" } }, pending: {}, muted: {} };
+  assert.equal(requestJoin(g, "p", "سلمى", 1).ok, true); assert.equal(removeMember(g, "x", false, "p").ok, false);
+  assert.equal(removeMember(g, "p", false, "p").ok, true); assert.equal(Object.keys(g.pending).length, 0);
+  assert.equal(removeMember(g, "m", false, "m").ok, true); assert.equal(Object.keys(g.members).length, 0);
+});

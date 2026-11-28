@@ -89,6 +89,12 @@ $("codePublish").addEventListener("click", async () => {
 const HUES = [240, 252, 264, 276];
 function hue(text) { let h = 0; for (const c of String(text)) h = (h * 31 + c.codePointAt(0)) >>> 0; return HUES[h % HUES.length]; }
 function avatar(node, name) { node.textContent = Array.from(String(name).replace(/^نموذج:\s*/, "")).find(c => /[\p{L}\p{N}]/u.test(c)) || "؟"; node.style.background = "hsl(" + hue(name) + " 38% 36%)"; }
+function askNick(g) {
+  const dlg = $("nickDlg"), f = $("nickForm"), fb = $("nickFeedback"); $("nickGroup").textContent = g.name; f.reset(); say(fb, "");
+  f.onsubmit = async ev => { ev.preventDefault(); const b = f.querySelector("button[type=submit]"); b.disabled = true; try { await api("groups/join", { gid: g.id, nick: f.elements.nick.value }); dlg.close(); loadGroups(); loadNext(); } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; } };
+  dlg.showModal();
+}
+$("nickCancel").addEventListener("click", () => $("nickDlg").close());
 async function loadGroups() {
   const list = $("groupList");
   try {
@@ -103,14 +109,14 @@ async function loadGroups() {
       const av = el("span", "wa-avatar"); avatar(av, g.name);
       const body = el("div", "wa-row-body"); body.append(el("strong", "", g.name));
       const sub = [TRACKS[g.track] || g.track, g.members + " عضو", "المدرب: " + (g.ownerName || "—")].join(" · ");
-      body.append(el("small", "", sub));
+      body.append(el("small", "", sub)); if (g.description) body.append(el("small", "", g.description));
       row.append(av, body);
       if (g.archived) row.append(el("span", "hub-pill", "مؤرشفة"));
       if (canOpen) { row.tabIndex = 0; row.setAttribute("role", "button"); const go = () => openChat(g); row.addEventListener("click", go); row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }); }
-      else if (g.role === "pending") row.append(el("span", "hub-pill", "بانتظار الموافقة"));
+      else if (g.role === "pending") { row.append(el("span", "hub-pill", "بانتظار موافقة المدرب")); const w = el("button", "hub-ghost", "إلغاء الطلب"); w.type = "button"; w.addEventListener("click", async () => { try { await api("groups/remove", { gid: g.id }); loadGroups(); loadNext(); } catch (e) { alert(e.message); } }); row.append(w); }
       else if (state.role === "student") {
         const j = el("button", "hub-ghost", "اطلب الانضمام"); j.type = "button";
-        j.addEventListener("click", async () => { const nick = prompt("اكتب اسمًا مستعارًا يظهر للمجموعة (بدون اسمك الحقيقي):"); if (!nick) return; try { await api("groups/join", { gid: g.id, nick }); loadGroups(); } catch (e) { alert(e.message); } });
+        j.addEventListener("click", async () => { askNick(g) });
         row.append(j);
       }
       list.append(row);
@@ -177,7 +183,7 @@ async function refreshChat(first) {
       const dl = dayLabel(m.at); if (dl !== state.lastDay) { state.lastDay = dl; box.append(el("div", "wa-day", dl)); }
       const row = el("div", "hub-msg " + (m.kind === "ann" ? "ann" : m.mine ? "mine" : "other"));
       row.dataset.id = m.id;
-      if (!m.mine || m.kind === "ann") row.append(el("b", "", (m.kind === "ann" ? "📢 إعلان · " : "") + m.nick + (m.role === "trainer" ? " (المدرب)" : "")));
+      { const who = el("b", "", (m.kind === "ann" ? "📢 إعلان · " : "") + m.nick + (m.mine ? " (أنت)" : "") + (m.role === "trainer" ? " · المدرب" : m.role === "admin" ? " · الإدارة" : "")); if (m.kind !== "ann") who.style.color = "hsl(" + hue(m.nick) + " 70% 78%)"; row.append(who); }
       const body = el("span", "wa-text"); if (m.kind === "ann" && /^https?:\/\/\S+$/i.test(m.text.split(/\s+/).pop() || "")) { const parts = m.text.split(/\s+/); const url = parts.pop(); body.append(parts.join(" ") + " "); const a = el("a", "", "فتح الرابط"); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; body.append(a); } else body.textContent = m.text;
       row.append(body); const meta = el("small", "", new Date(m.at).toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit" })); row.append(meta);
       if (!m.mine && d.role === "member") { const r = el("button", "", "إبلاغ"); r.type = "button"; r.addEventListener("click", async () => { try { await api("groups/report", { gid: state.chatId, mid: m.id }); r.textContent = "تم الإبلاغ"; r.disabled = true; } catch (e) { alert(e.message); } }); meta.append(r); }
@@ -185,6 +191,7 @@ async function refreshChat(first) {
       box.append(row);
       if (m.kind === "ann") state.pin = m;
     }
+    if (!box.querySelector(".hub-msg")) { if (!box.querySelector(".wa-hint")) box.append(el("div", "wa-hint", d.role === "member" ? "لا توجد رسائل بعد. اكتب أول رسالة لتبدأ المحادثة." : "لا توجد رسائل بعد. انشر إعلانًا (فعّل خانة «إعلان») ليظهر مثبتًا للجميع.")); } else { const h = box.querySelector(".wa-hint"); if (h) h.remove(); }
     pin();
     if (first || near) box.scrollTop = box.scrollHeight;
     renderManage(d, owner);
@@ -202,6 +209,7 @@ function renderManage(d, owner) {
     row.append(a); p.append(row);
   }
   state.pending = d.pending;
+  $("leaveBtn").hidden = d.role !== "member";
   if (!d.members.length) m.append(el("p", "hub-hint", "لا يوجد أعضاء بعد."));
   for (const x of d.members) {
     const row = el("div", "hub-person"); row.append(el("span", "", x.nick + (x.muted ? " (مكتوم)" : "")));
@@ -214,6 +222,7 @@ function renderManage(d, owner) {
     m.append(row);
   }
 }
+$("leaveBtn").addEventListener("click", async () => { if (!confirm("مغادرة هذه المجموعة؟ يمكنك طلب الانضمام مرة أخرى لاحقًا.")) return; try { await api("groups/remove", { gid: state.chatId }); $("chatClose").click(); loadGroups(); loadNext(); } catch (e) { alert(e.message); } });
 $("acceptAll").addEventListener("click", async () => {
   const b = $("acceptAll"); b.disabled = true;
   try { for (const x of state.pending || []) await api("groups/review", { gid: state.chatId, target: x.uid, decision: "approve" }); await refreshChat(); } catch (e) { alert(e.message); } finally { b.disabled = false; }
@@ -271,13 +280,40 @@ $("workForm").addEventListener("submit", async ev => {
 });
 $("archiveBtn").addEventListener("click", async () => { if (!confirm("أرشفة المجموعة؟ لن يتمكن الأعضاء من المراسلة.")) return; try { await api("groups/archive", { gid: state.chatId }); $("chatClose").click(); } catch (e) { alert(e.message); } });
 
+// ---------- Next step: one clear instruction per role and state ----------
+function step(title, text, links) {
+  const box = $("nextStep"); box.replaceChildren(el("span", "ns-kicker", "الخطوة التالية"), el("h2", "", title), el("p", "", text));
+  const a = el("div", "hub-actions"); a.style.margin = "10px 0 0";
+  for (const [lab, href, primary] of links || []) { const l = el("a", primary ? "hub-btn" : "hub-ghost", lab); l.href = href; l.style.textDecoration = "none"; l.style.display = "inline-flex"; l.style.alignItems = "center"; a.append(l); }
+  if (links && links.length) box.append(a); box.hidden = false;
+}
+function loadNext() {
+  const gd = document.querySelector(".cq-start-guide"); if (gd) gd.hidden = !!state.user && state.role !== "none"; $("hubState").hidden = !!state.user;
+  const r = state.role, gs = state.groups || [];
+  if (!state.user) return step("سجّل الدخول", "الأكاديمية مجانية. أنشئ حسابًا أو سجّل الدخول لتبدأ.", [["تسجيل الدخول", "login.html?next=academy-hub.html", true], ["إنشاء حساب", "signup.html", false]]);
+  if (r === "none") return step("أكمل التسجيل", "اختر دورك: طالب يتعلم مع مدرب، أو مدرب ينشئ مجموعات وجلسات. بعد التسجيل تُفتح هذه الصفحة بالكامل.", [["أكمل التسجيل", "academy-registration.html", true], ["اختبار تحديد المستوى", "placement.html", false]]);
+  if (r === "student_pending") return step("بانتظار تأكيد ولي الأمر", "ملفك محفوظ. تؤكد الإدارة موافقة ولي الأمر ثم تفتح المجموعات والجلسات. في الأثناء يمكنك التعلم في المنصة.", [["مساحة التعلّم", "dashboard.html", true], ["اختبار تحديد المستوى", "placement.html", false]]);
+  if (r === "applicant_pending") return step("طلب المدرب قيد المراجعة", "تراجع الإدارة طلبك. لا يلزمك شيء الآن. يمكنك إكمال ملف طالب من صفحة التسجيل.", [["صفحة التسجيل", "academy-registration.html", false]]);
+  if (String(r).startsWith("applicant_")) return step("لم يُقبل الطلب", "يمكنك التسجيل كطالب من صفحة التسجيل.", [["صفحة التسجيل", "academy-registration.html", true]]);
+  if (r === "admin") return step("أنت في وضع الإدارة", "راجع طلبات المدربين وموافقات أولياء الأمور والبلاغات من لوحة الإدارة.", [["لوحة الإدارة", "academy-admin.html", true]]);
+  if (r === "trainer") {
+    const mine = gs.filter(g => g.role === "owner");
+    if (!mine.length) return step("أنشئ مجموعتك الأولى", "من تبويب «المجموعات» أنشئ مجموعة، وسيرسل الطلاب طلبات انضمام تقبلها أنت.", []);
+    return step("أدر مجموعتك", "افتح مجموعتك: انشر إعلانًا في «المحادثة»، وحدد موعدًا في «الجدول»، وأضف واجبًا، ثم اقبل طلبات الانضمام من «الأعضاء».", []);
+  }
+  const member = gs.filter(g => g.role === "member"), pend = gs.filter(g => g.role === "pending");
+  if (member.length) return step("افتح مجموعتك", "تابع إعلانات المدرب في «المحادثة»، وموعد الجلسة في «الجدول»، وواجباتك في «الواجبات».", []);
+  if (pend.length) return step("طلبك بانتظار المدرب", "يقبل المدرب طلبك قريبًا فتظهر مجموعتك هنا. يمكنك إلغاء الطلب وتجربة مجموعة أخرى.", []);
+  return step("انضم إلى مجموعة", "افتح تبويب «المجموعات»، اختر مجموعة مناسبة لمسارك، واضغط «اطلب الانضمام» بلقب تختاره (دون اسمك الحقيقي).", [["اختبار تحديد المستوى", "placement.html", false]]);
+}
+
 // ---------- Boot ----------
 await authPersistenceReady;
 onAuthStateChanged(auth, async user => {
-  state.user = user; const st = $("hubState");
+  state.user = user; const st = $("hubState"); loadNext();
   if (!user) { st.textContent = "سجّل الدخول لمشاهدة الجلسات والمجموعات. "; const a = el("a", "", "تسجيل الدخول"); a.href = "login.html?next=academy-hub.html"; st.append(a); $("hubBody").hidden = true; return; }
   try {
-    const d = await api("my-role"); state.role = d.role;
+    const d = await api("my-role"); state.role = d.role; loadNext();
     const reg = () => { st.textContent = ""; const a = el("a", "", "صفحة التسجيل"); a.href = "academy-registration.html"; return a; };
     if (state.role === "student_pending") { st.textContent = "ملفك محفوظ وبانتظار تأكيد موافقة ولي الأمر من الإدارة. بعدها تفتح الجلسات والمجموعات."; $("hubBody").hidden = true; return; }
     if (state.role === "none" || String(state.role).startsWith("applicant_")) {
@@ -285,6 +321,6 @@ onAuthStateChanged(auth, async user => {
     }
     st.textContent = state.role === "admin" ? "أنت في وضع الإدارة." : state.role === "trainer" ? "أهلًا بك أيها المدرب المعتمد." : "ملفك مفعّل. اختر جلسة أو مجموعة.";
     $("hubBody").hidden = false; $("sessionCreate").hidden = !isTrainer(); $("groupCreate").hidden = !isTrainer();
-    loadSessions(); loadGroups();
-  } catch (e) { st.textContent = e.message; $("hubBody").hidden = true; }
+    loadSessions(); loadGroups().then(loadNext);
+  } catch (e) { st.hidden = false; st.textContent = e.message; $("hubBody").hidden = true; }
 });

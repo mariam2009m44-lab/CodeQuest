@@ -46,6 +46,7 @@ export function reviewJoin(group, actor, isAdmin, target, decision, now) {
 }
 export function removeMember(group, actor, isAdmin, target) {
   if (!group) return { ok: false, status: 404, reason: "not_found" };
+  if (actor === target && group.pending[target]) { delete group.pending[target]; return { ok: true }; } // withdraw own join request
   const self = actor === target && !!group.members[target];
   if (group.owner !== actor && !isAdmin && !self) return { ok: false, status: 403, reason: "forbidden" };
   if (!group.members[target]) return { ok: false, status: 404, reason: "not_member" };

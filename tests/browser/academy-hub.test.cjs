@@ -36,6 +36,16 @@ test('safety rules are visible and state the 8-student cap',async()=>{const {p,b
 test('assignments: student ticks done, trainer sees the count and can post',async()=>{
  const st=await open('student',{width:1100,height:900});try{await st.p.click('#tabGroups');await st.p.waitForTimeout(300);await st.p.click('#groupList .wa-row >> nth=0');await st.p.click('#stWork');await st.p.waitForTimeout(300);assert.match(await st.p.textContent('#workList'),/تمرين الحلقات/);assert.equal(await st.p.isVisible('#workBtn'),false);await st.p.click('#workList button');await st.p.waitForTimeout(200);assert.ok((await st.p.evaluate(()=>globalThis.__calls||[])).some(c=>c[0]==='assignments/mark'&&c[1].on===true))}finally{await st.b.close()}
  const tr=await open('trainer',{width:1100,height:900});try{await tr.p.click('#tabGroups');await tr.p.waitForTimeout(300);await tr.p.click('#groupList .wa-row >> nth=0');await tr.p.click('#stWork');await tr.p.waitForTimeout(300);assert.match(await tr.p.textContent('#workList'),/أنجز 1 من 3/);await tr.p.click('#workBtn');await tr.p.fill('#workForm [name=title]','نموذج: واجب جديد');await tr.p.screenshot({path:require('os').tmpdir()+'/hub-desktop-work.png',fullPage:true});await tr.p.click('#workForm button[type=submit]');await tr.p.waitForTimeout(300);assert.ok((await tr.p.evaluate(()=>globalThis.__calls||[])).some(c=>c[0]==='assignments/create'&&c[1].title.includes('واجب')))}finally{await tr.b.close()}});
+test('next step: each role sees one clear instruction; messages show per-sender names; nickname dialog replaces the prompt',async()=>{
+ const st=await open('student',{width:1100,height:900});try{
+  assert.match(await st.p.textContent('#nextStep'),/افتح مجموعتك/);assert.equal(await st.p.isVisible('.cq-start-guide'),false);
+  await st.p.click('#tabGroups');await st.p.waitForTimeout(300);await st.p.click('#groupList .wa-row >> nth=0');await st.p.waitForTimeout(500);
+  const names=await st.p.$$eval('#chatMessages .hub-msg b',e=>e.map(x=>x.textContent));assert.ok(names.some(n=>n.includes('نور')),'sender name shown');assert.ok(names.some(n=>n.includes('المدرب')||n.includes('مدربة')),'trainer tag shown');
+  assert.equal(await st.p.isVisible('#leaveBtn'),false);await st.p.click('#stPeople');assert.equal(await st.p.isVisible('#leaveBtn'),true);
+  await st.p.screenshot({path:require('os').tmpdir()+'/hub-student-next.png',fullPage:true})}finally{await st.b.close()}
+ const tr=await open('trainer',{width:1100,height:900});try{assert.match(await tr.p.textContent('#nextStep'),/أدر مجموعتك/)}finally{await tr.b.close()}});
+test('next step covers visitors with no profile, pending guardian and admin',async()=>{
+ for(const [r,re] of [['none',/أكمل التسجيل/],['student_pending',/بانتظار تأكيد ولي الأمر/],['admin',/لوحة الإدارة/]]){const x=await open(r);try{assert.match(await x.p.textContent('#nextStep'),re,r);if(r!=='admin')assert.equal(await x.p.isVisible('#hubBody'),false,r);if(r==='none')await x.p.screenshot({path:require('os').tmpdir()+'/hub-none-next.png',fullPage:true})}finally{await x.b.close()}}});
 test('chat-app layout: desktop two panes, mobile one pane at a time; trainer starts a live session from the group',async()=>{
  const {p,b}=await open('trainer',{width:1280,height:900});try{
   assert.equal(await p.locator('#groupList .wa-row').count(),2);await p.click('#tabGroups');await p.waitForTimeout(300);
