@@ -145,7 +145,7 @@
   <section class="game-art-banner" aria-label="تحدي المعرفة"><img src="assets/games/game-quiz.svg" alt="" decoding="async"></section>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
-      <h2>اختر مستوى التحدي</h2>
+      <h2>اختيار مستوى التحدي</h2>
       <div class="levels-grid">
         <button class="lvl-btn lvl-easy" onclick="startGame('easy')"><span>مبتدئ</span> <span>10 أسئلة</span></button>
         <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>15 سؤال</span></button>
@@ -163,7 +163,7 @@
   <div class="screen" id="resultScreen">
     <div class="level-box result-box">
       <div class="result-emoji" id="resultEmoji">🏆</div>
-      <h2 id="resultTitle">أحسنت!</h2>
+      <h2 id="resultTitle">إنجاز رائع!</h2>
       <p class="result-message" id="resultMessage"></p>
       <p class="final-score-text">لقد جمعت <span id="finalScore" style="color: var(--green);">0</span> نقطة.</p>
       <button class="btn-restart" onclick="restartGame()">العب مستوى آخر</button>
@@ -375,10 +375,10 @@
       // Same thresholds as the stars in js/game-levels.js: 80% / 50% / 20% of the best possible streak score.
       let bestPossible = 0; for (let k = 1; k <= currentQs.length; k++) bestPossible += 10 + 2 * k;
       const quizRatio = score / bestPossible;
-      if (quizRatio >= 0.8) { emoji.textContent = '🏆'; msg.textContent = 'أنت أسطورة! أداء مبهر جداً. حصلت على 3 نجوم.'; }
-      else if (quizRatio >= 0.5) { emoji.textContent = '🌟'; msg.textContent = 'عمل رائع! حصلت على نجمتين. حاول مرة أخرى للحصول على 3.'; }
+      if (quizRatio >= 0.8) { emoji.textContent = '🏆'; msg.textContent = 'أداء أسطوري ومبهر جدًا. حصلت على 3 نجوم.'; }
+      else if (quizRatio >= 0.5) { emoji.textContent = '🌟'; msg.textContent = 'عمل رائع! حصلت على نجمتين. يمكن المحاولة مرة أخرى للحصول على 3.'; }
       else if (quizRatio >= 0.2) { emoji.textContent = '🚀'; msg.textContent = 'بداية جيدة! حصلت على نجمة وفتحت المستوى التالي. استمر في التعلم.'; }
-      else { emoji.textContent = '🚀'; msg.textContent = 'لم تحصل على نجمة هذه المرة. أجب بشكل صحيح وبسلسلة أطول لفتح المستوى التالي، وحاول مرة أخرى.'; }
+      else { emoji.textContent = '🚀'; msg.textContent = 'لم تحصل على نجمة هذه المرة. أجب بشكل صحيح وبسلسلة أطول لفتح المستوى التالي، ويمكن المحاولة مرة أخرى.'; }
       if (quizRatio >= 0.2) window.CodeQuestExperience?.reward({ gems: 0, title: 'تحدي مكتمل!', message: 'أداء رائع! كودي بيحتفل بتقدمك.' });
     }
 
