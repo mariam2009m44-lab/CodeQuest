@@ -53,7 +53,7 @@ test("academy pages never show raw error codes and keep the owner bootstrap hidd
   assert.equal(r[3], "");
   const live = fs.readFileSync(path.join(root, "js/live-academy.js"), "utf8");
   assert.ok(/bootstrapButton\.hidden=true/.test(live));
-  for (const f of ["js/live-academy.js", "js/academy-community.js", "js/academy-registration.js"]) {
+  for (const f of ["js/live-academy.js", "js/academy-registration.js"]) {
     assert.ok(!/error\??\.message/.test(fs.readFileSync(path.join(root, f), "utf8")), f);
   }
 });

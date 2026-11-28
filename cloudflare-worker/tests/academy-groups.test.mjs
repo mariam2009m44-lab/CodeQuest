@@ -158,3 +158,13 @@ test("rejected request is shown to the student once and can be re-sent; lastAt o
   assert.equal(listGroups({ g }, "m", false)[0].lastAt, 77); assert.equal("rejected" in listGroups({ g }, "m", false)[0], false);
   assert.equal(requestJoin(g, "p", "سلمى", 3).ok, true); assert.equal("rejected" in listGroups({ g }, "p", false)[0], false);
 });
+
+import { listTrainers } from "../academy-groups-core.js";
+test("trainer directory lists approved trainers only and exposes no private fields", async () => {
+  const apps = { u1: { status: "approved", fullName: "مدرب تجريبي", specialties: ["python"], teachingLevels: ["beginner"], ageGroups: ["10-12"], bio: "ب".repeat(300), email: "x@y.test", portfolioUrl: "https://a.test", linkedinUrl: "https://b.test" }, u2: { status: "pending", fullName: "طلب" } };
+  const l = listTrainers(apps, { g: { owner: "u1", archived: false }, h: { owner: "u1", archived: true } });
+  assert.equal(l.length, 1); assert.equal(l[0].groups, 1); assert.equal(l[0].bio.length, 240);
+  assert.deepEqual(Object.keys(l[0]).sort(), ["ageGroups", "bio", "groups", "levels", "name", "specialties"]);
+  const { c } = await world(); const r = await c("trainers/list", "tokA"); assert.equal(r.status, 200); assert.ok(Array.isArray(r.data.trainers));
+  assert.equal((await c("trainers/list", "tokB")).status, 403); assert.equal((await c("trainers/list", "")).status, 401);
+});

@@ -1,7 +1,7 @@
 import { auth, functions, authPersistenceReady } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
-import { acadMsg, academyErrorIsDown } from "./academy-errors.js";
+import { acadMsg, academyErrorIsDown, legacyMsg } from "./academy-errors.js";
 
 const account = document.getElementById("liveAccount");
 const list = document.getElementById("classList");
@@ -110,7 +110,7 @@ function renderClass(item) {
           rosterList.append(row);
         });
         roster.dataset.loaded="true";
-      }catch(error){rosterList.textContent=acadMsg(error)||"تعذر تحميل قائمة الطلاب.";}
+      }catch(error){rosterList.textContent=legacyMsg(error)||"تعذر تحميل قائمة الطلاب.";}
       finally{roster.dataset.loading="false";}
     });
     card.append(roster);
@@ -119,7 +119,7 @@ function renderClass(item) {
 }
 async function runAction(action) {
   try { await action(); }
-  catch(error) { showMessage(account,acadMsg(error) || "تعذر تنفيذ العملية. حاول مرة أخرى.",true); }
+  catch(error) { showMessage(account,legacyMsg(error) || "تعذر تنفيذ العملية. حاول مرة أخرى.",true); }
 }
 async function loadClasses() {
   if (!currentUser) return;
@@ -135,8 +135,8 @@ async function loadClasses() {
     classes.forEach(item=>list.append(renderClass(item)));
   } catch(error) {
     list.replaceChildren();
-    const empty=document.createElement("div");empty.className="live-empty";empty.textContent=acadMsg(error)||"تعذر تحميل الفصول. حاول مرة أخرى بعد قليل.";list.append(empty);
-    if(!academyErrorIsDown(error))showMessage(account,acadMsg(error) || "تعذر الاتصال بخدمة الأكاديمية.",true);
+    const empty=document.createElement("div");empty.className="live-empty";empty.textContent=legacyMsg(error)||"تعذر تحميل الفصول. حاول مرة أخرى بعد قليل.";list.append(empty);
+    if(!academyErrorIsDown(error))showMessage(account,legacyMsg(error) || "تعذر الاتصال بخدمة الأكاديمية.",true);
   }
 }
 refreshButton.addEventListener("click",loadClasses);
@@ -147,13 +147,13 @@ bootstrapButton.addEventListener("click",async()=>{
     await currentUser.getIdToken(true);
     showMessage(account,"تم إعداد صلاحية مسؤول الأكاديمية. حدّث الصفحة إذا لم تظهر أدوات الإدارة.");
     location.reload();
-  }catch(error){showMessage(account,acadMsg(error)||"تعذر إعداد المسؤول. تأكد من إعداد بريد المالك على الخادم.",true);}
+  }catch(error){showMessage(account,legacyMsg(error)||"تعذر إعداد المسؤول. تأكد من إعداد بريد المالك على الخادم.",true);}
   finally{bootstrapButton.disabled=false;}
 });
 approveSelfButton.addEventListener("click",async()=>{
   approveSelfButton.disabled=true;
   try{await approveInstructor({instructorUid:currentUser.uid});await currentUser.getIdToken(true);showMessage(adminFeedback,"تم اعتماد حسابك كمدرّب. حدّث الصفحة.");location.reload();}
-  catch(error){showMessage(adminFeedback,acadMsg(error)||"تعذر اعتماد الحساب.",true);}
+  catch(error){showMessage(adminFeedback,legacyMsg(error)||"تعذر اعتماد الحساب.",true);}
   finally{approveSelfButton.disabled=false;}
 });
 approveForm.addEventListener("submit",async event=>{
@@ -163,7 +163,7 @@ approveForm.addEventListener("submit",async event=>{
     const instructorUid=String(new FormData(approveForm).get("instructorUid")||"").trim();
     await approveInstructor({instructorUid});
     approveForm.reset();showMessage(adminFeedback,"تم اعتماد حساب المدرّب. يجب عليه تسجيل الخروج والدخول لتحديث صلاحياته.");
-  }catch(error){showMessage(adminFeedback,acadMsg(error)||"تعذر اعتماد المدرّب.",true);}
+  }catch(error){showMessage(adminFeedback,legacyMsg(error)||"تعذر اعتماد المدرّب.",true);}
   finally{button.disabled=false;}
 });
 createForm.addEventListener("submit",async event=>{
@@ -188,7 +188,7 @@ createForm.addEventListener("submit",async event=>{
     showMessage(feedback,"تم إنشاء الفصل وغرفة البث. سيظهر الفصل في القائمة.");
     await loadClasses();
   } catch(error) {
-    showMessage(feedback,acadMsg(error) || "تعذر إنشاء الفصل.",true);
+    showMessage(feedback,legacyMsg(error) || "تعذر إنشاء الفصل.",true);
   } finally {submit.disabled=false;}
 });
 await authPersistenceReady;
@@ -211,7 +211,7 @@ onAuthStateChanged(auth,async user=>{
         const ownedGroups=groupsResult.data?.groups||[];
         groupSelect.replaceChildren(new Option("فصل مفتوح لجميع الطلاب المسجلين",""));
         ownedGroups.forEach(group=>groupSelect.add(new Option(group.name,group.id)));
-      }catch(error){showMessage(account,"تعذر تحميل مجموعاتك: "+(acadMsg(error)||"حاول تحديث الصفحة."),true);}
+      }catch(error){showMessage(account,"تعذر تحميل مجموعاتك: "+(legacyMsg(error)||"حاول تحديث الصفحة."),true);}
     }
     bootstrapButton.hidden=true; // owner bootstrap stays hidden: admin tools are not offered to learners
     account.textContent=isAdmin?"تم التحقق من صلاحيات مسؤول الأكاديمية.":isInstructor?"تم التحقق من حساب المدرّب المعتمد.":"أهلًا بك في أكاديمية CodeQuest المباشرة.";

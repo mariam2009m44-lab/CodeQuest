@@ -26,15 +26,39 @@ async function api(path, body) {
 }
 function trackJoin(a, id) { a.addEventListener("click", () => { api("sessions/attend", { id }).catch(() => {}); }); }
 function fmt(ts) { return new Date(ts).toLocaleString("ar-EG", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }); }
+const TABS = ["trainers", "groups", "chats", "sessions"], TAB_ID = { trainers: "Trainers", groups: "Groups", chats: "Chats", sessions: "Sessions" };
 function setTab(name) {
-  const s = name === "sessions";
-  $("paneSessions").hidden = !s; $("paneGroups").hidden = s;
-  $("tabSessions").classList.toggle("is-active", s); $("tabGroups").classList.toggle("is-active", !s);
-  $("tabSessions").setAttribute("aria-selected", String(s)); $("tabGroups").setAttribute("aria-selected", String(!s));
-  if (!s) loadGroups(); else loadSessions();
+  for (const t of TABS) { const on = t === name; $("pane" + TAB_ID[t]).hidden = !on; $("tab" + TAB_ID[t]).classList.toggle("is-active", on); $("tab" + TAB_ID[t]).setAttribute("aria-selected", String(on)); }
+  document.querySelectorAll("#bottomNav button").forEach(b => b.classList.toggle("is-active", b.dataset.tab === name));
+  state.tab = name;
+  if (name === "trainers") loadTrainers(); else if (name === "sessions") loadSessions(); else loadGroups();
 }
-$("tabSessions").addEventListener("click", () => setTab("sessions"));
-$("tabGroups").addEventListener("click", () => setTab("groups"));
+for (const t of TABS) $("tab" + TAB_ID[t]).addEventListener("click", () => setTab(t));
+document.querySelectorAll("#bottomNav button").forEach(b => b.addEventListener("click", () => { setTab(b.dataset.tab); window.scrollTo({ top: 0, behavior: "smooth" }); }));
+
+// ---------- Trainers ----------
+async function loadTrainers() {
+  const box = $("trainerList");
+  try {
+    const d = await api("trainers/list"); state.trainers = d.trainers || []; box.replaceChildren();
+    if (!state.trainers.length) { box.append(el("div", "hub-empty", "لا يوجد مدرّسون معتمدون بعد. يظهر المدرّس هنا بعد أن تعتمده الإدارة.")); return; }
+    for (const t of state.trainers) {
+      const c = el("article", "hub-card2 hub-trainer"), av = el("span", "hub-avatar"); avatar(av, t.name);
+      c.append(av, el("strong", "", t.name), el("span", "hub-verified", "✓ معتمد"));
+      const sp = el("div", "hub-tags"); t.specialties.forEach(x => sp.append(el("span", "hub-pill", TRACKS[x] || x))); c.append(sp);
+      c.append(el("small", "", t.groups ? t.groups + " " + (t.groups === 1 ? "مجموعة" : "مجموعات") : "لا توجد مجموعات بعد"));
+      const b = el("button", "hub-ghost", "عرض الملف"); b.type = "button"; b.addEventListener("click", () => openTrainer(t)); c.append(b); box.append(c);
+    }
+  } catch (e) { box.replaceChildren(el("div", "hub-empty", e.message)); }
+}
+const LEVEL_AR = { beginner: "مبتدئ", basic: "أساسي", intermediate: "متوسط", advanced: "متقدم" };
+function openTrainer(t) {
+  $("trName").textContent = t.name; $("trSpec").textContent = "التخصصات: " + t.specialties.map(x => TRACKS[x] || x).join("، "); $("trBio").textContent = t.bio || "";
+  $("trMeta").textContent = [t.levels.length ? "المستويات: " + t.levels.map(x => LEVEL_AR[x] || x).join("، ") : "", t.ageGroups.length ? "الأعمار: " + t.ageGroups.join("، ") : ""].filter(Boolean).join(" · ");
+  $("trGroups").onclick = () => { $("trDlg").close(); state.dirFilter = t.name; setTab("groups"); };
+  $("trDlg").showModal();
+}
+$("trClose").addEventListener("click", () => $("trDlg").close());
 
 // ---------- Sessions ----------
 async function loadSessions() {
@@ -99,34 +123,52 @@ function askNick(g) {
 }
 $("nickCancel").addEventListener("click", () => $("nickDlg").close());
 async function loadGroups() {
-  const list = $("groupList");
+  const list = $("groupList"), dir = $("groupDir");
   try {
     const d = await api("groups/list"); state.groups = d.groups || [];
     const sel = $("sessionGroup"); sel.length = 1;
     state.groups.filter(g => g.role === "owner" || state.role === "admin").forEach(g => sel.add(new Option(g.name, g.id)));
+    const open = g => g.role === "owner" || g.role === "member" || state.role === "admin";
+    // Chats list: only groups the user can open
     list.replaceChildren();
-    if (!state.groups.length) { list.append(el("div", "hub-empty", isTrainer() ? "لم تنشئ مجموعات بعد. أنشئ أول مجموعة لطلابك." : "لا توجد مجموعات الآن. ستظهر هنا مجموعات المدربين.")); return; }
-    for (const g of state.groups) {
-      const canOpen = g.role === "owner" || g.role === "member" || state.role === "admin";
-      const row = el("div", "wa-row" + (g.id === state.chatId ? " is-open" : "") + (canOpen ? "" : " is-locked")); row.dataset.gid = g.id;
+    const mine = state.groups.filter(open);
+    if (!mine.length) {
+      const e = el("div", "hub-empty", isTrainer() ? "لا توجد محادثات بعد. أنشئ مجموعة من تبويب «المجموعات»." : "لا توجد محادثات بعد. اطلب الانضمام إلى مجموعة من تبويب «المجموعات»، وتظهر هنا بعد موافقة المدرّس.");
+      list.append(e);
+    }
+    for (const g of mine) {
+      const row = el("div", "wa-row" + (g.id === state.chatId ? " is-open" : "")); row.dataset.gid = g.id;
       const av = el("span", "wa-avatar"); avatar(av, g.name);
       const body = el("div", "wa-row-body"); body.append(el("strong", "", g.name));
-      const sub = [TRACKS[g.track] || g.track, g.members + " عضو", "المدرب: " + (g.ownerName || "—")].join(" · ");
-      body.append(el("small", "", sub)); if (g.description) body.append(el("small", "", g.description));
+      body.append(el("small", "", [TRACKS[g.track] || g.track, g.members + " من 8", "المدرب: " + (g.ownerName || "—")].join(" · ")));
       row.append(av, body);
       if (g.archived) row.append(el("span", "hub-pill", "مؤرشفة"));
-      if (canOpen && g.lastAt && g.lastAt > getSeen(g.id) && g.id !== state.chatId) { const nb = el("span", "hub-pill hub-new", "جديد"); nb.title = "رسائل جديدة"; row.append(nb); }
-      if (canOpen) { row.tabIndex = 0; row.setAttribute("role", "button"); const go = () => openChat(g); row.addEventListener("click", go); row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }); }
-      else if (g.role === "pending") { row.append(el("span", "hub-pill", "بانتظار موافقة المدرب")); const w = el("button", "hub-ghost", "إلغاء الطلب"); w.type = "button"; w.addEventListener("click", async () => { try { await api("groups/remove", { gid: g.id }); loadGroups(); loadNext(); } catch (e) { alert(e.message); } }); row.append(w); }
-      else if (state.role === "student") {
-        if (g.rejected) row.append(el("span", "hub-pill", "لم يُقبل طلبك"));
-        const j = el("button", "hub-ghost", g.rejected ? "اطلب مجددًا" : "اطلب الانضمام"); j.type = "button";
-        j.addEventListener("click", async () => { askNick(g) });
-        row.append(j);
-      }
+      if (g.lastAt && g.lastAt > getSeen(g.id) && g.id !== state.chatId) { const nb = el("span", "hub-pill hub-new", "جديد"); nb.title = "رسائل جديدة"; row.append(nb); }
+      row.tabIndex = 0; row.setAttribute("role", "button"); const go = () => openChat(g); row.addEventListener("click", go); row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
       list.append(row);
     }
-  } catch (e) { list.replaceChildren(el("div", "hub-empty", e.message)); }
+    // Directory: every group as a card with its own action
+    dir.replaceChildren();
+    const flt = $("dirFilter"); flt.hidden = !state.dirFilter; flt.replaceChildren();
+    if (state.dirFilter) { flt.append(el("span", "hub-pill", "مجموعات: " + state.dirFilter)); const x = el("button", "hub-ghost", "عرض الكل"); x.type = "button"; x.addEventListener("click", () => { state.dirFilter = ""; loadGroups(); }); flt.append(x); }
+    const shown = state.groups.filter(g => !state.dirFilter || g.ownerName === state.dirFilter);
+    if (!shown.length) dir.append(el("div", "hub-empty", isTrainer() ? "لم تنشئ مجموعات بعد. أنشئ أول مجموعة لطلابك من النموذج أعلاه." : "لا توجد مجموعات الآن. تظهر هنا مجموعات المدرّسين عندما يفتحونها."));
+    for (const g of shown) {
+      const c = el("article", "hub-card2 hub-group"), av = el("span", "hub-avatar sq"); avatar(av, g.name);
+      c.append(av, el("strong", "", g.name), el("small", "", (TRACKS[g.track] || g.track) + " · المدرب: " + (g.ownerName || "—")));
+      if (g.description) c.append(el("small", "", g.description));
+      const left = Math.max(0, 8 - g.members); c.append(el("small", "hub-seats", g.members + " من 8 · " + (left ? left + " مقاعد متاحة" : "المجموعة ممتلئة")));
+      const act = el("div", "hub-actions"); act.style.margin = "8px 0 0";
+      if (g.archived) act.append(el("span", "hub-pill", "مؤرشفة"));
+      if (open(g)) { const b = el("button", "hub-btn", "افتح المحادثة"); b.type = "button"; b.addEventListener("click", () => { setTab("chats"); openChat(g); }); act.append(b); }
+      else if (g.role === "pending") { act.append(el("span", "hub-pill", "بانتظار موافقة المدرب")); const w = el("button", "hub-ghost", "إلغاء الطلب"); w.type = "button"; w.addEventListener("click", async () => { try { await api("groups/remove", { gid: g.id }); loadGroups(); loadNext(); } catch (e) { alert(e.message); } }); act.append(w); }
+      else if (state.role === "student") {
+        if (g.rejected) act.append(el("span", "hub-pill", "لم يُقبل طلبك"));
+        if (left) { const j = el("button", "hub-ghost", g.rejected ? "اطلب مجددًا" : "اطلب الانضمام"); j.type = "button"; j.addEventListener("click", () => askNick(g)); act.append(j); }
+      }
+      c.append(act); dir.append(c);
+    }
+  } catch (e) { list.replaceChildren(el("div", "hub-empty", e.message)); dir.replaceChildren(el("div", "hub-empty", e.message)); }
 }
 $("groupForm").addEventListener("submit", async ev => {
   ev.preventDefault(); const f = ev.target, fb = $("groupFeedback"), b = f.querySelector("button"); b.disabled = true; say(fb, "");
@@ -139,7 +181,7 @@ $("stChat").addEventListener("click", () => setSub("chat")); $("stSched").addEve
 function stopChat() { clearInterval(state.chatTimer); state.chatId = ""; state.lastDay = ""; }
 function showChat(on) { $("chat").hidden = !on; $("waEmpty").hidden = on; $("wa").classList.toggle("wa--chat", on); }
 async function openChat(g) {
-  stopChat(); state.chatId = g.id; state.since = 0; state.chat = g; state.pin = null; setSub("chat"); $("pinned").hidden = true; $("workForm").hidden = true; showChat(true); $("groupCreate").hidden = true;
+  stopChat(); state.chatId = g.id; state.since = 0; state.chat = g; state.pin = null; setSub("chat"); $("pinned").hidden = true; $("workForm").hidden = true; showChat(true); 
   document.querySelectorAll(".wa-row").forEach(r => r.classList.toggle("is-open", r.dataset.gid === g.id));
   avatar($("chatAvatar"), g.name); $("chatTitle").textContent = g.name; $("chatMeta").textContent = (TRACKS[g.track] || g.track) + " · المدرب: " + (g.ownerName || "—") + " · " + g.members + " من 8 أعضاء";
   $("chatMessages").replaceChildren(); say($("chatFeedback"), ""); $("liveForm").hidden = true;
@@ -237,7 +279,7 @@ $("chatForm").addEventListener("submit", async ev => {
   try { await api("groups/post", { gid: state.chatId, text: input.value, kind: $("annCheck").checked ? "ann" : "msg" }); input.value = ""; $("annCheck").checked = false; say($("chatFeedback"), ""); await refreshChat(true); }
   catch (e) { say($("chatFeedback"), e.message, true); } finally { b.disabled = false; input.focus(); }
 });
-$("chatClose").addEventListener("click", () => { stopChat(); showChat(false); $("groupCreate").hidden = !isTrainer(); loadGroups(); });
+$("chatClose").addEventListener("click", () => { stopChat(); showChat(false); loadGroups(); });
 $("liveBtn").addEventListener("click", () => { $("liveForm").hidden = !$("liveForm").hidden; });
 $("liveCancel").addEventListener("click", () => { $("liveForm").hidden = true; });
 $("liveForm").addEventListener("submit", async ev => {
@@ -307,10 +349,10 @@ function loadNext() {
     return step("أدر مجموعتك", "افتح مجموعتك: انشر إعلانًا في «المحادثة»، وحدد موعدًا في «الجدول»، وأضف واجبًا، ثم اقبل طلبات الانضمام من «الأعضاء».", []);
   }
   const member = gs.filter(g => g.role === "member"), pend = gs.filter(g => g.role === "pending");
-  if (member.length) return step("افتح مجموعتك", "تابع إعلانات المدرب في «المحادثة»، وموعد الجلسة في «الجدول»، وواجباتك في «الواجبات».", []);
+  if (member.length) return step("افتح محادثة مجموعتك", "من تبويب «المحادثات» تابع إعلانات المدرب في «المحادثة»، وموعد الجلسة في «الجدول»، وواجباتك في «الواجبات».", []);
   if (pend.length) return step("طلبك بانتظار المدرب", "يقبل المدرب طلبك قريبًا فتظهر مجموعتك هنا. يمكنك إلغاء الطلب وتجربة مجموعة أخرى.", []);
   if (gs.some(g => g.rejected)) return step("لم يُقبل طلبك", "لم يقبل المدرب الطلب هذه المرة، وقد تكون المجموعة ممتلئة. جرّب مجموعة أخرى من تبويب «المجموعات»، أو اطلب مجددًا.", []);
-  return step("انضم إلى مجموعة", "افتح تبويب «المجموعات»، اختر مجموعة مناسبة لمسارك، واضغط «اطلب الانضمام» بلقب تختاره (دون اسمك الحقيقي).", [["اختبار تحديد المستوى", "placement.html", false]]);
+  return step("انضم إلى مجموعة", "تصفح «المدرّسون» ثم افتح تبويب «المجموعات»، اختر مجموعة مناسبة لمسارك، واضغط «اطلب الانضمام» بلقب تختاره (دون اسمك الحقيقي).", [["اختبار تحديد المستوى", "placement.html", false]]);
 }
 
 // ---------- Boot ----------
@@ -326,7 +368,7 @@ onAuthStateChanged(auth, async user => {
       const a = reg(); st.append(state.role === "applicant_pending" ? "طلبك كمدرب قيد المراجعة. يمكنك أيضًا إكمال ملف الطالب من " : "أكمل التسجيل أولًا كطالب أو مدرب من ", a, "."); $("hubBody").hidden = true; return;
     }
     st.textContent = state.role === "admin" ? "أنت في وضع الإدارة." : state.role === "trainer" ? "أهلًا بك أيها المدرب المعتمد." : "ملفك مفعّل. اختر جلسة أو مجموعة.";
-    $("hubBody").hidden = false; $("sessionCreate").hidden = !isTrainer(); $("groupCreate").hidden = !isTrainer();
-    loadSessions(); loadGroups().then(loadNext);
+    $("hubBody").hidden = false; $("bottomNav").hidden = false; $("sessionCreate").hidden = !isTrainer(); $("groupCreate").hidden = !isTrainer();
+    await loadGroups(); loadNext(); setTab(state.groups.some(g => g.role === "owner" || g.role === "member") ? "chats" : "trainers");
   } catch (e) { st.hidden = false; st.textContent = e.message; $("hubBody").hidden = true; }
 });

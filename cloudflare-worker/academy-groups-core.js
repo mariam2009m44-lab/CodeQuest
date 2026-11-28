@@ -148,3 +148,12 @@ export function deleteAssignment(asg, group, actor, isAdmin, id) {
   if (group.owner !== actor && !isAdmin) return { ok: false, status: 403, reason: "forbidden" };
   a.deleted = true; return { ok: true };
 }
+
+// Public trainer directory: approved trainers only, safe fields only (no uid, email, links or phone).
+export function listTrainers(apps, groups) {
+  const mine = {};
+  for (const g of Object.values(groups || {})) if (!g.archived) mine[g.owner] = (mine[g.owner] || 0) + 1;
+  return Object.entries(apps || {}).filter(([, a]) => a && a.status === "approved").slice(0, 100).map(([uid, a]) => ({
+    name: String(a.fullName || "").slice(0, 80), specialties: (a.specialties || []).slice(0, 6), levels: (a.teachingLevels || []).slice(0, 4), ageGroups: (a.ageGroups || []).slice(0, 4),
+    bio: String(a.bio || "").slice(0, 240), groups: mine[uid] || 0 })).filter(t => t.name);
+}

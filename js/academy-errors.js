@@ -14,3 +14,6 @@ export function acadMsg(error) {
   const msg = String(error?.message || "").trim();
   return /[\u0600-\u06FF]/.test(msg) ? msg : "";
 }
+// Older pages (community directory, live classes) still call a service that is not deployed. Say so plainly and point to the working hub.
+export const LEGACY_DOWN_TEXT = "هذه الصفحة تعتمد على خدمة لم تُفتح بعد. المجموعات والجلسات المباشرة والواجبات تعمل الآن من «مساحة الأكاديمية».";
+export function legacyMsg(error) { return academyErrorIsDown(error) ? LEGACY_DOWN_TEXT : acadMsg(error); }

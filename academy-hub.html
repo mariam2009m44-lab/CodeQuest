@@ -12,7 +12,7 @@
 <body>
 <header class="academy-header"><a class="academy-brand" href="index.html"><span>&lt;/&gt;</span> CodeQuest</a><nav><a href="dashboard.html">مساحة التعلّم</a><a href="live-academy.html">الأكاديمية</a><a href="academy-registration.html">التسجيل</a></nav></header>
 <main class="academy-wrap hub-wrap">
-<section class="academy-intro"><span class="academy-eyebrow">CODEQUEST · ACADEMY SPACE</span><h1>مساحة <span>الأكاديمية</span></h1><p>الجلسات المباشرة مع المدربين، ومجموعات الطلاب، وكود المدرب أمامك أثناء الشرح.</p></section>
+<section class="hub-banner"><div class="hub-banner-text"><span class="academy-eyebrow">CODEQUEST · ACADEMY</span><h1>مجتمع <span>الأكاديمية</span></h1><p>تواصل وتعلّم مع مجتمع CodeQuest: المدرّسون والمجموعات والمحادثات والجلسات المباشرة، كلها في مكان واحد.</p></div><img class="hub-banner-cody" src="assets/cody-banner.png" alt="" width="130" height="150"></section>
 <div class="hub-state" id="hubState" role="status">جارٍ التحقق من حسابك…</div>
 <section class="cq-start-guide" aria-label="دليل استخدام مساحة الأكاديمية">
  <div class="cq-guide-heading"><span class="cq-guide-kicker">دليل سريع</span><h2>أول مرة هنا؟ ابدأ من 3 خطوات</h2><p>مساحة الأكاديمية تجمع جلسات المدربين ومجموعات التعلم في مكان واحد.</p></div>
@@ -35,9 +35,13 @@
  <li>تحت 18 سنة: لا يبدأ الطالب قبل تأكيد موافقة ولي الأمر.</li>
  <li>الجلسات المباشرة تظهر لأعضاء المجموعة فقط، وإدارة الأكاديمية تستطيع مراجعة المحادثات عند الحاجة.</li>
 </ul></details>
-<div class="academy-tabs hub-tabs" role="tablist"><button id="tabSessions" class="is-active" role="tab" aria-selected="true" type="button">الجلسات</button><button id="tabGroups" role="tab" aria-selected="false" type="button">المجموعات</button></div>
+<div class="academy-tabs hub-tabs" role="tablist"><button id="tabTrainers" class="is-active" role="tab" aria-selected="true" type="button">المدرّسون</button><button id="tabGroups" role="tab" aria-selected="false" type="button">المجموعات</button><button id="tabChats" role="tab" aria-selected="false" type="button">المحادثات</button><button id="tabSessions" role="tab" aria-selected="false" type="button">الجلسات</button></div>
 
-<section id="paneSessions">
+<section id="paneTrainers">
+ <div class="hub-sec-head"><h2>المدرّسون المعتمدون</h2><p>اعتمدت الإدارة كل مدرّس هنا. افتح الملف لتعرف تخصصه، ثم اطلع على مجموعاته.</p></div>
+ <div id="trainerList" class="hub-cards"></div>
+</section>
+<section id="paneSessions" hidden>
  <div class="academy-card hub-card" id="sessionCreate" hidden>
   <h2>جلسة جديدة</h2>
   <p class="hub-hint">الصق رابط اجتماع من Google Meet أو Zoom أو Jitsi أو Teams أو Whereby. يفتح الطلاب الرابط في نافذة جديدة.</p>
@@ -73,6 +77,10 @@
    <button class="hub-btn" type="submit">إنشاء المجموعة</button><p class="hub-feedback" id="groupFeedback" aria-live="polite"></p>
   </form>
  </div>
+ <div class="hub-sec-head"><h2>المجموعات</h2><p>كل مجموعة تضم 8 طلاب كحد أقصى. اطلب الانضمام، ويقبلك المدرّس.</p><div id="dirFilter" class="hub-filter" hidden></div></div>
+ <div id="groupDir" class="hub-cards"></div>
+</section>
+<section id="paneChats" hidden>
  <div class="wa" id="wa">
   <aside class="wa-side" aria-label="المجموعات"><div class="wa-side-head"><h2>المحادثات</h2></div><div id="groupList" class="wa-list"></div></aside>
   <section class="wa-main" aria-label="المحادثة">
@@ -105,8 +113,10 @@
  </div>
 </section>
 </div>
+<dialog id="trDlg" class="hub-dlg"><div class="hub-form"><h2 id="trName"></h2><p class="hub-hint" id="trSpec"></p><p id="trBio" class="hub-bio"></p><p class="hub-hint" id="trMeta"></p><div class="hub-actions"><button class="hub-btn" id="trGroups" type="button">مجموعات المدرّس</button><button class="hub-ghost" id="trClose" type="button">إغلاق</button></div></div></dialog>
 <dialog id="nickDlg" class="hub-dlg"><form id="nickForm" class="hub-form"><h2>الانضمام إلى «<span id="nickGroup"></span>»</h2><p class="hub-hint">اختر لقبًا يظهر للمجموعة بدل اسمك الحقيقي. بعد إرسال الطلب ينتظر موافقة المدرب.</p><label>اللقب (من حرفين إلى 20)<input name="nick" required minlength="2" maxlength="20" autocomplete="off"></label><div class="hub-actions"><button class="hub-btn" type="submit">أرسل الطلب</button><button class="hub-ghost" id="nickCancel" type="button">إلغاء</button></div><p class="hub-feedback" id="nickFeedback" aria-live="polite"></p></form></dialog>
 </main>
+<nav class="hub-bottomnav" id="bottomNav" aria-label="التنقل في الأكاديمية" hidden><button type="button" data-tab="trainers">المدرّسون</button><button type="button" data-tab="groups">المجموعات</button><button type="button" data-tab="chats">المحادثات</button><button type="button" data-tab="sessions">الجلسات</button></nav>
 <footer class="academy-footer"><a href="index.html">CodeQuest</a><a href="live-academy.html">العودة للأكاديمية</a></footer>
 <script type="module" src="js/academy-hub.js"></script>
 </body></html>

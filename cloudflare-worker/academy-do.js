@@ -1,7 +1,7 @@
 // Extra Academy Directory actions: student profiles, sessions, code share, groups. Runs inside the Durable Object transaction (free plan).
 import * as S from "./academy-sessions-core.js";
 import * as G from "./academy-groups-core.js";
-export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole", "satt", "sattl", "acr", "als", "amk", "adl"]);
+export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole", "satt", "sattl", "acr", "als", "amk", "adl", "tls"]);
 const fail = (r) => ({ status: r.status || 400, data: { success: false, message: r.reason } });
 const ok = (data = {}) => ({ status: 200, data: { success: true, ...data } });
 export async function handleExtra(tx, action, b, now, newId) {
@@ -40,6 +40,7 @@ export async function handleExtra(tx, action, b, now, newId) {
     return ok({ groups: G.listGroups(grp, uid, true), reports: rep.slice(-50).reverse() });
   }
   if (["agroups", "summary", "guardians", "greview"].includes(action)) return fail({ status: 403, reason: "forbidden" });
+  if (action === "tls") { if (!canBrowse) return fail({ status: 403, reason: "profile_required" }); return ok({ trainers: G.listTrainers(dir.apps, (await tx.get("grp")) || {}) }); }
   // Sessions
   const ses = (await tx.get("ses")) || {}; const codes = (await tx.get("code")) || {};
   const grp = (await tx.get("grp")) || {};

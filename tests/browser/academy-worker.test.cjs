@@ -66,8 +66,8 @@ test('worker ON: applicant submits through the Worker, reload shows pending and 
 });
 test('worker ON: a non-admin sees the admin refusal and no applications', async t => {
   const a = await setup(t, { workerOn: true, token: 'tokA' });
-  const { p } = await page(a.context, 'academy-admin.html'); await p.waitForFunction(() => document.getElementById('adminState').textContent.includes('مخصص لمسؤول'));
-  assert.equal(await p.locator('#adminContent').isVisible(), false);
+  const { p } = await page(a.context, 'academy-admin.html'); await p.waitForFunction(() => document.getElementById('adminState').textContent.includes('الصفحة غير موجودة'));
+  assert.equal(await p.locator('#adminContent').isVisible(), false); assert.doesNotMatch(await p.innerText('body'), /مسؤول|@/);
 });
 test('worker OFF: clean Arabic line, the dead Firebase callable is never called, nothing stored', async t => {
   const a = await setup(t, { workerOn: false, token: 'tokV' });
@@ -95,8 +95,8 @@ test('admin-only mode (stubbed Firebase, mock tokens): the owner uid sees the ad
   assert.deepEqual(owner.errors, []);
   const n = await setup(t, { workerOn: 'admin-only', token: 'tokA' });
   const statuses = []; n.context.on('response', r => { if (r.url().includes('/api/academy/admin/applications')) statuses.push(r.status()); });
-  const non = await page(n.context, 'academy-admin.html'); await non.p.waitForFunction(() => document.getElementById('adminState').textContent.includes('مخصص لمسؤول'));
-  assert.equal(await non.p.locator('#adminContent').isVisible(), false); assert.deepEqual(statuses, [403]);
+  const non = await page(n.context, 'academy-admin.html'); await non.p.waitForFunction(() => document.getElementById('adminState').textContent.includes('الصفحة غير موجودة'));
+  assert.equal(await non.p.locator('#adminContent').isVisible(), false); assert.equal(await non.p.locator('#adminIntro').isVisible(), false); assert.doesNotMatch(await non.p.innerText('body'), /مسؤول|إدارة|@/); assert.deepEqual(statuses, [403]);
   await non.p.screenshot({ path: path.join(artifactDir, 'academy-admin-only-nonowner-390.png'), fullPage: true });
   for (const h of [o.w, n.w]) for (const st of h.stores.values()) assert.equal(st.m.size, 0, 'no record written');
 });
