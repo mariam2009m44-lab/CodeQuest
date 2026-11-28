@@ -140,7 +140,7 @@
   <section class="game-art-banner" aria-label="لعبة الذاكرة"><img src="assets/games/game-memory.svg" alt="" decoding="async"></section>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
-      <h2>اختر مستوى الذاكرة</h2>
+      <h2>اختيار مستوى الذاكرة</h2>
       <div class="levels-grid">
         <button class="lvl-btn lvl-easy" data-pairs="6" onclick="startGame(6)"><span>مبتدئ</span> <span>6 أزواج</span> <span class="cq-stars" data-stars="6"></span></button>
         <button class="lvl-btn lvl-med" data-pairs="10" onclick="startGame(10)"><span>متوسط</span> <span>10 أزواج</span> <span class="cq-stars" data-stars="10"></span></button>
@@ -154,7 +154,7 @@
       <p id="matchNote" class="match-note" role="status" aria-live="polite"></p>
       <div id="winScreen" class="win-screen">
         <div class="result-emoji" id="resultEmoji">🏆</div>
-        <h2 id="resultTitle">أحسنت! لقد أكملت اللعبة 🎉</h2>
+        <h2 id="resultTitle">إنجاز رائع! لقد أكملت اللعبة 🎉</h2>
         <p class="result-message" id="resultMessage" style="color: var(--muted); margin-bottom: 20px;"></p>
         <button class="btn-restart" onclick="restartCurrentLevel()">العب مرة أخرى</button>
         <button class="btn-back" onclick="showMemoryLevels()">المستويات</button>
@@ -303,7 +303,7 @@
       }
     }
     function showMatchNote(term, def) { const n = document.getElementById('matchNote'); n.className = 'match-note'; n.textContent = '✔ ' + term.text + ' = ' + def.text; }
-    function showMissNote() { const n = document.getElementById('matchNote'); n.className = 'match-note miss'; n.textContent = 'مش نفس الزوج. افتكر مكان كل بطاقة وحاول تاني.'; }
+    function showMissNote() { const n = document.getElementById('matchNote'); n.className = 'match-note miss'; n.textContent = 'مش نفس الزوج. افتكر مكان كل بطاقة ويمكن المحاولة مرة أخرى.'; }
     function restartCurrentLevel() { startGame(currentPairs); }
     window.addEventListener('pagehide',stopMemoryTimer);
 
