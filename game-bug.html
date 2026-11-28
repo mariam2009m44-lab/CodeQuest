@@ -139,7 +139,7 @@
   </div>
   <div class="screen" id="gameScreen">
     <div class="level-box">
-      <p style="font-weight: 800; text-align: center; color: var(--red); margin-bottom: 20px; font-size: 1.1rem;">اضغط على السطر الذي يحتوي على الخطأ!</p>
+      <p style="font-weight: 800; text-align: center; color: var(--red); margin-bottom: 20px; font-size: 1.1rem;">الضغط على السطر الذي يحتوي على الخطأ!</p>
       <div class="code-box" id="codeContainer"></div>
       <p id="attemptStatus" class="attempt-status" aria-live="polite">المحاولات: 0</p>
       <div class="msg" id="msg" role="status" aria-live="polite"></div>
@@ -167,7 +167,7 @@
   </style>
   <script>
     const levels = {
-      easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, hint:'مراجعة اسم المتغير في سطر الإرجاع؛ هل يطابق الاسم الذي تم إنشاؤه؟', explanation:'تم إنشاء المتغير باسم result، لكن سطر الإرجاع يستخدم reslt. أسماء المتغيرات يجب أن تتطابق تمامًا.' },
+      easy: { lines: ['def calculate_sum(a, b):', '    result = a + b', '    return reslt', '', 'print(calculate_sum(5, 3))'], bugIndex: 2, hint:'ممراجعةة اسم المتغير في سطر الإرجاع؛ هل يطابق الاسم الذي تم إنشاؤه؟', explanation:'تم إنشاء المتغير باسم result، لكن سطر الإرجاع يستخدم reslt. أسماء المتغيرات يجب أن تتطابق تمامًا.' },
       medium: { lines: ['let x = 10;', 'let y = "5";', 'let sum = x + y;', 'console.log(sum);'], bugIndex: 2, hint:'انتبه لاختلاف نوع البيانات: أحد المتغيرين رقم والآخر نص.', explanation:'في JavaScript، استخدام + مع رقم ونص قد يؤدي إلى دمج النصوص بدل الجمع الحسابي. حوّل النص إلى رقم عند الحاجة.' },
       hard: { lines: ['function findMax(arr) { // مصفوفة أرقام غير فارغة', '  let max = arr[0];', '  for (let i = 0; i <= arr.length; i++) {', '    if (arr[i] > max) max = arr[i];', '  }', '  return max;', '}'], bugIndex: 2, hint:'تذكّر أن آخر فهرس في المصفوفة يساوي طولها ناقص واحد.', explanation:'الفهارس تبدأ من صفر؛ لذلك يجب أن يتوقف الشرط قبل arr.length. استخدام <= يجعل الحلقة تصل إلى فهرس غير موجود.' }
     };
@@ -220,7 +220,7 @@
         // Pressing a line already ruled out again is not a new attempt: no extra penalty.
         const repeated = lineEl.dataset.tried === '1';
         lineEl.dataset.tried = '1';
-        if (repeated) { msg.textContent = 'السطر ده جربته قبل كده وطلع سليم. جرّب سطر تاني.'; msg.style.color = 'var(--red)'; return; }
+        if (repeated) { msg.textContent = 'السطر ده يمكن تجربةته قبل كده وطلع سليم. يمكن تيمكن تجربةة سطر تاني.'; msg.style.color = 'var(--red)'; return; }
         attempts++;
         document.getElementById('attemptStatus').textContent = 'المحاولات: ' + attempts;
         lineEl.classList.add('wrong');
