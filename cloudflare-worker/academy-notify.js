@@ -31,7 +31,7 @@ export async function sendAdminNotice(env, kind, uid, fetchImpl = fetch) {
     const res = await fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + env.RESEND_API_KEY },
-      body: JSON.stringify({ from: "CodeQuest <onboarding@resend.dev>", to: [env.ADMIN_NOTICE_EMAIL], subject: k.subject, text: k.line + "\nافتحي لوحة الإدارة للمراجعة:\n" + link })
+      body: JSON.stringify({ from: "CodeQuest <onboarding@resend.dev>", to: [env.ADMIN_NOTICE_EMAIL], subject: k.subject, text: k.line + "\nلوحة الإدارة للمراجعة:\n" + link })
     });
     await remember(env, kind, res.ok ? "sent" : "http_" + res.status, res.status);
     return { sent: res.ok, reason: res.ok ? "sent" : "http_" + res.status };
