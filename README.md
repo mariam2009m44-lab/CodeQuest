@@ -18,8 +18,6 @@
 <p align="center">
   <a href="https://codequest-mu-six.vercel.app/">🌐 Live Application</a>
   &nbsp;·&nbsp;
-  <a href="https://mariam2009m44-lab.github.io/CodeQuest/">🪞 GitHub Pages Mirror</a>
-  &nbsp;·&nbsp;
   <a href="https://github.com/mariam2009m44-lab/CodeQuest">💻 GitHub Repository</a>
 </p>
 
@@ -498,7 +496,7 @@ CodeQuest combines frontend technologies, backend services, cloud integrations, 
 - Firebase Authentication
 - Cloud Firestore
 - Cloudflare Workers and Durable Objects (free plan)
-- Vercel and GitHub Pages (frontend hosting)
+- Vercel (frontend hosting)
 
 ### AI and Machine Learning
 
@@ -887,7 +885,7 @@ Open the application at:
 http://localhost:5500
 ```
 
-The frontend and FastAPI backend run on separate ports. The root HTML pages are the main frontend served by GitHub Pages under `/CodeQuest/`; the Vite build in `CodeQuest/` is a separate workspace and does not build those pages. Serving the files locally does not switch the browser’s Firebase configuration to an emulator. Do not use the default browser configuration for tests that create or change accounts unless it is explicitly connected to a test project.
+The frontend and FastAPI backend run on separate ports. The root HTML pages are the main frontend served by Vercel; the Vite build in `CodeQuest/` is a separate workspace and does not build those pages. Serving the files locally does not switch the browser’s Firebase configuration to an emulator. Do not use the default browser configuration for tests that create or change accounts unless it is explicitly connected to a test project.
 
 Student dashboard and profile show device-local lesson progress separately from the synchronization status. Python chapter and final exams are not individual lesson completions. Local-only records do not grant XP or stars. This does not guarantee that a page can be opened for the first time without connectivity.
 
@@ -1041,15 +1039,12 @@ CodeQuest consists of multiple components that can be deployed independently.
 
 ### Frontend Deployment
 
-The main web application is published on Vercel and mirrored on GitHub Pages. Both serve the same files from the `main` branch.
+The main web application is published on Vercel from the `main` branch.
 
 **Live Application:**
 
 https://codequest-mu-six.vercel.app/
 
-**GitHub Pages mirror:**
-
-https://mariam2009m44-lab.github.io/CodeQuest/
 
 **GitHub Repository:**
 
@@ -1261,8 +1256,7 @@ If you would like to contribute:
 | Code Execution | Judge0 Integration |
 | Repository | [GitHub Repository](https://github.com/mariam2009m44-lab/CodeQuest) |
 | Live Application | [Open CodeQuest](https://codequest-mu-six.vercel.app/) |
-| GitHub Pages Mirror | [Open mirror](https://mariam2009m44-lab.github.io/CodeQuest/) |
-| Hosting | Free tier (Vercel, GitHub Pages, Cloudflare Workers) |
+| Hosting | Free tier (Vercel, Cloudflare Workers) |
 
 ---
 
