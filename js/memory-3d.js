@@ -23,7 +23,10 @@ import * as THREE from '../assets/vendor/three.module.min.js';
 
   function resize() {
     const w = window.innerWidth, h = window.innerHeight;
-    renderer.setSize(w, h, false); camera.aspect = w / h;
+    renderer.setSize(w, h, false);
+    // Match the CSS box to the drawing size in real pixels. 100vh is taller than the visible area on phones while the
+    // browser bar is showing, which stretched the board vertically and drew the bottom cards over the message below.
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px'; camera.aspect = w / h;
     camera.position.set(w / 2, -h / 2, (h / 2) / Math.tan(FOV * Math.PI / 360)); camera.updateProjectionMatrix();
   }
   resize(); window.addEventListener('resize', resize);

@@ -10,7 +10,7 @@ try{const c=await b.newContext({viewport:{width:390,height:844}});await c.route(
  const lines=p.locator('#codeContainer .line');
  await lines.nth(0).click();await p.waitForTimeout(900);await lines.nth(0).click();await lines.nth(0).click();
  assert.equal((await p.textContent('#attemptStatus')).trim(),'المحاولات: 1','repeat presses are not extra attempts');
- assert.match(await p.textContent('#msg'),/جربته قبل كده/);
+ assert.match(await p.textContent('#msg'),/تم اختبار هذا السطر سابقًا/);
  await lines.nth(1).click();assert.equal((await p.textContent('#attemptStatus')).trim(),'المحاولات: 2');
  await p.screenshot({path:process.env.SHOT||'/tmp/bug-repeat.png'});
  await lines.nth(2).click();assert.match(await p.textContent('#msg'),/صحيح/);
