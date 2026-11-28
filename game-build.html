@@ -130,7 +130,7 @@
   <section class="game-art-banner" aria-label="بازل الأكواد"><img src="assets/games/game-build.svg" alt="" decoding="async"></section>
   <div class="screen active" id="levelScreen">
     <div class="level-box">
-      <h2>اختر مستوى البازل</h2>
+      <h2>اختيار مستوى البازل</h2>
       <div class="levels-grid">
         <button class="lvl-btn lvl-easy" onclick="startGame('easy')"><span>مبتدئ</span> <span>3 قطع</span></button>
         <button class="lvl-btn lvl-med" onclick="startGame('medium')"><span>متوسط</span> <span>4 قطع</span></button>
@@ -151,7 +151,7 @@
   <div class="screen" id="resultScreen">
     <div class="level-box result-box">
       <div class="result-emoji" id="resultEmoji">🏆</div>
-      <h2 id="resultTitle">أحسنت!</h2>
+      <h2 id="resultTitle">إنجاز رائع!</h2>
       <pre id="buildLearning" dir="ltr" class="cq-code-learning"></pre><p class="result-message" id="resultMessage"></p>
       <button class="btn-restart" onclick="restartGame()">العب مستوى آخر</button>
       <button class="btn-back" onclick="window.location.href='games.html'">العودة للألعاب</button>
@@ -240,7 +240,7 @@
       if (exact) {
         const earned = Math.max(20, 50 - attempts * 5);
         document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! كل سطر في مكانه، وأصبح الكود جاهزًا للتنفيذ.';
-        btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
+        btn.textContent = 'إنجاز رائع! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
         drop.querySelectorAll('.code-block').forEach(item => { item.disabled = true; });
         score += earned; scoreDisplay.textContent = score; updateGlobalScore(earned);
         drop.style.borderColor = 'var(--green)'; drop.style.background = 'rgba(118,233,192,0.1)';
@@ -252,7 +252,7 @@
           document.getElementById('resultTitle').textContent = 'اكتمل ترتيب الكود!';
           document.getElementById('resultMessage').textContent = `حصلت على ${earned} نقطة. تم اختبار ترتيب هذا البرنامج وناتجه ضمن اختبارات المنصة.`;
           document.getElementById('buildLearning').textContent = correctSeq.join('\\n') + '\\n\\n# Expected output:\\n' + ({easy:'Hello\\n5',medium:'Hello Cody',hard:'Cody'}[currentLevel]);
-          window.CodeQuestExperience?.reward({ gems: 0, title: 'البازل اكتمل!', message: 'رتبت الكود بشكل صحيح! كودي فخور بيك.' });
+          window.CodeQuestExperience?.reward({ gems: 0, title: 'البازل اكتمل!', message: 'تم ترتيب الكود بشكل صحيح! كودي فخور بيك.' });
         }, 800);
       } else {
         attempts++;
@@ -266,7 +266,7 @@
         drop.querySelectorAll('.build-wrong').forEach(item => item.classList.remove('build-wrong'));
         const wrongBlock = drop.children[firstWrong];
         if (wrongBlock) wrongBlock.classList.add('build-wrong');
-        document.getElementById('buildFeedback').textContent = 'راجع السطر المميز؛ أول اختلاف في الترتيب يبدأ من هنا.';
+        document.getElementById('buildFeedback').textContent = 'مراجعة السطر المميز؛ أول اختلاف في الترتيب يبدأ من هنا.';
         btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
         setTimeout(() => { if (!btn.disabled) { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; } }, 1500);
       }
