@@ -1,4 +1,5 @@
 import { auth, authPersistenceReady } from "./firebase-config.js";
+import { academyWorker } from "./academy-api.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const status = document.getElementById("portalStatus");
@@ -20,27 +21,22 @@ onAuthStateChanged(auth, async user => {
     return;
   }
 
-  message("جارٍ التحقق من اعتماد حساب المدرّب…");
+  message("جارٍ التحقق من حالة حسابك…");
   action.setAttribute("aria-disabled", "true");
   try {
-    const token = await user.getIdTokenResult(true);
-    const approved = token.claims.liveRole === "instructor"
-      && token.claims.liveInstructorApproved === true;
-    const admin = token.claims.liveRole === "admin"
-      || token.claims.admin === true;
-
-    if (approved || admin) {
-      message(admin ? "تم التحقق من صلاحيات مسؤول الأكاديمية." : "تم التحقق من اعتماد حساب المدرّب.");
-      action.href = "live-academy.html";
-      action.textContent = "افتح مساحة إدارة الفصول";
-      action.removeAttribute("aria-disabled");
-      fallback.hidden = true;
+    const r = await academyWorker(user, "my-role", {});
+    const role = r.ok ? r.data.role : "";
+    if (!r.ok) throw new Error("role");
+    action.removeAttribute("aria-disabled"); fallback.hidden = true;
+    if (role === "trainer" || role === "admin") {
+      message("حسابك معتمد كمدرّب. افتح مجتمع الأكاديمية لإنشاء المجموعات وجدولة الجلسات.");
+      action.href = "academy-hub.html"; action.textContent = "افتح مجتمع الأكاديمية";
+    } else if (role === "applicant_pending") {
+      message("طلبك قيد المراجعة. سنعتمده قريبًا، ويمكنك في الأثناء تصفّح مجتمع الأكاديمية.");
+      action.href = "academy-hub.html"; action.textContent = "تصفّح مجتمع الأكاديمية";
     } else {
-      message("الحساب مسجّل، لكنه غير معتمد كمدرّب حتى الآن. أدوات إنشاء الفصول لا تُتاح إلا بعد مراجعة مسؤول الأكاديمية.", true);
-      action.href = "live-academy.html";
-      action.textContent = "عرض الأكاديمية";
-      action.removeAttribute("aria-disabled");
-      fallback.hidden = true;
+      message("لم تقدّم طلب مدرّب بعد. التقديم يستغرق دقائق، وبعد الاعتماد تنشئ مجموعاتك وجلساتك.");
+      action.href = "academy-registration.html"; action.textContent = "قدّم كمدرّب";
     }
   } catch (error) {
     message("تعذّر التحقق من صلاحيات الحساب. حدّث الصفحة أو سجّل الدخول مرة أخرى.", true);
