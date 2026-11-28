@@ -230,11 +230,14 @@
     }
 
     function check() {
-      // Accept every genuinely equivalent order (for example two independent methods in a class).
-      // The wrong-line hint follows the accepted order that matches the longest prefix.
-      const wrongAt = candidate => seq.findIndex((value, index) => value !== candidate[index]);
-      const firstWrong = acceptedSeqs.map(wrongAt).reduce((best, at) => (at === -1 || best === -1) ? -1 : Math.max(best, at), 0);
-      if (firstWrong === -1 && acceptedSeqs.some(candidate => seq.length === candidate.length)) {
+      if (seq.length !== correctSeq.length) {
+        document.getElementById('buildFeedback').textContent = 'أكمل ترتيب كل السطور أولًا قبل التحقق.';
+        return;
+      }
+      const exact = acceptedSeqs.some(candidate =>
+        candidate.length === seq.length && candidate.every((value, index) => value === seq[index])
+      );
+      if (exact) {
         const earned = Math.max(20, 50 - attempts * 5);
         document.getElementById('buildFeedback').textContent = 'ترتيب صحيح! كل سطر في مكانه، وأصبح الكود جاهزًا للتنفيذ.';
         btn.textContent = 'أحسنت! 🎉'; btn.style.background = 'var(--cyan)'; btn.disabled = true;
@@ -248,20 +251,24 @@
           document.getElementById('resultEmoji').textContent = '🏆';
           document.getElementById('resultTitle').textContent = 'اكتمل ترتيب الكود!';
           document.getElementById('resultMessage').textContent = `حصلت على ${earned} نقطة. تم اختبار ترتيب هذا البرنامج وناتجه ضمن اختبارات المنصة.`;
-          document.getElementById('buildLearning').textContent = correctSeq.join('\n') + '\n\n# Expected output:\n' + ({easy:'Hello\n5',medium:'Hello Cody',hard:'Cody'}[currentLevel]);
+          document.getElementById('buildLearning').textContent = correctSeq.join('\\n') + '\\n\\n# Expected output:\\n' + ({easy:'Hello\\n5',medium:'Hello Cody',hard:'Cody'}[currentLevel]);
           window.CodeQuestExperience?.reward({ gems: 0, title: 'البازل اكتمل!', message: 'رتبت الكود بشكل صحيح! كودي فخور بيك.' });
         }, 800);
       } else {
         attempts++;
         document.getElementById('buildAttempts').textContent = 'المحاولات: ' + attempts;
+        const nearest = acceptedSeqs.map(candidate => {
+          let prefix = 0;
+          while (prefix < seq.length && prefix < candidate.length && seq[prefix] === candidate[prefix]) prefix++;
+          return { candidate, prefix };
+        }).sort((a,b) => b.prefix - a.prefix)[0];
+        const firstWrong = nearest ? nearest.prefix : 0;
         drop.querySelectorAll('.build-wrong').forEach(item => item.classList.remove('build-wrong'));
-        const wrongBlock = drop.children[firstWrong >= 0 ? firstWrong : drop.children.length - 1];
+        const wrongBlock = drop.children[firstWrong];
         if (wrongBlock) wrongBlock.classList.add('build-wrong');
-        document.getElementById('buildFeedback').textContent = firstWrong >= 0
-          ? 'راجع السطر المميز؛ أول اختلاف في الترتيب يبدأ من هنا.'
-          : 'ما زال هناك سطر ناقص. أكمل ترتيب كل الأجزاء أولًا.';
+        document.getElementById('buildFeedback').textContent = 'راجع السطر المميز؛ أول اختلاف في الترتيب يبدأ من هنا.';
         btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
-        setTimeout(() => { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; }, 1500);
+        setTimeout(() => { if (!btn.disabled) { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; } }, 1500);
       }
     }
     function restartGame() {
