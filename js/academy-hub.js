@@ -144,7 +144,7 @@ async function loadGroupSessions(gid) {
     box.replaceChildren();
     if (!mine.length) { box.append(el("div", "hub-empty", "لا توجد جلسات مجدولة لهذه المجموعة.")); return; }
     for (const s of mine) {
-      const row = el("div", "wa-session"); const t = el("div", "wa-session-t"); t.append(el("strong", "", s.title), el("small", "", fmt(s.startsAt) + " · " + s.durationMin + " دقيقة"));
+      const row = el("div", "wa-session"); const t = el("div", "wa-session-t"); t.append(el("strong", "", (s.kind === "demo" ? "يوم العرض · " : "") + s.title), el("small", "", fmt(s.startsAt) + " · " + s.durationMin + " دقيقة"));
       const act = el("div", "hub-actions"); act.style.margin = 0;
       const j = el("a", "hub-btn", "انضم"); j.href = s.linkUrl; j.target = "_blank"; j.rel = "noopener noreferrer"; trackJoin(j, s.id); act.append(j);
       if (s.mine || state.role === "admin") {
@@ -230,8 +230,9 @@ $("liveForm").addEventListener("submit", async ev => {
   ev.preventDefault(); const f = ev.target, fb = $("liveFeedback"), b = f.querySelector("button[type=submit]"); b.disabled = true; say(fb, "");
   try {
     const title = f.elements.title.value.trim(), link = f.elements.linkUrl.value.trim(), g = state.chat;
-    await api("sessions/create", { title, description: "", track: g.track || "python", durationMin: 60, startsAt: Date.now() + 60000, linkUrl: link, groupId: g.id });
-    await api("groups/post", { gid: g.id, text: "بدأت جلسة مباشرة: " + title + " " + link, kind: "ann" });
+    const kind = f.elements.kind.value === "demo" ? "demo" : "lesson", w = f.elements.when.value ? new Date(f.elements.when.value).getTime() : 0, later = w && w > Date.now() + 120000;
+    await api("sessions/create", { title, description: "", track: g.track || "python", durationMin: 60, startsAt: later ? w : Date.now() + 60000, linkUrl: link, groupId: g.id, kind });
+    await api("groups/post", { gid: g.id, text: (kind === "demo" ? "يوم العرض: " : "جلسة مباشرة: ") + title + (later ? " (" + fmt(w) + ") " : " ") + link, kind: "ann" });
     f.reset(); f.hidden = true; say(fb, ""); await refreshChat(true); loadGroupSessions(g.id);
   } catch (e) { say(fb, e.message, true); } finally { b.disabled = false; }
 });

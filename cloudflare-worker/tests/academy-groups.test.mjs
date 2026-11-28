@@ -109,3 +109,10 @@ test("group size cap is 8: the 9th approval is refused", () => {
   for (let i = 0; i < 8; i++) assert.equal(reviewJoin(g, "o", false, "u" + i, "approve", 2).ok, true);
   const r = reviewJoin(g, "o", false, "u8", "approve", 3); assert.equal(r.ok, false); assert.equal(r.reason, "group_full");
 });
+
+test("demo day: session kind is kept, unknown kinds fall back to lesson", async () => {
+  const { c } = await world();
+  const a = await c("sessions/create", "tokV", { ...sess, kind: "demo" }); const b = await c("sessions/create", "tokV", { ...sess, kind: "x" });
+  const l = (await c("sessions/list", "tokV")).data.sessions;
+  assert.equal(l.find(x => x.id === a.data.id).kind, "demo"); assert.equal(l.find(x => x.id === b.data.id).kind, "lesson");
+});

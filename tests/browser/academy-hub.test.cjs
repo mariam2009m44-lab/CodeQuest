@@ -37,7 +37,7 @@ test('chat-app layout: desktop two panes, mobile one pane at a time; trainer sta
   assert.equal(await p.locator('#groupList .wa-row').count(),2);await p.click('#tabGroups');await p.waitForTimeout(300);
   assert.equal(await p.isVisible('#waEmpty'),true);await p.click('#groupList .wa-row >> nth=0');await p.waitForTimeout(500);
   assert.equal(await p.isVisible('#chat'),true);assert.equal(await p.isVisible('#groupList'),true);
-  await p.click('#stSched');await p.click('#liveBtn');await p.fill('#liveForm [name=title]','نموذج: شرح الحلقات');await p.fill('#liveForm [name=linkUrl]','https://meet.google.com/abc-defg-hij');
+  await p.click('#stSched');await p.click('#liveBtn');await p.selectOption('#liveForm [name=kind]','demo');await p.fill('#liveForm [name=title]','نموذج: شرح الحلقات');await p.fill('#liveForm [name=linkUrl]','https://meet.google.com/abc-defg-hij');
   await p.screenshot({path:require('os').tmpdir()+'/hub-desktop-trainer.png',fullPage:true});
   await p.click('#liveForm button[type=submit]');await p.waitForTimeout(500);
   await p.click('#stChat');

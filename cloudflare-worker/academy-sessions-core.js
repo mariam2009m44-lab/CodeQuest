@@ -46,7 +46,7 @@ export function listPendingGuardians(idx, limit = 50) {
 }
 export function validateSession(d, now) {
   d = d && typeof d === "object" && !Array.isArray(d) ? d : {};
-  const v = { title: str(d.title), description: str(d.description), track: str(d.track), startsAt: Number(d.startsAt), durationMin: Number(d.durationMin), linkUrl: str(d.linkUrl) };
+  const v = { title: str(d.title), description: str(d.description), track: str(d.track), startsAt: Number(d.startsAt), durationMin: Number(d.durationMin), linkUrl: str(d.linkUrl), kind: d.kind === "demo" ? "demo" : "lesson" };
   if (v.title.length < 3 || v.title.length > 80 || v.description.length > 500 || !TRACKS.includes(v.track) || !Number.isFinite(v.startsAt) ||
     v.startsAt < now - 15 * 60000 || v.startsAt > now + MAX_DAYS_AHEAD * 86400000 || !Number.isInteger(v.durationMin) || v.durationMin < 15 || v.durationMin > 240) return { ok: false, reason: "invalid" };
   if (!hostAllowed(v.linkUrl) || v.linkUrl.length > 500) return { ok: false, reason: "link_not_allowed" };
@@ -65,7 +65,7 @@ export function createSession(sessions, id, uid, name, value, now) {
 }
 export function listSessions(sessions, uid, now, visible) {
   return Object.values(sessions).filter(s => !s.canceled && s.startsAt + s.durationMin * 60000 > now - 30 * 60000 && (!visible || visible(s)))
-    .sort((a, b) => a.startsAt - b.startsAt).slice(0, 60).map(s => ({ id: s.id, title: s.title, description: s.description, track: s.track, startsAt: s.startsAt, durationMin: s.durationMin, linkUrl: s.linkUrl, groupId: s.groupId || "", ownerName: s.ownerName, mine: s.owner === uid, ...(s.owner === uid ? { attended: Object.keys(s.att || {}).length } : {}) }));
+    .sort((a, b) => a.startsAt - b.startsAt).slice(0, 60).map(s => ({ id: s.id, title: s.title, description: s.description, track: s.track, startsAt: s.startsAt, durationMin: s.durationMin, linkUrl: s.linkUrl, groupId: s.groupId || "", kind: s.kind || "lesson", ownerName: s.ownerName, mine: s.owner === uid, ...(s.owner === uid ? { attended: Object.keys(s.att || {}).length } : {}) }));
 }
 export function cancelSession(sessions, id, uid, isAdmin) {
   const s = sessions[id]; if (!s) return { ok: false, status: 404, reason: "not_found" };
