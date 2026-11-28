@@ -11,10 +11,14 @@
   <img src="https://img.shields.io/badge/Interface-Arabic%20%7C%20RTL-36BFE5?style=for-the-badge" alt="Arabic RTL">
   <img src="https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JavaScript-43C99A?style=for-the-badge" alt="Frontend">
   <img src="https://img.shields.io/badge/AI-Cody%20Assistant-9B7EDE?style=for-the-badge" alt="Cody AI">
+  <img src="https://img.shields.io/badge/Academy-Trainers%20%7C%20Groups%20%7C%20Sessions-F59E0B?style=for-the-badge" alt="Academy">
+  <img src="https://img.shields.io/badge/Hosting-Free%20Tier-2EA44F?style=for-the-badge" alt="Free tier">
 </p>
 
 <p align="center">
-  <a href="https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html">🌐 Live Application</a>
+  <a href="https://codequest-mu-six.vercel.app/">🌐 Live Application</a>
+  &nbsp;·&nbsp;
+  <a href="https://mariam2009m44-lab.github.io/CodeQuest/">🪞 GitHub Pages Mirror</a>
   &nbsp;·&nbsp;
   <a href="https://github.com/mariam2009m44-lab/CodeQuest">💻 GitHub Repository</a>
 </p>
@@ -27,6 +31,8 @@
 - [Project Vision](#-project-vision)
 - [Programming Languages](#-programming-languages)
 - [Core Features](#-core-features)
+- [Cody Academy Community](#-cody-academy-community)
+- [Games](#-games)
 - [Learning Curriculum](#-learning-curriculum)
 - [Cody AI Assistant](#-cody-ai-assistant)
 - [Cody Machine Learning Engine](#-cody-machine-learning-engine)
@@ -54,6 +60,8 @@
 ## 🌟 Overview
 
 **CodeQuest — Cody Academy** is an interactive, web-based programming education platform designed to make programming more accessible, engaging, and practical.
+
+The project now includes an open academy community (trainers, groups, group chat, live sessions, assignments and a placement quiz), seven games, and Cody, the AI assistant. It runs on free-tier hosting.
 
 The project brings together programming lessons, interactive learning activities, coding environments, AI-assisted educational support, and progress tracking.
 
@@ -150,6 +158,47 @@ The repository also contains the earlier Java pages `java-chapters.html` and `ja
 | Store | User store and server-side purchase functionality. |
 | PWA Support | Web app manifest and service-worker functionality. |
 | Responsive Design | Interfaces designed for different screen sizes. |
+
+---
+
+## 🎓 Cody Academy Community
+
+The academy is open and runs on the free tier. Everything is reachable from one page, `academy-hub.html`, with four tabs.
+
+| Tab | What it does |
+|---|---|
+| Trainers | Lists approved trainers only, with safe public fields. |
+| Groups | Browse groups and send a join request. A trainer or group admin approves it. Students cannot be added directly. |
+| Chats | Group chat for the groups the user belongs to. Only members can see a group. |
+| Sessions | Live group sessions, visible only to the group's members. |
+
+Other academy pieces:
+
+- **Registration:** `academy-registration.html` for students and trainers. Trainers are reviewed before they appear.
+- **Placement quiz:** `placement.html` suggests a starting level.
+- **Assignments:** trainers can assign work to a group.
+- **Groups:** up to 256 members per group. Trainers and the academy team can create groups. Each group can have a supervisor who approves requests, mutes or removes members, posts announcements and deletes messages.
+- **Announcements:** trainer-only, with no direct messages between members.
+- **Safety rules:** students use a nickname only. Links and phone numbers are blocked in chat. Students under 18 stay blocked until a guardian confirms. There are no leaderboards in groups. Mute, remove, archive and report are available.
+- **Backend:** the academy runs on the Cloudflare Worker with a Durable Object, on the free plan. It needs no paid Firebase plan.
+
+---
+
+## 🎮 Games
+
+Seven standalone games, all in Arabic with a navy and purple space look. They work on phones and laptops.
+
+| Game | Page |
+|---|---|
+| Bug Hunter | `game-bug.html` |
+| Code Build | `game-build.html` |
+| Code Match | `game-match.html` |
+| Image Puzzle | `game-image-puzzle.html` |
+| Memory | `game-memory.html` |
+| Quiz Master | `game-quiz.html` |
+| Speed Challenge | `game-speed.html` |
+
+The games page is `games.html`. There are no leaderboards for students in the academy.
 
 ---
 
@@ -750,7 +799,7 @@ cloudflare-worker/
 
 The Worker includes Firebase JWT verification using the `jose` library and a Firebase project ID binding.
 
-The Worker is an additional backend component and is separate from the main FastAPI application.
+The Worker also serves the academy (trainers, groups, group chat, sessions, assignments), student progress and the Cody classifier, using a Durable Object on the Cloudflare free plan. It is separate from the main FastAPI application. Older sections above describe the first version of the Worker.
 
 ---
 
@@ -974,11 +1023,15 @@ CodeQuest consists of multiple components that can be deployed independently.
 
 ### Frontend Deployment
 
-The main web application is published through GitHub Pages.
+The main web application is published on Vercel and mirrored on GitHub Pages. Both serve the same files from the `main` branch.
 
 **Live Application:**
 
-https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html
+https://codequest-mu-six.vercel.app/
+
+**GitHub Pages mirror:**
+
+https://mariam2009m44-lab.github.io/CodeQuest/
 
 **GitHub Repository:**
 
@@ -1137,6 +1190,7 @@ Potential areas for future development include:
 - [ ] Improve interactive coding exercises.
 - [ ] Continue improving the Cody educational assistant.
 - [ ] Enhance contextual explanations and learning support.
+- [ ] Let parents view group activity of their children (not decided or built yet).
 - [ ] Expand educational games and activities.
 - [ ] Improve learning analytics and progress visualization.
 - [ ] Complete trusted server-side verification for game rewards.
@@ -1188,7 +1242,9 @@ If you would like to contribute:
 | Machine Learning | Scikit-learn |
 | Code Execution | Judge0 Integration |
 | Repository | [GitHub Repository](https://github.com/mariam2009m44-lab/CodeQuest) |
-| Live Application | [Open CodeQuest](https://mariam2009m44-lab.github.io/CodeQuest/dashboard.html) |
+| Live Application | [Open CodeQuest](https://codequest-mu-six.vercel.app/) |
+| GitHub Pages Mirror | [Open mirror](https://mariam2009m44-lab.github.io/CodeQuest/) |
+| Hosting | Free tier (Vercel, GitHub Pages, Cloudflare Workers) |
 
 ---
 
