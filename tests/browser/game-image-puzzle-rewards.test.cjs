@@ -28,7 +28,7 @@ const win=async(p,wait)=>{await p.waitForSelector('#tray .free-piece');const tot
  log.push('learning card: title/intro/'+lcd.facts+' facts/question shown, answer hidden then toggles (no artwork has multiple-choice data, so the choice branch is not exercised; choiceBtns='+lcd.choiceBtns+')');
  // second win, deliberately slower: not a record, best time kept, points added, plays 2
  await p.evaluate(()=>document.getElementById('replayBtn').scrollIntoView({block:'center'}));await p.click('#replayBtn');const w2=await win(p,3500);
- assert.match(w2.text,/^أحسنت/,'slower second win is not a record');assert.equal(w2.rec.plays,2);assert.equal(w2.rec.time,w1.seconds,'best time stays the faster first time');assert.equal(w2.best,w1.time);assert.equal(w2.total,w1.points+w2.points,'points accumulate: '+w1.points+' + '+w2.points);assert.ok(w2.seconds>w1.seconds);
+ assert.match(w2.text,/^إنجاز رائع/,'slower second win is not a record');assert.equal(w2.rec.plays,2);assert.equal(w2.rec.time,w1.seconds,'best time stays the faster first time');assert.equal(w2.best,w1.time);assert.equal(w2.total,w1.points+w2.points,'points accumulate: '+w1.points+' + '+w2.points);assert.ok(w2.seconds>w1.seconds);
  assert.deepEqual(errs,[]);log.push('win 1: new record, '+w1.points+' pts, '+w1.stars+', plays 1; win 2 (slower, '+w2.seconds+'s vs '+w1.seconds+'s): not a record, best time kept, +'+w2.points+' pts, plays 2, total '+w2.total);
 
  // ?return= handling: same-origin target gets the lesson button with gameDone=1; a foreign origin is ignored.

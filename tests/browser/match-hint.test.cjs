@@ -59,7 +59,7 @@ test('match: a wrong order says how many pieces are right and which one to reche
   await page.click('#checkButton');
   const msg = (await page.textContent('#feedback')).trim();
   assert.match(msg, /3 من 5 قطع في مكانها الصحيح/);
-  assert.match(msg, /راجع القطعة رقم 4/);
+  assert.match(msg, /مراجعة القطعة رقم 4/);
   await page.waitForTimeout(600);
   await page.screenshot({ path: path.join(artifactDir, 'match-hint-390.png') });
   assert.equal(await page.$$eval('#targetZone .piece', b => b.map(x => getComputedStyle(x).direction).join()), 'ltr,ltr,ltr,ltr,ltr');
