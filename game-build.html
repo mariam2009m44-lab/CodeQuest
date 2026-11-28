@@ -231,7 +231,7 @@
 
     function check() {
       if (seq.length !== correctSeq.length) {
-        document.getElementById('buildFeedback').textContent = 'أكمل ترتيب كل السطور أولًا قبل التحقق.';
+        document.getElementById('buildFeedback').textContent = 'استكمال ترتيب كل السطور أولًا قبل التحقق.';
         return;
       }
       const exact = acceptedSeqs.some(candidate =>
@@ -266,7 +266,7 @@
         drop.querySelectorAll('.build-wrong').forEach(item => item.classList.remove('build-wrong'));
         const wrongBlock = drop.children[firstWrong];
         if (wrongBlock) wrongBlock.classList.add('build-wrong');
-        document.getElementById('buildFeedback').textContent = 'مراجعة السطر المميز؛ أول اختلاف في الترتيب يبدأ من هنا.';
+        document.getElementById('buildFeedback').textContent = 'ممراجعةة السطر المميز؛ أول اختلاف في الترتيب يبدأ من هنا.';
         btn.textContent = 'خطأ، حاول مجدداً!'; btn.style.background = 'var(--red)';
         setTimeout(() => { if (!btn.disabled) { btn.textContent = 'تحقق من الترتيب'; btn.style.background = 'var(--green)'; } }, 1500);
       }
