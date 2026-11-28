@@ -7,7 +7,10 @@ const KINDS = {
   student: { subject: "CodeQuest: تسجيل طالب جديد", line: "سجّل طالب جديد في الأكاديمية." }
 };
 export async function readLastNotice(env) {
-  try { const v = env.QUIZ_ANSWERS && await env.QUIZ_ANSWERS.get("notice:last"); return v ? JSON.parse(v) : null; } catch { return null; }
+  let last = null;
+  try { const v = env.QUIZ_ANSWERS && await env.QUIZ_ANSWERS.get("notice:last"); last = v ? JSON.parse(v) : null; } catch { last = null; }
+  // Live presence check, names only (never values): is the flag on and does this Worker see both secrets right now.
+  return { ...(last || {}), live: { flag: env.ACADEMY_EMAIL_NOTICE === "on", key: !!env.RESEND_API_KEY, email: !!env.ADMIN_NOTICE_EMAIL } };
 }
 async function remember(env, kind, reason, status) {
   try { if (env.QUIZ_ANSWERS) await env.QUIZ_ANSWERS.put("notice:last", JSON.stringify({ at: new Date().toISOString(), kind, reason, status: status || 0 }), { expirationTtl: 60 * 60 * 24 * 14 }); } catch {}

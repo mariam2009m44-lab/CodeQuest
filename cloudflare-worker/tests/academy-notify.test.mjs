@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sendAdminNotice, NOTICE_DAILY_CAP } from "../academy-notify.js";
+import { sendAdminNotice, readLastNotice, NOTICE_DAILY_CAP } from "../academy-notify.js";
 const kv = () => { const m = new Map(); return { m, get: async k => m.get(k) ?? null, put: async (k, v) => { m.set(k, v); }, delete: async k => { m.delete(k); } }; };
 const env = (o = {}) => ({ ACADEMY_EMAIL_NOTICE: "on", RESEND_API_KEY: "k", ADMIN_NOTICE_EMAIL: "owner@example.test", QUIZ_ANSWERS: kv(), ...o });
 test("off without flag or secrets: no network call", async () => {
@@ -40,4 +40,10 @@ test("a refused student notice does not block the retry", async () => {
   assert.equal((await sendAdminNotice(e, "student", "u1", bad)).sent, false);
   assert.equal((await sendAdminNotice(e, "student", "u1", good)).sent, true);
   assert.equal((await sendAdminNotice(e, "student", "u1", good)).reason, "seen"); assert.equal(n, 2);
+});
+
+test("live check reports presence of the flag and both secrets, never values", async () => {
+  const a = await readLastNotice(env()); assert.deepEqual(a.live, { flag: true, key: true, email: true });
+  const b = await readLastNotice(env({ RESEND_API_KEY: "" })); assert.equal(b.live.key, false); assert.equal(b.live.email, true);
+  assert.ok(!JSON.stringify(a).includes("owner@example.test"));
 });
