@@ -33,6 +33,7 @@ export async function sendAdminNotice(env, kind, uid, fetchImpl = fetch) {
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + env.RESEND_API_KEY },
       body: JSON.stringify({ from: "CodeQuest <onboarding@resend.dev>", to: [env.ADMIN_NOTICE_EMAIL], subject: k.subject, text: k.line + "\nلوحة الإدارة للمراجعة:\n" + link })
     });
+    if (!res.ok && kind === "student") { try { await env.QUIZ_ANSWERS.delete("notice:stu:" + String(uid || "").slice(0, 64)); } catch {} } // a refused send must not block the retry
     await remember(env, kind, res.ok ? "sent" : "http_" + res.status, res.status);
     return { sent: res.ok, reason: res.ok ? "sent" : "http_" + res.status };
   } catch { await remember(env, kind, "error"); return { sent: false, reason: "error" }; }

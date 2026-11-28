@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { sendAdminNotice, NOTICE_DAILY_CAP } from "../academy-notify.js";
-const kv = () => { const m = new Map(); return { m, get: async k => m.get(k) ?? null, put: async (k, v) => { m.set(k, v); } }; };
+const kv = () => { const m = new Map(); return { m, get: async k => m.get(k) ?? null, put: async (k, v) => { m.set(k, v); }, delete: async k => { m.delete(k); } }; };
 const env = (o = {}) => ({ ACADEMY_EMAIL_NOTICE: "on", RESEND_API_KEY: "k", ADMIN_NOTICE_EMAIL: "owner@example.test", QUIZ_ANSWERS: kv(), ...o });
 test("off without flag or secrets: no network call", async () => {
   let calls = 0; const f = async () => { calls++; return { ok: true }; };
@@ -33,4 +33,11 @@ test("last result is recorded: provider rejection shows its status, missing secr
   const last = JSON.parse(e.QUIZ_ANSWERS.m.get("notice:last")); assert.equal(last.reason, "http_403"); assert.ok(!JSON.stringify(last).includes("owner@example.test"));
   const e2 = env({ RESEND_API_KEY: undefined }); await sendAdminNotice(e2, "trainer", "u", async () => ({ ok: true }));
   assert.equal(JSON.parse(e2.QUIZ_ANSWERS.m.get("notice:last")).reason, "missing_key");
+});
+test("a refused student notice does not block the retry", async () => {
+  const e = env(); let n = 0;
+  const bad = async () => { n++; return { ok: false, status: 403 }; }, good = async () => { n++; return { ok: true, status: 200 }; };
+  assert.equal((await sendAdminNotice(e, "student", "u1", bad)).sent, false);
+  assert.equal((await sendAdminNotice(e, "student", "u1", good)).sent, true);
+  assert.equal((await sendAdminNotice(e, "student", "u1", good)).reason, "seen"); assert.equal(n, 2);
 });
