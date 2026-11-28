@@ -90,3 +90,13 @@ test("a session tied to a group is hidden from non-members", async () => {
   await c("admin/guardian-review", "tokE", { target: "uidB", decision: "verified" });
   assert.equal((await c("sessions/list", "tokB")).data.sessions.length, 0);
 });
+test("attendance: an active student's join tap is recorded once; only the owner or admin reads it; pending students and strangers cannot", async () => {
+  const { c } = await world();
+  const mk = await c("sessions/create", "tokV", sess); assert.equal(mk.data.success, true); const id = mk.data.id;
+  assert.equal((await c("sessions/attend", "tokA", { id })).status, 200); assert.equal((await c("sessions/attend", "tokA", { id })).status, 200);
+  assert.equal((await c("sessions/attend", "tokB", { id })).status, 403);
+  assert.equal((await c("sessions/attendance", "tokA", { id })).status, 403);
+  const r = await c("sessions/attendance", "tokV", { id }); assert.equal(r.data.count, 1); assert.deepEqual(r.data.names, []);
+  const mine = (await c("sessions/list", "tokV")).data.sessions.find(x => x.id === id); assert.equal(mine.attended, 1);
+  const theirs = (await c("sessions/list", "tokA")).data.sessions.find(x => x.id === id); assert.equal("attended" in theirs, false);
+});

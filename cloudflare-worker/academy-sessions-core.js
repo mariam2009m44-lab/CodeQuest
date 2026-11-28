@@ -65,7 +65,7 @@ export function createSession(sessions, id, uid, name, value, now) {
 }
 export function listSessions(sessions, uid, now, visible) {
   return Object.values(sessions).filter(s => !s.canceled && s.startsAt + s.durationMin * 60000 > now - 30 * 60000 && (!visible || visible(s)))
-    .sort((a, b) => a.startsAt - b.startsAt).slice(0, 60).map(s => ({ id: s.id, title: s.title, description: s.description, track: s.track, startsAt: s.startsAt, durationMin: s.durationMin, linkUrl: s.linkUrl, groupId: s.groupId || "", ownerName: s.ownerName, mine: s.owner === uid }));
+    .sort((a, b) => a.startsAt - b.startsAt).slice(0, 60).map(s => ({ id: s.id, title: s.title, description: s.description, track: s.track, startsAt: s.startsAt, durationMin: s.durationMin, linkUrl: s.linkUrl, groupId: s.groupId || "", ownerName: s.ownerName, mine: s.owner === uid, ...(s.owner === uid ? { attended: Object.keys(s.att || {}).length } : {}) }));
 }
 export function cancelSession(sessions, id, uid, isAdmin) {
   const s = sessions[id]; if (!s) return { ok: false, status: 404, reason: "not_found" };

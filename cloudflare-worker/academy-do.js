@@ -1,7 +1,7 @@
 // Extra Academy Directory actions: student profiles, sessions, code share, groups. Runs inside the Durable Object transaction (free plan).
 import * as S from "./academy-sessions-core.js";
 import * as G from "./academy-groups-core.js";
-export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole"]);
+export const EXTRA = new Set(["student", "summary", "guardians", "greview", "agroups", "scr", "sls", "scn", "cput", "cget", "gcr", "gls", "gjoin", "grev", "grem", "gmute", "garch", "gpost", "gread", "gdel", "grep", "myrole", "satt", "sattl"]);
 const fail = (r) => ({ status: r.status || 400, data: { success: false, message: r.reason } });
 const ok = (data = {}) => ({ status: 200, data: { success: true, ...data } });
 export async function handleExtra(tx, action, b, now, newId) {
@@ -53,6 +53,19 @@ export async function handleExtra(tx, action, b, now, newId) {
     await tx.put("ses", ses); return ok({ id: r.session.id });
   }
   if (action === "sls") { if (!canBrowse) return fail({ status: 403, reason: "profile_required" }); return ok({ sessions: S.listSessions(ses, uid, now, inGroup), role }); }
+  if (action === "satt") { // join tap: records that this account opened the session link (idempotent, no names stored)
+    const s = ses[String(b.id || "")]; if (!s || s.canceled) return fail({ status: 404, reason: "not_found" });
+    if (!canBrowse || !inGroup(s)) return fail({ status: 403, reason: "profile_required" });
+    s.att = s.att || {}; if (!s.att[uid] && Object.keys(s.att).length < 300) s.att[uid] = now;
+    await tx.put("ses", ses); return ok();
+  }
+  if (action === "sattl") { // owner or admin: who tapped join. Group sessions show group nicknames only; others show a count.
+    const s = ses[String(b.id || "")]; if (!s) return fail({ status: 404, reason: "not_found" });
+    if (s.owner !== uid && !admin) return fail({ status: 403, reason: "forbidden" });
+    const att = s.att || {}, g = s.groupId && grp[s.groupId];
+    const names = g ? Object.keys(att).map(u => (g.members[u] && g.members[u].nick) || "").filter(Boolean) : [];
+    return ok({ count: Object.keys(att).length, names: names.slice(0, 100) });
+  }
   if (action === "scn") { const r = S.cancelSession(ses, String(b.id || ""), uid, admin); if (!r.ok) return fail(r); await tx.put("ses", ses); return ok(); }
   if (action === "cput") {
     const r = S.putCode(ses, codes, String(b.id || ""), uid, b.code, b.lang, now); if (!r.ok) return fail(r);

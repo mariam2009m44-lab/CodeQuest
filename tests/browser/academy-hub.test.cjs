@@ -9,7 +9,7 @@ export async function academyWorker(u,p,body){const ok=d=>({ok:true,status:200,d
  if(p==="my-role")return ok({role});if(p==="sessions/list")return ok({sessions:S});if(p==="groups/list")return ok({groups:G});
  if(p==="sessions/code-get")return ok({v:1,changed:true,code:"print('hi')"});
  if(p==="groups/read")return ok({items:M,members:[{uid:"u9",nick:"نور",muted:false}],pending:role==="trainer"?[{uid:"u8",nick:"سلمى",at:1}]:[],role:role==="trainer"?"owner":"member"});
- if(p==="sessions/create"||p==="groups/post")globalThis.__calls.push([p,body]);return ok({});}`;
+ if(p==="sessions/create"||p==="groups/post"||p==="sessions/attend")globalThis.__calls.push([p,body]);return ok({});}`;
 const STUB=(role)=>({'/js/firebase-config.js':'export const auth={};export const authPersistenceReady=Promise.resolve();','/js/academy-api.js':API(role)});
 async function open(role,vp={width:390,height:900}){const b=await chromium.launch();const p=await b.newPage({viewport:vp,deviceScaleFactor:1});const st=STUB(role);
  await p.route('**/*',async r=>{const u=new URL(r.request().url());
@@ -36,9 +36,11 @@ test('chat-app layout: desktop two panes, mobile one pane at a time; trainer sta
   assert.equal(await p.locator('#groupList .wa-row').count(),2);await p.click('#tabGroups');await p.waitForTimeout(300);
   assert.equal(await p.isVisible('#waEmpty'),true);await p.click('#groupList .wa-row >> nth=0');await p.waitForTimeout(500);
   assert.equal(await p.isVisible('#chat'),true);assert.equal(await p.isVisible('#groupList'),true);
-  await p.click('#liveBtn');await p.fill('#liveForm [name=title]','نموذج: شرح الحلقات');await p.fill('#liveForm [name=linkUrl]','https://meet.google.com/abc-defg-hij');
+  await p.click('#stSched');await p.click('#liveBtn');await p.fill('#liveForm [name=title]','نموذج: شرح الحلقات');await p.fill('#liveForm [name=linkUrl]','https://meet.google.com/abc-defg-hij');
   await p.screenshot({path:require('os').tmpdir()+'/hub-desktop-trainer.png',fullPage:true});
   await p.click('#liveForm button[type=submit]');await p.waitForTimeout(500);
+  await p.click('#stChat');
+  assert.ok(await p.isVisible('#pinned'),'latest announcement is pinned');await p.click('#stPeople');assert.ok(await p.isVisible('#memberList'));await p.screenshot({path:require('os').tmpdir()+'/hub-desktop-people.png',fullPage:true});
   const calls=await p.evaluate(()=>globalThis.__calls||[]);
   assert.ok(calls.some(c=>c[0]==='sessions/create'&&c[1].groupId==='g1'&&/meet\.google/.test(c[1].linkUrl)));
   assert.ok(calls.some(c=>c[0]==='groups/post'&&c[1].kind==='ann'));

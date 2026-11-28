@@ -58,14 +58,23 @@
   <section class="wa-main" aria-label="المحادثة">
    <div class="wa-empty" id="waEmpty"><div class="wa-empty-ico" aria-hidden="true">💬</div><p>اختر مجموعة لعرض المحادثة.</p></div>
    <div class="wa-chat" id="chat" hidden>
-    <header class="wa-head"><button class="wa-back" id="chatClose" type="button" aria-label="رجوع إلى المجموعات">‹</button><span class="wa-avatar" id="chatAvatar" aria-hidden="true"></span><div class="wa-title"><h2 id="chatTitle"></h2><p id="chatMeta"></p></div><div class="wa-tools"><button class="hub-ghost" id="liveBtn" type="button" hidden>بدء جلسة مباشرة</button><button class="hub-ghost" id="manageBtn" type="button" hidden>الأعضاء</button></div></header>
-    <form class="wa-live hub-form" id="liveForm" hidden><label>عنوان الجلسة<input name="title" required minlength="3" maxlength="80" placeholder="مثال: شرح الحلقات التكرارية"></label><label>رابط الاجتماع<input name="linkUrl" type="url" required dir="ltr" placeholder="https://meet.google.com/..."></label><div class="hub-actions"><button class="hub-btn" type="submit">ابدأ ونبّه المجموعة</button><button class="hub-ghost" id="liveCancel" type="button">إلغاء</button></div><p class="hub-hint">يُنشر الرابط في المحادثة كإعلان، ويفتحه الطلاب في نافذة جديدة. يدعم Google Meet وZoom وJitsi وTeams وWhereby.</p><p class="hub-feedback" id="liveFeedback" aria-live="polite"></p></form>
-    <div class="wa-sessions" id="groupSessions" hidden></div>
-    <div class="hub-safety">الرسائل نصية فقط. لا تُرسل روابط أو أرقام هاتف أو حسابات. المدرب يشرف على المجموعة، ويمكنك الإبلاغ عن أي رسالة.</div>
-    <div id="chatMessages" class="wa-messages" aria-live="polite"></div>
-    <form id="chatForm" class="wa-compose"><label class="wa-ann" id="annLabel" hidden><input type="checkbox" id="annCheck"><span>إعلان</span></label><input id="chatInput" maxlength="500" autocomplete="off" placeholder="اكتب رسالة…" required><button class="wa-send" type="submit" aria-label="إرسال">➤</button></form>
-    <p class="hub-feedback" id="chatFeedback" aria-live="polite"></p>
-    <div id="manage" class="hub-manage" hidden><h3>الطلبات</h3><div id="pendingList"></div><h3>الأعضاء</h3><div id="memberList"></div><button class="hub-ghost hub-danger" id="archiveBtn" type="button">أرشفة المجموعة</button></div>
+    <header class="wa-head"><button class="wa-back" id="chatClose" type="button" aria-label="رجوع إلى المجموعات">‹</button><span class="wa-avatar" id="chatAvatar" aria-hidden="true"></span><div class="wa-title"><h2 id="chatTitle"></h2><p id="chatMeta"></p></div></header>
+    <div class="wa-subtabs" role="tablist"><button id="stChat" class="is-active" role="tab" aria-selected="true" type="button">المحادثة</button><button id="stSched" role="tab" aria-selected="false" type="button">الجدول</button><button id="stPeople" role="tab" aria-selected="false" type="button">الأعضاء</button></div>
+    <div id="wpChat" class="wa-pane">
+     <div class="wa-pinned" id="pinned" hidden></div>
+     <div id="chatMessages" class="wa-messages" aria-live="polite"></div>
+     <form id="chatForm" class="wa-compose"><label class="wa-ann" id="annLabel" hidden><input type="checkbox" id="annCheck"><span>إعلان</span></label><input id="chatInput" maxlength="500" autocomplete="off" placeholder="اكتب رسالة…" required><button class="wa-send" type="submit" aria-label="إرسال">➤</button></form>
+     <p class="hub-feedback" id="chatFeedback" aria-live="polite"></p>
+     <div class="hub-safety">الرسائل نصية فقط. لا تُرسل روابط أو أرقام هاتف أو حسابات. المدرب يشرف على المجموعة، ويمكنك الإبلاغ عن أي رسالة.</div>
+    </div>
+    <div id="wpSched" class="wa-pane" hidden>
+     <div class="wa-pane-head"><h3>الجلسات المباشرة</h3><button class="hub-btn" id="liveBtn" type="button" hidden>بدء جلسة مباشرة</button></div>
+     <form class="wa-live hub-form" id="liveForm" hidden><label>عنوان الجلسة<input name="title" required minlength="3" maxlength="80" placeholder="مثال: شرح الحلقات التكرارية"></label><label>رابط الاجتماع<input name="linkUrl" type="url" required dir="ltr" placeholder="https://meet.google.com/..."></label><div class="hub-actions"><button class="hub-btn" type="submit">ابدأ ونبّه المجموعة</button><button class="hub-ghost" id="liveCancel" type="button">إلغاء</button></div><p class="hub-hint">يُنشر الرابط في المحادثة كإعلان، ويفتحه الطلاب في نافذة جديدة. يدعم Google Meet وZoom وJitsi وTeams وWhereby.</p><p class="hub-feedback" id="liveFeedback" aria-live="polite"></p></form>
+     <div class="wa-sessions" id="groupSessions"></div>
+    </div>
+    <div id="wpPeople" class="wa-pane" hidden>
+     <div id="manage" class="hub-manage"><div id="ownerBox"></div><div id="pendingBox" hidden><div class="wa-pane-head"><h3>طلبات الانضمام</h3><button class="hub-btn" id="acceptAll" type="button">قبول الكل</button></div><div id="pendingList"></div></div><h3>الأعضاء</h3><div id="memberList"></div><button class="hub-ghost hub-danger" id="archiveBtn" type="button" hidden>أرشفة المجموعة</button></div>
+    </div>
    </div>
   </section>
  </div>
