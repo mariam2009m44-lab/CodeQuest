@@ -6,9 +6,16 @@ const KINDS = {
   trainer: { subject: "CodeQuest: طلب مدرب جديد", line: "وصل طلب مدرب جديد." },
   student: { subject: "CodeQuest: تسجيل طالب جديد", line: "سجّل طالب جديد في الأكاديمية." }
 };
+export async function readLastNotice(env) {
+  try { const v = env.QUIZ_ANSWERS && await env.QUIZ_ANSWERS.get("notice:last"); return v ? JSON.parse(v) : null; } catch { return null; }
+}
+async function remember(env, kind, reason, status) {
+  try { if (env.QUIZ_ANSWERS) await env.QUIZ_ANSWERS.put("notice:last", JSON.stringify({ at: new Date().toISOString(), kind, reason, status: status || 0 }), { expirationTtl: 60 * 60 * 24 * 14 }); } catch {}
+}
 export async function sendAdminNotice(env, kind, uid, fetchImpl = fetch) {
   try {
-    if (env.ACADEMY_EMAIL_NOTICE !== "on" || !env.RESEND_API_KEY || !env.ADMIN_NOTICE_EMAIL || !KINDS[kind] || !env.QUIZ_ANSWERS) return { sent: false, reason: "off" };
+    if (env.ACADEMY_EMAIL_NOTICE !== "on" || !KINDS[kind] || !env.QUIZ_ANSWERS) return { sent: false, reason: "off" };
+    if (!env.RESEND_API_KEY || !env.ADMIN_NOTICE_EMAIL) { await remember(env, kind, "missing_" + (env.RESEND_API_KEY ? "" : "key") + (env.ADMIN_NOTICE_EMAIL ? "" : "email")); return { sent: false, reason: "missing_secret" }; }
     const day = new Date().toISOString().slice(0, 10);
     const capKey = "notice:cap:" + day;
     const used = Number(await env.QUIZ_ANSWERS.get(capKey)) || 0;
@@ -26,6 +33,7 @@ export async function sendAdminNotice(env, kind, uid, fetchImpl = fetch) {
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + env.RESEND_API_KEY },
       body: JSON.stringify({ from: "CodeQuest <onboarding@resend.dev>", to: [env.ADMIN_NOTICE_EMAIL], subject: k.subject, text: k.line + "\nافتحي لوحة الإدارة للمراجعة:\n" + link })
     });
+    await remember(env, kind, res.ok ? "sent" : "http_" + res.status, res.status);
     return { sent: res.ok, reason: res.ok ? "sent" : "http_" + res.status };
-  } catch { return { sent: false, reason: "error" }; }
+  } catch { await remember(env, kind, "error"); return { sent: false, reason: "error" }; }
 }

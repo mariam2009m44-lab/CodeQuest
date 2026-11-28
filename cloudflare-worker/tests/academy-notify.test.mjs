@@ -28,3 +28,9 @@ test("provider failure or throw never throws to the caller", async () => {
   assert.equal((await sendAdminNotice(env(), "trainer", "u", async () => ({ ok: false, status: 403 }))).sent, false);
   assert.equal((await sendAdminNotice(env(), "trainer", "u", async () => { throw new Error("x"); })).reason, "error");
 });
+test("last result is recorded: provider rejection shows its status, missing secret is named", async () => {
+  const e = env(); await sendAdminNotice(e, "trainer", "u", async () => ({ ok: false, status: 403 }));
+  const last = JSON.parse(e.QUIZ_ANSWERS.m.get("notice:last")); assert.equal(last.reason, "http_403"); assert.ok(!JSON.stringify(last).includes("owner@example.test"));
+  const e2 = env({ RESEND_API_KEY: undefined }); await sendAdminNotice(e2, "trainer", "u", async () => ({ ok: true }));
+  assert.equal(JSON.parse(e2.QUIZ_ANSWERS.m.get("notice:last")).reason, "missing_key");
+});
