@@ -154,7 +154,7 @@
       <p id="matchNote" class="match-note" role="status" aria-live="polite"></p>
       <div id="winScreen" class="win-screen">
         <div class="result-emoji" id="resultEmoji">🏆</div>
-        <h2 id="resultTitle">إنجاز رائع! لقد أكملت اللعبة 🎉</h2>
+        <h2 id="resultTitle">إنجاز رائع! لقد استكمالت اللعبة 🎉</h2>
         <p class="result-message" id="resultMessage" style="color: var(--muted); margin-bottom: 20px;"></p>
         <button class="btn-restart" onclick="restartCurrentLevel()">العب مرة أخرى</button>
         <button class="btn-back" onclick="showMemoryLevels()">المستويات</button>
@@ -283,9 +283,9 @@
             renderMemoryLevels();
             winScreen.style.display = 'block'; gameGrid.style.display = 'none'; document.getElementById('matchNote').textContent = '';
             document.getElementById('resultEmoji').textContent = '🏆';
-            document.getElementById('resultTitle').textContent = 'رائع! لقد أكملت اللعبة! ' + '★'.repeat(earned);
+            document.getElementById('resultTitle').textContent = 'رائع! لقد استكمالت اللعبة! ' + '★'.repeat(earned);
             document.getElementById('resultMessage').textContent = `النقاط: ${score} • الوقت: ${formatMemoryTime(memorySeconds)} • المحاولات: ${memoryMoves} • أفضل وقت: ${formatMemoryTime(Number(CQGameStore.get(bestKey))||memorySeconds)}${isBest?' • رقم قياسي جديد!':''}`;
-            window.CodeQuestExperience?.reward({ gems: 0, title: 'ذاكرة خارقة!', message: 'طابقت كل البطاقات وأكملت المرحلة بنجاح.' });
+            window.CodeQuestExperience?.reward({ gems: 0, title: 'ذاكرة خارقة!', message: 'طابقت كل البطاقات واستكمالت المرحلة بنجاح.' });
           }, 500);
         }
       } else {
