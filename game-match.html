@@ -581,7 +581,7 @@
       if (!piecesContainer.children.length && !solved) {
         const message = document.createElement("span");
         message.className = "empty-message";
-        message.textContent = "إضافةت كل القطع إلى الكود.";
+        message.textContent = "تمت إضافة كل القطع إلى الكود.";
         piecesContainer.appendChild(message);
       }
     }
@@ -779,7 +779,7 @@
         targetZone.classList.add("incorrect");
 
         setFeedback(
-          "استكمال كل القطع أولًا، ثم تحقّق من الحل.",
+          "إضافة كل القطع أولًا، ثم التحقق من الحل.",
           "error"
         );
 
@@ -797,7 +797,7 @@
         const inPlace = userBuild.filter((piece, index) => piece.value === correctCode[index]).length;
         const firstWrong = userBuild.findIndex((piece, index) => piece.value !== correctCode[index]) + 1;
         setFeedback(
-          `الترتيب غير صحيح. ${inPlace} من ${correctCode.length} قطع في مكانها الصحيح. مراجعة القطعة رقم ${firstWrong} من أول الكود، والضغط عليها لإزالتها ثم يمكن المحاولة مرة أخرى.`,
+          `الترتيب غير صحيح. ${inPlace} من ${correctCode.length} قطع في مكانها الصحيح. مراجعة القطعة رقم ${firstWrong} من أول الكود، يمكن إزالة القطعة المحددة ثم المحاولة مرة أخرى.`,
           "error"
         );
 
